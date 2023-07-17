@@ -1,7 +1,6 @@
 {
     "attributes": {
         "description": "Overview of Microsoft 365 Defender Alert Events.",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -70,6 +69,8 @@
         "optionsJSON": {
             "hidePanelTitles": false,
             "syncColors": true,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
@@ -110,106 +111,152 @@
                 "panelIndex": "5a7c7a42-12a4-49f3-a9be-cddff83fea6e",
                 "title": "Dashboards [Logs Microsoft 365 Defender]",
                 "type": "visualization",
-                "version": "7.16.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "hidePanelTitles": true,
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {
-                                        "customLabel": "Severity"
-                                    },
-                                    "schema": "metric",
-                                    "type": "count"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-7c6f0141-f2b6-470a-b228-4d171ba5ec9c",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "7c6f0141-f2b6-470a-b228-4d171ba5ec9c": {
+                                            "columnOrder": [
+                                                "c6bf301d-636a-4542-823f-2d5560351433",
+                                                "f9fc8f3a-2689-47a0-be9c-4b1475047b38",
+                                                "f9fc8f3a-2689-47a0-be9c-4b1475047b38X0",
+                                                "f9fc8f3a-2689-47a0-be9c-4b1475047b38X1"
+                                            ],
+                                            "columns": {
+                                                "c6bf301d-636a-4542-823f-2d5560351433": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Filters",
+                                                    "operationType": "filters",
+                                                    "params": {
+                                                        "filters": [
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "m365_defender.event.severity : \"high\" "
+                                                                },
+                                                                "label": "High"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "m365_defender.event.severity : \"medium\""
+                                                                },
+                                                                "label": "Medium"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "m365_defender.event.severity : \"low\" "
+                                                                },
+                                                                "label": "Low"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "m365_defender.event.severity : \"informational\""
+                                                                },
+                                                                "label": "informational"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "scale": "ordinal"
+                                                },
+                                                "f9fc8f3a-2689-47a0-be9c-4b1475047b38": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Severity",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "defaults(count(), 0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "f9fc8f3a-2689-47a0-be9c-4b1475047b38X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "f9fc8f3a-2689-47a0-be9c-4b1475047b38X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Severity",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "f9fc8f3a-2689-47a0-be9c-4b1475047b38X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Severity",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "f9fc8f3a-2689-47a0-be9c-4b1475047b38X0",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 20,
+                                                                "min": 0
+                                                            },
+                                                            "name": "defaults",
+                                                            "text": "defaults(count(), 0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "f9fc8f3a-2689-47a0-be9c-4b1475047b38X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
                                 },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "filters": [
-                                            {
-                                                "input": {
-                                                    "language": "kuery",
-                                                    "query": "m365_defender.event.severity : \"high\" "
-                                                },
-                                                "label": "High"
-                                            },
-                                            {
-                                                "input": {
-                                                    "language": "kuery",
-                                                    "query": "m365_defender.event.severity : \"medium\""
-                                                },
-                                                "label": "Medium"
-                                            },
-                                            {
-                                                "input": {
-                                                    "language": "kuery",
-                                                    "query": "m365_defender.event.severity : \"low\" "
-                                                },
-                                                "label": "Low"
-                                            },
-                                            {
-                                                "input": {
-                                                    "language": "kuery",
-                                                    "query": "m365_defender.event.severity : \"informational\""
-                                                },
-                                                "label": "informational"
-                                            }
-                                        ]
-                                    },
-                                    "schema": "group",
-                                    "type": "filters"
+                                "textBased": {
+                                    "layers": {}
                                 }
-                            ],
-                            "searchSource": {
-                                "filter": [],
-                                "index": "logs-*",
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "breakdownByAccessor": "c6bf301d-636a-4542-823f-2d5560351433",
+                                "color": "#6092C0",
+                                "layerId": "7c6f0141-f2b6-470a-b228-4d171ba5ec9c",
+                                "layerType": "data",
+                                "metricAccessor": "f9fc8f3a-2689-47a0-be9c-4b1475047b38"
                             }
                         },
-                        "description": "",
-                        "id": "",
-                        "params": {
-                            "addLegend": false,
-                            "addTooltip": true,
-                            "metric": {
-                                "colorSchema": "Green to Red",
-                                "colorsRange": [
-                                    {
-                                        "from": 0,
-                                        "to": 10000
-                                    }
-                                ],
-                                "invertColors": false,
-                                "labels": {
-                                    "show": true
-                                },
-                                "metricColorMode": "None",
-                                "percentageMode": false,
-                                "style": {
-                                    "bgColor": false,
-                                    "bgFill": "#000",
-                                    "fontSize": 60,
-                                    "labelColor": false,
-                                    "subText": ""
-                                },
-                                "useRanges": false
-                            },
-                            "type": "metric"
-                        },
-                        "title": "",
-                        "type": "metric",
-                        "uiState": {}
-                    }
+                        "title": "Metric visualization (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
                 },
                 "gridData": {
                     "h": 10,
@@ -219,9 +266,8 @@
                     "y": 2
                 },
                 "panelIndex": "f7f48432-a963-4c54-860d-8a33a26940c5",
-                "title": "Alert Severity Information [Logs Microsoft 365 Defender]",
-                "type": "visualization",
-                "version": "7.16.0"
+                "type": "lens",
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -240,7 +286,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "0bfbdd96-9c40-4fe8-808c-86624470ce91": {
                                             "columnOrder": [
@@ -274,7 +320,7 @@
                                                     "label": "Count",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -291,15 +337,18 @@
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "groups": [
-                                            "96f53808-7c6b-4b58-9681-31185fb341b7"
-                                        ],
                                         "layerId": "0bfbdd96-9c40-4fe8-808c-86624470ce91",
                                         "layerType": "data",
                                         "legendDisplay": "default",
-                                        "metric": "f99388d1-ad86-4951-9a54-adbcc9c30e54",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "f99388d1-ad86-4951-9a54-adbcc9c30e54"
+                                        ],
                                         "nestedLegend": false,
-                                        "numberDisplay": "percent"
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "96f53808-7c6b-4b58-9681-31185fb341b7"
+                                        ]
                                     }
                                 ],
                                 "shape": "pie"
@@ -322,7 +371,7 @@
                 "panelIndex": "17575d40-8cb8-4a3e-bc13-b8ef8a09123f",
                 "title": "Distribution of Alert Events by Category [Logs Microsoft 365 Defender]",
                 "type": "lens",
-                "version": "7.16.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -341,7 +390,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "f47a423f-8940-4b5b-8deb-c4351b75d7d5": {
                                             "columnOrder": [
@@ -357,7 +406,7 @@
                                                     "label": "Count",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 },
                                                 "4b06f22b-cbf2-454e-9faa-cb77ece83c86": {
                                                     "customLabel": true,
@@ -385,6 +434,7 @@
                                                     "label": "Timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
+                                                        "includeEmptyRows": true,
                                                         "interval": "auto"
                                                     },
                                                     "scale": "interval",
@@ -418,6 +468,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "auto",
                                     "position": "right"
                                 },
                                 "preferredSeriesType": "line",
@@ -448,7 +499,7 @@
                 "panelIndex": "ed37facb-6a06-448e-8b27-33a266d36ede",
                 "title": "Severity of Alerts Over Time [Logs Microsoft 365 Defender]",
                 "type": "lens",
-                "version": "7.16.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -467,7 +518,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "c947d589-efac-479f-a315-6eba984ef356": {
                                             "columnOrder": [
@@ -501,7 +552,7 @@
                                                     "label": "Count",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -518,15 +569,18 @@
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "groups": [
-                                            "93a0f8fa-463d-4bf8-a124-1f32e5fc7723"
-                                        ],
                                         "layerId": "c947d589-efac-479f-a315-6eba984ef356",
                                         "layerType": "data",
                                         "legendDisplay": "default",
-                                        "metric": "a59d0987-6709-4870-8ec7-a2bde8631214",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "a59d0987-6709-4870-8ec7-a2bde8631214"
+                                        ],
                                         "nestedLegend": false,
-                                        "numberDisplay": "percent"
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "93a0f8fa-463d-4bf8-a124-1f32e5fc7723"
+                                        ]
                                     }
                                 ],
                                 "shape": "pie"
@@ -549,7 +603,7 @@
                 "panelIndex": "b36c4cb0-fb8d-4587-9175-e8993c4345f2",
                 "title": "Distribution of Alert Events by AlertEvidence Category [Logs Microsoft 365 Defender]",
                 "type": "lens",
-                "version": "7.16.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -568,7 +622,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "43b1d1bf-cd29-446c-9ead-24eab1414c58": {
                                             "columnOrder": [
@@ -583,7 +637,7 @@
                                                     "label": "Count",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 },
                                                 "f889e677-8053-4b7f-a3ee-e40f13196545": {
                                                     "customLabel": true,
@@ -619,15 +673,18 @@
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "groups": [
-                                            "f889e677-8053-4b7f-a3ee-e40f13196545"
-                                        ],
                                         "layerId": "43b1d1bf-cd29-446c-9ead-24eab1414c58",
                                         "layerType": "data",
                                         "legendDisplay": "default",
-                                        "metric": "c8e84e65-9c5a-4da4-aff7-c06d0019f616",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "c8e84e65-9c5a-4da4-aff7-c06d0019f616"
+                                        ],
                                         "nestedLegend": false,
-                                        "numberDisplay": "percent"
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "f889e677-8053-4b7f-a3ee-e40f13196545"
+                                        ]
                                     }
                                 ],
                                 "shape": "pie"
@@ -650,7 +707,7 @@
                 "panelIndex": "b8b9e1dc-f5e5-4cb4-b935-6f6bc8deeb45",
                 "title": "Distribution of Alert Events by AlertInfo Category [Logs Microsoft 365 Defender]",
                 "type": "lens",
-                "version": "7.16.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -669,7 +726,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "7dcdc94e-03b5-4de3-ad69-86fc6fd75bb9": {
                                             "columnOrder": [
@@ -703,7 +760,7 @@
                                                     "label": "Count",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -732,6 +789,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "auto",
                                     "position": "right"
                                 },
                                 "preferredSeriesType": "bar_stacked",
@@ -762,7 +820,7 @@
                 "panelIndex": "f7b0e2ea-30a7-4ea8-84a4-ea258a438dd0",
                 "title": "Distribution of Alert Events by Detection Source [Logs Microsoft 365 Defender]",
                 "type": "lens",
-                "version": "7.16.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -781,7 +839,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "526d57ca-b35a-482d-83c1-14aaf56e2fdb": {
                                             "columnOrder": [
@@ -796,7 +854,7 @@
                                                     "label": "Count",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 },
                                                 "d5a2d011-e9ae-4e02-adda-9768c2555ca2": {
                                                     "customLabel": true,
@@ -832,15 +890,18 @@
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "groups": [
-                                            "d5a2d011-e9ae-4e02-adda-9768c2555ca2"
-                                        ],
                                         "layerId": "526d57ca-b35a-482d-83c1-14aaf56e2fdb",
                                         "layerType": "data",
                                         "legendDisplay": "default",
-                                        "metric": "a0d68c67-c705-4999-9254-726420d4596f",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "a0d68c67-c705-4999-9254-726420d4596f"
+                                        ],
                                         "nestedLegend": false,
-                                        "numberDisplay": "percent"
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "d5a2d011-e9ae-4e02-adda-9768c2555ca2"
+                                        ]
                                     }
                                 ],
                                 "shape": "pie"
@@ -863,7 +924,7 @@
                 "panelIndex": "1bdac8c4-40d5-4256-9678-d0be8da4e90f",
                 "title": "Distribution of Alert Events by Entity Type [Logs Microsoft 365 Defender]",
                 "type": "lens",
-                "version": "7.16.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -882,7 +943,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "85022ca8-d03d-46e1-a69a-00f3f3f296ce": {
                                             "columnOrder": [
@@ -897,7 +958,7 @@
                                                     "label": "Count",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 },
                                                 "561e7a47-3de8-416d-8c1b-0b27f2b8c430": {
                                                     "customLabel": true,
@@ -933,15 +994,18 @@
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "groups": [
-                                            "561e7a47-3de8-416d-8c1b-0b27f2b8c430"
-                                        ],
                                         "layerId": "85022ca8-d03d-46e1-a69a-00f3f3f296ce",
                                         "layerType": "data",
                                         "legendDisplay": "default",
-                                        "metric": "4b18a23e-a1f7-4e0c-ba99-bee954fcf901",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "4b18a23e-a1f7-4e0c-ba99-bee954fcf901"
+                                        ],
                                         "nestedLegend": false,
-                                        "numberDisplay": "percent"
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "561e7a47-3de8-416d-8c1b-0b27f2b8c430"
+                                        ]
                                     }
                                 ],
                                 "shape": "pie"
@@ -964,7 +1028,7 @@
                 "panelIndex": "425863c5-767c-46b4-a8d5-f3457813c1c5",
                 "title": "Distribution of Alert Events by Service Source [Logs Microsoft 365 Defender]",
                 "type": "lens",
-                "version": "7.16.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -983,7 +1047,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "99c43573-42fe-4560-b82c-6747f72c15ca": {
                                             "columnOrder": [
@@ -998,7 +1062,7 @@
                                                     "label": "Count",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 },
                                                 "b1160ab3-8939-40d7-8018-5409a8d05275": {
                                                     "customLabel": true,
@@ -1041,7 +1105,9 @@
                                     }
                                 ],
                                 "layerId": "99c43573-42fe-4560-b82c-6747f72c15ca",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "rowHeight": "single",
+                                "rowHeightLines": 1
                             }
                         },
                         "title": "",
@@ -1061,7 +1127,7 @@
                 "panelIndex": "aee72ecd-3e85-473d-ae8e-a4b8c30eb35b",
                 "title": "Top 10 Attack Techniques that Triggered the Alert [Logs Microsoft 365 Defender]",
                 "type": "lens",
-                "version": "7.16.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -1080,7 +1146,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "ded3c9d4-9e45-44b1-be3b-6efc126abff4": {
                                             "columnOrder": [
@@ -1095,7 +1161,7 @@
                                                     "label": "Count",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 },
                                                 "990c5af3-5dc0-4548-af9d-d826084a38a0": {
                                                     "customLabel": true,
@@ -1131,15 +1197,18 @@
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "groups": [
-                                            "990c5af3-5dc0-4548-af9d-d826084a38a0"
-                                        ],
                                         "layerId": "ded3c9d4-9e45-44b1-be3b-6efc126abff4",
                                         "layerType": "data",
                                         "legendDisplay": "default",
-                                        "metric": "60dd110b-2302-43cf-b91c-6ff59f47c024",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "60dd110b-2302-43cf-b91c-6ff59f47c024"
+                                        ],
                                         "nestedLegend": false,
-                                        "numberDisplay": "percent"
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "990c5af3-5dc0-4548-af9d-d826084a38a0"
+                                        ]
                                     }
                                 ],
                                 "shape": "pie"
@@ -1162,7 +1231,7 @@
                 "panelIndex": "63038c1f-4fc2-4223-8093-1d531dcebf55",
                 "title": "Distribution of Alert Events by Evidence Role [Logs Microsoft 365 Defender]",
                 "type": "lens",
-                "version": "7.16.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -1181,7 +1250,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "5f8abf5a-28b8-4645-8cd9-c4e9ba781d5b": {
                                             "columnOrder": [
@@ -1215,7 +1284,7 @@
                                                     "label": "Count",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -1232,15 +1301,18 @@
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "groups": [
-                                            "4d52046b-4ecb-4596-815f-5ae8c002ca2c"
-                                        ],
                                         "layerId": "5f8abf5a-28b8-4645-8cd9-c4e9ba781d5b",
                                         "layerType": "data",
                                         "legendDisplay": "default",
-                                        "metric": "c7348f0f-3f29-40f3-8403-e8d5ef1124cd",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "c7348f0f-3f29-40f3-8403-e8d5ef1124cd"
+                                        ],
                                         "nestedLegend": false,
-                                        "numberDisplay": "percent"
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "4d52046b-4ecb-4596-815f-5ae8c002ca2c"
+                                        ]
                                     }
                                 ],
                                 "shape": "pie"
@@ -1263,7 +1335,7 @@
                 "panelIndex": "b5ea653b-40c9-4909-b801-ac6d91c0ded1",
                 "title": "Distribution of Alert Events by Application [Logs Microsoft 365 Defender]",
                 "type": "lens",
-                "version": "7.16.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -1282,7 +1354,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "e45f17e1-69db-48e1-878c-c3ca4fcf6d50": {
                                             "columnOrder": [
@@ -1297,7 +1369,7 @@
                                                     "label": "Count",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 },
                                                 "2ce07d3c-213b-4a78-ac11-7e0657fe8d93": {
                                                     "customLabel": true,
@@ -1341,7 +1413,9 @@
                                     }
                                 ],
                                 "layerId": "e45f17e1-69db-48e1-878c-c3ca4fcf6d50",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "rowHeight": "single",
+                                "rowHeightLines": 1
                             }
                         },
                         "title": "",
@@ -1361,7 +1435,7 @@
                 "panelIndex": "689534bf-7bd5-47c3-b2e4-05ad3e05065c",
                 "title": "Top 10 User with Highest Alert [Logs Microsoft 365 Defender]",
                 "type": "lens",
-                "version": "7.16.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -1380,7 +1454,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "cc1cd5fe-470e-413d-b165-78bb959fdcae": {
                                             "columnOrder": [
@@ -1395,7 +1469,7 @@
                                                     "label": "Count",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 },
                                                 "3c99dee2-cbde-488f-9dd2-e1135ef3d9a2": {
                                                     "customLabel": true,
@@ -1439,7 +1513,9 @@
                                     }
                                 ],
                                 "layerId": "cc1cd5fe-470e-413d-b165-78bb959fdcae",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "rowHeight": "single",
+                                "rowHeightLines": 1
                             }
                         },
                         "title": "",
@@ -1459,17 +1535,18 @@
                 "panelIndex": "8a6b9b07-4d25-4e16-9d75-7cef9ae0b6d5",
                 "title": "Top 10 Device with Highest Alert [Logs Microsoft 365 Defender]",
                 "type": "lens",
-                "version": "7.16.0"
+                "version": "8.7.1"
             }
         ],
         "timeRestore": false,
         "title": "[Logs Microsoft 365 Defender] Alert Events",
         "version": 1
     },
-    "coreMigrationVersion": "7.16.0",
+    "coreMigrationVersion": "8.7.1",
+    "created_at": "2023-07-10T16:03:22.216Z",
     "id": "m365_defender-2690a440-7235-11ed-8657-c59f6ece834c",
     "migrationVersion": {
-        "dashboard": "7.16.0"
+        "dashboard": "8.7.0"
     },
     "references": [
         {
@@ -1484,7 +1561,7 @@
         },
         {
             "id": "logs-*",
-            "name": "f7f48432-a963-4c54-860d-8a33a26940c5:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "name": "f7f48432-a963-4c54-860d-8a33a26940c5:indexpattern-datasource-layer-7c6f0141-f2b6-470a-b228-4d171ba5ec9c",
             "type": "index-pattern"
         },
         {
