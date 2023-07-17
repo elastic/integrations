@@ -10,14 +10,14 @@ Once this application is registered, note the _Application (client) ID_ and the 
 
 To use client-secret authentication, add your secret to the _Client Secret_ field.
 
-**NOTE:** As Microsoft is no longer supporting Azure Active Directory Authentication Library (ADAL), the existing o365audit input is being deprecated in favor of new [CEL](https://www.elastic.co/guide/en/beats/filebeat/8.6/filebeat-input-cel.html) input in version `1.17.0`. Hence for versions `>= 1.17.0`, certificate based authentication (provided by earlier o365audit input) is no longer supported. 
+**NOTE:** As Microsoft is no longer supporting Azure Active Directory Authentication Library (ADAL), the existing o365audit input is being deprecated in favor of new [CEL](https://www.elastic.co/guide/en/beats/filebeat/8.6/filebeat-input-cel.html) input in version `1.18.0`. Hence for versions `>= 1.18.0`, certificate based authentication (provided by earlier o365audit input) is no longer supported. 
 
-We request users upgrading from integration version `< 1.17.0` to `>= 1.17.0` to follow following steps:
+We request users upgrading from integration version `< 1.18.0` to `>= 1.18.0` to follow following steps:
 
 1. Upgrade the Elastic Stack version to `>= 8.7.1`.
 2. Upgrade the integration navigating via `Integrations -> Microsoft 365 -> Settings -> Upgrade`
 3. Upgrade the integration policy navigating via `Integrations -> Microsoft 365 -> integration policies -> Version (Upgrade)`. If `Upgrade` option doesn't appear under the `Version`, that means the policy is already upgraded in the previous step. Please go to the next step.
-4. Update the integration policy:
+4. Modify the integration policy:
     
     * Disable existing configuration (marked as `Deprecated`) and enable `Collect Office 365 audit logs via CEL` configuration.
     * Add the required parameters such as `Directory (tenant) ID`, `Application (client) ID`, `Client Secret` based on the previous configuration.
