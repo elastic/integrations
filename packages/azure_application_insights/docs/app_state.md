@@ -39,13 +39,13 @@ Costs: Metric queries are charged based on the number of standard API calls. Mor
 | azure.app_state.users_authenticated.unique | Authenticated users count | float |
 | azure.app_state.users_count.unique | User count | float |
 | azure.application_id | The application ID | keyword |
-| azure.dimensions.\* | Azure metric dimensions. | flattened |
+| azure.dimensions | Azure metric dimensions. | flattened |
 | azure.metrics.\*.\* | Metrics returned. | object |
 | azure.namespace | The namespace selected | keyword |
 | azure.resource.group | The resource group | keyword |
 | azure.resource.id | The id of the resource | keyword |
 | azure.resource.name | The name of the resource | keyword |
-| azure.resource.tags.\* | Azure resource tags. | flattened |
+| azure.resource.tags | Azure resource tags. | flattened |
 | azure.resource.type | The type of the resource | keyword |
 | azure.subscription_id | The subscription ID | keyword |
 | azure.timegrain | The Azure metric timegrain | keyword |
