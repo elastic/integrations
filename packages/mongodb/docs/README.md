@@ -1423,9 +1423,6 @@ An example event for `status` looks as following:
             }
         }
     },
-    "process": {
-        "name": "mongod"
-    },
     "service": {
         "address": "mongodb://elastic-package-service_mongodb_1",
         "type": "mongodb",
