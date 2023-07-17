@@ -64,7 +64,7 @@ Follow these detailed steps to release a fix for a given package version:
 
 3. **Create a PR for the bug fix**
 
-   Create a new branch in your remote (it is advised **not using** a branch name starting with `backport-`), and apply bugfixes there.
+   Create a new branch in your own remote (it is advised **not using** a branch name starting with `backport-`), and apply bugfixes there.
    Remember to update the version in the package manifest (update patch version like `1.19.<x+1>`) and add a new changelog entry for this patch version.
 
    Once ready, open a PR selecting as a base branch the one created above: `backport-<package_name>-<package_major_version>.<package_minor_version>` (e.g. `backport-aws-1.19`.
