@@ -4,7 +4,8 @@ The IBM MQ Integration is used to fetch observability data from [IBM MQ web endp
 
 ## Compatibility
 
-This integration has been tested against `IBM MQ v9.1` and `IBM MQ v9.2`.
+This integration has been tested against `IBM MQ v9.1` and `IBM MQ v9.2`. The ibmmq `qmgr` data stream is compatible with a containerized distribution of IBM MQ (since version 9.1.0).
+The Docker image starts the `runmqserver` process, which spawns the HTTP server exposing metrics in Prometheus format.
 
 ## Requirements
 

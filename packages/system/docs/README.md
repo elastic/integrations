@@ -114,6 +114,7 @@ The Windows `application` data stream provides events from the Windows
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| error.code | Error code describing the error. | keyword |
 | error.message | Error message. | match_only_text |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
@@ -303,6 +304,7 @@ event log.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| error.code | Error code describing the error. | keyword |
 | error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
@@ -485,11 +487,11 @@ An example event for `security` looks as following:
 {
     "@timestamp": "2019-11-07T10:37:04.226Z",
     "agent": {
-        "ephemeral_id": "aa973fb6-b8fe-427e-a9e9-51c411926db8",
-        "id": "dbc761fd-dec4-4bc7-acec-8e5cb02a0cb6",
+        "ephemeral_id": "a61c3b83-c6fa-42f5-aa89-7dcbcd22df29",
+        "id": "b757cc21-a0b3-4107-8936-c7b5ce22c9ce",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.1"
+        "version": "8.8.0"
     },
     "data_stream": {
         "dataset": "system.security",
@@ -500,9 +502,9 @@ An example event for `security` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "dbc761fd-dec4-4bc7-acec-8e5cb02a0cb6",
-        "snapshot": true,
-        "version": "8.2.1"
+        "id": "b757cc21-a0b3-4107-8936-c7b5ce22c9ce",
+        "snapshot": false,
+        "version": "8.8.0"
     },
     "event": {
         "action": "logging-service-shutdown",
@@ -511,9 +513,9 @@ An example event for `security` looks as following:
             "process"
         ],
         "code": "1100",
-        "created": "2022-05-18T06:07:07.204Z",
+        "created": "2023-06-26T19:07:48.567Z",
         "dataset": "system.security",
-        "ingested": "2022-05-18T06:07:08Z",
+        "ingested": "2023-06-26T19:07:49Z",
         "kind": "event",
         "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-Eventlog' Guid='{fc65ddd8-d6ef-4962-83d5-6e5cfe9ce148}'/\u003e\u003cEventID\u003e1100\u003c/EventID\u003e\u003cVersion\u003e0\u003c/Version\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e103\u003c/Task\u003e\u003cOpcode\u003e0\u003c/Opcode\u003e\u003cKeywords\u003e0x4020000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2019-11-07T10:37:04.226092500Z'/\u003e\u003cEventRecordID\u003e14257\u003c/EventRecordID\u003e\u003cCorrelation/\u003e\u003cExecution ProcessID='1144' ThreadID='4532'/\u003e\u003cChannel\u003eSecurity\u003c/Channel\u003e\u003cComputer\u003eWIN-41OB2LO92CR.wlbeat.local\u003c/Computer\u003e\u003cSecurity/\u003e\u003c/System\u003e\u003cUserData\u003e\u003cServiceShutdown xmlns='http://manifests.microsoft.com/win/2004/08/windows/eventlog'\u003e\u003c/ServiceShutdown\u003e\u003c/UserData\u003e\u003c/Event\u003e",
         "outcome": "success",
@@ -1077,7 +1079,7 @@ The `syslog` data stream provides system logs.
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -1130,6 +1132,7 @@ The `syslog` data stream provides system logs.
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
 | process.pid | Process id. | long |
+| tags | List of keywords used to tag each event. | keyword |
 
 
 ## Metrics reference
@@ -1155,6 +1158,7 @@ This data should be available without elevated permissions.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
@@ -1180,7 +1184,7 @@ This data should be available without elevated permissions.
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
-| host.mac | Host mac addresses. | keyword |  |  |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
@@ -1189,7 +1193,7 @@ This data should be available without elevated permissions.
 | host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
 | host.os.name | Operating system name, without the version. | keyword |  |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
@@ -1862,118 +1866,118 @@ If running as less privileged user, it may not be able to read process data belo
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 | system.process.cgroup.blkio.id | ID of the cgroup. | keyword |  |  |
 | system.process.cgroup.blkio.path | Path to the cgroup relative to the cgroup subsystems mountpoint. | keyword |  |  |
-| system.process.cgroup.blkio.total.bytes | Total number of bytes transferred to and from all block devices by processes in the cgroup. | long |  |  |
-| system.process.cgroup.blkio.total.ios | Total number of I/O operations performed on all devices by processes in the cgroup as seen by the throttling policy. | long |  |  |
+| system.process.cgroup.blkio.total.bytes | Total number of bytes transferred to and from all block devices by processes in the cgroup. | long |  | counter |
+| system.process.cgroup.blkio.total.ios | Total number of I/O operations performed on all devices by processes in the cgroup as seen by the throttling policy. | long |  | counter |
 | system.process.cgroup.cgroups_version | The version of cgroups reported for the process | long |  |  |
-| system.process.cgroup.cpu.cfs.period.us | Period of time in microseconds for how regularly a cgroup's access to CPU resources should be reallocated. | long |  |  |
-| system.process.cgroup.cpu.cfs.quota.us | Total amount of time in microseconds for which all tasks in a cgroup can run during one period (as defined by cfs.period.us). | long |  |  |
-| system.process.cgroup.cpu.cfs.shares | An integer value that specifies a relative share of CPU time available to the tasks in a cgroup. The value specified in the cpu.shares file must be 2 or higher. | long |  |  |
+| system.process.cgroup.cpu.cfs.period.us | Period of time in microseconds for how regularly a cgroup's access to CPU resources should be reallocated. | long |  | gauge |
+| system.process.cgroup.cpu.cfs.quota.us | Total amount of time in microseconds for which all tasks in a cgroup can run during one period (as defined by cfs.period.us). | long |  | gauge |
+| system.process.cgroup.cpu.cfs.shares | An integer value that specifies a relative share of CPU time available to the tasks in a cgroup. The value specified in the cpu.shares file must be 2 or higher. | long |  | gauge |
 | system.process.cgroup.cpu.id | ID of the cgroup. | keyword |  |  |
 | system.process.cgroup.cpu.path | Path to the cgroup relative to the cgroup subsystem's mountpoint. | keyword |  |  |
-| system.process.cgroup.cpu.pressure.full.10.pct | Pressure over 10 seconds | float |  |  |
-| system.process.cgroup.cpu.pressure.full.300.pct | Pressure over 300 seconds | float |  |  |
-| system.process.cgroup.cpu.pressure.full.60.pct | Pressure over 60 seconds | float |  |  |
-| system.process.cgroup.cpu.pressure.full.total | total Full pressure time | long |  |  |
-| system.process.cgroup.cpu.pressure.some.10.pct | Pressure over 10 seconds | float |  |  |
-| system.process.cgroup.cpu.pressure.some.300.pct | Pressure over 300 seconds | float |  |  |
-| system.process.cgroup.cpu.pressure.some.60.pct | Pressure over 60 seconds | float |  |  |
-| system.process.cgroup.cpu.pressure.some.total | total Some pressure time | long |  |  |
-| system.process.cgroup.cpu.rt.period.us | Period of time in microseconds for how regularly a cgroup's access to CPU resources is reallocated. | long |  |  |
-| system.process.cgroup.cpu.rt.runtime.us | Period of time in microseconds for the longest continuous period in which the tasks in a cgroup have access to CPU resources. | long |  |  |
-| system.process.cgroup.cpu.stats.periods | Number of period intervals (as specified in cpu.cfs.period.us) that have elapsed. | long |  |  |
-| system.process.cgroup.cpu.stats.system.norm.pct | cgroups v2 normalized system time | float |  |  |
-| system.process.cgroup.cpu.stats.system.ns | cgroups v2 system time in nanoseconds | long |  |  |
-| system.process.cgroup.cpu.stats.system.pct | cgroups v2 system time | float |  |  |
-| system.process.cgroup.cpu.stats.throttled.ns | The total time duration (in nanoseconds) for which tasks in a cgroup have been throttled. | long |  |  |
-| system.process.cgroup.cpu.stats.throttled.periods | Number of times tasks in a cgroup have been throttled (that is, not allowed to run because they have exhausted all of the available time as specified by their quota). | long |  |  |
-| system.process.cgroup.cpu.stats.throttled.us | The total time duration (in microseconds) for which tasks in a cgroup have been throttled, as reported by cgroupsv2 | long |  |  |
-| system.process.cgroup.cpu.stats.usage.norm.pct | cgroups v2 normalized usage | float |  |  |
-| system.process.cgroup.cpu.stats.usage.ns | cgroups v2 usage in nanoseconds | long |  |  |
-| system.process.cgroup.cpu.stats.usage.pct | cgroups v2 usage | float |  |  |
-| system.process.cgroup.cpu.stats.user.norm.pct | cgroups v2 normalized cpu user time | float |  |  |
-| system.process.cgroup.cpu.stats.user.ns | cgroups v2 cpu user time in nanoseconds | long |  |  |
-| system.process.cgroup.cpu.stats.user.pct | cgroups v2 cpu user time | float |  |  |
+| system.process.cgroup.cpu.pressure.full.10.pct | Pressure over 10 seconds | float |  | gauge |
+| system.process.cgroup.cpu.pressure.full.300.pct | Pressure over 300 seconds | float |  | gauge |
+| system.process.cgroup.cpu.pressure.full.60.pct | Pressure over 60 seconds | float |  | gauge |
+| system.process.cgroup.cpu.pressure.full.total | total Full pressure time | long |  | counter |
+| system.process.cgroup.cpu.pressure.some.10.pct | Pressure over 10 seconds | float |  | gauge |
+| system.process.cgroup.cpu.pressure.some.300.pct | Pressure over 300 seconds | float |  | gauge |
+| system.process.cgroup.cpu.pressure.some.60.pct | Pressure over 60 seconds | float |  | gauge |
+| system.process.cgroup.cpu.pressure.some.total | total Some pressure time | long |  | counter |
+| system.process.cgroup.cpu.rt.period.us | Period of time in microseconds for how regularly a cgroup's access to CPU resources is reallocated. | long |  | gauge |
+| system.process.cgroup.cpu.rt.runtime.us | Period of time in microseconds for the longest continuous period in which the tasks in a cgroup have access to CPU resources. | long |  | gauge |
+| system.process.cgroup.cpu.stats.periods | Number of period intervals (as specified in cpu.cfs.period.us) that have elapsed. | long |  | counter |
+| system.process.cgroup.cpu.stats.system.norm.pct | cgroups v2 normalized system time | float |  | gauge |
+| system.process.cgroup.cpu.stats.system.ns | cgroups v2 system time in nanoseconds | long |  | counter |
+| system.process.cgroup.cpu.stats.system.pct | cgroups v2 system time | float |  | gauge |
+| system.process.cgroup.cpu.stats.throttled.ns | The total time duration (in nanoseconds) for which tasks in a cgroup have been throttled. | long |  | counter |
+| system.process.cgroup.cpu.stats.throttled.periods | Number of times tasks in a cgroup have been throttled (that is, not allowed to run because they have exhausted all of the available time as specified by their quota). | long |  | counter |
+| system.process.cgroup.cpu.stats.throttled.us | The total time duration (in microseconds) for which tasks in a cgroup have been throttled, as reported by cgroupsv2 | long |  | counter |
+| system.process.cgroup.cpu.stats.usage.norm.pct | cgroups v2 normalized usage | float |  | gauge |
+| system.process.cgroup.cpu.stats.usage.ns | cgroups v2 usage in nanoseconds | long |  | counter |
+| system.process.cgroup.cpu.stats.usage.pct | cgroups v2 usage | float |  | gauge |
+| system.process.cgroup.cpu.stats.user.norm.pct | cgroups v2 normalized cpu user time | float |  | gauge |
+| system.process.cgroup.cpu.stats.user.ns | cgroups v2 cpu user time in nanoseconds | long |  | counter |
+| system.process.cgroup.cpu.stats.user.pct | cgroups v2 cpu user time | float |  | gauge |
 | system.process.cgroup.cpuacct.id | ID of the cgroup. | keyword |  |  |
 | system.process.cgroup.cpuacct.path | Path to the cgroup relative to the cgroup subsystem's mountpoint. | keyword |  |  |
 | system.process.cgroup.cpuacct.percpu | CPU time (in nanoseconds) consumed on each CPU by all tasks in this cgroup. | object |  |  |
-| system.process.cgroup.cpuacct.stats.system.norm.pct | Time the cgroup spent in kernel space, as a percentage of total CPU time, normalized by CPU count. | scaled_float |  |  |
-| system.process.cgroup.cpuacct.stats.system.ns | CPU time consumed by tasks in user (kernel) mode. | long |  |  |
-| system.process.cgroup.cpuacct.stats.system.pct | Time the cgroup spent in kernel space, as a percentage of total CPU time | scaled_float |  |  |
-| system.process.cgroup.cpuacct.stats.user.norm.pct | time the cgroup spent in user space, as a percentage of total CPU time, normalized by CPU count. | scaled_float |  |  |
-| system.process.cgroup.cpuacct.stats.user.ns | CPU time consumed by tasks in user mode. | long |  |  |
-| system.process.cgroup.cpuacct.stats.user.pct | time the cgroup spent in user space, as a percentage of total CPU time | scaled_float |  |  |
-| system.process.cgroup.cpuacct.total.norm.pct | CPU time of the cgroup as a percentage of overall CPU time, normalized by CPU count. This is functionally an average of time spent across individual CPUs. | scaled_float |  |  |
-| system.process.cgroup.cpuacct.total.ns | Total CPU time in nanoseconds consumed by all tasks in the cgroup. | long |  |  |
-| system.process.cgroup.cpuacct.total.pct | CPU time of the cgroup as a percentage of overall CPU time. | scaled_float |  |  |
+| system.process.cgroup.cpuacct.stats.system.norm.pct | Time the cgroup spent in kernel space, as a percentage of total CPU time, normalized by CPU count. | scaled_float |  | gauge |
+| system.process.cgroup.cpuacct.stats.system.ns | CPU time consumed by tasks in user (kernel) mode. | long |  | counter |
+| system.process.cgroup.cpuacct.stats.system.pct | Time the cgroup spent in kernel space, as a percentage of total CPU time | scaled_float |  | gauge |
+| system.process.cgroup.cpuacct.stats.user.norm.pct | time the cgroup spent in user space, as a percentage of total CPU time, normalized by CPU count. | scaled_float |  | gauge |
+| system.process.cgroup.cpuacct.stats.user.ns | CPU time consumed by tasks in user mode. | long |  | counter |
+| system.process.cgroup.cpuacct.stats.user.pct | time the cgroup spent in user space, as a percentage of total CPU time | scaled_float |  | gauge |
+| system.process.cgroup.cpuacct.total.norm.pct | CPU time of the cgroup as a percentage of overall CPU time, normalized by CPU count. This is functionally an average of time spent across individual CPUs. | scaled_float |  | gauge |
+| system.process.cgroup.cpuacct.total.ns | Total CPU time in nanoseconds consumed by all tasks in the cgroup. | long |  | counter |
+| system.process.cgroup.cpuacct.total.pct | CPU time of the cgroup as a percentage of overall CPU time. | scaled_float |  | gauge |
 | system.process.cgroup.id | The ID common to all cgroups associated with this task. If there isn't a common ID used by all cgroups this field will be absent. | keyword |  |  |
 | system.process.cgroup.io.id | ID of the cgroup. | keyword |  |  |
 | system.process.cgroup.io.path | Path to the cgroup relative to the cgroup subsystems mountpoint. | keyword |  |  |
-| system.process.cgroup.io.pressure.full.10.pct | Pressure over 10 seconds | float |  |  |
-| system.process.cgroup.io.pressure.full.300.pct | Pressure over 300 seconds | float |  |  |
-| system.process.cgroup.io.pressure.full.60.pct | Pressure over 60 seconds | float |  |  |
-| system.process.cgroup.io.pressure.full.total | total Some pressure time | long |  |  |
-| system.process.cgroup.io.pressure.some.10.pct | Pressure over 10 seconds | float |  |  |
-| system.process.cgroup.io.pressure.some.300.pct | Pressure over 300 seconds | float |  |  |
-| system.process.cgroup.io.pressure.some.60.pct | Pressure over 60 seconds | float |  |  |
-| system.process.cgroup.io.pressure.some.total | total Some pressure time | long |  |  |
+| system.process.cgroup.io.pressure.full.10.pct | Pressure over 10 seconds | float |  | gauge |
+| system.process.cgroup.io.pressure.full.300.pct | Pressure over 300 seconds | float |  | gauge |
+| system.process.cgroup.io.pressure.full.60.pct | Pressure over 60 seconds | float |  | gauge |
+| system.process.cgroup.io.pressure.full.total | total Some pressure time | long |  | counter |
+| system.process.cgroup.io.pressure.some.10.pct | Pressure over 10 seconds | float |  | gauge |
+| system.process.cgroup.io.pressure.some.300.pct | Pressure over 300 seconds | float |  | gauge |
+| system.process.cgroup.io.pressure.some.60.pct | Pressure over 60 seconds | float |  | gauge |
+| system.process.cgroup.io.pressure.some.total | total Some pressure time | long |  | counter |
 | system.process.cgroup.io.stats.\* | per-device IO usage stats | object |  |  |
 | system.process.cgroup.io.stats.\*.\* |  | object |  |  |
 | system.process.cgroup.io.stats.\*.\*.bytes | per-device IO usage stats | object |  |  |
 | system.process.cgroup.io.stats.\*.\*.ios | per-device IO usage stats | object |  |  |
 | system.process.cgroup.memory.id | ID of the cgroup. | keyword |  |  |
-| system.process.cgroup.memory.kmem.failures | The number of times that the memory limit (kmem.limit.bytes) was reached. | long |  |  |
-| system.process.cgroup.memory.kmem.limit.bytes | The maximum amount of kernel memory that tasks in the cgroup are allowed to use. | long |  |  |
-| system.process.cgroup.memory.kmem.usage.bytes | Total kernel memory usage by processes in the cgroup (in bytes). | long |  |  |
-| system.process.cgroup.memory.kmem.usage.max.bytes | The maximum kernel memory used by processes in the cgroup (in bytes). | long |  |  |
-| system.process.cgroup.memory.kmem_tcp.failures | The number of times that the memory limit (kmem_tcp.limit.bytes) was reached. | long |  |  |
-| system.process.cgroup.memory.kmem_tcp.limit.bytes | The maximum amount of memory for TCP buffers that tasks in the cgroup are allowed to use. | long |  |  |
-| system.process.cgroup.memory.kmem_tcp.usage.bytes | Total memory usage for TCP buffers in bytes. | long |  |  |
-| system.process.cgroup.memory.kmem_tcp.usage.max.bytes | The maximum memory used for TCP buffers by processes in the cgroup (in bytes). | long |  |  |
-| system.process.cgroup.memory.mem.events.fail | failed threshold | long |  |  |
-| system.process.cgroup.memory.mem.events.high | high threshold | long |  |  |
-| system.process.cgroup.memory.mem.events.low | low threshold | long |  |  |
-| system.process.cgroup.memory.mem.events.max | max threshold | long |  |  |
-| system.process.cgroup.memory.mem.events.oom | oom threshold | long |  |  |
-| system.process.cgroup.memory.mem.events.oom_kill | oom killer threshold | long |  |  |
-| system.process.cgroup.memory.mem.failures | The number of times that the memory limit (mem.limit.bytes) was reached. | long |  |  |
-| system.process.cgroup.memory.mem.high.bytes | memory high threshhold | long |  |  |
-| system.process.cgroup.memory.mem.limit.bytes | The maximum amount of user memory in bytes (including file cache) that tasks in the cgroup are allowed to use. | long |  |  |
-| system.process.cgroup.memory.mem.low.bytes | memory low threshhold | long |  |  |
-| system.process.cgroup.memory.mem.max.bytes | memory max threshhold | long |  |  |
-| system.process.cgroup.memory.mem.usage.bytes | Total memory usage by processes in the cgroup (in bytes). | long |  |  |
-| system.process.cgroup.memory.mem.usage.max.bytes | The maximum memory used by processes in the cgroup (in bytes). | long |  |  |
-| system.process.cgroup.memory.memsw.events.fail | failed threshold | long |  |  |
-| system.process.cgroup.memory.memsw.events.high | high threshold | long |  |  |
-| system.process.cgroup.memory.memsw.events.low | low threshold | long |  |  |
-| system.process.cgroup.memory.memsw.events.max | max threshold | long |  |  |
-| system.process.cgroup.memory.memsw.events.oom | oom threshold | long |  |  |
-| system.process.cgroup.memory.memsw.events.oom_kill | oom killer threshold | long |  |  |
-| system.process.cgroup.memory.memsw.failures | The number of times that the memory plus swap space limit (memsw.limit.bytes) was reached. | long |  |  |
-| system.process.cgroup.memory.memsw.high.bytes | memory high threshhold | long |  |  |
-| system.process.cgroup.memory.memsw.limit.bytes | The maximum amount for the sum of memory and swap usage that tasks in the cgroup are allowed to use. | long |  |  |
-| system.process.cgroup.memory.memsw.low.bytes | memory low threshhold | long |  |  |
-| system.process.cgroup.memory.memsw.max.bytes | memory max threshhold | long |  |  |
-| system.process.cgroup.memory.memsw.usage.bytes | The sum of current memory usage plus swap space used by processes in the cgroup (in bytes). | long |  |  |
-| system.process.cgroup.memory.memsw.usage.max.bytes | The maximum amount of memory and swap space used by processes in the cgroup (in bytes). | long |  |  |
+| system.process.cgroup.memory.kmem.failures | The number of times that the memory limit (kmem.limit.bytes) was reached. | long |  | counter |
+| system.process.cgroup.memory.kmem.limit.bytes | The maximum amount of kernel memory that tasks in the cgroup are allowed to use. | long |  | gauge |
+| system.process.cgroup.memory.kmem.usage.bytes | Total kernel memory usage by processes in the cgroup (in bytes). | long |  | gauge |
+| system.process.cgroup.memory.kmem.usage.max.bytes | The maximum kernel memory used by processes in the cgroup (in bytes). | long |  | gauge |
+| system.process.cgroup.memory.kmem_tcp.failures | The number of times that the memory limit (kmem_tcp.limit.bytes) was reached. | long |  | counter |
+| system.process.cgroup.memory.kmem_tcp.limit.bytes | The maximum amount of memory for TCP buffers that tasks in the cgroup are allowed to use. | long |  | gauge |
+| system.process.cgroup.memory.kmem_tcp.usage.bytes | Total memory usage for TCP buffers in bytes. | long |  | gauge |
+| system.process.cgroup.memory.kmem_tcp.usage.max.bytes | The maximum memory used for TCP buffers by processes in the cgroup (in bytes). | long |  | gauge |
+| system.process.cgroup.memory.mem.events.fail | failed threshold | long |  | counter |
+| system.process.cgroup.memory.mem.events.high | high threshold | long |  | counter |
+| system.process.cgroup.memory.mem.events.low | low threshold | long |  | counter |
+| system.process.cgroup.memory.mem.events.max | max threshold | long |  | counter |
+| system.process.cgroup.memory.mem.events.oom | oom threshold | long |  | counter |
+| system.process.cgroup.memory.mem.events.oom_kill | oom killer threshold | long |  | counter |
+| system.process.cgroup.memory.mem.failures | The number of times that the memory limit (mem.limit.bytes) was reached. | long |  | counter |
+| system.process.cgroup.memory.mem.high.bytes | memory high threshhold | long |  | gauge |
+| system.process.cgroup.memory.mem.limit.bytes | The maximum amount of user memory in bytes (including file cache) that tasks in the cgroup are allowed to use. | long |  | gauge |
+| system.process.cgroup.memory.mem.low.bytes | memory low threshhold | long |  | gauge |
+| system.process.cgroup.memory.mem.max.bytes | memory max threshhold | long |  | gauge |
+| system.process.cgroup.memory.mem.usage.bytes | Total memory usage by processes in the cgroup (in bytes). | long |  | gauge |
+| system.process.cgroup.memory.mem.usage.max.bytes | The maximum memory used by processes in the cgroup (in bytes). | long |  | gauge |
+| system.process.cgroup.memory.memsw.events.fail | failed threshold | long |  | counter |
+| system.process.cgroup.memory.memsw.events.high | high threshold | long |  | counter |
+| system.process.cgroup.memory.memsw.events.low | low threshold | long |  | counter |
+| system.process.cgroup.memory.memsw.events.max | max threshold | long |  | counter |
+| system.process.cgroup.memory.memsw.events.oom | oom threshold | long |  | counter |
+| system.process.cgroup.memory.memsw.events.oom_kill | oom killer threshold | long |  | counter |
+| system.process.cgroup.memory.memsw.failures | The number of times that the memory plus swap space limit (memsw.limit.bytes) was reached. | long |  | counter |
+| system.process.cgroup.memory.memsw.high.bytes | memory high threshhold | long |  | gauge |
+| system.process.cgroup.memory.memsw.limit.bytes | The maximum amount for the sum of memory and swap usage that tasks in the cgroup are allowed to use. | long |  | gauge |
+| system.process.cgroup.memory.memsw.low.bytes | memory low threshhold | long |  | gauge |
+| system.process.cgroup.memory.memsw.max.bytes | memory max threshhold | long |  | gauge |
+| system.process.cgroup.memory.memsw.usage.bytes | The sum of current memory usage plus swap space used by processes in the cgroup (in bytes). | long |  | gauge |
+| system.process.cgroup.memory.memsw.usage.max.bytes | The maximum amount of memory and swap space used by processes in the cgroup (in bytes). | long |  | gauge |
 | system.process.cgroup.memory.path | Path to the cgroup relative to the cgroup subsystem's mountpoint. | keyword |  |  |
 | system.process.cgroup.memory.stats.\* | detailed memory IO stats | object |  |  |
 | system.process.cgroup.memory.stats.\*.bytes | detailed memory IO stats | object |  |  |
-| system.process.cgroup.memory.stats.active_anon.bytes | Anonymous and swap cache on active least-recently-used (LRU) list, including tmpfs (shmem), in bytes. | long |  |  |
-| system.process.cgroup.memory.stats.active_file.bytes | File-backed memory on active LRU list, in bytes. | long |  |  |
-| system.process.cgroup.memory.stats.cache.bytes | Page cache, including tmpfs (shmem), in bytes. | long |  |  |
-| system.process.cgroup.memory.stats.hierarchical_memory_limit.bytes | Memory limit for the hierarchy that contains the memory cgroup, in bytes. | long |  |  |
-| system.process.cgroup.memory.stats.hierarchical_memsw_limit.bytes | Memory plus swap limit for the hierarchy that contains the memory cgroup, in bytes. | long |  |  |
-| system.process.cgroup.memory.stats.inactive_anon.bytes | Anonymous and swap cache on inactive LRU list, including tmpfs (shmem), in bytes | long |  |  |
-| system.process.cgroup.memory.stats.inactive_file.bytes | File-backed memory on inactive LRU list, in bytes. | long |  |  |
-| system.process.cgroup.memory.stats.major_page_faults | Number of times that a process in the cgroup triggered a major fault. "Major" faults happen when the kernel actually has to read the data from disk. | long |  |  |
-| system.process.cgroup.memory.stats.mapped_file.bytes | Size of memory-mapped mapped files, including tmpfs (shmem), in bytes. | long |  |  |
-| system.process.cgroup.memory.stats.page_faults | Number of times that a process in the cgroup triggered a page fault. | long |  |  |
-| system.process.cgroup.memory.stats.pages_in | Number of pages paged into memory. This is a counter. | long |  |  |
-| system.process.cgroup.memory.stats.pages_out | Number of pages paged out of memory. This is a counter. | long |  |  |
-| system.process.cgroup.memory.stats.rss.bytes | Anonymous and swap cache (includes transparent hugepages), not including tmpfs (shmem), in bytes. | long |  |  |
-| system.process.cgroup.memory.stats.rss_huge.bytes | Number of bytes of anonymous transparent hugepages. | long |  |  |
-| system.process.cgroup.memory.stats.swap.bytes | Swap usage, in bytes. | long |  |  |
-| system.process.cgroup.memory.stats.unevictable.bytes | Memory that cannot be reclaimed, in bytes. | long |  |  |
+| system.process.cgroup.memory.stats.active_anon.bytes | Anonymous and swap cache on active least-recently-used (LRU) list, including tmpfs (shmem), in bytes. | long |  | gauge |
+| system.process.cgroup.memory.stats.active_file.bytes | File-backed memory on active LRU list, in bytes. | long |  | gauge |
+| system.process.cgroup.memory.stats.cache.bytes | Page cache, including tmpfs (shmem), in bytes. | long |  | gauge |
+| system.process.cgroup.memory.stats.hierarchical_memory_limit.bytes | Memory limit for the hierarchy that contains the memory cgroup, in bytes. | long |  | gauge |
+| system.process.cgroup.memory.stats.hierarchical_memsw_limit.bytes | Memory plus swap limit for the hierarchy that contains the memory cgroup, in bytes. | long |  | gauge |
+| system.process.cgroup.memory.stats.inactive_anon.bytes | Anonymous and swap cache on inactive LRU list, including tmpfs (shmem), in bytes | long |  | gauge |
+| system.process.cgroup.memory.stats.inactive_file.bytes | File-backed memory on inactive LRU list, in bytes. | long |  | gauge |
+| system.process.cgroup.memory.stats.major_page_faults | Number of times that a process in the cgroup triggered a major fault. "Major" faults happen when the kernel actually has to read the data from disk. | long |  | counter |
+| system.process.cgroup.memory.stats.mapped_file.bytes | Size of memory-mapped mapped files, including tmpfs (shmem), in bytes. | long |  | gauge |
+| system.process.cgroup.memory.stats.page_faults | Number of times that a process in the cgroup triggered a page fault. | long |  | counter |
+| system.process.cgroup.memory.stats.pages_in | Number of pages paged into memory. This is a counter. | long |  | counter |
+| system.process.cgroup.memory.stats.pages_out | Number of pages paged out of memory. This is a counter. | long |  | counter |
+| system.process.cgroup.memory.stats.rss.bytes | Anonymous and swap cache (includes transparent hugepages), not including tmpfs (shmem), in bytes. | long |  | gauge |
+| system.process.cgroup.memory.stats.rss_huge.bytes | Number of bytes of anonymous transparent hugepages. | long |  | gauge |
+| system.process.cgroup.memory.stats.swap.bytes | Swap usage, in bytes. | long |  | gauge |
+| system.process.cgroup.memory.stats.unevictable.bytes | Memory that cannot be reclaimed, in bytes. | long |  | gauge |
 | system.process.cgroup.path | The path to the cgroup relative to the cgroup subsystem's mountpoint. If there isn't a common path used by all cgroups this field will be absent. | keyword |  |  |
 | system.process.cmdline | The full command-line used to start the process, including the arguments separated by space. | keyword |  |  |
 | system.process.cpu.start_time | The time when the process was started. | date |  |  |
