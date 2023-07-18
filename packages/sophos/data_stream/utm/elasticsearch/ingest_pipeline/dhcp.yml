@@ -97,6 +97,11 @@ processors:
       ignore_failure: true
       ignore_missing: true
       tag: lowercase_event_action
+  - set:
+      field: event.action
+      value: '{{process.name}}-{{event.action}}'
+      if: ctx?.event?.action != null && (ctx?.event?.action == 'sending' || ctx?.event?.action == 'listening')
+      tag: set_event_action_dhcpd
 
   # Transform MAC address
   - gsub:

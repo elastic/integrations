@@ -43,6 +43,12 @@ processors:
       ignore_missing: true
       tag: lowercase_network_type
 
+  - set:
+      field: event.action
+      value: '{{process.name}}-{{event.action}}'
+      if: ctx?.event?.action != null
+      tag: set_event_action_dns
+
   # IP Geolocation Lookup
   - geoip:
       field: server.ip
