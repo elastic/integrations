@@ -93,103 +93,67 @@ An example event for `applocker_exe_and_dll` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-07-13T18:25:14.899Z",
-    "agent": {
-        "name": "Win10-Desktop-02",
-        "id": "ed4956ce-72e0-4a82-a844-f59a8f2e1c0c",
-        "type": "filebeat",
-        "ephemeral_id": "6b09b438-bf25-4b3d-ba0f-41114e58d342",
-        "version": "8.8.1"
-    },
-    "winlog": {
-        "computer_name": "Win10-Desktop-02",
-        "record_id": 6050985,
-        "process": {
-            "pid": 1744,
-            "thread": {
-                "id": 7240
-            }
-        },
-        "event_id": "8004",
-        "task": "None",
-        "provider_guid": "{cbda4dbf-8d5d-4f69-9578-be14aa540d22}",
-        "channel": "Microsoft-Windows-AppLocker/EXE and DLL",
-        "api": "wineventlog",
-        "user_data": {
-            "FilePath": "%PROGRAMFILES%\\COMMON FILES\\ADOBE\\ARM\\1.0\\ADOBEARM.EXE",
-            "FqbnLength": "97",
-            "FullFilePathLength": "62",
-            "FullFilePath": "C:\\Program Files (x86)\\Common Files\\Adobe\\ARM\\1.0\\AdobeARM.exe",
-            "RuleId": "{7ac6ceda-b34d-4401-8815-319986edbc68}",
-            "PolicyNameLength": "3",
-            "RuleSddl": "D:(XD;;FX;;;S-1-5-21-1221191019-1150130252-1771859221-105369;((APPID://PATH Contains \"*\") \u0026\u0026 (!(((((((((((((((((Exists APPID://FQBN) \u0026\u0026 ((APPID://FQBN) \u003e= ({\"O=MICROSOFT CORPORATION, L=REDMOND, S=WASHINGTON, C=US\\MICROSOFT OFFICE\\MSACCESS.EXE\",0}))) || ...",
-            "TargetUser": "S-1-5-21-1221191019-1150130252-1771859221-71534",
-            "TargetLogonId": "0x1675f1",
-            "FilePathLength": "54",
-            "TargetProcessId": "9448",
-            "Fqbn": "O=ADOBE INC., L=SAN JOSE, S=CA, C=US\\ADOBE READER AND ACROBAT MANAGER\\ADOBEARM.EXE\\1.824.460.1042",
-            "RuleSddlLength": "256",
-            "FileHash": "94747F09D9940CB07A170884E63333B9D5B7740832A358053BA20143831977C6",
-            "FileHashLength": "32",
-            "PolicyName": "EXE",
-            "RuleNameLength": "42",
-            "xml_name": "RuleAndFileData",
-            "RuleName": "Enforced AppLocker Rule 25"
-        },
-        "provider_name": "Microsoft-Windows-AppLocker",
-        "opcode": "Info",
-        "user": {
-            "identifier": "S-1-5-21-1221191019-1150130252-1771859221-71534",
-            "name": "topsy",
-            "type": "User"
-        }
-    },
-    "log": {
-        "level": "error"
-    },
-    "elastic_agent": {
-        "id": "ed4956ce-72e0-4a82-a844-f59a8f2e1c0c",
-        "version": "8.8.1",
-        "snapshot": false
-    },
-    "message": "%PROGRAMFILES%\\COMMON FILES\\ADOBE\\ARM\\1.0\\ADOBEARM.EXE was prevented from running.",
-    "input": {
-        "type": "winlog"
-    },
+    "@timestamp": "2023-07-18T14:07:07.637Z",
     "ecs": {
         "version": "8.0.0"
     },
-    "data_stream": {
-        "namespace": "ep",
-        "type": "logs",
-        "dataset": "windows.applocker_exe_and_dll"
+    "event": {
+        "category": "process",
+        "code": "8003",
+        "kind": "event",
+        "provider": "Microsoft-Windows-AppLocker",
+        "type": "start"
     },
     "host": {
-        "hostname": "Win10-Desktop-02",
-        "os": {
-            "build": "19044.2728",
-            "kernel": "10.0.19041.2728 (WinBuild.160101.0800)",
-            "name": "Windows 10 Enterprise",
-            "family": "windows",
-            "type": "windows",
-            "version": "10.0",
-            "platform": "windows"
-        },
-        "ip": [
-            "192.168.189.87"
-        ],
-        "name": "Win10-Desktop-02",
-        "architecture": "x86_64"
+        "name": "TOPSYLL.local"
     },
-    "event": {
-        "agent_id_status": "verified",
-        "ingested": "2023-07-13T18:25:17Z",
-        "code": "8004",
-        "provider": "Microsoft-Windows-AppLocker",
-        "kind": "event",
-        "created": "2023-07-13T18:25:16.518Z",
-        "action": "None",
-        "dataset": "windows.applocker_exe_and_dll"
+    "log": {
+        "level": "Warning"
+    },
+    "message": "%OSDRIVE%\\USERS\\TOPSY\\APPDATA\\LOCAL\\GITHUBDESKTOP\\APP-3.1.2\\RESOURCES\\APP\\GIT\\MINGW64\\BIN\\GIT.EXE was allowed to run but would have been prevented from running if the AppLocker policy were enforced.",
+    "user": {
+        "id": "S-1-5-21-1133191089-1850170202-1535859923-200319"
+    },
+    "winlog": {
+        "channel": "Microsoft-Windows-AppLocker/EXE and DLL",
+        "computer_name": "TOPSYLL.local",
+        "event_id": "8003",
+        "level": "Warning",
+        "opcode": "Info\u0000",
+        "process": {
+            "pid": 2152,
+            "thread": {
+                "id": 25496
+            }
+        },
+        "provider_guid": "cbda4dbf-8d5d-4f69-9578-be14aa540d22",
+        "provider_name": "Microsoft-Windows-AppLocker",
+        "record_id": "149861",
+        "time_created": "2023-07-18T14:07:07.6373880Z",
+        "user": {
+            "identifier": "S-1-5-21-1133191089-1850170202-1535859923-200319"
+        },
+        "user_data": {
+            "FileHash": "11D3940DE41D28E044CE45AB76A6D824E617D99B62C5FB44E37BE5CD7B0545F5",
+            "FileHashLength": 32,
+            "FilePath": "%OSDRIVE%\\USERS\\TOPSY\\APPDATA\\LOCAL\\GITHUBDESKTOP\\APP-3.1.2\\RESOURCES\\APP\\GIT\\MINGW64\\BIN\\GIT.EXE",
+            "FilePathLength": 101,
+            "Fqbn": "O=JOHANNES SCHINDELIN, S=NORDRHEIN-WESTFALEN, C=DE\\GIT\\GIT.EXE\\2.35.5.01",
+            "FqbnLength": 72,
+            "FullFilePath": "C:\\Users\\TOPSY\\AppData\\Local\\GitHubDesktop\\app-3.1.2\\resources\\app\\git\\mingw64\\bin\\git.exe",
+            "FullFilePathLength": 94,
+            "PolicyName": "EXE",
+            "PolicyNameLength": 3,
+            "RuleId": "00000000-0000-0000-0000-000000000000",
+            "RuleName": "-",
+            "RuleNameLength": 1,
+            "RuleSddl": "-",
+            "RuleSddlLength": 1,
+            "TargetLogonId": 1375415,
+            "TargetProcessId": 20056,
+            "TargetUser": "S-1-5-21-1133191089-1850170202-1535859923-200319"
+        },
+        "version": 0
     }
 }
 ```
@@ -384,7 +348,7 @@ An example event for `applocker_exe_and_dll` looks as following:
 | winlog.event_data.TargetDomainName |  | keyword |
 | winlog.event_data.TargetInfo |  | keyword |
 | winlog.event_data.TargetLogonGuid |  | keyword |
-| winlog.event_data.TargetLogonId |  | keyword |
+| winlog.event_data.TargetLogonId |  | long |
 | winlog.event_data.TargetServerName |  | keyword |
 | winlog.event_data.TargetUserName |  | keyword |
 | winlog.event_data.TargetUserSid |  | keyword |
@@ -404,6 +368,7 @@ An example event for `applocker_exe_and_dll` looks as following:
 | winlog.event_data.param8 |  | keyword |
 | winlog.event_id | The event identifier. The value is specific to the source of the event. | keyword |
 | winlog.keywords | The keywords are used to classify an event. | keyword |
+| winlog.level | The level assigned to the event such as Information, Warning, or Critical. | keyword |
 | winlog.opcode | The opcode defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. | keyword |
 | winlog.process.pid | The process_id of the Client Server Runtime Process. | long |
 | winlog.process.thread.id |  | long |
@@ -412,28 +377,29 @@ An example event for `applocker_exe_and_dll` looks as following:
 | winlog.record_id | The record ID of the event log record. The first record written to an event log is record number 1, and other records are numbered sequentially. If the record number reaches the maximum value (2^32^ for the Event Logging API and 2^64^ for the Windows Event Log API), the next record number will be 0. | keyword |
 | winlog.related_activity_id | A globally unique identifier that identifies the activity to which control was transferred to. The related events would then have this identifier as their `activity_id` identifier. | keyword |
 | winlog.task | The task defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. The category used by the Event Logging API (on pre Windows Vista operating systems) is written to this field. | keyword |
+| winlog.time_created | The time the event was created. | date |
 | winlog.user.domain | The domain that the account associated with this event is a member of. | keyword |
 | winlog.user.identifier | The Windows security identifier (SID) of the account associated with this event. If Winlogbeat cannot resolve the SID to a name, then the `user.name`, `user.domain`, and `user.type` fields will be omitted from the event. If you discover Winlogbeat not resolving SIDs, review the log for clues as to what the problem may be. | keyword |
 | winlog.user.name | Name of the user associated with this event. | keyword |
 | winlog.user.type | The type of account associated with this event. | keyword |
 | winlog.user_data | The event specific data. This field is mutually exclusive with `event_data`. | object |
 | winlog.user_data.FileHash |  | keyword |
-| winlog.user_data.FileHashLength |  | keyword |
+| winlog.user_data.FileHashLength |  | long |
 | winlog.user_data.FilePath |  | keyword |
-| winlog.user_data.FilePathLength |  | keyword |
+| winlog.user_data.FilePathLength |  | long |
 | winlog.user_data.Fqbn |  | keyword |
-| winlog.user_data.FqbnLength |  | keyword |
+| winlog.user_data.FqbnLength |  | long |
 | winlog.user_data.FullFilePath |  | keyword |
-| winlog.user_data.FullFilePathLength |  | keyword |
+| winlog.user_data.FullFilePathLength |  | long |
 | winlog.user_data.PolicyName |  | keyword |
-| winlog.user_data.PolicyNameLength |  | keyword |
+| winlog.user_data.PolicyNameLength |  | long |
 | winlog.user_data.RuleId |  | keyword |
 | winlog.user_data.RuleName |  | keyword |
-| winlog.user_data.RuleNameLength |  | keyword |
+| winlog.user_data.RuleNameLength |  | long |
 | winlog.user_data.RuleSddl |  | keyword |
-| winlog.user_data.RuleSddlLength |  | keyword |
-| winlog.user_data.TargetLogonId |  | keyword |
-| winlog.user_data.TargetProcessId |  | keyword |
+| winlog.user_data.RuleSddlLength |  | long |
+| winlog.user_data.TargetLogonId |  | long |
+| winlog.user_data.TargetProcessId |  | long |
 | winlog.user_data.TargetUser |  | keyword |
 | winlog.user_data.xml_name |  | keyword |
 | winlog.version | The version number of the event's definition. | long |
