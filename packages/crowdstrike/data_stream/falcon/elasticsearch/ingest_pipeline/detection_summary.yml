@@ -3,6 +3,7 @@ processors:
   - set:
       field: event.kind
       value: alert
+      tag: set_event_kind
   - append:
       field: event.category
       value: malware
@@ -95,6 +96,11 @@ processors:
       target_field: message
       ignore_missing: true
       tag: rename_detect_description
+  - set: 
+      field: rule.description
+      copy_from: message
+      tag: set_rule_description
+      if: ctx.message != null
   - rename:
       field: crowdstrike.event.FileName
       target_field: process.name     
@@ -156,6 +162,7 @@ processors:
       field: crowdstrike.event.DetectName
       target_field: rule.name
       ignore_missing: true
+      tag: rename_detect_name
   - rename:
       field: crowdstrike.event.DetectId
       target_field: rule.id
@@ -172,32 +179,29 @@ processors:
       ignore_missing: true
       tag: uppercase_mac_address
       if: ctx.host?.mac != null
-  - rename:
-      field: crowdstrike.event.DetectDescription
-      target_field: rule.description
-      ignore_missing: true
-      tag: rename_detect_description
   - set: 
       field: threat.framework
       value: MITRE ATT&CK
-  - lowercase:
-      field: crowdstrike.event.Technique
-      ignore_missing: true
-      tag: lowercase_technique
   - append:
       field: threat.technique.name
       value: "{{{crowdstrike.event.Technique}}}"
       tag: append_technique_name
-      if: ctx._tmp?.threat?.technique?.name != null
-  - lowercase:
-      field: _tmp.threat.tactic.name
-      ignore_missing: true
-      tag: lowercase_tactic_name
+      if: ctx.crowdstrike?.event?.Technique != null
+  - append:
+      field: threat.technique.id
+      value: "{{{crowdstrike.event.TechniqueId}}}"
+      tag: append_technique_id
+      if: ctx.crowdstrike?.event?.TechniqueId != null
   - append:
       field: threat.tactic.name
       value: "{{{crowdstrike.event.Tactic}}}"
       tag: append_tactic_name
-      if: ctx._tmp?.threat?.tactic?.name != null
+      if: ctx.crowdstrike?.event?.Tactic != null
+  - append:
+      field: threat.tactic.id
+      value: "{{{crowdstrike.event.TacticId}}}"
+      tag: append_tactic_id
+      if: ctx.crowdstrike?.event?.TacticId != null
 
 on_failure:
   - append:
