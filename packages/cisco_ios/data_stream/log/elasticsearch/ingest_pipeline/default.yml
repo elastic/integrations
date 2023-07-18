@@ -49,6 +49,14 @@ processors:
       pattern_definitions:
         CISCO_TIMESTAMP: '[*]?%{CISCOTIMESTAMP:_temp_.cisco_timestamp}(?: %{CISCO_TZ:_temp_.tz})?'
         CISCO_TZ: '[a-zA-Z]{1,4}'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: _temp_.header
+            ignore_missing: true
+            tag: on_failure_remove_header
 
   - set:
       field: event.sequence
