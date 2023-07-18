@@ -204,7 +204,7 @@ An example event for `cloudwatch` looks as following:
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
-| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | float | gauge |
+| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | double | gauge |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
 | aws.dimensions.\* | Metric dimensions. | object |  |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |
