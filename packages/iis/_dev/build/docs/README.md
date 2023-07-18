@@ -49,6 +49,7 @@ The IIS module has been tested with logs from version 7.5, 8 and version 10.
 
 ### access
 This dataset will collect and parse access IIS logs. The supported log format is IIS (W3C). The IIS W3C log format is customizable with different properties.
+
 The IIS ships logs with few properties by default and if the user is interested in customizing the selection, the IIS Manager provides ability to add new fields for logging.
 
 IIS integration offers certain field combinations shipped automatically into Elasticsearch using ingest pipelines. The supported formats are listed below,
