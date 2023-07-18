@@ -235,7 +235,7 @@ processors:
       ignore_failure: true
   - foreach:
       field: user.name
-      if: ctx.user?.name != null && ctx.user.name instanceof List
+      if: ctx.user?.name instanceof List
       processor:
         append:
           field: related.user
@@ -334,10 +334,15 @@ processors:
       field: json.devicehostname
       target_field: zscaler_zia.web.device.hostname
       ignore_missing: true
-  - set:
-      field: host.name
-      value: '{{{zscaler_zia.web.device.hostname}}}'
-      ignore_empty_value: true
+  - lowercase:
+      field: zscaler_zia.web.device.hostname
+      target_field: host.name
+      ignore_missing: true
+      if: ctx.zscaler_zia?.web?.device?.hostname != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.hosts
       value: '{{{zscaler_zia.web.device.hostname}}}'
