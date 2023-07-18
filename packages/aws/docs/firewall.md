@@ -416,7 +416,6 @@ An example event for `firewall` looks as following:
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
-| aws.dimensions.\* | Metric dimensions. | object |  |
 | aws.dimensions.AvailabilityZone | Availability Zone in the Region where the Network Firewall firewall is active. | keyword |  |
 | aws.dimensions.CustomAction | Dimension for a publish metrics custom action that you defined. You can define this for a rule action in a stateless rule group or for a stateless default action in a firewall policy. | keyword |  |
 | aws.dimensions.Engine | Rules engine that processed the packet. The value for this is either Stateful or Stateless. | keyword |  |
