@@ -12,7 +12,7 @@ To use client-secret authentication, add your secret to the _Client Secret_ fiel
 
 **NOTE:** As Microsoft is no longer supporting Azure Active Directory Authentication Library (ADAL), the existing o365audit input is being deprecated in favor of new [CEL](https://www.elastic.co/guide/en/beats/filebeat/8.6/filebeat-input-cel.html) input in version `1.18.0`. Hence for versions `>= 1.18.0`, certificate based authentication (provided by earlier o365audit input) is no longer supported. 
 
-We request users upgrading from integration version `< 1.18.0` to `>= 1.18.0` to follow following steps:
+We request users upgrading from integration version `< 1.18.0` to `>= 1.18.0` to follow these steps:
 
 1. Upgrade the Elastic Stack version to `>= 8.7.1`.
 2. Upgrade the integration navigating via `Integrations -> Microsoft 365 -> Settings -> Upgrade`
@@ -23,6 +23,8 @@ We request users upgrading from integration version `< 1.18.0` to `>= 1.18.0` to
     * Add the required parameters such as `Directory (tenant) ID`, `Application (client) ID`, `Client Secret` based on the previous configuration.
     * Verify/Update `Initial Interval` configuration parameter to start fetching events from. This defaults to 7 days. Even if there is overlap in times, the events are not duplicated.
     * Update the other configuration parameters as required and hit `Save Integration`.
+
+Please refer [Upgrade an integration](https://www.elastic.co/guide/en/fleet/current/upgrade-integration.html) in case of any issues while performing integration upgrade.
 
 ## Compatibility
 
