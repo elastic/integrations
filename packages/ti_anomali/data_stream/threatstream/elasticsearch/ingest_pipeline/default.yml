@@ -6,7 +6,7 @@ processors:
   #
   - set:
       field: ecs.version
-      value: '8.7.0'
+      value: '8.8.0'
   - set:
       field: event.kind
       value: enrichment
@@ -476,9 +476,9 @@ processors:
       target_field: anomali.threatstream
 
 on_failure:
-  - append:
-      field: error.message
-      value: "{{ _ingest.on_failure_message }}"
-  - set: 
+  - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

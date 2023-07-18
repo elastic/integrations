@@ -25,7 +25,7 @@ Before using any AWS integration you will need:
 * **AWS Credentials** to connect with your AWS account.
 * **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
 
-For more details about these requirements, see the **AWS** integration documentation.
+For more details about these requirements, please take a look at the [AWS integration documentation](https://docs.elastic.co/integrations/aws#requirements).
 
 ## Setup
 
@@ -134,8 +134,8 @@ An example event for `ecs` looks as following:
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
-| aws.dimensions.\* | Metric dimensions. | object |  |
 | aws.dimensions.ClusterName | This dimension filters the data that you request for all resources in a specified cluster. All Amazon ECS metrics are filtered by ClusterName. | keyword |  |
 | aws.dimensions.ServiceName | This dimension filters the data that you request for all resources in a specified service within a specified cluster. | keyword |  |
 | aws.ecs.metrics.CPUReservation.avg | The percentage of CPU units that are reserved by running tasks in the cluster. | double | gauge |

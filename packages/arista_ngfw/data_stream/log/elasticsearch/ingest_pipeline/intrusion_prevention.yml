@@ -1,0 +1,58 @@
+---
+description: Pipeline for processing Arista NG Firewall intrusion prevention events
+processors:
+  #################################
+  ## Intrusion Prevention Events ##
+  #################################
+  - rename:
+      field: arista.msg
+      target_field: rule.name
+      ignore_missing: true
+  - rename:
+      field: arista.ipDestination
+      target_field: destination.ip
+      ignore_missing: true
+  - rename:
+      field: arista.ipSource
+      target_field: source.ip
+      ignore_missing: true
+  - rename:
+      field: arista.classtype
+      target_field: rule.ruleset
+      ignore_missing: true
+  - rename:
+      field: arista.category
+      target_field: rule.category
+      ignore_missing: true
+  - remove:
+      field: rule.id
+      ignore_missing: true
+  - rename:
+      field: arista.signatureId
+      target_field: rule.id
+      ignore_missing: true
+  - convert:
+      field: rule.id
+      type: string
+      ignore_missing: true
+
+  ##############
+  ## Clean Up ##
+  ##############
+  - remove:
+      description: Remove Arista fields that are not necessary after parsing to ECS
+      field:
+        - arista.dportIcode
+        - arista.generatorId
+        - arista.ruleId
+        - arista.signatureId
+        - arista.sportItype
+        - arista.timestamp
+      ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
