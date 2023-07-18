@@ -81,13 +81,13 @@ program: |
                                         (state.base.list_contents_url + content_type + "&PublisherIdentifier={{azure_tenant_id}}" 
                                             + "&startTime=" + (content_type_state_created_at.parse_time(time_layout.RFC3339) + duration("1s")).format(time_layout.RFC3339) 
                                             + "&endTime=" + ((content_type_state_created_at.parse_time(time_layout.RFC3339) + duration("24h")).as(calc_end_time, 
-                                                calc_end_time <= now ? calc_end_time : now)).format(time_layout.RFC3339) ) ))
+                                                calc_end_time <= now() ? calc_end_time : now())).format(time_layout.RFC3339) ) ))
                             :
                                 // initial run when no cursor state exists i.e., polling from initial_interval
                                 state.base.list_contents_url + content_type + "&PublisherIdentifier={{azure_tenant_id}}"  
-                                    + "&startTime=" + (now - duration(state.base.list_contents_start_time)).format(time_layout.RFC3339) 
-                                    + "&endTime=" + ((now - duration(state.base.list_contents_start_time) + duration("24h")).as(calc_end_time, 
-                                        calc_end_time <= now ? calc_end_time : now)).format(time_layout.RFC3339)
+                                    + "&startTime=" + (now() - duration(state.base.list_contents_start_time)).format(time_layout.RFC3339) 
+                                    + "&endTime=" + ((now() - duration(state.base.list_contents_start_time) + duration("24h")).as(calc_end_time, 
+                                        calc_end_time <= now() ? calc_end_time : now())).format(time_layout.RFC3339)
                     ))
                     .do_request().as(list_contents_resp,
                         bytes(list_contents_resp.Body).decode_json().as(list_contents_resp_body, 
@@ -105,7 +105,7 @@ program: |
                                                     "content_created_at": { "temp" : list_contents_resp_body}.collate("temp.contentCreated").max(),
                                                     "next_page": (has(list_contents_resp.Header) && has(list_contents_resp.Header.NextPageUri) ) ? list_contents_resp.Header.NextPageUri[0] : (has(list_contents_resp.Header) && has(list_contents_resp.Header.Nextpageuri)) ? list_contents_resp.Header.Nextpageuri[0] : "",
                                                     // keep fetching more if (nextpageuri exists) or (max time returned date != today's date)
-                                                    "want_more_content": ( (has(list_contents_resp.Header) && (has(list_contents_resp.Header.NextPageUri) && (list_contents_resp.Header.NextPageUri.size() > 0)) || (has(list_contents_resp.Header.Nextpageuri) && (list_contents_resp.Header.Nextpageuri.size() > 0)) ) || ( { "temp" : list_contents_resp_body}.collate("temp.contentCreated").max().split('T')[0] != now.format("2006-01-02") ) )
+                                                    "want_more_content": ( (has(list_contents_resp.Header) && (has(list_contents_resp.Header.NextPageUri) && (list_contents_resp.Header.NextPageUri.size() > 0)) || (has(list_contents_resp.Header.Nextpageuri) && (list_contents_resp.Header.Nextpageuri.size() > 0)) ) || ( { "temp" : list_contents_resp_body}.collate("temp.contentCreated").max().split('T')[0] != now().format("2006-01-02") ) )
                                                 })
                                         )
                                 :
@@ -124,7 +124,7 @@ program: |
                                         "want_more_content": (
                                             has(list_contents_resp.StatusCode) 
                                             && list_contents_resp.StatusCode == 200 
-                                            && (list_contents_resp.Request.URL.parse_url().RawQuery.parse_query().endTime[0].split('T')[0] != now.format("2006-01-02")) 
+                                            && (list_contents_resp.Request.URL.parse_url().RawQuery.parse_query().endTime[0].split('T')[0] != now().format("2006-01-02")) 
                                             )
                                     } 
                                 )
@@ -141,7 +141,7 @@ program: |
                                 state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)[0].content_created_at
                             :
                                 (
-                                    (now - duration(state.base.list_contents_start_time)).format(time_layout.RFC3339)
+                                    (now() - duration(state.base.list_contents_start_time)).format(time_layout.RFC3339)
                                 )
                         ,
                         "next_page": "",
