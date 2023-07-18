@@ -311,25 +311,26 @@
                                     "layers": {
                                         "8e445489-0de2-4126-8fc1-600da62173f1": {
                                             "columnOrder": [
+                                                "bd00ecbc-837c-4af9-8443-6d30e2367b9c",
                                                 "76f9ff2d-4e19-4e8e-b4db-5ed24c1280f0",
                                                 "7ab1a608-82f8-4a94-958b-6ffd2d4779a7",
+                                                "4f18de4d-2fe2-4b67-86ba-b4a6b310a79b",
+                                                "525493b4-d9e3-439d-bf97-4094f068564f",
+                                                "a576b513-dfa8-4d0b-ad2c-1bcad785cfc5",
+                                                "f76978e6-0e8c-493d-b285-8820e5cf10c5",
                                                 "7ab1a608-82f8-4a94-958b-6ffd2d4779a7X0",
                                                 "7ab1a608-82f8-4a94-958b-6ffd2d4779a7X1",
                                                 "7ab1a608-82f8-4a94-958b-6ffd2d4779a7X2",
                                                 "76f9ff2d-4e19-4e8e-b4db-5ed24c1280f0X0",
                                                 "76f9ff2d-4e19-4e8e-b4db-5ed24c1280f0X1",
                                                 "76f9ff2d-4e19-4e8e-b4db-5ed24c1280f0X2",
-                                                "4f18de4d-2fe2-4b67-86ba-b4a6b310a79b",
                                                 "4f18de4d-2fe2-4b67-86ba-b4a6b310a79bX0",
                                                 "4f18de4d-2fe2-4b67-86ba-b4a6b310a79bX1",
                                                 "4f18de4d-2fe2-4b67-86ba-b4a6b310a79bX2",
-                                                "525493b4-d9e3-439d-bf97-4094f068564f",
                                                 "525493b4-d9e3-439d-bf97-4094f068564fX0",
                                                 "525493b4-d9e3-439d-bf97-4094f068564fX1",
                                                 "525493b4-d9e3-439d-bf97-4094f068564fX2",
-                                                "a576b513-dfa8-4d0b-ad2c-1bcad785cfc5",
-                                                "a576b513-dfa8-4d0b-ad2c-1bcad785cfc5X0",
-                                                "f76978e6-0e8c-493d-b285-8820e5cf10c5"
+                                                "a576b513-dfa8-4d0b-ad2c-1bcad785cfc5X0"
                                             ],
                                             "columns": {
                                                 "4f18de4d-2fe2-4b67-86ba-b4a6b310a79b": {
@@ -423,7 +424,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Bytes sent",
+                                                    "label": "Part of max(beats_stats.metrics.libbeat.output.write.bytes)-min(beats_stats.metrics.libbeat.output.write.bytes)",
                                                     "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -435,7 +436,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Bytes sent",
+                                                    "label": "Part of max(beats_stats.metrics.libbeat.output.write.bytes)-min(beats_stats.metrics.libbeat.output.write.bytes)",
                                                     "operationType": "min",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -447,7 +448,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Bytes sent",
+                                                    "label": "Part of max(beats_stats.metrics.libbeat.output.write.bytes)-min(beats_stats.metrics.libbeat.output.write.bytes)",
                                                     "operationType": "math",
                                                     "params": {
                                                         "tinymathAst": {
@@ -629,6 +630,19 @@
                                                     "scale": "ratio",
                                                     "sourceField": "beats_stats.metrics.beat.handles.limit.soft"
                                                 },
+                                                "bd00ecbc-837c-4af9-8443-6d30e2367b9c": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "h"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "timestamp"
+                                                },
                                                 "f76978e6-0e8c-493d-b285-8820e5cf10c5": {
                                                     "customLabel": true,
                                                     "dataType": "number",
@@ -697,6 +711,11 @@
                                         "alignment": "left",
                                         "columnId": "f76978e6-0e8c-493d-b285-8820e5cf10c5",
                                         "isTransposed": false
+                                    },
+                                    {
+                                        "collapseFn": "sum",
+                                        "columnId": "bd00ecbc-837c-4af9-8443-6d30e2367b9c",
+                                        "isTransposed": false
                                     }
                                 ],
                                 "layerId": "8e445489-0de2-4126-8fc1-600da62173f1",
@@ -719,6 +738,1126 @@
                 "panelIndex": "64af956c-fdb1-400c-9e85-3849ec001f96",
                 "type": "lens",
                 "version": "8.10.0-SNAPSHOT"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "e7dec61e-aa10-46fc-924f-b875b5f516bd": {
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "e7dec61e-aa10-46fc-924f-b875b5f516bd",
+                                    "name": ".monitoring-beats-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": ".monitoring-beats-*"
+                                }
+                            },
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "9b5d38f9-8378-4702-a145-894835bf8fd1": {
+                                            "columnOrder": [
+                                                "22e35a47-7ae0-42b4-87d6-064a12e28fd4",
+                                                "dcd3d505-afb0-4607-a438-3ed17245df17",
+                                                "2507aeb5-1f34-489a-b43d-837d9ef11b7d",
+                                                "b8b98322-0a80-4ea2-96e9-bea69f459a1f",
+                                                "efb397af-f837-4edc-8af0-cc86f2e6f407",
+                                                "84269fc0-8f24-4bee-ae1d-8e78cf4bbd95",
+                                                "711c4f92-ebf4-4159-94c1-1f0130a5731e",
+                                                "bf969e20-8928-4853-8ee9-fa4a658840ab",
+                                                "00c21546-cbd3-4a53-928f-67e121bdb872"
+                                            ],
+                                            "columns": {
+                                                "00c21546-cbd3-4a53-928f-67e121bdb872": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Maximum of beats_stats.metrics.libbeat.pipeline.events.published",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "beats_stats.metrics.libbeat.pipeline.events.published"
+                                                },
+                                                "22e35a47-7ae0-42b4-87d6-064a12e28fd4": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "10s"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "timestamp"
+                                                },
+                                                "2507aeb5-1f34-489a-b43d-837d9ef11b7d": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Acknowledged",
+                                                    "operationType": "counter_rate",
+                                                    "references": [
+                                                        "b8b98322-0a80-4ea2-96e9-bea69f459a1f"
+                                                    ],
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
+                                                },
+                                                "711c4f92-ebf4-4159-94c1-1f0130a5731e": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Maximum of beats_stats.metrics.libbeat.output.events.total",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "beats_stats.metrics.libbeat.output.events.total",
+                                                    "timeScale": "s"
+                                                },
+                                                "84269fc0-8f24-4bee-ae1d-8e78cf4bbd95": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Maximum of beats_stats.metrics.libbeat.pipeline.queue.acked",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "beats_stats.metrics.libbeat.pipeline.queue.acked"
+                                                },
+                                                "b8b98322-0a80-4ea2-96e9-bea69f459a1f": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Maximum of beats_stats.metrics.libbeat.output.events.acked",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "beats_stats.metrics.libbeat.output.events.acked"
+                                                },
+                                                "bf969e20-8928-4853-8ee9-fa4a658840ab": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "New",
+                                                    "operationType": "counter_rate",
+                                                    "references": [
+                                                        "00c21546-cbd3-4a53-928f-67e121bdb872"
+                                                    ],
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
+                                                },
+                                                "dcd3d505-afb0-4607-a438-3ed17245df17": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Emitted",
+                                                    "operationType": "counter_rate",
+                                                    "references": [
+                                                        "711c4f92-ebf4-4159-94c1-1f0130a5731e"
+                                                    ],
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
+                                                },
+                                                "efb397af-f837-4edc-8af0-cc86f2e6f407": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Queued",
+                                                    "operationType": "counter_rate",
+                                                    "references": [
+                                                        "84269fc0-8f24-4bee-ae1d-8e78cf4bbd95"
+                                                    ],
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "e7dec61e-aa10-46fc-924f-b875b5f516bd",
+                                    "name": "indexpattern-datasource-layer-9b5d38f9-8378-4702-a145-894835bf8fd1",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "dcd3d505-afb0-4607-a438-3ed17245df17",
+                                            "2507aeb5-1f34-489a-b43d-837d9ef11b7d",
+                                            "efb397af-f837-4edc-8af0-cc86f2e6f407",
+                                            "bf969e20-8928-4853-8ee9-fa4a658840ab"
+                                        ],
+                                        "layerId": "9b5d38f9-8378-4702-a145-894835bf8fd1",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "22e35a47-7ae0-42b4-87d6-064a12e28fd4",
+                                        "yConfig": [
+                                            {
+                                                "color": "#391dc5",
+                                                "forAccessor": "dcd3d505-afb0-4607-a438-3ed17245df17"
+                                            },
+                                            {
+                                                "color": "#54b399",
+                                                "forAccessor": "2507aeb5-1f34-489a-b43d-837d9ef11b7d"
+                                            },
+                                            {
+                                                "color": "#9170b8",
+                                                "forAccessor": "efb397af-f837-4edc-8af0-cc86f2e6f407"
+                                            },
+                                            {
+                                                "color": "#f59ab8",
+                                                "forAccessor": "bf969e20-8928-4853-8ee9-fa4a658840ab"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "1ff7105d-2cf3-4131-b967-719af0f5d514",
+                    "w": 24,
+                    "x": 0,
+                    "y": 8
+                },
+                "panelIndex": "1ff7105d-2cf3-4131-b967-719af0f5d514",
+                "title": "Events Rate (/s)",
+                "type": "lens",
+                "version": "8.10.0-SNAPSHOT"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "e7dec61e-aa10-46fc-924f-b875b5f516bd": {
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "e7dec61e-aa10-46fc-924f-b875b5f516bd",
+                                    "name": ".monitoring-beats-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": ".monitoring-beats-*"
+                                }
+                            },
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "9b5d38f9-8378-4702-a145-894835bf8fd1": {
+                                            "columnOrder": [
+                                                "22e35a47-7ae0-42b4-87d6-064a12e28fd4",
+                                                "dcd3d505-afb0-4607-a438-3ed17245df17",
+                                                "2507aeb5-1f34-489a-b43d-837d9ef11b7d",
+                                                "b8b98322-0a80-4ea2-96e9-bea69f459a1f",
+                                                "bf969e20-8928-4853-8ee9-fa4a658840ab",
+                                                "efb397af-f837-4edc-8af0-cc86f2e6f407",
+                                                "84269fc0-8f24-4bee-ae1d-8e78cf4bbd95",
+                                                "711c4f92-ebf4-4159-94c1-1f0130a5731e",
+                                                "00c21546-cbd3-4a53-928f-67e121bdb872"
+                                            ],
+                                            "columns": {
+                                                "00c21546-cbd3-4a53-928f-67e121bdb872": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Maximum of beats_stats.metrics.libbeat.output.events.dropped",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "beats_stats.metrics.libbeat.output.events.dropped"
+                                                },
+                                                "22e35a47-7ae0-42b4-87d6-064a12e28fd4": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "10s"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "timestamp"
+                                                },
+                                                "2507aeb5-1f34-489a-b43d-837d9ef11b7d": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Dropped in Pipeline",
+                                                    "operationType": "counter_rate",
+                                                    "references": [
+                                                        "b8b98322-0a80-4ea2-96e9-bea69f459a1f"
+                                                    ],
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
+                                                },
+                                                "711c4f92-ebf4-4159-94c1-1f0130a5731e": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Maximum of beats_stats.metrics.libbeat.pipeline.events.failed",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "beats_stats.metrics.libbeat.pipeline.events.failed",
+                                                    "timeScale": "s"
+                                                },
+                                                "84269fc0-8f24-4bee-ae1d-8e78cf4bbd95": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Maximum of beats_stats.metrics.libbeat.pipeline.events.retry",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "beats_stats.metrics.libbeat.pipeline.events.retry"
+                                                },
+                                                "b8b98322-0a80-4ea2-96e9-bea69f459a1f": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Maximum of beats_stats.metrics.libbeat.pipeline.events.dropped",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "beats_stats.metrics.libbeat.pipeline.events.dropped"
+                                                },
+                                                "bf969e20-8928-4853-8ee9-fa4a658840ab": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Dropped in Output",
+                                                    "operationType": "counter_rate",
+                                                    "references": [
+                                                        "00c21546-cbd3-4a53-928f-67e121bdb872"
+                                                    ],
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
+                                                },
+                                                "dcd3d505-afb0-4607-a438-3ed17245df17": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Failed in Pipeline",
+                                                    "operationType": "counter_rate",
+                                                    "references": [
+                                                        "711c4f92-ebf4-4159-94c1-1f0130a5731e"
+                                                    ],
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
+                                                },
+                                                "efb397af-f837-4edc-8af0-cc86f2e6f407": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Retry in Pipeline",
+                                                    "operationType": "counter_rate",
+                                                    "references": [
+                                                        "84269fc0-8f24-4bee-ae1d-8e78cf4bbd95"
+                                                    ],
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "e7dec61e-aa10-46fc-924f-b875b5f516bd",
+                                    "name": "indexpattern-datasource-layer-9b5d38f9-8378-4702-a145-894835bf8fd1",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "dcd3d505-afb0-4607-a438-3ed17245df17",
+                                            "2507aeb5-1f34-489a-b43d-837d9ef11b7d",
+                                            "bf969e20-8928-4853-8ee9-fa4a658840ab",
+                                            "efb397af-f837-4edc-8af0-cc86f2e6f407"
+                                        ],
+                                        "layerId": "9b5d38f9-8378-4702-a145-894835bf8fd1",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "22e35a47-7ae0-42b4-87d6-064a12e28fd4",
+                                        "yConfig": [
+                                            {
+                                                "color": "#dc499f",
+                                                "forAccessor": "dcd3d505-afb0-4607-a438-3ed17245df17"
+                                            },
+                                            {
+                                                "color": "#4b02e9",
+                                                "forAccessor": "2507aeb5-1f34-489a-b43d-837d9ef11b7d"
+                                            },
+                                            {
+                                                "color": "#9170b8",
+                                                "forAccessor": "efb397af-f837-4edc-8af0-cc86f2e6f407"
+                                            },
+                                            {
+                                                "color": "#54b399",
+                                                "forAccessor": "bf969e20-8928-4853-8ee9-fa4a658840ab"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "38880e87-5977-4433-a73d-6549e1613b77",
+                    "w": 24,
+                    "x": 24,
+                    "y": 8
+                },
+                "panelIndex": "38880e87-5977-4433-a73d-6549e1613b77",
+                "title": "Fail Rate (/s)",
+                "type": "lens",
+                "version": "8.10.0-SNAPSHOT"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "e7dec61e-aa10-46fc-924f-b875b5f516bd": {
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "e7dec61e-aa10-46fc-924f-b875b5f516bd",
+                                    "name": ".monitoring-beats-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": ".monitoring-beats-*"
+                                }
+                            },
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "9b5d38f9-8378-4702-a145-894835bf8fd1": {
+                                            "columnOrder": [
+                                                "22e35a47-7ae0-42b4-87d6-064a12e28fd4",
+                                                "bf969e20-8928-4853-8ee9-fa4a658840ab",
+                                                "dcd3d505-afb0-4607-a438-3ed17245df17",
+                                                "711c4f92-ebf4-4159-94c1-1f0130a5731e",
+                                                "00c21546-cbd3-4a53-928f-67e121bdb872"
+                                            ],
+                                            "columns": {
+                                                "00c21546-cbd3-4a53-928f-67e121bdb872": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Maximum of beats_stats.metrics.libbeat.output.write.bytes",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "beats_stats.metrics.libbeat.output.write.bytes"
+                                                },
+                                                "22e35a47-7ae0-42b4-87d6-064a12e28fd4": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "10s"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "timestamp"
+                                                },
+                                                "711c4f92-ebf4-4159-94c1-1f0130a5731e": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Maximum of beats_stats.metrics.libbeat.output.read.bytes",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "beats_stats.metrics.libbeat.output.read.bytes",
+                                                    "timeScale": "s"
+                                                },
+                                                "bf969e20-8928-4853-8ee9-fa4a658840ab": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Bytes Sent",
+                                                    "operationType": "counter_rate",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "00c21546-cbd3-4a53-928f-67e121bdb872"
+                                                    ],
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
+                                                },
+                                                "dcd3d505-afb0-4607-a438-3ed17245df17": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Emitted",
+                                                    "operationType": "counter_rate",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "711c4f92-ebf4-4159-94c1-1f0130a5731e"
+                                                    ],
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "e7dec61e-aa10-46fc-924f-b875b5f516bd",
+                                    "name": "indexpattern-datasource-layer-9b5d38f9-8378-4702-a145-894835bf8fd1",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bf969e20-8928-4853-8ee9-fa4a658840ab",
+                                            "dcd3d505-afb0-4607-a438-3ed17245df17"
+                                        ],
+                                        "layerId": "9b5d38f9-8378-4702-a145-894835bf8fd1",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "22e35a47-7ae0-42b4-87d6-064a12e28fd4",
+                                        "yConfig": [
+                                            {
+                                                "color": "#391dc5",
+                                                "forAccessor": "dcd3d505-afb0-4607-a438-3ed17245df17"
+                                            },
+                                            {
+                                                "color": "#f59ab8",
+                                                "forAccessor": "bf969e20-8928-4853-8ee9-fa4a658840ab"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "1fdecb75-2479-44db-924e-15dc18e57572",
+                    "w": 24,
+                    "x": 0,
+                    "y": 17
+                },
+                "panelIndex": "1fdecb75-2479-44db-924e-15dc18e57572",
+                "title": "Throughput (/s)",
+                "type": "lens",
+                "version": "8.10.0-SNAPSHOT"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "e7dec61e-aa10-46fc-924f-b875b5f516bd": {
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "e7dec61e-aa10-46fc-924f-b875b5f516bd",
+                                    "name": ".monitoring-beats-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": ".monitoring-beats-*"
+                                }
+                            },
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "9b5d38f9-8378-4702-a145-894835bf8fd1": {
+                                            "columnOrder": [
+                                                "22e35a47-7ae0-42b4-87d6-064a12e28fd4",
+                                                "bf969e20-8928-4853-8ee9-fa4a658840ab",
+                                                "dcd3d505-afb0-4607-a438-3ed17245df17",
+                                                "711c4f92-ebf4-4159-94c1-1f0130a5731e",
+                                                "00c21546-cbd3-4a53-928f-67e121bdb872"
+                                            ],
+                                            "columns": {
+                                                "00c21546-cbd3-4a53-928f-67e121bdb872": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Maximum of beats_stats.metrics.libbeat.output.write.errors",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "beats_stats.metrics.libbeat.output.write.errors"
+                                                },
+                                                "22e35a47-7ae0-42b4-87d6-064a12e28fd4": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "10s"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "timestamp"
+                                                },
+                                                "711c4f92-ebf4-4159-94c1-1f0130a5731e": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Maximum of beats_stats.metrics.libbeat.output.read.errors",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "beats_stats.metrics.libbeat.output.read.errors",
+                                                    "timeScale": "s"
+                                                },
+                                                "bf969e20-8928-4853-8ee9-fa4a658840ab": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Sending",
+                                                    "operationType": "counter_rate",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "00c21546-cbd3-4a53-928f-67e121bdb872"
+                                                    ],
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
+                                                },
+                                                "dcd3d505-afb0-4607-a438-3ed17245df17": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Receiving",
+                                                    "operationType": "counter_rate",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "711c4f92-ebf4-4159-94c1-1f0130a5731e"
+                                                    ],
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "e7dec61e-aa10-46fc-924f-b875b5f516bd",
+                                    "name": "indexpattern-datasource-layer-9b5d38f9-8378-4702-a145-894835bf8fd1",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bf969e20-8928-4853-8ee9-fa4a658840ab",
+                                            "dcd3d505-afb0-4607-a438-3ed17245df17"
+                                        ],
+                                        "layerId": "9b5d38f9-8378-4702-a145-894835bf8fd1",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "22e35a47-7ae0-42b4-87d6-064a12e28fd4",
+                                        "yConfig": [
+                                            {
+                                                "color": "#391dc5",
+                                                "forAccessor": "dcd3d505-afb0-4607-a438-3ed17245df17"
+                                            },
+                                            {
+                                                "color": "#f59ab8",
+                                                "forAccessor": "bf969e20-8928-4853-8ee9-fa4a658840ab"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "897e4970-d01d-4a83-a1b2-c6207a0347e9",
+                    "w": 24,
+                    "x": 24,
+                    "y": 17
+                },
+                "panelIndex": "897e4970-d01d-4a83-a1b2-c6207a0347e9",
+                "title": "Output Errors (/s)",
+                "type": "lens",
+                "version": "8.10.0-SNAPSHOT"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "e7dec61e-aa10-46fc-924f-b875b5f516bd": {
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "e7dec61e-aa10-46fc-924f-b875b5f516bd",
+                                    "name": ".monitoring-beats-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": ".monitoring-beats-*"
+                                }
+                            },
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "9b5d38f9-8378-4702-a145-894835bf8fd1": {
+                                            "columnOrder": [
+                                                "22e35a47-7ae0-42b4-87d6-064a12e28fd4",
+                                                "bf969e20-8928-4853-8ee9-fa4a658840ab",
+                                                "dcd3d505-afb0-4607-a438-3ed17245df17",
+                                                "2cd1dd19-2dd6-4798-9e82-9c113fc0365e"
+                                            ],
+                                            "columns": {
+                                                "22e35a47-7ae0-42b4-87d6-064a12e28fd4": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "10s"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "timestamp"
+                                                },
+                                                "2cd1dd19-2dd6-4798-9e82-9c113fc0365e": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "beats_stats.metrics.beat.memstats.rss: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Process Total",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        },
+                                                        "sortField": "beats_state.timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "beats_stats.metrics.beat.memstats.rss"
+                                                },
+                                                "bf969e20-8928-4853-8ee9-fa4a658840ab": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "beats_stats.metrics.beat.memstats.gc_next: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "GC Next",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "sortField": "beats_state.timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "beats_stats.metrics.beat.memstats.gc_next"
+                                                },
+                                                "dcd3d505-afb0-4607-a438-3ed17245df17": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "beats_stats.metrics.beat.memstats.memory_alloc: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Active",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "sortField": "beats_state.timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "beats_stats.metrics.beat.memstats.memory_alloc"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "e7dec61e-aa10-46fc-924f-b875b5f516bd",
+                                    "name": "indexpattern-datasource-layer-9b5d38f9-8378-4702-a145-894835bf8fd1",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bf969e20-8928-4853-8ee9-fa4a658840ab",
+                                            "dcd3d505-afb0-4607-a438-3ed17245df17",
+                                            "2cd1dd19-2dd6-4798-9e82-9c113fc0365e"
+                                        ],
+                                        "layerId": "9b5d38f9-8378-4702-a145-894835bf8fd1",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "22e35a47-7ae0-42b4-87d6-064a12e28fd4",
+                                        "yConfig": [
+                                            {
+                                                "color": "#e34dbb",
+                                                "forAccessor": "dcd3d505-afb0-4607-a438-3ed17245df17"
+                                            },
+                                            {
+                                                "color": "#54b399",
+                                                "forAccessor": "bf969e20-8928-4853-8ee9-fa4a658840ab"
+                                            },
+                                            {
+                                                "color": "#2e29d2",
+                                                "forAccessor": "2cd1dd19-2dd6-4798-9e82-9c113fc0365e"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "4510f4d8-c54f-43d7-8925-056490cbe1e4",
+                    "w": 24,
+                    "x": 0,
+                    "y": 25
+                },
+                "panelIndex": "4510f4d8-c54f-43d7-8925-056490cbe1e4",
+                "title": "Memory (MB)",
+                "type": "lens",
+                "version": "8.10.0-SNAPSHOT"
             }
         ],
         "timeRestore": false,
@@ -726,7 +1865,7 @@
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2023-07-18T06:00:51.233Z",
+    "created_at": "2023-07-18T10:09:47.746Z",
     "id": "beat-ac1af2a0-252c-11ee-b54d-67eac297b626",
     "managed": false,
     "references": [
