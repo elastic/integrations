@@ -39,7 +39,13 @@ processors:
       field: _temp_.header
       tag: grok_header
       patterns:
-        - '^(<%{NONNEGINT:log.syslog.priority:long}>)?(?:%{NUMBER:cisco.ios.message_count}: |: )?(%{SYSLOGTIMESTAMP:log.syslog.timestamp}[:]? )?(%{IP:log.syslog.ip}[:]? )?(%{HOSTNAME:log.syslog.hostname}: )?(%{NUMBER:cisco.ios.sequence}: )?(%{CISCO_TIMESTAMP}|%{NOTSPACE:cisco.ios.uptime}:)'
+        - '^(%{SYSLOGTIMESTAMP}[:]? )?(%{IP}[:]? )?(%{HOSTNAME:log.syslog.hostname}[:]? )?%{NUMBER:cisco.ios.sequence}: (%{CISCO_TIMESTAMP}|%{NOTSPACE:cisco.ios.uptime}:)'
+        - '^(<%{NONNEGINT:log.syslog.priority:long}>)?(?:%{NUMBER:cisco.ios.message_count}: |: )(%{SYSLOGTIMESTAMP}[:]? )?(%{IP}[:]? )?(%{HOSTNAME:log.syslog.hostname}: )?%{NUMBER:cisco.ios.sequence}: (%{CISCO_TIMESTAMP}|%{NOTSPACE:cisco.ios.uptime}:)'
+        - '^(<%{NONNEGINT:log.syslog.priority:long}>)?(?:%{NUMBER:cisco.ios.message_count}: |: )(%{SYSLOGTIMESTAMP}[:]? )?(%{IP}[:]? )?(%{HOSTNAME:log.syslog.hostname}: )?(%{NUMBER:cisco.ios.sequence}: )?(%{CISCO_TIMESTAMP}|%{NOTSPACE:cisco.ios.uptime}:)'
+        - '^(<%{NONNEGINT:log.syslog.priority:long}>)?(?:%{NUMBER:cisco.ios.message_count}: |: )?(%{SYSLOGTIMESTAMP}[:]? )?(%{IP}[:]? )?%{HOSTNAME:log.syslog.hostname}: %{NUMBER:cisco.ios.sequence}: (%{CISCO_TIMESTAMP}|%{NOTSPACE:cisco.ios.uptime}:)'
+        - '^(<%{NONNEGINT:log.syslog.priority:long}>)?(?:%{NUMBER:cisco.ios.message_count}: |: )?(%{SYSLOGTIMESTAMP}[:]? )?(%{IP}[:]? )?%{NUMBER:cisco.ios.sequence}: (%{CISCO_TIMESTAMP}|%{NOTSPACE:cisco.ios.uptime}:)'
+        - '^(<%{NONNEGINT:log.syslog.priority:long}>)?(?:%{NUMBER:cisco.ios.message_count}: |: )?(%{SYSLOGTIMESTAMP}[:]? )?(%{IP}[:]? )?%{HOSTNAME:log.syslog.hostname}: (%{CISCO_TIMESTAMP}|%{NOTSPACE:cisco.ios.uptime}:)'
+        - '^(<%{NONNEGINT:log.syslog.priority:long}>)?(?:%{NUMBER:cisco.ios.message_count}: |: )?(%{SYSLOGTIMESTAMP}[:]? )?(%{IP}[:]? )?(%{HOSTNAME:log.syslog.hostname}: )?(%{NUMBER:cisco.ios.sequence}: )?(%{CISCO_TIMESTAMP}|%{NOTSPACE:cisco.ios.uptime}:)'
       pattern_definitions:
         CISCO_TIMESTAMP: '[*]?%{CISCOTIMESTAMP:_temp_.cisco_timestamp}(?: %{CISCO_TZ:_temp_.tz})?'
         CISCO_TZ: '[a-zA-Z]{1,4}'
