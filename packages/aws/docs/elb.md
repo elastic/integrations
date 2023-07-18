@@ -388,6 +388,7 @@ An example event for `elb` looks as following:
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | aws.applicationelb.metrics.ActiveConnectionCount.sum | The total number of concurrent TCP connections active from clients to the load balancer and from the load balancer to targets. | long | gauge |
 | aws.applicationelb.metrics.ClientTLSNegotiationErrorCount.sum | The number of TLS connections initiated by the client that did not establish a session with the load balancer due to a TLS error. | long | gauge |
 | aws.applicationelb.metrics.ConsumedLCUs.avg | The number of load balancer capacity units (LCU) used by your load balancer. | double | gauge |
@@ -409,7 +410,6 @@ An example event for `elb` looks as following:
 | aws.applicationelb.metrics.RequestCount.sum | The number of requests processed over IPv4 and IPv6. | long | gauge |
 | aws.applicationelb.metrics.RuleEvaluations.sum | The number of rules processed by the load balancer given a request rate averaged over an hour. | long | gauge |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
-| aws.dimensions.\* | Metric dimensions. | object |  |
 | aws.dimensions.AvailabilityZone | Filters the metric data by the specified Availability Zone. | keyword |  |
 | aws.dimensions.LoadBalancer | Filters the metric data by load balancer. | keyword |  |
 | aws.dimensions.LoadBalancerName | Filters the metric data by the specified load balancer. | keyword |  |

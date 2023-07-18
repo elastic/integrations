@@ -85,6 +85,10 @@ The `number_of_workers` setting defines the number of workers assigned to readin
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | ARN of the S3 bucket that this log retrieved from. | keyword |
+| aws.s3.bucket.name | Name of a S3 bucket. | keyword |
+| aws.s3.metadata | AWS S3 object metadata values. | flattened |
+| aws.s3.object.key | Name of the S3 object that this log retrieved from. | keyword |
 | aws.vpcflow.account_id | The AWS account ID for the flow log. | keyword |
 | aws.vpcflow.action | The action that is associated with the traffic, ACCEPT or REJECT. | keyword |
 | aws.vpcflow.instance_id | The ID of the instance that's associated with network interface for which the traffic is recorded, if the instance is owned by you. | keyword |
