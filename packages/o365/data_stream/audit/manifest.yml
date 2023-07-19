@@ -1,9 +1,183 @@
 type: logs
 title: Office 365 audit logs
 streams:
+  - input: cel
+    enabled: true
+    title: "Collect Office 365 audit logs via the Management Activity API using CEL Input"
+    description: "Collect audit logs from Office 365 via the Management Activity API via CEL Input"
+    template_path: cel.yml.hbs
+    vars:
+      - name: url
+        type: text
+        title: Base URL of Office Management API
+        show_user: true
+        required: false
+        default: https://manage.office.com
+      - name: interval
+        type: text
+        title: Interval
+        description: How often the API is polled, supports seconds, minutes and hours.
+        show_user: true
+        required: true
+        default: 3m
+      - name: azure_tenant_id
+        type: text
+        title: Directory (tenant) ID
+        description: Directory (tenant) ID
+        show_user: true
+        multi: false
+        required: true
+      - name: client_id
+        type: text
+        title: Application (client) ID
+        description: Client ID used for Oauth2 authentication
+        show_user: true
+        required: true
+      - name: client_secret
+        type: password
+        title: Client Secret
+        description: Client secret used for Oauth2 authentication
+        show_user: true
+        required: true
+      - name: token_url
+        type: text
+        title: Oauth2 Token URL
+        description: The Base URL endpoint that will be used to generate the tokens during the oauth2 flow. If not provided, above `Azure Tenant ID` will be used for oauth2 token generation. Default value - `https://login.microsoftonline.com`
+        show_user: true
+        required: false
+        default: https://login.microsoftonline.com
+      - name: content_types
+        type: text
+        title: Content Type
+        show_user: true
+        multi: false
+        required: true
+        default: "Audit.AzureActiveDirectory, Audit.Exchange, Audit.SharePoint, Audit.General, DLP.All"
+        description: "Comma seperated list of content types to fetch from Management API. \ne.g. `Audit.SharePoint,Audit.AzureActiveDirectory,Audit.Exchange`. \nSupported content types are - `Audit.AzureActiveDirectory, Audit.Exchange, Audit.SharePoint, Audit.General, DLP.All`.\nMore information can be found in the [documentation](https://learn.microsoft.com/en-us/office/office-365-management-api/office-365-management-activity-api-reference#working-with-the-office-365-management-activity-api).\n"
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: Initial interval for the first API call. Default starts fetching events from 168h, i.e., 7 days ago. Supports following suffixes - "h" (hour), "m" (minute), "s" (second), "ms" (millisecond), "us" (microsecond), and "ns" (nanosecond)
+        show_user: true
+        required: true
+        default: 168h
+      - name: resource_ssl
+        type: yaml
+        title: Resource SSL Configuration
+        description: i.e. certificate_authorities, supported_protocols, verification_mode etc, more examples found in the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config)
+        multi: false
+        required: false
+        show_user: false
+      - name: resource_timeout
+        type: text
+        title: Resource Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h. Default is "30"s.
+        show_user: false
+        multi: false
+        required: false
+        default: 60s
+      - name: resource_proxy_url
+        type: text
+        title: Resource Proxy
+        description: This specifies proxy configuration in the form of `http[s]://<user>:<password>@<server name/ip>:<port>`.
+        show_user: false
+        multi: false
+        required: false
+      - name: resource_retry_max_attempts
+        type: text
+        title: Resource Retry Max Attempts
+        description: The maximum number of retries for the HTTP client. Default is "5".
+        show_user: false
+        multi: false
+        required: false
+      - name: resource_retry_wait_min
+        type: text
+        title: Resource Retry Wait Min
+        description: The minimum time to wait before a retry is attempted. Default is "1s".
+        show_user: false
+        multi: false
+        required: false
+      - name: resource_retry_wait_max
+        type: text
+        title: Resource Retry Wait Max
+        description: The maximum time to wait before a retry is attempted. Default is "60s".
+        show_user: false
+        multi: false
+        required: false
+      - name: resource_redirect_forward_headers
+        type: bool
+        title: Resource Redirect Forward Headers
+        description: When set to true resource headers are forwarded in case of a redirect. Default is "false".
+        show_user: false
+        multi: false
+        required: false
+      - name: resource_redirect_headers_ban_list
+        type: text
+        title: Resource Redirect Headers Ban List
+        description: When Redirect Forward Headers is set to true, all headers except the ones defined in this list will be forwarded. All headers are forwarded by default.
+        show_user: false
+        multi: true
+        required: false
+      - name: resource_redirect_max_redirects
+        type: text
+        title: Resource Redirect Max Redirects
+        description: The maximum number of redirects to follow for a resource. Default is "10".
+        show_user: false
+        multi: false
+        required: false
+      - name: resource_rate_limit_limit
+        type: text
+        title: Resource Rate Limit
+        description: The value of the response that specifies the total limit.
+        show_user: false
+        multi: false
+        required: false
+      - name: resource_rate_limit_burst
+        type: text
+        title: Resource Rate Limit Burst
+        description: The maximum burst size. Burst is the maximum number of resource requests that can be made above the overall rate limit.
+        show_user: false
+        multi: false
+        required: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        default:
+          - forwarded
+          - o365-cel
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          The request tracer logs HTTP requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
+
   - input: o365audit
-    title: "Collect Office 365 audit logs"
-    description: "Collect audit logs from Office 365 via the Management Activity API"
+    enabled: false
+    title: "Collect Office 365 audit logs - Deprecated. Please disable this and use the CEL input instead."
+    description: "Collect audit logs from Office 365 via the Management Activity API using Filebeat's O365Audit Input"
+    template_path: o365audit.yml.hbs
     vars:
       - name: application_id
         type: text
@@ -100,4 +274,3 @@ streams:
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
-    template_path: o365audit.yml.hbs
