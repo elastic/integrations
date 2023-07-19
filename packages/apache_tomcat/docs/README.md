@@ -24,7 +24,7 @@ Data streams:
 - `catalina`: Collects information related to the startup and shutdown of the Apache Tomcat application server, the deployment of new applications, or the failure of one or more subsystems.
 - `localhost`: Collects information related to Web application activity which is related to HTTP transactions between the application server and the client.
 - `request`: Collects information related to requests of the Apache Tomcat instance.
-- `thread pool`: Collects information related to the overall states of the threads, CPU usage and processing termination time of the threads in the Tomcat instance.
+- `thread pool`: Collects information related to the overall states of the threads, CPU time and processing termination time of the threads in the Tomcat instance.
 - `session`: Collects information related to overall created, active and expired sessions of the Tomcat instance.
 
 Note:
@@ -890,7 +890,7 @@ An example event for `session` looks as following:
 
 ### Thread Pool
 
-This is the `thread pool` data stream. This data stream collects metrics related to the total, active, current, daemon, busy and peak threads, CPU usage and processing termination time of the threads.
+This is the `thread pool` data stream. This data stream collects metrics related to the total, active, current, daemon, busy and peak threads, CPU time and processing termination time of the threads.
 
 An example event for `thread_pool` looks as following:
 
