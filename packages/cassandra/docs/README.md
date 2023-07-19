@@ -365,19 +365,19 @@ An example event for `metrics` looks as following:
 | cassandra.metrics.column_family.total_disk_space_used |  | long | gauge |
 | cassandra.metrics.compaction.completed | compaction completed tasks. | long | gauge |
 | cassandra.metrics.compaction.pending | compaction pending tasks. | long | gauge |
-| cassandra.metrics.dropped_message.batch_remove |  | long |  |
-| cassandra.metrics.dropped_message.batch_store |  | long |  |
-| cassandra.metrics.dropped_message.counter_mutation |  | long |  |
-| cassandra.metrics.dropped_message.hint |  | long |  |
-| cassandra.metrics.dropped_message.mutation |  | long |  |
-| cassandra.metrics.dropped_message.paged_range |  | long |  |
-| cassandra.metrics.dropped_message.range_slice |  | long |  |
-| cassandra.metrics.dropped_message.read |  | long |  |
-| cassandra.metrics.dropped_message.read_repair |  | long |  |
-| cassandra.metrics.dropped_message.request_response |  | long |  |
-| cassandra.metrics.dropped_message.trace |  | long |  |
-| cassandra.metrics.gc.concurrent_mark_sweep.collection_count | Total number of CMS collections that have occurred. | long |  |
-| cassandra.metrics.gc.concurrent_mark_sweep.collection_time | Approximate accumulated CMS collection elapsed time in milliseconds. | long |  |
+| cassandra.metrics.dropped_message.batch_remove |  | long | counter |
+| cassandra.metrics.dropped_message.batch_store |  | long | counter |
+| cassandra.metrics.dropped_message.counter_mutation |  | long | counter |
+| cassandra.metrics.dropped_message.hint |  | long | counter |
+| cassandra.metrics.dropped_message.mutation |  | long | counter |
+| cassandra.metrics.dropped_message.paged_range |  | long | counter |
+| cassandra.metrics.dropped_message.range_slice |  | long | counter |
+| cassandra.metrics.dropped_message.read |  | long | counter |
+| cassandra.metrics.dropped_message.read_repair |  | long | counter |
+| cassandra.metrics.dropped_message.request_response |  | long | counter |
+| cassandra.metrics.dropped_message.trace |  | long | counter |
+| cassandra.metrics.gc.concurrent_mark_sweep.collection_count | Total number of CMS collections that have occurred. | long | gauge |
+| cassandra.metrics.gc.concurrent_mark_sweep.collection_time | Approximate accumulated CMS collection elapsed time in milliseconds. | long | gauge |
 | cassandra.metrics.gc.par_new.collection_count | Total number of ParNew collections that have occurred. | long | gauge |
 | cassandra.metrics.gc.par_new.collection_time | Approximate accumulated ParNew collection elapsed time in milliseconds. | long | gauge |
 | cassandra.metrics.memory.heap_usage.committed | Committed heap memory usage. | long | gauge |
