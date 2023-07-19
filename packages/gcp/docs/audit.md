@@ -60,7 +60,7 @@ The `audit` dataset collects audit logs of administrative activities and accesse
 | gcp.audit.request_metadata.caller_ip | The IP address of the caller. | ip |
 | gcp.audit.request_metadata.caller_supplied_user_agent | The user agent of the caller. This information is not authenticated and  should be treated accordingly. | keyword |
 | gcp.audit.request_metadata.raw.caller_ip | The raw IP address of the caller. | keyword |
-| gcp.audit.resource_location.current_locations | Current locations of the resource. | array |
+| gcp.audit.resource_location.current_locations | Current locations of the resource. | keyword |
 | gcp.audit.resource_name | The resource or collection that is the target of the operation.  The name is a scheme-less URI, not including the API service name.  For example, 'shelves/SHELF_ID/books'. | keyword |
 | gcp.audit.response |  | flattened |
 | gcp.audit.service_name | The name of the API service performing the operation.  For example, datastore.googleapis.com. | keyword |
@@ -147,11 +147,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2019-12-19T00:44:25.051Z",
     "agent": {
-        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "ephemeral_id": "7780bdcf-661a-4891-83bd-dd5233873f9d",
+        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.7.1"
     },
     "client": {
         "user": {
@@ -173,9 +173,9 @@ An example event for `audit` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
+        "snapshot": false,
+        "version": "8.7.1"
     },
     "event": {
         "action": "beta.compute.instances.aggregatedList",
@@ -184,10 +184,10 @@ An example event for `audit` looks as following:
             "network",
             "configuration"
         ],
-        "created": "2023-01-13T14:59:20.459Z",
+        "created": "2023-07-19T18:53:36.388Z",
         "dataset": "gcp.audit",
         "id": "yonau2dg2zi",
-        "ingested": "2023-01-13T14:59:21Z",
+        "ingested": "2023-07-19T18:53:40Z",
         "kind": "event",
         "outcome": "success",
         "provider": "data_access",
