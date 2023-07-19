@@ -1,0 +1,11 @@
+---
+description: "Pipeline for AWS CloudWatch metrics"
+processors:
+  - fingerprint:
+      fields: ["aws.dimensions"]
+      target_field: 'aws.dimensions.fingerprint'
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
