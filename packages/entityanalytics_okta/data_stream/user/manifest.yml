@@ -1,0 +1,114 @@
+title: Collect User Identities logs from Okta
+type: logs
+streams:
+  - input: entity-analytics
+    title: User Identities logs
+    description: Collect User Identities logs from Okta.
+    template_path: entity-analytics.yml.hbs
+    vars:
+      - name: okta_domain
+        type: text
+        title: Domain
+        multi: false
+        required: true
+        show_user: true
+        description: The Okta domain.
+      - name: okta_token
+        type: password
+        title: Okta API Token
+        multi: false
+        required: true
+        show_user: true
+        description: The Okta API token, used for authentication.
+      - name: sync_interval
+        type: text
+        title: Sync Interval
+        description: How often full synchronizations should occur. Must be greater than Update Interval. Expected value is a duration string (15m, 1h, 1m30, etc), defaults to 24h. Supported units for this parameter are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+      - name: update_interval
+        type: text
+        title: Update Interval
+        description: How often incremental updates should occur. Must be less than Sync Interval. Expected value is a duration string (15m, 1h, 1m30, etc), defaults to 15m. Supported units for this parameter are h/m/s.
+        default: 15m
+        multi: false
+        required: true
+        show_user: true
+      - name: id
+        type: text
+        title: Input ID
+        description: Identity Source. Which will be added to every event as a label.
+        multi: false
+        required: false
+        show_user: false
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+        multi: false
+        required: true
+        show_user: false
+        default: 30s
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        multi: false
+        required: false
+        show_user: false
+        description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #certificate_authorities:
+          #  - |
+          #    -----BEGIN CERTIFICATE-----
+          #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+          #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+          #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+          #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+          #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+          #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+          #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+          #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+          #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+          #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+          #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+          #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+          #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+          #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+          #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+          #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+          #    sxSmbIUfc2SGJGCJD4I=
+          #    -----END CERTIFICATE-----
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - entityanalytics_okta-user
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve entityanalytics_okta.user fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
