@@ -1,6 +1,6 @@
 # IIS (Internet Information Services)  integration
 
-IIS (Internet Information Services) is a secure, reliable, and scalable Web server that provides an easy to manage platform for developing and hosting Web applications and services. For more information, see: [IIS Logging](https://docs.microsoft.com/en-us/windows/win32/http/iis-logging).
+IIS (Internet Information Services) is a secure, reliable, and scalable Web server that provides an easy to manage platform for developing and hosting Web applications and services. For more information, see: [IIS Logging](https://learn.microsoft.com/en-us/iis/manage/provisioning-and-managing-iis/configure-logging-in-iis).
 
 The `iis` package will periodically retrieve IIS related metrics using performance counters such as:
 
@@ -48,9 +48,9 @@ The fields reported are:
 The IIS module has been tested with logs from version 7.5, 8 and version 10.
 
 ### access
-This dataset will collect and parse access IIS logs. The supported log format is IIS (W3C). The IIS W3C log format is customizable with different properties.
+This dataset will collect and parse access IIS logs. The supported log format is W3C. The W3C log format is customizable with different fields.
 
-The IIS ships logs with few properties by default and if the user is interested in customizing the selection, the IIS Manager provides ability to add new fields for logging.
+The IIS ships logs with few fields by default and if the user is interested in customizing the selection, the IIS Manager provides ability to add new fields for logging.
 
 IIS integration offers certain field combinations shipped automatically into Elasticsearch using ingest pipelines. The supported formats are listed below,
 
