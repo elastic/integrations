@@ -1463,20 +1463,20 @@ processors:
       value: "{{{event.duration}}}"
       ignore_empty_value: true
   #
-  # Ensure source.bytes is integer
+  # Ensure source.bytes is long
   #
   - convert:
       if: "ctx.source?.bytes != null"
       field: "source.bytes"
-      type: "integer"
+      type: "long"
 
   #
-  # Ensure destination.bytes is integer
+  # Ensure destination.bytes is long
   #
   - convert:
       if: "ctx.destination?.bytes != null"
       field: "destination.bytes"
-      type: "integer"
+      type: "long"
 
   #
   # Sum source.bytes and destination.bytes in network.bytes
@@ -1484,7 +1484,7 @@ processors:
   - script:
       lang: painless
       source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
-      if: ctx.source?.bytes != null && ctx.destination?.bytes != null && ctx.network != null && ctx.network.bytes == null
+      if: ctx.source?.bytes != null && ctx.destination?.bytes != null && ctx.network?.bytes == null
 
   #
   # Process the flow duration "hh:mm:ss" present in some messages
