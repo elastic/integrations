@@ -1036,6 +1036,7 @@ HTTP requests and replies.
 | url.password | Password of the request. | keyword |
 | url.path | Path of the request, such as "/search". | wildcard |
 | url.port | Port of the request, such as 443. | long |
+| url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | url.username | Username of the request. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
@@ -1054,6 +1055,7 @@ HTTP requests and replies.
 | user_agent.version | Version of the user agent. | keyword |
 | zeek.http.captured_password | Determines if the password will be captured for this request. | boolean |
 | zeek.http.client_header_names | The vector of HTTP header names sent by the client. No header values are included here, just the header names. | keyword |
+| zeek.http.host | The Zeek host if it differs from the domain extracted from the Zeek URI. | keyword |
 | zeek.http.info_code | Last seen 1xx informational reply code returned by the server. | integer |
 | zeek.http.info_msg | Last seen 1xx informational reply message returned by the server. | keyword |
 | zeek.http.orig_filenames | An ordered vector of filenames from the originator. | keyword |
