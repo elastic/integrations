@@ -52,6 +52,6 @@ For step-by-step instructions on how to set up an integration, see the
 
 ## Logs reference
 
-{{event "apigateway_metrics"}}
+{{event "apigateway_logs"}}
 
-{{fields "apigateway_metrics"}}
+{{fields "apigateway_logs"}}
