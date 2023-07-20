@@ -2,7 +2,7 @@
 
 The AWS API Gateway integration allows you to monitor [API Gateway](https://aws.amazon.com/api-gateway/) — a centralized API management service.
 
-Use the AWS API Gateway integration to collect metrics related to your HTTP, REST or WebSockets APIs. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics when troubleshooting an issue.
+Use the AWS API Gateway integration to collect metrics and logs related to your HTTP, REST or WebSockets APIs. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics when troubleshooting an issue.
 
 For example, you could use this integration to examine metrics related to error rates, response codes, and latency. You can pinpoint problematic areas, identify error-prone API endpoints, and troubleshoot performance issues.
 
@@ -10,7 +10,12 @@ For example, you could use this integration to examine metrics related to error 
 
 ## Data streams
 
-The API Gateway integration collects one type of data: metrics.
+The API Gateway integration collects two types of data: metrics and logs.
+
+**Logs** help you keep a record of events happening in Amazon API Gateway.
+Logs collected by the Amazon API Gateway integration include the HTTP method, status code, request details and more. 
+
+See more details in the [Logs reference](#logs-reference).
 
 **Metrics** give you insight into the state of API Gateway.
 Metrics collected by the AWS API Gateway integration include the number of client and server errors, request and error counts and cache counts.
@@ -206,3 +211,97 @@ An example event for `apigateway` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
+
+
+## Logs reference
+
+An example event for `apigateway` looks as following:
+
+```json
+{
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "aws.apigateway_logs"
+    },
+    "@timestamp": "2020-02-20T07:01:01.000Z",
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "event": {
+        "ingested": "2021-07-19T21:47:04.871450600Z",
+        "original": "2020-02-20T07:01:01.000Z Feb 20 07:01:01 ip-172-31-81-156 systemd: Stopping User Slice of root."
+    },
+    "aws": {
+        "apigateway": {
+            "ip_address": "172.31.81.156"
+        }
+    },
+    "message": "Stopping User Slice of root.",
+    "tags": [
+        "preserve_original_event"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| aws.apigateway.caller | The principal identifier of the caller making the request. | keyword |
+| aws.apigateway.connection_id | A unique ID for the connection that can be used to make a callback to the client. | keyword |
+| aws.apigateway.event_type | The event type: CONNECT, MESSAGE, or DISCONNECT. | keyword |
+| aws.apigateway.http_method | The HTTP method used. Valid values include: DELETE, GET, HEAD, OPTIONS, PATCH, POST, and PUT. | keyword |
+| aws.apigateway.ip_address | The internet address of the requester. | ip |
+| aws.apigateway.protocol | API Gateway APIs can accept HTTP/2 requests, but API Gateway sends requests to backend integrations using HTTP/1.1. | keyword |
+| aws.apigateway.request_id | An ID for the request. Clients can override this request ID. | keyword |
+| aws.apigateway.request_time | The CLF-formatted request time (dd/MMM/yyyy:HH:mm:ss +-hhmm). | date |
+| aws.apigateway.resource_path | The path to your resource. | keyword |
+| aws.apigateway.response_length | The response payload length in bytes. | long |
+| aws.apigateway.route_key | The selected route key. | keyword |
+| aws.apigateway.status | The response status. | long |
+| aws.apigateway.user | The principal identifier of the user making the request. | keyword |
+| aws.s3.bucket.arn | ARN of the S3 bucket that this log retrieved from. | keyword |
+| aws.s3.bucket.name | Name of a S3 bucket. | keyword |
+| aws.s3.metadata | AWS S3 object metadata values. | flattened |
+| aws.s3.object.key | Name of the S3 object that this log retrieved from. | keyword |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| tags | List of keywords used to tag each event. | keyword |
