@@ -76,11 +76,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-11-18T17:05:48.837Z",
     "agent": {
-        "ephemeral_id": "b290281f-0eee-49e8-aafc-bb85d4d0c6c4",
-        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
+        "ephemeral_id": "39fbfc30-ef11-4c8c-9b89-af6c312ba558",
+        "id": "be3f80ae-4090-4151-99c4-6a6454fd8148",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.3"
+        "version": "8.8.2"
     },
     "data_stream": {
         "dataset": "github.audit",
@@ -91,9 +91,9 @@ An example event for `audit` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
+        "id": "be3f80ae-4090-4151-99c4-6a6454fd8148",
         "snapshot": false,
-        "version": "8.4.3"
+        "version": "8.8.2"
     },
     "event": {
         "action": "repo.destroy",
@@ -102,10 +102,10 @@ An example event for `audit` looks as following:
             "configuration",
             "web"
         ],
-        "created": "2023-02-23T17:27:07.020Z",
+        "created": "2023-07-17T20:07:53.610Z",
         "dataset": "github.audit",
         "id": "LwW2vpJZCDS-WUmo9Z-ifw",
-        "ingested": "2023-02-23T17:27:08Z",
+        "ingested": "2023-07-17T20:07:54Z",
         "kind": "event",
         "original": "{\"@timestamp\":1605719148837,\"_document_id\":\"LwW2vpJZCDS-WUmo9Z-ifw\",\"action\":\"repo.destroy\",\"actor\":\"monalisa\",\"created_at\":1605719148837,\"org\":\"mona-org\",\"repo\":\"mona-org/mona-test-repo\",\"visibility\":\"private\"}",
         "type": [
@@ -246,11 +246,11 @@ An example event for `code_scanning` looks as following:
 {
     "@timestamp": "2022-06-29T18:03:27.000Z",
     "agent": {
-        "ephemeral_id": "f5851d69-1f67-451b-be80-a7a62f30df3b",
-        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
+        "ephemeral_id": "43277076-e7e1-4818-97e4-9f70a909fb8d",
+        "id": "be3f80ae-4090-4151-99c4-6a6454fd8148",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.3"
+        "version": "8.8.2"
     },
     "data_stream": {
         "dataset": "github.code_scanning",
@@ -261,16 +261,16 @@ An example event for `code_scanning` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
+        "id": "be3f80ae-4090-4151-99c4-6a6454fd8148",
         "snapshot": false,
-        "version": "8.4.3"
+        "version": "8.8.2"
     },
     "event": {
         "action": "code_scanning",
         "agent_id_status": "verified",
         "created": "2022-06-29T18:03:27.000Z",
         "dataset": "github.code_scanning",
-        "ingested": "2023-02-23T17:27:54Z",
+        "ingested": "2023-07-17T20:08:46Z",
         "kind": "alert",
         "original": "{\"created_at\":\"2022-06-29T18:03:27Z\",\"html_url\":\"https://github.com/sample_owner/sample_repo/security/code-scanning/91\",\"most_recent_instance\":{\"analysis_key\":\".github/workflows/codeql-analysis.yml:analyze\",\"category\":\".github/workflows/codeql-analysis.yml:analyze/language:javascript\",\"classifications\":[],\"commit_sha\":\"3244e8b15cc1b8f2732eecd69fc1890b737f0dda\",\"location\":{\"end_column\":50,\"end_line\":67,\"path\":\"routes/chatbot.ts\",\"start_column\":23,\"start_line\":67},\"message\":{\"text\":\"(Experimental) This may be a database query that depends on a user-provided value. Identified using machine learning.(Experimental) This may be a database query that depends on a user-provided value. Identified using machine learning.\"},\"ref\":\"refs/heads/master\",\"state\":\"open\"},\"number\":90,\"rule\":{\"description\":\"SQL database query built from user-controlled sources (experimental)\",\"id\":\"js/ml-powered/sql-injection\",\"security_severity_level\":\"high\",\"severity\":\"error\",\"tags\":[\"experimental\",\"external/cwe/cwe-089\",\"security\"]},\"state\":\"open\",\"tool\":{\"name\":\"CodeQL\",\"version\":\"2.9.4\"},\"updated_at\":\"2022-06-29T18:03:27Z\",\"url\":\"https://api.github.com/repos/sample_owner/sample_repo/code-scanning/alerts/91\"}"
     },
@@ -423,11 +423,11 @@ An example event for `secret_scanning` looks as following:
 {
     "@timestamp": "2022-06-30T18:07:27.000Z",
     "agent": {
-        "ephemeral_id": "144198a9-4a8e-4b47-9102-402a7b3a1052",
-        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
+        "ephemeral_id": "5054567d-5106-49d8-969d-3aa3e1c83063",
+        "id": "be3f80ae-4090-4151-99c4-6a6454fd8148",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.3"
+        "version": "8.8.2"
     },
     "data_stream": {
         "dataset": "github.secret_scanning",
@@ -438,16 +438,16 @@ An example event for `secret_scanning` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
+        "id": "be3f80ae-4090-4151-99c4-6a6454fd8148",
         "snapshot": false,
-        "version": "8.4.3"
+        "version": "8.8.2"
     },
     "event": {
         "action": "secret_scanning",
         "agent_id_status": "verified",
         "created": "2022-06-30T18:07:27Z",
         "dataset": "github.secret_scanning",
-        "ingested": "2023-02-23T17:30:34Z",
+        "ingested": "2023-07-17T20:11:28Z",
         "original": "{\"created_at\":\"2022-06-30T18:07:27Z\",\"html_url\":\"https://github.com/sample_owner/sample_repo/security/secret-scanning/3\",\"number\":3,\"push_protection_bypassed\":true,\"push_protection_bypassed_by\":{\"html_url\":\"https://github.com/sample_owner\",\"login\":\"sample_owner\",\"type\":\"User\",\"url\":\"https://api.github.com/users/sample_owner\"},\"resolution\":\"revoked\",\"resolved_by\":{\"login\":\"sample_owner\",\"type\":\"User\",\"url\":\"https://api.github.com/users/sample_owner\"},\"secret\":\"npm_2vYJ3QzGXoGbEgMYduYS1k2M4D0wDu2opJbl\",\"secret_type\":\"npm_access_token\",\"secret_type_display_name\":\"npm Access Token\",\"state\":\"open\",\"url\":\"https://api.github.com/repos/sample_owner/sample_repo/secret-scanning/alerts/3\"}"
     },
     "github": {
@@ -610,11 +610,11 @@ An example event for `dependabot` looks as following:
 {
     "@timestamp": "2022-07-11T11:39:07.000Z",
     "agent": {
-        "ephemeral_id": "e923b2a8-7ed8-4aa8-94a7-7f928b339241",
-        "id": "da8ad14f-576e-470c-a40d-15eda3748307",
+        "ephemeral_id": "be806890-bf40-4bea-8f53-b545e1f62668",
+        "id": "be3f80ae-4090-4151-99c4-6a6454fd8148",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.8.2"
     },
     "data_stream": {
         "dataset": "github.dependabot",
@@ -625,16 +625,16 @@ An example event for `dependabot` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "da8ad14f-576e-470c-a40d-15eda3748307",
-        "snapshot": true,
-        "version": "8.8.0"
+        "id": "be3f80ae-4090-4151-99c4-6a6454fd8148",
+        "snapshot": false,
+        "version": "8.8.2"
     },
     "event": {
         "action": "dependabot",
         "agent_id_status": "verified",
         "created": "2022-07-11T11:39:07.000Z",
         "dataset": "github.dependabot",
-        "ingested": "2023-04-27T10:01:15Z",
+        "ingested": "2023-07-17T20:09:41Z",
         "kind": "alert",
         "original": "{\"createdAt\":\"2022-07-11T11:39:07Z\",\"dependabotUpdate\":{\"error\":{\"body\":\"The currently installed version can't be determined.\\n\\nTo resolve the issue add a supported lockfile (package-lock.json or yarn.lock).\",\"errorType\":\"dependency_file_not_supported\",\"title\":\"Dependabot can't update vulnerable dependencies without a lockfile\"},\"pullRequest\":null},\"dependencyScope\":\"RUNTIME\",\"dismissReason\":null,\"dismissedAt\":null,\"dismisser\":null,\"fixedAt\":null,\"number\":1,\"repository\":{\"description\":\"OWASP Juice Shop: Probably the most modern and sophisticated insecure web application\",\"isInOrganization\":false,\"isPrivate\":false,\"name\":\"sample_repo\",\"owner\":{\"login\":\"sample_owner\",\"url\":\"https://github.com/sample_owner\"},\"url\":\"https://github.com/sample_owner/sample_repo\"},\"securityAdvisory\":{\"classification\":\"GENERAL\",\"cvss\":{\"score\":0,\"vectorString\":null},\"cwes\":{\"nodes\":[{\"cweId\":\"CWE-20\",\"description\":\"The product receives input or data, but it does not validate or incorrectly validates that the input has the properties that are required to process the data safely and correctly.\",\"name\":\"Improper Input Validation\"}]},\"description\":\"Versions 4.2.1 and earlier of `jsonwebtoken` are affected by a verification bypass vulnerability. This is a result of weak validation of the JWT algorithm type, occuring when an attacker is allowed to arbitrarily specify the JWT algorithm.\\n\\n\\n\\n\\n## Recommendation\\n\\nUpdate to version 4.2.2 or later.\",\"ghsaId\":\"GHSA-c7hr-j4mj-j2w6\",\"identifiers\":[{\"type\":\"GHSA\",\"value\":\"GHSA-c7hr-j4mj-j2w6\"},{\"type\":\"CVE\",\"value\":\"CVE-2015-9235\"}],\"origin\":\"UNSPECIFIED\",\"permalink\":\"https://github.com/advisories/GHSA-c7hr-j4mj-j2w6\",\"publishedAt\":\"2018-10-09T00:38:30Z\",\"references\":[{\"url\":\"https://nvd.nist.gov/vuln/detail/CVE-2015-9235\"},{\"url\":\"https://github.com/auth0/node-jsonwebtoken/commit/1bb584bc382295eeb7ee8c4452a673a77a68b687\"},{\"url\":\"https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/\"},{\"url\":\"https://github.com/advisories/GHSA-c7hr-j4mj-j2w6\"},{\"url\":\"https://www.npmjs.com/advisories/17\"},{\"url\":\"https://www.timmclean.net/2015/02/25/jwt-alg-none.html\"},{\"url\":\"https://nodesecurity.io/advisories/17\"}],\"severity\":\"CRITICAL\",\"summary\":\"Verification Bypass in jsonwebtoken\",\"updatedAt\":\"2021-01-08T19:00:39Z\",\"withdrawnAt\":null},\"securityVulnerability\":{\"firstPatchedVersion\":{\"identifier\":\"4.2.2\"},\"package\":{\"ecosystem\":\"NPM\",\"name\":\"jsonwebtoken\"},\"severity\":\"CRITICAL\",\"updatedAt\":\"2018-11-30T19:54:28Z\",\"vulnerableVersionRange\":\"\\u003c 4.2.2\"},\"state\":\"OPEN\",\"vulnerableManifestFilename\":\"package.json\",\"vulnerableManifestPath\":\"package.json\",\"vulnerableRequirements\":\"= 0.4.0\"}",
         "start": "2022-07-11T11:39:07Z"
@@ -773,7 +773,7 @@ To use this integration, users must use Github Apps or Personal Access Token wit
 | github.issues.assignee.site_admin |  | boolean |  |  |
 | github.issues.assignee.type |  | keyword |  |  |
 | github.issues.assignee.url |  | keyword |  |  |
-| github.issues.assignees | Information of users who were assigned the issue | array |  |  |
+| github.issues.assignees | Information of users who were assigned the issue | flattened |  |  |
 | github.issues.author_association |  | keyword |  |  |
 | github.issues.body |  | text |  |  |
 | github.issues.closed_at | The time that the issue was closed in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ` | date |  |  |
@@ -860,11 +860,11 @@ An example event for `issues` looks as following:
 {
     "@timestamp": "2011-04-22T13:33:48.000Z",
     "agent": {
-        "ephemeral_id": "65c36540-ba95-4866-b299-09bea561974f",
-        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
+        "ephemeral_id": "4e1dee80-55cc-46a2-8b69-043e6fc581a7",
+        "id": "be3f80ae-4090-4151-99c4-6a6454fd8148",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.3"
+        "version": "8.8.2"
     },
     "data_stream": {
         "dataset": "github.issues",
@@ -875,16 +875,16 @@ An example event for `issues` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
+        "id": "be3f80ae-4090-4151-99c4-6a6454fd8148",
         "snapshot": false,
-        "version": "8.4.3"
+        "version": "8.8.2"
     },
     "event": {
         "action": "event",
         "agent_id_status": "verified",
         "created": "2011-04-22T13:33:48.000Z",
         "dataset": "github.issues",
-        "ingested": "2023-02-23T17:29:38Z",
+        "ingested": "2023-07-17T20:10:35Z",
         "kind": "event",
         "original": "{\"active_lock_reason\":\"too heated\",\"assignee\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"assignees\":[{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"}],\"author_association\":\"COLLABORATOR\",\"body\":\"I'm having a problem with this.\",\"closed_at\":null,\"closed_by\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"comments\":0,\"comments_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/comments\",\"created_at\":\"2011-04-22T13:33:48Z\",\"events_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/events\",\"html_url\":\"https://github.com/octocat/Hello-World/issues/1347\",\"id\":1,\"labels\":[{\"color\":\"f29513\",\"default\":true,\"description\":\"Something isn't working\",\"id\":208045946,\"name\":\"bug\",\"node_id\":\"MDU6TGFiZWwyMDgwNDU5NDY=\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/labels/bug\"}],\"labels_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/labels{/name}\",\"locked\":true,\"milestone\":{\"closed_at\":\"2013-02-12T13:22:01Z\",\"closed_issues\":8,\"created_at\":\"2011-04-10T20:09:31Z\",\"creator\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"description\":\"Tracking milestone for version 1.0\",\"due_on\":\"2012-10-09T23:39:01Z\",\"html_url\":\"https://github.com/octocat/Hello-World/milestones/v1.0\",\"id\":1002604,\"labels_url\":\"https://api.github.com/repos/octocat/Hello-World/milestones/1/labels\",\"node_id\":\"MDk6TWlsZXN0b25lMTAwMjYwNA==\",\"number\":1,\"open_issues\":4,\"state\":\"open\",\"title\":\"v1.0\",\"updated_at\":\"2014-03-03T18:58:10Z\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/milestones/1\"},\"node_id\":\"MDU6SXNzdWUx\",\"number\":1347,\"pull_request\":{\"diff_url\":\"https://github.com/octocat/Hello-World/pull/1347.diff\",\"html_url\":\"https://github.com/octocat/Hello-World/pull/1347\",\"patch_url\":\"https://github.com/octocat/Hello-World/pull/1347.patch\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/pulls/1347\"},\"repository_url\":\"https://api.github.com/repos/octocat/Hello-World\",\"state\":\"open\",\"state_reason\":\"completed\",\"title\":\"Found a bug\",\"updated_at\":\"2011-04-22T13:33:48Z\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347\",\"user\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"}}"
     },

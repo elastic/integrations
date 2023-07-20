@@ -5,30 +5,79 @@ processors:
       value: alert
   - append:
       field: event.category
-      value: [malware]
+      value: malware
+      tag: append_malware_category
   - append:
       field: event.type
-      value: [info]
-  - set:
+      value: info
+      tag: append_info_type
+  - append:
       field: event.action
       value: incident
-  - set:
-      field: agent.type
-      value: falcon
-  - convert:
-      field: crowdstrike.event.FalconHostLink
-      target_field: event.url
-      type: string
-      ignore_failure: true
+      tag: append_incident_action
+  - rename:
+      field: crowdstrike.event.UserId
+      target_field: user.name
       ignore_missing: true
+      tag: rename_user_id
+  - date:
+      field: crowdstrike.event.IncidentStartTime
+      target_field: event.start
+      timezone: UTC
+      formats:
+        - UNIX_MS
+      tag: date_incident_start_time
+      if: 'ctx.crowdstrike?.event?.IncidentStartTime != null && String.valueOf(ctx.crowdstrike.event.IncidentStartTime).length() >= 12'
+  - date:
+      field: crowdstrike.event.IncidentStartTime
+      target_field: event.start
+      timezone: UTC
+      formats:
+        - UNIX
+      tag: date_incident_start_time
+      if: 'ctx.crowdstrike?.event?.IncidentStartTime != null && String.valueOf(ctx.crowdstrike.event.IncidentStartTime).length() <= 11'
+  - date:
+      field: crowdstrike.event.IncidentEndTime
+      target_field: event.end
+      timezone: UTC
+      formats:
+        - UNIX_MS
+      tag: date_incident_end_time
+      if: 'ctx.crowdstrike?.event?.IncidentEndTime != null && String.valueOf(ctx.crowdstrike.event.IncidentEndTime).length() >= 12'
+  - date:
+      field: crowdstrike.event.IncidentEndTime
+      target_field: event.end
+      timezone: UTC
+      formats:
+        - UNIX
+      tag: date_incident_end_time
+      if: 'ctx.crowdstrike?.event?.IncidentEndTime != null && String.valueOf(ctx.crowdstrike.event.IncidentEndTime).length() <= 11'
+  - rename:
+      field: crowdstrike.event.FalconHostLink
+      target_field: event.reference
+      ignore_missing: true
+      tag: rename_falcon_host_link
+  - rename:
+      field: crowdstrike.event.HostID
+      target_field: host.id
+      ignore_missing: true
+      tag: rename_host_id
+  - rename:
+      field: crowdstrike.event.IncidentID
+      target_field: event.id
+      ignore_missing: true
+      tag: rename_incident_id
   - set:
       field: message
       value: "Incident score {{crowdstrike.event.FineScore}}"
-      if: ctx?.crowdstrike?.event?.FineScore != null
+      tag: set_message
+      if: ctx.crowdstrike?.event?.FineScore != null
+
 on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
   - set:
       field: event.kind
       value: pipeline_error
-  - append:
-      field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
