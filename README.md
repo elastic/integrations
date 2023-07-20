@@ -6,7 +6,7 @@ This repository contains sources for Elastic Integrations. Each Elastic Integrat
 
 An Elastic Package may define configuration for the [Elastic Agent](#elastic-agent) as well as assets (such as Kibana dashboards and Elasticsearch index templates) for the Elastic Stack. It should also define documentation about the package. Finally, a package may also define tests to ensure that it is functioning as expected.
 
-Elastic Packages have a certain, well-defined structure. This structure is described by the [Package Specification](#package-spec). The repository is also used for discussions about extending the specification (with proposals).
+Elastic Packages have a certain, well-defined structure. This structure is described by the [Package Specification](#package-specification). The repository is also used for discussions about extending the specification (with proposals).
 
 While this repository contains _sources_ for Elastic Integrations, _built_ Elastic Integrations are stored in the [Package Storage](#package-storage) repository and served up via the [Package Registry](#package-registry). The Fleet UI in Kibana connects to the Package Registry and allows users to discover, install, and configure Elastic Packages.
 
