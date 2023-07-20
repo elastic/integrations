@@ -22,75 +22,75 @@ processors:
       if: ctx._tmp?.raw_data != null && ctx._tmp.raw_data.startsWith('DHCPDISCOVER')
       field: _tmp.raw_data
       patterns:
-        - "^%{WORD:event.action} from %{MAC:client.mac} via %{WORD:observer.ingress.interface.name}: %{GREEDYDATA:message}$"
-        - "^%{WORD:event.action} from %{MAC:client.mac} via %{WORD:observer.ingress.interface.name}$"
-        - "^%{WORD:event.action} %{GREEDYDATA:message}$"
-        - "^%{GREEDYDATA:message}$"
+        - '^%{WORD:event.action} from %{MAC:client.mac} via %{WORD:observer.ingress.interface.name}: %{GREEDYDATA:message}$'
+        - '^%{WORD:event.action} from %{MAC:client.mac} via %{WORD:observer.ingress.interface.name}$'
+        - '^%{WORD:event.action} %{GREEDYDATA:message}$'
+        - '^%{GREEDYDATA:message}$'
       tag: grok_dhcp_discover
   - grok:
       if: ctx._tmp?.raw_data != null && ctx._tmp.raw_data.startsWith('DHCPOFFER')
       field: _tmp.raw_data
       patterns:
-        - "^%{WORD:event.action} on %{IP:client.ip} to %{MAC:client.mac} via %{WORD:observer.ingress.interface.name}$"
-        - "^%{WORD:event.action} %{GREEDYDATA:message}$"
-        - "^%{GREEDYDATA:message}$"
+        - '^%{WORD:event.action} on %{IP:client.ip} to %{MAC:client.mac} via %{WORD:observer.ingress.interface.name}$'
+        - '^%{WORD:event.action} %{GREEDYDATA:message}$'
+        - '^%{GREEDYDATA:message}$'
       tag: grok_dhcp_offer
   - grok:
       if: ctx._tmp?.raw_data != null && ctx._tmp.raw_data.startsWith('DHCPREQUEST')
       field: _tmp.raw_data
       patterns:
-        - "^%{WORD:event.action} for %{IP:client.ip}( \\(%{IP:sophos.utm.router.ip}\\))? from %{MAC:client.mac}( \\(%{DATA:sophos.utm.client.hostname}\\))? via %{WORD:observer.ingress.interface.name}(: %{GREEDYDATA:message})?$"
-        - "^%{WORD:event.action} %{GREEDYDATA:message}$"
-        - "^%{GREEDYDATA:message}$"
+        - '^%{WORD:event.action} for %{IP:client.ip}( \(%{IP:sophos.utm.router.ip}\))? from %{MAC:client.mac}( \(%{DATA:sophos.utm.client.hostname}\))? via %{WORD:observer.ingress.interface.name}(: %{GREEDYDATA:message})?$'
+        - '^%{WORD:event.action} %{GREEDYDATA:message}$'
+        - '^%{GREEDYDATA:message}$'
       tag: grok_dhcp_request
   - grok:
       if: ctx._tmp?.raw_data != null && ctx._tmp.raw_data.startsWith('DHCPACK')
       field: _tmp.raw_data
       patterns:
-        - "^%{WORD:event.action} on %{IP:client.ip} to %{MAC:client.mac}( \\(%{DATA:sophos.utm.client.hostname}\\))? via %{WORD:observer.ingress.interface.name}$"
-        - "^%{WORD:event.action} to %{IP:client.ip} \\(%{MAC:client.mac}\\) via %{WORD:observer.ingress.interface.name}$"
-        - "^%{WORD:event.action} %{GREEDYDATA:message}$"
-        - "^%{GREEDYDATA:message}$"
+        - '^%{WORD:event.action} on %{IP:client.ip} to %{MAC:client.mac}( \(%{DATA:sophos.utm.client.hostname}\))? via %{WORD:observer.ingress.interface.name}$'
+        - '^%{WORD:event.action} to %{IP:client.ip} \(%{MAC:client.mac}\) via %{WORD:observer.ingress.interface.name}$'
+        - '^%{WORD:event.action} %{GREEDYDATA:message}$'
+        - '^%{GREEDYDATA:message}$'
       tag: grok_dhcp_ack
   - grok:
       if: ctx._tmp?.raw_data != null && ctx._tmp.raw_data.startsWith('DHCPNACK')
       field: _tmp.raw_data
       patterns:
-        - "^%{WORD:event.action} on %{IP:client.ip} to %{MAC:client.mac}( \\(%{DATA:sophos.utm.client.hostname}\\))? via %{WORD:observer.ingress.interface.name}$"
-        - "^%{WORD:event.action} to %{IP:client.ip} \\(%{MAC:client.mac}\\) via %{WORD:observer.ingress.interface.name}$"
-        - "^%{WORD:event.action} %{GREEDYDATA:message}$"
-        - "^%{GREEDYDATA:message}$"
+        - '^%{WORD:event.action} on %{IP:client.ip} to %{MAC:client.mac}( \(%{DATA:sophos.utm.client.hostname}\))? via %{WORD:observer.ingress.interface.name}$'
+        - '^%{WORD:event.action} to %{IP:client.ip} \(%{MAC:client.mac}\) via %{WORD:observer.ingress.interface.name}$'
+        - '^%{WORD:event.action} %{GREEDYDATA:message}$'
+        - '^%{GREEDYDATA:message}$'
       tag: grok_dhcp_nak
   - grok:
       if: ctx._tmp?.raw_data != null && ctx._tmp.raw_data.startsWith('DHCPINFORM')
       field: _tmp.raw_data
       patterns:
-        - "^%{WORD:event.action} from %{IP:client.ip} via %{WORD:observer.ingress.interface.name}: %{GREEDYDATA:message}$"
-        - "^%{WORD:event.action} from %{IP:client.ip} via %{WORD:observer.ingress.interface.name}$"
-        - "^%{WORD:event.action} %{GREEDYDATA:message}$"
-        - "^%{GREEDYDATA:message}$"
+        - '^%{WORD:event.action} from %{IP:client.ip} via %{WORD:observer.ingress.interface.name}: %{GREEDYDATA:message}$'
+        - '^%{WORD:event.action} from %{IP:client.ip} via %{WORD:observer.ingress.interface.name}$'
+        - '^%{WORD:event.action} %{GREEDYDATA:message}$'
+        - '^%{GREEDYDATA:message}$'
       tag: grok_dhcp_inform
   - grok:
       if: ctx._tmp?.raw_data != null && ctx._tmp.raw_data.startsWith('Listening')
       field: _tmp.raw_data
       patterns:
-        - "^%{WORD:event.action}[ ]+on[ ]+%{WORD:sophos.utm.socket}/%{WORD:observer.ingress.interface.name}/%{MAC:client.mac}/%{DATA:sophos.utm.subnet}$"
-        - "^%{WORD:event.action}[ ]+on[ ]+%{WORD:sophos.utm.socket}/%{WORD:observer.ingress.interface.name}/%{DATA:sophos.utm.subnet}$"
-        - "^%{GREEDYDATA:message}$"
+        - '^%{WORD:event.action}[ ]+on[ ]+%{WORD:sophos.utm.socket}/%{WORD:observer.ingress.interface.name}/%{MAC:client.mac}/%{DATA:sophos.utm.subnet}$'
+        - '^%{WORD:event.action}[ ]+on[ ]+%{WORD:sophos.utm.socket}/%{WORD:observer.ingress.interface.name}/%{DATA:sophos.utm.subnet}$'
+        - '^%{GREEDYDATA:message}$'
       tag: grok_dhcp_listening
   - grok:
       if: ctx._tmp?.raw_data != null && ctx._tmp.raw_data.startsWith('Sending')
       field: _tmp.raw_data
       patterns:
-        - "^%{WORD:event.action}[ ]+on[ ]+%{WORD:sophos.utm.socket}/%{WORD:observer.ingress.interface.name}/%{MAC:client.mac}/%{DATA:sophos.utm.subnet}$"
-        - "^%{WORD:event.action}[ ]+on[ ]+%{WORD:sophos.utm.socket}/%{WORD:observer.ingress.interface.name}/%{DATA:sophos.utm.subnet}$"
-        - "^%{GREEDYDATA:message}$"
+        - '^%{WORD:event.action}[ ]+on[ ]+%{WORD:sophos.utm.socket}/%{WORD:observer.ingress.interface.name}/%{MAC:client.mac}/%{DATA:sophos.utm.subnet}$'
+        - '^%{WORD:event.action}[ ]+on[ ]+%{WORD:sophos.utm.socket}/%{WORD:observer.ingress.interface.name}/%{DATA:sophos.utm.subnet}$'
+        - '^%{GREEDYDATA:message}$'
       tag: grok_dhcp_sending
   - grok:
       if: ctx.event?.action == null
       field: _tmp.raw_data
       patterns:
-        - "^%{GREEDYDATA:message}$"
+        - '^%{GREEDYDATA:message}$'
       tag: grok_dhcp_default
   - lowercase:
       field: event.action
@@ -99,8 +99,8 @@ processors:
       tag: lowercase_event_action
   - set:
       field: event.action
-      value: '{{process.name}}-{{event.action}}'
-      if: ctx?.event?.action != null && (ctx?.event?.action == 'sending' || ctx?.event?.action == 'listening')
+      value: '{{{process.name}}}-{{{event.action}}}'
+      if: ctx.event?.action != null && (ctx.event.action == 'sending' || ctx.event.action == 'listening')
       tag: set_event_action_dhcpd
 
   # Transform MAC address
@@ -146,15 +146,15 @@ processors:
   # Fill related fields
   - append:
       field: related.hosts
-      value: '{{sophos.utm.client.hostname}}'
+      value: '{{{sophos.utm.client.hostname}}}'
       allow_duplicates: false
-      if: ctx.sophos?.utm?.client?.hostname != null && ctx.sophos?.utm?.client?.hostname != ''
+      if: ctx.sophos?.utm?.client?.hostname != null && ctx.sophos.utm.client.hostname != ''
       tag: append_related_client_host
   - append:
       field: related.ip
-      value: '{{client.ip}}'
+      value: '{{{client.ip}}}'
       allow_duplicates: false
-      if: ctx.client?.ip != null && ctx.client?.ip != ''
+      if: ctx.client?.ip != null && ctx.client.ip != ''
       tag: append_related_client_ip
 on_failure:
   - append:

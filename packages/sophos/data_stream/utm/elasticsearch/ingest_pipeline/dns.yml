@@ -20,18 +20,18 @@ processors:
       if: ctx._tmp?.raw_data != null && ctx._tmp.raw_data.contains('listening')
       field: _tmp.raw_data
       patterns:
-        - "^%{WORD:event.action} on %{WORD:network.type} interface %{WORD:observer.ingress.interface.name}, %{IP:server.ip}#%{NUMBER:server.port:long}$"
-        - "^no longer %{WORD:event.action} on %{IP:server.ip}#%{NUMBER:server.port:long}$"
-        - "^%{GREEDYDATA:message}$"
+        - '^%{WORD:event.action} on %{WORD:network.type} interface %{WORD:observer.ingress.interface.name}, %{IP:server.ip}#%{NUMBER:server.port:long}$'
+        - '^no longer %{WORD:event.action} on %{IP:server.ip}#%{NUMBER:server.port:long}$'
+        - '^%{GREEDYDATA:message}$'
       tag: grok_dns
   - grok:
       if: ctx.event?.action == null
       field: _tmp.raw_data
       patterns:
-        - "^%{GREEDYDATA:message}$"
+        - '^%{GREEDYDATA:message}$'
       tag: grok_dns_default
   
-  # Lowercase fields
+  # Lowercase fields
   - lowercase:
       field: event.action
       ignore_failure: true
@@ -45,8 +45,8 @@ processors:
 
   - set:
       field: event.action
-      value: '{{process.name}}-{{event.action}}'
-      if: ctx?.event?.action != null
+      value: '{{{process.name}}}-{{{event.action}}}'
+      if: ctx.event?.action != null
       tag: set_event_action_dns
 
   # IP Geolocation Lookup
@@ -80,9 +80,9 @@ processors:
   # Fill related fields
   - append:
       field: related.ip
-      value: '{{server.ip}}'
+      value: '{{{server.ip}}}'
       allow_duplicates: false
-      if: ctx.server?.ip != null && ctx.server?.ip != ''
+      if: ctx.server?.ip != null && ctx.server.ip != ''
       tag: append_related_server_ip
 on_failure:
   - append:

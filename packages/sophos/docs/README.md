@@ -28,8 +28,8 @@ An example event for `utm` looks as following:
 {
     "@timestamp": "2023-03-08T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "ccb6a9e5-f48b-42cb-ae04-2ea4524304d7",
-        "id": "01dbabf7-3487-4309-bbcc-b441cf27f84e",
+        "ephemeral_id": "cc0463c4-c141-46e2-81a4-c9ffe70bf450",
+        "id": "533bdb32-d7d6-482e-a4ee-22a7c8ba474c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.1"
@@ -67,7 +67,7 @@ An example event for `utm` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "01dbabf7-3487-4309-bbcc-b441cf27f84e",
+        "id": "533bdb32-d7d6-482e-a4ee-22a7c8ba474c",
         "snapshot": false,
         "version": "8.8.1"
     },
@@ -79,7 +79,7 @@ An example event for `utm` looks as following:
         ],
         "dataset": "sophos.utm",
         "id": "0001",
-        "ingested": "2023-07-14T16:42:29Z",
+        "ingested": "2023-07-20T08:37:19Z",
         "kind": "event",
         "provider": "http",
         "severity": 6,
@@ -110,7 +110,7 @@ An example event for `utm` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.21.0.4:34541"
+            "address": "172.31.0.4:45730"
         }
     },
     "network": {
@@ -437,8 +437,8 @@ An example event for `xg` looks as following:
 {
     "@timestamp": "2016-12-02T18:50:20.000Z",
     "agent": {
-        "ephemeral_id": "d677cff9-ffa4-44b1-bb7e-9a0ccb23f829",
-        "id": "01dbabf7-3487-4309-bbcc-b441cf27f84e",
+        "ephemeral_id": "12701a32-24a5-401a-a7f4-b8202e00f440",
+        "id": "533bdb32-d7d6-482e-a4ee-22a7c8ba474c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.1"
@@ -452,7 +452,7 @@ An example event for `xg` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "01dbabf7-3487-4309-bbcc-b441cf27f84e",
+        "id": "533bdb32-d7d6-482e-a4ee-22a7c8ba474c",
         "snapshot": false,
         "version": "8.8.1"
     },
@@ -464,7 +464,7 @@ An example event for `xg` looks as following:
         ],
         "code": "16010",
         "dataset": "sophos.xg",
-        "ingested": "2023-07-14T16:44:20Z",
+        "ingested": "2023-07-20T08:39:24Z",
         "kind": "event",
         "outcome": "success",
         "severity": 1,
@@ -479,7 +479,7 @@ An example event for `xg` looks as following:
     "log": {
         "level": "alert",
         "source": {
-            "address": "172.21.0.4:41796"
+            "address": "172.31.0.4:59318"
         }
     },
     "observer": {

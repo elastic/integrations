@@ -2,12 +2,12 @@
 description: Pipeline for Sophos UTM Packet Filter logs
 processors:
   - kv:
-      if: ctx?._tmp?.raw_data != null
+      if: ctx._tmp?.raw_data != null
       field: _tmp.raw_data
-      field_split: " (?=[a-z0-9\\_\\-]+=)"
-      value_split: "="
-      prefix: "sophos.utm."
-      trim_value: "\" "
+      field_split: ' (?=[a-z0-9\_\-]+=)'
+      value_split: '='
+      prefix: 'sophos.utm.'
+      trim_value: '" '
       ignore_missing: true
       tag: kv_parse_fields
 
@@ -18,14 +18,14 @@ processors:
       ignore_missing: true
       tag: rename_event_action
   - append:
-      if: ctx?.event?.action != null && ctx?.event?.action == 'accept'
+      if: ctx.event?.action == 'accept'
       field: event.type
       value: 
         - allowed
       allow_duplicates: false
       tag: append_type_allowed
   - append:
-      if: ctx?.event?.action != null && ctx?.event?.action == 'drop'
+      if: ctx.event?.action == 'drop'
       field: event.type
       value: 
         - denied
@@ -113,48 +113,48 @@ processors:
   - set:
       field: event.severity
       value: 0
-      if: ctx.sophos.utm?.severity == "emergency"
+      if: ctx.sophos?.utm?.severity == 'emergency'
       tag: set_severity_0
   - set:
       field: event.severity
       value: 1
-      if: ctx.sophos.utm?.severity == "alert"
+      if: ctx.sophos?.utm?.severity == 'alert'
       tag: set_severity_1
   - set:
       field: event.severity
       value: 2
-      if: ctx.sophos.utm?.severity == "critical"
+      if: ctx.sophos?.utm?.severity == 'critical'
       tag: set_severity_2
   - set:
       field: event.severity
       value: 3
-      if: ctx.sophos.utm?.severity == "error"
+      if: ctx.sophos?.utm?.severity == 'error'
       tag: set_severity_3
   - set:
       field: event.severity
       value: 4
-      if: ctx.sophos.utm?.severity == "warning"
+      if: ctx.sophos?.utm?.severity == 'warning'
       tag: set_severity_4
   - set:
       field: event.severity
       value: 5
-      if: ctx.sophos.utm?.severity == "notice"
+      if: ctx.sophos?.utm?.severity == 'notice'
       tag: set_severity_5
   - set:
       field: event.severity
       value: 6
-      if: ctx.sophos.utm?.severity == "info"
+      if: ctx.sophos?.utm?.severity == 'info'
       tag: set_severity_6
   - set:
       field: event.severity
       value: 7
-      if: ctx.sophos.utm?.severity == "debug"
+      if: ctx.sophos?.utm?.severity == 'debug'
       tag: set_severity_7
 
   # Process TCP Flags
   - split:
       field: sophos.utm.tcpflags
-      separator: "\\s+"
+      separator: '\s+'
       ignore_missing: true
       tag: split_tcp_flags
   - lowercase:
@@ -251,15 +251,15 @@ processors:
   # Fill related fields
   - append:
       field: related.ip
-      value: '{{source.ip}}'
+      value: '{{{source.ip}}}'
       allow_duplicates: false
-      if: ctx.source?.ip != null && ctx.source?.ip != ''
+      if: ctx.source?.ip != null && ctx.source.ip != ''
       tag: append_related_source_ip
   - append:
       field: related.ip
-      value: '{{destination.ip}}'
+      value: '{{{destination.ip}}}'
       allow_duplicates: false
-      if: ctx.destination?.ip != null && ctx.destination?.ip != ''
+      if: ctx.destination?.ip != null && ctx.destination.ip != ''
       tag: append_related_destination_ip
 on_failure:
   - append:

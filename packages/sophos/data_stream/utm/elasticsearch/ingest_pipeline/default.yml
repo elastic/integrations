@@ -31,14 +31,16 @@ processors:
       pattern_definitions:
         SOPHOS_TIMESTAMP: (?:%{YEAR}:%{MONTHNUM}:%{MONTHDAY}-%{HOUR}:%{MINUTE}:%{SECOND})
       patterns:
-        - "^%{SOPHOS_TIMESTAMP:_tmp.timestamp} (?:%{HOSTNAME:host.hostname}) %{DATA:process.name}(?:\\[%{POSINT:process.pid:long}\\])?: %{GREEDYDATA:_tmp.raw_data}"
+        - '^%{SOPHOS_TIMESTAMP:_tmp.timestamp} (?:%{HOSTNAME:host.hostname}) %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?: %{GREEDYDATA:_tmp.raw_data}'
       tag: grok_syslog_header
       on_failure:
         - append:
             field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+            value: |-
+              Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+        - set:
+            field: event.kind
+            value: pipeline_error
   # Process timestamp and timezone if configured (default UTC)
   - rename:
       if: ctx._conf?.tz_offset != null
@@ -52,7 +54,7 @@ processors:
       override: false
       tag: set_default_timezone
   - date:
-      if: ctx?._tmp?.timestamp != null
+      if: ctx._tmp?.timestamp != null
       timezone: "{{{ event.timezone }}}"
       field: _tmp.timestamp
       formats:
@@ -61,46 +63,48 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+            value: |-
+              Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+        - set:
+            field: event.kind
+            value: pipeline_error
 
   # Choose the pipeline based on the log source
   - set:
       field: event.provider
-      value: 'dns'
-      if: ctx?.process?.name != null && ctx?.process?.name == 'named'
+      value: dns
+      if: ctx.process?.name != null && ctx.process.name == 'named'
       tag: set_provider_dns
   - set:
       field: event.provider
-      value: 'dhcp'
-      if: ctx?.process?.name != null && ctx?.process?.name == 'dhcpd'
+      value: dhcp
+      if: ctx.process?.name != null && ctx.process.name == 'dhcpd'
       tag: set_provider_dhcp
   - set:
       field: event.provider
-      value: 'http'
-      if: ctx?.process?.name != null && ctx?.process?.name == 'httpproxy'
+      value: http
+      if: ctx.process?.name != null && ctx.process.name == 'httpproxy'
       tag: set_provider_http
   - set:
       field: event.provider
-      value: 'packetfilter'
-      if: ctx?.process?.name != null && ctx?.process?.name == 'ulogd'
+      value: packetfilter
+      if: ctx.process?.name != null && ctx.process.name == 'ulogd'
       tag: set_provider_packetfilter
   - pipeline:
       name: '{{ IngestPipeline "dns" }}'
-      if: ctx?.event?.provider != null && ctx?.event?.provider == 'dns'
+      if: ctx.event?.provider != null && ctx.event.provider == 'dns'
       tag: pipeline_dns
   - pipeline:
       name: '{{ IngestPipeline "dhcp" }}'
-      if: ctx?.event?.provider != null && ctx?.event?.provider == 'dhcp'
+      if: ctx.event?.provider != null && ctx.event.provider == 'dhcp'
       tag: pipeline_dhcp
   - pipeline:
       name: '{{ IngestPipeline "http" }}'
-      if: ctx?.event?.provider != null && ctx?.event?.provider == 'http'
+      if: ctx.event?.provider != null && ctx.event.provider == 'http'
       tag: pipeline_http
   - pipeline:
       name: '{{ IngestPipeline "packetfilter" }}'
-      if: ctx?.event?.provider != null && ctx?.event?.provider == 'packetfilter'
+      if: ctx.event?.provider != null && ctx.event.provider == 'packetfilter'
       tag: pipeline_packetfilter
 
   # Set observer fields
@@ -120,9 +124,9 @@ processors:
   # Fill related fields
   - append:
       field: related.hosts
-      value: '{{host.hostname}}'
+      value: '{{{host.hostname}}}'
       allow_duplicates: false
-      if: ctx.host?.hostname != null && ctx.host?.hostname != ''
+      if: ctx.host?.hostname != null && ctx.host.hostname != ''
       tag: append_related_hosts
 
   # Clean event
@@ -156,9 +160,6 @@ processors:
         }
         dropEmptyFields(ctx);
 on_failure:
-  - set:
-      field: event.kind
-      value: pipeline_error
   - append:
       field: error.message
       value: |-
