@@ -300,7 +300,7 @@ An example event for `flow` looks as following:
         "packets": 2
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "c70d142e-4a17-4f44-8e4f-ae1b216f2ea2",
@@ -611,7 +611,7 @@ An example event for `amqp` looks as following:
         "port": 5672
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "24617916-b7fd-4486-af56-1754af7b012c",
@@ -980,7 +980,7 @@ An example event for `cassandra` looks as following:
         "port": 9042
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "adef13cd-055b-465e-bc3e-5f12f6a4c481",
@@ -1272,7 +1272,7 @@ An example event for `dhcpv4` looks as following:
         "transaction_id": "0x00003d1d"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "9e89fcea-696e-4a75-9119-4c7bc3a85882",
@@ -1624,7 +1624,7 @@ An example event for `dns` looks as following:
         "type": "answer"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
@@ -2025,7 +2025,7 @@ An example event for `http` looks as following:
         "port": 8080
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "20cb5c83-48bd-4c1e-ab57-1a86b91daedc",
@@ -2313,7 +2313,7 @@ An example event for `icmp` looks as following:
         "ip": "10.0.0.2"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "138c995b-c63c-44be-aba8-a8cb9a58872d",
@@ -2552,7 +2552,7 @@ Fields published for Memcached packets.
 | memcache.response.opaque | The binary protocol opaque header value used for correlating request with response messages. | long |
 | memcache.response.opcode | The binary protocol message opcode name. | keyword |
 | memcache.response.opcode_value | The binary protocol message opcode value. | long |
-| memcache.response.stats | The list of statistic values returned. Each entry is a dictionary with the fields "name" and "value". | keyword |
+| memcache.response.stats | The statistic values returned. | flattened |
 | memcache.response.status | The textual representation of the response error code (binary protocol only). | keyword |
 | memcache.response.status_code | The status code value returned in the response (binary protocol only). | long |
 | memcache.response.type | The memcache command classification. This value can be "UNKNOWN", "Load", "Store", "Delete", "Counter", "Info", "SlabCtrl", "LRUCrawler", "Stats", "Success", "Fail", or "Auth". The text based protocol will employ any of these, whereas the binary based protocol will mirror the request commands only (see `memcache.response.status` for binary protocol). | keyword |
@@ -2644,7 +2644,7 @@ An example event for `memcached` looks as following:
         "port": 11211
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "f617d9af-c859-41da-b89c-a10379936378",
@@ -2938,7 +2938,7 @@ An example event for `mongodb` looks as following:
         "port": 27017
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -3214,7 +3214,7 @@ An example event for `mysql` looks as following:
         "port": 3306
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -3483,7 +3483,7 @@ An example event for `nfs` looks as following:
         "port": 2049
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -3766,7 +3766,7 @@ An example event for `pgsql` looks as following:
         "port": 5432
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -4026,7 +4026,7 @@ An example event for `redis` looks as following:
         "port": 6380
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -4366,7 +4366,7 @@ An example event for `sip` looks as following:
         "port": 5060
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -4781,7 +4781,7 @@ An example event for `thrift` looks as following:
         "port": 9090
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -5103,7 +5103,34 @@ Fields published for TLS packets.
 | tls.client.x509.version_number | Version of x509 format. | keyword |
 | tls.curve | String indicating the curve used for the given cipher, when applicable. | keyword |
 | tls.detailed.alert_types | An array containing the TLS alert type for every alert received. | keyword |
-| tls.detailed.client_certificate_chain | Chain of trust for the client certificate. | keyword |
+| tls.detailed.client_certificate_chain.alternative_names | Subject alternative names (SANs) in the certificate. | keyword |
+| tls.detailed.client_certificate_chain.issuer.common_name |  | keyword |
+| tls.detailed.client_certificate_chain.issuer.country |  | keyword |
+| tls.detailed.client_certificate_chain.issuer.distinguished_name |  | keyword |
+| tls.detailed.client_certificate_chain.issuer.locality |  | keyword |
+| tls.detailed.client_certificate_chain.issuer.organization |  | keyword |
+| tls.detailed.client_certificate_chain.issuer.organizational_unit |  | keyword |
+| tls.detailed.client_certificate_chain.issuer.postal_code |  | keyword |
+| tls.detailed.client_certificate_chain.issuer.serial_number |  | keyword |
+| tls.detailed.client_certificate_chain.issuer.state_or_province |  | keyword |
+| tls.detailed.client_certificate_chain.issuer.street_address |  | keyword |
+| tls.detailed.client_certificate_chain.not_after | End of the validity period (inclusive). | date |
+| tls.detailed.client_certificate_chain.not_before | Start of the validity period (inclusive). | date |
+| tls.detailed.client_certificate_chain.public_key_algorithm | Public key algorithm (e.g. RSA, DSA, ECDSA, Ed25519). | keyword |
+| tls.detailed.client_certificate_chain.public_key_size | Number of bits in the public key. | long |
+| tls.detailed.client_certificate_chain.serial_number | Base 10 representation of the certificate serial number. | keyword |
+| tls.detailed.client_certificate_chain.signature_algorithm | Signature algorithm (e.g. SHA256-RSA). | keyword |
+| tls.detailed.client_certificate_chain.subject.common_name |  | keyword |
+| tls.detailed.client_certificate_chain.subject.country |  | keyword |
+| tls.detailed.client_certificate_chain.subject.distinguished_name |  | keyword |
+| tls.detailed.client_certificate_chain.subject.locality |  | keyword |
+| tls.detailed.client_certificate_chain.subject.organization |  | keyword |
+| tls.detailed.client_certificate_chain.subject.organizational_unit |  | keyword |
+| tls.detailed.client_certificate_chain.subject.postal_code |  | keyword |
+| tls.detailed.client_certificate_chain.subject.serial_number |  | keyword |
+| tls.detailed.client_certificate_chain.subject.state_or_province |  | keyword |
+| tls.detailed.client_certificate_chain.subject.street_address |  | keyword |
+| tls.detailed.client_certificate_chain.version_number | The x509 certificate version. Version 3 is the latest and most common. | keyword |
 | tls.detailed.client_certificate_requested | Whether the server has requested the client to authenticate itself using a client certificate. | boolean |
 | tls.detailed.client_hello.extensions._unparsed_ | List of extensions that were left unparsed by Packetbeat. | keyword |
 | tls.detailed.client_hello.extensions.application_layer_protocol_negotiation | List of application-layer protocols the client is willing to use. | keyword |
@@ -5122,7 +5149,34 @@ Fields published for TLS packets.
 | tls.detailed.client_hello.version | The version of the TLS protocol by which the client wishes to communicate during this session. | keyword |
 | tls.detailed.ocsp_response | The result of an OCSP request. | keyword |
 | tls.detailed.resumption_method | If the session has been resumed, the underlying method used. One of "id" for TLS session ID or "ticket" for TLS ticket extension. | keyword |
-| tls.detailed.server_certificate_chain | Chain of trust for the server certificate. | keyword |
+| tls.detailed.server_certificate_chain.alternative_names | Subject alternative names (SANs) in the certificate. | keyword |
+| tls.detailed.server_certificate_chain.issuer.common_name |  | keyword |
+| tls.detailed.server_certificate_chain.issuer.country |  | keyword |
+| tls.detailed.server_certificate_chain.issuer.distinguished_name |  | keyword |
+| tls.detailed.server_certificate_chain.issuer.locality |  | keyword |
+| tls.detailed.server_certificate_chain.issuer.organization |  | keyword |
+| tls.detailed.server_certificate_chain.issuer.organizational_unit |  | keyword |
+| tls.detailed.server_certificate_chain.issuer.postal_code |  | keyword |
+| tls.detailed.server_certificate_chain.issuer.serial_number |  | keyword |
+| tls.detailed.server_certificate_chain.issuer.state_or_province |  | keyword |
+| tls.detailed.server_certificate_chain.issuer.street_address |  | keyword |
+| tls.detailed.server_certificate_chain.not_after | End of the validity period (inclusive). | date |
+| tls.detailed.server_certificate_chain.not_before | Start of the validity period (inclusive). | date |
+| tls.detailed.server_certificate_chain.public_key_algorithm | Public key algorithm (e.g. RSA, DSA, ECDSA, Ed25519). | keyword |
+| tls.detailed.server_certificate_chain.public_key_size | Number of bits in the public key. | long |
+| tls.detailed.server_certificate_chain.serial_number | Base 10 representation of the certificate serial number. | keyword |
+| tls.detailed.server_certificate_chain.signature_algorithm | Signature algorithm (e.g. SHA256-RSA). | keyword |
+| tls.detailed.server_certificate_chain.subject.common_name |  | keyword |
+| tls.detailed.server_certificate_chain.subject.country |  | keyword |
+| tls.detailed.server_certificate_chain.subject.distinguished_name |  | keyword |
+| tls.detailed.server_certificate_chain.subject.locality |  | keyword |
+| tls.detailed.server_certificate_chain.subject.organization |  | keyword |
+| tls.detailed.server_certificate_chain.subject.organizational_unit |  | keyword |
+| tls.detailed.server_certificate_chain.subject.postal_code |  | keyword |
+| tls.detailed.server_certificate_chain.subject.serial_number |  | keyword |
+| tls.detailed.server_certificate_chain.subject.state_or_province |  | keyword |
+| tls.detailed.server_certificate_chain.subject.street_address |  | keyword |
+| tls.detailed.server_certificate_chain.version_number | The x509 certificate version. Version 3 is the latest and most common. | keyword |
 | tls.detailed.server_hello.extensions._unparsed_ | List of extensions that were left unparsed by Packetbeat. | keyword |
 | tls.detailed.server_hello.extensions.application_layer_protocol_negotiation | Negotiated application layer protocol | keyword |
 | tls.detailed.server_hello.extensions.ec_points_formats | List of Elliptic Curve (EC) point formats. Indicates the set of point formats that the server can parse. | keyword |
@@ -5203,7 +5257,7 @@ An example event for `tls` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "8a4932f4-ce31-4183-b0c7-a7008f14e6fa",
