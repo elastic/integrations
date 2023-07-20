@@ -11,6 +11,6 @@ Since we want to retain only valuable information and avoid duplicated data, the
 **Please, refer to this index in order to set alerts and so on.**
 
 ### How it works
-This is possible thanks to a transform rule installed along the integration. The transform rule parses the data_stream content that is pulled from Maltiverse and only adds new indicators.
+This is possible thanks to a transform rule installed along with the integration. The transform rule parses the data_stream content that is pulled from Maltiverse and only adds new indicators.
 
 Both, the data_stream and the _latest index have applied expiration through ILM and a retention policy in the transform respectively.
