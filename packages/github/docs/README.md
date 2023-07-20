@@ -1102,10 +1102,10 @@ An example event for `project_items` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-06-29T09:00:00.000Z",
+    "@timestamp": "2023-06-29T09:00:05.000Z",
     "agent": {
-        "ephemeral_id": "3e91aa9e-3546-4917-94b9-59dd85549281",
-        "id": "086d5cbf-8e1b-4696-8c23-385975e1e88b",
+        "ephemeral_id": "e9f39026-770b-4d2a-9175-d0f258baaebf",
+        "id": "25ece9e4-a953-4867-a208-2c2e9b1a43c8",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.7.1"
@@ -1119,19 +1119,19 @@ An example event for `project_items` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "086d5cbf-8e1b-4696-8c23-385975e1e88b",
+        "id": "25ece9e4-a953-4867-a208-2c2e9b1a43c8",
         "snapshot": false,
         "version": "8.7.1"
     },
     "event": {
         "action": "event",
         "agent_id_status": "verified",
-        "created": "2023-07-03T18:00:32.533Z",
+        "created": "2023-07-20T12:00:35.064Z",
         "dataset": "github.project_items",
         "id": "PVTI_lAHOAKxyIc4ASK3FzgHo9-k",
-        "ingested": "2023-07-03T18:00:33Z",
+        "ingested": "2023-07-20T12:00:36Z",
         "kind": "event",
-        "original": "{\"content\":{\"assignees\":{\"nodes\":[]},\"body\":\"\",\"createdAt\":\"2023-06-29T09:00:00Z\",\"creator\":{\"login\":\"sample_owner\"},\"title\":\"Test Title 2\"},\"fieldValues\":{\"nodes\":[{\"field\":{\"name\":\"Title\"},\"text\":\"Test Title 2\"},{\"field\":{\"name\":\"Status\"},\"name\":\"Todo\"},{\"duration\":14,\"field\":{\"name\":\"testIterationFieldName\"},\"startDate\":\"2023-07-27\",\"title\":\"testIterationFieldName 3\"}]},\"id\":\"PVTI_lAHOAKxyIc4ASK3FzgHo9-k\",\"project\":{\"closed\":false,\"closedAt\":null,\"createdAt\":\"2023-06-29T08:56:18Z\",\"creator\":{\"login\":\"sample_owner\"},\"databaseId\":4763077,\"id\":\"PVT_kwHOAKxyIc4ASK3F\",\"number\":1,\"public\":false,\"readme\":null,\"repositories\":{\"nodes\":[]},\"resourcePath\":\"/users/sample_owner/projects/1\",\"shortDescription\":null,\"template\":false,\"title\":\"KC - My Test Project\",\"updatedAt\":\"2023-06-30T05:00:51Z\",\"url\":\"https://github.com/users/sample_owner/projects/1\",\"viewerCanClose\":true,\"viewerCanReopen\":true,\"viewerCanUpdate\":true,\"workflows\":{\"nodes\":[{\"createdAt\":\"2023-06-29T08:56:18Z\",\"databaseId\":10116732,\"enabled\":true,\"name\":\"Item closed\",\"number\":1,\"updatedAt\":\"2023-06-29T08:56:18Z\"},{\"createdAt\":\"2023-06-29T08:56:18Z\",\"databaseId\":10116733,\"enabled\":true,\"name\":\"Pull request merged\",\"number\":2,\"updatedAt\":\"2023-06-29T08:56:18Z\"}]}}}"
+        "original": "{\"content\":{\"assignees\":{\"nodes\":[]},\"body\":\"\",\"createdAt\":\"2023-06-29T09:00:00Z\",\"creator\":{\"login\":\"sample_owner\"},\"title\":\"Test Title 2\"},\"createdAt\":\"2023-06-29T09:00:00Z\",\"creator\":{\"login\":\"sample_user\"},\"fieldValues\":{\"nodes\":[{\"field\":{\"name\":\"Title\"},\"text\":\"Test Title 2\"},{\"field\":{\"name\":\"Status\"},\"name\":\"Todo\"},{\"duration\":14,\"field\":{\"name\":\"testIterationFieldName\"},\"startDate\":\"2023-07-27\",\"title\":\"testIterationFieldName 3\"}]},\"id\":\"PVTI_lAHOAKxyIc4ASK3FzgHo9-k\",\"project\":{\"closed\":false,\"closedAt\":null,\"createdAt\":\"2023-06-29T08:56:18Z\",\"creator\":{\"login\":\"sample_owner\"},\"databaseId\":4763077,\"id\":\"PVT_kwHOAKxyIc4ASK3F\",\"number\":1,\"public\":false,\"readme\":null,\"repositories\":{\"nodes\":[]},\"resourcePath\":\"/users/sample_owner/projects/1\",\"shortDescription\":null,\"template\":false,\"title\":\"KC - My Test Project\",\"updatedAt\":\"2023-06-30T05:00:51Z\",\"url\":\"https://github.com/users/sample_owner/projects/1\",\"viewerCanClose\":true,\"viewerCanReopen\":true,\"viewerCanUpdate\":true,\"workflows\":{\"nodes\":[{\"createdAt\":\"2023-06-29T08:56:18Z\",\"databaseId\":10116732,\"enabled\":true,\"name\":\"Item closed\",\"number\":1,\"updatedAt\":\"2023-06-29T08:56:18Z\"},{\"createdAt\":\"2023-06-29T08:56:18Z\",\"databaseId\":10116733,\"enabled\":true,\"name\":\"Pull request merged\",\"number\":2,\"updatedAt\":\"2023-06-29T08:56:18Z\"}]}},\"updatedAt\":\"2023-06-29T09:00:05Z\"}"
     },
     "github": {
         "project": {
@@ -1176,11 +1176,15 @@ An example event for `project_items` looks as following:
         },
         "project_items": {
             "content": {
-                "created_at": "2023-06-29T09:00:00Z",
+                "created_at": "2023-06-29T09:00:00.000Z",
                 "creator": {
                     "login": "sample_owner"
                 },
                 "title": "Test Title 2"
+            },
+            "created_at": "2023-06-29T09:00:00.000Z",
+            "creator": {
+                "login": "sample_user"
             },
             "field_values": {
                 "provided": {
@@ -1188,7 +1192,8 @@ An example event for `project_items` looks as following:
                     "title": "Test Title 2"
                 }
             },
-            "id": "PVTI_lAHOAKxyIc4ASK3FzgHo9-k"
+            "id": "PVTI_lAHOAKxyIc4ASK3FzgHo9-k",
+            "updated_at": "2023-06-29T09:00:05Z"
         }
     },
     "input": {
