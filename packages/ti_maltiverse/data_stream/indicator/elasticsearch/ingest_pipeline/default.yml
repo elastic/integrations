@@ -48,12 +48,13 @@ processors:
       value: file
       if: 'ctx.json?.type == "sample"'
   - foreach:
-      field: tags
+      field: json.tag
       ignore_missing: true
       processor:
         append:
           field: tags
           value: "{{{ _ingest._value }}}"
+      if: 'ctx.json?.tag != null'
   - set:
       field: threat.feed.reference
       value: "https://maltiverse.com/feed/{{ feed }}"
@@ -229,10 +230,11 @@ processors:
 # Generate an event ID based on the original event
   - fingerprint:
       target_field: event.id
-      fields: ["threat.indicator"]
+      fields: ["threat.indicator.last_seen", "threat.indicator.first_seen", "threat.indicator.provider"]
   - set:
       field: _id
       value: "{{ event.id }}"
+      if: 'ctx.event?.id != null'
 
   - remove:
       field: event.original
