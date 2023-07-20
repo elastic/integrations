@@ -255,7 +255,6 @@ An example event for `emr` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| aws.emr.log_level | The internet address of the requester. | keyword |
 | aws.s3.bucket.arn | ARN of the S3 bucket that this log retrieved from. | keyword |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
 | aws.s3.metadata | AWS S3 object metadata values. | flattened |
