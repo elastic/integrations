@@ -47,11 +47,13 @@ processors:
       field: threat.indicator.type
       value: file
       if: 'ctx.json?.type == "sample"'
-  - rename:
+  - foreach:
       field: tags
-      target_field: tags
       ignore_missing: true
-      if: 'ctx.json?.tags != null'
+      processor:
+        append:
+          field: tags
+          value: "{{{ _ingest._value }}}"
   - set:
       field: threat.feed.reference
       value: "https://maltiverse.com/feed/{{ feed }}"
@@ -60,22 +62,27 @@ processors:
       field: json.blacklist.first_seen
       target_field: threat.indicator.first_seen
       formats: ["yyyy-MM-dd HH:mm:ss"]
+      if: 'ctx.json?.blacklist?.first_seen != null'
   - date:
       field: json.blacklist.last_seen
       target_field: threat.indicator.last_seen
       formats: ["yyyy-MM-dd HH:mm:ss"]
+      if: 'ctx.json?.blacklist?.last_seen != null'
   - rename:
       field: json.blacklist.count
       target_field: threat.indicator.sightings
       ignore_missing: true
+      if: 'ctx.json?.blacklist?.count != null'
   - rename:
       field: json.blacklist.description
       target_field: threat.indicator.description
       ignore_missing: true
+      if: 'ctx.json?.blacklist?.description != null'
   - rename:
       field: json.blacklist.source
       target_field: threat.indicator.provider
       ignore_missing: true
+      if: 'ctx.json?.blacklist?.source != null'
 ## map classification and confidence to ECS severity
   - set:
       field: event.severity
@@ -184,7 +191,7 @@ processors:
   - set:
       field: threat.indicator.reference
       value: "https://maltiverse.com/url/{{ json.urlchecksum }}"
-      if: 'ctx.json?.type == "url"'
+      if: 'ctx.json?.type == "url" && ctx.json?.urlchecksum != null'
 ## Sample fields
   - rename:
       field: json.sha256
@@ -222,11 +229,14 @@ processors:
 # Generate an event ID based on the original event
   - fingerprint:
       target_field: event.id
-      fields: ["event.original"]
+      fields: ["threat.indicator"]
+  - set:
+      field: _id
+      value: "{{ event.id }}"
 
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 
@@ -234,3 +244,6 @@ on_failure:
   - append:
       field: error.message
       value: "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
