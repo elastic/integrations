@@ -1,0 +1,90 @@
+---
+description: "Pipeline for API Gateway logs in CloudWatch"
+
+processors:
+  - set:
+      field: ecs.version
+      value: '8.0.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: 'ctx.event?.original == null'
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
+  - json:
+      field: event.original
+      target_field: aws.apigateway
+      ignore_failure: true
+  - rename:
+      field: aws.apigateway.requestId
+      target_field: aws.apigateway.request_id
+      ignore_missing: true
+  - rename:
+      field: aws.apigateway.responseLength
+      target_field: aws.apigateway.response_length
+      ignore_missing: true
+  - rename:
+      field: aws.apigateway.requestTime
+      target_field: aws.apigateway.request_time
+      ignore_missing: true
+  - rename:
+      field: aws.apigateway.httpMethod
+      target_field: aws.apigateway.http_method
+      ignore_missing: true
+  - rename:
+      field: aws.apigateway.routeKey
+      target_field: aws.apigateway.route_key
+      ignore_missing: true
+  - rename:
+      field: aws.apigateway.ip
+      target_field: aws.apigateway.ip_address
+      ignore_missing: true
+  - rename:
+      field: aws.apigateway.resourcePath
+      target_field: aws.apigateway.resource_path
+      ignore_missing: true
+  - rename:
+      field: aws.apigateway.connectionId
+      target_field: aws.apigateway.connection_id
+      ignore_missing: true
+  - rename:
+      field: aws.apigateway.eventType
+      target_field: aws.apigateway.event_type
+      ignore_missing: true
+  - grok:
+      field: aws.apigateway.ip_address
+      patterns:
+        - '%{IPORHOST:aws.apigateway.ip_address}'
+      ignore_failure: true
+  - convert:
+      field: aws.apigateway.ip_address
+      type: ip
+      ignore_missing: true
+  - convert:
+      field: aws.apigateway.response_length
+      type: long
+      ignore_missing: true
+  - convert:
+      field: aws.apigateway.status
+      type: long
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+  - date:
+      field: aws.apigateway.request_time
+      target_field: "aws.apigateway.request_time"
+      formats:
+        - dd/MMM/yyyy:H:m:s Z
+      ignore_failure: true
+on_failure:
+  - set:
+      field: 'error.message'
+      value: '{{ _ingest.on_failure_message }}'
