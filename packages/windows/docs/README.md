@@ -49,8 +49,6 @@ For more information see [Ingest data from Splunk](https://www.elastic.co/guide/
 Note: This integration requires Windows Events from Splunk to be in XML format.
 To achieve this, `renderXml` needs to be set to `1` in your [`inputs.conf`](https://docs.splunk.com/Documentation/Splunk/latest/Admin/Inputsconf) file.
 
-*AppLocker events are not supported for the Splunk integration at this time.
-
 ## Notes
 
 ### Windows Event ID clause limit
@@ -93,7 +91,7 @@ An example event for `applocker_exe_and_dll` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-07-18T14:07:07.637Z",
+    "@timestamp": "2023-07-20T15:05:03.882Z",
     "ecs": {
         "version": "8.0.0"
     },
@@ -121,15 +119,15 @@ An example event for `applocker_exe_and_dll` looks as following:
         "level": "Warning",
         "opcode": "Info\u0000",
         "process": {
-            "pid": 2152,
+            "pid": 33848,
             "thread": {
-                "id": 25496
+                "id": 12040
             }
         },
         "provider_guid": "cbda4dbf-8d5d-4f69-9578-be14aa540d22",
         "provider_name": "Microsoft-Windows-AppLocker",
-        "record_id": "149861",
-        "time_created": "2023-07-18T14:07:07.6373880Z",
+        "record_id": "154247",
+        "time_created": "2023-07-20T15:05:03.8826518Z",
         "user": {
             "identifier": "S-1-5-21-1133191089-1850170202-1535859923-200319"
         },
@@ -149,8 +147,8 @@ An example event for `applocker_exe_and_dll` looks as following:
             "RuleNameLength": 1,
             "RuleSddl": "-",
             "RuleSddlLength": 1,
-            "TargetLogonId": 1375415,
-            "TargetProcessId": 20056,
+            "TargetLogonId": "0x14FCB7",
+            "TargetProcessId": 27116,
             "TargetUser": "S-1-5-21-1133191089-1850170202-1535859923-200319"
         },
         "version": 0
@@ -348,7 +346,7 @@ An example event for `applocker_exe_and_dll` looks as following:
 | winlog.event_data.TargetDomainName |  | keyword |
 | winlog.event_data.TargetInfo |  | keyword |
 | winlog.event_data.TargetLogonGuid |  | keyword |
-| winlog.event_data.TargetLogonId |  | long |
+| winlog.event_data.TargetLogonId |  | keyword |
 | winlog.event_data.TargetServerName |  | keyword |
 | winlog.event_data.TargetUserName |  | keyword |
 | winlog.event_data.TargetUserSid |  | keyword |
@@ -398,7 +396,7 @@ An example event for `applocker_exe_and_dll` looks as following:
 | winlog.user_data.RuleNameLength |  | long |
 | winlog.user_data.RuleSddl |  | keyword |
 | winlog.user_data.RuleSddlLength |  | long |
-| winlog.user_data.TargetLogonId |  | long |
+| winlog.user_data.TargetLogonId |  | keyword |
 | winlog.user_data.TargetProcessId |  | long |
 | winlog.user_data.TargetUser |  | keyword |
 | winlog.user_data.xml_name |  | keyword |
