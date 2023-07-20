@@ -23,10 +23,9 @@ processors:
       field: event.original
       target_field: json
 on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
   - append:
       field: error.message
-      value: >-
-        error in third party api pipeline:
-        error in [{{_ingest.on_failure_processor_type}}] processor{{#_ingest.on_failure_processor_tag}}
-        with tag [{{_ingest.on_failure_processor_tag }}]{{/_ingest.on_failure_processor_tag}}
-        {{ _ingest.on_failure_message }}
+      value: '{{{ _ingest.on_failure_message }}}'
