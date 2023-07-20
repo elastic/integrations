@@ -72,6 +72,9 @@ processors:
     value: error
     if: "ctx?.log?.level != null && ctx.log.level.toLowerCase() == 'error'"
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
