@@ -10,10 +10,13 @@ For example, you could use this data to track Amazon EMR cluster progress and cl
 
 ## Data streams
 
-The Amazon EMR integration collects one type of data: metrics.
+The Amazon EMR integration collects two types of data: metrics and logs.
 
 **Metrics** give you insight into the state of Amazon EMR.
 The metrics collected by the Amazon EMR integration include cluster progress, cluster state, cluster or node storage, and more. See more details in the [Metrics reference](#metrics-reference)
+
+**Logs** help you keep a record of events happening in Amazon EMR.
+Logs collected by the Amazon EMR integration include the cluster status, node status details and more. 
 
 ## Requirements
 
@@ -42,3 +45,9 @@ For step-by-step instructions on how to set up an integration, see the
 {{event "emr_metrics"}}
 
 {{fields "emr_metrics"}}
+
+## Logs reference
+
+{{event "emr_logs"}}
+
+{{fields "emr_logs"}}
