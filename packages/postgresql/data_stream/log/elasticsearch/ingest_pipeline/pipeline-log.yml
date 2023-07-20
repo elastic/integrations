@@ -13,3 +13,10 @@ processors:
         POSTGRESQL_DB_NAME: '[a-zA-Z0-9_]+[a-zA-Z0-9_\$]*'
         POSTGRESQL_QUERY_STEP: '%{WORD:postgresql.log.query_step}(?: <unnamed>| %{WORD:postgresql.log.query_name})?'
         POSTGRESQL_ERROR: '\b[A-Z0-9]{5}\b'
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

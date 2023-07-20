@@ -10,3 +10,10 @@ processors:
         GREEDYDATA: '(.|\r|\n)*'
         POSTGRESQL_DB_NAME: '[a-zA-Z0-9_]+[a-zA-Z0-9_\$]*'
         POSTGRESQL_QUERY_STEP: '%{SPACE}%{WORD:postgresql.log.query_step}'
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
