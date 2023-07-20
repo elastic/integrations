@@ -1,0 +1,13 @@
+---
+description: Pipeline for formatting Kibana node_actions events
+processors:
+  - dot_expander:
+      field: service.address
+  - set:
+      if: ctx.service.address != null && ctx.service.address instanceof List
+      field: service.address
+      value: "{{service.address.0}}"
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
