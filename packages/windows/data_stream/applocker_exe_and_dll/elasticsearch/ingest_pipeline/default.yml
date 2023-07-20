@@ -11,7 +11,7 @@ processors:
       copy_from: winlog.level
       ignore_empty_value: true
       ignore_failure: true
-      if: ctx?.winlog?.level != ""
+      if: ctx.winlog?.level != ""
   - date:
       field: winlog.time_created
       tag: "time_created_date"
@@ -69,66 +69,66 @@ processors:
       value: "{{_temp.user_parts.0}}"
       ignore_failure: true
       ignore_empty_value: true
-      if: ctx?._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
+      if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
   - set:
       field: user.name
       value: "{{_temp.user_parts.1}}"
       ignore_failure: true
       ignore_empty_value: true
-      if: ctx?._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
+      if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
   - append:
       field: related.user
       value: "{{user.name}}"
       ignore_failure: true
       allow_duplicates: false
-      if: ctx?.user?.name != null
+      if: ctx.user?.name != null
   - split:
       field: winlog.event_data.ConnectedUser
       target_field: "_temp.connected_user_parts"
       separator: '\\'
-      if: ctx?.winlog?.event_data?.ConnectedUser != null
+      if: ctx.winlog?.event_data?.ConnectedUser != null
   - set:
       field: source.user.domain
       value: "{{_temp.connected_user_parts.0}}"
       ignore_failure: true
       ignore_empty_value: true
-      if: ctx?._temp?.connected_user_parts != null && ctx._temp.connected_user_parts.size() == 2
+      if: ctx._temp?.connected_user_parts != null && ctx._temp.connected_user_parts.size() == 2
   - set:
       field: source.user.name
       value: "{{_temp.connected_user_parts.1}}"
       ignore_failure: true
       ignore_empty_value: true
-      if: ctx?._temp?.connected_user_parts != null && ctx._temp.connected_user_parts.size() == 2
+      if: ctx._temp?.connected_user_parts != null && ctx._temp.connected_user_parts.size() == 2
   - append:
       field: related.user
       value: "{{source.user.name}}"
       ignore_failure: true
       allow_duplicates: false
-      if: ctx?.source?.user?.name != null
+      if: ctx.source?.user?.name != null
   - rename:
       field: user.domain
       target_field: destination.user.domain
       ignore_failure: true
       ignore_missing: true
-      if: ctx?.source?.user != null
+      if: ctx.source?.user != null
   - rename:
       field: user.name
       target_field: destination.user.name
       ignore_failure: true
       ignore_missing: true
-      if: ctx?.source?.user != null
+      if: ctx.source?.user != null
   - set:
       field: user.domain
       copy_from: source.user.domain
       ignore_failure: true
       ignore_empty_value: true
-      if: ctx?.source?.user != null
+      if: ctx.source?.user != null
   - set:
       field: user.name
       copy_from: source.user.name
       ignore_failure: true
       ignore_empty_value: true
-      if: ctx?.source?.user != null
+      if: ctx.source?.user != null
 
 on_failure:
   - set:
