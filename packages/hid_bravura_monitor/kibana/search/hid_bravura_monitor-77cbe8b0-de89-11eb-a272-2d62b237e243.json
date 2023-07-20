@@ -2,7 +2,10 @@
     "attributes": {
         "columns": [],
         "description": "",
+        "grid": {},
+        "hideChart": true,
         "hits": 0,
+        "isTextBasedQuery": false,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -15,15 +18,13 @@
                             "disabled": false,
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
                             "key": "hid_bravura_monitor.perf.transid",
-                            "negate": true,
-                            "params": {
-                                "query": ""
-                            },
-                            "type": "phrase"
+                            "negate": false,
+                            "type": "exists",
+                            "value": "exists"
                         },
                         "query": {
-                            "match_phrase": {
-                                "hid_bravura_monitor.perf.transid": ""
+                            "exists": {
+                                "field": "hid_bravura_monitor.perf.transid"
                             }
                         }
                     },
@@ -31,17 +32,22 @@
                         "$state": {
                             "store": "appState"
                         },
-                        "exists": {
-                            "field": "hid_bravura_monitor.perf.transid"
-                        },
                         "meta": {
                             "alias": null,
                             "disabled": false,
+                            "field": "data_stream.dataset",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
-                            "key": "hid_bravura_monitor.perf.transid",
+                            "key": "data_stream.dataset",
                             "negate": false,
-                            "type": "exists",
-                            "value": "exists"
+                            "params": {
+                                "query": "hid_bravura_monitor.log"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "hid_bravura_monitor.log"
+                            }
                         }
                     }
                 ],
@@ -58,17 +64,17 @@
                 "desc"
             ]
         ],
+        "timeRestore": false,
         "title": "Users: Pages: Search",
+        "usesAdHocDataView": false,
         "version": 1
     },
-    "coreMigrationVersion": "7.15.0",
+    "coreMigrationVersion": "8.7.1",
+    "created_at": "2023-07-17T07:44:48.922Z",
     "id": "hid_bravura_monitor-77cbe8b0-de89-11eb-a272-2d62b237e243",
     "migrationVersion": {
-        "search": "7.9.3"
+        "search": "8.0.0"
     },
-    "namespaces": [
-        "default"
-    ],
     "references": [
         {
             "id": "logs-*",
