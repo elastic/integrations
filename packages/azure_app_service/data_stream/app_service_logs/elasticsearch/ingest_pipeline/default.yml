@@ -1,0 +1,67 @@
+---
+description: Pipeline for processing Azure App Service logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.3.0'
+  - rename:
+      field: azure
+      target_field: azure-eventhub
+      ignore_missing: true
+  - script:
+      source: ctx.message = ctx.message.replace(params.empty_field_name, '')
+      params:
+        empty_field_name: '"":"",'
+      ignore_failure: true
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: 'ctx.event?.original == null'
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
+  - json:
+      field: event.original
+      target_field: azure.app_service
+      ignore_failure: true
+  - date:
+      field: azure.app_service.time
+      target_field: '@timestamp'
+      ignore_failure: true
+      formats:
+        - ISO8601
+  - remove:
+      field: azure.app_service.time
+      ignore_missing: true
+  - pipeline:
+      if: "ctx?.azure?.app_service?.Category == 'AppServiceAuditLogs'"
+      name: '{{ IngestPipeline "appservice-auditlogs-inner-pipeline" }}'
+  - pipeline:
+      if: "ctx?.azure?.app_service?.category == 'AppServiceHTTPLogs'"
+      name: '{{ IngestPipeline "appservice-httplogs-inner-pipeline" }}'
+  - pipeline:
+      if: "ctx?.azure?.app_service?.Category == 'AppServiceIPSecAuditLogs'"
+      name: '{{ IngestPipeline "appservice-ipsecauditlogs-inner-pipeline" }}'
+  - pipeline:
+      if: "ctx?.azure?.app_service?.category == 'AppServiceConsoleLogs'"
+      name: '{{ IngestPipeline "appservice-consolelogs-inner-pipeline" }}'
+  - pipeline:
+      if: "ctx?.azure?.app_service?.category == 'AppServicePlatformLogs'"
+      name: '{{ IngestPipeline "appservice-platformlogs-inner-pipeline" }}'
+  - pipeline:
+      if: "ctx?.azure?.app_service?.category == 'AppServiceAppLogs'"
+      name: '{{ IngestPipeline "appservice-applogs-inner-pipeline" }}'
+on_failure:
+  - append:
+      field: "error.message"
+      value: "{{ _ingest.on_failure_message }} {{ _ingest.on_failure_processor_type }}"
+  - remove:
+      field:
+        - json
+        - _conf
+        - message
+      ignore_missing: true
