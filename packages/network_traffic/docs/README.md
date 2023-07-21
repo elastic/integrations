@@ -5103,7 +5103,34 @@ Fields published for TLS packets.
 | tls.client.x509.version_number | Version of x509 format. | keyword |
 | tls.curve | String indicating the curve used for the given cipher, when applicable. | keyword |
 | tls.detailed.alert_types | An array containing the TLS alert type for every alert received. | keyword |
-| tls.detailed.client_certificate_chain | Chain of trust for the client certificate. | keyword |
+| tls.detailed.client_certificate_chain.alternative_names | Subject alternative names (SANs) in the certificate. | keyword |
+| tls.detailed.client_certificate_chain.issuer.common_name |  | keyword |
+| tls.detailed.client_certificate_chain.issuer.country |  | keyword |
+| tls.detailed.client_certificate_chain.issuer.distinguished_name |  | keyword |
+| tls.detailed.client_certificate_chain.issuer.locality |  | keyword |
+| tls.detailed.client_certificate_chain.issuer.organization |  | keyword |
+| tls.detailed.client_certificate_chain.issuer.organizational_unit |  | keyword |
+| tls.detailed.client_certificate_chain.issuer.postal_code |  | keyword |
+| tls.detailed.client_certificate_chain.issuer.serial_number |  | keyword |
+| tls.detailed.client_certificate_chain.issuer.state_or_province |  | keyword |
+| tls.detailed.client_certificate_chain.issuer.street_address |  | keyword |
+| tls.detailed.client_certificate_chain.not_after | End of the validity period (inclusive). | date |
+| tls.detailed.client_certificate_chain.not_before | Start of the validity period (inclusive). | date |
+| tls.detailed.client_certificate_chain.public_key_algorithm | Public key algorithm (e.g. RSA, DSA, ECDSA, Ed25519). | keyword |
+| tls.detailed.client_certificate_chain.public_key_size | Number of bits in the public key. | long |
+| tls.detailed.client_certificate_chain.serial_number | Base 10 representation of the certificate serial number. | keyword |
+| tls.detailed.client_certificate_chain.signature_algorithm | Signature algorithm (e.g. SHA256-RSA). | keyword |
+| tls.detailed.client_certificate_chain.subject.common_name |  | keyword |
+| tls.detailed.client_certificate_chain.subject.country |  | keyword |
+| tls.detailed.client_certificate_chain.subject.distinguished_name |  | keyword |
+| tls.detailed.client_certificate_chain.subject.locality |  | keyword |
+| tls.detailed.client_certificate_chain.subject.organization |  | keyword |
+| tls.detailed.client_certificate_chain.subject.organizational_unit |  | keyword |
+| tls.detailed.client_certificate_chain.subject.postal_code |  | keyword |
+| tls.detailed.client_certificate_chain.subject.serial_number |  | keyword |
+| tls.detailed.client_certificate_chain.subject.state_or_province |  | keyword |
+| tls.detailed.client_certificate_chain.subject.street_address |  | keyword |
+| tls.detailed.client_certificate_chain.version_number | The x509 certificate version. Version 3 is the latest and most common. | keyword |
 | tls.detailed.client_certificate_requested | Whether the server has requested the client to authenticate itself using a client certificate. | boolean |
 | tls.detailed.client_hello.extensions._unparsed_ | List of extensions that were left unparsed by Packetbeat. | keyword |
 | tls.detailed.client_hello.extensions.application_layer_protocol_negotiation | List of application-layer protocols the client is willing to use. | keyword |
@@ -5122,7 +5149,34 @@ Fields published for TLS packets.
 | tls.detailed.client_hello.version | The version of the TLS protocol by which the client wishes to communicate during this session. | keyword |
 | tls.detailed.ocsp_response | The result of an OCSP request. | keyword |
 | tls.detailed.resumption_method | If the session has been resumed, the underlying method used. One of "id" for TLS session ID or "ticket" for TLS ticket extension. | keyword |
-| tls.detailed.server_certificate_chain | Chain of trust for the server certificate. | keyword |
+| tls.detailed.server_certificate_chain.alternative_names | Subject alternative names (SANs) in the certificate. | keyword |
+| tls.detailed.server_certificate_chain.issuer.common_name |  | keyword |
+| tls.detailed.server_certificate_chain.issuer.country |  | keyword |
+| tls.detailed.server_certificate_chain.issuer.distinguished_name |  | keyword |
+| tls.detailed.server_certificate_chain.issuer.locality |  | keyword |
+| tls.detailed.server_certificate_chain.issuer.organization |  | keyword |
+| tls.detailed.server_certificate_chain.issuer.organizational_unit |  | keyword |
+| tls.detailed.server_certificate_chain.issuer.postal_code |  | keyword |
+| tls.detailed.server_certificate_chain.issuer.serial_number |  | keyword |
+| tls.detailed.server_certificate_chain.issuer.state_or_province |  | keyword |
+| tls.detailed.server_certificate_chain.issuer.street_address |  | keyword |
+| tls.detailed.server_certificate_chain.not_after | End of the validity period (inclusive). | date |
+| tls.detailed.server_certificate_chain.not_before | Start of the validity period (inclusive). | date |
+| tls.detailed.server_certificate_chain.public_key_algorithm | Public key algorithm (e.g. RSA, DSA, ECDSA, Ed25519). | keyword |
+| tls.detailed.server_certificate_chain.public_key_size | Number of bits in the public key. | long |
+| tls.detailed.server_certificate_chain.serial_number | Base 10 representation of the certificate serial number. | keyword |
+| tls.detailed.server_certificate_chain.signature_algorithm | Signature algorithm (e.g. SHA256-RSA). | keyword |
+| tls.detailed.server_certificate_chain.subject.common_name |  | keyword |
+| tls.detailed.server_certificate_chain.subject.country |  | keyword |
+| tls.detailed.server_certificate_chain.subject.distinguished_name |  | keyword |
+| tls.detailed.server_certificate_chain.subject.locality |  | keyword |
+| tls.detailed.server_certificate_chain.subject.organization |  | keyword |
+| tls.detailed.server_certificate_chain.subject.organizational_unit |  | keyword |
+| tls.detailed.server_certificate_chain.subject.postal_code |  | keyword |
+| tls.detailed.server_certificate_chain.subject.serial_number |  | keyword |
+| tls.detailed.server_certificate_chain.subject.state_or_province |  | keyword |
+| tls.detailed.server_certificate_chain.subject.street_address |  | keyword |
+| tls.detailed.server_certificate_chain.version_number | The x509 certificate version. Version 3 is the latest and most common. | keyword |
 | tls.detailed.server_hello.extensions._unparsed_ | List of extensions that were left unparsed by Packetbeat. | keyword |
 | tls.detailed.server_hello.extensions.application_layer_protocol_negotiation | Negotiated application layer protocol | keyword |
 | tls.detailed.server_hello.extensions.ec_points_formats | List of Elliptic Curve (EC) point formats. Indicates the set of point formats that the server can parse. | keyword |

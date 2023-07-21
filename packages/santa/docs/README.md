@@ -23,11 +23,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2022-05-12T11:30:05.248Z",
     "agent": {
-        "ephemeral_id": "ea9b3ab9-896a-456a-8e87-7a6452edad19",
-        "id": "2c596a05-d358-406e-924c-bf221088f43c",
+        "ephemeral_id": "55a748a5-5ecc-451d-859d-988ea77abde5",
+        "id": "bb043b0c-36d1-4054-81ed-2d3f4546a433",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.1"
+        "version": "8.8.1"
     },
     "data_stream": {
         "dataset": "santa.log",
@@ -38,15 +38,15 @@ An example event for `log` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "2c596a05-d358-406e-924c-bf221088f43c",
-        "snapshot": true,
-        "version": "8.2.1"
+        "id": "bb043b0c-36d1-4054-81ed-2d3f4546a433",
+        "snapshot": false,
+        "version": "8.8.1"
     },
     "event": {
         "action": "link",
         "agent_id_status": "verified",
         "dataset": "santa.log",
-        "ingested": "2022-05-18T03:34:40Z",
+        "ingested": "2023-07-06T20:01:12Z",
         "kind": "event"
     },
     "file": {
@@ -59,23 +59,24 @@ An example event for `log` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": false,
+        "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "1de1e3b6561d4ccb9731539ce2f3baf3",
         "ip": [
-            "192.168.160.7"
+            "192.168.16.7"
         ],
         "mac": [
-            "02:42:c0:a8:a0:07"
+            "02-42-C0-A8-10-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.104-linuxkit",
+            "kernel": "5.10.47-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "input": {
@@ -92,7 +93,7 @@ An example event for `log` looks as following:
         "args": [
             "/usr/sbin/newsyslog"
         ],
-        "entity_id": "2c596a05-d358-406e-924c-bf221088f43c-71559-1096716",
+        "entity_id": "bb043b0c-36d1-4054-81ed-2d3f4546a433-71559-1096716",
         "executable": "/usr/sbin/newsyslog",
         "name": "newsyslog",
         "parent": {

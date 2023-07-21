@@ -3,7 +3,7 @@ name: cel
 title: CEL Custom API
 description: Collect custom events from an API with Elastic agent
 type: input
-version: "1.0.0"
+version: "1.1.0"
 categories:
   - custom
 conditions:
@@ -118,6 +118,25 @@ policy_templates:
         description: The URL endpoint that will be used to generate the tokens during the oauth2 flow. It is required if no oauth_custom variable is set or provider is not specified in oauth_custom variable.
         show_user: true
         required: false
+      - name: redact_fields
+        type: text
+        title: Redacted fields
+        description: |
+          Fields to redact in debug logs. When logging at debug-level the input state and CEL evaluation state are included
+          in logs. This may leak secrets, so list sensitive state fields in this configuration.
+        show_user: true
+        multi: true
+        required: false
+      - name: delete_redacted_fields
+        type: bool
+        title: Delete redacted fields
+        description: |
+          The default behavior for field redaction is to replace characters with `*`s. If field value length or presence will
+          leak information, the fields can be deleted from logging by setting this configuration to true.
+        show_user: true
+        multi: false
+        default: false
+        required: true
       - name: resource_ssl
         type: yaml
         title: Resource SSL Configuration

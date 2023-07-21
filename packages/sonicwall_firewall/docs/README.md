@@ -80,11 +80,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2022-05-16T08:18:39.000+02:00",
     "agent": {
-        "ephemeral_id": "6cc3228b-d89c-4104-b750-d9cb44ed5513",
-        "id": "08a5caf6-a717-4f5f-90e2-0f4eb7c59b00",
+        "ephemeral_id": "9c635b3a-cb8b-4d1a-891b-3f37008b59bb",
+        "id": "bb043b0c-36d1-4054-81ed-2d3f4546a433",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.0"
+        "version": "8.8.1"
     },
     "data_stream": {
         "dataset": "sonicwall_firewall.log",
@@ -112,9 +112,9 @@ An example event for `log` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "08a5caf6-a717-4f5f-90e2-0f4eb7c59b00",
+        "id": "bb043b0c-36d1-4054-81ed-2d3f4546a433",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.8.1"
     },
     "event": {
         "action": "connection-denied",
@@ -124,7 +124,7 @@ An example event for `log` looks as following:
         ],
         "code": "713",
         "dataset": "sonicwall_firewall.log",
-        "ingested": "2022-05-23T13:47:58Z",
+        "ingested": "2023-07-06T18:14:01Z",
         "kind": "event",
         "outcome": "success",
         "sequence": "692",
@@ -141,7 +141,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "debug",
         "source": {
-            "address": "172.24.0.4:47831"
+            "address": "192.168.16.4:58483"
         }
     },
     "message": "� (TCP Flag(s): RST)",
@@ -163,7 +163,9 @@ An example event for `log` looks as following:
             },
             "zone": "Untrusted"
         },
-        "ip": "10.0.0.96",
+        "ip": [
+            "10.0.0.96"
+        ],
         "name": "firewall",
         "product": "SonicOS",
         "serial_number": "0040103CE114",

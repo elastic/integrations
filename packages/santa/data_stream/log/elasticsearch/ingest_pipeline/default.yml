@@ -100,10 +100,10 @@ processors:
       field: related.hash
       value: "{{process.hash.sha256}}"
       if: "ctx?.process?.hash != null"
-  - set:
+  - append:
       field: file.x509.issuer.common_name
-      value: "{{santa.certificate.common_name}}"
-      ignore_empty_value: true
+      value: "{{{santa.certificate.common_name}}}"
+      if: ctx.santa?.certificate?.common_name != null
   - remove:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
