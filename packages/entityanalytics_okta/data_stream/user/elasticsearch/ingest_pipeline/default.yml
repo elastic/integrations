@@ -1,0 +1,596 @@
+---
+description: Pipeline for processing User logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.8.0
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: asset
+  - set:
+      field: event.category
+      tag: set_event_category
+      value: ['iam']
+  - set:
+      field: event.type
+      tag: set_event_type
+      value: ['user','info']
+  - rename:
+      field: okta.id
+      target_field: entityanalytics_okta.user.id
+      tag: rename_user_id
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{entityanalytics_okta.user.id}}}'
+      tag: append_user_id_into_related_user
+      allow_duplicates: false
+      if: ctx.entityanalytics_okta?.user?.id != null
+  - script:
+      lang: painless
+      description: Set User Account Status properties.
+      tag: painless_set_user_account_status
+      if: ctx.okta?.status != null
+      source: |-
+        if (ctx.user == null) {
+          ctx.user = new HashMap();
+        }
+        if (ctx.user.account == null) {
+          ctx.user.account = new HashMap();
+        }
+        if (ctx.user.account.status == null) {
+          ctx.user.account.status = new HashMap();
+        }
+        ctx.user.account.status.put('recovery', false);
+        ctx.user.account.status.put('locked_out', false);
+        ctx.user.account.status.put('suspended', false);
+        ctx.user.account.status.put('password_expired', false);
+        ctx.user.account.status.put('deprovisioned', false);
+        def status = ctx.okta.status.toLowerCase();
+        if (['recovery', 'locked_out', 'suspended', 'password_expired', 'deprovisioned'].contains(status)) {
+          ctx.user.account.status[status] = true;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: okta.status
+      target_field: entityanalytics_okta.user.status
+      tag: rename_user_status
+      ignore_missing: true
+  - set:
+      field: asset.status
+      copy_from: entityanalytics_okta.user.status
+      tag: set_asset_status
+      ignore_empty_value: true
+  - set:
+      field: user.profile.status
+      copy_from: entityanalytics_okta.user.status
+      tag: set_user_profile_status
+      ignore_empty_value: true
+  - date:
+      field: okta.created
+      target_field: entityanalytics_okta.user.created
+      tag: date_user_created
+      formats:
+        - ISO8601
+      if: ctx.okta?.created != null && ctx.okta.created != ''
+      on_failure:
+        - remove:
+            field: okta.created
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.account.create_date
+      copy_from: entityanalytics_okta.user.created
+      tag: set_user_account_create_date
+      ignore_empty_value: true
+  - set:
+      field: asset.create_date
+      copy_from: entityanalytics_okta.user.created
+      tag: set_asset_create_date
+      ignore_empty_value: true
+  - date:
+      field: okta.activated
+      target_field: entityanalytics_okta.user.activated
+      tag: date_user_activated
+      formats:
+        - ISO8601
+      if: ctx.okta?.activated != null && ctx.okta.activated != ''
+      on_failure:
+        - remove:
+            field: okta.activated
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.account.activated_date
+      copy_from: entityanalytics_okta.user.activated
+      tag: set_user_account_activated_date
+      ignore_empty_value: true
+  - date:
+      field: okta.statusChanged
+      target_field: entityanalytics_okta.user.status_changed
+      tag: date_user_status_changed
+      formats:
+        - ISO8601
+      if: ctx.okta?.statusChanged != null && ctx.okta.statusChanged != ''
+      on_failure:
+        - remove:
+            field: okta.statusChanged
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.account.change_date
+      copy_from: entityanalytics_okta.user.status_changed
+      tag: set_user_account_change_date
+      ignore_empty_value: true
+  - set:
+      field: asset.last_status_change_date
+      copy_from: entityanalytics_okta.user.status_changed
+      tag: set_asset_last_status_change_date
+      ignore_empty_value: true
+  - date:
+      field: okta.lastLogin
+      target_field: entityanalytics_okta.user.last_login
+      tag: date_user_last_login
+      formats:
+        - ISO8601
+      if: ctx.okta?.lastLogin != null && ctx.okta.lastLogin != ''
+      on_failure:
+        - remove:
+            field: okta.lastLogin
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: asset.last_seen
+      copy_from: entityanalytics_okta.user.last_login
+      tag: set_asset_last_seen
+      ignore_empty_value: true
+  - date:
+      field: okta.lastUpdated
+      target_field: entityanalytics_okta.user.last_updated
+      tag: date_user_last_updated
+      formats:
+        - ISO8601
+      if: ctx.okta?.lastUpdated != null && ctx.okta.lastUpdated != ''
+      on_failure:
+        - remove:
+            field: okta.lastUpdated
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: asset.last_updated
+      copy_from: entityanalytics_okta.user.last_updated
+      tag: set_asset_last_seen
+      ignore_empty_value: true
+  - date:
+      field: okta.passwordChanged
+      target_field: entityanalytics_okta.user.password_changed
+      tag: date_user_password_changed
+      formats:
+        - ISO8601
+      if: ctx.okta?.passwordChanged != null && ctx.okta.passwordChanged != ''
+      on_failure:
+        - remove:
+            field: okta.passwordChanged
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.account.password_change_date
+      copy_from: entityanalytics_okta.user.password_changed
+      tag: set_user_account_password_change_date
+      ignore_empty_value: true
+  - rename:
+      field: okta.type
+      target_field: entityanalytics_okta.user.type
+      tag: rename_user_type
+      ignore_missing: true
+  - rename:
+      field: okta.transitioningToStatus
+      target_field: entityanalytics_okta.user.transitioning_to_status
+      tag: user_transitioning_to_status
+      ignore_missing: true
+  - rename:
+      field: okta.profile.login
+      target_field: entityanalytics_okta.user.profile.login
+      tag: rename_user_profile_login
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{entityanalytics_okta.user.profile.login}}}'
+      tag: append_user_profile_login_into_related_user
+      allow_duplicates: false
+      if: ctx.entityanalytics_okta?.user?.profile?.login != null
+  - set:
+      field: user.name
+      copy_from: entityanalytics_okta.user.profile.login
+      tag: set_user_name
+      ignore_empty_value: true
+  - rename:
+      field: okta.profile.email
+      target_field: entityanalytics_okta.user.profile.email
+      tag: rename_user_profile_email
+      ignore_missing: true
+  - set:
+      field: user.email
+      copy_from: entityanalytics_okta.user.profile.email
+      tag: set_user_email
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      value: '{{{entityanalytics_okta.user.profile.email}}}'
+      tag: append_user_profile_email_into_related_user
+      allow_duplicates: false
+      if: ctx.entityanalytics_okta?.user?.profile?.email != null
+  - rename:
+      field: okta.profile.secondEmail
+      target_field: entityanalytics_okta.user.profile.second_email
+      tag: rename_user_profile_second_email
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{entityanalytics_okta.user.profile.second_email}}}'
+      tag: append_user_profile_second_email_into_related_user
+      allow_duplicates: false
+      if: ctx.entityanalytics_okta?.user?.profile?.second_email != null
+  - set:
+      field: user.profile.other_identities
+      copy_from: entityanalytics_okta.user.profile.second_email
+      tag: set_user_profile_other_identities
+      ignore_empty_value: true
+  - set:
+      field: user.profile.secondEmail
+      copy_from: entityanalytics_okta.user.profile.second_email
+      tag: set_user_profile_secondEmail
+      ignore_empty_value: true
+  - rename:
+      field: okta.profile.firstName
+      target_field: entityanalytics_okta.user.profile.first_name
+      tag: rename_user_profile_first_name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{entityanalytics_okta.user.profile.first_name}}}'
+      tag: append_user_profile_first_name_into_related_user
+      allow_duplicates: false
+      if: ctx.entityanalytics_okta?.user?.profile?.first_name != null
+  - set:
+      field: user.profile.first_name
+      copy_from: entityanalytics_okta.user.profile.first_name
+      tag: set_user_profile_first_name
+      ignore_empty_value: true
+  - rename:
+      field: okta.profile.lastName
+      target_field: entityanalytics_okta.user.profile.last_name
+      tag: rename_user_profile_last_name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{entityanalytics_okta.user.profile.last_name}}}'
+      tag: append_user_profile_last_name_into_related_user
+      allow_duplicates: false
+      if: ctx.entityanalytics_okta?.user?.profile?.last_name != null
+  - set:
+      field: user.profile.last_name
+      copy_from: entityanalytics_okta.user.profile.last_name
+      tag: set_user_profile_last_name
+      ignore_empty_value: true
+  - rename:
+      field: okta.profile.middleName
+      target_field: entityanalytics_okta.user.profile.middle_name
+      tag: rename_user_profile_middle_name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{entityanalytics_okta.user.profile.middle_name}}}'
+      tag: append_user_profile_middle_name_into_related_user
+      allow_duplicates: false
+      if: ctx.entityanalytics_okta?.user?.profile?.middle_name != null
+  - rename:
+      field: okta.profile.honorificPrefix
+      target_field: entityanalytics_okta.user.profile.honorific.prefix
+      tag: rename_user_profile_honorific_prefix
+      ignore_missing: true
+  - rename:
+      field: okta.profile.honorificSuffix
+      target_field: entityanalytics_okta.user.profile.honorific.suffix
+      tag: rename_user_profile_honorific_suffix
+      ignore_missing: true
+  - rename:
+      field: okta.profile.title
+      target_field: entityanalytics_okta.user.profile.title
+      tag: rename_user_profile_title
+      ignore_missing: true
+  - set:
+      field: user.profile.job_title
+      copy_from: entityanalytics_okta.user.profile.title
+      tag: set_user_profile_job_title
+      ignore_empty_value: true
+  - rename:
+      field: okta.profile.displayName
+      target_field: entityanalytics_okta.user.profile.display_name
+      tag: rename_user_profile_display_name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{entityanalytics_okta.user.profile.display_name}}}'
+      tag: append_user_profile_display_name_into_related_user
+      allow_duplicates: false
+      if: ctx.entityanalytics_okta?.user?.profile?.display_name != null
+  - set:
+      field: user.full_name
+      copy_from: entityanalytics_okta.user.profile.display_name
+      tag: set_user_full_name
+      ignore_empty_value: true
+  - set:
+      field: asset.name
+      copy_from: entityanalytics_okta.user.profile.display_name
+      tag: set_asset_name
+      ignore_empty_value: true
+  - rename:
+      field: okta.profile.nickName
+      target_field: entityanalytics_okta.user.profile.nick_name
+      tag: rename_user_profile_nick_name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{entityanalytics_okta.user.profile.nick_name}}}'
+      tag: append_user_profile_nick_name_into_related_user
+      allow_duplicates: false
+      if: ctx.entityanalytics_okta?.user?.profile?.nick_name != null
+  - rename:
+      field: okta.profile.profileUrl
+      target_field: entityanalytics_okta.user.profile.url
+      tag: rename_user_profile_url
+      ignore_missing: true
+  - rename:
+      field: okta.profile.primaryPhone
+      target_field: entityanalytics_okta.user.profile.primary_phone
+      tag: rename_user_profile_primary_phone
+      ignore_missing: true
+  - set:
+      field: user.profile.primaryPhone
+      copy_from: entityanalytics_okta.user.profile.primary_phone
+      tag: set_user_profile_primaryPhone
+      ignore_empty_value: true
+  - rename:
+      field: okta.profile.mobilePhone
+      target_field: entityanalytics_okta.user.profile.mobile_phone
+      tag: rename_user_profile_mobile_phone
+      ignore_missing: true
+  - set:
+      field: user.profile.mobile_phone
+      copy_from: entityanalytics_okta.user.profile.mobile_phone
+      tag: set_user_profile_mobile_phone
+      ignore_empty_value: true
+  - rename:
+      field: okta.profile.streetAddress
+      target_field: entityanalytics_okta.user.profile.street_address
+      tag: rename_user_profile_street_address
+      ignore_missing: true
+  - rename:
+      field: okta.profile.city
+      target_field: entityanalytics_okta.user.profile.city
+      tag: rename_user_profile_city
+      ignore_missing: true
+  - rename:
+      field: okta.profile.state
+      target_field: entityanalytics_okta.user.profile.state
+      tag: rename_user_profile_state
+      ignore_missing: true
+  - rename:
+      field: okta.profile.zipCode
+      target_field: entityanalytics_okta.user.profile.zip_code
+      tag: rename_user_profile_zip_code
+      ignore_missing: true
+  - rename:
+      field: okta.profile.countryCode
+      target_field: entityanalytics_okta.user.profile.country_code
+      tag: rename_user_profile_country_code
+      ignore_missing: true
+  - rename:
+      field: okta.profile.postalAddress
+      target_field: entityanalytics_okta.user.profile.postal_address
+      tag: rename_user_profile_postal_address
+      ignore_missing: true
+  - rename:
+      field: okta.profile.preferredLanguage
+      target_field: entityanalytics_okta.user.profile.preferred_language
+      tag: rename_user_profile_preferred_language
+      ignore_missing: true
+  - rename:
+      field: okta.profile.locale
+      target_field: entityanalytics_okta.user.profile.locale
+      tag: rename_user_profile_locale
+      ignore_missing: true
+  - rename:
+      field: okta.profile.timezone
+      target_field: entityanalytics_okta.user.profile.timezone
+      tag: rename_user_profile_timezone
+      ignore_missing: true
+  - rename:
+      field: okta.profile.userType
+      target_field: entityanalytics_okta.user.profile.user_type
+      tag: rename_user_profile_user_type
+      ignore_missing: true
+  - set:
+      field: user.profile.type
+      copy_from: entityanalytics_okta.user.profile.user_type
+      tag: set_user_profile_type
+      ignore_empty_value: true
+  - rename:
+      field: okta.profile.employeeNumber
+      target_field: entityanalytics_okta.user.profile.employee_number
+      tag: rename_user_profile_employee_number
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{entityanalytics_okta.user.profile.employee_number}}}'
+      tag: append_user_profile_employee_number_into_related_user
+      allow_duplicates: false
+      if: ctx.entityanalytics_okta?.user?.profile?.employee_number != null
+  - set:
+      field: user.profile.id
+      copy_from: entityanalytics_okta.user.profile.employee_number
+      tag: set_user_profile_id
+      ignore_empty_value: true
+  - rename:
+      field: okta.profile.costCenter
+      target_field: entityanalytics_okta.user.profile.cost_center
+      tag: rename_user_profile_cost_center
+      ignore_missing: true
+  - set:
+      field: asset.costCenter
+      copy_from: entityanalytics_okta.user.profile.cost_center
+      tag: set_asset_costCenter
+      ignore_empty_value: true
+  - rename:
+      field: okta.profile.organization
+      target_field: entityanalytics_okta.user.profile.organization
+      tag: rename_user_profile_organization
+      ignore_missing: true
+  - set:
+      field: user.profile.organization
+      copy_from: entityanalytics_okta.user.profile.organization
+      tag: set_user_profile_organization
+      ignore_empty_value: true
+  - rename:
+      field: okta.profile.division
+      target_field: entityanalytics_okta.user.profile.division
+      tag: rename_user_profile_division
+      ignore_missing: true
+  - rename:
+      field: okta.profile.department
+      target_field: entityanalytics_okta.user.profile.department
+      tag: rename_user_profile_department
+      ignore_missing: true
+  - set:
+      field: user.profile.department
+      copy_from: entityanalytics_okta.user.profile.department
+      tag: set_user_profile_department
+      ignore_empty_value: true
+  - rename:
+      field: okta.profile.managerId
+      target_field: entityanalytics_okta.user.profile.manager.id
+      tag: rename_user_profile_manager_id
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{entityanalytics_okta.user.profile.manager.id}}}'
+      tag: append_user_profile_manager_id_into_related_user
+      allow_duplicates: false
+      if: ctx.entityanalytics_okta?.user?.profile?.manager?.id != null
+  - set:
+      field: user.profile.manager
+      copy_from: entityanalytics_okta.user.profile.manager.id
+      tag: set_user_profile_manager
+      ignore_empty_value: true
+  - rename:
+      field: okta.profile.manager
+      target_field: entityanalytics_okta.user.profile.manager.name
+      tag: rename_user_profile_manager_name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{entityanalytics_okta.user.profile.manager.name}}}'
+      tag: append_user_profile_manager_name_into_related_user
+      allow_duplicates: false
+      if: ctx.entityanalytics_okta?.user?.profile?.manager?.name != null
+  - rename:
+      field: okta.credentials.provider.type
+      target_field: entityanalytics_okta.user.credentials.provider.type
+      tag: rename_user_credentials_provider_type
+      ignore_missing: true
+  - rename:
+      field: okta.credentials.provider.name
+      target_field: entityanalytics_okta.user.credentials.provider.name
+      tag: rename_user_credentials_provider_name
+      ignore_missing: true
+  - set:
+      field: asset.vendor
+      copy_from: entityanalytics_okta.user.credentials.provider.name
+      tag: set_asset_vendor
+      ignore_empty_value: true
+  - rename:
+      field: okta._links
+      target_field: entityanalytics_okta.user._links
+      tag: rename_user_links
+      ignore_missing: true
+  - rename:
+      field: okta._embedded
+      target_field: entityanalytics_okta.user._embedded
+      tag: rename_user_embedded
+      ignore_missing: true
+  - remove:
+      field:
+        - okta
+      tag: remove_okta
+      ignore_missing: true
+  - remove:
+      field:
+        - entityanalytics_okta.user.profile.cost_center
+        - entityanalytics_okta.user.last_login
+        - entityanalytics_okta.user.last_updated
+        - entityanalytics_okta.user.status
+        - entityanalytics_okta.user.credentials.provider.name
+        - entityanalytics_okta.user.activated
+        - entityanalytics_okta.user.status_changed
+        - entityanalytics_okta.user.created
+        - entityanalytics_okta.user.password_changed
+        - entityanalytics_okta.user.profile.email
+        - entityanalytics_okta.user.profile.display_name
+        - entityanalytics_okta.user.id
+        - entityanalytics_okta.user.profile.login
+        - entityanalytics_okta.user.profile.department
+        - entityanalytics_okta.user.profile.first_name
+        - entityanalytics_okta.user.profile.employee_number
+        - entityanalytics_okta.user.profile.title
+        - entityanalytics_okta.user.profile.last_name
+        - entityanalytics_okta.user.profile.manager.id
+        - entityanalytics_okta.user.profile.mobile_phone
+        - entityanalytics_okta.user.profile.primary_phone
+        - entityanalytics_okta.user.profile.organization
+        - entityanalytics_okta.user.profile.second_email
+        - entityanalytics_okta.user.profile.user_type
+      tag: remove_duplicate_custom_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

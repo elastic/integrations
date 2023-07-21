@@ -141,42 +141,50 @@ When you are ready for your changes in the integration to be released, remember 
 It is up to you, as the package developer, to decide how many changes you want to release in a single version.
 For example, you could implement a change in a PR and bump up the package version in the same PR. Or you could
 implement several changes across multiple PRs and then bump up the package version in the last of these PRs
-or in a separate follow up PR. As an example, it could be followed this procedure:
+or in a separate follow up PR. For example, you can apply the following procedure for a package whose latest published version is `2.5.0`:
 
-1. Add a new version entry in the changelog with the prerelease tag `next`. Example: `2.6.0-next`
-   ```yaml
-   - version: "2.6.0-next"
-     changes:
-       - description: First PR
-         type: enhancement
-         link: https://github.com/elastic/integrations/pull/1
-   - version: "2.5.0"
-   ```
-2. Add the required Pull Requests under this entry:
-   ```yaml
-   - version: "2.6.0-next"
-     changes:
-       - description: First PR
-         type: enhancement
-         link: https://github.com/elastic/integrations/pull/1
-       - description: Second PR
-         type: enhancement
-         link: https://github.com/elastic/integrations/pull/2
-       - description: Third PR
-         type: enhancement
-         link: https://github.com/elastic/integrations/pull/3
-   ```
+1. Add a new version entry in the changelog with the prerelease tag `next`:
+    - Keep same version in package manifest: `2.5.0`
+    - Update changelog with a new entry with the prerelease tag (e.g. `2.6.0-next`):
+      ```yaml
+      - version: "2.6.0-next"
+        changes:
+          - description: First PR
+            type: enhancement
+            link: https://github.com/elastic/integrations/pull/1
+      - version: "2.5.0"
+      ```
+2. Add the required Pull Requests under this new changelog entry:
+    - Keep same version in package manifest: `2.5.0`
+    - Changelog:
+      ```yaml
+      - version: "2.6.0-next"
+        changes:
+          - description: First PR
+            type: enhancement
+            link: https://github.com/elastic/integrations/pull/1
+          - description: Second PR
+            type: enhancement
+            link: https://github.com/elastic/integrations/pull/2
+          - description: Third PR
+            type: enhancement
+            link: https://github.com/elastic/integrations/pull/3
+      - version: "2.5.0"
+      ```
 3. Once everything is merged, another PR is required to bump up the manifest version and replace the changelog entry to be `2.6.0`:
-   ```yaml
-   - version: "2.6.0"
-     changes:
-       - description: First PR
-         type: enhancement
-         link: https://github.com/elastic/integrations/pull/1
-       - description: Second PR
-         type: enhancement
-         link: https://github.com/elastic/integrations/pull/2
-       - description: Third PR
-         type: enhancement
-         link: https://github.com/elastic/integrations/pull/3
-   ```
+    - Update version in package manifest: `2.6.0`
+    - Update changelog entry to `2.6.0`:
+      ```yaml
+      - version: "2.6.0"
+        changes:
+          - description: First PR
+            type: enhancement
+            link: https://github.com/elastic/integrations/pull/1
+          - description: Second PR
+            type: enhancement
+            link: https://github.com/elastic/integrations/pull/2
+          - description: Third PR
+            type: enhancement
+            link: https://github.com/elastic/integrations/pull/3
+      - version: "2.5.0"
+      ```

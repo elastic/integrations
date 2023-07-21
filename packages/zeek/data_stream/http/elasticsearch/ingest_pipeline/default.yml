@@ -143,6 +143,11 @@ processors:
       field: zeek.http.host
       target_field: url.domain
       ignore_missing: true
+      if: ctx.zeek?.http?.host != null && ctx?.url?.domain == null
+  - remove:
+      field: zeek.http.host
+      ignore_missing: true
+      if: ctx.zeek?.http?.host == ctx?.url?.domain
   - rename:
       field: zeek.http.username
       target_field: url.username
