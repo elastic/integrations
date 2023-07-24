@@ -18,9 +18,13 @@ processors:
       copy_from: microsoft.online_message_trace.Status
       ignore_empty_value: true
   - set:
-      field: email.from.address
+      field: _temp_.email.from.address
       copy_from: microsoft.online_message_trace.SenderAddress
       ignore_empty_value: true
+  - append:
+      field: email.from.address
+      value: '{{{_temp_.email.from.address}}}'
+      if: ctx._temp_?.email?.from?.address != null
   - set:
       field: source.user.id
       copy_from: microsoft.online_message_trace.SenderAddress
@@ -50,9 +54,13 @@ processors:
       copy_from: microsoft.online_message_trace.Subject
       ignore_empty_value: true
   - set:
-      field: email.to.address
+      field: _temp_.email.to.address
       copy_from: microsoft.online_message_trace.RecipientAddress
       ignore_empty_value: true
+  - append:
+      field: email.to.address
+      value: '{{{_temp_.email.to.address}}}'
+      if: ctx._temp_?.email?.to?.address != null
   - set:
       field: destination.user.id
       copy_from: microsoft.online_message_trace.RecipientAddress
@@ -135,13 +143,13 @@ processors:
 
   # Extraction of domain
   - grok:
-      field: email.from.address
+      field: _temp_.email.from.address
       patterns:
         - "^%{DATA}@%{DATA:source.domain}$"
       ignore_failure: false
       ignore_missing: true
   - grok:
-      field: email.to.address
+      field: _temp_.email.to.address
       patterns:
         - "^%{DATA}@%{DATA:destination.domain}$"
       ignore_failure: false
@@ -177,17 +185,17 @@ processors:
   # Extract Username from mail
   - append:
       field: related.user
-      value: '{{{email.to.address}}}'
+      value: '{{{_temp_.email.to.address}}}'
       allow_duplicates: false
-      if: ctx.email?.to?.address != null && ctx.email.to.address != ""
+      if: ctx._temp_?.email?.to?.address != null && ctx._temp_.email.to.address != ""
   - append:
       field: related.user
-      value: '{{{email.from.address}}}'
+      value: '{{{_temp_.email.from.address}}}'
       allow_duplicates: false
-      if: ctx.email?.from?.address != null && ctx.email.from.address != ""
+      if: ctx._temp_?.email?.from?.address != null && ctx._temp_.email.from.address != ""
 
   - dissect:
-      field: "email.to.address"
+      field: _temp_.email.to.address
       pattern: '%{_temp_.to_user_name}@%{_temp_.to_user_domain}'
       ignore_missing: true
   - append:
@@ -197,7 +205,7 @@ processors:
       if: ctx._temp_?.to_user_name != null && ctx._temp_.to_user_name != ""
 
   - dissect:
-      field: "email.from.address"
+      field: _temp_.email.from.address
       pattern: '%{_temp_.from_user_name}@%{_temp_.from_user_domain}'
       ignore_missing: true
   - append:
@@ -218,24 +226,24 @@ processors:
       if: ctx._temp_?.from_user_name != null && ctx._temp_.from_user_name != "" && ctx.email?.direction == "outbound" || ctx.email?.direction == "internal"
   - append:
       field: user.email
-      value: '{{{email.to.address}}}'
+      value: '{{{_temp_.email.to.address}}}'
       allow_duplicates: false
-      if: ctx.email?.to?.address != null && ctx.email.to.address != "" && ctx.email?.direction == "inbound" || ctx.email?.direction == "internal"
+      if: ctx._temp_?.email?.to?.address != null && ctx._temp_.email.to.address != "" && ctx.email?.direction == "inbound" || ctx.email?.direction == "internal"
   - append:
       field: user.email
-      value: '{{{email.from.address}}}'
+      value: '{{{_temp_.email.from.address}}}'
       allow_duplicates: false
-      if: ctx.email?.from?.address != null && ctx.email.from.address != "" && ctx.email?.direction == "outbound" || ctx.email?.direction == "internal"
+      if: ctx._temp_?.email?.from?.address != null && ctx._temp_.email.from.address != "" && ctx.email?.direction == "outbound" || ctx.email?.direction == "internal"
   - append:
       field: user.id
-      value: '{{{email.to.address}}}'
+      value: '{{{_temp_.email.to.address}}}'
       allow_duplicates: false
-      if: ctx.email?.to?.address != null && ctx.email.to.address != "" && ctx.email?.direction == "inbound" || ctx.email?.direction == "internal"
+      if: ctx._temp_?.email?.to?.address != null && ctx._temp_.email.to.address != "" && ctx.email?.direction == "inbound" || ctx.email?.direction == "internal"
   - append:
       field: user.id
-      value: '{{{email.from.address}}}'
+      value: '{{{_temp_.email.from.address}}}'
       allow_duplicates: false
-      if: ctx.email?.from?.address != null && ctx.email.from.address != "" && ctx.email?.direction == "outbound" || ctx.email?.direction == "internal"
+      if: ctx._temp_?.email?.from?.address != null && ctx._temp_.email.from.address != "" && ctx.email?.direction == "outbound" || ctx.email?.direction == "internal"
   - script:
       lang: painless
       description: Reduce user.* to keyword if a single element.
