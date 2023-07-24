@@ -3,6 +3,7 @@
   description: ""
   fields:
     - name: timegrain
+      dimension: true
       type: keyword
       description: >
         The Azure metric timegrain
@@ -25,6 +26,7 @@
 
         - name: id
           type: keyword
+          dimension: true
           description: >
             The id of the resource
 
@@ -55,17 +57,33 @@
       description: >
         The application ID
 
-    - name: dimensions.*
-      type: object
-      object_type: keyword
-      object_type_mapping_type: "*"
-      description: >
-        Azure metric dimensions.
+    - name: dimensions
+      type: group
+      fields:
+        - name: container_name
+          type: keyword
+          dimension: true
+          description: The container name
 
-    - name: metrics.*.*
-      type: object
-      object_type: float
-      object_type_mapping_type: "*"
-      description: >
-        Metrics returned.
-
+    - name: metrics
+      type: group
+      fields:
+        - name: cpu_usage.avg
+          type: float
+          metric_type: gauge
+          description: CPU usage on all cores in millicores.
+        - name: memory_usage.avg
+          type: float
+          metric_type: gauge
+          unit: byte
+          description: Total memory usage in byte.
+        - name: network_bytes_received_per_second.avg
+          type: float
+          metric_type: gauge
+          unit: byte
+          description: The network bytes received per second.
+        - name: network_bytes_transmitted_per_second.avg
+          type: float
+          metric_type: gauge
+          unit: byte
+          description: The network bytes transmitted per second.
