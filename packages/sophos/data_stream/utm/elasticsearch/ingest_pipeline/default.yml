@@ -1,87 +1,169 @@
 ---
-description: Pipeline for Sophos UTM (formerly Astaro Security Gateway).
-
+description: Pipeline for Sophos UTM (formerly Astaro Security Gateway)
 processors:
   - set:
       field: ecs.version
       value: '8.8.0'
-  - gsub:
-      field: destination.mac
+      tag: set_ecs_version
+  - rename:
+      field: message
+      target_field: event.original
       ignore_missing: true
-      pattern: '[:]'
-      replacement: '-'
-  - gsub:
-      field: source.mac
-      ignore_missing: true
-      pattern: '[:]'
-      replacement: '-'
-  - uppercase:
-      field: destination.mac
-      ignore_missing: true
-  - uppercase:
-      field: source.mac
-      ignore_missing: true
-  # User agent
-  - user_agent:
-      field: user_agent.original
-      ignore_missing: true
-  # IP Geolocation Lookup
-  - geoip:
-      field: source.ip
-      target_field: source.geo
-      ignore_missing: true
-  - geoip:
-      field: destination.ip
-      target_field: destination.geo
-      ignore_missing: true
+      tag: rename_event_original
+  - set:
+      field: event.category
+      value: [network]
+      tag: set_event_category
+  - set:
+      field: event.type
+      value: [info]
+      tag: set_event_type
+  - set:
+      field: event.kind
+      value: event
+      tag: set_event_kind
 
-  # IP Autonomous System (AS) Lookup
-  - geoip:
-      database_file: GeoLite2-ASN.mmdb
-      field: source.ip
-      target_field: source.as
-      properties:
-          - asn
-          - organization_name
-      ignore_missing: true
-  - geoip:
-      database_file: GeoLite2-ASN.mmdb
-      field: destination.ip
-      target_field: destination.as
-      properties:
-          - asn
-          - organization_name
-      ignore_missing: true
+  # Parse the event header: populates the timestamp, hostname, and process info
+  # from the header and stores the message in _tmp.raw_data
+  - grok:
+      field: event.original
+      if: ctx.event?.original != null
+      pattern_definitions:
+        SOPHOS_TIMESTAMP: (?:%{YEAR}:%{MONTHNUM}:%{MONTHDAY}-%{HOUR}:%{MINUTE}:%{SECOND})
+      patterns:
+        - '^%{SOPHOS_TIMESTAMP:_tmp.timestamp} (?:%{HOSTNAME:host.hostname}) %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?: %{GREEDYDATA:_tmp.raw_data}'
+      tag: grok_syslog_header
+      on_failure:
+        - append:
+            field: error.message
+            value: |-
+              Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+        - set:
+            field: event.kind
+            value: pipeline_error
+  # Process timestamp and timezone if configured (default UTC)
   - rename:
-      field: source.as.asn
-      target_field: source.as.number
+      if: ctx._conf?.tz_offset != null
+      field: _conf.tz_offset
+      target_field: event.timezone
       ignore_missing: true
-  - rename:
-      field: source.as.organization_name
-      target_field: source.as.organization.name
-      ignore_missing: true
-  - rename:
-      field: destination.as.asn
-      target_field: destination.as.number
-      ignore_missing: true
-  - rename:
-      field: destination.as.organization_name
-      target_field: destination.as.organization.name
-      ignore_missing: true
+      tag: rename_conf_timezone
+  - set:
+      field: event.timezone
+      value: UTC
+      override: false
+      tag: set_default_timezone
+  - date:
+      if: ctx._tmp?.timestamp != null
+      timezone: "{{{ event.timezone }}}"
+      field: _tmp.timestamp
+      formats:
+        - yyyy:MM:dd-HH:mm:ss
+      tag: date_set_timestamp
+      on_failure:
+        - append:
+            field: error.message
+            value: |-
+              Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+        - set:
+            field: event.kind
+            value: pipeline_error
+
+  # Choose the pipeline based on the log source
+  - set:
+      field: event.provider
+      value: dns
+      if: ctx.process?.name == 'named'
+      tag: set_provider_dns
+  - set:
+      field: event.provider
+      value: dhcp
+      if: ctx.process?.name == 'dhcpd'
+      tag: set_provider_dhcp
+  - set:
+      field: event.provider
+      value: http
+      if: ctx.process?.name == 'httpproxy'
+      tag: set_provider_http
+  - set:
+      field: event.provider
+      value: packetfilter
+      if: ctx.process?.name == 'ulogd'
+      tag: set_provider_packetfilter
+  - pipeline:
+      name: '{{ IngestPipeline "dns" }}'
+      if: ctx.event?.provider == 'dns'
+      tag: pipeline_dns
+  - pipeline:
+      name: '{{ IngestPipeline "dhcp" }}'
+      if: ctx.event?.provider == 'dhcp'
+      tag: pipeline_dhcp
+  - pipeline:
+      name: '{{ IngestPipeline "http" }}'
+      if: ctx.event?.provider == 'http'
+      tag: pipeline_http
+  - pipeline:
+      name: '{{ IngestPipeline "packetfilter" }}'
+      if: ctx.event?.provider == 'packetfilter'
+      tag: pipeline_packetfilter
+
+  # Set observer fields
+  - set:
+      field: observer.vendor
+      value: Sophos
+      tag: set_observer_vendor
+  - set:
+      field: observer.product
+      value: UTM
+      tag: set_observer_product
+  - set:
+      field: observer.type
+      value: firewall
+      tag: set_observer_type
+
+  # Fill related fields
   - append:
       field: related.hosts
-      value: '{{host.name}}'
+      value: '{{{host.hostname}}}'
       allow_duplicates: false
-      if: ctx.host?.name != null && ctx.host?.name != ''
+      if: ctx.host?.hostname != null && ctx.host.hostname != ''
+      tag: append_related_hosts
+
+  # Clean event
   - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      field: _tmp
       ignore_failure: true
       ignore_missing: true
+      tag: remove_tmp
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+      tag: remove_event_original
+  - script:
+      description: Drops null/empty values recursively.
+      tag: script_drop_empty_fields
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
 on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
   - set:
       field: event.kind
       value: pipeline_error
-  - append:
-      field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
