@@ -1,5 +1,5 @@
 ---
-description: Pipeline for parsing container logs
+description: Pipeline for Kubernetes container logs
 processors:
   - set:
       field: ecs.version
@@ -11,3 +11,10 @@ processors:
       namespace:
         - '{{kubernetes.labels.elastic_co/namespace}}'
         - '{{data_stream.namespace}}'
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
