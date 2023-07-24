@@ -73,38 +73,38 @@ processors:
   - set:
       field: event.provider
       value: dns
-      if: ctx.process?.name != null && ctx.process.name == 'named'
+      if: ctx.process?.name == 'named'
       tag: set_provider_dns
   - set:
       field: event.provider
       value: dhcp
-      if: ctx.process?.name != null && ctx.process.name == 'dhcpd'
+      if: ctx.process?.name == 'dhcpd'
       tag: set_provider_dhcp
   - set:
       field: event.provider
       value: http
-      if: ctx.process?.name != null && ctx.process.name == 'httpproxy'
+      if: ctx.process?.name == 'httpproxy'
       tag: set_provider_http
   - set:
       field: event.provider
       value: packetfilter
-      if: ctx.process?.name != null && ctx.process.name == 'ulogd'
+      if: ctx.process?.name == 'ulogd'
       tag: set_provider_packetfilter
   - pipeline:
       name: '{{ IngestPipeline "dns" }}'
-      if: ctx.event?.provider != null && ctx.event.provider == 'dns'
+      if: ctx.event?.provider == 'dns'
       tag: pipeline_dns
   - pipeline:
       name: '{{ IngestPipeline "dhcp" }}'
-      if: ctx.event?.provider != null && ctx.event.provider == 'dhcp'
+      if: ctx.event?.provider == 'dhcp'
       tag: pipeline_dhcp
   - pipeline:
       name: '{{ IngestPipeline "http" }}'
-      if: ctx.event?.provider != null && ctx.event.provider == 'http'
+      if: ctx.event?.provider == 'http'
       tag: pipeline_http
   - pipeline:
       name: '{{ IngestPipeline "packetfilter" }}'
-      if: ctx.event?.provider != null && ctx.event.provider == 'packetfilter'
+      if: ctx.event?.provider == 'packetfilter'
       tag: pipeline_packetfilter
 
   # Set observer fields
