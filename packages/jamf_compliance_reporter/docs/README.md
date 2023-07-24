@@ -69,11 +69,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2019-10-02T16:17:08.000Z",
     "agent": {
-        "ephemeral_id": "d5ffc842-05cf-43da-96fe-905f95ab2e41",
-        "id": "4f9748a6-cc5b-4160-bfdb-b533f9ba576a",
+        "ephemeral_id": "3210e168-0038-4c64-bf69-6bd94996ed48",
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.8.2"
     },
     "data_stream": {
         "dataset": "jamf_compliance_reporter.log",
@@ -84,9 +84,9 @@ An example event for `log` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "4f9748a6-cc5b-4160-bfdb-b533f9ba576a",
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
         "snapshot": false,
-        "version": "8.4.0"
+        "version": "8.8.2"
     },
     "event": {
         "action": "preference_list_event",
@@ -95,7 +95,7 @@ An example event for `log` looks as following:
             "process"
         ],
         "dataset": "jamf_compliance_reporter.log",
-        "ingested": "2022-11-04T11:01:45Z",
+        "ingested": "2023-07-20T19:38:36Z",
         "kind": "event",
         "type": [
             "info"
@@ -113,7 +113,7 @@ An example event for `log` looks as following:
         }
     },
     "input": {
-        "type": "tcp"
+        "type": "http_endpoint"
     },
     "jamf_compliance_reporter": {
         "log": {
@@ -175,11 +175,6 @@ An example event for `log` looks as following:
                     "uuid": "3X6E4X3X-9285-4X7X-9X0X-X3X62XX379XX"
                 }
             }
-        }
-    },
-    "log": {
-        "source": {
-            "address": "192.168.224.7:58764"
         }
     },
     "related": {
