@@ -119,7 +119,7 @@ An example event for `utm` looks as following:
     },
     "observer": {
         "product": "UTM",
-        "type": "Firewall",
+        "type": "firewall",
         "vendor": "Sophos"
     },
     "process": {
