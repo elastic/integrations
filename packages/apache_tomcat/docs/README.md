@@ -6,7 +6,7 @@
 
 Use the Apache Tomcat integration to:
 
-- Collect metrics related to the cache, memory, request and session and collect logs related to access, catalina, and localhost.
+- Collect metrics related to the cache, memory, request, session and thread pool and collect logs related to access, catalina, and localhost.
 - Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
 - Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
@@ -16,7 +16,7 @@ The Apache Tomcat integration collects logs and metrics data.
 
 Logs help you keep a record of events that happen on your machine. The `Log` data streams collected by Apache Tomcat integration are `access`, `catalina`, and `localhost`, so that users can keep track of the IP addresses of the clients, bytes returned to the client or sent by clients, etc., so that users could monitor and troubleshoot the performance of Java applications.
 
-Metrics give you insight into the statistics of the Apache Tomcat. The `Metric` data streams collected by the Apache Tomcat integration are `cache`, `memory`, `request` and `session`, so that the user can monitor and troubleshoot the performance of the Apache Tomcat instance.
+Metrics give you insight into the statistics of the Apache Tomcat. The `Metric` data streams collected by the Apache Tomcat integration are `cache`, `memory`, `request`, `session` and `thread pool`, so that the user can monitor and troubleshoot the performance of the Apache Tomcat instance.
 
 Data streams:
 - `access`: Collects information related to overall performance of Java applications.
@@ -25,6 +25,7 @@ Data streams:
 - `localhost`: Collects information related to Web application activity which is related to HTTP transactions between the application server and the client.
 - `memory`: Collects information related to heap memory, non-heap memory and garbage collection of the Tomcat instance.
 - `request`: Collects information related to requests of the Apache Tomcat instance.
+- `thread pool`: Collects information related to the overall states of the threads, CPU time and processing termination time of the threads in the Tomcat instance.
 - `session`: Collects information related to overall created, active and expired sessions of the Tomcat instance.
 
 Note:
@@ -1044,3 +1045,206 @@ An example event for `session` looks as following:
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |
 
+
+### Thread Pool
+
+This is the `thread pool` data stream. This data stream collects metrics related to the total, active, current, daemon, busy and peak threads, CPU time and processing termination time of the threads.
+
+An example event for `thread_pool` looks as following:
+
+```json
+{
+    "@timestamp": "2023-07-06T06:13:12.777Z",
+    "agent": {
+        "ephemeral_id": "5209fee4-2cae-4498-bf4b-c295a793454b",
+        "id": "c78eadae-edd0-4b88-ab24-f2fb84a98229",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.8.0"
+    },
+    "apache_tomcat": {
+        "thread_pool": {
+            "contention": {
+                "monitoring_enabled": false
+            },
+            "thread": {
+                "active": {
+                    "count": 26
+                },
+                "allocated_memory": {
+                    "enabled": true,
+                    "supported": true
+                },
+                "current": {
+                    "allocated": {
+                        "bytes": 2835120
+                    },
+                    "cpu": {
+                        "time": {
+                            "enabled": true,
+                            "ms": 31925017
+                        }
+                    },
+                    "user": {
+                        "time": {
+                            "ms": 30000000
+                        }
+                    }
+                },
+                "daemon": {
+                    "count": 23
+                },
+                "peak": {
+                    "count": 26
+                },
+                "supported": {
+                    "contention_monitoring": true,
+                    "cpu": {
+                        "current": {
+                            "time": true
+                        }
+                    },
+                    "usage": {
+                        "object_monitor": true,
+                        "synchronizer": true
+                    }
+                },
+                "total": 27
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "apache_tomcat.thread_pool",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.7.0"
+    },
+    "elastic_agent": {
+        "id": "c78eadae-edd0-4b88-ab24-f2fb84a98229",
+        "snapshot": false,
+        "version": "8.8.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
+        "dataset": "apache_tomcat.thread_pool",
+        "duration": 256268755,
+        "ingested": "2023-07-06T06:13:16Z",
+        "kind": "metric",
+        "module": "apache_tomcat",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "e8978f2086c14e13b7a0af9ed0011d19",
+        "ip": [
+            "172.27.0.7"
+        ],
+        "mac": [
+            "02-42-AC-1B-00-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.90.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "collector",
+        "period": 10000
+    },
+    "service": {
+        "address": "http://elastic-package-service_apache_tomcat_1:9090/metrics",
+        "type": "prometheus"
+    },
+    "tags": [
+        "apache_tomcat-thread_pool",
+        "forwarded"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
+| apache_tomcat.thread_pool.connection.count | Count of all connections. | double |  | counter |
+| apache_tomcat.thread_pool.connection.linger | The number of seconds during which the sockets used by this connector will linger when they are closed. | double | s | gauge |
+| apache_tomcat.thread_pool.connection.max | The total number of concurrent connections that the server will accept and process. | double |  | gauge |
+| apache_tomcat.thread_pool.connection.timeout | Thread connection timeout. | double |  | counter |
+| apache_tomcat.thread_pool.contention.monitoring_enabled | This is used to determine if a Java virtual machine enables thread contention monitoring. | boolean |  |  |
+| apache_tomcat.thread_pool.executor_termination.timeout.ms | The time that the private internal executor will wait for request processing threads to terminate before continuing with the process of stopping the connector. If not set, the default is 5000 (5 seconds). | double | ms | gauge |
+| apache_tomcat.thread_pool.initiated_connector.state | State of bound when the connector is initiated. | boolean |  |  |
+| apache_tomcat.thread_pool.keep_alive.count | Total keep alive on the ThreadPool. | double |  | gauge |
+| apache_tomcat.thread_pool.keep_alive.max_requests | Maximum number of request keep alive in ThreadPool. | double |  | gauge |
+| apache_tomcat.thread_pool.keep_alive.timeout | Keep alive timeout on the ThreadPool. | double |  | gauge |
+| apache_tomcat.thread_pool.nio_connector | Name of NIO Connector. | keyword |  |  |
+| apache_tomcat.thread_pool.ssl_enabled | SSL enable status. | boolean |  |  |
+| apache_tomcat.thread_pool.tcp_no_delay | Status of tcp no delay option used to improves performance under most circumstances. | boolean |  |  |
+| apache_tomcat.thread_pool.thread.accept.count | Count of all threads accepted. | double |  | counter |
+| apache_tomcat.thread_pool.thread.active.count | Current active threads at JVM level (from java.lang:type=Threading). | double |  | gauge |
+| apache_tomcat.thread_pool.thread.allocated_memory.enabled | Allocated memory enabled in thread. | boolean |  |  |
+| apache_tomcat.thread_pool.thread.allocated_memory.supported | Allocated memory supported in thread. | boolean |  |  |
+| apache_tomcat.thread_pool.thread.current.allocated.bytes | Allocated bytes in current thread. | double | byte | counter |
+| apache_tomcat.thread_pool.thread.current.busy | Current busy threads from the ThreadPool. | double |  | gauge |
+| apache_tomcat.thread_pool.thread.current.count | Current number of threads, taken from the ThreadPool. | double |  | gauge |
+| apache_tomcat.thread_pool.thread.current.cpu.time.enabled | CPU time for the current thread. | boolean |  |  |
+| apache_tomcat.thread_pool.thread.current.cpu.time.ms | CPU time in milliseconds. | double | ms | gauge |
+| apache_tomcat.thread_pool.thread.current.user.time.ms | User time in milliseconds. | double | ms | gauge |
+| apache_tomcat.thread_pool.thread.daemon.count | Daemon count for the current thread. | double |  | gauge |
+| apache_tomcat.thread_pool.thread.daemon.status | The status which states whether the thread is daemon or not. | boolean |  |  |
+| apache_tomcat.thread_pool.thread.paused | Pause state of Thread. | boolean |  |  |
+| apache_tomcat.thread_pool.thread.peak.count | Peak number of threads at JVM level (from java.lang:type=Threading). | double |  | gauge |
+| apache_tomcat.thread_pool.thread.port.default | Default port of thread in Apache Tomcat. | long |  | gauge |
+| apache_tomcat.thread_pool.thread.port.offset | The offset to apply to port of thread. | long |  | gauge |
+| apache_tomcat.thread_pool.thread.port.value | Port of thread. | long |  | gauge |
+| apache_tomcat.thread_pool.thread.port.with_offset | Port of thread with offset. | long |  | gauge |
+| apache_tomcat.thread_pool.thread.priority.acceptor | The priority of the acceptor thread. | double |  | gauge |
+| apache_tomcat.thread_pool.thread.priority.count | Priority of thread. | double |  | gauge |
+| apache_tomcat.thread_pool.thread.priority.poller | The priority of the poller threads. | double |  | gauge |
+| apache_tomcat.thread_pool.thread.requests.max | Max threads from the ThreadPool, to be created by the connector and made available for requests. | double |  | counter |
+| apache_tomcat.thread_pool.thread.running.min | The minimum number of threads always kept running. | double |  | gauge |
+| apache_tomcat.thread_pool.thread.running.value | The status which states whether the thread is running or not. | boolean |  |  |
+| apache_tomcat.thread_pool.thread.selector.timeout | Selector thread's timeout. | double |  | gauge |
+| apache_tomcat.thread_pool.thread.sni_parse_limit | SNI parsing limit of thread. | double |  | gauge |
+| apache_tomcat.thread_pool.thread.supported.contention_monitoring | This is used to determine if a Java virtual machine supports thread contention monitoring. | boolean |  |  |
+| apache_tomcat.thread_pool.thread.supported.cpu.current.time | CPU time that the current thread has executed in user mode is supported or not. | boolean |  |  |
+| apache_tomcat.thread_pool.thread.supported.usage.object_monitor | Support of object monitor usage of thread. | boolean |  |  |
+| apache_tomcat.thread_pool.thread.supported.usage.synchronizer | Support of synchronizer usage. | boolean |  |  |
+| apache_tomcat.thread_pool.thread.total | Total threads at the JVM level (from java.lang:type=Threading). | double |  | gauge |
+| apache_tomcat.thread_pool.use_inherited_channel | Returns the channel inherited from the entity that created this Java virtual machine. | boolean |  |  |
+| apache_tomcat.thread_pool.use_send_file | Use of sendfile will disable any compression that Tomcat may otherwise have performed on the response. | boolean |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |

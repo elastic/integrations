@@ -1,0 +1,216 @@
+- name: apache_tomcat
+  type: group
+  fields:
+    - name: thread_pool
+      type: group
+      fields:
+        - name: connection
+          type: group
+          fields:
+            - name: count
+              type: double
+              description: Count of all connections.
+              metric_type: counter
+            - name: linger
+              type: double
+              description: The number of seconds during which the sockets used by this connector will linger when they are closed.
+              metric_type: gauge
+              unit: s
+            - name: max
+              type: double
+              description: The total number of concurrent connections that the server will accept and process.
+              metric_type: gauge
+            - name: timeout
+              type: double
+              description: Thread connection timeout.
+              metric_type: counter
+        - name: contention.monitoring_enabled
+          type: boolean
+          description: This is used to determine if a Java virtual machine enables thread contention monitoring.
+        - name: executor_termination.timeout.ms
+          type: double
+          description: The time that the private internal executor will wait for request processing threads to terminate before continuing with the process of stopping the connector. If not set, the default is 5000 (5 seconds).
+          metric_type: gauge
+          unit: ms
+        - name: initiated_connector.state
+          type: boolean
+          description: State of bound when the connector is initiated.
+        - name: keep_alive
+          type: group
+          fields:
+            - name: count
+              type: double
+              description: Total keep alive on the ThreadPool.
+              metric_type: gauge
+            - name: max_requests
+              type: double
+              description: Maximum number of request keep alive in ThreadPool.
+              metric_type: gauge
+            - name: timeout
+              type: double
+              description: Keep alive timeout on the ThreadPool.
+              metric_type: gauge
+        - name: nio_connector
+          type: keyword
+          description: Name of NIO Connector.
+          # Reason to add as a dimension field: Users can configure many different NIO Connector in Apache Tomcat instance.
+          dimension: true
+        - name: ssl_enabled
+          type: boolean
+          description: SSL enable status.
+        - name: tcp_no_delay
+          type: boolean
+          description: Status of tcp no delay option used to improves performance under most circumstances.
+        - name: thread
+          type: group
+          fields:
+            - name: accept.count
+              type: double
+              description: Count of all threads accepted.
+              metric_type: counter
+            - name: active.count
+              type: double
+              description: Current active threads at JVM level (from java.lang:type=Threading).
+              metric_type: gauge
+            - name: allocated_memory
+              type: group
+              fields:
+                - name: enabled
+                  type: boolean
+                  description: Allocated memory enabled in thread.
+                - name: supported
+                  type: boolean
+                  description: Allocated memory supported in thread.
+            - name: current
+              type: group
+              fields:
+                - name: allocated.bytes
+                  type: double
+                  description: Allocated bytes in current thread.
+                  metric_type: counter
+                  unit: byte
+                - name: busy
+                  type: double
+                  description: Current busy threads from the ThreadPool.
+                  metric_type: gauge
+                - name: count
+                  type: double
+                  description: Current number of threads, taken from the ThreadPool.
+                  metric_type: gauge
+                - name: cpu.time
+                  type: group
+                  fields:
+                    - name: enabled
+                      type: boolean
+                      description: CPU time for the current thread.
+                    - name: ms
+                      type: double
+                      description: CPU time in milliseconds.
+                      metric_type: gauge
+                      unit: ms
+                - name: user.time.ms
+                  type: double
+                  description: User time in milliseconds.
+                  metric_type: gauge
+                  unit: ms
+            - name: daemon
+              type: group
+              fields:
+                - name: count
+                  type: double
+                  description: Daemon count for the current thread.
+                  metric_type: gauge
+                - name: status
+                  type: boolean
+                  description: The status which states whether the thread is daemon or not.
+            - name: paused
+              type: boolean
+              description: Pause state of Thread.
+            - name: peak.count
+              type: double
+              description: Peak number of threads at JVM level (from java.lang:type=Threading).
+              metric_type: gauge
+            - name: port
+              type: group
+              fields:
+                - name: default
+                  type: long
+                  description: Default port of thread in Apache Tomcat.
+                  metric_type: gauge
+                - name: offset
+                  type: long
+                  description: The offset to apply to port of thread.
+                  metric_type: gauge
+                - name: value
+                  type: long
+                  description: Port of thread.
+                  metric_type: gauge
+                - name: with_offset
+                  type: long
+                  description: Port of thread with offset.
+                  metric_type: gauge
+            - name: priority
+              type: group
+              fields:
+                - name: acceptor
+                  type: double
+                  description: The priority of the acceptor thread.
+                  metric_type: gauge
+                - name: count
+                  type: double
+                  description: Priority of thread.
+                  metric_type: gauge
+                - name: poller
+                  type: double
+                  description: The priority of the poller threads.
+                  metric_type: gauge
+            - name: requests.max
+              type: double
+              description: Max threads from the ThreadPool, to be created by the connector and made available for requests.
+              metric_type: counter
+            - name: running
+              type: group
+              fields:
+                - name: min
+                  type: double
+                  description: The minimum number of threads always kept running.
+                  metric_type: gauge
+                - name: value
+                  type: boolean
+                  description: The status which states whether the thread is running or not.
+            - name: selector.timeout
+              type: double
+              description: Selector thread's timeout.
+              metric_type: gauge
+            - name: sni_parse_limit
+              type: double
+              description: SNI parsing limit of thread.
+              metric_type: gauge
+            - name: supported
+              type: group
+              fields:
+                - name: contention_monitoring
+                  type: boolean
+                  description: This is used to determine if a Java virtual machine supports thread contention monitoring.
+                - name: cpu.current.time
+                  type: boolean
+                  description: CPU time that the current thread has executed in user mode is supported or not.
+                - name: usage
+                  type: group
+                  fields:
+                    - name: object_monitor
+                      type: boolean
+                      description: Support of object monitor usage of thread.
+                    - name: synchronizer
+                      type: boolean
+                      description: Support of synchronizer usage.
+            - name: total
+              type: double
+              description: Total threads at the JVM level (from java.lang:type=Threading).
+              metric_type: gauge
+        - name: use_inherited_channel
+          type: boolean
+          description: Returns the channel inherited from the entity that created this Java virtual machine.
+        - name: use_send_file
+          type: boolean
+          description: Use of sendfile will disable any compression that Tomcat may otherwise have performed on the response.
