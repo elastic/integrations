@@ -4,6 +4,18 @@ processors:
   - set:
       field: ecs.version
       value: '8.8.0'
+  - set:
+      field: service.name
+      value: '{{kubernetes.labels.app_kubernetes_io/name}}'
+      if: ctx?.kubernetes?.labels['app_kubernetes_io/name'] != null
+  - set:
+      field: service.name
+      value: '{{kubernetes.container.name}}'
+      if: ctx?.service?.name == null && ctx?.kubernetes?.container?.name != null
+  - set:
+      field: service.version
+      value: '{{kubernetes.labels.app_kubernetes_io/version}}'
+      if: ctx?.kubernetes?.labels['app_kubernetes_io/version'] != null
   - reroute:
       dataset:
         - '{{kubernetes.labels.elastic_co/dataset}}'
