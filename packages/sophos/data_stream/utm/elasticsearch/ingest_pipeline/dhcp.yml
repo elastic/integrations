@@ -1,0 +1,166 @@
+---
+description: Pipeline for Sophos UTM DHCP logs
+processors:
+  - append:
+      field: event.type
+      value: 
+        - connection
+        - protocol
+      allow_duplicates: false
+      tag: append_type_network
+  - set:
+      field: network.protocol
+      value: dhcp
+      tag: set_network_protocol
+  - set:
+      field: network.transport
+      value: udp
+      tag: set_network_transport
+
+  # Process DHCP events in separate grok processors
+  - grok:
+      if: ctx._tmp?.raw_data != null && ctx._tmp.raw_data.startsWith('DHCPDISCOVER')
+      field: _tmp.raw_data
+      patterns:
+        - '^%{WORD:event.action} from %{MAC:client.mac} via %{WORD:observer.ingress.interface.name}: %{GREEDYDATA:message}$'
+        - '^%{WORD:event.action} from %{MAC:client.mac} via %{WORD:observer.ingress.interface.name}$'
+        - '^%{WORD:event.action} %{GREEDYDATA:message}$'
+        - '^%{GREEDYDATA:message}$'
+      tag: grok_dhcp_discover
+  - grok:
+      if: ctx._tmp?.raw_data != null && ctx._tmp.raw_data.startsWith('DHCPOFFER')
+      field: _tmp.raw_data
+      patterns:
+        - '^%{WORD:event.action} on %{IP:client.ip} to %{MAC:client.mac} via %{WORD:observer.ingress.interface.name}$'
+        - '^%{WORD:event.action} %{GREEDYDATA:message}$'
+        - '^%{GREEDYDATA:message}$'
+      tag: grok_dhcp_offer
+  - grok:
+      if: ctx._tmp?.raw_data != null && ctx._tmp.raw_data.startsWith('DHCPREQUEST')
+      field: _tmp.raw_data
+      patterns:
+        - '^%{WORD:event.action} for %{IP:client.ip}( \(%{IP:sophos.utm.router.ip}\))? from %{MAC:client.mac}( \(%{DATA:sophos.utm.client.hostname}\))? via %{WORD:observer.ingress.interface.name}(: %{GREEDYDATA:message})?$'
+        - '^%{WORD:event.action} %{GREEDYDATA:message}$'
+        - '^%{GREEDYDATA:message}$'
+      tag: grok_dhcp_request
+  - grok:
+      if: ctx._tmp?.raw_data != null && ctx._tmp.raw_data.startsWith('DHCPACK')
+      field: _tmp.raw_data
+      patterns:
+        - '^%{WORD:event.action} on %{IP:client.ip} to %{MAC:client.mac}( \(%{DATA:sophos.utm.client.hostname}\))? via %{WORD:observer.ingress.interface.name}$'
+        - '^%{WORD:event.action} to %{IP:client.ip} \(%{MAC:client.mac}\) via %{WORD:observer.ingress.interface.name}$'
+        - '^%{WORD:event.action} %{GREEDYDATA:message}$'
+        - '^%{GREEDYDATA:message}$'
+      tag: grok_dhcp_ack
+  - grok:
+      if: ctx._tmp?.raw_data != null && ctx._tmp.raw_data.startsWith('DHCPNACK')
+      field: _tmp.raw_data
+      patterns:
+        - '^%{WORD:event.action} on %{IP:client.ip} to %{MAC:client.mac}( \(%{DATA:sophos.utm.client.hostname}\))? via %{WORD:observer.ingress.interface.name}$'
+        - '^%{WORD:event.action} to %{IP:client.ip} \(%{MAC:client.mac}\) via %{WORD:observer.ingress.interface.name}$'
+        - '^%{WORD:event.action} %{GREEDYDATA:message}$'
+        - '^%{GREEDYDATA:message}$'
+      tag: grok_dhcp_nak
+  - grok:
+      if: ctx._tmp?.raw_data != null && ctx._tmp.raw_data.startsWith('DHCPINFORM')
+      field: _tmp.raw_data
+      patterns:
+        - '^%{WORD:event.action} from %{IP:client.ip} via %{WORD:observer.ingress.interface.name}: %{GREEDYDATA:message}$'
+        - '^%{WORD:event.action} from %{IP:client.ip} via %{WORD:observer.ingress.interface.name}$'
+        - '^%{WORD:event.action} %{GREEDYDATA:message}$'
+        - '^%{GREEDYDATA:message}$'
+      tag: grok_dhcp_inform
+  - grok:
+      if: ctx._tmp?.raw_data != null && ctx._tmp.raw_data.startsWith('Listening')
+      field: _tmp.raw_data
+      patterns:
+        - '^%{WORD:event.action}[ ]+on[ ]+%{WORD:sophos.utm.socket}/%{WORD:observer.ingress.interface.name}/%{MAC:client.mac}/%{DATA:sophos.utm.subnet}$'
+        - '^%{WORD:event.action}[ ]+on[ ]+%{WORD:sophos.utm.socket}/%{WORD:observer.ingress.interface.name}/%{DATA:sophos.utm.subnet}$'
+        - '^%{GREEDYDATA:message}$'
+      tag: grok_dhcp_listening
+  - grok:
+      if: ctx._tmp?.raw_data != null && ctx._tmp.raw_data.startsWith('Sending')
+      field: _tmp.raw_data
+      patterns:
+        - '^%{WORD:event.action}[ ]+on[ ]+%{WORD:sophos.utm.socket}/%{WORD:observer.ingress.interface.name}/%{MAC:client.mac}/%{DATA:sophos.utm.subnet}$'
+        - '^%{WORD:event.action}[ ]+on[ ]+%{WORD:sophos.utm.socket}/%{WORD:observer.ingress.interface.name}/%{DATA:sophos.utm.subnet}$'
+        - '^%{GREEDYDATA:message}$'
+      tag: grok_dhcp_sending
+  - grok:
+      if: ctx.event?.action == null
+      field: _tmp.raw_data
+      patterns:
+        - '^%{GREEDYDATA:message}$'
+      tag: grok_dhcp_default
+  - lowercase:
+      field: event.action
+      ignore_failure: true
+      ignore_missing: true
+      tag: lowercase_event_action
+  - set:
+      field: event.action
+      value: '{{{process.name}}}-{{{event.action}}}'
+      if: ctx.event?.action != null && (ctx.event.action == 'sending' || ctx.event.action == 'listening')
+      tag: set_event_action_dhcpd
+
+  # Transform MAC address
+  - gsub:
+      field: client.mac
+      ignore_missing: true
+      pattern: '[:]'
+      replacement: '-'
+      tag: gsub_client_mac
+  - uppercase:
+      field: client.mac
+      ignore_missing: true
+      tag: uppercase_client_mac
+
+  # IP Geolocation Lookup
+  - geoip:
+      field: client.ip
+      target_field: client.geo
+      ignore_missing: true
+      tag: geo_client_ip
+
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: client.ip
+      target_field: client.as
+      properties:
+          - asn
+          - organization_name
+      ignore_missing: true
+      tag: geo_client_as
+  - rename:
+      field: client.as.asn
+      target_field: client.as.number
+      ignore_missing: true
+      tag: rename_client_as_number
+  - rename:
+      field: client.as.organization_name
+      target_field: client.as.organization.name
+      ignore_missing: true
+      tag: rename_client_as_org
+
+  # Fill related fields
+  - append:
+      field: related.hosts
+      value: '{{{sophos.utm.client.hostname}}}'
+      allow_duplicates: false
+      if: ctx.sophos?.utm?.client?.hostname != null && ctx.sophos.utm.client.hostname != ''
+      tag: append_related_client_host
+  - append:
+      field: related.ip
+      value: '{{{client.ip}}}'
+      allow_duplicates: false
+      if: ctx.client?.ip != null && ctx.client.ip != ''
+      tag: append_related_client_ip
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
