@@ -52,13 +52,13 @@ An example event for `detailed_shared_folder` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-01-13T12:25:09.044Z",
+    "@timestamp": "2023-07-24T13:38:49.667Z",
     "agent": {
-        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
-        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "ephemeral_id": "0c9df2f5-7a57-46b5-af86-d72509a29876",
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.8.2"
     },
     "data_stream": {
         "dataset": "lastpass.detailed_shared_folder",
@@ -69,15 +69,15 @@ An example event for `detailed_shared_folder` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
+        "snapshot": false,
+        "version": "8.8.2"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-01-13T12:25:09.044Z",
+        "created": "2023-07-24T13:38:49.667Z",
         "dataset": "lastpass.detailed_shared_folder",
-        "ingested": "2023-01-13T12:25:10Z",
+        "ingested": "2023-07-24T13:38:52Z",
         "kind": "state",
         "original": "{\"id\":\"101\",\"score\":99,\"sharedfoldername\":\"ThisSFName\",\"users\":{\"can_administer\":true,\"give\":false,\"readonly\":true,\"sites\":[\"aaa.com\",\"bbb.com\"],\"username\":\"joe.user@lastpass.com\"}}",
         "type": [
@@ -195,13 +195,13 @@ An example event for `event_report` looks as following:
 
 ```json
 {
-    "@timestamp": "2015-07-17T09:51:51.000Z",
+    "@timestamp": "2015-07-17T09:51:51.000-04:00",
     "agent": {
-        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
-        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "ephemeral_id": "4e6d75f4-e465-474d-a8d1-0b01f2ac927d",
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.8.2"
     },
     "data_stream": {
         "dataset": "lastpass.event_report",
@@ -212,9 +212,9 @@ An example event for `event_report` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
+        "snapshot": false,
+        "version": "8.8.2"
     },
     "event": {
         "action": "failed login attempt",
@@ -222,9 +222,9 @@ An example event for `event_report` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2023-01-13T12:25:45.230Z",
+        "created": "2023-07-24T13:39:48.616Z",
         "dataset": "lastpass.event_report",
-        "ingested": "2023-01-13T12:25:46Z",
+        "ingested": "2023-07-24T13:39:49Z",
         "kind": "event",
         "original": "{\"Action\":\"Failed Login Attempt\",\"Data\":\"\",\"IP_Address\":\"10.16.21.21\",\"Time\":\"2015-07-17 09:51:51\",\"Username\":\"j.user@example.com\",\"id\":\"Event1\"}",
         "outcome": "failure",
@@ -239,7 +239,7 @@ An example event for `event_report` looks as following:
         "event_report": {
             "action": "Failed Login Attempt",
             "ip": "10.16.21.21",
-            "time": "2015-07-17T09:51:51.000Z",
+            "time": "2015-07-17T09:51:51.000-04:00",
             "user_name": "j.user@example.com"
         }
     },
@@ -358,13 +358,13 @@ An example event for `user` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-01-13T12:26:19.400Z",
+    "@timestamp": "2023-07-24T13:40:43.764Z",
     "agent": {
-        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
-        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "ephemeral_id": "7022fcec-d213-4320-8c7d-663b20b9d82c",
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.8.2"
     },
     "data_stream": {
         "dataset": "lastpass.user",
@@ -375,18 +375,18 @@ An example event for `user` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
+        "snapshot": false,
+        "version": "8.8.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "iam"
         ],
-        "created": "2023-01-13T12:26:19.400Z",
+        "created": "2023-07-24T13:40:43.764Z",
         "dataset": "lastpass.user",
-        "ingested": "2023-01-13T12:26:20Z",
+        "ingested": "2023-07-24T13:40:46Z",
         "kind": "state",
         "original": "{\"admin\":false,\"applications\":0,\"attachments\":1,\"created\":\"2014-03-12 10:02:56\",\"disabled\":false,\"formfills\":2,\"fullname\":\"Ned Flanders\",\"groups\":[\"Domain Admins\",\"Dev Team\",\"Support Team\"],\"id\":\"101\",\"last_login\":\"2015-05-29 11:45:05\",\"last_pw_change\":\"2015-05-19 10:58:33\",\"linked\":\"personal.account@mydomain.com\",\"mpstrength\":\"100\",\"neverloggedin\":false,\"notes\":19,\"password_reset_required\":false,\"sites\":72,\"username\":\"user1@lastpass.com\"}",
         "type": [
