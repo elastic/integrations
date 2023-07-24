@@ -1413,7 +1413,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          field: host.ip
+          field: source.ip
           value: '{{{_ingest._value.ip_address}}}'
           allow_duplicates: false
           ignore_failure: true
@@ -2098,7 +2098,6 @@ processors:
           ctx.user = new HashMap();
         }
         def userDomain = new HashSet();
-        def userId = new HashSet();
         def userName = new HashSet();
         def userEmail = new HashSet();
         if (!(ctx.process instanceof HashMap)) {
@@ -2122,9 +2121,6 @@ processors:
             if (['#microsoft.graph.security.mailboxEvidence', '#microsoft.graph.security.userEvidence'].contains(evidence.odata_type)) {
               if (evidence?.user_account?.domain_name != null) {
                 userDomain.add(evidence.user_account.domain_name);
-              }
-              if (evidence?.user_account?.azure_ad_user_id != null) {
-                userId.add(evidence.user_account.azure_ad_user_id);
               }
               if (evidence?.user_account?.user_principal_name != null) {
                 userEmail.add(evidence.user_account.user_principal_name);
@@ -2158,14 +2154,12 @@ processors:
         if (!userDomain.isEmpty()) {
           ctx.user.domain = convertToOrderedArray(userDomain);
         }
-        if (!userId.isEmpty()) {
-          ctx.user.id = convertToOrderedArray(userId);
-        }
         if (!userName.isEmpty()) {
           ctx.user.name = convertToOrderedArray(userName);
         }
         if (!userEmail.isEmpty()) {
           ctx.user.email = convertToOrderedArray(userEmail);
+          ctx.user.id = ctx.user.email;
         }
         if (!processUserId.isEmpty()) {
           ctx.process.user.id = convertToOrderedArray(processUserId);
@@ -2285,7 +2279,7 @@ processors:
           ignore_failure: true
           processor:
             remove:
-              field: 
+              field:
                 - _ingest._value.account_name
               ignore_missing: true
   - foreach:
