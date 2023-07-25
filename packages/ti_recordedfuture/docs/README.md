@@ -10,19 +10,26 @@ from multiple entities, it's necessary to define one integration for each.
 Alternatively, it's also possible to use the integration to fetch custom Fusion files
 by supplying the URL to the CSV file as the _Custom_ _URL_ configuration option.
 
+### Expiration of Indicators of Compromise (IOCs)
+The ingested IOCs expire after certain duration. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to faciliate only active IOCs be available to the end users. This transform creates a destination index named `logs-ti_recordedfuture_latest.threat` which only contains active and unexpired IOCs. When setting up indicator match rules, use this latest destination index to avoid false positives from expired IOCs. Please read [ILM Policy](#ilm-policy) below which is added to avoid unbounded growth on source `.ds-logs-ti_recordedfuture.threat-*` indices.
+
+### ILM Policy
+To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_recordedfuture.threat-*` are allowed to contain duplicates from each polling interval. ILM policy is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date. 
+
+
 **NOTE:** For large risklist downloads, adjust the timeout setting so that the Agent has enough time to download and process the risklist.
 
 An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-28T00:51:15.439Z",
+    "@timestamp": "2023-05-31T11:13:32.635Z",
     "agent": {
-        "ephemeral_id": "ab36e75a-d84f-4a16-9896-44e791dc923d",
-        "id": "33b93e16-9d01-4487-9b09-99db9e860912",
+        "ephemeral_id": "e583bff6-64ed-4587-8eda-0a4f5249d2b4",
+        "id": "214e2522-a0a5-4ad8-bbc2-412caa5e26c4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.2"
+        "version": "8.8.0"
     },
     "data_stream": {
         "dataset": "ti_recordedfuture.threat",
@@ -30,18 +37,18 @@ An example event for `threat` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "33b93e16-9d01-4487-9b09-99db9e860912",
-        "snapshot": false,
-        "version": "8.2.2"
+        "id": "214e2522-a0a5-4ad8-bbc2-412caa5e26c4",
+        "snapshot": true,
+        "version": "8.8.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
         "dataset": "ti_recordedfuture.threat",
-        "ingested": "2022-06-28T00:51:16Z",
+        "ingested": "2023-05-31T11:13:33Z",
         "kind": "enrichment",
         "risk_score": 87,
         "timezone": "+00:00",
@@ -104,6 +111,7 @@ An example event for `threat` looks as following:
                 "Timestamp": "2021-07-10T00:00:00.000Z"
             }
         ],
+        "name": "http://144.34.179.162/a",
         "risk_string": "2/24"
     },
     "tags": [
@@ -115,6 +123,14 @@ An example event for `threat` looks as following:
             "name": "Recorded Future"
         },
         "indicator": {
+            "provider": [
+                "Ars Technica",
+                "fook.news",
+                "urdupresss.com",
+                "HackDig Posts",
+                "apple.news",
+                "Insikt Group"
+            ],
             "type": "url",
             "url": {
                 "domain": "144.34.179.162",
@@ -177,6 +193,8 @@ An example event for `threat` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
+| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |

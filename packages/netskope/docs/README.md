@@ -611,7 +611,7 @@ An example event for `alerts` looks as following:
         "ip": "81.2.69.143"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "19f05486-b68d-449a-9bdd-1493d2f3b55d",
@@ -1029,8 +1029,6 @@ An example event for `alerts` looks as following:
 | netskope.events.referer.query |  | keyword |
 | netskope.events.referer.scheme |  | keyword |
 | netskope.events.referer.username |  | keyword |
-| netskope.events.region | N/A | keyword |
-| netskope.events.region.id | Region ID (as provided by the cloud provider). | keyword |
 | netskope.events.repo | N/A | keyword |
 | netskope.events.request.count | Total number of HTTP requests (equal to number of transaction events for this page event) sent from client to server over one underlying TCP connection. | long |
 | netskope.events.request.id | Unique request ID for the event. | keyword |
@@ -1194,7 +1192,7 @@ An example event for `events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "19f05486-b68d-449a-9bdd-1493d2f3b55d",

@@ -632,28 +632,16 @@
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
-                                                        "orderAgg": {
-                                                            "dataType": "number",
-                                                            "isBucketed": false,
-                                                            "label": "Sum of kubernetes.controllermanager.workqueue.adds.count",
-                                                            "operationType": "sum",
-                                                            "params": {
-                                                                "emptyAsNull": true
-                                                            },
-                                                            "scale": "ratio",
-                                                            "sourceField": "kubernetes.controllermanager.workqueue.adds.count"
-                                                        },
                                                         "orderBy": {
-                                                            "type": "custom"
+                                                            "fallback": false,
+                                                            "type": "alphabetical"
                                                         },
-                                                        "orderDirection": "desc",
+                                                        "orderDirection": "asc",
                                                         "otherBucket": false,
                                                         "parentFormat": {
-                                                            "id": "multi_terms"
+                                                            "id": "terms"
                                                         },
-                                                        "secondaryFields": [
-                                                            "host.name"
-                                                        ],
+                                                        "secondaryFields": [],
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
@@ -665,27 +653,7 @@
                                     }
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "3ed2b7d8-6b77-43b7-8ed3-c52117016d59",
-                                        "key": "kubernetes.controllermanager.workqueue.adds.count",
-                                        "negate": false,
-                                        "type": "exists",
-                                        "value": "exists"
-                                    },
-                                    "query": {
-                                        "exists": {
-                                            "field": "kubernetes.controllermanager.workqueue.adds.count"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -2561,7 +2529,7 @@
                                                                 "decimals": 0
                                                             }
                                                         },
-                                                        "formula": "counter_rate(sum(kubernetes.controllermanager.client.request.count))",
+                                                        "formula": "counter_rate(last_value(kubernetes.controllermanager.client.request.count))",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -2579,9 +2547,9 @@
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Part of Server errors",
-                                                    "operationType": "sum",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "kubernetes.controllermanager.client.request.count"
@@ -2619,7 +2587,7 @@
                                                                 "decimals": 0
                                                             }
                                                         },
-                                                        "formula": "counter_rate(sum(kubernetes.controllermanager.client.request.count))",
+                                                        "formula": "counter_rate(last_value(kubernetes.controllermanager.client.request.count))",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -2637,9 +2605,9 @@
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Part of Client errors",
-                                                    "operationType": "sum",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "kubernetes.controllermanager.client.request.count"
@@ -2673,7 +2641,7 @@
                                                                 "decimals": 0
                                                             }
                                                         },
-                                                        "formula": "counter_rate(sum(kubernetes.controllermanager.client.request.count))",
+                                                        "formula": "counter_rate(last_value(kubernetes.controllermanager.client.request.count))",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -2685,11 +2653,15 @@
                                                 "63268365-bb35-456f-831c-78238984a061X0": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "kubernetes.controllermanager.client.request.count: *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Part of Requests",
-                                                    "operationType": "sum",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "kubernetes.controllermanager.client.request.count"
@@ -2722,7 +2694,7 @@
                                                 "d3b90051-0bb2-41e0-9d5d-34ff145dba09": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 3 values of host.name",
+                                                    "label": "Top values",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
@@ -2733,12 +2705,16 @@
                                                         "orderDirection": "asc",
                                                         "otherBucket": false,
                                                         "parentFormat": {
-                                                            "id": "terms"
+                                                            "id": "multi_terms"
                                                         },
+                                                        "secondaryFields": [
+                                                            "kubernetes.controllermanager.method",
+                                                            "kubernetes.controllermanager.code"
+                                                        ],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.name"
+                                                    "sourceField": "kubernetes.controllermanager.host"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -2875,12 +2851,12 @@
                                                             "id": "multi_terms"
                                                         },
                                                         "secondaryFields": [
-                                                            "kubernetes.controllermanager.host"
+                                                            "kubernetes.controllermanager.verb"
                                                         ],
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.name"
+                                                    "sourceField": "kubernetes.controllermanager.host"
                                                 },
                                                 "43097f7a-e478-47bc-81c1-7541bd899d46": {
                                                     "customLabel": true,
@@ -2896,7 +2872,7 @@
                                                                 "suffix": "ms"
                                                             }
                                                         },
-                                                        "formula": "sum(kubernetes.controllermanager.client.request.duration.us.sum)/sum(kubernetes.controllermanager.client.request.duration.us.count)/1000",
+                                                        "formula": "last_value(kubernetes.controllermanager.client.request.duration.us.sum)/last_value(kubernetes.controllermanager.client.request.duration.us.count)/1000",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -2907,11 +2883,15 @@
                                                 "43097f7a-e478-47bc-81c1-7541bd899d46X0": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "kubernetes.controllermanager.client.request.duration.us.sum: *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Part of Average latency in ms",
-                                                    "operationType": "sum",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "kubernetes.controllermanager.client.request.duration.us.sum"
@@ -2919,11 +2899,15 @@
                                                 "43097f7a-e478-47bc-81c1-7541bd899d46X1": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "kubernetes.controllermanager.client.request.duration.us.count: *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Part of Average latency in ms",
-                                                    "operationType": "sum",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "kubernetes.controllermanager.client.request.duration.us.count"
@@ -2948,11 +2932,11 @@
                                                                 1000
                                                             ],
                                                             "location": {
-                                                                "max": 136,
+                                                                "max": 150,
                                                                 "min": 0
                                                             },
                                                             "name": "divide",
-                                                            "text": "sum(kubernetes.controllermanager.client.request.duration.us.sum)/sum(kubernetes.controllermanager.client.request.duration.us.count)/1000",
+                                                            "text": "last_value(kubernetes.controllermanager.client.request.duration.us.sum)/last_value(kubernetes.controllermanager.client.request.duration.us.count)/1000",
                                                             "type": "function"
                                                         }
                                                     },

@@ -3,7 +3,7 @@ description: Pipeline for processing System Status Alert logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.8.0'
   - grok:
       field: message
       patterns:
@@ -134,13 +134,14 @@ processors:
       target_field: darktrace.system_status_alert._temp_.ip_address
       type: ip
       ignore_failure: true
-  - set:
+  - append:
       field: host.ip
-      copy_from: darktrace.system_status_alert._temp_.ip_address
+      value: '{{{darktrace.system_status_alert._temp_.ip_address}}}'
+      allow_duplicates: false
       ignore_failure: true
   - append:
       field: related.ip
-      value: '{{{host.ip}}}'
+      value: '{{{darktrace.system_status_alert._temp_.ip_address}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -230,6 +231,9 @@ processors:
         }
         dropEmptyFields(ctx);
 on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

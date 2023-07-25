@@ -226,66 +226,66 @@ An example event for `host` looks as following:
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
-| nagios_xi.host.acknowledgement_type |  | keyword |
+| nagios_xi.host.acknowledgement_type | The acknowledgement_type column can be either 0, 1, or 2 which represent None, Normal, or Sticky, respectively. | keyword |
 | nagios_xi.host.action_url | This is used to define an optional URL that can be used to provide more actions to be performed on the host. | keyword |
 | nagios_xi.host.active_checks_enabled | This is used to determine whether or not active checks (either regularly scheduled or on-demand) of this host are enabled. Values=\> 0 = disable active host checks, 1 = enable active host checks (default). | keyword |
 | nagios_xi.host.address | This is used to define the address of the host. Normally, this is an IP address, although it could really be anything user want (so long as it can be used to check the status of the host). | keyword |
 | nagios_xi.host.check_command | This is used to specify the short name of the command that should be used to check if the host is up or down. Typically, this command would try and ping the host to see if it is "alive". | keyword |
-| nagios_xi.host.check_options |  | keyword |
-| nagios_xi.host.check_timeperiod_object_id |  | keyword |
-| nagios_xi.host.check_type |  | keyword |
-| nagios_xi.host.current_check_attempt |  | keyword |
-| nagios_xi.host.current_notification_number |  | keyword |
-| nagios_xi.host.current_state | This is used to check current status of host. | keyword |
+| nagios_xi.host.check_options | Refers to the various parameters and settings that can be configured for a specific check command or plugin. | keyword |
+| nagios_xi.host.check_timeperiod_object_id | Refers to the identifier of a time period object used for scheduling checks and notifications within the monitoring system. | keyword |
+| nagios_xi.host.check_type | Refers to the type or category of the monitoring check being performed on a particular host. | keyword |
+| nagios_xi.host.current_check_attempt | Refers to the current attempt number of a particular check being executed on a monitored host. | keyword |
+| nagios_xi.host.current_notification_number | Refers to the current number of the notifications being sent out by the system for a particular host. | keyword |
+| nagios_xi.host.current_state | This is used to check the current status of the host. | keyword |
 | nagios_xi.host.display_name | This is used to define an alternate name that should be displayed in the web interface for this host. | keyword |
 | nagios_xi.host.event_handler | This is used to specify the short name of the command that should be run whenever a change in the state of the host is detected (i.e. whenever it goes down or recovers). | keyword |
 | nagios_xi.host.event_handler_enabled | This is used to determine whether or not the event handler for this host is enabled. Values=\> 0 = disable host event handler, 1 = enable host event handler. | keyword |
-| nagios_xi.host.execution_time |  | double |
-| nagios_xi.host.failure_prediction_enabled |  | keyword |
+| nagios_xi.host.execution_time | Refers to the duration or elapsed time taken to execute a monitoring check on a specific host. | double |
+| nagios_xi.host.failure_prediction_enabled | Refers to a configuration setting that determines whether failure prediction is enabled for a specific host or not. | keyword |
 | nagios_xi.host.flap_detection_enabled | This is used to determine whether or not flap detection is enabled for this host. More information on flap detection can be found here. Values=\> 0 = disable host flap detection, 1 = enable host flap detection. | keyword |
-| nagios_xi.host.has_been_checked |  | keyword |
+| nagios_xi.host.has_been_checked | Refers to a flag or attribute that indicates whether a particular host has been checked during the current monitoring cycle. | keyword |
 | nagios_xi.host.host_alias | This is used to define a longer name or description used to identify the host. | keyword |
 | nagios_xi.host.host_name | This is used to define a short name used to identify the host. It is used in host group and service definitions to reference this particular host. | keyword |
-| nagios_xi.host.host_object_id |  | keyword |
-| nagios_xi.host.hoststatus_id |  | keyword |
+| nagios_xi.host.host_object_id | Refers to the unique identifier assigned to a host object within the monitoring system. | keyword |
+| nagios_xi.host.hoststatus_id | Refers to the unique identifier assigned to a host status entry in the monitoring system. | keyword |
 | nagios_xi.host.icon_image | This variable is used to define the name of a GIF, PNG, or JPG image that should be associated with this host. This image will be displayed in the various places in the CGIs. | keyword |
 | nagios_xi.host.icon_image_alt | This variable is used to define an optional string that is used in the ALT tag of the image specified by the \<icon_image\> argument. | keyword |
-| nagios_xi.host.instance_id |  | keyword |
-| nagios_xi.host.is_flapping |  | keyword |
-| nagios_xi.host.last_check |  | date |
-| nagios_xi.host.last_hard_state |  | keyword |
-| nagios_xi.host.last_hard_state_change |  | date |
-| nagios_xi.host.last_notification |  | date |
-| nagios_xi.host.last_state_change |  | date |
-| nagios_xi.host.last_time_down |  | date |
-| nagios_xi.host.last_time_unreachable |  | date |
-| nagios_xi.host.last_time_up |  | date |
-| nagios_xi.host.latency |  | double |
-| nagios_xi.host.long_output |  | keyword |
+| nagios_xi.host.instance_id | Refers to a unique identifier assigned to an instance of Nagios XI or a specific component within the Nagios XI system. | keyword |
+| nagios_xi.host.is_flapping | Refers to a flag or attribute that indicates whether a particular host is experiencing flapping. | keyword |
+| nagios_xi.host.last_check | Refers to the timestamp indicating the most recent time when a host was checked during the monitoring process. | date |
+| nagios_xi.host.last_hard_state | Refers to the last known "hard state" of a host during the monitoring process. | keyword |
+| nagios_xi.host.last_hard_state_change | Refers to the timestamp indicating the most recent time when the hard state of a host changed. | date |
+| nagios_xi.host.last_notification | Refers to the timestamp indicating the most recent time when a notification was sent for a particular host. | date |
+| nagios_xi.host.last_state_change | Refers to the timestamp indicating the most recent time when a host experienced a change in its overall state. | date |
+| nagios_xi.host.last_time_down | Refers to the timestamp indicating the most recent time when a host was detected as being in a "down" state. | date |
+| nagios_xi.host.last_time_unreachable | Refers to the timestamp indicating the most recent time when a host was detected as being "unreachable." | date |
+| nagios_xi.host.last_time_up | Refers to the timestamp indicating the most recent time when a host was detected as being in an "up" state. | date |
+| nagios_xi.host.latency | Refers to the measure of the time it takes for a monitoring check to be performed and for the result to be obtained from the monitored host. | double |
+| nagios_xi.host.long_output | Refers to the detailed description or additional information associated with a host check result. It provides more specific and comprehensive details about the status or condition of the monitored object. | keyword |
 | nagios_xi.host.max_check_attempts | This is used to define the number of times that Nagios will retry the host check command if it returns any state other than an OK state. | keyword |
-| nagios_xi.host.modified_host_attributes |  | keyword |
-| nagios_xi.host.next_check |  | date |
-| nagios_xi.host.next_notification |  | date |
-| nagios_xi.host.no_more_notifications |  | keyword |
+| nagios_xi.host.modified_host_attributes | Refers to the set of host attributes or properties that have been manually modified or overridden by the administrator or user, deviating from the default configuration. | keyword |
+| nagios_xi.host.next_check | Refers to the timestamp indicating the scheduled time for the next check to be performed on a host. | date |
+| nagios_xi.host.next_notification | Refers to the timestamp indicating the scheduled time for the next notification to be sent for a particular host. | date |
+| nagios_xi.host.no_more_notifications | This is used in specific scenarios when it is necessary to prevent additional notifications from being sent for a host. | keyword |
 | nagios_xi.host.normal_check_interval | This is used to define the number of "time units" between regularly scheduled checks of the host. | long |
 | nagios_xi.host.notes | This is used to define an optional string of notes pertaining to the host. | keyword |
 | nagios_xi.host.notes_url | This variable is used to define an optional URL that can be used to provide more information about the host. | keyword |
 | nagios_xi.host.notifications_enabled | This is used to determine whether or not notifications for this host are enabled. Values=\> 0 = disable host notifications, 1 = enable host notifications. | keyword |
 | nagios_xi.host.obsess_over_host | This determines whether or not checks for the host will be "obsessed" over using the ochp_command. | keyword |
-| nagios_xi.host.output |  | keyword |
+| nagios_xi.host.output | Refers to the textual information or status message that is generated as the result of a host check. | keyword |
 | nagios_xi.host.passive_checks_enabled | This is used to determine whether or not passive checks are enabled for this host. Values=\> 0 = disable passive host checks, 1 = enable passive host checks (default). | keyword |
-| nagios_xi.host.percent_state_change |  | keyword |
+| nagios_xi.host.percent_state_change | Refers to a metric that represents the percentage of state changes that have occurred for a particular host within a specified time period. | keyword |
 | nagios_xi.host.performance_data.pl | This shows Packet Loss for current host. | double |
 | nagios_xi.host.performance_data.rta | This shows Round Trip Around for current host. | double |
 | nagios_xi.host.performance_data.size | This shows Request Size for current host. | double |
 | nagios_xi.host.performance_data.time | This shows Time taken while request for current host. | double |
-| nagios_xi.host.problem_has_been_acknowledged |  | keyword |
+| nagios_xi.host.problem_has_been_acknowledged | This is a flag or attribute associated with a host that indicates whether a particular problem or issue has been acknowledged by an administrator or user. | keyword |
 | nagios_xi.host.process_performance_data | This is used to determine whether or not the processing of performance data is enabled for this host. Values=\> 0 = disable performance data processing, 1 = enable performance data processing. | keyword |
 | nagios_xi.host.retry_check_interval | This is used to define the number of "time units" to wait before scheduling a re-check of the hosts. Hosts are rescheduled at the retry interval when they have changed to a non-UP state. | long |
-| nagios_xi.host.scheduled_downtime_depth |  | keyword |
-| nagios_xi.host.should_be_scheduled |  | keyword |
-| nagios_xi.host.state_type |  | keyword |
-| nagios_xi.host.status_update_time |  | date |
+| nagios_xi.host.scheduled_downtime_depth | Refers to the number of active scheduled downtimes affecting a particular host. It indicates the depth or level of scheduled downtimes that have been applied to the object. | keyword |
+| nagios_xi.host.should_be_scheduled | Refers to a flag or attribute associated with a host that indicates whether it should be included in the scheduling process for checks and notifications. | keyword |
+| nagios_xi.host.state_type | Refers to a configuration setting that determines the behavior of how the state of a host is determined and interpreted in the monitoring process. | keyword |
+| nagios_xi.host.status_update_time | Refers to the timestamp or time of the most recent status update for a host. It indicates the time when the current status of the object was last updated. | date |
 | related.ip | All of the IPs seen on your event. | ip |
 | tags | List of keywords used to tag each event. | keyword |
 
@@ -422,68 +422,68 @@ An example event for `service` looks as following:
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
-| nagios_xi.service.acknowledgement_type |  | keyword |
+| nagios_xi.service.acknowledgement_type | The acknowledgement_type column can be either 0, 1, or 2 which represent None, Normal, or Sticky, respectively. | keyword |
 | nagios_xi.service.action_url | This is used to define an optional URL that can be used to provide more actions to be performed on the host. If you specify an URL, you will see a red "splat" icon in the CGIs (when you are viewing host information) that links to the URL you specify here. Any valid URL can be used. If you plan on using relative paths, the base path will the the same as what is used to access the CGIs (i.e. /cgi-bin/nagios/). | keyword |
 | nagios_xi.service.active_checks_enabled | This is used to determine whether or not active checks (either regularly scheduled or on-demand) of this host are enabled. Values=\> 0 = disable active host checks, 1 = enable active host checks (default). | keyword |
 | nagios_xi.service.check_command | This is used to specify the short name of the command that should be used to check if the host is up or down. Typically, this command would try and ping the host to see if it is "alive". The command must return a status of OK (0) or Nagios will assume the host is down. If you leave this argument blank, the host will not be actively checked. Thus, Nagios will likely always assume the host is up (it may show up as being in a "PENDING" state in the web interface). This is useful if you are monitoring printers or other devices that are frequently turned off. The maximum amount of time that the notification command can run is controlled by the host_check_timeout option. | keyword |
-| nagios_xi.service.check_options |  | keyword |
-| nagios_xi.service.check_timeperiod_object_id |  | keyword |
-| nagios_xi.service.check_type |  | keyword |
-| nagios_xi.service.current_check_attempt |  | keyword |
+| nagios_xi.service.check_options | Refers to the various parameters and settings that can be configured for a specific check command or plugin. | keyword |
+| nagios_xi.service.check_timeperiod_object_id | Refers to the identifier of a time period object used for scheduling checks and notifications within the monitoring system. | keyword |
+| nagios_xi.service.check_type | Refers to the type or category of the monitoring check being performed on a particular service. | keyword |
+| nagios_xi.service.current_check_attempt | Refers to the current attempt number of a particular check being executed on a monitored service. | keyword |
 | nagios_xi.service.current_load.load1 | Current Load in 1m. | double |
 | nagios_xi.service.current_load.load15 | Current Load in 15m. | double |
 | nagios_xi.service.current_load.load5 | Current Load in 5m. | double |
 | nagios_xi.service.current_load.performance_data | Exact output of check_command. | keyword |
-| nagios_xi.service.current_notification_number |  | keyword |
-| nagios_xi.service.current_state |  | keyword |
+| nagios_xi.service.current_notification_number | Refers to the current number of the notifications being sent out by the system for a particular service. | keyword |
+| nagios_xi.service.current_state | This is used to check the current status of the host. | keyword |
 | nagios_xi.service.current_users.performance_data | Exact output of check_command. | keyword |
 | nagios_xi.service.current_users.users | Current Users in host. | double |
 | nagios_xi.service.custom.performance_data | Exact output of check_command. | keyword |
 | nagios_xi.service.event_handler | This is used to specify the short name of the command that should be run whenever a change in the state of the host is detected (i.e. whenever it goes down or recovers). Read the documentation on event handlers for a more detailed explanation of how to write scripts for handling events. The maximum amount of time that the event handler command can run is controlled by the event_handler_timeout option. | keyword |
 | nagios_xi.service.event_handler_enabled | This is used to determine whether or not the event handler for this host is enabled. Values=\> 0 = disable host event handler, 1 = enable host event handler. | keyword |
-| nagios_xi.service.execution_time |  | double |
-| nagios_xi.service.failure_prediction_enabled |  | keyword |
+| nagios_xi.service.execution_time | Refers to the duration or elapsed time taken to execute a monitoring check on a specific service. | double |
+| nagios_xi.service.failure_prediction_enabled | Refers to a configuration setting that determines whether failure prediction is enabled for a specific host or not. | keyword |
 | nagios_xi.service.flap_detection_enabled | This is used to determine whether or not flap detection is enabled for this host. More information on flap detection can be found here. Values=\> 0 = disable host flap detection, 1 = enable host flap detection. | keyword |
-| nagios_xi.service.has_been_checked |  | keyword |
-| nagios_xi.service.host_address |  | keyword |
+| nagios_xi.service.has_been_checked | Refers to a flag or attribute that indicates whether a particular service has been checked during the current monitoring cycle. | keyword |
+| nagios_xi.service.host_address | Refers to the IP address or network address associated with a specific host that is being monitored. | keyword |
 | nagios_xi.service.host_alias |  | keyword |
-| nagios_xi.service.host_name |  | keyword |
-| nagios_xi.service.host_object_id |  | keyword |
+| nagios_xi.service.host_name | This is used to define a short name used to identify the host. It is used in host group and service definitions to reference this particular host. | keyword |
+| nagios_xi.service.host_object_id | Refers to the unique identifier assigned to a host object within the monitoring system. | keyword |
 | nagios_xi.service.http.performance_data | Exact output of check_command. | keyword |
 | nagios_xi.service.http.size | Http byte size while request to host. | double |
 | nagios_xi.service.http.time | Http Time taken while request to host. | double |
 | nagios_xi.service.icon_image | This variable is used to define the name of a GIF, PNG, or JPG image that should be associated with this host. This image will be displayed in the various places in the CGIs. The image will look best if it is 40x40 pixels in size. Images for hosts are assumed to be in the logos/ subdirectory in your HTML images directory (i.e. /usr/local/nagios/share/images/logos). | keyword |
 | nagios_xi.service.icon_image_alt | This variable is used to define an optional string that is used in the ALT tag of the image specified by the \<icon_image\> argument. | keyword |
-| nagios_xi.service.instance_id |  | keyword |
-| nagios_xi.service.is_flapping |  | keyword |
-| nagios_xi.service.last_check |  | date |
-| nagios_xi.service.last_hard_state |  | keyword |
-| nagios_xi.service.last_hard_state_change |  | date |
-| nagios_xi.service.last_notification |  | date |
-| nagios_xi.service.last_state_change |  | date |
-| nagios_xi.service.last_time_critical |  | date |
-| nagios_xi.service.last_time_ok |  | date |
-| nagios_xi.service.last_time_unknown |  | date |
-| nagios_xi.service.last_time_warning |  | date |
-| nagios_xi.service.latency |  | double |
-| nagios_xi.service.long_output |  | keyword |
+| nagios_xi.service.instance_id | Refers to a unique identifier assigned to an instance of Nagios XI or a specific component within the Nagios XI system. | keyword |
+| nagios_xi.service.is_flapping | Refers to a flag or attribute that indicates whether a particular service is experiencing flapping. | keyword |
+| nagios_xi.service.last_check | Refers to the timestamp indicating the most recent time when a service was checked during the monitoring process. | date |
+| nagios_xi.service.last_hard_state | Refers to the last known "hard state" of a service during the monitoring process. | keyword |
+| nagios_xi.service.last_hard_state_change | Refers to the timestamp indicating the most recent time when the hard state of a service changed. | date |
+| nagios_xi.service.last_notification | Refers to the timestamp indicating the most recent time when a notification was sent for a particular service. | date |
+| nagios_xi.service.last_state_change | Refers to the timestamp indicating the most recent time when a service experienced a change in its overall state. | date |
+| nagios_xi.service.last_time_critical | Refers to the timestamp or time of the most recent occurrence when a service transitioned to a critical state. | date |
+| nagios_xi.service.last_time_ok | Refers to the timestamp or time of the most recent occurrence when a service transitioned to an OK state. | date |
+| nagios_xi.service.last_time_unknown | Refers to the timestamp or time of the most recent occurrence when a service transitioned to an unknown state. | date |
+| nagios_xi.service.last_time_warning | Refers to the timestamp or time of the most recent occurrence when a service transitioned to a warning state. | date |
+| nagios_xi.service.latency | Refers to the measure of the time it takes for a monitoring check to be performed and for the result to be obtained from the monitored service. | double |
+| nagios_xi.service.long_output | Refers to the detailed description or additional information associated with a service check result. It provides more specific and comprehensive details about the status or condition of the monitored object. | keyword |
 | nagios_xi.service.max_check_attempts | This is used to define the number of times that Nagios will retry the host check command if it returns any state other than an OK state. Setting this value to 1 will cause Nagios to generate an alert without retrying the host check. | keyword |
-| nagios_xi.service.modified_service_attributes |  | keyword |
-| nagios_xi.service.next_check |  | date |
-| nagios_xi.service.next_notification |  | date |
-| nagios_xi.service.no_more_notifications |  | keyword |
+| nagios_xi.service.modified_service_attributes | Refers to the set of service attributes that have been modified or customized for a particular service. | keyword |
+| nagios_xi.service.next_check | Refers to the timestamp indicating the scheduled time for the next check to be performed on a service. | date |
+| nagios_xi.service.next_notification | Refers to the timestamp indicating the scheduled time for the next notification to be sent for a particular service. | date |
+| nagios_xi.service.no_more_notifications | This is used in specific scenarios when it is necessary to prevent additional notifications from being sent for a service. | keyword |
 | nagios_xi.service.normal_check_interval | This is used to define the number of "time units" between regularly scheduled checks of the host. Unless you've changed the interval_length from the default value of 60, this number will mean minutes. More information on this value can be found in the check scheduling documentation. | long |
 | nagios_xi.service.notes | This is used to define an optional string of notes pertaining to the host. If you specify a note here, you will see the it in the extended information CGI (when you are viewing information about the specified host). | keyword |
 | nagios_xi.service.notes_url | This variable is used to define an optional URL that can be used to provide more information about the host. If you specify an URL, you will see a red folder icon in the CGIs (when you are viewing host information) that links to the URL you specify here. Any valid URL can be used. If you plan on using relative paths, the base path will the the same as what is used to access the CGIs (i.e. /cgi-bin/nagios/). This can be very useful if you want to make detailed information on the host, emergency contact methods, etc. available to other support staff. | keyword |
 | nagios_xi.service.notifications_enabled | This is used to determine whether or not notifications for this host are enabled. Values=\> 0 = disable host notifications, 1 = enable host notifications. | keyword |
-| nagios_xi.service.obsess_over_service |  | keyword |
-| nagios_xi.service.output |  | keyword |
+| nagios_xi.service.obsess_over_service | This is used in the configuration files to determine whether the monitoring system should obsess over a specific service. | keyword |
+| nagios_xi.service.output | Refers to the textual information or status message that is generated as the result of a service check. | keyword |
 | nagios_xi.service.passive_checks_enabled | This is used to determine whether or not passive checks are enabled for this host. Values=\> 0 = disable passive host checks, 1 = enable passive host checks (default). | keyword |
-| nagios_xi.service.percent_state_change |  | keyword |
+| nagios_xi.service.percent_state_change | Refers to the percentage of state change for a specific service within a defined time period. | keyword |
 | nagios_xi.service.ping.performance_data | Exact output of check_command. | keyword |
 | nagios_xi.service.ping.pl | Packet Loss while ping to host. | double |
 | nagios_xi.service.ping.rta | Round Trip Around while ping to host. | double |
-| nagios_xi.service.problem_has_been_acknowledged |  | keyword |
+| nagios_xi.service.problem_has_been_acknowledged | This is a flag or attribute associated with a service that indicates whether a particular problem or issue has been acknowledged by an administrator or user. | keyword |
 | nagios_xi.service.process.performance_data | Exact output of check_command. | keyword |
 | nagios_xi.service.process.total | Total processes in host. | double |
 | nagios_xi.service.process_performance_data | This is used to determine whether or not the processing of performance data is enabled for this host. Values=\> 0 = disable performance data processing, 1 = enable performance data processing. | keyword |
@@ -492,15 +492,15 @@ An example event for `service` looks as following:
 | nagios_xi.service.root_partition.performance_data | Exact output of check_command. | keyword |
 | nagios_xi.service.root_partition.total_space | Total Space in host. | double |
 | nagios_xi.service.root_partition.used_space | Used space in host. | double |
-| nagios_xi.service.scheduled_downtime_depth |  | keyword |
-| nagios_xi.service.service_description |  | keyword |
-| nagios_xi.service.service_object_id |  | keyword |
-| nagios_xi.service.servicestatus_id |  | keyword |
-| nagios_xi.service.should_be_scheduled |  | keyword |
+| nagios_xi.service.scheduled_downtime_depth | Refers to the number of active scheduled downtimes affecting a particular service. It indicates the depth or level of scheduled downtimes that have been applied to the object. | keyword |
+| nagios_xi.service.service_description | Refers to a unique identifier or label that represents a specific service being monitored. | keyword |
+| nagios_xi.service.service_object_id | Refers to a unique identifier assigned to a specific service object within the monitoring configuration. | keyword |
+| nagios_xi.service.servicestatus_id | Refers to a unique identifier assigned to the current status of a specific service. | keyword |
+| nagios_xi.service.should_be_scheduled | This is a parameter that determines whether a specific service check should be scheduled for monitoring. It is used to control the scheduling behavior of service checks in Nagios XI. | keyword |
 | nagios_xi.service.ssh.performance_data | Exact output of check_command. | keyword |
 | nagios_xi.service.ssh.time | SSH time taken for host. | double |
-| nagios_xi.service.state_type |  | keyword |
-| nagios_xi.service.status_update_time |  | date |
+| nagios_xi.service.state_type | Refers to a configuration setting that determines the behavior of how the state of a service is determined and interpreted in the monitoring process. | keyword |
+| nagios_xi.service.status_update_time | Refers to the timestamp or time of the most recent status update for a service. It indicates the time when the current status of the object was last updated. | date |
 | nagios_xi.service.swap_usage.free_swap | Free swap usage for host. | double |
 | nagios_xi.service.swap_usage.performance_data | Exact output of check_command. | keyword |
 | nagios_xi.service.swap_usage.total_swap | Total swap usage for host. | double |
