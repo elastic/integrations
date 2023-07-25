@@ -296,4 +296,6 @@ Default port for HTTP Endpoint: _9574_
 
 #### Example
 
+{{event "workers_trace"}}
+
 {{fields "workers_trace"}}
