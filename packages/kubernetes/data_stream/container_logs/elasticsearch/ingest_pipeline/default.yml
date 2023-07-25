@@ -2,20 +2,18 @@
 description: Pipeline for Kubernetes container logs
 processors:
   - set:
-      field: ecs.version
-      value: '8.8.0'
-  - set:
       field: service.name
       copy_from: kubernetes.labels.app_kubernetes_io/name
       ignore_empty_value: true
   - set:
       field: service.name
-      value: '{{kubernetes.container.name}}'
-      if: ctx?.service?.name == null && ctx?.kubernetes?.container?.name != null
+      copy_from: kubernetes.container.name
+      override: false
+      ignore_empty_value: true
   - set:
       field: service.version
-      value: '{{kubernetes.labels.app_kubernetes_io/version}}'
-      if: ctx?.kubernetes?.labels['app_kubernetes_io/version'] != null
+      copy_from: kubernetes.labels.app_kubernetes_io/version
+      ignore_empty_value: true
   - reroute:
       dataset:
         - '{{kubernetes.labels.elastic_co/dataset}}'
