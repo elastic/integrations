@@ -15,7 +15,7 @@ The input supports the following types of metrics:
 
 **Histogram (h)**:: Time measurement, an alias for the *Timer*.
 
-**Set (s)***:: Measurement which counts unique occurrences until flushed (value set to 0).
+**Set (s)**:: Measurement which counts unique occurrences until flushed (value set to 0).
 
 
 ## Compatibility
