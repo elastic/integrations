@@ -10,10 +10,13 @@ For example, you could use this data to track Amazon EMR cluster progress and cl
 
 ## Data streams
 
-The Amazon EMR integration collects one type of data: metrics.
+The Amazon EMR integration collects two types of data: metrics and logs.
 
 **Metrics** give you insight into the state of Amazon EMR.
 The metrics collected by the Amazon EMR integration include cluster progress, cluster state, cluster or node storage, and more. See more details in the [Metrics reference](#metrics-reference)
+
+**Logs** help you keep a record of events happening in Amazon EMR.
+Logs collected by the Amazon EMR integration include the cluster status, node status details and more. 
 
 ## Requirements
 
@@ -109,21 +112,22 @@ An example event for `emr` looks as following:
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |  |
 | aws.dimensions.JobFlowId | Filters metrics by cluster ID. | keyword |  |  |
-| aws.elasticmapreduce.metrics.AppsCompleted.sum | The number of applications submitted to YARN that have completed. | long |  | counter |
-| aws.elasticmapreduce.metrics.AppsFailed.sum | The number of applications submitted to YARN that have failed to complete. | long |  | counter |
-| aws.elasticmapreduce.metrics.AppsKilled.sum | The number of applications submitted to YARN that have been killed. | long |  | counter |
-| aws.elasticmapreduce.metrics.AppsPending.sum | The number of applications submitted to YARN that are in a pending state. | long |  | counter |
-| aws.elasticmapreduce.metrics.AppsRunning.sum | The number of applications submitted to YARN that are running. | long |  | counter |
-| aws.elasticmapreduce.metrics.AppsSubmitted.sum | The number of applications submitted to YARN. | long |  | counter |
+| aws.elasticmapreduce.metrics.AppsCompleted.sum | The number of applications submitted to YARN that have completed. | long |  | gauge |
+| aws.elasticmapreduce.metrics.AppsFailed.sum | The number of applications submitted to YARN that have failed to complete. | long |  | gauge |
+| aws.elasticmapreduce.metrics.AppsKilled.sum | The number of applications submitted to YARN that have been killed. | long |  | gauge |
+| aws.elasticmapreduce.metrics.AppsPending.sum | The number of applications submitted to YARN that are in a pending state. | long |  | gauge |
+| aws.elasticmapreduce.metrics.AppsRunning.sum | The number of applications submitted to YARN that are running. | long |  | gauge |
+| aws.elasticmapreduce.metrics.AppsSubmitted.sum | The number of applications submitted to YARN. | long |  | gauge |
 | aws.elasticmapreduce.metrics.AutoTerminationIsClusterIdle.avg | Indicates whether the cluster is in use. | long | percent | gauge |
-| aws.elasticmapreduce.metrics.CapacityRemainingGB.sum | The amount of remaining HDFS disk capacity. | long | byte | counter |
-| aws.elasticmapreduce.metrics.ContainerAllocated.sum | The number of resource containers allocated by the ResourceManager. | long |  | counter |
-| aws.elasticmapreduce.metrics.ContainerPending.sum | The number of containers in the queue that have not yet been allocated. | long |  | counter |
+| aws.elasticmapreduce.metrics.CapacityRemainingGB.sum | The amount of remaining HDFS disk capacity. | long | byte | gauge |
+| aws.elasticmapreduce.metrics.ContainerAllocated.sum | The number of resource containers allocated by the ResourceManager. | long |  | gauge |
+| aws.elasticmapreduce.metrics.ContainerPending.sum | The number of containers in the queue that have not yet been allocated. | long |  | gauge |
 | aws.elasticmapreduce.metrics.ContainerPendingRatio.avg | The ratio of pending containers to containers allocated | long | percent | gauge |
-| aws.elasticmapreduce.metrics.ContainerReserved.sum | The number of containers reserved. | long |  | counter |
-| aws.elasticmapreduce.metrics.CoreNodesPending.sum | The number of core nodes waiting to be assigned. | long |  | counter |
+| aws.elasticmapreduce.metrics.ContainerReserved.sum | The number of containers reserved. | long |  | gauge |
+| aws.elasticmapreduce.metrics.CoreNodesPending.sum | The number of core nodes waiting to be assigned. | long |  | gauge |
 | aws.elasticmapreduce.metrics.CoreNodesRequested.max | The target number of CORE nodes in a cluster as determined by managed scaling. | long |  | gauge |
 | aws.elasticmapreduce.metrics.CoreNodesRunning.avg | The current number of CORE nodes running in a cluster. | long |  | gauge |
 | aws.elasticmapreduce.metrics.CoreUnitsRequested.max | The target number of CORE units in a cluster as determined by managed scaling. | long |  | gauge |
@@ -131,44 +135,44 @@ An example event for `emr` looks as following:
 | aws.elasticmapreduce.metrics.CoreVCPURequested.max | The target number of CORE vCPUs in a cluster as determined by managed scaling. | long |  | gauge |
 | aws.elasticmapreduce.metrics.CoreVCPURunning.avg | The current number of CORE vCPUs running in a cluster. | long |  | gauge |
 | aws.elasticmapreduce.metrics.CorruptBlocks.max | The number of blocks that HDFS reports as corrupted. | long |  | gauge |
-| aws.elasticmapreduce.metrics.DfsPendingReplicationBlocks.sum | The status of block replication - blocks being replicated, age of replication requests, and unsuccessful replication requests. | long |  | counter |
-| aws.elasticmapreduce.metrics.HDFSBytesRead.sum | The number of bytes read from HDFS. | long | byte | counter |
-| aws.elasticmapreduce.metrics.HDFSBytesWritten.sum | The number of bytes written to HDFS. | long | byte | counter |
+| aws.elasticmapreduce.metrics.DfsPendingReplicationBlocks.sum | The status of block replication - blocks being replicated, age of replication requests, and unsuccessful replication requests. | long |  | gauge |
+| aws.elasticmapreduce.metrics.HDFSBytesRead.sum | The number of bytes read from HDFS. | long | byte | gauge |
+| aws.elasticmapreduce.metrics.HDFSBytesWritten.sum | The number of bytes written to HDFS. | long | byte | gauge |
 | aws.elasticmapreduce.metrics.HDFSUtilization.avg | The percentage of HDFS storage currently used. | double | percent | gauge |
 | aws.elasticmapreduce.metrics.IsIdle.avg | Indicates that a cluster is no longer performing work, but is still alive and accruing charges. | long | percent | gauge |
 | aws.elasticmapreduce.metrics.LiveDataNodes.avg | The percentage of data nodes that are receiving work from Hadoop. | double | percent | gauge |
-| aws.elasticmapreduce.metrics.MRActiveNodes.sum | The number of nodes presently running MapReduce tasks or jobs. | long |  | counter |
-| aws.elasticmapreduce.metrics.MRDecommissionedNodes.sum | The number of nodes allocated to MapReduce applications that have been marked in a DECOMMISSIONED state. | long |  | counter |
-| aws.elasticmapreduce.metrics.MRLostNodes.sum | The number of nodes allocated to MapReduce that have been marked in a LOST state. | long |  | counter |
-| aws.elasticmapreduce.metrics.MRRebootedNodes.sum | The number of nodes available to MapReduce that have been rebooted and marked in a REBOOTED state. | long |  | counter |
-| aws.elasticmapreduce.metrics.MRTotalNodes.sum | The number of nodes presently available to MapReduce jobs. | long |  | counter |
-| aws.elasticmapreduce.metrics.MRUnhealthyNodes.sum | The number of nodes available to MapReduce jobs marked in an UNHEALTHY state. | long |  | counter |
-| aws.elasticmapreduce.metrics.MemoryAllocatedMB.sum | The amount of memory allocated to the cluster. | long | byte | counter |
-| aws.elasticmapreduce.metrics.MemoryAvailableMB.sum | The amount of memory available to be allocated. | long | byte | counter |
-| aws.elasticmapreduce.metrics.MemoryReservedMB.sum | The amount of memory reserved. | long | byte | counter |
-| aws.elasticmapreduce.metrics.MemoryTotalMB.sum | The total amount of memory in the cluster. | long | byte | counter |
+| aws.elasticmapreduce.metrics.MRActiveNodes.sum | The number of nodes presently running MapReduce tasks or jobs. | long |  | gauge |
+| aws.elasticmapreduce.metrics.MRDecommissionedNodes.sum | The number of nodes allocated to MapReduce applications that have been marked in a DECOMMISSIONED state. | long |  | gauge |
+| aws.elasticmapreduce.metrics.MRLostNodes.sum | The number of nodes allocated to MapReduce that have been marked in a LOST state. | long |  | gauge |
+| aws.elasticmapreduce.metrics.MRRebootedNodes.sum | The number of nodes available to MapReduce that have been rebooted and marked in a REBOOTED state. | long |  | gauge |
+| aws.elasticmapreduce.metrics.MRTotalNodes.sum | The number of nodes presently available to MapReduce jobs. | long |  | gauge |
+| aws.elasticmapreduce.metrics.MRUnhealthyNodes.sum | The number of nodes available to MapReduce jobs marked in an UNHEALTHY state. | long |  | gauge |
+| aws.elasticmapreduce.metrics.MemoryAllocatedMB.sum | The amount of memory allocated to the cluster. | long | byte | gauge |
+| aws.elasticmapreduce.metrics.MemoryAvailableMB.sum | The amount of memory available to be allocated. | long | byte | gauge |
+| aws.elasticmapreduce.metrics.MemoryReservedMB.sum | The amount of memory reserved. | long | byte | gauge |
+| aws.elasticmapreduce.metrics.MemoryTotalMB.sum | The total amount of memory in the cluster. | long | byte | gauge |
 | aws.elasticmapreduce.metrics.MissingBlocks.max | The number of blocks in which HDFS has no replicas. | long |  | gauge |
-| aws.elasticmapreduce.metrics.MultiMasterInstanceGroupNodesRequested.sum | The number of requested master nodes. | long |  | counter |
-| aws.elasticmapreduce.metrics.MultiMasterInstanceGroupNodesRunning.sum | The number of running master nodes. | long |  | counter |
+| aws.elasticmapreduce.metrics.MultiMasterInstanceGroupNodesRequested.sum | The number of requested master nodes. | long |  | gauge |
+| aws.elasticmapreduce.metrics.MultiMasterInstanceGroupNodesRunning.sum | The number of running master nodes. | long |  | gauge |
 | aws.elasticmapreduce.metrics.MultiMasterInstanceGroupNodesRunningPercentage.avg | The percentage of master nodes that are running over the requested master node instance count. | double | percent | gauge |
-| aws.elasticmapreduce.metrics.PendingDeletionBlocks.sum | The number of blocks marked for deletion. | long |  | counter |
-| aws.elasticmapreduce.metrics.S3BytesRead.sum | The number of bytes read from Amazon S3. | long | byte | counter |
-| aws.elasticmapreduce.metrics.S3BytesWritten.sum | The number of bytes written to Amazon S3. | long | byte | counter |
+| aws.elasticmapreduce.metrics.PendingDeletionBlocks.sum | The number of blocks marked for deletion. | long |  | gauge |
+| aws.elasticmapreduce.metrics.S3BytesRead.sum | The number of bytes read from Amazon S3. | long | byte | gauge |
+| aws.elasticmapreduce.metrics.S3BytesWritten.sum | The number of bytes written to Amazon S3. | long | byte | gauge |
 | aws.elasticmapreduce.metrics.TaskNodesRequested.max | The target number of TASK nodes in a cluster as determined by managed scaling. | long |  | gauge |
 | aws.elasticmapreduce.metrics.TaskNodesRunning.avg | The current number of TASK nodes running in a cluster. | long |  | gauge |
 | aws.elasticmapreduce.metrics.TaskUnitsRequested.max | The target number of TASK units in a cluster as determined by managed scaling. | long |  | gauge |
 | aws.elasticmapreduce.metrics.TaskUnitsRunning.avg | The current number of TASK units running in a cluster. | long |  | gauge |
 | aws.elasticmapreduce.metrics.TaskVCPURequested.max | The target number of TASK vCPUs in a cluster as determined by managed scaling. | long |  | gauge |
 | aws.elasticmapreduce.metrics.TaskVCPURunning.avg | The current number of TASK vCPUs running in a cluster. | long |  | gauge |
-| aws.elasticmapreduce.metrics.TotalLoad.sum | The total number of concurrent data transfers. | long |  | counter |
+| aws.elasticmapreduce.metrics.TotalLoad.sum | The total number of concurrent data transfers. | long |  | gauge |
 | aws.elasticmapreduce.metrics.TotalNodesRequested.max | The target total number of nodes in a cluster as determined by managed scaling. | long |  | gauge |
 | aws.elasticmapreduce.metrics.TotalNodesRunning.avg | The current total number of nodes available in a running cluster. | long |  | gauge |
-| aws.elasticmapreduce.metrics.TotalNotebookKernels.sum | The total number of running and idle notebook kernels on the cluster. | long |  | counter |
+| aws.elasticmapreduce.metrics.TotalNotebookKernels.sum | The total number of running and idle notebook kernels on the cluster. | long |  | gauge |
 | aws.elasticmapreduce.metrics.TotalUnitsRequested.max | The target total number of units in a cluster as determined by managed scaling. | long |  | gauge |
 | aws.elasticmapreduce.metrics.TotalUnitsRunning.avg | The current total number of units available in a running cluster. | long |  | gauge |
 | aws.elasticmapreduce.metrics.TotalVCPURequested.max | The target total number of vCPUs in a cluster as determined by managed scaling. | long |  | gauge |
 | aws.elasticmapreduce.metrics.TotalVCPURunning.avg | The current total number of vCPUs available in a running cluster. | long |  | gauge |
-| aws.elasticmapreduce.metrics.UnderReplicatedBlocks.sum | The number of blocks that need to be replicated one or more times. | long |  | counter |
+| aws.elasticmapreduce.metrics.UnderReplicatedBlocks.sum | The number of blocks that need to be replicated one or more times. | long |  | gauge |
 | aws.elasticmapreduce.metrics.YARNMemoryAvailablePercentage.avg | The percentage of remaining memory available to YARN | double | percent | gauge |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |  |
 | aws.tags.\* | Tag key value pairs from aws resources. | object |  |  |
@@ -213,3 +217,88 @@ An example event for `emr` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
+
+
+## Logs reference
+
+An example event for `emr` looks as following:
+
+```json
+{
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "aws.emr_logs"
+    },
+    "@timestamp": "2020-02-20T07:01:01.000Z",
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "log": {
+        "level": "INFO"
+    },
+    "event": {
+        "original": "2023-06-26 13:45:50,566 INFO common.Util: dfs.datanode.fileio.profiling.sampling.percentage set to 0. Disabling file IO profiling"
+    },
+    "process": {
+        "name": "blockmanagement.BlockManager"
+    },
+    "message": "dfs.datanode.fileio.profiling.sampling.percentage set to 0. Disabling file IO profiling",
+    "tags": [
+        "preserve_original_event"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | ARN of the S3 bucket that this log retrieved from. | keyword |
+| aws.s3.bucket.name | Name of a S3 bucket. | keyword |
+| aws.s3.metadata | AWS S3 object metadata values. | flattened |
+| aws.s3.object.key | Name of the S3 object that this log retrieved from. | keyword |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| process.entrypoint | Process entrypoint. | keyword |
+| process.message | Process message. | keyword |
+| process.name | Process name. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
