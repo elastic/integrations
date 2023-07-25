@@ -445,10 +445,10 @@ so the `period` for `container_service` should be `300s` or multiples of `300s`.
 | @timestamp | Event timestamp. | date |  |
 | azure.application_id | The application ID | keyword |  |
 | azure.container_service.\*.\* | container service | object |  |
-| azure.dimensions.\*.condition | The container name | keyword |  |
-| azure.dimensions.\*.node | Node name | keyword |  |
-| azure.dimensions.\*.pod | Pod name | keyword |  |
-| azure.dimensions.\*.status | The container name | keyword |  |
+| azure.dimensions.condition | The container name | keyword |  |
+| azure.dimensions.node | Node name | keyword |  |
+| azure.dimensions.pod | Pod name | keyword |  |
+| azure.dimensions.status | The container name | keyword |  |
 | azure.metrics.kube_node_status_allocatable_cpu_cores.avg | Total number of available cpu cores in a managed cluster | float | gauge |
 | azure.metrics.kube_node_status_allocatable_memory_bytes.avg | Total amount of available memory in a managed cluster | float | gauge |
 | azure.metrics.kube_node_status_condition.avg | Statuses for various node conditions | float | gauge |
