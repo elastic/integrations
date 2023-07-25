@@ -10,7 +10,7 @@ processors:
   - set:
       field: event.timezone
       value: "{{{_conf.tz_offset}}}"
-      if: "ctx?._conf?.tz_offset != null && ctx._conf.tz_offset != 'local'"
+      if: "ctx._conf?.tz_offset != null && ctx._conf.tz_offset != 'local'"
   - set:
       field: event.original
       override: false
@@ -24,10 +24,14 @@ processors:
       ignore_missing: true
   - pipeline:
       name: '{{ IngestPipeline "dhcp" }}'
-      if: "ctx?.log?.file?.path != null && !ctx.log.file.path.contains('V6')"
+      if: "ctx.log?.file?.path != null && !ctx.log.file.path.contains('V6')"
   - pipeline:
       name: '{{ IngestPipeline "dhcpv6" }}'
-      if: "ctx?.log?.file?.path != null && ctx.log.file.path.contains('V6')"
+      if: "ctx.log?.file?.path != null && ctx.log.file.path.contains('V6')"
+  - append:
+      field: host.ip
+      value: '{{{_tmp_.host.ip}}}'
+      if: ctx._tmp_?.host?.ip != null
   - foreach:
       field: observer.mac
       ignore_missing: true
@@ -44,7 +48,7 @@ processors:
           field: _ingest._value
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
   - remove:
