@@ -162,10 +162,10 @@ processors:
       field: threat.framework
       value: MITRE ATT&CK
       if: ctx.json?.category != null
-  - rename:
-      field: json.category
-      target_field: threat.technique.name
-      ignore_missing: true
+  - append:
+      field: threat.technique.name
+      value: '{{{json.category}}}'
+      if: ctx.json?.category != null
   - rename:
       field: json.description
       target_field: rule.description
@@ -304,6 +304,7 @@ processors:
         - json.alertCreationTime
         - json.severity
         - json.relatedUser
+        - json.category
       ignore_missing: true
   - rename:
       field: json
