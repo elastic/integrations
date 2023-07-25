@@ -2,6 +2,10 @@
 description: Pipeline for Office 365 Audit logs
 
 processors:
+  - rename:
+      field: message
+      target_field: event.original
+      if: ctx.message != null && ctx.event?.original == null
   - set:
       field: ecs.version
       value: '8.8.0'
@@ -24,10 +28,21 @@ processors:
       field: o365audit.CreationTime
       formats:
         - ISO8601
+      if: ctx.o365audit?.CreationTime != null
   - rename:
       field: o365audit.Id
       target_field: event.id
       ignore_missing: true
+  - convert:
+      field: o365audit.ListBaseType
+      type: string
+      tag: convert-listbasetype-to-string
+      if: ctx.o365audit?.ListBaseType != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
   - rename:
       field: o365audit.ClientIPAddress
       target_field: client._temp

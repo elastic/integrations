@@ -83,13 +83,13 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-08-18T17:07:22.769Z",
+    "@timestamp": "2023-07-20T13:39:22.108Z",
     "agent": {
-        "ephemeral_id": "623671b3-bcc9-4060-9806-e1cb0b945aae",
-        "id": "03109bfa-7015-46bd-9433-3879357210cd",
+        "ephemeral_id": "a7c83396-040f-439b-a855-c30ecdf1e604",
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.3.2"
+        "version": "8.8.2"
     },
     "data_stream": {
         "dataset": "hashicorp_vault.audit",
@@ -100,9 +100,9 @@ An example event for `audit` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "03109bfa-7015-46bd-9433-3879357210cd",
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
         "snapshot": false,
-        "version": "8.3.2"
+        "version": "8.8.2"
     },
     "event": {
         "action": "update",
@@ -111,10 +111,10 @@ An example event for `audit` looks as following:
             "authentication"
         ],
         "dataset": "hashicorp_vault.audit",
-        "id": "e54c706f-1a3d-9662-3705-872e05c9c39f",
-        "ingested": "2022-08-18T17:07:55Z",
+        "id": "07b55e76-c58c-7911-f1a2-a19692c37e43",
+        "ingested": "2023-07-20T13:39:50Z",
         "kind": "event",
-        "original": "{\"time\":\"2022-08-18T17:07:22.76907021Z\",\"type\":\"request\",\"auth\":{\"token_type\":\"default\"},\"request\":{\"id\":\"e54c706f-1a3d-9662-3705-872e05c9c39f\",\"operation\":\"update\",\"namespace\":{\"id\":\"root\"},\"path\":\"sys/audit/test\"}}",
+        "original": "{\"time\":\"2023-07-20T13:39:22.1089946Z\",\"type\":\"request\",\"auth\":{\"token_type\":\"default\"},\"request\":{\"id\":\"07b55e76-c58c-7911-f1a2-a19692c37e43\",\"operation\":\"update\",\"namespace\":{\"id\":\"root\"},\"path\":\"sys/audit/test\"}}",
         "outcome": "success",
         "type": [
             "change"
@@ -126,7 +126,7 @@ An example event for `audit` looks as following:
                 "token_type": "default"
             },
             "request": {
-                "id": "e54c706f-1a3d-9662-3705-872e05c9c39f",
+                "id": "07b55e76-c58c-7911-f1a2-a19692c37e43",
                 "namespace": {
                     "id": "root"
                 },
@@ -138,23 +138,24 @@ An example event for `audit` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": false,
+        "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "f61391496aaa43bb94736676494450c5",
         "ip": [
-            "172.23.0.7"
+            "172.22.0.10"
         ],
         "mac": [
-            "02:42:ac:17:00:07"
+            "02-42-AC-16-00-0A"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.76-linuxkit",
+            "kernel": "5.10.47-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "input": {
@@ -201,7 +202,6 @@ An example event for `audit` looks as following:
 | hashicorp_vault.audit.auth.no_default_policy | Indicates that the default policy should not be added by core when creating a token. The default policy will still be added if it's explicitly defined. | boolean |
 | hashicorp_vault.audit.auth.policies | Policies is the list of policies that the authenticated user is associated with. | keyword |
 | hashicorp_vault.audit.auth.policy_results.allowed |  | boolean |
-| hashicorp_vault.audit.auth.policy_results.granting_policies |  | array |
 | hashicorp_vault.audit.auth.policy_results.granting_policies.name |  | keyword |
 | hashicorp_vault.audit.auth.policy_results.granting_policies.namespace_id |  | keyword |
 | hashicorp_vault.audit.auth.policy_results.granting_policies.type |  | keyword |
@@ -317,13 +317,13 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-13T01:56:49.423Z",
+    "@timestamp": "2023-07-20T13:40:29.312Z",
     "agent": {
-        "ephemeral_id": "519f95f7-ce93-4b23-b4ba-cb55bee8d69c",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "a7c83396-040f-439b-a855-c30ecdf1e604",
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.8.2"
     },
     "data_stream": {
         "dataset": "hashicorp_vault.log",
@@ -334,16 +334,16 @@ An example event for `log` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.8.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "hashicorp_vault.log",
-        "ingested": "2022-01-13T01:57:16Z",
+        "ingested": "2023-07-20T13:40:57Z",
         "kind": "event",
-        "original": "{\"@level\":\"info\",\"@message\":\"proxy environment\",\"@timestamp\":\"2022-01-13T01:56:49.423084Z\",\"http_proxy\":\"\",\"https_proxy\":\"\",\"no_proxy\":\"\"}"
+        "original": "{\"@level\":\"info\",\"@message\":\"proxy environment\",\"@timestamp\":\"2023-07-20T13:40:29.312131Z\",\"http_proxy\":\"\",\"https_proxy\":\"\",\"no_proxy\":\"\"}"
     },
     "hashicorp_vault": {
         "log": {
@@ -356,22 +356,22 @@ An example event for `log` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "id": "f61391496aaa43bb94736676494450c5",
         "ip": [
-            "172.18.0.4"
+            "172.22.0.10"
         ],
         "mac": [
-            "02:42:ac:12:00:04"
+            "02-42-AC-16-00-0A"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "input": {
@@ -382,7 +382,7 @@ An example event for `log` looks as following:
             "path": "/tmp/service_logs/log.json"
         },
         "level": "info",
-        "offset": 679
+        "offset": 709
     },
     "message": "proxy environment",
     "tags": [

@@ -1,0 +1,183 @@
+interval: {{interval}}
+auth.oauth2:
+    client.id: {{client_id}}
+    client.secret: {{client_secret}}
+    provider: azure
+    scopes: https://manage.office.com/.default
+    endpoint_params: 
+        grant_type: client_credentials
+{{#if token_url}}
+    token_url: {{token_url}}/{{azure_tenant_id}}/oauth2/v2.0/token
+{{else if azure_tenant_id}}
+    azure.tenant_id: {{azure_tenant_id}}
+{{/if}}
+
+resource.url: {{url}}
+{{#if resource_ssl}}
+resource.ssl: 
+  {{resource_ssl}}
+{{/if}}
+{{#if resource_proxy_url}}
+resource.proxy_url: {{resource_proxy_url}}
+{{/if}}
+{{#if resource_retry_max_attempts}}
+resource.retry.max_attempts: {{resource_retry_max_attempts}}
+{{/if}}
+{{#if resource_retry_wait_min}}
+resource.retry.wait_min: {{resource_retry_wait_min}}
+{{/if}}
+{{#if resource_retry_wait_max}}
+resource.retry.wait_max: {{resource_retry_wait_max}}
+{{/if}}
+{{#if resource_redirect_forward_headers}}
+resource.redirect.forward_headers: {{resource_redirect_forward_headers}}
+{{/if}}
+{{#if resource_redirect_headers_ban_list}}
+resource.redirect.headers_ban_list:
+{{#each resource_redirect_headers_ban_list as |item|}}
+  - {{item}}
+{{/each}}
+{{/if}}
+{{#if resource_redirect_max_redirects}}
+resource.redirect.max_redirects: {{resource_redirect_max_redirects}}
+{{/if}}
+{{#if resource_rate_limit_limit}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
+{{/if}}
+{{#if resource_rate_limit_burst}}
+resource.rate_limit.burst: {{resource_rate_limit_burst}}
+{{/if}}
+
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+{{/if}}
+
+state:
+  want_more: false
+  base:
+    list_contents_url: "{{url}}/api/v1.0/{{azure_tenant_id}}/activity/feed/subscriptions/content?contentType="
+    list_contents_start_time: "{{initial_interval}}"
+
+redact:
+  fields: ~
+
+program: |
+  "{{content_types}}".split(",").map(content_type_raw, content_type_raw.trim_space()).as(content_types, 
+    content_types.map(content_type,
+        (request("POST", "{{url}}/api/v1.0/{{azure_tenant_id}}/activity/feed/subscriptions/start?contentType=" + content_type + "&PublisherIdentifier={{azure_tenant_id}}"))
+        .do_request().as(start_subs_resp,
+            bytes(start_subs_resp.Body).decode_json().as(start_subs_resp_body, 
+                (has(start_subs_resp_body.status) && start_subs_resp_body.status == 'enabled') || (has(start_subs_resp_body.error) && has(start_subs_resp_body.error.code) && start_subs_resp_body.error.code == "AF20024") ?
+                    // When start-subscription API returns success or if already started subscription,
+                    (request("GET", 
+                        ( state.want_more && has(state.cursor) && has(state.cursor.content_types_state_as_list) && (state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)[0].next_page != "") ) ?
+                            // if NextPageUri exists
+                            state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)[0].next_page
+                        :
+                            ( has (state.cursor) && has(state.cursor.content_types_state_as_list)) ?
+                                // if NextPageUri does not exist, but content_type_state_created_at exists in state
+                                state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)
+                                    .as(content_type_state, content_type_state[0].content_created_at.as(content_type_state_created_at, 
+                                        (state.base.list_contents_url + content_type + "&PublisherIdentifier={{azure_tenant_id}}" 
+                                            + "&startTime=" + (content_type_state_created_at.parse_time(time_layout.RFC3339) + duration("1s")).format(time_layout.RFC3339) 
+                                            + "&endTime=" + ((content_type_state_created_at.parse_time(time_layout.RFC3339) + duration("24h")).as(calc_end_time, 
+                                                calc_end_time <= now() ? calc_end_time : now())).format(time_layout.RFC3339) ) ))
+                            :
+                                // initial run when no cursor state exists i.e., polling from initial_interval
+                                state.base.list_contents_url + content_type + "&PublisherIdentifier={{azure_tenant_id}}"  
+                                    + "&startTime=" + (now() - duration(state.base.list_contents_start_time)).format(time_layout.RFC3339) 
+                                    + "&endTime=" + ((now() - duration(state.base.list_contents_start_time) + duration("24h")).as(calc_end_time, 
+                                        calc_end_time <= now() ? calc_end_time : now())).format(time_layout.RFC3339)
+                    ))
+                    .do_request().as(list_contents_resp,
+                        bytes(list_contents_resp.Body).decode_json().as(list_contents_resp_body, 
+                            ( type(list_contents_resp_body) != map && size(list_contents_resp_body) > 0 && has(list_contents_resp_body[0].contentUri) && list_contents_resp_body[0].contentUri != "" && has(list_contents_resp_body[0].contentCreated) && list_contents_resp_body[0].contentCreated != "" ) ?
+                                // contents exist to consume
+                                list_contents_resp_body.map(l1, 
+                                    (request("GET", l1.contentUri))
+                                    .do_request().as(content_resp, 
+                                            bytes(content_resp.Body).decode_json()).map(content_resp_body, 
+                                                content_resp_body.with({ "copy": {"o365audit" : content_resp_body}})
+                                            ).map(content_resp_body_with_copy, content_resp_body_with_copy.copy)).flatten().drop_empty().as(contents,
+                                                ({
+                                                    "events_per_content_type": contents,
+                                                    "content_type": content_type,
+                                                    "content_created_at": { "temp" : list_contents_resp_body}.collate("temp.contentCreated").max(),
+                                                    "next_page": (has(list_contents_resp.Header) && has(list_contents_resp.Header.NextPageUri) ) ? list_contents_resp.Header.NextPageUri[0] : (has(list_contents_resp.Header) && has(list_contents_resp.Header.Nextpageuri)) ? list_contents_resp.Header.Nextpageuri[0] : "",
+                                                    // keep fetching more if (nextpageuri exists) or (max time returned date != today's date)
+                                                    "want_more_content": ( (has(list_contents_resp.Header) && (has(list_contents_resp.Header.NextPageUri) && (list_contents_resp.Header.NextPageUri.size() > 0)) || (has(list_contents_resp.Header.Nextpageuri) && (list_contents_resp.Header.Nextpageuri.size() > 0)) ) || ( { "temp" : list_contents_resp_body}.collate("temp.contentCreated").max().split('T')[0] != now().format("2006-01-02") ) )
+                                                })
+                                        )
+                                :
+                                // contents does not exist, or is empty array
+                                (
+                                    {
+                                        "events_per_content_type": size(list_contents_resp_body) == 0 ? [] : [list_contents_resp_body],
+                                        "content_type": content_type,
+                                        "content_created_at": 
+                                                (has(list_contents_resp.StatusCode) && list_contents_resp.StatusCode == 200 ) ?
+                                                    list_contents_resp.Request.URL.parse_url().RawQuery.parse_query().endTime[0]
+                                                :
+                                                    list_contents_resp.Request.URL.parse_url().RawQuery.parse_query().startTime[0]
+                                        ,
+                                        "next_page": "",
+                                        "want_more_content": (
+                                            has(list_contents_resp.StatusCode) 
+                                            && list_contents_resp.StatusCode == 200 
+                                            && (list_contents_resp.Request.URL.parse_url().RawQuery.parse_query().endTime[0].split('T')[0] != now().format("2006-01-02")) 
+                                            )
+                                    } 
+                                )
+                        )
+                    )
+                :
+                // When start-subscription API produces error, such as Authentication error.
+                (
+                    {
+                        "events_per_content_type": [],
+                        "content_type": content_type,
+                        "content_created_at": 
+                            ( has (state.cursor) && has(state.cursor.content_types_state_as_list)) ?
+                                state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)[0].content_created_at
+                            :
+                                (
+                                    (now() - duration(state.base.list_contents_start_time)).format(time_layout.RFC3339)
+                                )
+                        ,
+                        "next_page": "",
+                        "want_more_content": false
+                    }
+                )
+            )
+        )
+    ).as(events_list_raw, events_list_raw.flatten().drop_empty()).as(events_list, 
+        {
+            "base": {
+                "list_contents_url": "{{url}}/api/v1.0/{{azure_tenant_id}}/activity/feed/subscriptions/content?contentType=",
+                "list_contents_start_time": "{{initial_interval}}"
+            },
+            "events": events_list.collate("events_per_content_type"),
+            "want_more": events_list.collate("want_more_content").filter(e, e == true).size() > 0,
+            "cursor": {
+                "content_types_state_as_list": events_list.drop(["events_per_content_type"]),
+            }
+        }
+    )
+  )
+
+{{#if tags}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
