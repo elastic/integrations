@@ -151,11 +151,11 @@ An example event for `siem` looks as following:
 {
     "@timestamp": "2016-08-11T13:45:33.026Z",
     "agent": {
-        "ephemeral_id": "9bba2ff8-f15b-4c09-8ac9-60ee0045a851",
-        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
+        "ephemeral_id": "ce1bf722-ade9-4106-a8f0-664b257e9ec7",
+        "id": "c8485ac0-bf98-4fd4-ad4a-973fb352f519",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.7.1"
     },
     "akamai": {
         "siem": {
@@ -260,19 +260,19 @@ An example event for `siem` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
-        "snapshot": true,
-        "version": "8.8.0"
+        "id": "c8485ac0-bf98-4fd4-ad4a-973fb352f519",
+        "snapshot": false,
+        "version": "8.7.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "created": "2023-05-09T21:06:11.267Z",
+        "created": "2023-07-25T11:10:50.596Z",
         "dataset": "akamai.siem",
         "id": "2ab418ac8515f33",
-        "ingested": "2023-05-09T21:06:12Z",
+        "ingested": "2023-07-25T11:10:51Z",
         "kind": "event",
         "original": "{\"attackData\":{\"clientIP\":\"89.160.20.156\",\"configId\":\"6724\",\"policyId\":\"scoe_5426\",\"ruleActions\":\"QUxFUlQ;REVOWQ==\",\"ruleData\":\"YWxlcnQo;Y3VybA==\",\"ruleMessages\":\"Q3Jvc3Mtc2l0ZSBTY3 JpcHRpbmcgKFhTUykgQXR0YWNr; UmVxdWVzdCBJbmRpY2F0ZXMgYW4 gYXV0b21hdGVkIHByb2 dyYW0gZXhwbG9yZWQgdGhlIHNpdGU=\",\"ruleSelectors\":\"QVJHUzph;UkVRVUVTVF9IRU FERVJTOlVzZXItQWdlbnQ=\",\"ruleTags\":\"V0VCX0FUVEFDSy9YU1M=;QV VUT01BVElPTi9NSVND\",\"ruleVersions\":\";\",\"rules\":\"OTUwMDA0;OTkwMDEx\"},\"botData\":{\"botScore\":\"100\",\"responseSegment\":\"3\"},\"clientData\":{\"appBundleId\":\"com.mydomain.myapp\",\"appVersion\":\"1.23\",\"sdkVersion\":\"4.7.1\",\"telemetryType\":\"2\"},\"format\":\"json\",\"geo\":{\"asn\":\"12271\",\"city\":\"NEWYORK\",\"continent\":\"NA\",\"country\":\"US\",\"regionCode\":\"NY\"},\"httpMessage\":{\"bytes\":\"34523\",\"host\":\"www.example.com\",\"method\":\"POST\",\"path\":\"/examples/1/\",\"port\":\"80\",\"protocol\":\"http/2\",\"query\":\"a%3D..%2F..%2F..%2Fetc%2Fpasswd\",\"requestHeaders\":\"User-Agent%3a%20BOT%2f0.1%20(BOT%20for%20JCE)%0d%0aAccept%3a%20text%2fhtml,application%2fxhtml+xml\",\"requestId\":\"2ab418ac8515f33\",\"responseHeaders\":\"Server%3a%20AkamaiGHost%0d%0aMime-Version%3a%201.0%0d%0aContent-Type%3a%20text%2fhtml\",\"start\":\"1470923133.026\",\"status\":\"301\",\"tls\":\"TLSv1.2\"},\"type\":\"akamai_siem\",\"userRiskData\":{\"allow\":\"0\",\"general\":\"duc_1h:10|duc_1d:30\",\"risk\":\"udfp:1325gdg4g4343g/M|unp:74256/H\",\"score\":\"75\",\"status\":\"0\",\"trust\":\"ugp:US\",\"uuid\":\"964d54b7-0821-413a-a4d6-8131770ec8d5\"},\"version\":\"1.0\"}",
         "start": "2016-08-11T13:45:33.026Z"
