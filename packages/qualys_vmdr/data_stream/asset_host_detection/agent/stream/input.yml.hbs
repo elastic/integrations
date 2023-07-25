@@ -14,15 +14,14 @@ state:
   user: {{username}}
   password: {{password}}
   batch_size: {{batch_size}}
-  want_more: false
   params: {{input_parameters}}
 redact:
   fields:
     - password
 program: |
   request("GET", (
-    has(state.want_more) && !state.want_more ?
-      (state.url + "/asset/host/vm/detection/?action=list&truncation_limit=" + string(state.batch_size) +
+    !has(state.want_more) || !state.want_more ?
+      (state.url + "/api/2.0/fo/asset/host/vm/detection/?action=list&truncation_limit=" + string(state.batch_size) +
       (has(state.params) ? "&" + state.params : ""))
     :
       state.url
@@ -49,9 +48,6 @@ program: |
       "password": state.password,
   }))
 tags:
-{{#if preserve_original_event}}
-  - preserve_original_event
-{{/if}}
 {{#if preserve_duplicate_custom_fields}}
   - preserve_duplicate_custom_fields
 {{/if}}

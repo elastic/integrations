@@ -17,19 +17,20 @@ processors:
       field: event.type
       tag: set_event_type
       value: [info]
-  - rename:
-      field: message
-      tag: rename_message
-      target_field: event.original
-      ignore_missing: true
   - json:
-      field: event.original
-      tag: json_event_original
+      field: message
+      tag: json_message
       target_field: json
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      fields:
+        - json.QID
+        - json.LAST_SERVICE_MODIFICATION_DATETIME
+      target_field: _id
+      ignore_missing: true
   - rename:
       field: json.CONSEQUENCE
       tag: rename_CONSEQUENCE
@@ -619,6 +620,7 @@ processors:
       tag: remove_json
       field:
         - json
+        - message
         - qualys_vmdr.knowledge_base.changelog_list.info.CHANGE_DATE
       ignore_missing: true
   - remove:
@@ -632,11 +634,6 @@ processors:
         - qualys_vmdr.knowledge_base.severity_level
       tag: remove_preserve_duplicate_custom_fields
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
-      ignore_missing: true
-  - remove:
-      field: event.original
-      tag: remove_event_original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_missing: true
   - script:
       lang: painless

@@ -17,14 +17,9 @@ processors:
       field: event.type
       tag: set_event_type
       value: [info]
-  - rename:
-      field: message
-      tag: rename_message
-      target_field: event.original
-      ignore_missing: true
   - json:
-      field: event.original
-      tag: json_event_original
+      field: message
+      tag: json_message
       target_field: json
       on_failure:
         - append:
@@ -1499,6 +1494,7 @@ processors:
       tag: remove_json
       field:
         - json
+        - message
         - qualys_vmdr.asset_host_detection.list.FIRST_FOUND_DATETIME
         - qualys_vmdr.asset_host_detection.list.FIRST_REOPENED_DATETIME
         - qualys_vmdr.asset_host_detection.list.IS_DISABLED
@@ -1529,11 +1525,6 @@ processors:
         - qualys_vmdr.asset_host_detection.os.value
       tag: remove_preserve_duplicate_custom_fields
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
-      ignore_missing: true
-  - remove:
-      field: event.original
-      tag: remove_event_original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_missing: true
   - script:
       lang: painless

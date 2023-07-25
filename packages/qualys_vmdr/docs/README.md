@@ -88,10 +88,10 @@ An example event for `asset_host_detection` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-07-12T07:41:25.642Z",
+    "@timestamp": "2023-07-19T11:45:22.303Z",
     "agent": {
-        "ephemeral_id": "033dfcf4-8c38-4079-aee0-fb4e4cd8f8f6",
-        "id": "24f09b4a-9e69-4e66-a826-69b8bd7a025a",
+        "ephemeral_id": "a3596394-8571-45f9-bc76-a357994aa995",
+        "id": "03a972e9-85aa-4975-a370-35fd9d7745e5",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.9.0"
@@ -105,7 +105,7 @@ An example event for `asset_host_detection` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "24f09b4a-9e69-4e66-a826-69b8bd7a025a",
+        "id": "03a972e9-85aa-4975-a370-35fd9d7745e5",
         "snapshot": true,
         "version": "8.9.0"
     },
@@ -115,9 +115,8 @@ An example event for `asset_host_detection` looks as following:
             "host"
         ],
         "dataset": "qualys_vmdr.asset_host_detection",
-        "ingested": "2023-07-12T07:41:28Z",
+        "ingested": "2023-07-19T11:45:25Z",
         "kind": "alert",
-        "original": "{\"DETECTION_LIST\":{\"DETECTION\":[{\"FIRST_FOUND_DATETIME\":\"2023-06-28T06:04:26Z\",\"IS_DISABLED\":\"0\",\"IS_IGNORED\":\"0\",\"LAST_FOUND_DATETIME\":\"2023-07-03T06:23:47Z\",\"LAST_PROCESSED_DATETIME\":\"2023-07-03T06:25:17Z\",\"LAST_TEST_DATETIME\":\"2023-07-03T06:23:47Z\",\"LAST_UPDATE_DATETIME\":\"2023-07-03T06:25:17Z\",\"QID\":\"91681\",\"RESULTS\":\"\",\"SEVERITY\":\"5\",\"SSL\":\"0\",\"STATUS\":\"Active\",\"TIMES_FOUND\":\"11\",\"TYPE\":\"Confirmed\"}]},\"DNS\":\"\",\"DNS_DATA\":{\"DOMAIN\":\"\",\"FQDN\":\"\",\"HOSTNAME\":\"\"},\"ID\":\"12048633\",\"IP\":\"10.50.2.111\",\"LAST_PC_SCANNED_DATE\":\"2023-06-28T09:58:12Z\",\"LAST_SCAN_DATETIME\":\"2023-07-03T06:25:17Z\",\"LAST_VM_SCANNED_DATE\":\"2023-07-03T06:23:47Z\",\"LAST_VM_SCANNED_DURATION\":\"1113\",\"NETBIOS\":\"\",\"OS\":\"\",\"TRACKING_METHOD\":\"IP\"}",
         "type": [
             "info"
         ]
@@ -178,7 +177,6 @@ An example event for `asset_host_detection` looks as following:
         ]
     },
     "tags": [
-        "preserve_original_event",
         "preserve_duplicate_custom_fields",
         "forwarded",
         "qualys_vmdr-asset_host_detection"
@@ -293,8 +291,8 @@ An example event for `knowledge_base` looks as following:
 {
     "@timestamp": "2023-06-29T12:20:46.000Z",
     "agent": {
-        "ephemeral_id": "8be4566d-30ff-43be-83e5-d35b48f4124b",
-        "id": "24f09b4a-9e69-4e66-a826-69b8bd7a025a",
+        "ephemeral_id": "2ded4b3f-fecf-4fa8-8b17-e138ff7bd374",
+        "id": "03a972e9-85aa-4975-a370-35fd9d7745e5",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.9.0"
@@ -308,7 +306,7 @@ An example event for `knowledge_base` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "24f09b4a-9e69-4e66-a826-69b8bd7a025a",
+        "id": "03a972e9-85aa-4975-a370-35fd9d7745e5",
         "snapshot": true,
         "version": "8.9.0"
     },
@@ -319,9 +317,8 @@ An example event for `knowledge_base` looks as following:
         ],
         "dataset": "qualys_vmdr.knowledge_base",
         "id": "11830",
-        "ingested": "2023-07-12T07:42:12Z",
+        "ingested": "2023-07-19T11:46:28Z",
         "kind": "alert",
-        "original": "{\"CATEGORY\":\"CGI\",\"CONSEQUENCE\":\"\",\"DIAGNOSIS\":\"\",\"DISCOVERY\":{\"REMOTE\":\"1\"},\"LAST_SERVICE_MODIFICATION_DATETIME\":\"2023-06-29T12:20:46Z\",\"PATCHABLE\":\"0\",\"PCI_FLAG\":\"1\",\"PUBLISHED_DATETIME\":\"2017-06-05T21:34:49Z\",\"QID\":\"11830\",\"SEVERITY_LEVEL\":\"2\",\"SOFTWARE_LIST\":{\"SOFTWARE\":[{\"PRODUCT\":\"\",\"VENDOR\":\"\"}]},\"SOLUTION\":\"\",\"THREAT_INTELLIGENCE\":{\"THREAT_INTEL\":[{\"id\":\"8\"}]},\"TITLE\":\"\",\"VULN_TYPE\":\"Vulnerability\"}",
         "type": [
             "info"
         ]
@@ -354,7 +351,6 @@ An example event for `knowledge_base` looks as following:
         }
     },
     "tags": [
-        "preserve_original_event",
         "preserve_duplicate_custom_fields",
         "forwarded",
         "qualys_vmdr-knowledge_base"
