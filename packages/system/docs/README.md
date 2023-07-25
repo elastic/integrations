@@ -487,8 +487,8 @@ An example event for `security` looks as following:
 {
     "@timestamp": "2019-11-07T10:37:04.226Z",
     "agent": {
-        "ephemeral_id": "a61c3b83-c6fa-42f5-aa89-7dcbcd22df29",
-        "id": "b757cc21-a0b3-4107-8936-c7b5ce22c9ce",
+        "ephemeral_id": "7b61ba2a-a1b9-4711-87d0-1b3aad5afb85",
+        "id": "a152fcd9-5b11-4ed3-9958-e3a95043132d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.0"
@@ -502,7 +502,7 @@ An example event for `security` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "b757cc21-a0b3-4107-8936-c7b5ce22c9ce",
+        "id": "a152fcd9-5b11-4ed3-9958-e3a95043132d",
         "snapshot": false,
         "version": "8.8.0"
     },
@@ -513,9 +513,9 @@ An example event for `security` looks as following:
             "process"
         ],
         "code": "1100",
-        "created": "2023-06-26T19:07:48.567Z",
+        "created": "2023-07-18T12:31:50.439Z",
         "dataset": "system.security",
-        "ingested": "2023-06-26T19:07:49Z",
+        "ingested": "2023-07-18T12:31:51Z",
         "kind": "event",
         "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-Eventlog' Guid='{fc65ddd8-d6ef-4962-83d5-6e5cfe9ce148}'/\u003e\u003cEventID\u003e1100\u003c/EventID\u003e\u003cVersion\u003e0\u003c/Version\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e103\u003c/Task\u003e\u003cOpcode\u003e0\u003c/Opcode\u003e\u003cKeywords\u003e0x4020000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2019-11-07T10:37:04.226092500Z'/\u003e\u003cEventRecordID\u003e14257\u003c/EventRecordID\u003e\u003cCorrelation/\u003e\u003cExecution ProcessID='1144' ThreadID='4532'/\u003e\u003cChannel\u003eSecurity\u003c/Channel\u003e\u003cComputer\u003eWIN-41OB2LO92CR.wlbeat.local\u003c/Computer\u003e\u003cSecurity/\u003e\u003c/System\u003e\u003cUserData\u003e\u003cServiceShutdown xmlns='http://manifests.microsoft.com/win/2004/08/windows/eventlog'\u003e\u003c/ServiceShutdown\u003e\u003c/UserData\u003e\u003c/Event\u003e",
         "outcome": "success",
@@ -582,6 +582,8 @@ An example event for `security` looks as following:
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.code | Error code describing the error. | keyword |
 | error.message | Error message. | match_only_text |
@@ -592,7 +594,7 @@ An example event for `security` looks as following:
 | event.dataset | Event dataset. | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
@@ -629,6 +631,10 @@ An example event for `security` looks as following:
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
@@ -703,6 +709,7 @@ An example event for `security` looks as following:
 | winlog.event_data.AccountExpires |  | keyword |
 | winlog.event_data.AccountName |  | keyword |
 | winlog.event_data.AllowedToDelegateTo |  | keyword |
+| winlog.event_data.Application |  | keyword |
 | winlog.event_data.AuditPolicyChanges |  | keyword |
 | winlog.event_data.AuditPolicyChangesDescription |  | keyword |
 | winlog.event_data.AuditSourceName |  | keyword |
@@ -726,13 +733,17 @@ An example event for `security` looks as following:
 | winlog.event_data.CountOfCredentialsReturned |  | keyword |
 | winlog.event_data.CrashOnAuditFailValue |  | keyword |
 | winlog.event_data.CreationUtcTime |  | keyword |
+| winlog.event_data.CurrentProfile |  | keyword |
 | winlog.event_data.Description |  | keyword |
+| winlog.event_data.DestAddress |  | keyword |
+| winlog.event_data.DestPort |  | keyword |
 | winlog.event_data.Detail |  | keyword |
 | winlog.event_data.DeviceName |  | keyword |
 | winlog.event_data.DeviceNameLength |  | keyword |
 | winlog.event_data.DeviceTime |  | keyword |
 | winlog.event_data.DeviceVersionMajor |  | keyword |
 | winlog.event_data.DeviceVersionMinor |  | keyword |
+| winlog.event_data.Direction |  | keyword |
 | winlog.event_data.DisplayName |  | keyword |
 | winlog.event_data.DnsHostName |  | keyword |
 | winlog.event_data.DomainBehaviorVersion |  | keyword |
@@ -751,11 +762,14 @@ An example event for `security` looks as following:
 | winlog.event_data.FailureNameLength |  | keyword |
 | winlog.event_data.FailureReason |  | keyword |
 | winlog.event_data.FileVersion |  | keyword |
+| winlog.event_data.FilterOrigin |  | keyword |
+| winlog.event_data.FilterRTID |  | keyword |
 | winlog.event_data.FinalStatus |  | keyword |
 | winlog.event_data.Flags |  | keyword |
 | winlog.event_data.Group |  | keyword |
 | winlog.event_data.GroupTypeChange |  | keyword |
 | winlog.event_data.HandleId |  | keyword |
+| winlog.event_data.HasRemoteDynamicKeywordAddress |  | keyword |
 | winlog.event_data.HomeDirectory |  | keyword |
 | winlog.event_data.HomePath |  | keyword |
 | winlog.event_data.Identity |  | keyword |
@@ -763,12 +777,17 @@ An example event for `security` looks as following:
 | winlog.event_data.IdleStateCount |  | keyword |
 | winlog.event_data.ImpersonationLevel |  | keyword |
 | winlog.event_data.IntegrityLevel |  | keyword |
+| winlog.event_data.InterfaceIndex |  | keyword |
 | winlog.event_data.IpAddress |  | keyword |
 | winlog.event_data.IpPort |  | keyword |
+| winlog.event_data.IsLoopback |  | keyword |
 | winlog.event_data.KerberosPolicyChange |  | keyword |
 | winlog.event_data.KeyLength |  | keyword |
 | winlog.event_data.LastBootGood |  | keyword |
 | winlog.event_data.LastShutdownGood |  | keyword |
+| winlog.event_data.LayerName |  | keyword |
+| winlog.event_data.LayerNameDescription |  | keyword |
+| winlog.event_data.LayerRTID |  | keyword |
 | winlog.event_data.LmPackageName |  | keyword |
 | winlog.event_data.LogonGuid |  | keyword |
 | winlog.event_data.LogonHours |  | keyword |
@@ -818,6 +837,7 @@ An example event for `security` looks as following:
 | winlog.event_data.OldTime |  | keyword |
 | winlog.event_data.OldUacValue |  | keyword |
 | winlog.event_data.OriginalFileName |  | keyword |
+| winlog.event_data.OriginalProfile |  | keyword |
 | winlog.event_data.PackageName |  | keyword |
 | winlog.event_data.ParentProcessName |  | keyword |
 | winlog.event_data.PasswordHistoryLength |  | keyword |
@@ -830,18 +850,24 @@ An example event for `security` looks as following:
 | winlog.event_data.PrimaryGroupId |  | keyword |
 | winlog.event_data.PrivilegeList |  | keyword |
 | winlog.event_data.ProcessCreationTime |  | keyword |
+| winlog.event_data.ProcessID |  | keyword |
 | winlog.event_data.ProcessId |  | keyword |
 | winlog.event_data.ProcessName |  | keyword |
 | winlog.event_data.ProcessPath |  | keyword |
 | winlog.event_data.ProcessPid |  | keyword |
 | winlog.event_data.Product |  | keyword |
 | winlog.event_data.ProfilePath |  | keyword |
+| winlog.event_data.Protocol |  | keyword |
 | winlog.event_data.PuaCount |  | keyword |
 | winlog.event_data.PuaPolicyId |  | keyword |
 | winlog.event_data.QfeVersion |  | keyword |
 | winlog.event_data.ReadOperation |  | keyword |
 | winlog.event_data.Reason |  | keyword |
 | winlog.event_data.RelativeTargetName |  | keyword |
+| winlog.event_data.RemoteMachineDescription |  | keyword |
+| winlog.event_data.RemoteMachineID |  | keyword |
+| winlog.event_data.RemoteUserDescription |  | keyword |
+| winlog.event_data.RemoteUserID |  | keyword |
 | winlog.event_data.Resource |  | keyword |
 | winlog.event_data.ResourceAttributes |  | keyword |
 | winlog.event_data.ReturnCode |  | keyword |
@@ -872,6 +898,8 @@ An example event for `security` looks as following:
 | winlog.event_data.Signature |  | keyword |
 | winlog.event_data.SignatureStatus |  | keyword |
 | winlog.event_data.Signed |  | keyword |
+| winlog.event_data.SourceAddress |  | keyword |
+| winlog.event_data.SourcePort |  | keyword |
 | winlog.event_data.StartTime |  | keyword |
 | winlog.event_data.State |  | keyword |
 | winlog.event_data.Status |  | keyword |
