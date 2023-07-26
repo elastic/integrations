@@ -1,0 +1,43 @@
+paths:
+{{#each paths as |path|}}
+- {{path}}
+{{/each}}
+prospector.scanner.exclude_files: [".gz$"]
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- decode_json_fields:
+    fields: message
+    target: json
+    add_error_key: true
+- drop_event:
+    when:
+      not:
+        or:
+          - equals:
+              json.telemetryEventCategory: LTM
+          - equals:
+              json.telemetryEventCategory: ASM
+          - equals:
+              json.telemetryEventCategory: AFM
+          - equals:
+              json.telemetryEventCategory: AVR
+          - equals:
+              json.telemetryEventCategory: APM
+- drop_fields:
+    fields: ['json']
+    ignore_missing: true
+{{#if processors}}
+{{processors}}
+{{/if}}
