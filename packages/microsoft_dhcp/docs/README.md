@@ -22,8 +22,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2001-01-01T01:01:01.000-05:00",
     "agent": {
-        "ephemeral_id": "1cde9af7-54e8-4285-b8bd-83acfe9563ff",
-        "id": "bc319581-f7b0-4cac-8494-9630eec16441",
+        "ephemeral_id": "d8fa21a0-e19c-4412-917a-0b3b12afb08d",
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.2"
@@ -37,7 +37,7 @@ An example event for `log` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "bc319581-f7b0-4cac-8494-9630eec16441",
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
         "snapshot": false,
         "version": "8.8.2"
     },
@@ -49,7 +49,7 @@ An example event for `log` looks as following:
         ],
         "code": "35",
         "dataset": "microsoft_dhcp.log",
-        "ingested": "2023-07-21T14:55:45Z",
+        "ingested": "2023-07-24T14:29:55Z",
         "kind": "event",
         "original": "35,01/01/01,01:01:01,DNS update request failed,192.168.2.1,host.test.com,000000000000,",
         "outcome": "failure",
@@ -65,7 +65,9 @@ An example event for `log` looks as following:
     "host": {
         "domain": "test.com",
         "id": "000000000000",
-        "ip": "192.168.2.1",
+        "ip": [
+            "192.168.2.1"
+        ],
         "mac": [
             "00-00-00-00-00-00"
         ],
@@ -84,10 +86,10 @@ An example event for `log` looks as following:
     "observer": {
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.19.0.4"
+            "172.22.0.10"
         ],
         "mac": [
-            "02-42-AC-13-00-04"
+            "02-42-AC-16-00-0A"
         ]
     },
     "tags": [
