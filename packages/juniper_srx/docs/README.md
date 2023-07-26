@@ -338,6 +338,7 @@ The following processes and tags are supported:
 | interface.name | Interface name as reported by the system. | keyword |
 | juniper.srx.action | action | keyword |
 | juniper.srx.action_detail | action detail | keyword |
+| juniper.srx.admin_status |  | keyword |
 | juniper.srx.alert | repeat alert | keyword |
 | juniper.srx.apbr_rule_type | apbr rule type | keyword |
 | juniper.srx.application | application | keyword |
@@ -345,6 +346,7 @@ The following processes and tags are supported:
 | juniper.srx.application_characteristics | application characteristics | keyword |
 | juniper.srx.application_name | application name | keyword |
 | juniper.srx.application_sub_category | application sub category | keyword |
+| juniper.srx.argument1 |  | keyword |
 | juniper.srx.attack_name | attack name | keyword |
 | juniper.srx.category | filter category | keyword |
 | juniper.srx.client_ip | client ip | ip |
@@ -370,20 +372,41 @@ The following processes and tags are supported:
 | juniper.srx.file_hash_lookup | file hash lookup | keyword |
 | juniper.srx.file_name | file name | keyword |
 | juniper.srx.filename | filename | keyword |
+| juniper.srx.first_forwarding_class |  | keyword |
+| juniper.srx.function_name |  | keyword |
 | juniper.srx.hostname | hostname | keyword |
 | juniper.srx.icmp_type | icmp type | integer |
+| juniper.srx.ike_negotiation.err_msg |  | keyword |
+| juniper.srx.ike_negotiation.gateway |  | keyword |
+| juniper.srx.ike_negotiation.local.ike_id |  | keyword |
+| juniper.srx.ike_negotiation.local.ip_range |  | keyword |
+| juniper.srx.ike_negotiation.remote.ike_id |  | keyword |
+| juniper.srx.ike_negotiation.remote.ip_range |  | keyword |
+| juniper.srx.ike_negotiation.role |  | keyword |
+| juniper.srx.ike_negotiation.version |  | keyword |
+| juniper.srx.ike_negotiation.vpn |  | keyword |
+| juniper.srx.ike_negotiation.vr_id |  | keyword |
 | juniper.srx.inbound_bytes | bytes from server | integer |
 | juniper.srx.inbound_packets | packets from server | integer |
 | juniper.srx.index | index | keyword |
+| juniper.srx.index1 |  | keyword |
+| juniper.srx.index2 |  | keyword |
+| juniper.srx.kern_arp_addr_change.ip |  | ip |
+| juniper.srx.kern_arp_addr_change.mac1 |  | keyword |
+| juniper.srx.kern_arp_addr_change.mac2 |  | keyword |
+| juniper.srx.local_initiator |  | keyword |
+| juniper.srx.log_type |  | keyword |
 | juniper.srx.logical_system_name | logical system name | keyword |
 | juniper.srx.malware_info | malware info | keyword |
 | juniper.srx.message | mesagge | keyword |
 | juniper.srx.message_type | message type | keyword |
+| juniper.srx.mode |  | keyword |
 | juniper.srx.name | name | keyword |
 | juniper.srx.nat_connection_tag | nat connection tag | keyword |
 | juniper.srx.nested_application | nested application | keyword |
 | juniper.srx.obj | url path | keyword |
 | juniper.srx.occur_count | occur count | integer |
+| juniper.srx.operational_status |  | keyword |
 | juniper.srx.outbound_bytes | bytes from client | integer |
 | juniper.srx.outbound_packets | packets from client | integer |
 | juniper.srx.packet_log_id | packet log id | integer |
@@ -392,6 +415,8 @@ The following processes and tags are supported:
 | juniper.srx.peer_session_id | peer session id | keyword |
 | juniper.srx.peer_source_address | peer source address | ip |
 | juniper.srx.peer_source_port | peer source port | integer |
+| juniper.srx.ping_test.name |  | keyword |
+| juniper.srx.ping_test.owner |  | keyword |
 | juniper.srx.policy_name | policy name | keyword |
 | juniper.srx.process | process that generated the message | keyword |
 | juniper.srx.profile | filter profile | keyword |
@@ -400,9 +425,19 @@ The following processes and tags are supported:
 | juniper.srx.protocol_id | protocol id | keyword |
 | juniper.srx.protocol_name | protocol name | keyword |
 | juniper.srx.reason | reason | keyword |
+| juniper.srx.remote_responder |  | keyword |
 | juniper.srx.repeat_count | repeat count | integer |
 | juniper.srx.roles | roles | keyword |
 | juniper.srx.routing_instance | routing instance | keyword |
+| juniper.srx.rtlog_conn_error.code |  | long |
+| juniper.srx.rtlog_conn_error.description |  | keyword |
+| juniper.srx.rtlog_conn_error.err_msg |  | keyword |
+| juniper.srx.rtlog_conn_error.major |  | long |
+| juniper.srx.rtlog_conn_error.minor |  | long |
+| juniper.srx.rtlog_conn_error.status |  | long |
+| juniper.srx.rtlog_conn_error.stream_name |  | keyword |
+| juniper.srx.rtslib_dfwsm.k_usr_d |  | keyword |
+| juniper.srx.rtslib_dfwsm.u_data |  | keyword |
 | juniper.srx.rule_name | rule name | keyword |
 | juniper.srx.ruleebase_name | ruleebase name | keyword |
 | juniper.srx.sample_sha256 | sample sha256 | keyword |
@@ -411,6 +446,7 @@ The following processes and tags are supported:
 | juniper.srx.session_flag | session flag | integer |
 | juniper.srx.session_id | session id | keyword |
 | juniper.srx.session_id_32 | session id 32 | keyword |
+| juniper.srx.snmp_interface_index |  | keyword |
 | juniper.srx.src_nat_rule_name | src nat rule name | keyword |
 | juniper.srx.src_nat_rule_type | src nat rule type | keyword |
 | juniper.srx.src_vrf_grp | src_vrf_grp | keyword |
@@ -426,6 +462,7 @@ The following processes and tags are supported:
 | juniper.srx.time_period | time period | integer |
 | juniper.srx.time_scope | time scope | keyword |
 | juniper.srx.timestamp | timestamp | date |
+| juniper.srx.traffic_selector_name |  | keyword |
 | juniper.srx.tunnel_inspection | tunnel inspection | keyword |
 | juniper.srx.tunnel_inspection_policy_set | tunnel inspection policy set | keyword |
 | juniper.srx.type | type | keyword |

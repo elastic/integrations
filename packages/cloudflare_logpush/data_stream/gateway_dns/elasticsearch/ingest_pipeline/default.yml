@@ -1,0 +1,360 @@
+---
+description: Pipeline for parsing Cloudflare Gateway DNS logs.
+processors:
+  - set:
+      field: ecs.version
+      value: 8.7.0
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+  - set:
+      field: event.category
+      value: [network]
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.type
+      value: [info]
+# ECS fields
+  - convert:
+      field: json.Datetime
+      type: string
+      ignore_missing: true
+  - gsub:
+      field: json.Datetime
+      pattern: (^[0-9]+)([0-9]{6}$)
+      replacement: $1
+      ignore_missing: true
+      description: Convert timestamp's granularity from nanosecond to millisecond
+  - date:
+      field: json.Datetime
+      if: ctx.json?.Datetime != null && ctx.json.Datetime != ''
+      formats:
+        - UNIX_MS
+        - UNIX
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssZ
+      timezone: UTC
+      on_failure:
+      - append:
+          field: error.message
+          value: "{{{_ingest.on_failure_message}}}"
+  - set:
+      field: cloudflare_logpush.gateway_dns.timestamp
+      copy_from: "@timestamp"
+  - rename:
+      field: json.DeviceID
+      target_field: cloudflare_logpush.gateway_dns.host.id
+      ignore_missing: true
+  - set:
+      field: host.id
+      copy_from: cloudflare_logpush.gateway_dns.host.id
+  - rename:
+      field: json.DeviceName
+      target_field: cloudflare_logpush.gateway_dns.host.name
+      ignore_missing: true
+  - set:
+      field: host.name
+      copy_from: cloudflare_logpush.gateway_dns.host.name
+  - rename:
+      field: json.Email
+      target_field: cloudflare_logpush.gateway_dns.user.email
+      ignore_missing: true
+  - set:
+      field: user.email
+      copy_from: cloudflare_logpush.gateway_dns.user.email
+  - rename:
+      field: json.DstIP
+      target_field: cloudflare_logpush.gateway_dns.destination.ip
+      ignore_missing: true
+  - set:
+      field: destination.ip
+      copy_from: cloudflare_logpush.gateway_dns.destination.ip
+# Geo enrichment (destination IP)
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: json.DstPort
+      target_field: cloudflare_logpush.gateway_dns.destination.port
+      ignore_missing: true
+  - set:
+      field: destination.port
+      copy_from: cloudflare_logpush.gateway_dns.destination.port
+  - rename:
+      field: json.Protocol
+      target_field: cloudflare_logpush.gateway_dns.protocol
+      ignore_missing: true
+  - set:
+      field: network.protocol
+      copy_from: cloudflare_logpush.gateway_dns.protocol
+  - rename:
+      field: json.QueryName
+      target_field: cloudflare_logpush.gateway_dns.question.name
+      ignore_missing: true
+  - set:
+      field: dns.question.name
+      copy_from: cloudflare_logpush.gateway_dns.question.name
+  - rename:
+      field: json.QueryTypeName
+      target_field: cloudflare_logpush.gateway_dns.question.type
+      ignore_missing: true
+  - set:
+      field: dns.question.type
+      copy_from: cloudflare_logpush.gateway_dns.question.type
+# Set event.outcome based on the response code
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.json?.RCode != null && ctx.json?.RCode == 0
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.json?.RCode != null && ctx.json?.RCode > 0
+  - convert:
+      field: json.RCode
+      target_field: cloudflare_logpush.gateway_dns.response_code
+      if: ctx.json?.RCode != ''
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: dns.response_code
+      copy_from: cloudflare_logpush.gateway_dns.response_code
+  - rename:
+      field: json.RData
+      target_field: cloudflare_logpush.gateway_dns.answers
+      ignore_missing: true
+  - set:
+      field: dns.answers
+      copy_from: cloudflare_logpush.gateway_dns.answers
+  - rename:
+      field: json.ResolvedIPs
+      target_field: cloudflare_logpush.gateway_dns.resolved_ip
+      ignore_missing: true
+  - set:
+      field: dns.resolved_ip
+      copy_from: cloudflare_logpush.gateway_dns.resolved_ip
+  - rename:
+      field: json.SrcIP
+      target_field: cloudflare_logpush.gateway_dns.source.ip
+      ignore_missing: true
+  - set:
+      field: source.ip
+      copy_from: cloudflare_logpush.gateway_dns.source.ip
+# Geo enrichment (source IP)
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: json.SrcPort
+      target_field: cloudflare_logpush.gateway_dns.source.port
+      ignore_missing: true
+  - set:
+      field: source.port
+      copy_from: cloudflare_logpush.gateway_dns.source.port
+  - rename:
+      field: json.TimeZone
+      target_field: cloudflare_logpush.gateway_dns.timezone
+      ignore_missing: true
+  - set:
+      field: event.timezone
+      copy_from: cloudflare_logpush.gateway_dns.timezone
+  - rename:
+      field: json.UserID
+      target_field: cloudflare_logpush.gateway_dns.user.id
+      ignore_missing: true
+  - set:
+      field: user.id
+      copy_from: cloudflare_logpush.gateway_dns.user.id
+# Custom fields
+  - rename:
+      field: json.ColoCode
+      target_field: cloudflare_logpush.gateway_dns.colo.code
+      ignore_missing: true
+  - rename:
+      field: json.ColoID
+      target_field: cloudflare_logpush.gateway_dns.colo.id
+      ignore_missing: true
+  - rename:
+      field: json.ApplicationID
+      target_field: cloudflare_logpush.gateway_dns.application_id
+      ignore_missing: true
+  - rename:
+      field: json.Location
+      target_field: cloudflare_logpush.gateway_dns.location.name
+      ignore_missing: true
+  - rename:
+      field: json.LocationID
+      target_field: cloudflare_logpush.gateway_dns.location.id
+      ignore_missing: true
+  - rename:
+      field: json.MatchedCategoryIDs
+      target_field: cloudflare_logpush.gateway_dns.matched.category.ids
+      ignore_missing: true
+  - rename:
+      field: json.MatchedCategoryNames
+      target_field: cloudflare_logpush.gateway_dns.matched.category.names
+      ignore_missing: true
+  - rename:
+      field: json.Policy
+      target_field: cloudflare_logpush.gateway_dns.policy.name
+      ignore_missing: true
+  - rename:
+      field: json.PolicyID
+      target_field: cloudflare_logpush.gateway_dns.policy.id
+      ignore_missing: true
+  - rename:
+      field: json.QueryCategoryIDs
+      target_field: cloudflare_logpush.gateway_dns.question.category.ids
+      ignore_missing: true
+  - rename:
+      field: json.QueryCategoryNames
+      target_field: cloudflare_logpush.gateway_dns.question.category.names
+      ignore_missing: true
+  - rename:
+      field: json.QueryNameReversed
+      target_field: cloudflare_logpush.gateway_dns.question.reversed
+      ignore_missing: true
+  - rename:
+      field: json.QuerySize
+      target_field: cloudflare_logpush.gateway_dns.question.size
+      ignore_missing: true
+  - rename:
+      field: json.QueryType
+      target_field: cloudflare_logpush.gateway_dns.question.type_id
+      ignore_missing: true
+  - rename:
+      field: json.ResolverDecision
+      target_field: cloudflare_logpush.gateway_dns.resolver_decision
+      ignore_missing: true
+  - rename:
+      field: json.TimeZoneInferredMethod
+      target_field: cloudflare_logpush.gateway_dns.timezone_inferred_method
+      ignore_missing: true
+# Create related fields
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      if: ctx.destination?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      value: "{{{host.id}}}"
+      if: ctx.host?.id != null
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      value: "{{{host.name}}}"
+      if: ctx.host?.name != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: '{{{user.id}}}'
+      if: ctx.user?.id != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: '{{{user.email}}}'
+      if: ctx.user?.email != null
+      allow_duplicates: false
+# Clean resulting event
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field:
+        - cloudflare_logpush.gateway_dns.timestamp
+        - cloudflare_logpush.gateway_dns.host.id
+        - cloudflare_logpush.gateway_dns.host.name
+        - cloudflare_logpush.gateway_dns.destination.ip
+        - cloudflare_logpush.gateway_dns.destination.port
+        - cloudflare_logpush.gateway_dns.protocol
+        - cloudflare_logpush.gateway_dns.question.name
+        - cloudflare_logpush.gateway_dns.question.type
+        - cloudflare_logpush.gateway_dns.response_code
+        - cloudflare_logpush.gateway_dns.answers
+        - cloudflare_logpush.gateway_dns.resolved_ip
+        - cloudflare_logpush.gateway_dns.source.ip
+        - cloudflare_logpush.gateway_dns.source.port
+        - cloudflare_logpush.gateway_dns.timezone
+        - cloudflare_logpush.gateway_dns.user.id
+        - cloudflare_logpush.gateway_dns.user.email
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error

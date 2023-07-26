@@ -1029,8 +1029,6 @@ An example event for `alerts` looks as following:
 | netskope.events.referer.query |  | keyword |
 | netskope.events.referer.scheme |  | keyword |
 | netskope.events.referer.username |  | keyword |
-| netskope.events.region | N/A | keyword |
-| netskope.events.region.id | Region ID (as provided by the cloud provider). | keyword |
 | netskope.events.repo | N/A | keyword |
 | netskope.events.request.count | Total number of HTTP requests (equal to number of transaction events for this page event) sent from client to server over one underlying TCP connection. | long |
 | netskope.events.request.id | Unique request ID for the event. | keyword |

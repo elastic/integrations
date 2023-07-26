@@ -347,10 +347,9 @@ processors:
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
-  - append:
-      field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
-  - append:
+  - set:
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

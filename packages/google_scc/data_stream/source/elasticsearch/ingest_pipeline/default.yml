@@ -1,0 +1,108 @@
+---
+description: Pipeline for processing Source logs.
+processors:
+  - set:
+      field: ecs.version
+      value: 8.8.0
+      tag: set_ecs_version
+  - rename:
+      field: message
+      target_field: event.original
+      tag: rename_message
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - json:
+      field: event.original
+      tag: 'json_decoding'
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - drop:
+      if: ctx.json?.sources != null && ctx.json.sources.isEmpty()
+      tag: drop_sources
+  - rename:
+      field: json.description
+      target_field: google_scc.source.description
+      tag: rename_description
+      ignore_missing: true
+  - set:
+      field: message
+      tag: set_message
+      copy_from: google_scc.source.description
+      ignore_empty_value: true
+  - rename:
+      field: json.canonicalName
+      target_field: google_scc.source.canonical_name
+      tag: rename_canonicalName
+      ignore_missing: true
+  - rename:
+      field: json.displayName
+      target_field: google_scc.source.display_name
+      tag: rename_displayName
+      ignore_missing: true
+  - rename:
+      field: json.name
+      target_field: google_scc.source.name
+      tag: rename_name
+      ignore_missing: true
+  - grok:
+      description: Extract Source ID and Organization ID.
+      field: google_scc.source.name
+      tag: grok_to_extract_source_id_and_organization_id
+      if: ctx.google_scc?.source?.name != null
+      patterns:
+        - '^organizations/%{DATA:organization.id}/sources/%{DATA:google_scc.source.id}$'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - remove:
+      field:
+        - google_scc.source.description
+      tag: remove_duplicate_custom_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

@@ -132,7 +132,7 @@ The `nx` integration ingests network security logs from FireEye NX through TCP/U
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| tls.client.ciphersuites | TLS cipher suites by client. | array |
+| tls.client.ciphersuites | TLS cipher suites by client. | long |
 | tls.client.fingerprint | TLS fingerprint. | keyword |
 | tls.client.issuer | Distinguished name of subject of the issuer of the x.509 certificate presented by the client. | keyword |
 | tls.client.ja3 | A hash that identifies clients based on how they perform an SSL/TLS handshake. | keyword |
@@ -141,12 +141,12 @@ The `nx` integration ingests network security logs from FireEye NX through TCP/U
 | tls.client.not_before | Date/Time indicating when client certificate is first considered valid. | date |
 | tls.client.server_name | Also called an SNI, this tells the server which hostname to which the client is attempting to connect to. When this value is available, it should get copied to `destination.domain`. | keyword |
 | tls.client.subject | Distinguished name of subject of the x.509 certificate presented by the client. | keyword |
-| tls.client.tls_exts | TLS extensions set by client. | array |
+| tls.client.tls_exts | TLS extensions set by client. | long |
 | tls.public_keylength | TLS public key length. | long |
-| tls.server.ciphersuite | TLS cipher suites by server. | array |
+| tls.server.ciphersuite | TLS cipher suites by server. | long |
 | tls.server.ja3s | A hash that identifies servers based on how they perform an SSL/TLS handshake. | keyword |
 | tls.server.ja3s_string | A hash that identifies servers based on how they perform an SSL/TLS handshake. | keyword |
-| tls.server.tls_exts | TLS extensions set by server. | array |
+| tls.server.tls_exts | TLS extensions set by server. | long |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
@@ -175,11 +175,11 @@ An example event for `nx` looks as following:
 {
     "@timestamp": "2020-09-22T08:34:44.991Z",
     "agent": {
-        "ephemeral_id": "9c10aabf-b5f2-46d4-af8d-eccd5dfe3597",
-        "id": "2411eb51-1c57-41d1-962f-cd06ac57198b",
+        "ephemeral_id": "48b0c5c9-2498-4165-95e7-753c3f489c09",
+        "id": "8b10c3ab-9f4b-4ca0-b5ad-b6200b7fe65d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.0"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "fireeye.nx",
@@ -197,9 +197,9 @@ An example event for `nx` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "2411eb51-1c57-41d1-962f-cd06ac57198b",
-        "snapshot": false,
-        "version": "8.2.0"
+        "id": "8b10c3ab-9f4b-4ca0-b5ad-b6200b7fe65d",
+        "snapshot": true,
+        "version": "8.9.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -207,7 +207,7 @@ An example event for `nx` looks as following:
             "network"
         ],
         "dataset": "fireeye.nx",
-        "ingested": "2022-05-12T06:20:01Z",
+        "ingested": "2023-06-15T19:10:16Z",
         "original": "{\"rawmsg\":\"{\\\"timestamp\\\":\\\"2020-09-22T08:34:44.991339+0000\\\",\\\"flow_id\\\":721570461162990,\\\"event_type\\\":\\\"flow\\\",\\\"src_ip\\\":\\\"fe80:0000:0000:0000:feec:daff:fe31:b706\\\",\\\"src_port\\\":45944,\\\"dest_ip\\\":\\\"ff02:0000:0000:0000:0000:0000:0000:0001\\\",\\\"dest_port\\\":10001,\\\"proto\\\":\\\"UDP\\\",\\\"proto_number\\\":17,\\\"ip_tc\\\":0,\\\"app_proto\\\":\\\"failed\\\",\\\"flow\\\":{\\\"pkts_toserver\\\":8,\\\"pkts_toclient\\\":0,\\\"bytes_toserver\\\":1680,\\\"bytes_toclient\\\":0,\\\"start\\\":\\\"2020-09-22T08:34:12.761326+0000\\\",\\\"end\\\":\\\"2020-09-22T08:34:12.761348+0000\\\",\\\"age\\\":0,\\\"state\\\":\\\"new\\\",\\\"reason\\\":\\\"timeout\\\",\\\"alerted\\\":false}}\\n\",\"meta_sip4\":\"192.168.1.99\",\"meta_oml\":520,\"deviceid\":\"860665216674\",\"meta_cbname\":\"fireeye-7e0de1\"}",
         "timezone": "+00:00",
         "type": [
@@ -229,23 +229,24 @@ An example event for `nx` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": false,
+        "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "85082b6dda81440ab2fd3b084337286f",
         "ip": [
-            "192.168.16.7"
+            "172.23.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:10:07"
+            "02-42-AC-17-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.104-linuxkit",
+            "kernel": "5.10.47-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "input": {

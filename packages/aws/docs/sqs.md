@@ -127,7 +127,6 @@ An example event for `sqs` looks as following:
 | @timestamp | Event timestamp. | date |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
-| aws.dimensions.\* | Metric dimensions. | object |  |
 | aws.dimensions.QueueName | SQS queue name | keyword |  |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |
 | aws.sqs.empty_receives | The number of ReceiveMessage API calls that did not return a message. | long | gauge |
