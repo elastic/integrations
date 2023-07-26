@@ -443,6 +443,7 @@ so the `period` for `container_service` should be `300s` or multiples of `300s`.
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | azure.application_id | The application ID | keyword |  |
 | azure.container_service.kube_node_status_allocatable_cpu_cores.avg | Total number of available cpu cores in a managed cluster | float | gauge |
 | azure.container_service.kube_node_status_allocatable_memory_bytes.avg | Total amount of available memory in a managed cluster | float | gauge |
@@ -453,11 +454,6 @@ so the `period` for `container_service` should be `300s` or multiples of `300s`.
 | azure.dimensions.node | Node name | keyword |  |
 | azure.dimensions.pod | Pod name | keyword |  |
 | azure.dimensions.status | The container name | keyword |  |
-| azure.metrics.kube_node_status_allocatable_cpu_cores.avg | Total number of available cpu cores in a managed cluster | float | gauge |
-| azure.metrics.kube_node_status_allocatable_memory_bytes.avg | Total amount of available memory in a managed cluster | float | gauge |
-| azure.metrics.kube_node_status_condition.avg | Statuses for various node conditions | float | gauge |
-| azure.metrics.kube_pod_status_phase.avg | Number of pods by phase | float | gauge |
-| azure.metrics.kube_pod_status_ready.avg | Number of pods in Ready state | float | gauge |
 | azure.namespace | The namespace selected | keyword |  |
 | azure.resource.group | The resource group | keyword |  |
 | azure.resource.id | The id of the resource | keyword |  |
