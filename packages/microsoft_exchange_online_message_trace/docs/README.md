@@ -119,11 +119,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2022-09-05T18:10:13.490Z",
     "agent": {
-        "ephemeral_id": "8de97862-77fa-4e44-91be-5d3947dd67aa",
-        "id": "6f0c420a-c434-4d40-90cb-956665a6fdd6",
+        "ephemeral_id": "f42c0a8e-b2c0-4772-ab85-278acafa95f5",
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.5.1"
+        "version": "8.8.2"
     },
     "data_stream": {
         "dataset": "microsoft_exchange_online_message_trace.log",
@@ -149,15 +149,21 @@ An example event for `log` looks as following:
         },
         "ip": "216.160.83.56",
         "registered_domain": "contoso.com",
-        "top_level_domain": "com"
+        "top_level_domain": "com",
+        "user": {
+            "domain": "contoso.com",
+            "email": "linus@contoso.com",
+            "id": "linus@contoso.com",
+            "name": "linus"
+        }
     },
     "ecs": {
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "6f0c420a-c434-4d40-90cb-956665a6fdd6",
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
         "snapshot": false,
-        "version": "8.5.1"
+        "version": "8.8.2"
     },
     "email": {
         "attachments": {
@@ -167,21 +173,25 @@ An example event for `log` looks as following:
         },
         "delivery_timestamp": "2022-09-05T18:10:13.4907658",
         "from": {
-            "address": "azure-noreply@microsoft.com"
+            "address": [
+                "azure-noreply@microsoft.com"
+            ]
         },
         "local_id": "cf7a249a-5edd-4350-130a-08da8f69e0f6",
         "message_id": "\u003ca210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com\u003e",
         "subject": "PIM: A privileged directory role was assigned outside of PIM",
         "to": {
-            "address": "linus@contoso.com"
+            "address": [
+                "linus@contoso.com"
+            ]
         }
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-02-05T23:16:02.721Z",
+        "created": "2023-07-24T14:46:09.199Z",
         "dataset": "microsoft_exchange_online_message_trace.log",
         "end": "2022-09-06T09:01:46.036Z",
-        "ingested": "2023-02-05T23:16:03Z",
+        "ingested": "2023-07-24T14:46:12Z",
         "original": "{\"EndDate\":\"2022-09-06T09:01:46.0369423Z\",\"FromIP\":\"81.2.69.144\",\"Index\":0,\"MessageId\":\"\\u003ca210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com\\u003e\",\"MessageTraceId\":\"cf7a249a-5edd-4350-130a-08da8f69e0f6\",\"Organization\":\"contoso.com\",\"Received\":\"2022-09-05T18:10:13.4907658\",\"RecipientAddress\":\"linus@contoso.com\",\"SenderAddress\":\"azure-noreply@microsoft.com\",\"Size\":87891,\"StartDate\":\"2022-09-04T09:01:46.0369423Z\",\"Status\":\"Delivered\",\"Subject\":\"PIM: A privileged directory role was assigned outside of PIM\",\"ToIP\":\"216.160.83.56\"}",
         "outcome": "Delivered",
         "start": "2022-09-04T09:01:46.036Z"
@@ -207,6 +217,14 @@ An example event for `log` looks as following:
             "ToIP": "216.160.83.56"
         }
     },
+    "related": {
+        "user": [
+            "linus@contoso.com",
+            "azure-noreply@microsoft.com",
+            "linus",
+            "azure-noreply"
+        ]
+    },
     "source": {
         "domain": "microsoft.com",
         "geo": {
@@ -223,7 +241,13 @@ An example event for `log` looks as following:
         },
         "ip": "81.2.69.144",
         "registered_domain": "microsoft.com",
-        "top_level_domain": "com"
+        "top_level_domain": "com",
+        "user": {
+            "domain": "microsoft.com",
+            "email": "azure-noreply@microsoft.com",
+            "id": "azure-noreply@microsoft.com",
+            "name": "azure-noreply"
+        }
     },
     "tags": [
         "preserve_original_event",
