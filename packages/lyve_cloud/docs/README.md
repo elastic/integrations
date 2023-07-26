@@ -199,7 +199,9 @@ An example event for `audit` looks as following:
             "1.128.0.0",
             "10.213.135.144"
         ],
-        "user": "user-name-terraform"
+        "user": [
+            "user-name-terraform"
+        ]
     },
     "tags": [
         "preserve_original_event"

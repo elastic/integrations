@@ -27,6 +27,11 @@ request.transforms:
       target: url.params.offset
       value: >-
         [[ if (index .cursor "last_offset") ]][[ .cursor.last_offset ]][[ end ]]
+{{#if event_limit}}
+  - set:
+      target: url.params.limit
+      value: '{{event_limit}}'
+{{/if}}
   - set:
       target: header.XTimestamp
       value: '[[ formatDate (now) "20060102T15:04:05-0700" ]]'
