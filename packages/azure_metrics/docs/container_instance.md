@@ -72,6 +72,7 @@ Authentication: we are handling authentication on our side (creating/renewing th
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | azure.application_id | The application ID | keyword |  |  |
 | azure.container_instance.\*.\* | container instance | object |  |  |
 | azure.dimensions.container_name | The container name | keyword |  |  |

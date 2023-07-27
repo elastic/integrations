@@ -315,6 +315,7 @@ so the `period` for `container_instance` should be `300s` or multiples of `300s`
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | azure.application_id | The application ID | keyword |  |  |
 | azure.container_instance.\*.\* | container instance | object |  |  |
 | azure.dimensions.container_name | The container name | keyword |  |  |
