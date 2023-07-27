@@ -317,7 +317,10 @@ so the `period` for `container_instance` should be `300s` or multiples of `300s`
 | @timestamp | Event timestamp. | date |  |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | azure.application_id | The application ID | keyword |  |  |
-| azure.container_instance.\*.\* | container instance | object |  |  |
+| azure.container_instance.cpu_usage.avg | CPU usage on all cores in millicores. | float |  | gauge |
+| azure.container_instance.memory_usage.avg | Total memory usage in byte. | float | byte | gauge |
+| azure.container_instance.network_bytes_received_per_second.avg | The network bytes received per second. | float | byte | gauge |
+| azure.container_instance.network_bytes_transmitted_per_second.avg | The network bytes transmitted per second. | float | byte | gauge |
 | azure.dimensions.container_name | The container name | keyword |  |  |
 | azure.metrics.cpu_usage.avg | CPU usage on all cores in millicores. | float |  | gauge |
 | azure.metrics.memory_usage.avg | Total memory usage in byte. | float | byte | gauge |
