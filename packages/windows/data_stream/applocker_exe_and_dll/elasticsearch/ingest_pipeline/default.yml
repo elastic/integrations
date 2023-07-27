@@ -220,6 +220,29 @@ processors:
             field: winlog.user_data.TargetProcessId
             ignore_failure: true
 
+    ## Fully Qualified Binary Name (FQBN) / File Fields
+  - grok:
+      field: winlog.user_data.Fqbn
+      ignore_missing: true
+      patterns:
+      - "O=(?<winlog.fqbn.organization>.*),%{SPACE}L=(?<winlog.fqbn.city>.*),%{SPACE}S=(?<winlog.fqbn.state>.*),%{SPACE}C=(?<winlog.fqbn.country>[^\\\\]*)\\\\(?<winlog.fqbn.name>[^\\\\]*)\\\\(?<winlog.fqbn.filename>[^\\\\]*)\\\\(?<winlog.fqbn.version>.*)"
+      - "O=(?<winlog.fqbn.organization>.*),%{SPACE}L=(?<winlog.fqbn.city>.*),%{SPACE}C=(?<winlog.fqbn.country>[^\\\\]*)\\\\(?<winlog.fqbn.name>[^\\\\]*)\\\\(?<winlog.fqbn.filename>[^\\\\]*)\\\\(?<winlog.fqbn.version>.*)"
+      - "O=(?<winlog.fqbn.organization>.*),%{SPACE}S=(?<winlog.fqbn.state>.*),%{SPACE}C=(?<winlog.fqbn.country>[^\\\\]*)\\\\(?<winlog.fqbn.name>[^\\\\]*)\\\\(?<winlog.fqbn.filename>[^\\\\]*)\\\\(?<winlog.fqbn.version>.*)"
+      if: ctx.winlog?.user_data?.Fqbn != "-"
+
+  - grok:
+      field: winlog.user_data.FilePath
+      ignore_missing: true
+      patterns:
+      - '(?<file.name>([^\\]*$))'
+      if: ctx.winlog?.user_data?.FilePath != "-"
+
+  - set:
+      field: file.hash.sha256
+      copy_from: winlog.user_data.FileHash
+      ignore_empty_value: true
+      if: ctx.winlog?.user_data?.FileHash != "-"
+      
 on_failure:
   - set:
       field: event.kind
