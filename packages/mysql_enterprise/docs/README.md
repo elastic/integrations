@@ -124,11 +124,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-10-19T19:21:33.000Z",
     "agent": {
-        "ephemeral_id": "d192381e-e559-464a-876d-058ff4104145",
-        "id": "1202ee7c-96a3-47b6-8ddf-4fd17e23f288",
+        "ephemeral_id": "c4d70ad8-06a8-4631-90a7-c20f2113e80d",
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "mysql_enterprise.audit",
@@ -139,9 +139,9 @@ An example event for `audit` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "1202ee7c-96a3-47b6-8ddf-4fd17e23f288",
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.9.0"
     },
     "event": {
         "action": "mysql-startup",
@@ -150,7 +150,7 @@ An example event for `audit` looks as following:
             "database"
         ],
         "dataset": "mysql_enterprise.audit",
-        "ingested": "2022-02-24T08:19:02Z",
+        "ingested": "2023-07-27T15:20:34Z",
         "kind": "event",
         "outcome": "unknown",
         "timezone": "+00:00"
@@ -159,22 +159,23 @@ An example event for `audit` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "61993a3120a949b68ffe69a69ae82866",
         "ip": [
-            "192.168.192.4"
+            "172.18.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:c0:04"
+            "02-42-AC-12-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
             "full": "x86_64-Linux",
-            "kernel": "5.10.60.1-microsoft-standard-WSL2",
+            "kernel": "5.10.47-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "input": {
@@ -184,7 +185,7 @@ An example event for `audit` looks as following:
         "file": {
             "path": "/tmp/service_logs/mysql_audit.log"
         },
-        "offset": 462
+        "offset": 0
     },
     "mysqlenterprise": {
         "audit": {
