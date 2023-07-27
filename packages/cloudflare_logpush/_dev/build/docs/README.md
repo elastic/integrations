@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Cloudflare Logpush](https://www.cloudflare.com/) integration allows you to monitor Access Request, Audit, CASB, Device Posture, DNS, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, NEL Report, Network Analytics, Spectrum Event and Network Session logs. Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
+The [Cloudflare Logpush](https://www.cloudflare.com/) integration allows you to monitor Access Request, Audit, CASB, Device Posture, DNS, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, NEL Report, Network Analytics, Spectrum Event, Network Session and Workers Trace Events logs. Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
 The Cloudflare Logpush integration can be used in three different modes to collect data:
 - HTTP Endpoint mode - Cloudflare pushes logs directly to an HTTP endpoint hosted by your Elastic Agent.
@@ -47,6 +47,8 @@ The Cloudflare Logpush integration collects logs for the following types of even
 
 **Spectrum Event**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/spectrum_events/).
 
+**Workers Trace Events**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/workers_trace_events/).
+
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
@@ -77,6 +79,7 @@ This module has been tested against **Cloudflare version v4**.
   | Network Analytics          | network_analytics_logs |
   | Zero Trust Network Session | network_session        |
   | Spectrum Event             | spectrum_event         |
+  | Workers Trace Events       | workers_trace          |
 
 ### To collect data from AWS SQS, follow the below steps:
 1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
@@ -285,3 +288,14 @@ Default port for HTTP Endpoint: _9566_
 {{event "spectrum_event"}}
 
 {{fields "spectrum_event"}}
+
+### workers_trace
+
+This is the `workers_trace` dataset.
+Default port for HTTP Endpoint: _9574_
+
+#### Example
+
+{{event "workers_trace"}}
+
+{{fields "workers_trace"}}

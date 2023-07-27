@@ -1,0 +1,37 @@
+- name: cloudflare_logpush.workers_trace
+  type: group
+  description: Integration for parsing Cloudflare Workers Trace Event logs.
+  fields:
+    - name: dispatch_namespace
+      type: keyword
+      description: The Cloudflare Worker dispatch namespace.
+    - name: event
+      type: flattened
+      description: Details about the source event.
+    - name: exceptions
+      type: flattened
+      description: List of uncaught exceptions during the invocation.
+    - name: logs
+      type: flattened
+      description: List of console messages emitted during the invocation.
+    - name: outcome
+      type: keyword
+      description: The outcome of the worker script invocation. Possible values are ok | exception.
+    - name: script
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: The Cloudflare Worker script name.
+        - name: tags
+          type: keyword
+          description: A list of user-defined tags used to categorize the Worker.
+    - name: timestamp
+      type: date
+      description: The timestamp of when the event was received.
+    - name: type
+      type: keyword
+      description: The event type that triggered the invocation.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.
