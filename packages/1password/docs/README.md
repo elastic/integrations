@@ -319,17 +319,17 @@ This uses the 1Password Events API to retrieve information about audit events. E
 | event.module | Event module | constant_keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Input type | keyword |
-| onepassword.actor_details.email | The email of the actor. | text |
+| onepassword.actor_details.email | The email of the actor. | keyword |
 | onepassword.actor_details.name | The name of the actor. | keyword |
 | onepassword.actor_details.uuid | The UUID of the actor. | keyword |
 | onepassword.actor_uuid | The UUID of the actor. | keyword |
-| onepassword.aux_details.email | The email of the aux resource. | text |
+| onepassword.aux_details.email | The email of the aux resource. | keyword |
 | onepassword.aux_details.name | The name of the aux resource. | keyword |
 | onepassword.aux_details.uuid | The UUID of the aux resource. | keyword |
 | onepassword.aux_id | Any auxilary id related to the event. | long |
 | onepassword.aux_info | Any auxilary info related to the event. | text |
 | onepassword.aux_uuid | Any auxilary uuid related to the event. | keyword |
-| onepassword.object_details.email | The email of the object. | text |
+| onepassword.object_details.email | The email of the object. | keyword |
 | onepassword.object_details.name | The name of the object. | keyword |
 | onepassword.object_details.uuid | The UUID of the object. | keyword |
 | onepassword.object_type | The type of object changed by the event. | keyword |
@@ -352,7 +352,10 @@ This uses the 1Password Events API to retrieve information about audit events. E
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
+| user.email | User email address. | keyword |
 | user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
 An example event for `audit_events` looks as following:
