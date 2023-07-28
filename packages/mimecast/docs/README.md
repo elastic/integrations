@@ -28,11 +28,11 @@ An example event for `audit_events` looks as following:
 {
     "@timestamp": "2021-11-16T12:01:37.000Z",
     "agent": {
-        "ephemeral_id": "318ed660-ab02-48f6-bd87-53b29acaedab",
-        "id": "8c5473c5-468b-444c-b5c0-0783fde1f55e",
+        "ephemeral_id": "67b65934-b452-4461-a076-c9b053b6da1f",
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.5.1"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "mimecast.audit_events",
@@ -43,18 +43,18 @@ An example event for `audit_events` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "8c5473c5-468b-444c-b5c0-0783fde1f55e",
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
         "snapshot": false,
-        "version": "8.5.1"
+        "version": "8.9.0"
     },
     "event": {
         "action": "search-action",
         "agent_id_status": "verified",
-        "created": "2023-01-16T22:59:08.657Z",
+        "created": "2023-07-27T14:56:43.376Z",
         "dataset": "mimecast.audit_events",
-        "id": "eNqrVipOTS4tSs1MUbJSSg_xMDJPNkisSDdISQ00j0gzz44wDAtL89c2DXZ1C3eP9AyvijKL9I7Rd_WOzC0ztMg2dzFM1M73s6w09CqoDA1T0lFKLE3JLMnJTwcZaGxoaWFsYmhkoaOUXFpckp-bWpScn5IKtMnZxMzR3BSovCy1qDgzP0_JyrAWAAjKK1o",
-        "ingested": "2023-01-16T22:59:09Z",
-        "original": "{\"auditType\":\"Search Action\",\"category\":\"case_review_logs\",\"eventInfo\":\"Inspected Review Set Messages - Source: Review Set - Supervision - hot words, Case - GDPR/CCPA, Message Status: Pending, Date: 2021-11-16, Time: 12:01:37+0000, IP: 8.8.8.8, Application: mimecast-case-review\",\"eventTime\":\"2021-11-16T12:01:37+0000\",\"id\":\"eNqrVipOTS4tSs1MUbJSSg_xMDJPNkisSDdISQ00j0gzz44wDAtL89c2DXZ1C3eP9AyvijKL9I7Rd_WOzC0ztMg2dzFM1M73s6w09CqoDA1T0lFKLE3JLMnJTwcZaGxoaWFsYmhkoaOUXFpckp-bWpScn5IKtMnZxMzR3BSovCy1qDgzP0_JyrAWAAjKK1o\",\"user\":\"johndoe@example.com\"}"
+        "id": "eNqrVipOTS4tSs1MUbJSSg_xMDJPNkisSDdISQ00j0gzz44wDAtL89c2DXZ1C3eP9AyvijKL9I7Rd_WOzC0ztMg2dzFM1M73s6w09CqoDA1T0lFKLE3JLMnJTwcZaGxoaWFsYmhkoaOUXFpckp-bWpScn5IKtMnZxMzR3BSovCy1qDgzP0_JyrAWAAjKK2o",
+        "ingested": "2023-07-27T14:56:44Z",
+        "original": "{\"auditType\":\"Search Action\",\"category\":\"case_review_logs\",\"eventInfo\":\"Inspected Review Set Messages - Source: Review Set - Supervision - hot words, Case - GDPR/CCPA, Message Status: Pending, Date: 2021-11-16, Time: 12:01:37+0000, IP: 8.8.8.8, Application: mimecast-case-review\",\"eventTime\":\"2021-11-16T12:01:37+0000\",\"id\":\"eNqrVipOTS4tSs1MUbJSSg_xMDJPNkisSDdISQ00j0gzz44wDAtL89c2DXZ1C3eP9AyvijKL9I7Rd_WOzC0ztMg2dzFM1M73s6w09CqoDA1T0lFKLE3JLMnJTwcZaGxoaWFsYmhkoaOUXFpckp-bWpScn5IKtMnZxMzR3BSovCy1qDgzP0_JyrAWAAjKK2o\",\"user\":\"johndoe@example.com\"}"
     },
     "input": {
         "type": "httpjson"
@@ -180,11 +180,11 @@ An example event for `dlp` looks as following:
 {
     "@timestamp": "2021-11-18T21:41:18.000Z",
     "agent": {
-        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "ephemeral_id": "b3630060-e536-4953-a9b4-74f78c6ac6c1",
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "mimecast.dlp_logs",
@@ -195,9 +195,9 @@ An example event for `dlp` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
+        "snapshot": false,
+        "version": "8.9.0"
     },
     "email": {
         "direction": "inbound",
@@ -206,7 +206,7 @@ An example event for `dlp` looks as following:
                 "\u003c\u003e"
             ]
         },
-        "message_id": "\u003c20211118214115.B346F10021D@mail.emailsec.ninja\u003e",
+        "message_id": "\u003c20211118214115.B346F10021D-2@mail.emailsec.ninja\u003e",
         "subject": "Undelivered Mail Returned to Sender",
         "to": {
             "address": [
@@ -219,8 +219,8 @@ An example event for `dlp` looks as following:
         "agent_id_status": "verified",
         "created": "2021-11-18T21:41:18+0000",
         "dataset": "mimecast.dlp_logs",
-        "ingested": "2023-01-13T15:05:15Z",
-        "original": "{\"action\":\"notification\",\"eventTime\":\"2021-11-18T21:41:18+0000\",\"messageId\":\"\\u003c20211118214115.B346F10021D@mail.emailsec.ninja\\u003e\",\"policy\":\"Content Inspection - Watermark\",\"recipientAddress\":\"johndoe@example.com\",\"route\":\"inbound\",\"senderAddress\":\"\\u003c\\u003e\",\"subject\":\"Undelivered Mail Returned to Sender\"}"
+        "ingested": "2023-07-27T14:57:41Z",
+        "original": "{\"action\":\"notification\",\"eventTime\":\"2021-11-18T21:41:18+0000\",\"messageId\":\"\\u003c20211118214115.B346F10021D-2@mail.emailsec.ninja\\u003e\",\"policy\":\"Content Inspection - Watermark\",\"recipientAddress\":\"johndoe@example.com\",\"route\":\"inbound\",\"senderAddress\":\"\\u003c\\u003e\",\"subject\":\"Undelivered Mail Returned to Sender\"}"
     },
     "input": {
         "type": "httpjson"
@@ -305,11 +305,11 @@ An example event for `siem` looks as following:
 {
     "@timestamp": "2021-11-12T12:15:46.000Z",
     "agent": {
-        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "ephemeral_id": "c6e5221f-b305-4a75-acb4-7a43547a1e6d",
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "mimecast.siem_logs",
@@ -320,9 +320,9 @@ An example event for `siem` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
+        "snapshot": false,
+        "version": "8.9.0"
     },
     "email": {
         "direction": "internal",
@@ -333,14 +333,16 @@ An example event for `siem` looks as following:
         },
         "local_id": "fjihpfEgM_iRwemxhe3t_w",
         "to": {
-            "address": "o365_service_account@example.com"
+            "address": [
+                "o365_service_account@example.com"
+            ]
         }
     },
     "event": {
         "agent_id_status": "verified",
         "created": "2021-11-12T12:15:46+0000",
         "dataset": "mimecast.siem_logs",
-        "ingested": "2023-01-13T15:06:00Z",
+        "ingested": "2023-07-27T14:59:24Z",
         "original": "{\"Content-Disposition\":\"attachment; filename=\\\"jrnl_20211018093329655.json\\\"\",\"Dir\":\"Internal\",\"Rcpt\":\"o365_service_account@example.com\",\"RcptActType\":\"Jnl\",\"RcptHdrType\":\"Unknown\",\"Sender\":\"johndoe@example.com\",\"aCode\":\"fjihpfEgM_iRwemxhe3t_w\",\"acc\":\"ABC123\",\"datetime\":\"2021-11-12T12:15:46+0000\"}",
         "outcome": "unknown"
     },
@@ -505,11 +507,11 @@ An example event for `threat_intel_malware_customer` looks as following:
 {
     "@timestamp": "2021-11-19T01:28:37.099Z",
     "agent": {
-        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "ephemeral_id": "1cb33560-ee01-4d6d-b63c-4d33848115e0",
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "mimecast.threat_intel_malware_customer",
@@ -520,19 +522,23 @@ An example event for `threat_intel_malware_customer` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
+        "snapshot": false,
+        "version": "8.9.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "threat",
-        "created": "2023-01-13T15:07:07.195Z",
+        "category": [
+            "threat"
+        ],
+        "created": "2023-07-27T15:00:16.307Z",
         "dataset": "mimecast.threat_intel_malware_customer",
-        "ingested": "2023-01-13T15:07:08Z",
+        "ingested": "2023-07-27T15:00:17Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2021-11-19T01:28:37.099Z\",\"id\":\"indicator--456ac916-4c4e-43be-b7a9-6678f6a845cd\",\"labels\":[\"malicious-activity\"],\"modified\":\"2021-11-19T01:28:37.099Z\",\"pattern\":\"[file:hashes.'SHA-256' = 'ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be']\",\"type\":\"indicator\",\"valid_from\":\"2021-11-19T01:28:37.099Z\"}",
-        "type": "indicator"
+        "type": [
+            "indicator"
+        ]
     },
     "input": {
         "type": "httpjson"
@@ -657,11 +663,11 @@ An example event for `threat_intel_malware_grid` looks as following:
 {
     "@timestamp": "2021-11-19T01:28:37.099Z",
     "agent": {
-        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "ephemeral_id": "f13ad74b-0d24-4bb8-b0f9-b72fc70a980a",
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "mimecast.threat_intel_malware_grid",
@@ -672,19 +678,23 @@ An example event for `threat_intel_malware_grid` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
+        "snapshot": false,
+        "version": "8.9.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "threat",
-        "created": "2023-01-13T15:08:03.217Z",
+        "category": [
+            "threat"
+        ],
+        "created": "2023-07-27T15:01:03.091Z",
         "dataset": "mimecast.threat_intel_malware_grid",
-        "ingested": "2023-01-13T15:08:04Z",
+        "ingested": "2023-07-27T15:01:04Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2021-11-19T01:28:37.099Z\",\"id\":\"indicator--456ac916-4c4e-43be-b7a9-6678f6a845cd\",\"labels\":[\"malicious-activity\"],\"modified\":\"2021-11-19T01:28:37.099Z\",\"pattern\":\"[file:hashes.'SHA-256' = 'ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be']\",\"type\":\"indicator\",\"valid_from\":\"2021-11-19T01:28:37.099Z\"}",
-        "type": "indicator"
+        "type": [
+            "indicator"
+        ]
     },
     "input": {
         "type": "httpjson"
@@ -812,11 +822,11 @@ An example event for `ttp_ap` looks as following:
 {
     "@timestamp": "2021-11-24T11:54:27.000Z",
     "agent": {
-        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "ephemeral_id": "f1e4b7e5-19a3-41bf-9ad5-c80de2f36ac9",
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "mimecast.ttp_ap_logs",
@@ -827,9 +837,9 @@ An example event for `ttp_ap` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
+        "snapshot": false,
+        "version": "8.9.0"
     },
     "email": {
         "attachments": {
@@ -848,7 +858,7 @@ An example event for `ttp_ap` looks as following:
                 "\u003c\u003e"
             ]
         },
-        "message_id": "\u003cCAKUQxhimsCd1bvWQVs14Amuh1+Hnw_bmSuA7ot8hy4eDa9_ziQ@mail.gmail.com\u003e",
+        "message_id": "\u003c1-CAKUQxhimsCd1bvWQVs14Amuh1+Hnw_bmSuA7ot8hy4eDa9_ziQ@mail.gmail.com\u003e",
         "subject": "Test Files",
         "to": {
             "address": [
@@ -861,14 +871,14 @@ An example event for `ttp_ap` looks as following:
         "agent_id_status": "verified",
         "created": "2021-11-24T11:54:27+0000",
         "dataset": "mimecast.ttp_ap_logs",
-        "ingested": "2023-01-13T15:08:52Z",
-        "original": "{\"actionTriggered\":\"user release, none\",\"date\":\"2021-11-24T11:54:27+0000\",\"definition\":\"Inbound - Safe file with On-Demand Sandbox\",\"details\":\"Safe                                              \\r\\nTime taken: 0 hrs, 0 min, 7 sec\",\"fileHash\":\"cabd7cb6e1822fd9e1fc9bcf144ee26ee6bfc855c4574ca967dd53dcc36a1254\",\"fileName\":\"Datasheet_Mimecast Targeted Threat Protection + Internal Email Protect (2).pdf\",\"fileType\":\"application/pdf\",\"messageId\":\"\\u003cCAKUQxhimsCd1bvWQVs14Amuh1+Hnw_bmSuA7ot8hy4eDa9_ziQ@mail.gmail.com\\u003e\",\"recipientAddress\":\"johndoe@emample.com\",\"result\":\"safe\",\"route\":\"inbound\",\"senderAddress\":\"\\u003c\\u003e\",\"subject\":\"Test Files\"}"
+        "ingested": "2023-07-27T15:03:13Z",
+        "original": "{\"actionTriggered\":\"user release, none\",\"date\":\"2021-11-24T11:54:27+0000\",\"definition\":\"Inbound - Safe file with On-Demand Sandbox\",\"details\":\"Safe\\r\\nTime taken: 0 hrs, 0 min, 7 sec\",\"fileHash\":\"cabd7cb6e1822fd9e1fc9bcf144ee26ee6bfc855c4574ca967dd53dcc36a1254\",\"fileName\":\"Datasheet_Mimecast Targeted Threat Protection + Internal Email Protect (2).pdf\",\"fileType\":\"application/pdf\",\"messageId\":\"\\u003c1-CAKUQxhimsCd1bvWQVs14Amuh1+Hnw_bmSuA7ot8hy4eDa9_ziQ@mail.gmail.com\\u003e\",\"recipientAddress\":\"johndoe@emample.com\",\"result\":\"safe\",\"route\":\"inbound\",\"senderAddress\":\"\\u003c\\u003e\",\"subject\":\"Test Files\"}"
     },
     "input": {
         "type": "httpjson"
     },
     "mimecast": {
-        "details": "Safe                                              \r\nTime taken: 0 hrs, 0 min, 7 sec",
+        "details": "Safe\r\nTime taken: 0 hrs, 0 min, 7 sec",
         "result": "safe"
     },
     "related": {
@@ -973,11 +983,11 @@ An example event for `ttp_ip` looks as following:
 {
     "@timestamp": "2021-11-12T15:27:04.000Z",
     "agent": {
-        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "ephemeral_id": "2c26c85b-6378-46cd-a2b8-222d87230852",
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "mimecast.ttp_ip_logs",
@@ -988,9 +998,9 @@ An example event for `ttp_ip` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
+        "snapshot": false,
+        "version": "8.9.0"
     },
     "email": {
         "from": {
@@ -998,7 +1008,7 @@ An example event for `ttp_ip` looks as following:
                 "johndoe@example.com"
             ]
         },
-        "message_id": "\u003cMN2PR16MB2719879CA4DB60C265F7FD8FB0959@MN2PR16MB2719.namprd16.prod.outlook.com\u003e",
+        "message_id": "\u003c20-MN2PR16MB2719879CA4DB60C265F7FD8FB0959@MN2PR16MB2719.namprd16.prod.outlook.com\u003e",
         "subject": "Don't read, just fill out!",
         "to": {
             "address": [
@@ -1012,8 +1022,8 @@ An example event for `ttp_ip` looks as following:
         "created": "2021-11-12T15:27:04+0000",
         "dataset": "mimecast.ttp_ip_logs",
         "id": "MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyMjM3MzAw0FEqSy0qzszPU7Iy1FEqyQMrNDAwV6oFAGMiEg8",
-        "ingested": "2023-01-13T15:10:14Z",
-        "original": "{\"action\":\"none\",\"definition\":\"IP - 1 hit (Tag email)\",\"eventTime\":\"2021-11-12T15:27:04+0000\",\"hits\":1,\"id\":\"MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyMjM3MzAw0FEqSy0qzszPU7Iy1FEqyQMrNDAwV6oFAGMiEg8\",\"identifiers\":[\"internal_user_name\"],\"impersonationResults\":[{\"checkerResult\":\"hit\",\"impersonationDomainSource\":\"internal_user_name\",\"similarDomain\":\"John Doe \\u003cjohndoe_cdw@example.com\\u003e\",\"stringSimilarToDomain\":\"John Doe\"}],\"messageId\":\"\\u003cMN2PR16MB2719879CA4DB60C265F7FD8FB0959@MN2PR16MB2719.namprd16.prod.outlook.com\\u003e\",\"recipientAddress\":\"johndoe@example.com\",\"senderAddress\":\"johndoe@example.com\",\"senderIpAddress\":\"8.8.8.8\",\"subject\":\"Don't read, just fill out!\",\"taggedExternal\":false,\"taggedMalicious\":true}"
+        "ingested": "2023-07-27T15:04:20Z",
+        "original": "{\"action\":\"none\",\"definition\":\"IP - 1 hit (Tag email)\",\"eventTime\":\"2021-11-12T15:27:04+0000\",\"hits\":1,\"id\":\"MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyMjM3MzAw0FEqSy0qzszPU7Iy1FEqyQMrNDAwV6oFAGMiEg8\",\"identifiers\":[\"internal_user_name\"],\"impersonationResults\":[{\"checkerResult\":\"hit\",\"impersonationDomainSource\":\"internal_user_name\",\"similarDomain\":\"John Doe \\u003cjohndoe_cdw@example.com\\u003e\",\"stringSimilarToDomain\":\"John Doe\"}],\"messageId\":\"\\u003c20-MN2PR16MB2719879CA4DB60C265F7FD8FB0959@MN2PR16MB2719.namprd16.prod.outlook.com\\u003e\",\"recipientAddress\":\"johndoe@example.com\",\"senderAddress\":\"johndoe@example.com\",\"senderIpAddress\":\"8.8.8.8\",\"subject\":\"Don't read, just fill out!\",\"taggedExternal\":false,\"taggedMalicious\":true}"
     },
     "input": {
         "type": "httpjson"
@@ -1147,11 +1157,11 @@ An example event for `ttp_url` looks as following:
 {
     "@timestamp": "2021-11-10T03:49:53.000Z",
     "agent": {
-        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "ephemeral_id": "ffba6f04-a3d6-4e55-8cbc-293b129d88d5",
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "mimecast.ttp_url_logs",
@@ -1162,9 +1172,9 @@ An example event for `ttp_url` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
+        "snapshot": false,
+        "version": "8.9.0"
     },
     "email": {
         "direction": "inbound",
@@ -1173,7 +1183,7 @@ An example event for `ttp_url` looks as following:
                 "googlealerts-noreply@google.com"
             ]
         },
-        "message_id": "\u003c000000000000a02a0a05d0671c06@google.com\u003e",
+        "message_id": "\u003c20-000000000000a02a0a05d0671c06@google.com\u003e",
         "subject": "Google Alert - china",
         "to": {
             "address": [
@@ -1186,8 +1196,8 @@ An example event for `ttp_url` looks as following:
         "agent_id_status": "verified",
         "created": "2021-11-10T03:49:53+0000",
         "dataset": "mimecast.ttp_url_logs",
-        "ingested": "2023-01-13T15:11:24Z",
-        "original": "{\"action\":\"allow\",\"actions\":\"Allow\",\"adminOverride\":\"N/A\",\"category\":\"Search Engines \\u0026 Portals\",\"creationMethod\":\"User Click\",\"date\":\"2021-11-10T03:49:53+0000\",\"emailPartsDescription\":[\"Body\"],\"fromUserEmailAddress\":\"googlealerts-noreply@google.com\",\"messageId\":\"\\u003c000000000000a02a0a05d0671c06@google.com\\u003e\",\"route\":\"inbound\",\"scanResult\":\"clean\",\"sendingIp\":\"8.8.8.8\",\"subject\":\"Google Alert - china\",\"ttpDefinition\":\"Inbound URL 'Aggressive'\",\"url\":\"https://www.google.co.za/alerts/share?hl=en\\u0026gl=US\\u0026ru=https://www.wsj.com/articles/u-s-tests-israels-iron-dome-in-guam-as-defense-against-chinese-cruise-missiles-11636455224\\u0026ss=tw\\u0026rt=U.S.+Tests+Israel%27s+Iron+Dome+in+Guam+as+Defense+Against+Chinese+Cruise+Missiles+-+WSJ\\u0026cd=KhQxNzg2NTc5NDQ3ODIzODUyNjI5NzIcZmQ4N2VjYzkxMGIxMWE4Yzpjby56YTplbjpVUw\\u0026ssp=AMJHsmW3CCK1S4TNPifSXszcyaNMwd6TDg\",\"userAwarenessAction\":\"Continue\",\"userEmailAddress\":\"johndoe@example.com\",\"userOverride\":\"None\"}"
+        "ingested": "2023-07-27T15:05:14Z",
+        "original": "{\"action\":\"allow\",\"actions\":\"Allow\",\"adminOverride\":\"N/A\",\"category\":\"Search Engines \\u0026 Portals\",\"creationMethod\":\"User Click\",\"date\":\"2021-11-10T03:49:53+0000\",\"emailPartsDescription\":[\"Body\"],\"fromUserEmailAddress\":\"googlealerts-noreply@google.com\",\"messageId\":\"\\u003c20-000000000000a02a0a05d0671c06@google.com\\u003e\",\"route\":\"inbound\",\"scanResult\":\"clean\",\"sendingIp\":\"8.8.8.8\",\"subject\":\"Google Alert - china\",\"ttpDefinition\":\"Inbound URL 'Aggressive'\",\"url\":\"https://www.google.co.za/alerts/share?hl=en\\u0026gl=US\\u0026ru=https://www.wsj.com/articles/u-s-tests-israels-iron-dome-in-guam-as-defense-against-chinese-cruise-missiles-11636455224\\u0026ss=tw\\u0026rt=U.S.+Tests+Israel%27s+Iron+Dome+in+Guam+as+Defense+Against+Chinese+Cruise+Missiles+-+WSJ\\u0026cd=KhQxNzg2NTc5NDQ3ODIzODUyNjI5NzIcZmQ4N2VjYzkxMGIxMWE4Yzpjby56YTplbjpVUw\\u0026ssp=AMJHsmW3CCK1S4TNPifSXszcyaNMwd6TDg\",\"userAwarenessAction\":\"Continue\",\"userEmailAddress\":\"johndoe@example.com\",\"userOverride\":\"None\"}"
     },
     "input": {
         "type": "httpjson"
