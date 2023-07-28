@@ -319,7 +319,6 @@ The following fields are populated for all events where `event.category: process
 | [process.previous.executable](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-previous-executable) | '/bin/bash' |
 | [process.session_leader.args](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-args) | ['bash'] |
 | [process.session_leader.entity_id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-entity-id) | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
-| [process.session_leader.entry_meta.type](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-entry-meta-type) | 'container' |
 | [process.session_leader.executable](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-executable) | '/bin/bash' |
 | [process.session_leader.group.id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-group-id) | '0' |
 | [process.session_leader.interactive](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-interactive) | true |
