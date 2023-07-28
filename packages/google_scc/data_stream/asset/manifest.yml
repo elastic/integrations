@@ -1,0 +1,180 @@
+title: Collect Asset logs from Google Security Command Center.
+type: logs
+streams:
+  - input: httpjson
+    enabled: false
+    title: Asset logs
+    description: Collect Asset logs from Google Security Command Center.
+    template_path: httpjson.yml.hbs
+    vars:
+      - name: url
+        type: text
+        title: Google SCC API Host
+        description: The Google SCC API Host.
+        multi: false
+        required: true
+        show_user: false
+        default: https://cloudasset.googleapis.com
+      - name: interval
+        type: text
+        title: Interval
+        description: "Duration between requests to the Google SCC API. NOTE: Supported units for this parameter are h/m/s."
+        default: 1h
+        multi: false
+        required: true
+        show_user: true
+      - name: content_type
+        type: select
+        title: Content Type
+        description: Asset content type. If not specified, no content but the asset name will be returned.
+        multi: false
+        options:
+          - value: RESOURCE
+            text: RESOURCE
+          - value: IAM_POLICY
+            text: IAM_POLICY
+          - value: ORG_POLICY
+            text: ORG_POLICY
+          - value: ACCESS_POLICY
+            text: ACCESS_POLICY
+          - value: OS_INVENTORY
+            text: OS_INVENTORY
+          - value: RELATIONSHIP
+            text: RELATIONSHIP
+          - value: CONTENT_TYPE_UNSPECIFIED
+            text: CONTENT_TYPE_UNSPECIFIED
+        required: true
+        show_user: true
+      - name: batch_size
+        type: integer
+        title: Batch Size
+        description: Batch size for the response of the Google SCC API. The maximum supported batch size value is 1000.
+        default: 1000
+        multi: false
+        required: true
+        show_user: false
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: "Duration before declaring that the HTTP client connection has timed out. NOTE: Valid time units are ns, us, ms, s, m, h."
+        multi: false
+        required: true
+        show_user: false
+        default: 30s
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - google_scc-asset
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve google_scc.asset fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+  - input: gcp-pubsub
+    enabled: false
+    title: Asset logs
+    description: Collect Asset logs from Google Security Command Center.
+    template_path: gcp-pubsub.yml.hbs
+    vars:
+      - name: topic
+        type: text
+        title: Topic
+        multi: false
+        required: true
+        show_user: true
+        description: Name of the topic where the logs are written to.
+      - name: subscription_name
+        type: text
+        title: Subscription Name
+        multi: false
+        required: true
+        show_user: true
+        description: Use the short subscription name here, not the full-blown path with the project ID. You can find it as 'Subscription ID' on the Google Cloud Console.
+      - name: subscription_create
+        type: bool
+        title: Subscription Create
+        description: If true, the integration will create the subscription on start.
+        multi: false
+        required: false
+        show_user: false
+        default: true
+      - name: subscription_num_goroutines
+        type: text
+        title: Subscription Num Goroutines
+        description: Number of goroutines created to read from the subscription. This does not limit the number of messages that can be processed concurrently or the maximum number of goroutines the input will create.
+        multi: false
+        required: false
+        show_user: false
+        default: 1
+      - name: subscription_max_outstanding_messages
+        type: text
+        title: Subscription Max Outstanding Messages
+        description: The maximum number of unprocessed messages (unacknowledged but not yet expired). If the value is negative, then there will be no limit on the number of unprocessed messages. Default is 1000.
+        multi: false
+        required: false
+        show_user: false
+        default: 1000
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - google_scc-asset
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve google_scc.asset fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: alternative_host
+        type: text
+        title: Alternative host
+        multi: false
+        required: false
+        show_user: false
+        description: "Overrides the default Pub/Sub service address and disables TLS. For testing."

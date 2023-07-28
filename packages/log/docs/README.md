@@ -10,3 +10,6 @@ In order to use the package, please follow these steps:
 4. Check that the raw log data is coming in via [Discover](https://www.elastic.co/guide/en/kibana/current/discover.html) by filtering the `logs-*` indices to the dataset name given in step 3, e.g. `logs-python`
 5. Configure the parsing rules via [Ingest Pipelines](https://www.elastic.co/guide/en/elasticsearch/reference/current/ingest.html), e.g. JSON Parsing or [grok](https://www.elastic.co/blog/slow-and-steady-how-to-build-custom-grok-patterns-incrementally) parsing
 6. Create a [custom dashboard](https://www.elastic.co/guide/en/kibana/current/create-a-dashboard-of-panels-with-web-server-data.html) that analyzes the incoming log data for your needs
+
+## ECS Field Mapping
+This integration includes the ECS Dynamic Template, all fields that follows the ECS Schema will get assigned the correct index field mapping and does not need to be added manually.

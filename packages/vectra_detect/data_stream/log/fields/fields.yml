@@ -5,16 +5,32 @@
       type: group
       fields:
         - name: access_history
-          type: flattened
-          description: The account access history associated with this host.
+          type: group
+          fields:
+            - name: id
+              type: keyword
+            - name: last_seen
+              type: date
+            - name: privilege_value
+              type: long
+            - name: privilege_category
+              type: keyword
+            - name: uid
+              type: keyword
         - name: domain
           type: keyword
         - name: id
           type: keyword
           description: The ID of the account.
         - name: info
-          type: flattened
-          description: The account information, consisting of account privilege score and privilege level.
+          type: group
+          fields:
+            - name: account_uid
+              type: keyword
+            - name: counts
+              type: long
+            - name: host_luid
+              type: keyword
         - name: name
           type: keyword
           description: The name of the account.
@@ -29,6 +45,24 @@
     - name: action
       type: keyword
       description: The action taken on the host or account (e.g., lock or unlock) OR The action that caused the message to be logged (e.g., START, TRIAGED, TIMEOUT).
+    - name: alert
+      type: group
+      fields:
+        - name: signature
+          type: group
+          fields:
+            - name: value
+              type: keyword
+            - name: id
+              type: keyword
+        - name: category
+          type: keyword
+        - name: severity
+          type: long
+        - name: rev
+          type: long
+        - name: gid
+          type: keyword
     - name: base_object
       type: keyword
       description: The base distinguished name.
@@ -122,6 +156,8 @@
         - name: name
           type: keyword
           description: The external domain of the campaign destination.
+        - name: port
+          type: long
     - name: detection
       type: group
       fields:
@@ -129,8 +165,14 @@
           type: keyword
           description: The ID of the detection.
         - name: profile
-          type: flattened
-          description: The detection profile associated with this host.
+          type: group
+          fields:
+            - name: name
+              type: keyword
+            - name: scoring_detections
+              type: keyword
+            - name: vname
+              type: keyword
     - name: det_id
       type: keyword
       description: The ID of the detection that caused the campaign creation.
@@ -170,11 +212,50 @@
       type: group
       fields:
         - name: access_history
-          type: flattened
-          description: The host access history associated with this account.
+          type: group
+          fields:
+            - name: id
+              type: keyword
+            - name: last_seen
+              type: date
+            - name: name
+              type: keyword
+            - name: privilege_value
+              type: long
+            - name: privilege_category
+              type: keyword
         - name: groups
-          type: keyword
-          description: A list of the host groups that the host is a member of.
+          type: group
+          fields:
+            - name: can_delete
+              type: boolean
+            - name: can_edit
+              type: boolean
+            - name: cognito_managed
+              type: boolean
+            - name: description
+              type: keyword
+            - name: filter_count
+              type: long
+            - name: group_type
+              type: keyword
+            - name: id
+              type: keyword
+            - name: impact
+              type: keyword
+            - name: last_modified
+              type: date
+            - name: last_modified_by
+              type: keyword
+            - name: name
+              type: keyword
+            - name: triage_filters
+              type: group
+              fields:
+                - name: triage_as
+                  type: keyword
+                - name: id
+                  type: keyword
         - name: id
           type: keyword
           description: The ID of the host.
@@ -196,7 +277,7 @@
           type: keyword
           description: The HTTP method.
         - name: response_code
-          type: long
+          type: keyword
           description: The HTTP response code.
     - name: http_segment
       type: keyword
@@ -270,6 +351,8 @@
     - name: product_id
       type: keyword
       description: The unusual product ID.
+    - name: proto
+      type: keyword
     - name: protocol
       type: keyword
       description: The external protocol used.
@@ -330,11 +413,27 @@
       type: group
       fields:
         - name: access_history
-          type: flattened
-          description: The service access history associated with this account.
+          type: group
+          fields:
+            - name: id
+              type: keyword
+            - name: last_seen
+              type: date
+            - name: privilege_value
+              type: long
+            - name: privilege_category
+              type: keyword
+            - name: uid
+              type: keyword
         - name: info
-          type: flattened
-          description: The service information, consisting of service privilege score and privilege level.
+          type: group
+          fields:
+            - name: account_uid
+              type: keyword
+            - name: counts
+              type: long
+            - name: host_luid
+              type: keyword
         - name: name
           type: keyword
           description: The service name.
@@ -368,6 +467,8 @@
         - name: name
           type: keyword
           description: The host name of the source host.
+        - name: port
+          type: long
     - name: success
       type: boolean
       description: Confirmation if the lockdown action was successful.

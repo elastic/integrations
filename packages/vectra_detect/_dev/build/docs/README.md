@@ -16,6 +16,7 @@ The Vectra Detect integration collects logs for the following events:
   | Account Detection      |
   | Account Lockdown       |
   | Account Scoring        |
+  | Alert                  |
   | Audit                  |
   | Campaign               |
   | Health                 |

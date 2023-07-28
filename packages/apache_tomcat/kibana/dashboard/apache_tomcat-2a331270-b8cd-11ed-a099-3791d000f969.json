@@ -1,0 +1,1070 @@
+{
+    "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
+            "panelsJSON": "{\"48036e6b-bb5f-4779-8ff2-a0affc20a119\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"service.address\",\"title\":\"Host Name\",\"id\":\"48036e6b-bb5f-4779-8ff2-a0affc20a119\",\"existsSelected\":false,\"selectedOptions\":[],\"enhancements\":{}}},\"b59436ce-764c-468d-ab13-0eb522f11c5c\":{\"order\":1,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"apache_tomcat.session.application_name\",\"title\":\"Application Name\",\"id\":\"b59436ce-764c-468d-ab13-0eb522f11c5c\",\"selectedOptions\":[],\"enhancements\":{},\"exclude\":true}}}"
+        },
+        "description": "This Apache Tomcat dashboard visualizes session data stream metrics.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "event.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "event.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "apache_tomcat.session"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "event.dataset": "apache_tomcat.session"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-0175242f-2671-474a-a828-deff61e43fb6",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "34b8c32b-1aaf-45de-bdb4-09081617f0c8",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "0175242f-2671-474a-a828-deff61e43fb6": {
+                                            "columnOrder": [
+                                                "83b48f4e-37fd-4965-a277-7fbc36cd10c4",
+                                                "227ea4ce-b872-4b6d-a4d6-b010fd3b7525",
+                                                "ebf4eedd-4933-4ed5-b63c-251ad89ce456"
+                                            ],
+                                            "columns": {
+                                                "227ea4ce-b872-4b6d-a4d6-b010fd3b7525": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "83b48f4e-37fd-4965-a277-7fbc36cd10c4": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Application name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "ebf4eedd-4933-4ed5-b63c-251ad89ce456",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "apache_tomcat.session.application_name"
+                                                },
+                                                "ebf4eedd-4933-4ed5-b63c-251ad89ce456": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "apache_tomcat.session.create.total: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Created",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        },
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "apache_tomcat.session.create.total"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "34b8c32b-1aaf-45de-bdb4-09081617f0c8",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "apache_tomcat.session"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "apache_tomcat.session"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "ebf4eedd-4933-4ed5-b63c-251ad89ce456"
+                                        ],
+                                        "layerId": "0175242f-2671-474a-a828-deff61e43fb6",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "83b48f4e-37fd-4965-a277-7fbc36cd10c4",
+                                        "xAccessor": "227ea4ce-b872-4b6d-a4d6-b010fd3b7525"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "large",
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yTitle": "Sessions"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "a39adf70-8e40-4d80-a127-a1747a75be1f",
+                    "w": 24,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "a39adf70-8e40-4d80-a127-a1747a75be1f",
+                "title": "Created sessions over time [Metrics Apache Tomcat]",
+                "type": "lens",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-85bb5555-4581-4120-ab66-6ce66aeb4066",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "fa5f9b9a-65b0-452a-bcd0-1df3a33b1b3e",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "85bb5555-4581-4120-ab66-6ce66aeb4066": {
+                                            "columnOrder": [
+                                                "a97f3cfc-2145-4883-9f87-11126379918d",
+                                                "763d5a9f-ee92-4166-806c-8b25ee913968",
+                                                "1eebd32f-91cc-4ea3-83d7-4802a2b9d79c"
+                                            ],
+                                            "columns": {
+                                                "1eebd32f-91cc-4ea3-83d7-4802a2b9d79c": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "apache_tomcat.session.expire.total: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Expired",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        },
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "apache_tomcat.session.expire.total"
+                                                },
+                                                "763d5a9f-ee92-4166-806c-8b25ee913968": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "a97f3cfc-2145-4883-9f87-11126379918d": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Application name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "1eebd32f-91cc-4ea3-83d7-4802a2b9d79c",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "apache_tomcat.session.application_name"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "fa5f9b9a-65b0-452a-bcd0-1df3a33b1b3e",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "apache_tomcat.session"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "apache_tomcat.session"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "1eebd32f-91cc-4ea3-83d7-4802a2b9d79c"
+                                        ],
+                                        "layerId": "85bb5555-4581-4120-ab66-6ce66aeb4066",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "a97f3cfc-2145-4883-9f87-11126379918d",
+                                        "xAccessor": "763d5a9f-ee92-4166-806c-8b25ee913968",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "auto",
+                                                "color": "#54b399",
+                                                "forAccessor": "1eebd32f-91cc-4ea3-83d7-4802a2b9d79c"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "large",
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "show",
+                                "valuesInLegend": true,
+                                "yTitle": "Sessions"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "91d26f64-351f-420e-a37b-88a882ecba0e",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "91d26f64-351f-420e-a37b-88a882ecba0e",
+                "title": "Expired sessions per application [Metrics Apache Tomcat]",
+                "type": "lens",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-57b12f03-6995-4072-8994-d512e5700ee4",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "de6b5c32-5630-4877-8b24-be30c47ee9c1",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "57b12f03-6995-4072-8994-d512e5700ee4": {
+                                            "columnOrder": [
+                                                "7d7e1358-c253-4d02-bb79-fff128597de4",
+                                                "d2e27628-e345-4f9e-b06e-2543268355c1",
+                                                "0d2a1caf-d316-462a-b8bd-a05a6d058d77"
+                                            ],
+                                            "columns": {
+                                                "0d2a1caf-d316-462a-b8bd-a05a6d058d77": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "apache_tomcat.session.active.total: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Current active",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        },
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "apache_tomcat.session.active.total"
+                                                },
+                                                "7d7e1358-c253-4d02-bb79-fff128597de4": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Application name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "0d2a1caf-d316-462a-b8bd-a05a6d058d77",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "apache_tomcat.session.application_name"
+                                                },
+                                                "d2e27628-e345-4f9e-b06e-2543268355c1": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "de6b5c32-5630-4877-8b24-be30c47ee9c1",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "apache_tomcat.session"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "apache_tomcat.session"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "0d2a1caf-d316-462a-b8bd-a05a6d058d77"
+                                        ],
+                                        "layerId": "57b12f03-6995-4072-8994-d512e5700ee4",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "7d7e1358-c253-4d02-bb79-fff128597de4",
+                                        "xAccessor": "d2e27628-e345-4f9e-b06e-2543268355c1"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "showSingleSeries": false
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yTitle": "Sessions"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "5922510e-e6a2-4f9c-aceb-83715cc3b539",
+                    "w": 24,
+                    "x": 0,
+                    "y": 14
+                },
+                "panelIndex": "5922510e-e6a2-4f9c-aceb-83715cc3b539",
+                "title": "Current active sessions over time [Metrics Apache Tomcat]",
+                "type": "lens",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "Time spent doing housekeeping and expiration for sessions",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-9b0dd57c-eb2b-434c-a7d6-21a8e5e83e8b",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "efe32f1b-651c-4ce4-a1e9-06cb0cf2d5af",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "9b0dd57c-eb2b-434c-a7d6-21a8e5e83e8b": {
+                                            "columnOrder": [
+                                                "110a6317-3f6c-4522-9c5a-f66baf19cd30",
+                                                "5b3ec5bb-5905-4cac-bb0e-5f830e4d63cd"
+                                            ],
+                                            "columns": {
+                                                "110a6317-3f6c-4522-9c5a-f66baf19cd30": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Application name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "5b3ec5bb-5905-4cac-bb0e-5f830e4d63cd",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "apache_tomcat.session.application_name"
+                                                },
+                                                "5b3ec5bb-5905-4cac-bb0e-5f830e4d63cd": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "apache_tomcat.session.processing_time: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Processing time(ms)",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "apache_tomcat.session.processing_time"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "efe32f1b-651c-4ce4-a1e9-06cb0cf2d5af",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "apache_tomcat.session"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "apache_tomcat.session"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "5b3ec5bb-5905-4cac-bb0e-5f830e4d63cd"
+                                        ],
+                                        "layerId": "9b0dd57c-eb2b-434c-a7d6-21a8e5e83e8b",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_horizontal",
+                                        "showGridlines": false,
+                                        "xAccessor": "110a6317-3f6c-4522-9c5a-f66baf19cd30"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_horizontal",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "show"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "2d408e1c-da52-4aed-b760-812f89f48184",
+                    "w": 24,
+                    "x": 24,
+                    "y": 14
+                },
+                "panelIndex": "2d408e1c-da52-4aed-b760-812f89f48184",
+                "title": "Session expiration processing time [Metric Apache Tomcat]",
+                "type": "lens",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-8533f30a-f59a-4f19-8a60-2231660778cf",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "1df29502-1178-4b06-b0c8-3009d0c3271b",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "8533f30a-f59a-4f19-8a60-2231660778cf": {
+                                            "columnOrder": [
+                                                "da9f5c00-8752-45b3-8ecc-d8260b2f9522",
+                                                "ede9710d-b7f7-40ca-91ac-4532bf0f9c26",
+                                                "e5699bbc-30d5-4eca-a198-bc9e0d08819b",
+                                                "8622a6d6-5901-49e2-a998-285029bdc82b",
+                                                "b90571b5-4b61-4a20-996a-f27afcf022e2"
+                                            ],
+                                            "columns": {
+                                                "8622a6d6-5901-49e2-a998-285029bdc82b": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "apache_tomcat.session.expire.total: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Expired",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "apache_tomcat.session.expire.total"
+                                                },
+                                                "b90571b5-4b61-4a20-996a-f27afcf022e2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "apache_tomcat.session.rejected.count: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Rejected",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "apache_tomcat.session.rejected.count"
+                                                },
+                                                "da9f5c00-8752-45b3-8ecc-d8260b2f9522": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Application name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "ede9710d-b7f7-40ca-91ac-4532bf0f9c26",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10000
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "apache_tomcat.session.application_name"
+                                                },
+                                                "e5699bbc-30d5-4eca-a198-bc9e0d08819b": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "apache_tomcat.session.active.total: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Current active",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "apache_tomcat.session.active.total"
+                                                },
+                                                "ede9710d-b7f7-40ca-91ac-4532bf0f9c26": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "apache_tomcat.session.create.total: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Created",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "apache_tomcat.session.create.total"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "1df29502-1178-4b06-b0c8-3009d0c3271b",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "apache_tomcat.session"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "apache_tomcat.session"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "da9f5c00-8752-45b3-8ecc-d8260b2f9522",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "e5699bbc-30d5-4eca-a198-bc9e0d08819b",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "ede9710d-b7f7-40ca-91ac-4532bf0f9c26",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "8622a6d6-5901-49e2-a998-285029bdc82b",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "b90571b5-4b61-4a20-996a-f27afcf022e2",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "headerRowHeight": "auto",
+                                "layerId": "8533f30a-f59a-4f19-8a60-2231660778cf",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
+                                "rowHeight": "auto"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "8ce83532-0623-4974-9280-b6c56c6b0c27",
+                    "w": 48,
+                    "x": 0,
+                    "y": 28
+                },
+                "panelIndex": "8ce83532-0623-4974-9280-b6c56c6b0c27",
+                "title": "Sessions overview [Metrics Apache Tomcat]",
+                "type": "lens",
+                "version": "8.7.0"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Metrics Apache Tomcat] Session",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.7.0",
+    "created_at": "2023-06-09T11:27:22.150Z",
+    "id": "apache_tomcat-2a331270-b8cd-11ed-a099-3791d000f969",
+    "migrationVersion": {
+        "dashboard": "8.7.0"
+    },
+    "references": [
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "a39adf70-8e40-4d80-a127-a1747a75be1f:indexpattern-datasource-layer-0175242f-2671-474a-a828-deff61e43fb6",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "a39adf70-8e40-4d80-a127-a1747a75be1f:34b8c32b-1aaf-45de-bdb4-09081617f0c8",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "91d26f64-351f-420e-a37b-88a882ecba0e:indexpattern-datasource-layer-85bb5555-4581-4120-ab66-6ce66aeb4066",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "91d26f64-351f-420e-a37b-88a882ecba0e:fa5f9b9a-65b0-452a-bcd0-1df3a33b1b3e",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "5922510e-e6a2-4f9c-aceb-83715cc3b539:indexpattern-datasource-layer-57b12f03-6995-4072-8994-d512e5700ee4",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "5922510e-e6a2-4f9c-aceb-83715cc3b539:de6b5c32-5630-4877-8b24-be30c47ee9c1",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "2d408e1c-da52-4aed-b760-812f89f48184:indexpattern-datasource-layer-9b0dd57c-eb2b-434c-a7d6-21a8e5e83e8b",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "2d408e1c-da52-4aed-b760-812f89f48184:efe32f1b-651c-4ce4-a1e9-06cb0cf2d5af",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "8ce83532-0623-4974-9280-b6c56c6b0c27:indexpattern-datasource-layer-8533f30a-f59a-4f19-8a60-2231660778cf",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "8ce83532-0623-4974-9280-b6c56c6b0c27:1df29502-1178-4b06-b0c8-3009d0c3271b",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_48036e6b-bb5f-4779-8ff2-a0affc20a119:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_b59436ce-764c-468d-ab13-0eb522f11c5c:optionsListDataView",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard"
+}

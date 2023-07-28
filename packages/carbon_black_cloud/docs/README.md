@@ -92,7 +92,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "45e49275-eb7d-4b20-a8af-d084fb2551c7",
@@ -244,7 +244,7 @@ An example event for `alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "c073dde3-4d37-4b40-8161-a008a04d551f",
@@ -441,7 +441,7 @@ An example event for `endpoint_event` looks as following:
         }
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "carbon_black_cloud": {
         "endpoint_event": {
@@ -683,7 +683,7 @@ An example event for `watchlist_hit` looks as following:
         "version": "8.0.0"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "process": {
         "parent": {
@@ -919,7 +919,7 @@ An example event for `asset_vulnerability_summary` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "45e49275-eb7d-4b20-a8af-d084fb2551c7",

@@ -1,0 +1,159 @@
+format_version: 2.8.0
+name: sentinel_one_cloud_funnel
+title: SentinelOne Cloud Funnel
+version: 0.1.0
+description: Collect logs from SentinelOne Cloud Funnel with Elastic Agent.
+type: integration
+categories: ["security", "edr_xdr"]
+conditions:
+  kibana.version: ^8.7.1
+  elastic.subscription: basic
+screenshots:
+  - src: /img/sentinel-one-cloud-funnel-overview-dashboard.png
+    title: SentinelOne Cloud Funnel Overview Dashboard Screenshot
+    size: 600x600
+    type: image/png
+  - src: /img/sentinel-one-cloud-funnel-login-dashboard.png
+    title: SentinelOne Cloud Funnel Login Dashboard Screenshot
+    size: 600x600
+    type: image/png
+  - src: /img/sentinel-one-cloud-funnel-network-action-dashboard.png
+    title: SentinelOne Cloud Funnel Network Action Dashboard Screenshot
+    size: 600x600
+    type: image/png
+  - src: /img/sentinel-one-cloud-funnel-registry-dashboard.png
+    title: SentinelOne Cloud Funnel Registry Dashboard Screenshot
+    size: 600x600
+    type: image/png
+  - src: /img/sentinel-one-cloud-funnel-threat-intelligence-indicator-dashboard.png
+    title: SentinelOne Cloud Funnel Threat Intelligence Indicator Dashboard Screenshot
+    size: 600x600
+    type: image/png
+  - src: /img/sentinel-one-cloud-funnel-url-dashboard.png
+    title: SentinelOne Cloud Funnel URL Dashboard Screenshot
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/sentinel-one-cloud-funnel-logo.svg
+    title: SentinelOne Cloud Funnel Logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: SentinelOne Cloud Funnel
+    title: SentinelOne Cloud Funnel logs
+    description: Collect logs using AWS S3 or AWS SQS.
+    inputs:
+      - type: aws-s3
+        title: Collect SentinelOne Cloud Funnel logs via AWS S3 or AWS SQS
+        description: Collecting logs from SentinelOne Cloud Funnel via AWS S3 or AWS SQS.
+        vars:
+          - name: collect_s3_logs
+            required: true
+            show_user: true
+            title: Collect logs via S3 Bucket
+            description: To collect logs via S3 bucket enable the toggle switch. By default, it will collect logs via SQS Queue.
+            type: bool
+            multi: false
+            default: false
+          - name: bucket_arn
+            type: text
+            title: "[S3] Bucket ARN"
+            multi: false
+            required: false
+            show_user: true
+            description: It is a required parameter for collecting logs via the AWS S3 Bucket.
+          - name: queue_url
+            type: text
+            title: "[SQS] Queue URL"
+            multi: false
+            required: false
+            show_user: true
+            description: URL of the AWS SQS queue that messages will be received from. It is a required parameter for collecting logs via the AWS SQS.
+          - name: access_key_id
+            type: password
+            title: Access Key ID
+            multi: false
+            required: false
+            show_user: true
+            description: First part of access key. This parameter along with the secret_access_key parameter is required if we are not providing shared_credential_file.
+          - name: secret_access_key
+            type: password
+            title: Secret Access Key
+            multi: false
+            required: false
+            show_user: true
+            description: Second part of access key. This parameter along with the access_key_id parameter is required if we are not providing shared_credential_file.
+          - name: session_token
+            type: text
+            title: Session Token
+            multi: false
+            required: false
+            show_user: true
+            description: Required when using temporary security credentials.
+          - name: shared_credential_file
+            type: text
+            title: Shared Credential File
+            multi: false
+            required: false
+            show_user: false
+            description: Directory of the shared credentials file. This parameter is required if we are not providing value for the parameters - secret_access_key and access_key_id.
+          - name: credential_profile_name
+            type: text
+            title: Credential Profile Name
+            multi: false
+            required: false
+            show_user: false
+            description: Profile name in shared credentials file.
+          - name: role_arn
+            type: text
+            title: Role ARN
+            multi: false
+            required: false
+            show_user: false
+            description: AWS IAM Role to assume.
+          - name: fips_enabled
+            type: bool
+            title: Enable S3 FIPS
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option changes the service name from `s3` to `s3-fips` for connecting to the correct service endpoint.
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
+owner:
+  github: elastic/security-external-integrations

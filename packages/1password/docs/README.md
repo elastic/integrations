@@ -79,11 +79,11 @@ An example event for `signin_attempts` looks as following:
 {
     "@timestamp": "2021-08-11T14:28:03.000Z",
     "agent": {
-        "ephemeral_id": "fb9eda1a-9166-4143-9a17-36362cd2a3f8",
-        "id": "086ffa1b-8e21-4d62-84aa-125408782121",
+        "ephemeral_id": "a8a828b3-bb8a-4339-8bad-78fe5093d055",
+        "id": "437fe922-4551-429d-a49f-0a4ad40bf297",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.8.0"
     },
     "data_stream": {
         "dataset": "1password.signin_attempts",
@@ -91,12 +91,12 @@ An example event for `signin_attempts` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "086ffa1b-8e21-4d62-84aa-125408782121",
+        "id": "437fe922-4551-429d-a49f-0a4ad40bf297",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.8.0"
     },
     "event": {
         "action": "success",
@@ -104,9 +104,9 @@ An example event for `signin_attempts` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2023-03-23T19:04:56.729Z",
+        "created": "2023-05-30T15:58:35.089Z",
         "dataset": "1password.signin_attempts",
-        "ingested": "2023-03-23T19:05:00Z",
+        "ingested": "2023-05-30T15:58:38Z",
         "kind": "event",
         "outcome": "success",
         "type": [
@@ -218,11 +218,11 @@ An example event for `item_usages` looks as following:
 {
     "@timestamp": "2021-08-30T18:57:42.484Z",
     "agent": {
-        "ephemeral_id": "06832445-5918-4f60-92f0-abb3f54c7422",
-        "id": "086ffa1b-8e21-4d62-84aa-125408782121",
+        "ephemeral_id": "cb0f64dc-e67b-4c05-abab-c76b645f5d31",
+        "id": "437fe922-4551-429d-a49f-0a4ad40bf297",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.8.0"
     },
     "data_stream": {
         "dataset": "1password.item_usages",
@@ -230,12 +230,12 @@ An example event for `item_usages` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "086ffa1b-8e21-4d62-84aa-125408782121",
+        "id": "437fe922-4551-429d-a49f-0a4ad40bf297",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.8.0"
     },
     "event": {
         "action": "reveal",
@@ -243,9 +243,9 @@ An example event for `item_usages` looks as following:
         "category": [
             "file"
         ],
-        "created": "2023-03-23T19:04:20.887Z",
+        "created": "2023-05-30T15:57:58.916Z",
         "dataset": "1password.item_usages",
-        "ingested": "2023-03-23T19:04:24Z",
+        "ingested": "2023-05-30T15:57:59Z",
         "kind": "event",
         "type": [
             "access"
@@ -351,11 +351,11 @@ An example event for `audit_events` looks as following:
 {
     "@timestamp": "2022-10-24T21:16:52.827Z",
     "agent": {
-        "ephemeral_id": "042ad272-9e5f-4e42-be29-3733a96797a5",
-        "id": "086ffa1b-8e21-4d62-84aa-125408782121",
+        "ephemeral_id": "26875e28-ac90-42f2-bcc9-5969510c2882",
+        "id": "437fe922-4551-429d-a49f-0a4ad40bf297",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.8.0"
     },
     "data_stream": {
         "dataset": "1password.audit_events",
@@ -363,12 +363,12 @@ An example event for `audit_events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "086ffa1b-8e21-4d62-84aa-125408782121",
+        "id": "437fe922-4551-429d-a49f-0a4ad40bf297",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.8.0"
     },
     "event": {
         "action": "suspend",
@@ -376,9 +376,9 @@ An example event for `audit_events` looks as following:
         "category": [
             "configuration"
         ],
-        "created": "2023-03-23T19:03:48.623Z",
+        "created": "2023-05-30T15:57:13.805Z",
         "dataset": "1password.audit_events",
-        "ingested": "2023-03-23T19:03:49Z",
+        "ingested": "2023-05-30T15:57:17Z",
         "kind": "event",
         "type": [
             "access"

@@ -1,0 +1,157 @@
+---
+description: Pipeline for processing Azure Function logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.8.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: 'ctx.event?.original == null'
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
+    
+    # Converts the JSON string in the event.original field into a structured JSON object
+  - json:
+      field: event.original
+      target_field: json
+      on_failure:
+        - set:
+            field: error.message
+            value: 'Received invalid JSON from the Azure Function service. Unable to parse the source log message'
+            ignore_failure: true
+  - date:
+      field: json.time
+      target_field: '@timestamp'
+      ignore_failure: true
+      formats:
+        - ISO8601
+      if: ctx.json?.time != null
+  - rename:
+      field: json.category
+      target_field: azure.category
+      ignore_missing: true
+  - rename:
+      field: json.resourceId
+      target_field: azure.resource_id
+      ignore_missing: true
+  - rename:
+      field: json.operationName
+      target_field: azure.operation_name
+      ignore_missing: true
+  - rename:
+      field: json.properties.level
+      target_field: azure.function.level
+      ignore_missing: true
+  - rename:
+      field: json.properties.levelId
+      target_field: azure.function.level_id
+      ignore_missing: true    
+  - rename:
+      field: json.properties.appName
+      target_field: azure.function.app_name
+      ignore_missing: true
+  - rename:
+      field: json.properties.category
+      target_field: azure.function.category
+      ignore_missing: true
+  - rename:
+      field: json.properties.roleInstance
+      target_field: azure.function.role_instance
+      ignore_missing: true
+  - rename:
+      field: json.properties.hostVersion
+      target_field: azure.function.host_version
+      ignore_missing: true
+  - rename:
+      field: json.properties.functionInvocationId
+      target_field: azure.function.invocation_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.functionName
+      target_field: azure.function.name
+      ignore_missing: true
+  - rename:
+      field: json.properties.hostInstanceId
+      target_field: azure.function.host_instance_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.processId
+      target_field: azure.function.process_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.eventName
+      target_field: azure.function.event_name
+      ignore_missing: true      
+  - rename:
+      field: json.properties.eventId
+      target_field: azure.function.event_id
+      ignore_missing: true      
+  - rename:
+      field: json.properties.message
+      target_field: azure.function.message
+      ignore_missing: true
+  - set:
+      field: observer.type
+      value: functions
+  - set:
+      field: observer.vendor
+      value: Azure
+  - set:
+      field: observer.product
+      value: "Azure Functions"
+  - rename:
+      field: json.properties.exceptionDetails
+      target_field: azure.function.exception_details
+      ignore_missing: true
+  - rename:
+      field: json.properties.exceptionMessage
+      target_field: azure.function.exception_message
+      ignore_missing: true
+  - rename:
+      field: json.properties.exceptionType
+      target_field: azure.function.exception_type
+      ignore_missing: true
+  - remove:
+      field:
+        - json
+      ignore_missing: true
+  - pipeline:
+      name: '{{ IngestPipeline "azure-shared-pipeline" }}'
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }} {{ _ingest.on_failure_processor_type }}"
+  - remove:
+      field:
+        - json
+        - _conf
+        - message
+      ignore_missing: true
