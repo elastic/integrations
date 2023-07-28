@@ -2099,7 +2099,7 @@ processors:
         }
         def userDomain = new HashSet();
         def userName = new HashSet();
-        def userEmail = new HashSet();
+        def userId = new HashSet();
         if (!(ctx.process instanceof HashMap)) {
           ctx.process = new HashMap();
         }
@@ -2123,7 +2123,7 @@ processors:
                 userDomain.add(evidence.user_account.domain_name);
               }
               if (evidence?.user_account?.user_principal_name != null) {
-                userEmail.add(evidence.user_account.user_principal_name);
+                userId.add(evidence.user_account.user_principal_name);
               }
               if (evidence?.user_account?.account_name != null) {
                 userName.add(evidence.user_account.account_name);
@@ -2157,9 +2157,8 @@ processors:
         if (!userName.isEmpty()) {
           ctx.user.name = convertToOrderedArray(userName);
         }
-        if (!userEmail.isEmpty()) {
-          ctx.user.email = convertToOrderedArray(userEmail);
-          ctx.user.id = ctx.user.email;
+        if (!userId.isEmpty()) {
+          ctx.user.id = convertToOrderedArray(userId);
         }
         if (!processUserId.isEmpty()) {
           ctx.process.user.id = convertToOrderedArray(processUserId);
