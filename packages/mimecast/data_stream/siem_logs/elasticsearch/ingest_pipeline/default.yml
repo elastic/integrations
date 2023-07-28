@@ -57,15 +57,11 @@ processors:
       field: mimecast.MsgId
       target_field: email.message_id
       ignore_missing: true
-  - rename:
-      field: mimecast.Rcpt
-      target_field: email.to.address
-      ignore_missing: true
   - append:
       field: email.to.address
-      value: "{{{mimecast.Rcpt}}}"
+      value: '{{{mimecast.Rcpt}}}'
       allow_duplicates: false
-      if: "ctx?.mimecast?.Rcpt != null"
+      if: ctx.mimecast?.Rcpt != null
   - append:
       field: email.from.address
       value: '{{{mimecast.headerFrom}}}'
@@ -139,14 +135,11 @@ processors:
       field: mimecast.md5
       target_field: email.attachments.file.hash.md5
       ignore_missing: true
-  - rename:
-      field: mimecast.Recipient
-      target_field: email.to.address
-      ignore_missing: true  
   - append:
       field: email.to.address
-      value: "{{{mimecast.Recipient}}}"
-      if: "ctx?.mimecast?.Recipient != null"
+      value: '{{{mimecast.Recipient}}}'
+      allow_duplicates: false
+      if: ctx.mimecast?.Recipient != null
   - rename:
       field: mimecast.SenderDomain
       target_field: source.domain
@@ -195,14 +188,11 @@ processors:
       field: mimecast.reason
       target_field: event.reason
       ignore_missing: true
-  - rename:
-      field: mimecast.recipient
-      target_field: email.to.address
-      ignore_missing: true
   - append:
       field: email.to.address
-      value: "{{{mimecast.recipient}}}"
-      if: "ctx?.mimecast?.recipient != null"
+      value: '{{{mimecast.recipient}}}'
+      allow_duplicates: false
+      if: ctx.mimecast?.recipient != null
   - rename:
       field: mimecast.route
       target_field: email.direction
@@ -310,16 +300,6 @@ processors:
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
-  - dissect:
-       field: email.from.address
-       pattern: "<%{email.from.address}>"
-       ignore_missing: true
-       ignore_failure: true
-  - dissect:
-       field: email.to.address
-       pattern: "<%{email.to.address}>"
-       ignore_missing: true
-       ignore_failure: true
 
   # Cleanup
   - remove:
@@ -332,6 +312,8 @@ processors:
         - mimecast.log_type_part1
         - mimecast.log_type_part2
         - mimecast.log_type_parts
+        - mimecast.recipient
+        - mimecast.Rcpt
         - mimecast.sender
         - mimecast.Sender
       ignore_missing: true
