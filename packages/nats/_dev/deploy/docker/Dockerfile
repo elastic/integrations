@@ -8,7 +8,7 @@ RUN go install github.com/nats-io/nats.go/examples/nats-bench@v1.10.0
 
 # create an enhanced container with nc command available since nats is based
 # on scratch image making healthcheck impossible
-FROM alpine:3.17
+FROM alpine:3
 COPY --from=0 / /opt/nats
 COPY --from=build-env /go/bin/nats-bench /nats-bench
 COPY run.sh /run.sh
