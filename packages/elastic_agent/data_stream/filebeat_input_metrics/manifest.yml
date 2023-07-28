@@ -6,3 +6,22 @@ elasticsearch:
   index_template:
     mappings:
       dynamic: true
+      # Use this instead of fields.yml so that path_unmatch can be used.
+      dynamic_templates:
+        - filebeat_input.*_gauge:
+            path_match: filebeat_input.*_gauge
+            path_unmatch: '*.histogram.*'
+            mapping:
+              type: long
+            match_mapping_type: '*'
+        - filebeat_input.*_length:
+            path_match: filebeat_input.*_length
+            path_unmatch: '*.histogram.*'
+            mapping:
+              type: long
+            match_mapping_type: '*'
+        - filebeat_input.*_total:
+            path_match: filebeat_input.*_total
+            path_unmatch: '*.histogram.*'
+            mapping:
+              type: long
