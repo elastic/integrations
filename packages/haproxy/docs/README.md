@@ -428,105 +428,105 @@ The fields reported are:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| haproxy.info.busy_polling | Number of busy polling. | long |
-| haproxy.info.bytes.out.rate | Average bytes output rate. | long |
-| haproxy.info.bytes.out.total | Number of bytes sent out. | long |
-| haproxy.info.compress.bps.in | Incoming compressed data in bits per second. | long |
-| haproxy.info.compress.bps.out | Outgoing compressed data in bits per second. | long |
-| haproxy.info.compress.bps.rate_limit | Rate limit of compressed data in bits per second. | long |
-| haproxy.info.connection.current | Current connections. | long |
-| haproxy.info.connection.hard_max |  | long |
-| haproxy.info.connection.max | Maximum connections. | long |
-| haproxy.info.connection.rate.limit | Rate limit of connections. | long |
-| haproxy.info.connection.rate.max | Maximum rate of connections. | long |
-| haproxy.info.connection.rate.value | Number of connections in the last second. | long |
-| haproxy.info.connection.ssl.current | Current SSL connections. | long |
-| haproxy.info.connection.ssl.max | Maximum SSL connections. | long |
-| haproxy.info.connection.ssl.total | Total SSL connections. | long |
-| haproxy.info.connection.total | Total connections. | long |
-| haproxy.info.dropped_logs | Number of dropped logs. | long |
-| haproxy.info.failed_resolutions | Number of failed resolutions. | long |
-| haproxy.info.idle.pct | Percentage of idle time. | scaled_float |
-| haproxy.info.jobs | Number of all jobs. | long |
-| haproxy.info.listeners | Number of listeners. | long |
-| haproxy.info.memory.max.bytes | Maximum amount of memory usage in bytes (the 'Memmax_MB' value converted to bytes). | long |
-| haproxy.info.peers.active | Number of active peers. | long |
-| haproxy.info.peers.connected | Number of connected peers. | long |
-| haproxy.info.pipes.free | Number of free pipes. | integer |
-| haproxy.info.pipes.max | Maximum number of used pipes. | integer |
-| haproxy.info.pipes.used | Number of used pipes during kernel-based tcp splicing. | integer |
-| haproxy.info.pool.allocated | Size of the allocated pool. | long |
-| haproxy.info.pool.failed | Number of failed connections to pool members. | long |
-| haproxy.info.pool.used | Number of members used from the allocated pool. | long |
-| haproxy.info.process_num | Process number. | long |
-| haproxy.info.processes | Number of processes. | long |
-| haproxy.info.requests.max | Maximum number of requests. | long |
-| haproxy.info.requests.total | Total number of requests. | long |
-| haproxy.info.run_queue |  | long |
-| haproxy.info.session.rate.limit | Rate limit of sessions. | integer |
-| haproxy.info.session.rate.max | Maximum rate of sessions. | integer |
-| haproxy.info.session.rate.value | Rate of session per seconds. | integer |
-| haproxy.info.sockets.max | Maximum number of sockets. | long |
-| haproxy.info.ssl.backend.key_rate.max | Maximum key rate of SSL backend sessions. | integer |
-| haproxy.info.ssl.backend.key_rate.value | Key rate of SSL backend sessions. | integer |
-| haproxy.info.ssl.cache_misses | Number of SSL cache misses. | long |
-| haproxy.info.ssl.cached_lookups | Number of SSL cache lookups. | long |
-| haproxy.info.ssl.frontend.key_rate.max | Maximum key rate of SSL frontend. | integer |
-| haproxy.info.ssl.frontend.key_rate.value | Key rate of SSL frontend. | integer |
-| haproxy.info.ssl.frontend.session_reuse.pct | Rate of reuse of SSL frontend sessions. | scaled_float |
-| haproxy.info.ssl.rate.limit | Rate limit of SSL requests. | integer |
-| haproxy.info.ssl.rate.max | Maximum rate of SSL requests. | integer |
-| haproxy.info.ssl.rate.value | Rate of SSL requests. | integer |
-| haproxy.info.stopping | Number of stopping jobs. | long |
-| haproxy.info.tasks |  | long |
-| haproxy.info.threads | Number of threads. | long |
-| haproxy.info.ulimit_n | Maximum number of open files for the process. | long |
-| haproxy.info.unstoppable_jobs | Number of unstoppable jobs. | long |
-| haproxy.info.uptime.sec | Current uptime in seconds. | long |
-| haproxy.info.zlib_mem_usage.max | Maximum memory usage of zlib. | integer |
-| haproxy.info.zlib_mem_usage.value | Memory usage of zlib. | integer |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| process | These fields contain information about a process. These fields can help you correlate metrics information with a process id/name from a log message.  The `process.pid` often stays in the metric itself and is copied to the global field for correlation. | group |
-| process.pid | Process id. | long |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.instance.name | Instance name of the host machine. | keyword |  |
+| cloud.machine.type | Machine type of the host machine. | keyword |  |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host is running. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| container.image.name | Name of the image the container was built on. | keyword |  |
+| container.labels | Image labels. | object |  |
+| container.name | Container name. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| haproxy.info.busy_polling | Number of busy polling. | long | gauge |
+| haproxy.info.bytes.out.rate | Average bytes output rate. | long | gauge |
+| haproxy.info.bytes.out.total | Number of bytes sent out. | long | gauge |
+| haproxy.info.compress.bps.in | Incoming compressed data in bits per second. | long | gauge |
+| haproxy.info.compress.bps.out | Outgoing compressed data in bits per second. | long | gauge |
+| haproxy.info.compress.bps.rate_limit | Rate limit of compressed data in bits per second. | long | gauge |
+| haproxy.info.connection.current | Current connections. | long | gauge |
+| haproxy.info.connection.hard_max |  | long | gauge |
+| haproxy.info.connection.max | Maximum connections. | long | gauge |
+| haproxy.info.connection.rate.limit | Rate limit of connections. | long | gauge |
+| haproxy.info.connection.rate.max | Maximum rate of connections. | long | gauge |
+| haproxy.info.connection.rate.value | Number of connections in the last second. | long | gauge |
+| haproxy.info.connection.ssl.current | Current SSL connections. | long | gauge |
+| haproxy.info.connection.ssl.max | Maximum SSL connections. | long | gauge |
+| haproxy.info.connection.ssl.total | Total SSL connections. | long | counter |
+| haproxy.info.connection.total | Total connections. | long | counter |
+| haproxy.info.dropped_logs | Number of dropped logs. | long | gauge |
+| haproxy.info.failed_resolutions | Number of failed resolutions. | long | gauge |
+| haproxy.info.idle.pct | Percentage of idle time. | scaled_float | gauge |
+| haproxy.info.jobs | Number of all jobs. | long | gauge |
+| haproxy.info.listeners | Number of listeners. | long | gauge |
+| haproxy.info.memory.max.bytes | Maximum amount of memory usage in bytes (the 'Memmax_MB' value converted to bytes). | long | gauge |
+| haproxy.info.peers.active | Number of active peers. | long | gauge |
+| haproxy.info.peers.connected | Number of connected peers. | long | gauge |
+| haproxy.info.pipes.free | Number of free pipes. | integer | gauge |
+| haproxy.info.pipes.max | Maximum number of used pipes. | integer | gauge |
+| haproxy.info.pipes.used | Number of used pipes during kernel-based tcp splicing. | integer | gauge |
+| haproxy.info.pool.allocated | Size of the allocated pool. | long | gauge |
+| haproxy.info.pool.failed | Number of failed connections to pool members. | long | counter |
+| haproxy.info.pool.used | Number of members used from the allocated pool. | long | gauge |
+| haproxy.info.process_num | Process number. | long | gauge |
+| haproxy.info.processes | Number of processes. | long | gauge |
+| haproxy.info.requests.max | Maximum number of requests. | long | gauge |
+| haproxy.info.requests.total | Total number of requests. | long | counter |
+| haproxy.info.run_queue |  | long | gauge |
+| haproxy.info.session.rate.limit | Rate limit of sessions. | integer | gauge |
+| haproxy.info.session.rate.max | Maximum rate of sessions. | integer | gauge |
+| haproxy.info.session.rate.value | Rate of session per seconds. | integer | gauge |
+| haproxy.info.sockets.max | Maximum number of sockets. | long | gauge |
+| haproxy.info.ssl.backend.key_rate.max | Maximum key rate of SSL backend sessions. | integer | gauge |
+| haproxy.info.ssl.backend.key_rate.value | Key rate of SSL backend sessions. | integer | gauge |
+| haproxy.info.ssl.cache_misses | Number of SSL cache misses. | long | counter |
+| haproxy.info.ssl.cached_lookups | Number of SSL cache lookups. | long | counter |
+| haproxy.info.ssl.frontend.key_rate.max | Maximum key rate of SSL frontend. | integer | gauge |
+| haproxy.info.ssl.frontend.key_rate.value | Key rate of SSL frontend. | integer | gauge |
+| haproxy.info.ssl.frontend.session_reuse.pct | Rate of reuse of SSL frontend sessions. | scaled_float | gauge |
+| haproxy.info.ssl.rate.limit | Rate limit of SSL requests. | integer | gauge |
+| haproxy.info.ssl.rate.max | Maximum rate of SSL requests. | integer | gauge |
+| haproxy.info.ssl.rate.value | Rate of SSL requests. | integer | gauge |
+| haproxy.info.stopping | Number of stopping jobs. | long | gauge |
+| haproxy.info.tasks |  | long | gauge |
+| haproxy.info.threads | Number of threads. | long | gauge |
+| haproxy.info.ulimit_n | Maximum number of open files for the process. | long | gauge |
+| haproxy.info.unstoppable_jobs | Number of unstoppable jobs. | long | gauge |
+| haproxy.info.uptime.sec | Current uptime in seconds. | long | gauge |
+| haproxy.info.zlib_mem_usage.max | Maximum memory usage of zlib. | integer | gauge |
+| haproxy.info.zlib_mem_usage.value | Memory usage of zlib. | integer | gauge |
+| host.architecture | Operating system architecture. | keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.mac | Host mac addresses. | keyword |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
+| host.os.name | Operating system name, without the version. | keyword |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
+| process | These fields contain information about a process. These fields can help you correlate metrics information with a process id/name from a log message.  The `process.pid` often stays in the metric itself and is copied to the global field for correlation. | group |  |
+| process.pid | Process id. | long |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### stat
