@@ -1,0 +1,220 @@
+---
+description: Pipeline for parsing Cloudflare Workers Trace Event logs.
+processors:
+  - set:
+      field: ecs.version
+      value: 8.8.0
+      tag: set_ecs_version
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      tag: rename_event_original
+  - json:
+      field: event.original
+      target_field: json
+      tag: json_event_original
+  - set:
+      field: event.category
+      value: [web]
+      tag: set_event_category
+  - set:
+      field: event.type
+      value: [info]
+      tag: set_event_type
+  - set:
+      field: event.kind
+      value: event
+      tag: set_event_kind
+
+  # Timestamp
+  - date:
+      field: json.EventTimestampMs
+      if: ctx.json?.EventTimestampMs != null && ctx.json.EventTimestampMs != ''
+      formats:
+        - UNIX_MS
+        - UNIX
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssZ
+      timezone: UTC
+      tag: date_event_timestamp
+      on_failure:
+      - append:
+          field: error.message
+          value: |-
+            Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: cloudflare_logpush.workers_trace.timestamp
+      copy_from: "@timestamp"
+      tag: set_timestamp
+
+  # ECS fields
+  - rename:
+      field: json.EventType
+      target_field: cloudflare_logpush.workers_trace.type
+      ignore_missing: true
+      tag: rename_event_type
+  - set:
+      field: event.action
+      copy_from: cloudflare_logpush.workers_trace.type
+      tag: set_event_action
+
+  # Set event.outcome
+  - rename:
+      field: json.Outcome
+      target_field: cloudflare_logpush.workers_trace.outcome
+      ignore_missing: true
+      tag: rename_outcome
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.cloudflare_logpush?.workers_trace?.outcome == 'ok'
+      tag: set_event_outcome_success
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.cloudflare_logpush?.workers_trace?.outcome == 'exception'
+      tag: set_event_outcome_failure
+  - append:
+      field: event.type
+      value: error
+      allow_duplicates: false
+      if: ctx.event?.outcome == 'failure'
+      tag: append_event_type_error
+
+  # Custom fields
+  - rename:
+      field: json.DispatchNamespace
+      target_field: cloudflare_logpush.workers_trace.dispatch_namespace
+      ignore_missing: true
+      tag: rename_dispatch_namespace
+  - rename:
+      field: json.Event
+      target_field: cloudflare_logpush.workers_trace.event
+      ignore_missing: true
+      tag: rename_event
+  - rename:
+      field: json.Exceptions
+      target_field: cloudflare_logpush.workers_trace.exceptions
+      ignore_missing: true
+      tag: rename_exceptions
+  - rename:
+      field: json.Logs
+      target_field: cloudflare_logpush.workers_trace.logs
+      ignore_missing: true
+      tag: rename_logs
+  - rename:
+      field: json.ScriptName
+      target_field: cloudflare_logpush.workers_trace.script.name
+      ignore_missing: true
+      tag: rename_script_name
+  - rename:
+      field: json.ScriptTags
+      target_field: cloudflare_logpush.workers_trace.script.tags
+      ignore_missing: true
+      tag: rename_script_tags
+
+  - script:
+      description: Convert Workers Trace Events keys to snake case recursively.
+      tag: script_convert_snake_case
+      lang: painless
+      source: |-
+        Map keysToSnakeCase(Map m) {
+          def regex = /([a-z])([A-Z]+)/;
+          def out = [:];
+
+          for (entry in m.entrySet()) {
+            def k = entry.getKey();
+            def v = entry.getValue();
+
+            if (v instanceof Map) {
+              v = keysToSnakeCase(v);
+            } else if (v instanceof List) {
+              for (int i = 0; i < v.size(); i++) {
+                def item = v.get(i);
+                if (item instanceof Map) {
+                  v.set(i, keysToSnakeCase(item));
+                }
+              }
+            }
+
+            k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
+            out.put(k, v);
+          }
+
+          return out;
+        }
+
+        ctx.cloudflare_logpush['workers_trace'] = keysToSnakeCase(ctx.cloudflare_logpush.workers_trace);
+
+  - set:
+      field: event.id
+      copy_from: cloudflare_logpush.workers_trace.event.ray_id
+      ignore_empty_value: true
+      tag: set_event_id
+  - set:
+      field: http.request.method
+      copy_from: cloudflare_logpush.workers_trace.event.request.method
+      ignore_empty_value: true
+      tag: set_http_request_method
+  - set:
+      field: http.response.status_code
+      copy_from: cloudflare_logpush.workers_trace.event.response.status
+      ignore_empty_value: true
+      tag: set_http_response_status
+  - uri_parts:
+      field: cloudflare_logpush.workers_trace.event.request.url
+      target_field: url
+      if: ctx.cloudflare_logpush?.workers_trace?.event?.request?.url != null
+      tag: uri_parts_http_url
+
+  # Clean event
+  - remove:
+      field: json
+      ignore_missing: true
+      tag: remove_json
+  - remove:
+      field:
+        - cloudflare_logpush.workers_trace.event.ray_id
+        - cloudflare_logpush.workers_trace.event.request.method
+        - cloudflare_logpush.workers_trace.event.request.url
+        - cloudflare_logpush.workers_trace.event.response.status
+        - cloudflare_logpush.workers_trace.outcome
+        - cloudflare_logpush.workers_trace.timestamp
+        - cloudflare_logpush.workers_trace.type
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_failure: true
+      ignore_missing: true
+      tag: remove_duplicated_custom_fields
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+      tag: remove_event_original
+  - script:
+      description: Drops null/empty values recursively.
+      tag: script_drop_empty_fields
+      lang: painless
+      source: |-
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error

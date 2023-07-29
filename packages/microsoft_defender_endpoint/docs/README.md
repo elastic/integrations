@@ -47,13 +47,13 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-05-12T07:01:02.145Z",
+    "@timestamp": "2023-07-24T14:20:13.467Z",
     "agent": {
-        "ephemeral_id": "5ad04d6b-7576-496c-aadf-72e9c1e72eab",
-        "id": "26dd4270-014a-48d2-8f5d-6aa3f48a273c",
+        "ephemeral_id": "6602c8b6-3007-4b99-8871-28728195e542",
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.8.2"
     },
     "cloud": {
         "account": {
@@ -73,9 +73,9 @@ An example event for `log` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "26dd4270-014a-48d2-8f5d-6aa3f48a273c",
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.8.2"
     },
     "event": {
         "action": "Execution",
@@ -88,7 +88,7 @@ An example event for `log` looks as following:
         "duration": 101466100,
         "end": "2021-01-26T20:31:33.0577322Z",
         "id": "da637472900382838869_1364969609",
-        "ingested": "2023-05-12T07:01:03Z",
+        "ingested": "2023-07-24T14:20:16Z",
         "kind": "alert",
         "provider": "defender_endpoint",
         "severity": 2,
@@ -147,7 +147,9 @@ An example event for `log` looks as following:
     "threat": {
         "framework": "MITRE ATT\u0026CK",
         "technique": {
-            "name": "Execution"
+            "name": [
+                "Execution"
+            ]
         }
     },
     "user": {
