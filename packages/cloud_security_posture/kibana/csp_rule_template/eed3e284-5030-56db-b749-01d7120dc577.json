@@ -1,0 +1,38 @@
+{
+    "id": "eed3e284-5030-56db-b749-01d7120dc577",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Using Customer-managed encryption keys (CMEK) will incur additional labor-hour investment to create, protect, and manage the keys.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/bigquery/docs/customer-managed-encryption",
+            "id": "eed3e284-5030-56db-b749-01d7120dc577",
+            "name": "Ensure That a Default Customer-Managed Encryption Key (CMEK) Is Specified for All BigQuery Data Sets",
+            "profile_applicability": "* Level 2",
+            "description": "BigQuery by default encrypts the data as rest by employing `Envelope Encryption` using Google managed cryptographic keys.\nThe data is encrypted using the `data encryption keys` and data encryption keys themselves are further encrypted using `key encryption keys`.\nThis is seamless and do not require any additional input from the user.\nHowever, if you want to have greater control, Customer-managed encryption keys (CMEK) can be used as encryption key management solution for BigQuery Data Sets.",
+            "rationale": "BigQuery by default encrypts the data as rest by employing `Envelope Encryption` using Google managed cryptographic keys.\nThis is seamless and does not require any additional input from the user.\n\nFor greater control over the encryption, customer-managed encryption keys (CMEK) can be used as encryption key management solution for BigQuery Data Sets.\nSetting a Default Customer-managed encryption key (CMEK) for a data set ensure any tables created in future will use the specified CMEK if none other is provided.\n\n```\nNote: Google does not store your keys on its servers and cannot access your protected data unless you provide the key.\nThis also means that if you forget or lose your key, there is no way for Google to recover the key or to recover any data encrypted with the lost key.\n```",
+            "audit": "**From Google Cloud Console**\n\n1. Go to `Analytics`\n2. Go to `BigQuery`\n3. Under `Analysis` click on `SQL Workspaces`, select the project\n4. Select Data Set\n5. Ensure `Customer-managed key` is present under `Dataset info` section.\n6. Repeat for each data set in all projects.\n\n**From Google Cloud CLI**\n\nList all dataset names\n```\nbq ls\n```\nUse the following command to view each dataset details.\n```\nbq show <data_set_object>\n```\nVerify the `kmsKeyName` is present.",
+            "remediation": "**From Google Cloud CLI**\n\nThe default CMEK for existing data sets can be updated by specifying the default key in the `EncryptionConfiguration.kmsKeyName` field when calling the `datasets.insert` or `datasets.patch` methods",
+            "section": "BigQuery",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 7.3",
+                "BigQuery"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "7.3",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_7_3"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

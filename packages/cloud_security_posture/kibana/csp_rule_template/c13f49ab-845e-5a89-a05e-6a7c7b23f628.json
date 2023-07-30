@@ -1,0 +1,38 @@
+{
+    "id": "c13f49ab-845e-5a89-a05e-6a7c7b23f628",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Removing `*Admin` or `*admin` or `Editor` or `Owner` role assignments from service accounts may break functionality that uses impacted service accounts. Required role(s) should be assigned to impacted service accounts in order to restore broken functionalities.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/sdk/gcloud/reference/iam/service-accounts/\n2. https://cloud.google.com/iam/docs/understanding-roles\n3. https://cloud.google.com/iam/docs/understanding-service-accounts",
+            "id": "c13f49ab-845e-5a89-a05e-6a7c7b23f628",
+            "name": "Ensure That Service Account Has No Admin Privileges",
+            "profile_applicability": "* Level 1",
+            "description": "A service account is a special Google account that belongs to an application or a VM, instead of to an individual end-user.\nThe application uses the service account to call the service's Google API so that users aren't directly involved.\nIt's recommended not to use admin access for ServiceAccount.",
+            "rationale": "Service accounts represent service-level security of the Resources (application or a VM) which can be determined by the roles assigned to it.\nEnrolling ServiceAccount with Admin rights gives full access to an assigned application or a VM.\nA ServiceAccount Access holder can perform critical actions like delete, update change settings, etc.\nwithout user intervention.\nFor this reason, it's recommended that service accounts not have Admin rights.",
+            "audit": "**From Google Cloud Console**\n\n1. Go to `IAM & admin/IAM` using `https://console.cloud.google.com/iam-admin/iam`\n2. Go to the `Members`\n3. Ensure that there are no `User-Managed user created service account(s)` with roles containing `*Admin` or `*admin` or role matching `Editor` or role matching `Owner`\n\n**From Google Cloud CLI**\n\n4. Get the policy that you want to modify, and write it to a JSON file:\n\n```\ngcloud projects get-iam-policy PROJECT_ID --format json > iam.json\n```\n\n5. The contents of the JSON file will look similar to the following. Note that `role` of members group associated with each `serviceaccount` does not contain `*Admin` or `*admin` or does not match `roles/editor` or does not match `roles/owner`.\n\nThis recommendation is only applicable to `User-Managed user-created` service accounts.\nThese accounts have the nomenclature: `SERVICE_ACCOUNT_NAME@PROJECT_ID.iam.gserviceaccount.com`.\nNote that some Google-managed, Google-created service accounts have the same naming format, and should be excluded (e.g., `appsdev-apps-dev-script-auth@system.gserviceaccount.com` which needs the Owner role).\n\n**Sample Json output:**\n\n {\n \"bindings\": [\n {\n \"members\": [\n \"serviceAccount:our-project-123@appspot.gserviceaccount.com\",\n ],\n \"role\": \"roles/appengine.appAdmin\"\n },\n {\n \"members\": [\n \"user:email1@gmail.com\"\n ],\n \"role\": \"roles/owner\"\n },\n {\n \"members\": [\n \"serviceAccount:our-project-123@appspot.gserviceaccount.com\",\n \"serviceAccount:123456789012-compute@developer.gserviceaccount.com\"\n ],\n \"role\": \"roles/editor\"\n }\n ],\n \"etag\": \"BwUjMhCsNvY=\",\n \"version\": 1\n }",
+            "remediation": "**From Google Cloud Console**\n\n1. Go to `IAM & admin/IAM` using `https://console.cloud.google.com/iam-admin/iam`\n2. Go to the `Members`\n3. Identify `User-Managed user created` service account with roles containing `*Admin` or `*admin` or role matching `Editor` or role matching `Owner`\n4. Click the `Delete bin` icon to remove the role from the member (service account in this case)\n\n**From Google Cloud CLI**\n\n```\ngcloud projects get-iam-policy PROJECT_ID --format json > iam.json\n```\n\n5. Using a text editor, Remove `Role` which contains `roles/*Admin` or `roles/*admin` or matched `roles/editor` or matches 'roles/owner`. Add a role to the bindings array that defines the group members and the role for those members. \n\nFor example, to grant the role roles/appengine.appViewer to the `ServiceAccount` which is roles/editor, you would change the example shown below as follows:\n\n {\n \"bindings\": [\n {\n \"members\": [\n \"serviceAccount:our-project-123@appspot.gserviceaccount.com\",\n ],\n \"role\": \"roles/appengine.appViewer\"\n },\n {\n \"members\": [\n \"user:email1@gmail.com\"\n ],\n \"role\": \"roles/owner\"\n },\n {\n \"members\": [\n \"serviceAccount:our-project-123@appspot.gserviceaccount.com\",\n \"serviceAccount:123456789012-compute@developer.gserviceaccount.com\"\n ],\n \"role\": \"roles/editor\"\n }\n ],\n \"etag\": \"BwUjMhCsNvY=\"\n }\n6. Update the project's IAM policy:\n\n```\ngcloud projects set-iam-policy PROJECT_ID iam.json\n```",
+            "section": "Identity and Access Management",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 1.5",
+                "Identity and Access Management"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "1.5",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_1_5"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
