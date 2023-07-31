@@ -445,3 +445,10 @@ processors:
         - m365_defender.event.ip_address
         - m365_defender.event.action.type
       ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

@@ -8,7 +8,10 @@ The GitHub integration collects events from the [GitHub API](https://docs.github
 
 The GitHub audit log records all events related to the GitHub organization. See [Audit log actions](https://docs.github.com/en/organizations/keeping-your-organization-secure/reviewing-the-audit-log-for-your-organization#audit-log-actions) for more details.
 
-To use this integration, you must be an organization owner, and you must use an Personal Access Token with the admin:org scope.
+To use this integration, the following prerequisites must be met:
+ - You must be an organization owner.
+ - You must be using Github Enterprise Cloud.
+ - You must use an Personal Access Token with the `admin:org` and `read:audit_log` scope.
 
 *This integration is not compatible with GitHub Enterprise server.*
 
@@ -49,3 +52,15 @@ To use this integration, you must be an administrator for the repository or for 
 {{fields "dependabot"}}
 
 {{event "dependabot"}}
+
+### Issues
+
+The Github Issues datastream lets you retrieve github issues, including pull requests, issue assignees, comments, labels, and milestones. See [About Issues](https://docs.github.com/en/rest/issues/issues?apiVersion=latest) for more details. You can retrieve issues for specific repository or for entire organization. Since Github API considers pull requests as issues, users can use `github.issues.is_pr` field to filter for only pull requests. 
+
+All issues including `closed` are retrieved by default. If users want to retrieve only `open` requests, you need to change `State` parameter to `open`.
+
+To use this integration, users must use Github Apps or Personal Access Token with `read` permission to repositories or organization. Please refer to [Github Apps Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-github-apps?apiVersion=latest) and [Personal Access Token Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-fine-grained-personal-access-tokens?apiVersion=latest) for more details.
+
+{{fields "issues"}}
+
+{{event "issues"}}

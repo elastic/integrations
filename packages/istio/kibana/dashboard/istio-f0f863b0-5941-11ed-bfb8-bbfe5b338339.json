@@ -2185,7 +2185,12 @@
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "5dd05ea2-58f7-478a-a08b-e1d651fd4f10",
+                                "name": "88e72ef0-c31c-46c6-a0e7-e2cfa424ad93",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "89487cc8-7e06-4827-b380-1ac1fd1a3050",
                                 "type": "index-pattern"
                             }
                         ],
@@ -2196,6 +2201,7 @@
                                     "layers": {
                                         "31508df4-45f0-4539-b60e-fc221663e793": {
                                             "columnOrder": [
+                                                "a00a0f0b-d1fc-4bac-977c-df6e5e8479ed",
                                                 "6d984ee0-898e-4a49-beed-28b876a26871",
                                                 "613f76d7-a700-4710-b92f-d75d20261c64"
                                             ],
@@ -2203,14 +2209,18 @@
                                                 "613f76d7-a700-4710-b92f-d75d20261c64": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "istio.istiod.metrics.pilot_xds_expired_nonce.counter: *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "pilot_xds_expired ",
-                                                    "operationType": "average",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number"
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "istio.istiod.metrics.pilot_xds_expired_nonce.counter"
@@ -2227,6 +2237,31 @@
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
+                                                },
+                                                "a00a0f0b-d1fc-4bac-977c-df6e5e8479ed": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of istio.istiod.labels.type",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "613f76d7-a700-4710-b92f-d75d20261c64",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "istio.istiod.labels.type"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -2246,7 +2281,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "5dd05ea2-58f7-478a-a08b-e1d651fd4f10",
+                                        "index": "88e72ef0-c31c-46c6-a0e7-e2cfa424ad93",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -2257,6 +2292,25 @@
                                     "query": {
                                         "match_phrase": {
                                             "data_stream.dataset": "istio.istiod_metrics"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "89487cc8-7e06-4827-b380-1ac1fd1a3050",
+                                        "key": "istio.istiod.metrics.pilot_xds_expired_nonce.counter",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "istio.istiod.metrics.pilot_xds_expired_nonce.counter"
                                         }
                                     }
                                 }
@@ -2296,6 +2350,7 @@
                                             "type": "palette"
                                         },
                                         "seriesType": "line",
+                                        "splitAccessor": "a00a0f0b-d1fc-4bac-977c-df6e5e8479ed",
                                         "xAccessor": "6d984ee0-898e-4a49-beed-28b876a26871",
                                         "yConfig": [
                                             {
@@ -2739,7 +2794,7 @@
         "version": 1
     },
     "coreMigrationVersion": "8.6.0",
-    "created_at": "2023-03-06T17:59:55.323Z",
+    "created_at": "2023-07-19T07:09:48.691Z",
     "id": "istio-f0f863b0-5941-11ed-bfb8-bbfe5b338339",
     "migrationVersion": {
         "dashboard": "8.6.0"
@@ -2852,7 +2907,12 @@
         },
         {
             "id": "metrics-*",
-            "name": "dbf7b077-25b6-4760-893e-ebbd42b4c04d:5dd05ea2-58f7-478a-a08b-e1d651fd4f10",
+            "name": "dbf7b077-25b6-4760-893e-ebbd42b4c04d:88e72ef0-c31c-46c6-a0e7-e2cfa424ad93",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "dbf7b077-25b6-4760-893e-ebbd42b4c04d:89487cc8-7e06-4827-b380-1ac1fd1a3050",
             "type": "index-pattern"
         },
         {
@@ -2874,19 +2934,7 @@
             "id": "metrics-*",
             "name": "115a531a-e8ef-497f-a3c9-9ccc82f8c974:9aa51899-fb25-42c0-9a06-8235e22c7054",
             "type": "index-pattern"
-        },
-        {
-            "id": "fleet-managed-default",
-            "name": "tag-ref-fleet-managed-default",
-            "type": "tag"
-        },
-        {
-            "id": "fleet-pkg-istio-default",
-            "name": "tag-ref-fleet-pkg-istio-default",
-            "type": "tag"
         }
     ],
-    "type": "dashboard",
-    "updated_at": "2023-03-06T17:59:55.323Z",
-    "version": "WzQ2ODIsMV0="
+    "type": "dashboard"
 }

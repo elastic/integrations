@@ -10,3 +10,10 @@ processors:
         - "^case %{GREEDYDATA:cisco_secure_email_gateway.log.object_category} \\(%{NUMBER:cisco_secure_email_gateway.log.case_id}\\) : case-daemon: %{DATA:cisco_secure_email_gateway.log.object} killed by %{DATA:cisco_secure_email_gateway.log.command}, %{GREEDYDATA:cisco_secure_email_gateway.log.result}$"
         - "^case %{GREEDYDATA:cisco_secure_email_gateway.log.object_category} \\(%{NUMBER:cisco_secure_email_gateway.log.case_id}\\) : case-daemon: %{GREEDYDATA:cisco_secure_email_gateway.log.result}$"
         - "^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$"
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

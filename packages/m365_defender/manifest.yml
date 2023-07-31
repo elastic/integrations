@@ -1,16 +1,15 @@
-format_version: 1.0.0
+format_version: 2.9.0
 name: m365_defender
 title: Microsoft M365 Defender
-version: 1.6.2
+version: "1.15.0"
 description: Collect logs from Microsoft M365 Defender with Elastic Agent.
 categories:
   - "security"
   - "edr_xdr"
-release: ga
 type: integration
 conditions:
   elastic.subscription: basic
-  kibana.version: ^7.16.0 || ^8.0.0
+  kibana.version: ^8.7.1
 policy_templates:
   - name: m365_defender
     title: M365 Defender Logs
@@ -27,6 +26,13 @@ policy_templates:
             show_user: false
             default: https://login.microsoftonline.com
             description: "URL of Login Server 'tenant-id/oauth2/token added automatically'."
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            multi: false
+            required: false
+            show_user: false
+            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
           - name: client_id
             type: text
             title: Client ID
@@ -113,5 +119,10 @@ screenshots:
     title: Microsoft 365 Defender Email Events Dashboard Screenshot
     size: 600x600
     type: image/png
+  - src: /img/m365-defender-dashboard-incident.png
+    title: Microsoft 365 Defender Incident Dashboard Screenshot
+    size: 600x600
+    type: image/png
 owner:
   github: elastic/security-external-integrations
+

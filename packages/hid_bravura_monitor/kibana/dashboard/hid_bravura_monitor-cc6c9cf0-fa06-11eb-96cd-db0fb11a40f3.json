@@ -1,14 +1,6 @@
 {
-    "id": "hid_bravura_monitor-cc6c9cf0-fa06-11eb-96cd-db0fb11a40f3",
-    "type": "dashboard",
-    "namespaces": [
-        "default"
-    ],
-    "updated_at": "2022-11-21T21:15:03.667Z",
-    "version": "WzY4OSwxXQ==",
     "attributes": {
         "description": "",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [],
@@ -20,75 +12,184 @@
         },
         "optionsJSON": {
             "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "title": "User Logins",
-                        "description": "",
-                        "uiState": {
-                            "vis": {
-                                "params": {
-                                    "sort": {
-                                        "columnIndex": null,
-                                        "direction": null
-                                    }
-                                }
-                            }
-                        },
-                        "params": {
-                            "perPage": 10,
-                            "percentageCol": "",
-                            "showMetricsAtAllLevels": false,
-                            "showPartialRows": false,
-                            "showToolbar": true,
-                            "showTotal": false,
-                            "sort": {
-                                "columnIndex": null,
-                                "direction": null
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-28beeee9-52bc-4d20-8308-c0781c53879a",
+                                "type": "index-pattern"
                             },
-                            "totalFunc": "sum"
-                        },
-                        "type": "table",
-                        "data": {
-                            "aggs": [
+                            {
+                                "id": "logs-*",
+                                "name": "424bba35-5ce1-42b3-834d-db7d0f582486",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "470f3e41-200a-4f74-a94e-e644b3ba1cab",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "28beeee9-52bc-4d20-8308-c0781c53879a": {
+                                            "columnOrder": [
+                                                "80b71bb5-dce7-41ba-9ec6-07b553091bcc",
+                                                "af00cd8f-d3c1-4490-b1a1-cc5bdd868d55"
+                                            ],
+                                            "columns": {
+                                                "80b71bb5-dce7-41ba-9ec6-07b553091bcc": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "User",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "af00cd8f-d3c1-4490-b1a1-cc5bdd868d55",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10000
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "user.name"
+                                                },
+                                                "af00cd8f-d3c1-4490-b1a1-cc5bdd868d55": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
                                 {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {},
-                                    "schema": "metric",
-                                    "type": "count"
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "424bba35-5ce1-42b3-834d-db7d0f582486",
+                                        "key": "event.action",
+                                        "negate": false,
+                                        "params": [
+                                            "logged-in",
+                                            "logged-in-special"
+                                        ],
+                                        "type": "phrases",
+                                        "value": [
+                                            "logged-in",
+                                            "logged-in-special"
+                                        ]
+                                    },
+                                    "query": {
+                                        "bool": {
+                                            "minimum_should_match": 1,
+                                            "should": [
+                                                {
+                                                    "match_phrase": {
+                                                        "event.action": "logged-in"
+                                                    }
+                                                },
+                                                {
+                                                    "match_phrase": {
+                                                        "event.action": "logged-in-special"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
                                 },
                                 {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "customLabel": "User",
-                                        "field": "user.name",
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 10000
+                                    "$state": {
+                                        "store": "appState"
                                     },
-                                    "schema": "bucket",
-                                    "type": "terms"
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "470f3e41-200a-4f74-a94e-e644b3ba1cab",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "hid_bravura_monitor.log"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "hid_bravura_monitor.log"
+                                        }
+                                    }
                                 }
                             ],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "af00cd8f-d3c1-4490-b1a1-cc5bdd868d55"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "80b71bb5-dce7-41ba-9ec6-07b553091bcc"
+                                    }
+                                ],
+                                "headerRowHeight": "single",
+                                "layerId": "28beeee9-52bc-4d20-8308-c0781c53879a",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
+                                "rowHeight": "single"
                             }
-                        }
-                    }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 18,
@@ -98,154 +199,244 @@
                     "y": 0
                 },
                 "panelIndex": "5d934c5f-f909-4f75-a036-ac6253f5f974",
-                "version": "8.0.0",
-                "type": "visualization"
+                "title": "User Logins",
+                "type": "lens",
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "title": "Login Attempts",
-                        "description": "",
-                        "uiState": {},
-                        "params": {
-                            "addLegend": true,
-                            "addTimeMarker": false,
-                            "addTooltip": true,
-                            "categoryAxes": [
-                                {
-                                    "id": "CategoryAxis-1",
-                                    "labels": {
-                                        "filter": true,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "position": "bottom",
-                                    "scale": {
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {},
-                                    "type": "category"
-                                }
-                            ],
-                            "detailedTooltip": true,
-                            "grid": {
-                                "categoryLines": false
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-7e40bbf6-ed02-43c4-b734-6b1861674ecb",
+                                "type": "index-pattern"
                             },
-                            "isVislibVis": true,
-                            "labels": {
-                                "show": false
+                            {
+                                "id": "logs-*",
+                                "name": "87b4e61c-d4e3-4276-988a-9ae53c450bd8",
+                                "type": "index-pattern"
                             },
-                            "legendPosition": "right",
-                            "palette": {
-                                "name": "kibana_palette",
-                                "type": "palette"
-                            },
-                            "seriesParams": [
-                                {
-                                    "data": {
-                                        "id": "1",
-                                        "label": "Count"
-                                    },
-                                    "drawLinesBetweenPoints": true,
-                                    "lineWidth": 2,
-                                    "mode": "stacked",
-                                    "show": true,
-                                    "showCircles": true,
-                                    "type": "histogram",
-                                    "valueAxis": "ValueAxis-1"
-                                }
-                            ],
-                            "thresholdLine": {
-                                "color": "#E7664C",
-                                "show": false,
-                                "style": "full",
-                                "value": 10,
-                                "width": 1
-                            },
-                            "times": [],
-                            "type": "histogram",
-                            "valueAxes": [
-                                {
-                                    "id": "ValueAxis-1",
-                                    "labels": {
-                                        "filter": false,
-                                        "rotate": 0,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "name": "LeftAxis-1",
-                                    "position": "left",
-                                    "scale": {
-                                        "mode": "normal",
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {
-                                        "text": "Count"
-                                    },
-                                    "type": "value"
-                                }
-                            ]
-                        },
-                        "type": "histogram",
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {},
-                                    "schema": "metric",
-                                    "type": "count"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "drop_partials": false,
-                                        "extended_bounds": {},
-                                        "field": "@timestamp",
-                                        "interval": "auto",
-                                        "min_doc_count": 1,
-                                        "scaleMetricValues": false,
-                                        "timeRange": {
-                                            "from": "now-90d",
-                                            "to": "now"
-                                        },
-                                        "useNormalizedEsInterval": true
-                                    },
-                                    "schema": "segment",
-                                    "type": "date_histogram"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "3",
-                                    "params": {
-                                        "field": "event.outcome",
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 5
-                                    },
-                                    "schema": "group",
-                                    "type": "terms"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
+                            {
+                                "id": "logs-*",
+                                "name": "2239b070-f41c-406a-bbe6-f0a2727f47b1",
+                                "type": "index-pattern"
                             }
-                        }
-                    }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "7e40bbf6-ed02-43c4-b734-6b1861674ecb": {
+                                            "columnOrder": [
+                                                "befd9832-6da9-472a-a3f5-e57961446f5b",
+                                                "0df2cbd4-5615-4d70-99b7-a60314ea8606",
+                                                "58f7e0d4-2504-4337-98b7-ad38ea8b248f"
+                                            ],
+                                            "columns": {
+                                                "0df2cbd4-5615-4d70-99b7-a60314ea8606": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "event.outcome: Descending",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "58f7e0d4-2504-4337-98b7-ad38ea8b248f",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "event.outcome"
+                                                },
+                                                "58f7e0d4-2504-4337-98b7-ad38ea8b248f": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "befd9832-6da9-472a-a3f5-e57961446f5b": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "87b4e61c-d4e3-4276-988a-9ae53c450bd8",
+                                        "key": "event.action",
+                                        "negate": false,
+                                        "params": [
+                                            "logged-in",
+                                            "logged-in-special"
+                                        ],
+                                        "type": "phrases",
+                                        "value": [
+                                            "logged-in",
+                                            "logged-in-special"
+                                        ]
+                                    },
+                                    "query": {
+                                        "bool": {
+                                            "minimum_should_match": 1,
+                                            "should": [
+                                                {
+                                                    "match_phrase": {
+                                                        "event.action": "logged-in"
+                                                    }
+                                                },
+                                                {
+                                                    "match_phrase": {
+                                                        "event.action": "logged-in-special"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "2239b070-f41c-406a-bbe6-f0a2727f47b1",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "hid_bravura_monitor.log"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "hid_bravura_monitor.log"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": -90
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "58f7e0d4-2504-4337-98b7-ad38ea8b248f"
+                                        ],
+                                        "isHistogram": true,
+                                        "layerId": "7e40bbf6-ed02-43c4-b734-6b1861674ecb",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "bar_stacked",
+                                        "simpleView": false,
+                                        "splitAccessor": "0df2cbd4-5615-4d70-99b7-a60314ea8606",
+                                        "xAccessor": "befd9832-6da9-472a-a3f5-e57961446f5b",
+                                        "xScaleType": "time",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "58f7e0d4-2504-4337-98b7-ad38ea8b248f"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": false,
+                                "yLeftExtent": {
+                                    "enforce": true,
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightScale": "linear",
+                                "yTitle": "Count"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 18,
@@ -255,199 +446,317 @@
                     "y": 0
                 },
                 "panelIndex": "7d27410b-537a-4c95-a1d8-8a64f363b90c",
-                "version": "8.0.0",
-                "type": "visualization"
+                "title": "Login Attempts",
+                "type": "lens",
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "title": "Login Activity",
-                        "description": "",
-                        "uiState": {
-                            "vis": {
-                                "params": {
-                                    "sort": {
-                                        "columnIndex": null,
-                                        "direction": null
-                                    }
-                                }
-                            }
-                        },
-                        "params": {
-                            "perPage": 10,
-                            "percentageCol": "",
-                            "showMetricsAtAllLevels": false,
-                            "showPartialRows": false,
-                            "showToolbar": true,
-                            "showTotal": false,
-                            "sort": {
-                                "columnIndex": null,
-                                "direction": null
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-d8ac7a72-2c00-4417-8b7a-f72f0895f153",
+                                "type": "index-pattern"
                             },
-                            "totalFunc": "sum"
-                        },
-                        "type": "table",
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {},
-                                    "schema": "metric",
-                                    "type": "count"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "customLabel": "Event ID",
-                                        "field": "winlog.event_id",
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 1000
-                                    },
-                                    "schema": "bucket",
-                                    "type": "terms"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "5",
-                                    "params": {
-                                        "customLabel": "Event Category",
-                                        "field": "event.category",
-                                        "missingBucket": true,
-                                        "missingBucketLabel": "N/A",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 5
-                                    },
-                                    "schema": "bucket",
-                                    "type": "terms"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "3",
-                                    "params": {
-                                        "customLabel": "Event Action",
-                                        "field": "event.action",
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 100
-                                    },
-                                    "schema": "bucket",
-                                    "type": "terms"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "4",
-                                    "params": {
-                                        "customLabel": "Event Outcome",
-                                        "field": "event.outcome",
-                                        "missingBucket": true,
-                                        "missingBucketLabel": "N/A",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 5
-                                    },
-                                    "schema": "bucket",
-                                    "type": "terms"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": [
-                                    {
-                                        "$state": {
-                                            "store": "appState"
-                                        },
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                                            "key": "winlog.event_id",
-                                            "negate": false,
-                                            "params": [
-                                                "4740",
-                                                "4728",
-                                                "4732",
-                                                "4756",
-                                                "4735",
-                                                "4624",
-                                                "4625",
-                                                "4648"
+                            {
+                                "id": "logs-*",
+                                "name": "066a0ad9-2d7e-4453-93b9-02d6bf0a0d86",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "0765a48f-c3ba-4064-b01e-e5c390538037",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "d8ac7a72-2c00-4417-8b7a-f72f0895f153": {
+                                            "columnOrder": [
+                                                "a476a41b-66ca-424b-b381-1e66b89b5c0b",
+                                                "eda7dc5f-60de-4eaa-be30-5da382315ec4",
+                                                "7883d2ed-a891-47f4-a793-787dc2cb035f",
+                                                "5b58fb3a-b3d6-4621-a8bc-8409a37f8d05",
+                                                "b765b757-9e68-4588-85e4-0d7185ca5f33"
                                             ],
-                                            "type": "phrases",
-                                            "value": "4740, 4728, 4732, 4756, 4735, 4624, 4625, 4648"
-                                        },
-                                        "query": {
-                                            "bool": {
-                                                "minimum_should_match": 1,
-                                                "should": [
-                                                    {
-                                                        "match_phrase": {
-                                                            "winlog.event_id": "4740"
-                                                        }
+                                            "columns": {
+                                                "5b58fb3a-b3d6-4621-a8bc-8409a37f8d05": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Event Outcome",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": true,
+                                                        "orderBy": {
+                                                            "columnId": "b765b757-9e68-4588-85e4-0d7185ca5f33",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
                                                     },
-                                                    {
-                                                        "match_phrase": {
-                                                            "winlog.event_id": "4728"
-                                                        }
+                                                    "scale": "ordinal",
+                                                    "sourceField": "event.outcome"
+                                                },
+                                                "7883d2ed-a891-47f4-a793-787dc2cb035f": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Event Action",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "b765b757-9e68-4588-85e4-0d7185ca5f33",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 100
                                                     },
-                                                    {
-                                                        "match_phrase": {
-                                                            "winlog.event_id": "4732"
-                                                        }
+                                                    "scale": "ordinal",
+                                                    "sourceField": "event.action"
+                                                },
+                                                "a476a41b-66ca-424b-b381-1e66b89b5c0b": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Event ID",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "b765b757-9e68-4588-85e4-0d7185ca5f33",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 1000
                                                     },
-                                                    {
-                                                        "match_phrase": {
-                                                            "winlog.event_id": "4756"
-                                                        }
+                                                    "scale": "ordinal",
+                                                    "sourceField": "winlog.event_id"
+                                                },
+                                                "b765b757-9e68-4588-85e4-0d7185ca5f33": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
                                                     },
-                                                    {
-                                                        "match_phrase": {
-                                                            "winlog.event_id": "4735"
-                                                        }
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "eda7dc5f-60de-4eaa-be30-5da382315ec4": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Event Category",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": true,
+                                                        "orderBy": {
+                                                            "columnId": "b765b757-9e68-4588-85e4-0d7185ca5f33",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
                                                     },
-                                                    {
-                                                        "match_phrase": {
-                                                            "winlog.event_id": "4624"
-                                                        }
-                                                    },
-                                                    {
-                                                        "match_phrase": {
-                                                            "winlog.event_id": "4625"
-                                                        }
-                                                    },
-                                                    {
-                                                        "match_phrase": {
-                                                            "winlog.event_id": "4648"
-                                                        }
-                                                    }
-                                                ]
-                                            }
+                                                    "scale": "ordinal",
+                                                    "sourceField": "event.category"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
                                         }
                                     }
-                                ],
-                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
+                                },
+                                "textBased": {
+                                    "layers": {}
                                 }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "066a0ad9-2d7e-4453-93b9-02d6bf0a0d86",
+                                        "key": "winlog.event_id",
+                                        "negate": false,
+                                        "params": [
+                                            "4740",
+                                            "4728",
+                                            "4732",
+                                            "4756",
+                                            "4735",
+                                            "4624",
+                                            "4625",
+                                            "4648"
+                                        ],
+                                        "type": "phrases",
+                                        "value": [
+                                            "4740",
+                                            "4728",
+                                            "4732",
+                                            "4756",
+                                            "4735",
+                                            "4624",
+                                            "4625",
+                                            "4648"
+                                        ]
+                                    },
+                                    "query": {
+                                        "bool": {
+                                            "minimum_should_match": 1,
+                                            "should": [
+                                                {
+                                                    "match_phrase": {
+                                                        "winlog.event_id": "4740"
+                                                    }
+                                                },
+                                                {
+                                                    "match_phrase": {
+                                                        "winlog.event_id": "4728"
+                                                    }
+                                                },
+                                                {
+                                                    "match_phrase": {
+                                                        "winlog.event_id": "4732"
+                                                    }
+                                                },
+                                                {
+                                                    "match_phrase": {
+                                                        "winlog.event_id": "4756"
+                                                    }
+                                                },
+                                                {
+                                                    "match_phrase": {
+                                                        "winlog.event_id": "4735"
+                                                    }
+                                                },
+                                                {
+                                                    "match_phrase": {
+                                                        "winlog.event_id": "4624"
+                                                    }
+                                                },
+                                                {
+                                                    "match_phrase": {
+                                                        "winlog.event_id": "4625"
+                                                    }
+                                                },
+                                                {
+                                                    "match_phrase": {
+                                                        "winlog.event_id": "4648"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "0765a48f-c3ba-4064-b01e-e5c390538037",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "hid_bravura_monitor.log"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "hid_bravura_monitor.log"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "b765b757-9e68-4588-85e4-0d7185ca5f33"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "a476a41b-66ca-424b-b381-1e66b89b5c0b"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "eda7dc5f-60de-4eaa-be30-5da382315ec4"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "7883d2ed-a891-47f4-a793-787dc2cb035f"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "5b58fb3a-b3d6-4621-a8bc-8409a37f8d05"
+                                    }
+                                ],
+                                "headerRowHeight": "single",
+                                "layerId": "d8ac7a72-2c00-4417-8b7a-f72f0895f153",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
+                                "rowHeight": "single"
                             }
-                        }
-                    }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 19,
@@ -457,95 +766,191 @@
                     "y": 18
                 },
                 "panelIndex": "27bdc4ea-7adc-4dee-9526-402fb6ec6d8b",
-                "version": "8.0.0",
-                "type": "visualization"
+                "title": "Login Activity",
+                "type": "lens",
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "title": "Provider Login Distribution",
-                        "description": "",
-                        "uiState": {
-                            "vis": {
-                                "colors": {
-                                    "failure": "#BF1B00",
-                                    "success": "#629E51"
-                                }
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-94b3fe21-2148-45ce-a3c4-8f44d72dad2d",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "8615e144-2bbd-4f2c-9215-d4c2651857de",
+                                "type": "index-pattern"
                             }
-                        },
-                        "params": {
-                            "addLegend": true,
-                            "addTooltip": true,
-                            "distinctColors": true,
-                            "isDonut": true,
-                            "labels": {
-                                "last_level": true,
-                                "show": false,
-                                "truncate": 100,
-                                "values": true
-                            },
-                            "legendPosition": "right",
-                            "palette": {
-                                "name": "kibana_palette",
-                                "type": "palette"
-                            },
-                            "type": "pie"
-                        },
-                        "type": "pie",
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {},
-                                    "schema": "metric",
-                                    "type": "count"
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "94b3fe21-2148-45ce-a3c4-8f44d72dad2d": {
+                                            "columnOrder": [
+                                                "cc44db0c-107c-4322-916e-326cf286305b",
+                                                "dfe7ecb4-4f5a-4164-817d-b01f8aba5c64",
+                                                "a7f32b39-47a3-4271-8cba-7e44d0aab239"
+                                            ],
+                                            "columns": {
+                                                "a7f32b39-47a3-4271-8cba-7e44d0aab239": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "cc44db0c-107c-4322-916e-326cf286305b": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Provider",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "a7f32b39-47a3-4271-8cba-7e44d0aab239",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10000
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "winlog.provider_name"
+                                                },
+                                                "dfe7ecb4-4f5a-4164-817d-b01f8aba5c64": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Outcome",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "a7f32b39-47a3-4271-8cba-7e44d0aab239",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "event.outcome"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
                                 },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
                                 {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "customLabel": "Provider",
-                                        "field": "winlog.provider_name",
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 10000
+                                    "$state": {
+                                        "store": "appState"
                                     },
-                                    "schema": "segment",
-                                    "type": "terms"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "3",
-                                    "params": {
-                                        "customLabel": "Outcome",
-                                        "field": "event.outcome",
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 5
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "8615e144-2bbd-4f2c-9215-d4c2651857de",
+                                        "key": "event.action",
+                                        "negate": false,
+                                        "params": [
+                                            "logged-in",
+                                            "logged-in-special"
+                                        ],
+                                        "type": "phrases",
+                                        "value": "logged-in, logged-in-special"
                                     },
-                                    "schema": "segment",
-                                    "type": "terms"
+                                    "query": {
+                                        "bool": {
+                                            "minimum_should_match": 1,
+                                            "should": [
+                                                {
+                                                    "match_phrase": {
+                                                        "event.action": "logged-in"
+                                                    }
+                                                },
+                                                {
+                                                    "match_phrase": {
+                                                        "event.action": "logged-in-special"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
                                 }
                             ],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "hide",
+                                        "emptySizeRatio": 0.3,
+                                        "layerId": "94b3fe21-2148-45ce-a3c4-8f44d72dad2d",
+                                        "layerType": "data",
+                                        "legendDisplay": "hide",
+                                        "legendMaxLines": 1,
+                                        "legendPosition": "right",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "a7f32b39-47a3-4271-8cba-7e44d0aab239"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "percentDecimals": 2,
+                                        "primaryGroups": [
+                                            "cc44db0c-107c-4322-916e-326cf286305b",
+                                            "dfe7ecb4-4f5a-4164-817d-b01f8aba5c64"
+                                        ],
+                                        "secondaryGroups": [],
+                                        "showValuesInLegend": true,
+                                        "truncateLegend": true
+                                    }
+                                ],
+                                "palette": {
+                                    "name": "default",
+                                    "type": "palette"
+                                },
+                                "shape": "donut"
                             }
-                        }
-                    }
+                        },
+                        "title": "Provider Login Distribution (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 19,
@@ -555,43 +960,77 @@
                     "y": 18
                 },
                 "panelIndex": "4c4f5228-f158-4ccc-afa5-e90d73bca46d",
-                "version": "8.0.0",
-                "type": "visualization"
+                "title": "Provider Login Distribution",
+                "type": "lens",
+                "version": "8.7.1"
             }
         ],
         "timeRestore": false,
         "title": "[Bravura Monitor] Windows Event Analysis - Logins",
         "version": 1
     },
+    "coreMigrationVersion": "8.7.1",
+    "created_at": "2023-07-17T12:47:21.382Z",
+    "id": "hid_bravura_monitor-cc6c9cf0-fa06-11eb-96cd-db0fb11a40f3",
+    "migrationVersion": {
+        "dashboard": "8.7.0"
+    },
     "references": [
         {
-            "type": "search",
-            "name": "5d934c5f-f909-4f75-a036-ac6253f5f974:search_0",
-            "id": "hid_bravura_monitor-1a724dd0-2395-11eb-abcf-effcd51852fa"
+            "id": "logs-*",
+            "name": "5d934c5f-f909-4f75-a036-ac6253f5f974:indexpattern-datasource-layer-28beeee9-52bc-4d20-8308-c0781c53879a",
+            "type": "index-pattern"
         },
         {
-            "type": "search",
-            "name": "7d27410b-537a-4c95-a1d8-8a64f363b90c:search_0",
-            "id": "hid_bravura_monitor-1a724dd0-2395-11eb-abcf-effcd51852fa"
+            "id": "logs-*",
+            "name": "5d934c5f-f909-4f75-a036-ac6253f5f974:424bba35-5ce1-42b3-834d-db7d0f582486",
+            "type": "index-pattern"
         },
         {
-            "type": "index-pattern",
-            "name": "27bdc4ea-7adc-4dee-9526-402fb6ec6d8b:kibanaSavedObjectMeta.searchSourceJSON.index",
-            "id": "logs-*"
+            "id": "logs-*",
+            "name": "5d934c5f-f909-4f75-a036-ac6253f5f974:470f3e41-200a-4f74-a94e-e644b3ba1cab",
+            "type": "index-pattern"
         },
         {
-            "type": "index-pattern",
-            "name": "27bdc4ea-7adc-4dee-9526-402fb6ec6d8b:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-            "id": "logs-*"
+            "id": "logs-*",
+            "name": "7d27410b-537a-4c95-a1d8-8a64f363b90c:indexpattern-datasource-layer-7e40bbf6-ed02-43c4-b734-6b1861674ecb",
+            "type": "index-pattern"
         },
         {
-            "type": "search",
-            "name": "4c4f5228-f158-4ccc-afa5-e90d73bca46d:search_0",
-            "id": "hid_bravura_monitor-1a724dd0-2395-11eb-abcf-effcd51852fa"
+            "id": "logs-*",
+            "name": "7d27410b-537a-4c95-a1d8-8a64f363b90c:87b4e61c-d4e3-4276-988a-9ae53c450bd8",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "7d27410b-537a-4c95-a1d8-8a64f363b90c:2239b070-f41c-406a-bbe6-f0a2727f47b1",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "27bdc4ea-7adc-4dee-9526-402fb6ec6d8b:indexpattern-datasource-layer-d8ac7a72-2c00-4417-8b7a-f72f0895f153",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "27bdc4ea-7adc-4dee-9526-402fb6ec6d8b:066a0ad9-2d7e-4453-93b9-02d6bf0a0d86",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "27bdc4ea-7adc-4dee-9526-402fb6ec6d8b:0765a48f-c3ba-4064-b01e-e5c390538037",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "4c4f5228-f158-4ccc-afa5-e90d73bca46d:indexpattern-datasource-layer-94b3fe21-2148-45ce-a3c4-8f44d72dad2d",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "4c4f5228-f158-4ccc-afa5-e90d73bca46d:8615e144-2bbd-4f2c-9215-d4c2651857de",
+            "type": "index-pattern"
         }
     ],
-    "migrationVersion": {
-        "dashboard": "8.1.0"
-    },
-    "coreMigrationVersion": "8.1.0"
+    "type": "dashboard"
 }

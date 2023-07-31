@@ -3,7 +3,7 @@ description: Pipeline for processing Model Breach Alert logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.8.0'
   - grok:
       field: message
       patterns:
@@ -664,10 +664,11 @@ processors:
       value: '{{{darktrace.model_breach_alert.model.created.by}}}'
       allow_duplicates: false
       ignore_failure: true
-  - set:
+  - append:
       field: rule.author
-      copy_from: darktrace.model_breach_alert.model.created.by
-      ignore_failure: true
+      value: '{{{darktrace.model_breach_alert.model.created.by}}}'
+      allow_duplicates: false
+      if: ctx.darktrace?.model_breach_alert?.model?.created?.by != null
   - foreach:
       field: json.model.defeats
       if: ctx.json?.model?.defeats instanceof List
@@ -1441,6 +1442,9 @@ processors:
         }
         dropEmptyFields(ctx);
 on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

@@ -22,11 +22,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2001-01-01T01:01:01.000-05:00",
     "agent": {
-        "ephemeral_id": "68a50178-8313-4e48-97ec-b378fe3d4ad0",
-        "id": "4a42006d-197a-4da4-9fa4-331718818b77",
+        "ephemeral_id": "d8fa21a0-e19c-4412-917a-0b3b12afb08d",
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.8.2"
     },
     "data_stream": {
         "dataset": "microsoft_dhcp.log",
@@ -34,12 +34,12 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "4a42006d-197a-4da4-9fa4-331718818b77",
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
         "snapshot": false,
-        "version": "8.4.1"
+        "version": "8.8.2"
     },
     "event": {
         "action": "dhcp-dns-update",
@@ -49,7 +49,7 @@ An example event for `log` looks as following:
         ],
         "code": "35",
         "dataset": "microsoft_dhcp.log",
-        "ingested": "2022-10-13T10:01:28Z",
+        "ingested": "2023-07-24T14:29:55Z",
         "kind": "event",
         "original": "35,01/01/01,01:01:01,DNS update request failed,192.168.2.1,host.test.com,000000000000,",
         "outcome": "failure",
@@ -62,7 +62,9 @@ An example event for `log` looks as following:
     "host": {
         "domain": "test.com",
         "id": "000000000000",
-        "ip": "192.168.2.1",
+        "ip": [
+            "192.168.2.1"
+        ],
         "mac": [
             "00-00-00-00-00-00"
         ],
@@ -81,10 +83,10 @@ An example event for `log` looks as following:
     "observer": {
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.16.7"
+            "172.22.0.10"
         ],
         "mac": [
-            "02-42-C0-A8-10-07"
+            "02-42-AC-16-00-0A"
         ]
     },
     "tags": [
@@ -118,7 +120,7 @@ An example event for `log` looks as following:
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | input.type |  | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset |  | long |
