@@ -202,6 +202,20 @@ processors:
             field: error.message
             value: 'Error parsing date_last field value "{{{ json.date_last }}}": {{{ _ingest.on_failure_message }}}'
 
+  - set:
+      field: _temp_.timestamp
+      copy_from: json.added_at
+      if: ctx.json?.added_at != null
+  
+  - set:
+      field: _temp_.timestamp
+      copy_from: json.deleted_at
+      if: ctx.json?.deleted_at != null && ctx._temp_?.timestamp == null
+
+  - set:
+      field: "@timestamp"
+      copy_from: _temp_.timestamp
+      if: ctx._temp_?.timestamp != null
   #
   # Map IP geolocation fields.
   #
@@ -449,6 +463,7 @@ processors:
       ignore_missing: true
   - remove:
       field:
+        - _temp_
         - _conf
         - json.asn
         - json.date_first
