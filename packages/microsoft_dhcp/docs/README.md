@@ -22,11 +22,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2001-01-01T01:01:01.000-05:00",
     "agent": {
-        "ephemeral_id": "fda1baa6-c95d-450d-a7dd-3165831e1d50",
-        "id": "adbd9a6d-bd11-4b00-b9fa-3424ad2e6224",
+        "ephemeral_id": "d8fa21a0-e19c-4412-917a-0b3b12afb08d",
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.0"
+        "version": "8.8.2"
     },
     "data_stream": {
         "dataset": "microsoft_dhcp.log",
@@ -34,12 +34,12 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "adbd9a6d-bd11-4b00-b9fa-3424ad2e6224",
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
         "snapshot": false,
-        "version": "8.7.0"
+        "version": "8.8.2"
     },
     "event": {
         "action": "dhcp-dns-update",
@@ -49,7 +49,7 @@ An example event for `log` looks as following:
         ],
         "code": "35",
         "dataset": "microsoft_dhcp.log",
-        "ingested": "2023-05-02T11:37:37Z",
+        "ingested": "2023-07-24T14:29:55Z",
         "kind": "event",
         "original": "35,01/01/01,01:01:01,DNS update request failed,192.168.2.1,host.test.com,000000000000,",
         "outcome": "failure",
@@ -62,7 +62,9 @@ An example event for `log` looks as following:
     "host": {
         "domain": "test.com",
         "id": "000000000000",
-        "ip": "192.168.2.1",
+        "ip": [
+            "192.168.2.1"
+        ],
         "mac": [
             "00-00-00-00-00-00"
         ],
@@ -81,10 +83,10 @@ An example event for `log` looks as following:
     "observer": {
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.20.0.7"
+            "172.22.0.10"
         ],
         "mac": [
-            "02-42-AC-14-00-07"
+            "02-42-AC-16-00-0A"
         ]
     },
     "tags": [
@@ -109,7 +111,7 @@ An example event for `log` looks as following:
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
