@@ -1,14 +1,27 @@
 type: flow
 {{#if timeout}}
-flows.timeout: '{{timeout}}'
+timeout: '{{timeout}}'
 {{/if}}
 {{#if period}}
-flows.period: '{{period}}'
+period: '{{period}}'
 {{/if}}
 fields_under_root: true
 fields:
   _conf:
     geoip_enrich: {{geoip_enrich}}
+{{#if tags}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+processors:
+{{#contains "forwarded" tags}}
+- add_observer_metadata: ~
+{{else}}
+- add_host_metadata: ~
+{{/contains}}
+{{processors}}
 {{#if monitor_processes}}
 procs:
   enabled: true
@@ -20,4 +33,8 @@ interface:
 {{else}}
   device: {{interface}}
 {{/if}}
+{{/if}}
+{{#if never_install}}
+npcap:
+  never_install: true
 {{/if}}

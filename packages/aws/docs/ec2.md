@@ -28,7 +28,7 @@ Before using any AWS integration you will need:
 * **AWS Credentials** to connect with your AWS account.
 * **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
 
-For more details about these requirements, see the **AWS** integration documentation.
+For more details about these requirements, please take a look at the [AWS integration documentation](https://docs.elastic.co/integrations/aws#requirements).
 
 ## Setup
 
@@ -39,6 +39,24 @@ When you configure the AWS integration, you can collect data from as many AWS se
 
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+### Advanced options
+
+#### CloudWatch
+
+The CloudWatch logs input has several advanced options to fit specific use cases.
+
+##### Latency
+
+AWS CloudWatch Logs sometimes takes extra time to make the latest logs available to clients like the Agent.
+
+The CloudWatch integration offers the `latency` setting to address this scenario. Latency translates the query's time range to consider the CloudWatch Logs latency. For example, a `5m` latency means the integration will query CloudWatch for logs available 5 minutes ago.
+
+##### Number of workers
+
+If you are collecting log events from multiple log groups using `log_group_name_prefix`, you should review the value of the `number_of_workers`.
+
+The `number_of_workers` setting defines the number of workers assigned to reading from log groups. Each log group matching the `log_group_name_prefix` requires a worker to keep log ingestion as close to real-time as possible. For example, if `log_group_name_prefix` matches five log groups, then `number_of_workers` should be set to `5`. The default value is `1`.
 
 ## Logs reference
 
@@ -300,7 +318,6 @@ An example event for `ec2` looks as following:
 | @timestamp | Event timestamp. | date |
 | aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
-| aws.dimensions.\* | Metric dimensions. | object |
 | aws.dimensions.AutoScalingGroupName | An Auto Scaling group is a collection of instances you define if you're using Auto Scaling. | keyword |
 | aws.dimensions.ImageId | This dimension filters the data you request for all instances running this Amazon EC2 Amazon Machine Image (AMI) | keyword |
 | aws.dimensions.InstanceId | Amazon EC2 instance ID | keyword |

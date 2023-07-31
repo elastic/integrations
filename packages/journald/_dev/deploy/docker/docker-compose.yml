@@ -1,8 +1,11 @@
 version: '2.3'
 services:
   journald:
-    image: alpine
+    build: .
     volumes:
       - ./sample_logs:/sample_logs:ro
       - ${SERVICE_LOGS_DIR}:/var/log
-    command: /bin/sh -c "cp /sample_logs/* /var/log/"
+    # Use journalctl -o export > test.journal.export
+    # to write logs to journald export format. Then this creates a new binary journal
+    # file from those logs to use in testing.
+    command: /bin/sh -c "/lib/systemd/systemd-journal-remote -o /var/log/test.journal /sample_logs/*.export"

@@ -16,6 +16,10 @@ The Tenable.io integration collects logs for three types of events: Asset, Plugi
 
 **Vulnerability** is used to retrieve all vulnerabilities on each asset, including the vulnerability state. See more details in the API documentation [here](https://developer.tenable.com/reference/exports-vulns-request-export).
 
+**Scanner** is used to retrieve the current state of scanners, including licensing and activity. See more details in the API documentation [here](https://developer.tenable.com/reference/scanners-list).
+
+**Scan** is used to retrieve details about existing scans, including scan statuses, assigned targets, and more. See more details in the API documentation [here](https://developer.tenable.com/reference/scans-list).
+
 ## Compatibility
 
 This module has been tested against `Tenable.io release` [December 6, 2022](https://docs.tenable.com/releasenotes/Content/tenableio/tenableio202212.htm).
@@ -72,3 +76,23 @@ This is the `vulnerability` dataset.
 {{event "vulnerability"}}
 
 {{fields "vulnerability"}}
+
+### scanner
+
+This is the `scanner` dataset.
+
+#### Example
+
+{{event "scanner"}}
+
+{{fields "scanner"}}
+
+### scan
+
+This is the `scan` dataset.
+
+#### Example
+
+{{event "scan"}}
+
+{{fields "scan"}}

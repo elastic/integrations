@@ -1,0 +1,38 @@
+{
+    "id": "6588bb48-d02b-5169-a013-fe4dc115c709",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://docs.aws.amazon.com/IAM/latest/UserGuide/what-is-access-analyzer.html\n2. https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-getting-started.html\n3. https://docs.aws.amazon.com/cli/latest/reference/accessanalyzer/get-analyzer.html\n4. https://docs.aws.amazon.com/cli/latest/reference/accessanalyzer/create-analyzer.html",
+            "id": "6588bb48-d02b-5169-a013-fe4dc115c709",
+            "name": "Ensure that IAM Access analyzer is enabled for all regions",
+            "profile_applicability": "* Level 1",
+            "description": "Enable IAM Access analyzer for IAM policies about all resources in each region.\n\nIAM Access Analyzer is a technology introduced at AWS reinvent 2019.\nAfter the Analyzer is enabled in IAM, scan results are displayed on the console showing the accessible resources.\nScans show resources that other accounts and federated users can access, such as KMS keys and IAM roles.\nSo the results allow you to determine if an unintended user is allowed, making it easier for administrators to monitor least privileges access.\nAccess Analyzer analyzes only policies that are applied to resources in the same AWS Region.",
+            "rationale": "AWS IAM Access Analyzer helps you identify the resources in your organization and accounts, such as Amazon S3 buckets or IAM roles, that are shared with an external entity.\nThis lets you identify unintended access to your resources and data.\nAccess Analyzer identifies resources that are shared with external principals by using logic-based reasoning to analyze the resource-based policies in your AWS environment.\nIAM Access Analyzer continuously monitors all policies for S3 bucket, IAM roles, KMS(Key Management Service) keys, AWS Lambda functions, and Amazon SQS(Simple Queue Service) queues.",
+            "audit": "**From Console:**\n\n1. Open the IAM console at `https://console.aws.amazon.com/iam/`\n2. Choose `Access analyzer`\n3. Click 'Analyzers'\n4. Ensure that at least one analyzer is present\n5. Ensure that the `STATUS` is set to `Active`\n6. Repeat these step for each active region\n\n**From Command Line:**\n\n7. Run the following command:\n```\naws accessanalyzer list-analyzers | grep status\n```\n8. Ensure that at least one Analyzer the `status` is set to `ACTIVE`\n\n9. Repeat the steps above for each active region.\n\nIf an Access analyzer is not listed for each region or the status is not set to active refer to the remediation procedure below.",
+            "remediation": "**From Console:**\n\nPerform the following to enable IAM Access analyzer for IAM policies:\n\n1. Open the IAM console at `https://console.aws.amazon.com/iam/.`\n2. Choose `Access analyzer`.\n3. Choose `Create analyzer`.\n4. On the `Create analyzer` page, confirm that the `Region` displayed is the Region where you want to enable Access Analyzer.\n5. Enter a name for the analyzer. `Optional as it will generate a name for you automatically`.\n6. Add any tags that you want to apply to the analyzer. `Optional`. \n7. Choose `Create Analyzer`.\n8. Repeat these step for each active region\n\n**From Command Line:**\n\nRun the following command:\n```\naws accessanalyzer create-analyzer --analyzer-name <NAME> --type <ACCOUNT|ORGANIZATION>\n```\nRepeat this command above for each active region.\n\n**Note:** The IAM Access Analyzer is successfully configured only when the account you use has the necessary permissions.",
+            "section": "Identity and Access Management",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AWS",
+                "CIS 1.20",
+                "Identity and Access Management"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Web Services Foundations",
+                "version": "v1.5.0",
+                "id": "cis_aws",
+                "rule_number": "1.20",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_1_20"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
