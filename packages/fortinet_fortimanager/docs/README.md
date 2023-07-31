@@ -65,7 +65,7 @@ An example event for `log` looks as following:
         "id": "FMGVMSTM23000100"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.9.0"
     },
     "elastic_agent": {
         "id": "207d005f-24c8-4c18-9523-e040132174ee",
