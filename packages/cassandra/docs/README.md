@@ -333,110 +333,110 @@ An example event for `metrics` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |
-| cassandra.metrics.cache.key_cache.capacity |  | long |
-| cassandra.metrics.cache.key_cache.one_minute_hit_rate |  | long |
-| cassandra.metrics.cache.key_cache.requests.one_minute_rate |  | long |
-| cassandra.metrics.cache.row_cache.capacity |  | long |
-| cassandra.metrics.cache.row_cache.one_minute_hit_rate |  | long |
-| cassandra.metrics.cache.row_cache.requests.one_minute_rate |  | long |
-| cassandra.metrics.client.connected_native_clients |  | long |
-| cassandra.metrics.client_request.casread.one_minute_rate |  | double |
-| cassandra.metrics.client_request.caswrite.one_minute_rate |  | double |
-| cassandra.metrics.client_request.range_slice.one_minute_rate |  | double |
-| cassandra.metrics.client_request.range_slice.total_latency |  | double |
-| cassandra.metrics.client_request.read.count |  | long |
-| cassandra.metrics.client_request.read.one_minute_rate |  | double |
-| cassandra.metrics.client_request.read.timeouts | Number of read timeouts encountered. | double |
-| cassandra.metrics.client_request.read.timeoutsms |  | double |
-| cassandra.metrics.client_request.read.total_latency |  | double |
-| cassandra.metrics.client_request.read.unavailables | Number of read unavailables encountered. | double |
-| cassandra.metrics.client_request.read.unavailablesms |  | double |
-| cassandra.metrics.client_request.write.count |  | long |
-| cassandra.metrics.client_request.write.one_minute_rate |  | double |
-| cassandra.metrics.client_request.write.timeouts |  | double |
-| cassandra.metrics.client_request.write.timeoutsms |  | double |
-| cassandra.metrics.client_request.write.total_latency |  | double |
-| cassandra.metrics.client_request.write.unavailables |  | double |
-| cassandra.metrics.client_request.write.unavailablesms |  | double |
-| cassandra.metrics.column_family.total_disk_space_used |  | long |
-| cassandra.metrics.compaction.completed | compaction completed tasks. | long |
-| cassandra.metrics.compaction.pending | compaction pending tasks. | long |
-| cassandra.metrics.dropped_message.batch_remove |  | long |
-| cassandra.metrics.dropped_message.batch_store |  | long |
-| cassandra.metrics.dropped_message.counter_mutation |  | long |
-| cassandra.metrics.dropped_message.hint |  | long |
-| cassandra.metrics.dropped_message.mutation |  | long |
-| cassandra.metrics.dropped_message.paged_range |  | long |
-| cassandra.metrics.dropped_message.range_slice |  | long |
-| cassandra.metrics.dropped_message.read |  | long |
-| cassandra.metrics.dropped_message.read_repair |  | long |
-| cassandra.metrics.dropped_message.request_response |  | long |
-| cassandra.metrics.dropped_message.trace |  | long |
-| cassandra.metrics.gc.concurrent_mark_sweep.collection_count | Total number of CMS collections that have occurred. | long |
-| cassandra.metrics.gc.concurrent_mark_sweep.collection_time | Approximate accumulated CMS collection elapsed time in milliseconds. | long |
-| cassandra.metrics.gc.par_new.collection_count | Total number of ParNew collections that have occurred. | long |
-| cassandra.metrics.gc.par_new.collection_time | Approximate accumulated ParNew collection elapsed time in milliseconds. | long |
-| cassandra.metrics.memory.heap_usage.committed | Committed heap memory usage. | long |
-| cassandra.metrics.memory.heap_usage.init | Initial heap memory usage. | long |
-| cassandra.metrics.memory.heap_usage.max | Max heap memory usage. | long |
-| cassandra.metrics.memory.heap_usage.used | Used heap memory usage. | long |
-| cassandra.metrics.memory.other_usage.committed | Committed non-heap memory usage. | long |
-| cassandra.metrics.memory.other_usage.init | Initial non-heap memory usage. | long |
-| cassandra.metrics.memory.other_usage.max | Max non-heap memory usage. | long |
-| cassandra.metrics.memory.other_usage.used | Used non-heap memory usage. | long |
-| cassandra.metrics.storage.exceptions | The number of the total exceptions. | long |
-| cassandra.metrics.storage.load | Storage used for Cassandra data in bytes. | long |
-| cassandra.metrics.storage.total_hint_in_progress | The number of the total hits in progress. | long |
-| cassandra.metrics.storage.total_hints | The number of the total hits. | long |
-| cassandra.metrics.system.cluster |  | keyword |
-| cassandra.metrics.system.data_center |  | keyword |
-| cassandra.metrics.system.joining_nodes |  | keyword |
-| cassandra.metrics.system.leaving_nodes |  | keyword |
-| cassandra.metrics.system.live_nodes |  | keyword |
-| cassandra.metrics.system.moving_nodes |  | keyword |
-| cassandra.metrics.system.rack |  | keyword |
-| cassandra.metrics.system.unreachable_nodes |  | keyword |
-| cassandra.metrics.system.version |  | keyword |
-| cassandra.metrics.table.all_memtables_heap_size |  | long |
-| cassandra.metrics.table.all_memtables_off_heap_size |  | long |
-| cassandra.metrics.table.live_disk_space_used |  | long |
-| cassandra.metrics.table.live_ss_table_count |  | long |
-| cassandra.metrics.task.complete | completed tasks. | long |
-| cassandra.metrics.task.pending | pending tasks. | long |
-| cassandra.metrics.task.total_commitlog_size | total commitlog size of tasks. | long |
-| cassandra.metrics.thread_pools.counter_mutation_stage.request.active |  | long |
-| cassandra.metrics.thread_pools.counter_mutation_stage.request.pending |  | long |
-| cassandra.metrics.thread_pools.mutation_stage.request.active |  | long |
-| cassandra.metrics.thread_pools.mutation_stage.request.pending |  | long |
-| cassandra.metrics.thread_pools.read_repair_stage.request.active |  | long |
-| cassandra.metrics.thread_pools.read_repair_stage.request.pending |  | long |
-| cassandra.metrics.thread_pools.read_stage.request.active |  | long |
-| cassandra.metrics.thread_pools.read_stage.request.pending |  | long |
-| cassandra.metrics.thread_pools.request_response_stage.request.active |  | long |
-| cassandra.metrics.thread_pools.request_response_stage.request.pending |  | long |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
-| container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
+| cassandra.metrics.cache.key_cache.capacity |  | long | gauge |
+| cassandra.metrics.cache.key_cache.one_minute_hit_rate |  | long | gauge |
+| cassandra.metrics.cache.key_cache.requests.one_minute_rate |  | long | gauge |
+| cassandra.metrics.cache.row_cache.capacity |  | long | gauge |
+| cassandra.metrics.cache.row_cache.one_minute_hit_rate |  | long | gauge |
+| cassandra.metrics.cache.row_cache.requests.one_minute_rate |  | long | gauge |
+| cassandra.metrics.client.connected_native_clients |  | long | gauge |
+| cassandra.metrics.client_request.casread.one_minute_rate |  | double | gauge |
+| cassandra.metrics.client_request.caswrite.one_minute_rate |  | double | gauge |
+| cassandra.metrics.client_request.range_slice.one_minute_rate |  | double | gauge |
+| cassandra.metrics.client_request.range_slice.total_latency |  | double | counter |
+| cassandra.metrics.client_request.read.count |  | long | counter |
+| cassandra.metrics.client_request.read.one_minute_rate |  | double | gauge |
+| cassandra.metrics.client_request.read.timeouts | Number of read timeouts encountered. | double | counter |
+| cassandra.metrics.client_request.read.timeoutsms |  | double | gauge |
+| cassandra.metrics.client_request.read.total_latency |  | double | counter |
+| cassandra.metrics.client_request.read.unavailables | Number of read unavailables encountered. | double | counter |
+| cassandra.metrics.client_request.read.unavailablesms |  | double | gauge |
+| cassandra.metrics.client_request.write.count |  | long | counter |
+| cassandra.metrics.client_request.write.one_minute_rate |  | double | gauge |
+| cassandra.metrics.client_request.write.timeouts |  | double | counter |
+| cassandra.metrics.client_request.write.timeoutsms |  | double | gauge |
+| cassandra.metrics.client_request.write.total_latency |  | double | counter |
+| cassandra.metrics.client_request.write.unavailables |  | double | counter |
+| cassandra.metrics.client_request.write.unavailablesms |  | double | gauge |
+| cassandra.metrics.column_family.total_disk_space_used |  | long | gauge |
+| cassandra.metrics.compaction.completed | compaction completed tasks. | long | gauge |
+| cassandra.metrics.compaction.pending | compaction pending tasks. | long | gauge |
+| cassandra.metrics.dropped_message.batch_remove |  | long | counter |
+| cassandra.metrics.dropped_message.batch_store |  | long | counter |
+| cassandra.metrics.dropped_message.counter_mutation |  | long | counter |
+| cassandra.metrics.dropped_message.hint |  | long | counter |
+| cassandra.metrics.dropped_message.mutation |  | long | counter |
+| cassandra.metrics.dropped_message.paged_range |  | long | counter |
+| cassandra.metrics.dropped_message.range_slice |  | long | counter |
+| cassandra.metrics.dropped_message.read |  | long | counter |
+| cassandra.metrics.dropped_message.read_repair |  | long | counter |
+| cassandra.metrics.dropped_message.request_response |  | long | counter |
+| cassandra.metrics.dropped_message.trace |  | long | counter |
+| cassandra.metrics.gc.concurrent_mark_sweep.collection_count | Total number of CMS collections that have occurred. | long | gauge |
+| cassandra.metrics.gc.concurrent_mark_sweep.collection_time | Approximate accumulated CMS collection elapsed time in milliseconds. | long | gauge |
+| cassandra.metrics.gc.par_new.collection_count | Total number of ParNew collections that have occurred. | long | gauge |
+| cassandra.metrics.gc.par_new.collection_time | Approximate accumulated ParNew collection elapsed time in milliseconds. | long | gauge |
+| cassandra.metrics.memory.heap_usage.committed | Committed heap memory usage. | long | gauge |
+| cassandra.metrics.memory.heap_usage.init | Initial heap memory usage. | long | gauge |
+| cassandra.metrics.memory.heap_usage.max | Max heap memory usage. | long | gauge |
+| cassandra.metrics.memory.heap_usage.used | Used heap memory usage. | long | gauge |
+| cassandra.metrics.memory.other_usage.committed | Committed non-heap memory usage. | long | gauge |
+| cassandra.metrics.memory.other_usage.init | Initial non-heap memory usage. | long | gauge |
+| cassandra.metrics.memory.other_usage.max | Max non-heap memory usage. | long | gauge |
+| cassandra.metrics.memory.other_usage.used | Used non-heap memory usage. | long | gauge |
+| cassandra.metrics.storage.exceptions | The number of the total exceptions. | long | counter |
+| cassandra.metrics.storage.load | Storage used for Cassandra data in bytes. | long | counter |
+| cassandra.metrics.storage.total_hint_in_progress | The number of the total hits in progress. | long | counter |
+| cassandra.metrics.storage.total_hints | The number of the total hits. | long | counter |
+| cassandra.metrics.system.cluster |  | keyword |  |
+| cassandra.metrics.system.data_center |  | keyword |  |
+| cassandra.metrics.system.joining_nodes |  | keyword |  |
+| cassandra.metrics.system.leaving_nodes |  | keyword |  |
+| cassandra.metrics.system.live_nodes |  | keyword |  |
+| cassandra.metrics.system.moving_nodes |  | keyword |  |
+| cassandra.metrics.system.rack |  | keyword |  |
+| cassandra.metrics.system.unreachable_nodes |  | keyword |  |
+| cassandra.metrics.system.version |  | keyword |  |
+| cassandra.metrics.table.all_memtables_heap_size |  | long | gauge |
+| cassandra.metrics.table.all_memtables_off_heap_size |  | long | gauge |
+| cassandra.metrics.table.live_disk_space_used |  | long | counter |
+| cassandra.metrics.table.live_ss_table_count |  | long | gauge |
+| cassandra.metrics.task.complete | completed tasks. | long | gauge |
+| cassandra.metrics.task.pending | pending tasks. | long | gauge |
+| cassandra.metrics.task.total_commitlog_size | total commitlog size of tasks. | long | gauge |
+| cassandra.metrics.thread_pools.counter_mutation_stage.request.active |  | long | gauge |
+| cassandra.metrics.thread_pools.counter_mutation_stage.request.pending |  | long | gauge |
+| cassandra.metrics.thread_pools.mutation_stage.request.active |  | long | gauge |
+| cassandra.metrics.thread_pools.mutation_stage.request.pending |  | long | gauge |
+| cassandra.metrics.thread_pools.read_repair_stage.request.active |  | long | gauge |
+| cassandra.metrics.thread_pools.read_repair_stage.request.pending |  | long | gauge |
+| cassandra.metrics.thread_pools.read_stage.request.active |  | long | gauge |
+| cassandra.metrics.thread_pools.read_stage.request.pending |  | long | gauge |
+| cassandra.metrics.thread_pools.request_response_stage.request.active |  | long | gauge |
+| cassandra.metrics.thread_pools.request_response_stage.request.pending |  | long | gauge |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| error.message | Error message. | match_only_text |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
