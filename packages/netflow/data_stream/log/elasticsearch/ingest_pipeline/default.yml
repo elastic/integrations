@@ -10,7 +10,14 @@ processors:
       type: string
       ignore_missing: true
       ignore_failure: true
-
+  - rename:
+      field: observer.ip
+      target_field: _tmp_.observer.ip
+      ignore_missing: true
+  - append:
+      field: observer.ip
+      value: '{{_tmp_.observer.ip}}'
+      if: ctx._tmp_?.observer?.ip != null
   - set:
       field: event.category
       value:
@@ -94,6 +101,10 @@ processors:
   - rename:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
+      ignore_missing: true
+  - remove:
+      field: 
+        - _tmp_
       ignore_missing: true
 on_failure:
   - set:
