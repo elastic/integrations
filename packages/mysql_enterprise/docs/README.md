@@ -124,8 +124,8 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-10-19T19:21:33.000Z",
     "agent": {
-        "ephemeral_id": "c4d70ad8-06a8-4631-90a7-c20f2113e80d",
-        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
+        "ephemeral_id": "40541c95-7cce-4bef-be7b-3eb82f363f0f",
+        "id": "0a5c1566-c6fd-4e91-b96d-4083445a000e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.9.0"
@@ -139,7 +139,7 @@ An example event for `audit` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
+        "id": "0a5c1566-c6fd-4e91-b96d-4083445a000e",
         "snapshot": false,
         "version": "8.9.0"
     },
@@ -150,7 +150,7 @@ An example event for `audit` looks as following:
             "database"
         ],
         "dataset": "mysql_enterprise.audit",
-        "ingested": "2023-07-27T15:20:34Z",
+        "ingested": "2023-07-31T15:48:08Z",
         "kind": "event",
         "outcome": "unknown",
         "timezone": "+00:00"
@@ -161,10 +161,10 @@ An example event for `audit` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "61993a3120a949b68ffe69a69ae82866",
         "ip": [
-            "172.18.0.7"
+            "192.168.176.7"
         ],
         "mac": [
-            "02-42-AC-12-00-07"
+            "02-42-C0-A8-B0-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
