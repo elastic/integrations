@@ -86,10 +86,13 @@ processors:
         - '^%{PREFIX} %{DATA}%{IP:fortinet_fortimail.log.ip}%{GREEDYDATA:temp.msg}$'
         - '^%{PREFIX}%{GREEDYDATA:temp.msg}$'
         - '^%{DATA}%{USER} %{DATA}%{IP:fortinet_fortimail.log.ip}%{GREEDYDATA:temp.msg}$'
+        - '^authserver: %{BLOCK_ACTION:temp.block_action} block rule for %{IP:temp.block_ip}$'
+        - '^authserver: %{BLOCK_ACTION:temp.block_action} block rule for %{IP:temp.block_ip} until %{GREEDYDATA}$'
         - '^%{DATA}%{USER} %{GREEDYDATA:temp.msg}$'
       pattern_definitions:
         PREFIX: '%{DATA}(?i)interface %{NUMBER:fortinet_fortimail.log.port:long}%{DATA} %{USER}'
         USER: '(?i)user %{NOTSPACE:temp.user}'
+        BLOCK_ACTION: '(?:added|removed)'
   - set:
       field: source.port
       copy_from: fortinet_fortimail.log.port
@@ -99,6 +102,20 @@ processors:
       value: '{{{fortinet_fortimail.log.ip}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.ip != null
+  - append:
+      field: related.ip
+      value: '{{{temp.block_ip}}}'
+      allow_duplicates: false
+      if: ctx.temp?.block_ip != null
+  - append:
+      field: client.ip
+      value: '{{{temp.block_ip}}}'
+      allow_duplicates: false
+      if: ctx.temp?.block_ip != null
+  - set:
+      field: event.action
+      value: '{{{temp.block_action}}}_block_rule'
+      if: ctx.temp?.block_ip != null
   - append:
       field: fortinet_fortimail.log.user
       value: '{{{temp.user}}}'
@@ -122,6 +139,7 @@ processors:
       field: event.action
       copy_from: fortinet_fortimail.log.action
       ignore_empty_value: true
+      override: false
   - rename:
       field: temp.module
       target_field: fortinet_fortimail.log.module
