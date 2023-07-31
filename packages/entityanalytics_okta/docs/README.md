@@ -159,7 +159,7 @@ An example event for `user` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.9.0"
     },
     "elastic_agent": {
         "id": "4cade9d6-16e3-45f1-9dcc-5ba9411ae088",

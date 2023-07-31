@@ -34,7 +34,7 @@ An example event for `event` looks as following:
         "version": "8.3.0"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "fim.event",
