@@ -90,12 +90,16 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.devicehostname
-      target_field: host.hostname
+      target_field: zscaler_zia.firewall.hostname
       ignore_missing: true
+  - set:
+      field: host.hostname
+      value: '{{{zscaler_zia.firewall.hostname}}}'
+      ignore_empty_value: true
   - append:
       field: related.hosts
-      value: '{{{host.hostname}}}'
-      if: ctx.host?.hostname != null
+      value: '{{{zscaler_zia.firewall.hostname}}}'
+      if: ctx.zscaler_zia?.firewall?.hostname != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -149,18 +153,30 @@ processors:
   - urldecode:
       field: json.user
       target_field: user.email
+      if: ctx.json?.user != null && ctx.json.user.contains('@')
       ignore_missing: true
       ignore_failure: true
-  - rename:
-      field: json.deviceowner
-      target_field: user.name
-      ignore_missing: true
   - append:
-      field: related.user
-      value: '{{{user.name}}}'
-      if: ctx.user?.name != null
+      field: user.name
+      value: '{{{json.user}}}'
+      if: ctx.user?.email == null
       allow_duplicates: false
       ignore_failure: true
+  - append:
+      field: user.name
+      value: '{{{json.deviceowner}}}'
+      if: ctx.json?.deviceowner != null
+      allow_duplicates: false
+      ignore_failure: true
+  - foreach:
+      field: user.name
+      if: ctx.user?.name instanceof List
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+      ignore_missing: true
   - urldecode:
       field: json.department
       target_field: zscaler_zia.firewall.department
@@ -423,6 +439,7 @@ processors:
         - json.duration
         - json.durationms
         - json.numsessions
+        - json.deviceowner
       ignore_missing: true
   - script:
       description: Adds all the remaining fields in fields under zscaler_zia.firewall.

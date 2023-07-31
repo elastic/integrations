@@ -112,16 +112,6 @@ processors:
       if: ctx.destination?.ip != null
       allow_duplicates: false
       ignore_failure: true
-  - rename:
-      field: json.deviceowner
-      target_field: source.user.name
-      ignore_missing: true
-  - append:
-      field: related.user
-      value: '{{{source.user.name}}}'
-      if: ctx.source?.user?.name != null
-      allow_duplicates: false
-      ignore_failure: true
   - convert:
       field: json.reqsize
       target_field: http.request.bytes
@@ -238,10 +228,20 @@ processors:
       field: user.email
       pattern: '%{user.name}@%{user.domain}'
   - append:
-      if: ctx.user?.name != null && ctx.user.name != ""
-      field: related.user
-      value: '{{{user.name}}}'
+      field: user.name
+      value: '{{{json.deviceowner}}}'
+      if: ctx.json?.deviceowner != null
       allow_duplicates: false
+      ignore_failure: true
+  - foreach:
+      field: user.name
+      if: ctx.user?.name instanceof List
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+      ignore_missing: true
   - rename:
       field: json.action
       target_field: event.action
@@ -334,6 +334,15 @@ processors:
       field: json.devicehostname
       target_field: zscaler_zia.web.device.hostname
       ignore_missing: true
+  - lowercase:
+      field: zscaler_zia.web.device.hostname
+      target_field: host.name
+      ignore_missing: true
+      if: ctx.zscaler_zia?.web?.device?.hostname != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.hosts
       value: '{{{zscaler_zia.web.device.hostname}}}'
@@ -365,6 +374,45 @@ processors:
       field: json.ehost
       target_field: zscaler_zia.web.encoded_host
       ignore_missing: true
+  - set:
+      field: destination.domain
+      value: '{{{zscaler_zia.web.encoded_host}}}'
+      ignore_empty_value: true
+  - set:
+      field: file.hash.md5
+      value: '{{{json.bamd5}}}'
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      value: '{{{file.hash.md5}}}'
+      if: ctx.file?.hash?.md5 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - set:
+      field: file.name
+      value: '{{{json.filename}}}'
+      ignore_empty_value: true
+  - set:
+      field: file.extension
+      value: '{{{json.filesubtype}}}'
+      ignore_empty_value: true
+  - convert:
+      field: json.clt_sport
+      target_field: client.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.clt_sport
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hosts
+      value: '{{{destination.domain}}}'
+      if: ctx.destination?.domain != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.fileclass
       target_field: zscaler_zia.web.file.class
@@ -373,6 +421,10 @@ processors:
       field: json.filetype
       target_field: zscaler_zia.web.file.type
       ignore_missing: true
+  - set:
+      field: file.type
+      value: '{{{zscaler_zia.web.file.type}}}'
+      ignore_empty_value: true
   - rename:
       field: json.malwareclass
       target_field: zscaler_zia.web.malware.class
@@ -384,6 +436,22 @@ processors:
   - rename:
       field: json.recordid
       target_field: zscaler_zia.web.record.id
+      ignore_missing: true
+  - rename:
+      field: json.upload_fileclass
+      target_field: zscaler_zia.web.upload.file.class
+      ignore_missing: true
+  - rename:
+      field: json.upload_filetype
+      target_field: zscaler_zia.web.upload.file.type
+      ignore_missing: true
+  - rename:
+      field: json.upload_filename
+      target_field: zscaler_zia.web.upload.file.name
+      ignore_missing: true
+  - rename:
+      field: json.upload_filesubtype
+      target_field: zscaler_zia.web.upload.file.sub_type
       ignore_missing: true
   - convert:
       field: json.totalsize
@@ -413,6 +481,8 @@ processors:
         - json.riskscore
         - json.cintip
         - json.totalsize
+        - json.deviceowner
+        - json.clt_sport
       ignore_missing: true
   - script:
       description: Adds all the remaining fields in fields under zscaler_zia.web.
