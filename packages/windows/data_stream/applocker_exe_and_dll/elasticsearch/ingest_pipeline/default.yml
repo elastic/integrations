@@ -1,0 +1,229 @@
+---
+description: Pipeline for Microsoft-Windows-AppLocker/EXE and DLL events
+processors:
+  ## ECS and Event fields.
+
+  - set:
+      field: ecs.version
+      value: '8.0.0'
+  - set:
+      field: log.level
+      copy_from: winlog.level
+      ignore_empty_value: true
+      ignore_failure: true
+      if: ctx.winlog?.level != ""
+  - date:
+      field: winlog.time_created
+      tag: "time_created_date"
+      formats:
+        - ISO8601
+      if: ctx.winlog?.time_created != null
+      on_failure:
+        - remove:
+            field: winlog.time_created
+            ignore_failure: true
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.code
+      value: '{{winlog.event_id}}'
+  - set:
+      field: event.category
+      value: process
+  - set:
+      field: event.type
+      value: start
+  - convert:
+      field: winlog.event_data.SequenceNumber
+      target_field: event.sequence
+      type: long
+      ignore_failure: true
+      ignore_missing: true
+  - convert:
+      field: winlog.record_id
+      type: string
+      ignore_failure: true
+      ignore_missing: true
+
+  ## User fields.
+
+  - set:
+      field: user.id
+      copy_from: winlog.user.identifier
+      ignore_failure: true
+      ignore_empty_value: true
+  - split:
+      field: winlog.event_data.User
+      target_field: "_temp.user_parts"
+      separator: '\\'
+      if: ctx.winlog?.event_data?.User != null
+  - set:
+      field: user.domain
+      value: "{{_temp.user_parts.0}}"
+      ignore_failure: true
+      ignore_empty_value: true
+      if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
+  - set:
+      field: user.name
+      value: "{{_temp.user_parts.1}}"
+      ignore_failure: true
+      ignore_empty_value: true
+      if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
+  - append:
+      field: related.user
+      value: "{{user.name}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - split:
+      field: winlog.event_data.ConnectedUser
+      target_field: "_temp.connected_user_parts"
+      separator: '\\'
+      if: ctx.winlog?.event_data?.ConnectedUser != null
+  - set:
+      field: source.user.domain
+      value: "{{_temp.connected_user_parts.0}}"
+      ignore_failure: true
+      ignore_empty_value: true
+      if: ctx._temp?.connected_user_parts != null && ctx._temp.connected_user_parts.size() == 2
+  - set:
+      field: source.user.name
+      value: "{{_temp.connected_user_parts.1}}"
+      ignore_failure: true
+      ignore_empty_value: true
+      if: ctx._temp?.connected_user_parts != null && ctx._temp.connected_user_parts.size() == 2
+  - append:
+      field: related.user
+      value: "{{source.user.name}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.source?.user?.name != null
+  - rename:
+      field: user.domain
+      target_field: destination.user.domain
+      ignore_failure: true
+      ignore_missing: true
+      if: ctx.source?.user != null
+  - rename:
+      field: user.name
+      target_field: destination.user.name
+      ignore_failure: true
+      ignore_missing: true
+      if: ctx.source?.user != null
+  - set:
+      field: user.domain
+      copy_from: source.user.domain
+      ignore_failure: true
+      ignore_empty_value: true
+      if: ctx.source?.user != null
+  - set:
+      field: user.name
+      copy_from: source.user.name
+      ignore_failure: true
+      ignore_empty_value: true
+      if: ctx.source?.user != null
+
+    ## User data fields.
+  - convert:
+      field: winlog.user_data.FileHashLength
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: winlog.user_data.FileHashLength
+            ignore_failure: true
+  - convert:
+      field: winlog.user_data.FileHashLength
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: winlog.user_data.FileHashLength
+            ignore_failure: true
+  - convert:
+      field: winlog.user_data.FileHashLength
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: winlog.user_data.FileHashLength
+            ignore_failure: true
+  - convert:
+      field: winlog.user_data.FileHashLength
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: winlog.user_data.FileHashLength
+            ignore_failure: true
+  - convert:
+      field: winlog.user_data.FilePathLength
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: winlog.user_data.FilePathLength
+            ignore_failure: true
+  - convert:
+      field: winlog.user_data.FqbnLength
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: winlog.user_data.FqbnLength
+            ignore_failure: true
+  - convert:
+      field: winlog.user_data.FullFilePathLength
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: winlog.user_data.FullFilePathLength
+            ignore_failure: true
+  - convert:
+      field: winlog.user_data.PolicyNameLength
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: winlog.user_data.PolicyNameLength
+            ignore_failure: true
+  - convert:
+      field: winlog.user_data.RuleNameLength
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: winlog.user_data.RuleNameLength
+            ignore_failure: true
+  - convert:
+      field: winlog.user_data.RuleSddlLength
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: winlog.user_data.RuleSddlLength
+            ignore_failure: true
+  - convert:
+      field: winlog.user_data.TargetProcessId
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: winlog.user_data.TargetProcessId
+            ignore_failure: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
