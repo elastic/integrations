@@ -1,0 +1,38 @@
+{
+    "id": "b56e76ca-b976-5b96-ab3f-359e5b51ddf2",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/compute/docs/access/service-accounts\n2. https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances\n3. https://cloud.google.com/sdk/gcloud/reference/compute/instances/set-service-account",
+            "id": "b56e76ca-b976-5b96-ab3f-359e5b51ddf2",
+            "name": "Ensure That Instances Are Not Configured To Use the Default Service Account",
+            "profile_applicability": "* Level 1",
+            "description": "It is recommended to configure your instance to not use the default Compute Engine service account because it has the Editor role on the project.",
+            "rationale": "The default Compute Engine service account has the Editor role on the project, which allows read and write access to most Google Cloud Services.\nTo defend against privilege escalations if your VM is compromised and prevent an attacker from gaining access to all of your project, it is recommended to not use the default Compute Engine service account.\nInstead, you should create a new service account and assigning only the permissions needed by your instance.\n\nThe default Compute Engine service account is named `[PROJECT_NUMBER]-compute@developer.gserviceaccount.com`.",
+            "audit": "**From Google Cloud Console**\n\n1. Go to the `VM instances` page by visiting: [https://console.cloud.google.com/compute/instances](https://console.cloud.google.com/compute/instances).\n2. Click on each instance name to go to its `VM instance details` page.\n3. Under the section `API and identity management`, ensure that the default Compute Engine service account is not used. This account is named `[PROJECT_NUMBER]-compute@developer.gserviceaccount.com`.\n\n**From Google Cloud CLI**\n\n4. List the instances in your project and get details on each instance:\n```\ngcloud compute instances list --format=json | jq -r '.\n| \"SA: \\(.[].serviceAccounts[].email) Name: \\(.[].name)\"'\n```\n5. Ensure that the service account section has an email that does not match the pattern `[PROJECT_NUMBER]-compute@developer.gserviceaccount.com`.\n\n**Exception:**\nVMs created by GKE should be excluded.\nThese VMs have names that start with `gke-` and are labeled `goog-gke-node`.",
+            "remediation": "**From Google Cloud Console**\n\n1. Go to the `VM instances` page by visiting: [https://console.cloud.google.com/compute/instances](https://console.cloud.google.com/compute/instances).\n2. Click on the instance name to go to its `VM instance details` page.\n3. Click `STOP` and then click `EDIT`.\n4. Under the section `API and identity management`, select a service account other than the default Compute Engine service account. You may first need to create a new service account.\n5. Click `Save` and then click `START`.\n\n**From Google Cloud CLI**\n\n6. Stop the instance:\n```\ngcloud compute instances stop <INSTANCE_NAME>\n```\n7. Update the instance:\n```\ngcloud compute instances set-service-account <INSTANCE_NAME> --service-account=<SERVICE_ACCOUNT> \n```\n8. Restart the instance:\n```\ngcloud compute instances start <INSTANCE_NAME>\n```",
+            "section": "Virtual Machines",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 4.1",
+                "Virtual Machines"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "4.1",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_4_1"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
