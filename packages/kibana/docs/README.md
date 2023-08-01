@@ -301,8 +301,7 @@ This data stream uses the `/api/task_manager/metrics` API of Kibana, which is av
 | host.os.version | Operating system version as a raw string. | keyword |
 | kibana.task_manager_metrics.last_update |  | date |
 | kibana.task_manager_metrics.metrics.task_claim.timestamp |  | date |
-| kibana.task_manager_metrics.metrics.task_claim.value.duration.counts |  | long |
-| kibana.task_manager_metrics.metrics.task_claim.value.duration.values |  | long |
+| kibana.task_manager_metrics.metrics.task_claim.value.duration |  | histogram |
 | kibana.task_manager_metrics.metrics.task_claim.value.success |  | long |
 | kibana.task_manager_metrics.metrics.task_claim.value.total |  | long |
 | kibana.task_manager_metrics.metrics.task_run.timestamp |  | date |
