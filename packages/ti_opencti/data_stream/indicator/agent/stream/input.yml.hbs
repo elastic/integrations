@@ -21,27 +21,26 @@ state:
   page_size: {{page_size}}
   want_more: false
   query: |
+
     query IndicatorsLinesPaginationQuery(
       $search: String
-      $count: Int!
-      $cursor: ID
+      $first: Int!
+      $after: ID
       $filters: [IndicatorsFiltering]
       $orderBy: IndicatorsOrdering
       $orderMode: OrderingMode
     ) {
       indicators(
         search: $search
-        first: $count
-        after: $cursor
+        first: $first
+        after: $after
         filters: $filters
         orderBy: $orderBy
         orderMode: $orderMode
       ) {
         edges {
           node {
-            id
             ...IndicatorLine_node
-            __typename
           }
           cursor
         }
@@ -52,136 +51,384 @@ state:
         }
       }
     }
-
     fragment IndicatorLine_node on Indicator {
       id
       standard_id
-      entity_type
-      parent_types
-      x_opencti_stix_ids
+      # entity_type
+      # parent_types
+      # x_opencti_stix_ids
       is_inferred
-      spec_version
-      created_at
-      updated_at
-      # x_opencti_inferences: [Inference]
-      # createdBy: Identity
-      # objectMarking: MarkingDefinitionConnection
-      # objectOrganization: OrganizationConnection
-      # objectLabel: LabelConnection
-      externalReferences(first: 100) {
+      # spec_version
+      # created_at
+      # updated_at
+      revoked
+      confidence
+      lang
+      created
+      modified
+      # x_opencti_graph_data
+      pattern_type
+      pattern_version
+      pattern
+      name
+      description
+      # indicator_types
+      valid_from
+      valid_until
+      x_opencti_score
+      x_opencti_detection
+      x_opencti_main_observable_type
+      # x_mitre_platforms
+      # toStix
+      # workflowEnabled
+      createdBy {
+        identity_class
+        name
         # ...
+      }
+      objectMarking {
         edges {
-          cursor
           node {
-            id
-            standard_id
-            entity_type
-            source_name
-            url
+            definition_type
+            definition
             # ...
           }
         }
       }
+      objectLabel {
+        edges {
+          node {
+            value
+            # id
+            # color
+            # ...
+          }
+        }
+      }
+      killChainPhases {
+        edges {
+          node {
+            phase_name
+            kill_chain_name
+            # ...
+          }
+        }
+      }
+      externalReferences(first: 100) {
+        edges {
+          node {
+            # id
+            external_id
+            source_name
+            url
+            description
+            # ...
+          }
+        }
+        # pageInfo {
+        #   hasNextPage
+        #   globalCount
+        # }
+      }
+      # x_opencti_inferences: [Inference]
+      # objectOrganization: OrganizationConnection
+      # creators: [Creator!]
+      # editContext: [EditUserContext!]
+      # connectors(onlyAlive: Boolean): [Connector]
+      # status: Status
       # reports(first: Int): ReportConnection
       # notes(first: Int): NoteConnection
       # opinions(first: Int): OpinionConnection
       # observedData(first: Int): ObservedDataConnection
       # groupings(first: Int): GroupingConnection
       # cases(first: Int): CaseConnection
-      stixCoreRelationships(first: 100) {
-        # ...
-        edges {
-          node {
-            id
-            # ...
-          }
-        }
-      }
-      # stixCoreObjectsDistribution(
-      #   relationship_type: [String]
-      #   toTypes: [String]
-      #   field: String!
-      #   startDate: DateTime
-      #   endDate: DateTime
-      #   dateAttribute: String
-      #   operation: StatsOperation!
-      #   limit: Int
-      #   order: String
-      #   types: [String]
-      #   filters: [StixCoreObjectsFiltering]
-      #   filterMode: FilterMode
-      #   search: String
-      # ): [Distribution]
-      # stixCoreRelationshipsDistribution(
-      #   field: String!
-      #   operation: StatsOperation!
-      #   startDate: DateTime
-      #   endDate: DateTime
-      #   dateAttribute: String
-      #   isTo: Boolean
-      #   limit: Int
-      #   order: String
-      #   elementWithTargetTypes: [String]
-      #   fromId: [String]
-      #   fromRole: String
-      #   fromTypes: [String]
-      #   toId: [String]
-      #   toRole: String
-      #   toTypes: [String]
-      #   relationship_type: [String]
-      #   confidences: [Int]
-      #   search: String
-      #   filters: [StixCoreRelationshipsFiltering]
-      #   filterMode: FilterMode
-      # ): [Distribution]
-      revoked
-      confidence
-      lang
-      created
-      modified
-      x_opencti_graph_data
-      # objectAssignee: AssigneeConnection
-      pattern_type
-      pattern_version
-      pattern
-      name
-      description
-      indicator_types
-      valid_from
-      valid_until
-      x_opencti_score
-      x_opencti_detection
-      x_opencti_main_observable_type
-      x_mitre_platforms
-      # killChainPhases: KillChainPhaseConnection
-      # observables(first: Int): StixCyberObservableConnection
-      # creators: [Creator!]
-      toStix
+      # stixCoreRelationships(...): StixCoreRelationshipConnection
+      # stixCoreObjectsDistribution(...): [Distribution] # for aggregation
+      # stixCoreRelationshipsDistribution(...): [Distribution] # for aggregation
       # importFiles(first: Int): FileConnection
       # pendingFiles(first: Int): FileConnection
       # exportFiles(first: Int): FileConnection
-      # editContext: [EditUserContext!]
-      # connectors(onlyAlive: Boolean): [Connector]
       # jobs(first: Int): [Work]
-      status {
-        id
-        template_id
-        template {
-          id
-          name
-          color
-          editContext {
-            name
-            focusOn
+      # objectAssignee: AssigneeConnection
+      observables(first: 100) { # StixCyberObservableConnection
+        edges {
+          # cursor
+          node {
+            # __typename
+            id
+            standard_id
+            entity_type
+            observable_value
+            ... on AutonomousSystem {
+              number # Int!
+              name # String
+              rir # String
+            }
+            ... on Directory {
+              path # String!
+              path_enc # String
+              ctime # DateTime
+              mtime # DateTime
+              atime # DateTime
+            }
+            ... on DomainName {
+              value # String!
+            }
+            ... on EmailAddr {
+              value # String
+              display_name # String
+            }
+            ... on EmailMessage {
+              is_multipart # Boolean
+              attribute_date # DateTime
+              content_type # String
+              message_id # String
+              subject # String
+              received_lines # [String]
+              body # String
+            }
+            ... on EmailMimePartType {
+              body # String
+              content_type # String
+              content_disposition # String
+            }
+            ... on Artifact {
+              hashes { # [Hash]
+                algorithm
+                hash
+              }
+              mime_type # String
+              payload_bin # String
+              url # String
+              encryption_algorithm # String
+              decryption_key # String
+              x_opencti_additional_names # [String]
+            }
+            ... on StixFile {
+              hashes { # [Hash]
+                algorithm
+                hash
+              }
+              size # Int
+              name # String
+              name_enc # String
+              magic_number_hex # String
+              mime_type # String
+              ctime # DateTime
+              mtime # DateTime
+              atime # DateTime
+              x_opencti_additional_names # [String]
+              obsContent { # Artifact
+                # hashes # [Hash]
+                # mime_type # String
+                payload_bin # String
+                url # String
+                encryption_algorithm # String
+                decryption_key # String
+                # x_opencti_additional_names # [String]
+              }
+            }
+            ... on X509Certificate {
+              hashes { # [Hash]
+                algorithm
+                hash
+              }
+              is_self_signed # Boolean
+              version # String
+              serial_number # String
+              signature_algorithm # String
+              issuer # String
+              subject # String
+              subject_public_key_algorithm # String
+              subject_public_key_modulus # String
+              subject_public_key_exponent # Int
+              validity_not_before # DateTime
+              validity_not_after # DateTime
+              basic_constraints # String
+              name_constraints # String
+              policy_constraints # String
+              key_usage # String
+              extended_key_usage # String
+              subject_key_identifier # String
+              authority_key_identifier # String
+              subject_alternative_name # String
+              issuer_alternative_name # String
+              subject_directory_attributes # String
+              crl_distribution_points # String
+              inhibit_any_policy # String
+              private_key_usage_period_not_before # DateTime
+              private_key_usage_period_not_after # DateTime
+              certificate_policies # String
+              policy_mappings # String
+            }
+            ... on IPv4Addr {
+              value # String
+            }
+            ... on IPv6Addr {
+              value # String
+            }
+            ... on MacAddr {
+              value # String
+            }
+            ... on Mutex {
+              name # String
+            }
+            ... on NetworkTraffic {
+              start # DateTime
+              end # DateTime
+              is_active # Boolean
+              src_port # Int
+              dst_port # Int
+              protocols # [String]
+              src_byte_count # Int
+              dst_byte_count # Int
+              src_packets # Int
+              dst_packets # Int
+            }
+            ... on Process {
+              is_hidden # Boolean
+              pid # Int
+              created_time # DateTime
+              cwd # String
+              x_opencti_description # String
+              command_line # String!
+              environment_variables # [String]
+              aslr_enabled # Boolean
+              dep_enabled # Boolean
+              priority # String
+              owner_sid # String
+              window_title # String
+              startup_info { # [Dictionary]
+                key
+                value
+              }
+              integrity_level # String
+              service_name # String
+              descriptions # [String]
+              display_name # String
+              group_name # String
+              start_type # String
+              service_type # String
+              service_status # String
+              serviceDlls { # StixFileConnection
+                edges {
+                  # cursor
+                  node {
+                    hashes { # [Hash]
+                      algorithm
+                      hash
+                    }
+                    size # Int
+                    name # String
+                    name_enc # String
+                    magic_number_hex # String
+                    mime_type # String
+                    ctime # DateTime
+                    mtime # DateTime
+                    atime # DateTime
+                    x_opencti_additional_names # [String]
+                    obsContent { # Artifact
+                      # hashes # [Hash]
+                      # mime_type # String
+                      payload_bin # String
+                      url # String
+                      encryption_algorithm # String
+                      decryption_key # String
+                      # x_opencti_additional_names # [String]
+                    }
+                  }
+                }
+                # pageInfo {
+                #   endCursor
+                #   hasNextPage
+                #   globalCount
+                # }
+              }
+            }
+            ... on Software {
+              name # String
+              cpe # String
+              swid # String
+              languages # [String]
+              vendor # String
+              version # String
+            }
+            ... on Url {
+              value # String
+            }
+            ... on UserAccount {
+              user_id # String
+              credential # String
+              account_login # String
+              account_type # String
+              display_name # String
+              is_service_account # Boolean
+              is_privileged # Boolean
+              can_escalate_privs # Boolean
+              is_disabled # Boolean
+              account_created # DateTime
+              account_expires # DateTime
+              credential_last_changed # DateTime
+              account_first_login # DateTime
+              account_last_login # DateTime
+            }
+            ... on WindowsRegistryKey {
+              attribute_key # String
+              modified_time # DateTime
+              number_of_subkeys # Int
+            }
+            ... on WindowsRegistryValueType {
+              name # String
+              data # String
+              data_type # String
+            }
+            ... on CryptographicKey {
+              value # String
+            }
+            ... on CryptocurrencyWallet {
+              value # String
+            }
+            ... on Hostname {
+              value # String
+            }
+            ... on Text {
+              value # String
+            }
+            ... on UserAgent {
+              value # String
+            }
+            ... on BankAccount {
+              iban # String
+              bic # String
+              account_number # String
+            }
+            ... on PhoneNumber {
+              value # String
+            }
+            ... on PaymentCard {
+              card_number # String!
+              expiration_date # DateTime
+              cvv # Int
+              holder_name # String
+            }
+            ... on MediaContent {
+              title # String
+              content # String
+              media_category # String
+              url # String!
+              publication_date # DateTime
+            }
+            # ...
           }
-          usages
         }
-        type
-        order
-        disabled
+        pageInfo {
+          # endCursor
+          # hasNextPage
+          globalCount
+        }
       }
-      workflowEnabled
     }
+
 redact:
   fields:
     - api_key
@@ -197,8 +444,8 @@ program: |
     "Body": '''{
       "query": ''' + state.query.encode_json() + ''',
       "variables": {
-        "count": ''' + string(state.page_size) + ''',
-        "cursor": ''' + (has(state.cursor) && has(state.cursor.value) ? state.cursor.value.encode_json() : 'null') + ''',
+        "first": ''' + string(state.page_size) + ''',
+        "after": ''' + (has(state.cursor) && has(state.cursor.value) ? state.cursor.value.encode_json() : 'null') + ''',
         "orderBy": "modified",
         "orderMode": "asc"
       }
