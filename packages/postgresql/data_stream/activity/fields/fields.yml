@@ -1,20 +1,44 @@
 - name: postgresql.activity
   type: group
   fields:
+    - name: backend_type
+      type: keyword
+      # Reason to add as a dimension field:  Multiple events having various backend_type (autovacuum launcher, autovacuum worker, etc) returned
+      dimension: true
+      description: |
+        Type of backend
+    - name: wait_event
+      type: keyword
+      # Reason to add as a dimension field: Multiple events having various wait_event https://www.postgresql.org/docs/current/monitoring-stats.html#WAIT-EVENT-TABLE
+      dimension: true
+      description: |
+        Wait event name if backend is currently waiting, otherwise NULL
+    - name: wait_event_type
+      type: keyword
+      # Reason to add as a dimension field: Multiple events having various wait_event_type https://www.postgresql.org/docs/current/monitoring-stats.html#WAIT-EVENT-TABLE
+      dimension: true
+      description: |
+        The type of event for which the backend is waiting, if any; otherwise NULL.
     - name: database.oid
       type: long
       description: |
         OID of the database this backend is connected to.
     - name: database.name
       type: keyword
+      dimension: true
+      # Reason to add as a dimension field: capture metrics of one or more database using a connection is possible.
       description: |
         Name of the database this backend is connected to.
     - name: pid
       type: long
+      # Reason to add as a dimension field: Observed events for multiple pids
+      dimension: true
       description: |
         Process ID of this backend.
     - name: user.id
       type: long
+      # Reason to add as a dimension field: databases can be multi-user, the activity of multiple users must be supported.
+      dimension: true
       description: |
         OID of the user logged into this backend.
     - name: user.name
@@ -22,6 +46,8 @@
       description: |
         Name of the user logged into this backend.
     - name: application_name
+      # Reason to add as a dimension field: One or more client applications can connect.
+      dimension: true
       type: keyword
       description: |
         Name of the application that is connected to this backend.
@@ -73,5 +99,7 @@
           * disabled: This state is reported if track_activities is disabled in this backend.
     - name: query
       type: keyword
+      dimension: true
+      # Reason to add as a dimension field: pg_stat_bgwriter and pg_stat_database returns same fields. The length of the query is very small and hence content hashing is not needed.
       description: |
         Text of this backend's most recent query. If state is active this field shows the currently executing query. In all other states, it shows the last query that was executed.

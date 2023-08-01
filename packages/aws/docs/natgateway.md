@@ -168,7 +168,6 @@ An example event for `natgateway` looks as following:
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
-| aws.dimensions.\* | Metric dimensions. | object |  |
 | aws.dimensions.NatGatewayId | Filter the metric data by the NAT gateway ID. | keyword |  |
 | aws.natgateway.metrics.ActiveConnectionCount.max | The total number of concurrent active TCP connections through the NAT gateway. | long | gauge |
 | aws.natgateway.metrics.BytesInFromDestination.sum | The number of bytes received by the NAT gateway from the destination. | long | gauge |

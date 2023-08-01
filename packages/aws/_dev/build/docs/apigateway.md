@@ -2,7 +2,7 @@
 
 The AWS API Gateway integration allows you to monitor [API Gateway](https://aws.amazon.com/api-gateway/) — a centralized API management service.
 
-Use the AWS API Gateway integration to collect metrics related to your HTTP, REST or WebSockets APIs. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics when troubleshooting an issue.
+Use the AWS API Gateway integration to collect metrics and logs related to your HTTP, REST or WebSockets APIs. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics when troubleshooting an issue.
 
 For example, you could use this integration to examine metrics related to error rates, response codes, and latency. You can pinpoint problematic areas, identify error-prone API endpoints, and troubleshoot performance issues.
 
@@ -10,7 +10,12 @@ For example, you could use this integration to examine metrics related to error 
 
 ## Data streams
 
-The API Gateway integration collects one type of data: metrics.
+The API Gateway integration collects two types of data: metrics and logs.
+
+**Logs** help you keep a record of events happening in Amazon API Gateway.
+Logs collected by the Amazon API Gateway integration include the HTTP method, status code, request details and more. 
+
+See more details in the [Logs reference](#logs-reference).
 
 **Metrics** give you insight into the state of API Gateway.
 Metrics collected by the AWS API Gateway integration include the number of client and server errors, request and error counts and cache counts.
@@ -44,3 +49,9 @@ For step-by-step instructions on how to set up an integration, see the
 {{event "apigateway_metrics"}}
 
 {{fields "apigateway_metrics"}}
+
+## Logs reference
+
+{{event "apigateway_logs"}}
+
+{{fields "apigateway_logs"}}

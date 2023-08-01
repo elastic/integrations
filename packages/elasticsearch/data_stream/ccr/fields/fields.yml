@@ -5,8 +5,10 @@
       type: keyword
     - name: bytes_read
       type: long
+      metric_type: gauge
     - name: last_requested_seq_no
       type: long
+      metric_type: gauge
     - name: shard_id
       type: integer
     - name: total_time
@@ -14,16 +16,21 @@
       fields:
         - name: read.ms
           type: long
+          metric_type: gauge
         - name: read.remote_exec.ms
           type: long
+          metric_type: gauge
         - name: write.ms
           type: long
+          metric_type: gauge
     - name: read_exceptions
       type: nested
     - name: read_exceptions.from_seq_no
       type: long
+      metric_type: gauge
     - name: read_exceptions.retries
       type: integer
+      metric_type: gauge
     - name: read_exceptions.exception
       type: object
     - name: read_exceptions.exception.type
@@ -38,29 +45,37 @@
           fields:
             - name: read.count
               type: long
+              metric_type: counter
             - name: write.count
               type: long
+              metric_type: counter
         - name: failed
           type: group
           fields:
             - name: read.count
               type: long
+              metric_type: counter
             - name: write.count
               type: long
+              metric_type: counter
         - name: outstanding
           type: group
           fields:
             - name: read.count
               type: long
+              metric_type: counter
             - name: write.count
               type: long
+              metric_type: counter
     - name: write_buffer
       type: group
       fields:
         - name: size.bytes
           type: long
+          metric_type: gauge
         - name: operation.count
           type: long
+          metric_type: gauge
     - name: auto_follow
       type: group
       fields:
@@ -69,13 +84,16 @@
           fields:
             - name: follow_indices.count
               type: long
+              metric_type: gauge
             - name: remote_cluster_state_requests.count
               type: long
+              metric_type: gauge
         - name: success
           type: group
           fields:
             - name: follow_indices.count
               type: long
+              metric_type: gauge
     - name: leader
       type: group
       fields:
@@ -85,10 +103,12 @@
             Name of leader index
         - name: max_seq_no
           type: long
+          metric_type: gauge
           description: |
             Maximum sequence number of operation on the leader shard
         - name: global_checkpoint
           type: long
+          metric_type: gauge
     - name: follower
       type: group
       fields:
@@ -102,25 +122,35 @@
             Number of the shard within the index
         - name: operations_written
           type: long
+          metric_type: counter
           description: |
-            Number of operations indexed (replicated) into the follower shard from the leader shard
+            Total number of operations indexed (replicated) into the follower shard from the leader shard
         - name: time_since_last_read.ms
           type: long
+          metric_type: gauge
           description: |
             Time, in ms, since the follower last fetched from the leader
         - name: global_checkpoint
           type: long
+          metric_type: gauge
           description: |
             Global checkpoint value on follower shard
         - name: max_seq_no
           type: long
+          metric_type: gauge
           description: |
             Maximum sequence number of operation on the follower shard
         - name: mapping_version
           type: long
+          metric_type: gauge
         - name: settings_version
           type: long
+          metric_type: gauge
         - name: aliases_version
           type: long
+          metric_type: gauge
         - name: operations.read.count
           type: long
+          metric_type: gauge
+          description: |
+            Current count of read operations.

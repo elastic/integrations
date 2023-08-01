@@ -1,0 +1,88 @@
+source:
+  index: "logs-*"
+  query:
+    bool:
+      must_not:
+        term:
+          user.name:
+            value: system
+      filter:
+        - exists:
+            field: process.Ext.session_info.client_address
+        - exists:
+            field: process.Ext.authentication_id
+        - exists:
+            field: host.ip
+        - term:
+            event.category:
+              value: process
+        - term:
+            process.Ext.session_info.logon_type:
+              value: RemoteInteractive
+  runtime_mappings:
+        destination.ip:
+          type: keyword
+          script:
+            source: "if (doc['host.ip'].size()!=0){emit(doc['host.ip'][1]);} else{emit('None');}"
+dest:
+  index: "ml-rdp-lmd-1.0.2"
+description: This transform runs hourly and collects windows RDP session information for Lateral Movement Detection package.
+frequency: 1h
+pivot:
+  aggregations:
+    number_processes_per_session:
+      value_count:
+        field: process.name
+    total_length_process_args:
+      sum:
+        field: process.args_count
+    session:
+      scripted_metric:
+        combine_script: return state.docs
+        init_script: |-
+          state.docs = []
+        map_script: |-
+          Map span = [
+              '@timestamp':doc['@timestamp'].value
+            ];
+            state.docs.add(span)
+        reduce_script: |-
+          def all_docs = [];
+            for (s in states) {
+              for (span in s) {
+                all_docs.add(span);
+              }
+            }
+            all_docs.sort((HashMap o1, HashMap o2)->o1['@timestamp'].toEpochMilli().compareTo(o2['@timestamp'].toEpochMilli()));
+            def size = all_docs.size();
+            def min_time = all_docs[0]['@timestamp'];
+            def max_time = all_docs[size-1]['@timestamp'];
+            def duration = (max_time.toEpochMilli() - min_time.toEpochMilli())/1000;
+            def ret = new HashMap();
+            ret['start_time'] = min_time;
+            ret['complete_time'] = max_time;
+            ret['duration'] = duration;
+            return ret;
+  group_by:
+    host.name:
+      terms:
+        field: host.name
+    destination.ip:
+      terms:
+        field: destination.ip
+    user.name:
+      terms:
+        field: user.name
+    source.ip:
+      terms:
+        field: process.Ext.session_info.client_address
+    process.Ext.authentication_id:
+      terms:
+        field: process.Ext.authentication_id
+sync:
+  time:
+    delay: 60s
+    field: '@timestamp'
+_meta:
+  fleet_transform_version: 1.0.2
+  run_as_kibana_system: false
