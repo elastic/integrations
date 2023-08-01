@@ -21,7 +21,7 @@ processors:
   #
   - script:
       lang: painless
-      if: "ctx.json.itype != null"
+      if: "ctx.json?.itype != null"
       description: >
         Map itype field to STIX 2.0 Cyber Observable values (threat.indicator.type).
       params:
@@ -151,31 +151,39 @@ processors:
             ctx.json.deleted_at = ZonedDateTime.parse(added_at, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusDays(90L);
           }        
         }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
 
 # Map added_at
   - date:
       field: json.added_at
       target_field: json.added_at
+      tag: date-added_at
       formats:
         - ISO8601
+        - strict_date_optional_time_nanos
       if: "ctx.json?.added_at != null"
       on_failure:
         - append:
             field: error.message
-            value: 'Error parsing added_at field value "{{{ json.added_at }}}": {{{ _ingest.on_failure_message }}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
 # Map deleted_at
   - date:
       field: json.deleted_at
       target_field: json.deleted_at
+      tag: date-deleted_at
       formats:
         - ISO8601
+        - strict_date_optional_time_nanos
       if: "ctx.json?.deleted_at != null"
       on_failure:
         - append:
             field: error.message
-            value: 'Error parsing deleted_at field value "{{{ json.deleted_at }}}": {{{ _ingest.on_failure_message }}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   #
   # Map first and last seen dates.
@@ -183,24 +191,26 @@ processors:
   - date:
       field: json.date_first
       target_field: threat.indicator.first_seen
+      tag: date-date_first
       formats:
         - ISO8601
       if: "ctx.json?.date_first != null"
       on_failure:
         - append:
             field: error.message
-            value: 'Error parsing date_first field value "{{{ json.date_first }}}": {{{ _ingest.on_failure_message }}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - date:
       field: json.date_last
       target_field: threat.indicator.last_seen
+      tag: date-last_seen
       formats:
         - ISO8601
       if: "ctx.json?.date_last != null"
       on_failure:
         - append:
             field: error.message
-            value: 'Error parsing date_last field value "{{{ json.date_last }}}": {{{ _ingest.on_failure_message }}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - set:
       field: _temp_.timestamp
