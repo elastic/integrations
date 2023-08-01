@@ -720,7 +720,7 @@ The fields reported are:
 | haproxy.stat.selected.total | Total number of times a server was selected, either for new sessions, or when re-dispatching. For servers, this field reports the the number of times the server was selected. | long | counter |
 | haproxy.stat.server.aborted | Number of data transfers aborted by the server. This value is included in haproxy.stat.response.errors. | integer | counter |
 | haproxy.stat.server.active | Number of backend servers that are active, meaning that they are healthy and can receive requests from the load balancer. | integer | gauge |
-| haproxy.stat.server.backup | Number of backend servers that are backup servers. | integer | counter |
+| haproxy.stat.server.backup | Number of backend servers that are backup servers. | integer | gauge |
 | haproxy.stat.server.id | Server ID (unique inside a proxy). | integer |  |
 | haproxy.stat.service_name | Service name (FRONTEND for frontend, BACKEND for backend, or any name for server/listener). | keyword |  |
 | haproxy.stat.session.current | Number of current sessions. | long | gauge |
