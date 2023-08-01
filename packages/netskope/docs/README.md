@@ -127,7 +127,7 @@ Default port: _9021_
 | netskope.alerts.acked | Whether user acknowledged the alert or not. | boolean |
 | netskope.alerts.acting.role | N/A | keyword |
 | netskope.alerts.action | Action taken on the event for the policy. | keyword |
-| netskope.alerts.activities | N/A | array |
+| netskope.alerts.activities | N/A | keyword |
 | netskope.alerts.activity.name | Description of the user performed activity. | keyword |
 | netskope.alerts.activity.status | Displayed when the user is denied access while performing some activity. | keyword |
 | netskope.alerts.activity.type | Displayed when only admins can perform the activity in question. | keyword |
@@ -225,7 +225,7 @@ Default port: _9021_
 | netskope.alerts.encryption.service.key | N/A | keyword |
 | netskope.alerts.enterprise.id | EnterpriseID in case of Slack for Enterprise. | keyword |
 | netskope.alerts.enterprise.name | Enterprise name in case of Slack for Enterprise. | keyword |
-| netskope.alerts.entity.list | N/A | array |
+| netskope.alerts.entity.list | N/A | keyword |
 | netskope.alerts.entity.type | N/A | keyword |
 | netskope.alerts.entity.value | N/A | keyword |
 | netskope.alerts.event.detail | N/A | keyword |
@@ -353,7 +353,7 @@ Default port: _9021_
 | netskope.alerts.modified.timestamp | Timestamp corresponding to the modification time of the entity (file, etc.). | long |
 | netskope.alerts.netskope_pop | N/A | keyword |
 | netskope.alerts.network.name | N/A | keyword |
-| netskope.alerts.network.security.group | N/A | array |
+| netskope.alerts.network.security.group | N/A | keyword |
 | netskope.alerts.new.value | New value for a given file for salesforce.com. | keyword |
 | netskope.alerts.nonzero.entries | N/A | long |
 | netskope.alerts.nonzero.percentage | N/A | double |
@@ -583,11 +583,11 @@ An example event for `alerts` looks as following:
 {
     "@timestamp": "2021-12-23T16:27:09.000Z",
     "agent": {
-        "ephemeral_id": "9574aad5-5325-431f-b252-84fc439b63c5",
-        "id": "19f05486-b68d-449a-9bdd-1493d2f3b55d",
+        "ephemeral_id": "f351413b-f36f-45a3-aa1f-1334e718f39a",
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "netskope.alerts",
@@ -614,14 +614,14 @@ An example event for `alerts` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "19f05486-b68d-449a-9bdd-1493d2f3b55d",
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
         "snapshot": false,
-        "version": "8.4.0"
+        "version": "8.9.0"
     },
     "event": {
         "agent_id_status": "verified",
         "id": "f621f259f5fbde850ad5593a",
-        "ingested": "2022-11-04T13:39:35Z"
+        "ingested": "2023-07-27T15:55:05Z"
     },
     "file": {
         "hash": {
@@ -638,7 +638,7 @@ An example event for `alerts` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.0.6:52200"
+            "address": "172.18.0.4:33326"
         }
     },
     "netskope": {
@@ -1180,11 +1180,11 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2021-12-24T00:29:56.000Z",
     "agent": {
-        "ephemeral_id": "a31c2d61-519a-4322-ab78-f49af3a1f010",
-        "id": "19f05486-b68d-449a-9bdd-1493d2f3b55d",
+        "ephemeral_id": "169a2d34-f013-46a1-8cfa-0688afe7cb78",
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "netskope.events",
@@ -1195,14 +1195,14 @@ An example event for `events` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "19f05486-b68d-449a-9bdd-1493d2f3b55d",
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
         "snapshot": false,
-        "version": "8.4.0"
+        "version": "8.9.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "netskope.events",
-        "ingested": "2022-11-04T13:41:21Z"
+        "ingested": "2023-07-27T15:55:55Z"
     },
     "event.id": "613ee55ec9d868fc47654a73",
     "input": {
@@ -1210,7 +1210,7 @@ An example event for `events` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.0.6:33808"
+            "address": "172.18.0.4:53214"
         }
     },
     "netskope": {
