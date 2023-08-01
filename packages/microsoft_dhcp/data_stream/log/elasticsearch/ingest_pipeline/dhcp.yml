@@ -376,24 +376,22 @@ processors:
   - script:
       description: Set the QResult description based on numerical value.
       lang: painless
-      tag: Add QResult Description
+      tag: add_qresult_description
       params:
-        "0":
-          result_description: NoQuarantine
-        "1":
-          result_description: Quarantine
-        "2":
-          result_description: Drop Packet
-        "3":
-          result_description: Probation
-        "6":
-          result_description: No Quarantine Information
+        "0": NoQuarantine
+        "1": Quarantine
+        "2": Drop Packet
+        "3": Probation
+        "6": No Quarantine Information
       source: |-
-        if (ctx.microsoft?.dhcp?.result == null || params.get(ctx.microsoft.dhcp.result) == null) {
+        if (ctx.microsoft?.dhcp?.result == null) {
           return;
         }
-        def hm = new HashMap(params[ctx.microsoft.dhcp.result]);
-        hm.forEach((k, v) -> ctx.microsoft.dhcp[k] = v);
+        def desc = params.get(ctx.microsoft.dhcp.result);
+        if (desc == null) {
+          return;
+        }
+        ctx.microsoft.dhcp['result_description'] = desc; 
   - set:
       field: event.outcome
       value: success
