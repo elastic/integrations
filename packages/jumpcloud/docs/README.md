@@ -75,6 +75,7 @@ All JumpCloud Directory Insights events are available in the `jumpcloud.events` 
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.risk_score | Risk score or priority of the event (e.g. security solutions). Use your system's original value here. | float |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
+| input.type |  | keyword |
 | jumpcloud.event.application.display_label |  | keyword |
 | jumpcloud.event.application.id |  | keyword |
 | jumpcloud.event.application.name |  | keyword |
@@ -181,6 +182,7 @@ All JumpCloud Directory Insights events are available in the `jumpcloud.events` 
 | jumpcloud.event.useragent.patch |  | keyword |
 | jumpcloud.event.useragent.version |  | keyword |
 | jumpcloud.event.username |  | keyword |
+| jumpcloud.event.version |  | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
