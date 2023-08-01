@@ -19,34 +19,25 @@ request.transforms:
   - set:
       target: header.Authorization
       value: "Bearer {{oauth_token}}"
+
+  # If the pagination is interrupted, then the last cursor
+  # is saved and sent in the request url to continue pagination.
+  # If pagination is complete, then the new request will have 'first_event'
+  # date as 'oldest' param and 'now' as 'latest' param 
+  {{#if this.cursor.pagination_incomplete}}
+  - set:
+      target: url.params.cursor
+      value: '[[- .cursor.last_cursor -]]'
+  {{else}}
   - set:
       target: url.params.oldest
-      # If last pagination cycle was finished successully
-      # we move the oldest pointer forward
-      # else we reprocess the last interval from the beginning.
-      # If none of the values are in the cursor it means is a fresh start
-      # and we pick the default value.
-      value: >-
-        [[- if eq .cursor.pagination_finished "true" -]]
-          [[- .cursor.next_oldest_date -]]
-        [[- else -]]
-          [[- .cursor.last_oldest_date -]]
-        [[- end -]]
+      value: '[[- .cursor.next_oldest_date -]]'
       default: '[[(now (parseDuration "-{{initial_interval}}")).Unix]]'
   - set:
       target: url.params.latest
-      # If last pagination cycle was finished successully
-      # we move the latest pointer forward
-      # else we reprocess the last interval from the beginning.
-      # If none of the values are in the cursor it means is a fresh start
-      # and we pick the default value.
-      value: >-
-        [[- if eq .cursor.pagination_finished "true" -]]
-          [[(now).Unix]]
-        [[- else -]]
-          [[- .cursor.last_latest_date -]]
-        [[- end -]]
-      default: '[[(now).Unix]]'
+      value: '[[(now).Unix]]'
+  {{/if}}
+
   - set:
       target: url.params.limit
       value: '[[{{limit}}]]'
@@ -68,23 +59,20 @@ response.pagination:
     target: url.params.latest
           
 cursor:
-  pagination_finished:
+  pagination_incomplete:
     # Use this flag to identify if an execution was interrupted in the middle
     # of a pagination cycle.
-    value: '[[not (index .last_response.body.response_metadata "next_cursor")]]'
-  last_oldest_date:
-    # Use this value to be able to resume from an interrupted pagination cycle.
-    value: '[[.last_request.url.params.Get "oldest"]]'
-  last_latest_date:
-    # Use this value to be able to resume from an interrupted pagination cycle.
-    value: '[[.last_request.url.params.Get "latest"]]'
-
-# in order to pick the next startDate we keep the first event (newest) time.
-  next_oldest_date:
-    value: "[[toInt .first_event.date_create]]"
+    value: '[[(index .last_response.body.response_metadata "next_cursor")]]'
     fail_on_template_error: true
-  last_timestamp:
-    value: "[[toInt .last_event.date_create]]"
+    
+  last_cursor:
+    # Use this value to be able to resume from an interrupted pagination cycle.
+    value: '[[.last_response.body.response_metadata.Get "next_cursor"]]'
+    fail_on_template_error: true
+
+  next_oldest_date:
+    # In order to pick the next startDate we keep the first event (newest) date.
+    value: "[[toInt .first_event.date_create]]"
     fail_on_template_error: true
 
 {{#if tags.length}}
