@@ -11,7 +11,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Potential Reverse Shell via Suspicious Binary",
-        "query": "sequence by host.id, process.entity_id with maxspan=1s\n[ process where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"exec\" and\n  process.executable : (\n  \"./*\", \"/tmp/*\", \"/var/tmp/*\", \"/var/www/*\", \"/dev/shm/*\", \"/etc/init.d/*\", \"/etc/rc*.d/*\",\n  \"/etc/crontab\", \"/etc/cron.*\", \"/etc/update-motd.d/*\", \"/usr/lib/update-notifier/*\",\n  \"/boot/*\", \"/srv/*\", \"/run/*\", \"/root/*\", \"/etc/rc.local\"\n   ) and\n  process.parent.name : (\"bash\", \"dash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\") and not\n  process.name : (\"curl\", \"wget\", \"ping\", \"apt\", \"dpkg\", \"yum\", \"rpm\", \"dnf\", \"dockerd\") ]\n[ network where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"connection_attempted\" and\n  process.executable : (\n  \"./*\", \"/tmp/*\", \"/var/tmp/*\", \"/var/www/*\", \"/dev/shm/*\", \"/etc/init.d/*\", \"/etc/rc*.d/*\",\n  \"/etc/crontab\", \"/etc/cron.*\", \"/etc/update-motd.d/*\", \"/usr/lib/update-notifier/*\",\n  \"/boot/*\", \"/srv/*\", \"/run/*\", \"/root/*\", \"/etc/rc.local\"\n   ) ]\n[ process where host.os.type == \"linux\" and event.action == \"exec\" and event.type == \"start\" and \n  process.name : (\"bash\", \"dash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\") and \n  process.parent.name : (\"bash\", \"dash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\") ]\n",
+        "query": "sequence by host.id, process.entity_id with maxspan=1s\n[ process where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"exec\" and\n  process.executable : (\n  \"./*\", \"/tmp/*\", \"/var/tmp/*\", \"/var/www/*\", \"/dev/shm/*\", \"/etc/init.d/*\", \"/etc/rc*.d/*\",\n  \"/etc/crontab\", \"/etc/cron.*\", \"/etc/update-motd.d/*\", \"/usr/lib/update-notifier/*\",\n  \"/boot/*\", \"/srv/*\", \"/run/*\", \"/root/*\", \"/etc/rc.local\"\n   ) and\n  process.parent.name : (\"bash\", \"dash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\") and not\n  process.name : (\"curl\", \"wget\", \"ping\", \"apt\", \"dpkg\", \"yum\", \"rpm\", \"dnf\", \"dockerd\") ]\n[ network where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"connection_attempted\" and\n  process.executable : (\n  \"./*\", \"/tmp/*\", \"/var/tmp/*\", \"/var/www/*\", \"/dev/shm/*\", \"/etc/init.d/*\", \"/etc/rc*.d/*\",\n  \"/etc/crontab\", \"/etc/cron.*\", \"/etc/update-motd.d/*\", \"/usr/lib/update-notifier/*\",\n  \"/boot/*\", \"/srv/*\", \"/run/*\", \"/root/*\", \"/etc/rc.local\"\n   ) and destination.ip != null and destination.ip != \"127.0.0.1\" and destination.ip != \"::1\" ]\n[ process where host.os.type == \"linux\" and event.action == \"exec\" and event.type == \"start\" and \n  process.name : (\"bash\", \"dash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\") and \n  process.parent.name : (\"bash\", \"dash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\") ]\n",
         "references": [
             "https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Reverse%20Shell%20Cheatsheet.md"
         ],
@@ -22,6 +22,11 @@
             }
         ],
         "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.ip",
+                "type": "ip"
+            },
             {
                 "ecs": true,
                 "name": "event.action",
@@ -112,7 +117,7 @@
             }
         ],
         "type": "eql",
-        "version": 1
+        "version": 2
     },
     "id": "fa3a59dc-33c3-43bf-80a9-e8437a922c7f",
     "type": "security-rule"

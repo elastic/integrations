@@ -17,7 +17,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Enumerating Domain Trusts via DSQUERY.EXE",
-        "note": "",
+        "note": "## Triage and analysis\n\n### Investigating Enumerating Domain Trusts via DSQUERY.EXE\n\nActive Directory (AD) domain trusts define relationships between domains within a Windows AD environment. In this setup, a \"trusting\" domain permits users from a \"trusted\" domain to access resources. These trust relationships can be configurable as one-way, two-way, transitive, or non-transitive, enabling controlled access and resource sharing across domains.\n\nThis rule identifies the usage of the `dsquery.exe` utility to enumerate domain trusts. Attackers can use this information to enable the next actions in a target environment, such as lateral movement.\n\n#### Possible investigation steps\n\n- Investigate the process execution chain (parent process tree) for unknown processes. Examine their executable files for prevalence, whether they are located in expected locations, and if they are signed with valid digital signatures.\n- Identify the user account that performed the action and whether it should perform this kind of action.\n- Investigate other alerts associated with the user/host during the past 48 hours.\n\n### False positive analysis\n\n- Discovery activities are not inherently malicious if they occur in isolation and are done within the user business context (e.g., an administrator in this context). As long as the analyst did not identify suspicious activity related to the user or host, such alerts can be dismissed.\n\n### Related rules\n\n- Enumerating Domain Trusts via NLTEST.EXE - 84da2554-e12a-11ec-b896-f661ea17fbcd\n\n### Response and remediation\n\n- Initiate the incident response process based on the outcome of the triage.\n- Isolate the involved hosts to prevent further post-compromise behavior.\n- Restrict PowerShell usage outside of IT and engineering business units using GPOs, AppLocker, Intune, or similar software.\n- Determine the initial vector abused by the attacker and take action to prevent reinfection through the same vector.\n- Run a full antimalware scan. This may reveal additional artifacts left in the system, persistence mechanisms, and malware components.\n- Using the incident response data, update logging and audit policies to improve the mean time to detect (MTTD) and the mean time to respond (MTTR).\n",
         "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n    (process.name : \"dsquery.exe\" or process.pe.original_file_name: \"dsquery.exe\") and \n    process.args : \"*objectClass=trustedDomain*\"\n",
         "references": [
             "https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/cc732952(v=ws.11)",
@@ -62,14 +62,14 @@
         ],
         "risk_score": 21,
         "rule_id": "06a7a03c-c735-47a6-a313-51c354aef6c3",
-        "setup": "If enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.",
         "severity": "low",
         "tags": [
             "Domain: Endpoint",
             "OS: Windows",
             "Use Case: Threat Detection",
             "Tactic: Discovery",
-            "Data Source: Elastic Endgame"
+            "Data Source: Elastic Endgame",
+            "Resources: Investigation Guide"
         ],
         "threat": [
             {
@@ -95,7 +95,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 3
+        "version": 4
     },
     "id": "06a7a03c-c735-47a6-a313-51c354aef6c3",
     "type": "security-rule"
