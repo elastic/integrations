@@ -24,6 +24,16 @@ When an IOC expires, Anomali feed contains information about all IOCs that got `
 
 **NOTE:** `IOC Expiration Duration` parameter does not override the expiration provided by the Anomali for their IOCs. So, if Anomali IOC is expired and subsequently such `deleted` IOCs are sent into the feed, they are deleted immediately. `IOC Expiration Duration` parameter only exists to add a fail-safe default expiration in case Anomali IOCs never expire.
 
+### Destination index versioning and deleting older versions
+The destination indices created by the transform are versioned with an integer suffix such as `-1`, `-2`. Example index name - `logs-ti_anomali_latest.threatstream-1`. 
+
+Due to schema changes on destination index, the versioning on it could be bumped. For example, in integration version `1.15.1`, the destination index  is changed to `logs-ti_anomali_latest.threatstream-2` from `logs-ti_anomali_latest.threatstream-1`. 
+
+Since the transform does not have the functionality to auto-delete the old index, users must to delete this old index manually. This is to ensure duplicates are not present when using wildcard queries such as `logs-ti_anomali_latest.threatstream-*`. Please follow below steps:
+1. After upgrading the integration to latest, check the current transform's destination index version by navigating via: `Stack Management -> Transforms -> logs-ti_anomali.latest_ioc-default -> Details`. Check `destination_index` value.
+2. Run `GET _cat/indices?v` and check if any older versions exist. Such as `logs-ti_anomali_latest.threatstream-1`
+3. Run `DELETE logs-ti_anomali_latest.threatstream-<OLDVERSION>` to delete the old index.
+
 ### ILM Policy
 To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_anomali.threat-*` are allowed to contain duplicates from each polling interval. ILM policy is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date. 
 
@@ -34,8 +44,8 @@ An example event for `threatstream` looks as following:
 {
     "@timestamp": "2020-10-08T12:22:11.000Z",
     "agent": {
-        "ephemeral_id": "e24315ac-e4b2-474c-adf9-7b779a448e8e",
-        "id": "4ac38dc0-f2c0-4141-8bb2-ddeede2bd546",
+        "ephemeral_id": "f0d737e0-4a4d-4435-bd74-1e9b097127c9",
+        "id": "f41c9be7-bab7-4158-ac54-00e9fb56ac44",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.1"
@@ -70,7 +80,7 @@ An example event for `threatstream` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "4ac38dc0-f2c0-4141-8bb2-ddeede2bd546",
+        "id": "f41c9be7-bab7-4158-ac54-00e9fb56ac44",
         "snapshot": false,
         "version": "8.8.1"
     },
@@ -78,7 +88,7 @@ An example event for `threatstream` looks as following:
         "agent_id_status": "verified",
         "category": "threat",
         "dataset": "ti_anomali.threatstream",
-        "ingested": "2023-07-19T15:22:27Z",
+        "ingested": "2023-08-01T05:26:05Z",
         "kind": "enrichment",
         "original": "{\"added_at\":\"2020-10-08T12:22:11\",\"classification\":\"public\",\"confidence\":20,\"country\":\"FR\",\"date_first\":\"2020-10-08T12:21:50\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 184\",\"domain\":\"d4xgfj.example.net\",\"id\":3135167627,\"import_session_id\":1400,\"itype\":\"mal_domain\",\"lat\":-49.1,\"lon\":94.4,\"org\":\"OVH Hosting\",\"resource_uri\":\"/api/v1/intelligence/P46279656657/\",\"severity\":\"high\",\"source\":\"Default Organization\",\"source_feed_id\":3143,\"srcip\":\"89.160.20.156\",\"state\":\"active\",\"trusted_circle_ids\":\"122\",\"update_id\":3786618776,\"value_type\":\"domain\"}",
         "severity": 7,
