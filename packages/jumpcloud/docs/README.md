@@ -75,6 +75,7 @@ All JumpCloud Directory Insights events are available in the `jumpcloud.events` 
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.risk_score | Risk score or priority of the event (e.g. security solutions). Use your system's original value here. | float |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
+| input.type |  | keyword |
 | jumpcloud.event.application.display_label |  | keyword |
 | jumpcloud.event.application.id |  | keyword |
 | jumpcloud.event.application.name |  | keyword |
@@ -181,6 +182,7 @@ All JumpCloud Directory Insights events are available in the `jumpcloud.events` 
 | jumpcloud.event.useragent.patch |  | keyword |
 | jumpcloud.event.useragent.version |  | keyword |
 | jumpcloud.event.username |  | keyword |
+| jumpcloud.event.version |  | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
@@ -232,6 +234,13 @@ An example event for `events` looks as following:
 ```json
 {
     "@timestamp": "2023-01-14T08:16:06.495Z",
+    "agent": {
+        "ephemeral_id": "bcbcbf24-2cdd-480e-9b75-96c0bafe1473",
+        "id": "25caf3f7-6754-40c9-8532-3f029a1a5c4d",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.8.2"
+    },
     "client": {
         "geo": {
             "city_name": "London",
@@ -247,23 +256,43 @@ An example event for `events` looks as following:
         },
         "ip": "81.2.69.144"
     },
+    "data_stream": {
+        "dataset": "jumpcloud.events",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
         "version": "8.9.0"
     },
+    "elastic_agent": {
+        "id": "25caf3f7-6754-40c9-8532-3f029a1a5c4d",
+        "snapshot": false,
+        "version": "8.8.2"
+    },
     "event": {
         "action": "admin_login_attempt",
+        "agent_id_status": "verified",
         "category": [
             "authentication"
         ],
+        "created": "2023-08-01T09:12:24.427Z",
+        "dataset": "jumpcloud.events",
         "id": "63c264c6c1bd55c1b7e901a4",
+        "ingested": "2023-08-01T09:12:25Z",
         "module": "directory",
+        "original": "{\"@version\":\"1\",\"client_ip\":\"81.2.69.144\",\"event_type\":\"admin_login_attempt\",\"geoip\":{\"continent_code\":\"OC\",\"country_code\":\"AU\",\"latitude\":-27.658,\"longitude\":152.8915,\"region_code\":\"QLD\",\"region_name\":\"Queensland\",\"timezone\":\"Australia/Brisbane\"},\"id\":\"63c264c6c1bd55c1b7e901a4\",\"initiated_by\":{\"email\":\"user.name@sub.domain.tld\",\"id\":\"123456789abcdef123456789\",\"type\":\"admin\"},\"mfa\":true,\"organization\":\"1234abcdef123456789abcde\",\"provider\":null,\"service\":\"directory\",\"success\":true,\"timestamp\":\"2023-01-14T08:16:06.495Z\",\"useragent\":{\"device\":\"Mac\",\"major\":\"109\",\"minor\":\"0\",\"name\":\"Chrome\",\"os\":\"Mac OS X\",\"os_full\":\"Mac OS X 10.15.7\",\"os_major\":\"10\",\"os_minor\":\"15\",\"os_name\":\"Mac OS X\",\"os_patch\":\"7\",\"os_version\":\"10.15.7\",\"patch\":\"0\",\"version\":\"109.0.0.0\"}}",
         "outcome": "success",
         "type": [
             "info"
         ]
     },
+    "input": {
+        "type": "httpjson"
+    },
     "jumpcloud": {
         "event": {
+            "client_ip": "81.2.69.144",
+            "event_type": "admin_login_attempt",
             "geoip": {
                 "continent_code": "OC",
                 "country_code": "AU",
@@ -273,12 +302,33 @@ An example event for `events` looks as following:
                 "region_name": "Queensland",
                 "timezone": "Australia/Brisbane"
             },
+            "id": "63c264c6c1bd55c1b7e901a4",
             "initiated_by": {
+                "email": "user.name@sub.domain.tld",
+                "id": "123456789abcdef123456789",
                 "type": "admin"
             },
             "mfa": true,
             "organization": "1234abcdef123456789abcde",
-            "success": true
+            "service": "directory",
+            "success": true,
+            "timestamp": "2023-01-14T08:16:06.495Z",
+            "useragent": {
+                "device": "Mac",
+                "major": "109",
+                "minor": "0",
+                "name": "Chrome",
+                "os": "Mac OS X",
+                "os_full": "Mac OS X 10.15.7",
+                "os_major": "10",
+                "os_minor": "15",
+                "os_name": "Mac OS X",
+                "os_patch": "7",
+                "os_version": "10.15.7",
+                "patch": "0",
+                "version": "109.0.0.0"
+            },
+            "version": "1"
         }
     },
     "source": {
@@ -287,6 +337,11 @@ An example event for `events` looks as following:
             "id": "123456789abcdef123456789"
         }
     },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded"
+    ],
     "user_agent": {
         "device": {
             "name": "Mac"
