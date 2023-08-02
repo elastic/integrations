@@ -230,6 +230,7 @@ An example event for `applocker_exe_and_dll` looks as following:
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | keyword |
 | file.extension | File extension, excluding the leading dot. Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
+| file.hash.sha256 | SHA256 hash. | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | file.path.text | Multi-field of `file.path`. | match_only_text |
@@ -395,6 +396,12 @@ An example event for `applocker_exe_and_dll` looks as following:
 | winlog.event_data.param7 |  | keyword |
 | winlog.event_data.param8 |  | keyword |
 | winlog.event_id | The event identifier. The value is specific to the source of the event. | keyword |
+| winlog.fqbn.country |  | keyword |
+| winlog.fqbn.filename |  | keyword |
+| winlog.fqbn.name |  | keyword |
+| winlog.fqbn.organization |  | keyword |
+| winlog.fqbn.state |  | keyword |
+| winlog.fqbn.version |  | keyword |
 | winlog.keywords | The keywords are used to classify an event. | keyword |
 | winlog.level | The level assigned to the event such as Information, Warning, or Critical. | keyword |
 | winlog.opcode | The opcode defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. | keyword |
