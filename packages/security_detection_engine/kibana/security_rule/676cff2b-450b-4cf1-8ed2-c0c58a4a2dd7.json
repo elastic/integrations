@@ -14,7 +14,7 @@
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "Attempt to Revoke Okta API Token",
-        "note": "",
+        "note": "## Triage and analysis\n\n### Investigating Attempt to Revoke Okta API Token\n\nThe rule alerts when attempts are made to revoke an Okta API token. The API tokens are critical for integration services, and revoking them may lead to disruption in services. Therefore, it's important to validate these activities.\n\n#### Possible investigation steps:\n- Identify the actor associated with the API token revocation attempt. You can use the `okta.actor.alternate_id` field for this purpose.\n- Determine the client used by the actor. Review the `okta.client.device`, `okta.client.ip`, `okta.client.user_agent.raw_user_agent`, `okta.client.ip_chain.ip`, and `okta.client.geographical_context` fields.\n- Verify if the API token revocation was authorized or part of some planned activity.\n- Check the `okta.outcome.result` and `okta.outcome.reason` fields to see if the attempt was successful or failed.\n- Analyze the past activities of the actor involved in this action. An actor who usually performs such activities may indicate a legitimate reason.\n- Evaluate the actions that happened just before and after this event. It can help understand the full context of the activity.\n\n### False positive analysis:\n- It might be a false positive if the action was part of a planned activity or was performed by an authorized person.\n\n### Response and remediation:\n- If unauthorized revocation attempts are confirmed, initiate the incident response process.\n- Block the IP address or device used in the attempts, if they appear suspicious.\n- Reset the user's password and enforce MFA re-enrollment, if applicable.\n- Conduct a review of Okta policies and ensure they are in accordance with security best practices.\n- If the revoked token was used for critical integrations, coordinate with the relevant team to minimize the impact.",
         "query": "event.dataset:okta.system and event.action:system.api_token.revoke\n",
         "references": [
             "https://developer.okta.com/docs/reference/api/system-log/",
@@ -67,7 +67,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 103
+        "version": 104
     },
     "id": "676cff2b-450b-4cf1-8ed2-c0c58a4a2dd7",
     "type": "security-rule"

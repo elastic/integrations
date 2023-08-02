@@ -12,10 +12,10 @@
             "auditbeat-*",
             "logs-endpoint.events.*"
         ],
-        "language": "kuery",
+        "language": "eql",
         "license": "Elastic License v2",
         "name": "File Permission Modification in Writable Directory",
-        "query": "event.category:process and host.os.type:linux and event.type:(start or process_started) and\n  process.name:(chmod or chown or chattr or chgrp) and\n  process.working_directory:(/tmp or /var/tmp or /dev/shm) and\n  not user.name:root\n",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\"and\n  process.name in (\"chmod\", \"chown\", \"chattr\", \"chgrp\") and\n  process.working_directory in (\"/tmp\", \"/var/tmp\", \"/dev/shm\") and\n  not process.parent.name in (\"update-motd-updates-available\") and\n  not user.name == \"root\"\n",
         "related_integrations": [
             {
                 "package": "endpoint",
@@ -23,11 +23,6 @@
             }
         ],
         "required_fields": [
-            {
-                "ecs": true,
-                "name": "event.category",
-                "type": "keyword"
-            },
             {
                 "ecs": true,
                 "name": "event.type",
@@ -41,6 +36,11 @@
             {
                 "ecs": true,
                 "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
                 "type": "keyword"
             },
             {
@@ -81,8 +81,8 @@
             }
         ],
         "timestamp_override": "event.ingested",
-        "type": "query",
-        "version": 103
+        "type": "eql",
+        "version": 104
     },
     "id": "9f9a2a82-93a8-4b1a-8778-1780895626d4",
     "type": "security-rule"
