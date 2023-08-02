@@ -52,7 +52,7 @@ An example event for `log` looks as following:
         "ip": "67.43.156.204"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.9.0"
     },
     "event": {
         "action": "proxy-request-GET",
