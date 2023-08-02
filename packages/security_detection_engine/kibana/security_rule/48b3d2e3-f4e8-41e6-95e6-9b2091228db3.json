@@ -11,7 +11,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Potential Reverse Shell",
-        "query": "sequence by host.id with maxspan=1s\n[ network where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"connection_attempted\" and \n  process.name : (\"bash\", \"dash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\", \"socat\") ] by process.entity_id\n[ process where host.os.type == \"linux\" and event.type == \"start\" and event.action : (\"exec\", \"fork\") and \n  process.name : (\"bash\", \"dash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\") and \n  process.parent.name : (\"bash\", \"dash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\", \"socat\") ] by process.parent.entity_id\n",
+        "query": "sequence by host.id with maxspan=1s\n[ network where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"connection_attempted\" and \n  process.name : (\"bash\", \"dash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\", \"socat\") and \n  destination.ip != null and destination.ip != \"127.0.0.1\" and destination.ip != \"::1\" ] by process.entity_id\n[ process where host.os.type == \"linux\" and event.type == \"start\" and event.action : (\"exec\", \"fork\") and \n  process.name : (\"bash\", \"dash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\") and \n  process.parent.name : (\"bash\", \"dash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\", \"socat\") ] by process.parent.entity_id\n",
         "references": [
             "https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Reverse%20Shell%20Cheatsheet.md"
         ],
@@ -22,6 +22,11 @@
             }
         ],
         "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.ip",
+                "type": "ip"
+            },
             {
                 "ecs": true,
                 "name": "event.action",
@@ -112,7 +117,7 @@
             }
         ],
         "type": "eql",
-        "version": 1
+        "version": 2
     },
     "id": "48b3d2e3-f4e8-41e6-95e6-9b2091228db3",
     "type": "security-rule"

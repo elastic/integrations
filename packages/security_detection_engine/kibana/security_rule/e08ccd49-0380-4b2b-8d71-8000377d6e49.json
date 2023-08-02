@@ -14,7 +14,7 @@
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "Attempts to Brute Force an Okta User Account",
-        "note": "",
+        "note": "## Triage and analysis\n\n### Investigating Attempts to Brute Force an Okta User Account\n\nBrute force attacks aim to guess user credentials through exhaustive trial-and-error attempts. In this context, Okta accounts are targeted.\n\nThis rule fires when an Okta user account has been locked out 3 times within a 3-hour window. This could indicate an attempted brute force or password spraying attack to gain unauthorized access to the user account. Okta's default authentication policy locks a user account after 10 failed authentication attempts.\n\n#### Possible investigation steps:\n\n- Identify the actor related to the alert by reviewing `okta.actor.alternate_id` field in the alert. This should give the username of the account being targeted.\n- Review the `okta.event_type` field to understand the nature of the events that led to the account lockout.\n- Check the `okta.severity` and `okta.display_message` fields for more context around the lockout events.\n- Look for correlation of events from the same IP address. Multiple lockouts from the same IP address might indicate a single source for the attack.\n- If the IP is not familiar, investigate it. The IP could be a proxy, VPN, Tor node, cloud datacenter, or a legitimate IP turned malicious.\n- Determine if the lockout events occurred during the user's regular activity hours. Unusual timing may indicate malicious activity.\n- Examine the authentication methods used during the lockout events by checking the `okta.authentication_context.credential_type` field.\n\n### False positive analysis:\n\n- Determine whether the account owner or an internal user made repeated mistakes in entering their credentials, leading to the account lockout.\n- Ensure there are no known network or application issues that might cause these events.\n\n### Response and remediation:\n\n- Alert the user and your IT department immediately.\n- If unauthorized access is confirmed, initiate your incident response process.\n- Investigate the source of the attack. If a specific machine or network is compromised, additional steps may need to be taken to address the issue.\n- Require the affected user to change their password.\n- If the attack is ongoing, consider blocking the IP address initiating the brute force attack.\n- Implement account lockout policies to limit the impact of brute force attacks.\n- Encourage users to use complex, unique passwords and consider implementing multi-factor authentication.\n- Check if the compromised account was used to access or alter any sensitive data or systems.",
         "query": "event.dataset:okta.system and event.action:user.account.lock\n",
         "references": [
             "https://developer.okta.com/docs/reference/api/system-log/",
@@ -73,7 +73,7 @@
             "value": 3
         },
         "type": "threshold",
-        "version": 103
+        "version": 104
     },
     "id": "e08ccd49-0380-4b2b-8d71-8000377d6e49",
     "type": "security-rule"
