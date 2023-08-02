@@ -1,9 +1,11 @@
 ---
 description: Pipeline for processing indicators
 processors:
+
   ####################
   # Event ECS fields #
   ####################
+
   - set:
       field: ecs.version
       value: '8.8.0'
@@ -18,263 +20,217 @@ processors:
       value: indicator
 
   ############################
-  # OpenCTI Indicator Fields #
+  # Generic indicator fields #
   ############################
-  - json:
-      field: toStix
-      target_field: threat.indicator.opencti.stix
-  - rename:
-      field: pattern_type
-      target_field: threat.indicator.opencti.pattern_type
-      ignore_missing: true
-  - rename:
-      field: pattern_version
-      target_field: threat.indicator.opencti.pattern_version
-      ignore_missing: true
-  - rename:
-      field: pattern
-      target_field: threat.indicator.opencti.pattern
-      ignore_missing: true
 
-  ###############################
-  # Threat ECS Fields - Generic #
-  ###############################
-  - set:
-      field: threat.feed.name
-      value: "OpenCTI"
   - rename:
-      field: description
-      target_field: threat.indicator.description
-      ignore_missing: true
+    field: id
+    target_field: event.id
   - rename:
-      field: modified
-      target_field: threat.indicator.modified_at
-  - script:
-      # based on https://stix2.readthedocs.io/en/latest/api/confidence/stix2.confidence.scales.html#stix2.confidence.scales.value_to_none_low_medium_high
-      lang: painless
-      source: |
-        if (ctx.confidence == null) {
-          ctx.threat.indicator.confidence = 'Not Specified';
-        } else if (ctx.confidence == 0) {
-          ctx.threat.indicator.confidence = 'None';
-        } else if (1 <= ctx.confidence && ctx.confidence <= 29) {
-          ctx.threat.indicator.confidence = 'Low';
-        } else if (30 <= ctx.confidence && ctx.confidence <= 69) {
-          ctx.threat.indicator.confidence = 'Med';
-        } else if (70 <= ctx.confidence && ctx.confidence <= 100) {
-          ctx.threat.indicator.confidence = 'High';
-        } else {
-          ctx.threat.indicator.confidence = 'Not Specified';
-        }
+    field: standard_id
+    target_field: opencti.indicator.standard_id
+  - rename:
+    field: is_inferred
+    target_field: opencti.indicator.is_inferred
+  - rename:
+    field: revoked
+    target_field: opencti.indicator.revoked
+  # TODO bring back script to map confidence values
+  - rename:
+    field: confidence
+    target_field: threat.indicator.confidence
+  - rename:
+    field: lang
+    target_field: opencti.indicator.lang
+  - rename:
+    field: created
+    target_field: '@timestamp'
+  - rename:
+    field: modified
+    target_field: threat.indicator.modified_at
+  - rename:
+    field: pattern_type
+    target_field: opencti.indicator.pattern_type
+  - rename:
+    field: pattern_version
+    target_field: opencti.indicator.pattern_version
+  - rename:
+    field: pattern
+    target_field: opencti.indicator.pattern
+  - rename:
+    field: name
+    target_field: threat.indicator.name
+  - rename:
+    field: description
+    target_field: threat.indicator.description
+  - rename:
+    field: valid_from
+    target_field: opencti.indicator.valid_from
+  - rename:
+    field: valid_until
+    target_field: opencti.indicator.valid_until
+  - rename:
+    field: x_opencti_score
+    target_field: opencti.indicator.score
+  - rename:
+    field: x_opencti_detection
+    target_field: opencti.indicator.detection
+  - rename:
+    field: x_opencti_main_observable_type
+    target_field: threat.indicator.type
+  - rename:
+    field: createdBy.name
+    target_field: threat.indicator.provider
+  - rename:
+    field: createdBy.identity_class
+    target_field: opencti.indicator.creator_identity_class
+
   - gsub:
-      if: "!ctx.objectMarking.edges.isEmpty() && ctx.objectMarking.edges[0].node.definition_type == 'TLP'"
-      field: objectMarking.edges[0].node.definition
-      pattern: '^TLP:'
-      replacement: ''
-      target_field: threat.indicator.marking.tlp
-  - rename:
-      field: createdBy.name
-      target_field: threat.indicator.provider
-  - lowercase:
-      field: x_opencti_main_observable_type
-      target_field: threat.indicator.type
+    if: '!ctx.objectMarking.edges.isEmpty() && ctx.objectMarking.edges[0].node.definition_type == "TLP"'
+    field: objectMarking.edges[0].node.definition
+    pattern: '^TLP:'
+    replacement: ''
+    target_field: threat.indicator.marking.tlp
 
-  ############################################
-  # Threat Fields - Observable type specific #
-  ############################################
+  - foreach:
+    field: objectLabel.edges
+    processor:
+      append:
+        field: tags
+        value: "{{{_ingest._value.node.value}}}"
+  - remove:
+    field: objectLabel
+
+  # TODO: fix kill chain phases to be an array of pairs
+  - foreach:
+    field: killChainPhases.edges
+    processor:
+      append:
+        field: opencti.indicator.kill_chain_phase_name
+        value: "{{{_ingest._value.node.phase_name}}}"
+  - foreach:
+    field: killChainPhases.edges
+    processor:
+      append:
+        field: opencti.indicator.kill_chain_name
+        value: "{{{_ingest._value.node.kill_chain_name}}}"
+  - remove:
+    field: killChainPhases
+
+  - foreach:
+    field: externalReferences.edges
+    processor:
+      append:
+        field: opencti.indicator.external_reference
+        value: "{{{_ingest._value.node}}}"
+  - remove:
+    field: externalReferences
+
+  #####################
+  # Observable fields #
+  #####################
+
+  - rename:
+    field: opencti.observables.pageInfo.globalCount
+    target_field: opencti.indicator.observables_count
+
+  - foreach:
+    field: observables.edges
+    processor:
+      pipeline:
+        processors:
+        - rename:
+            field: _ingest._value.node.observable_value
+            target_field: _ingest._value.node.value
+        - rename:
+            field: _ingest._value.node.x_opencti_description
+            target_field: _ingest._value.node.description
+            ignore_missing: true
+        - rename:
+            field: _ingest._value.node.x_opencti_additional_names
+            target_field: _ingest._value.node.additional_names
+            ignore_missing: true
+        - rename:
+            field: _ingest._value.node.obsContent
+            target_field: _ingest._value.node.content
+            ignore_missing: true
+        - foreach:
+          field: _ingest._value.node.serviceDlls.edges
+          ignore_missing: true
+          processor:
+            pipeline:
+              processors:
+              - rename:
+                  field: _ingest._value.node.x_opencti_additional_names
+                  target_field: _ingest.node._value.additional_names
+              - rename:
+                  field: _ingest._value.node.obsContent
+                  target_field: _ingest._value.node.content
+              - rename:
+                  field: _ingest._value.node
+                  target_field: _ingest._value
+        - rename:
+            field: _ingest._value.node.serviceDlls.edges
+            target_field: _ingest._value.node.service_dlls
+            ignore_missing: true
 
   - script:
-      description: Collect first observable of each type, note dropped observables
+      description: Restructure hashes to ECS format
       lang: painless
       source: |
-        ctx.has_additional_observables = false;
-        if (ctx.observables.edges.hasNextPage) {
-          ctx.has_additional_observables = true;
+        Map hashesToECS(ArrayList hashes) {
+          Map hash = [:];
+          for (int i = 0; i < hashes.length; i++) {
+            String algorithm = hashes[i].algorithm;
+            algorithm = algorithm.toLowerCase();
+            algorithm = algorithm.replace('sha-', 'sha');
+            algorithm = algorithm.replace('sha3-', 'sha3_');
+            hash[algorithm] = hashes[i].hash;
+          }
+          return hash;
         }
-        observables = ctx.observables.edges;
-        ctx.observables_by_type = [:];
+        ArrayList observables = ctx.observables.edges;
         for (int i = 0; i < observables.length; i++) {
-          k = observables[i]['__type'];
-          if (ctx.observables_by_type.containsKey(k) {
-            ctx.has_additional_observables = true;
-          } else {
-            ctx.observables_by_type[k] = observables[i];
+          Map observable = observables[i].node;
+          if (observable.containsKey('hashes')) {
+            observable.hash = hashesToECS(observable.hashes);
+            observable.remove('hashes');
+          }
+          if (observable.containsKey('service_dlls')) {
+            for (int ii = 0; ii < observable.service_dlls.length; ii++) {
+              Map serviceDll = observable.service_dlls[ii];
+              if (serviceDll.containsKey('hashes')) {
+                serviceDll.hash = hashesToECS(serviceDll.hashes);
+                serviceDll.remove('hashes');
+              }
+            }
           }
         }
 
-  # - rename:
-  #     if: observables_by_type.containsKey('Artifact')
-  #     field: observables_by_type.Artifact.
-  #     target_field: threat.indicator.
+  - script:
+      description: Move observable nodes to their target location
+      lang: painless
+      source: |
+        if (!ctx.containsKey('opencti')) {
+          ctx.opencti = [:];
+        }
+        if (!ctx.opencti.containsKey('observable')) {
+          ctx.opencti.observable = [:];
+        }
+        ArrayList observables = ctx.observables.edges;
+        for (int i = 0; i < observables.length; i++) {
+          String entity = observables[i]['node']['entity_type'];
+          entity = entity.toLowerCase();
+          entity = entity.replace('-', '_');
+          if (ctx.opencti.observable.containsKey(entity)) {
+            ctx.opencti.observable[entity].append(observables[i]['node'])
+          } else {
+            ctx.opencti.observable[entity] = observables[i]['node'];
+          }
+        }
 
-  - rename:
-      if: observables_by_type.containsKey('AutonomousSystem')
-      field: observables_by_type.AutonomousSystem.standard_id
-      target_field: threat.indicator.as.opencti.standard_id
-  - rename:
-      if: observables_by_type.containsKey('AutonomousSystem')
-      field: observables_by_type.AutonomousSystem.number
-      target_field: threat.indicator.as.number
-  - rename:
-      if: observables_by_type.containsKey('AutonomousSystem')
-      field: observables_by_type.AutonomousSystem.name
-      target_field: threat.indicator.as.organization_name
-  - rename:
-      if: observables_by_type.containsKey('AutonomousSystem')
-      field: observables_by_type.AutonomousSystem.rir
-      target_field: threat.indicator.as.opencti.rir
-
-  # - rename:
-  #     if: observables_by_type.containsKey('BankAccount')
-  #     field: observables_by_type.BankAccount.
-  #     target_field: threat.indicator.
-
-  # - rename:
-  #     if: observables_by_type.containsKey('CryptocurrencyWallet')
-  #     field: observables_by_type.CryptocurrencyWallet.
-  #     target_field: threat.indicator.
-
-  # - rename:
-  #     if: observables_by_type.containsKey('CryptographicKey')
-  #     field: observables_by_type.CryptographicKey.
-  #     target_field: threat.indicator.
-
-  # - rename:
-  #     if: observables_by_type.containsKey('Directory')
-  #     field: observables_by_type.Directory.
-  #     target_field: threat.indicator.
-
-  # - rename:
-  #     if: observables_by_type.containsKey('DomainName')
-  #     field: observables_by_type.DomainName.
-  #     target_field: threat.indicator.
-
-  # - rename:
-  #     if: observables_by_type.containsKey('EmailAddr')
-  #     field: observables_by_type.EmailAddr.
-  #     target_field: threat.indicator.
-
-  # - rename:
-  #     if: observables_by_type.containsKey('EmailMessage')
-  #     field: observables_by_type.EmailMessage.
-  #     target_field: threat.indicator.
-
-  # - rename:
-  #     if: observables_by_type.containsKey('EmailMimePartType')
-  #     field: observables_by_type.EmailMimePartType.
-  #     target_field: threat.indicator.
-
-  # - rename:
-  #     if: observables_by_type.containsKey('Hostname')
-  #     field: observables_by_type.Hostname.
-  #     target_field: threat.indicator.
-
-  # - rename:
-  #     if: observables_by_type.containsKey('IPv4Addr')
-  #     field: observables_by_type.IPv4Addr.
-  #     target_field: threat.indicator.
-
-  # - rename:
-  #     if: observables_by_type.containsKey('IPv6Addr')
-  #     field: observables_by_type.IPv6Addr.
-  #     target_field: threat.indicator.
-
-  # - rename:
-  #     if: observables_by_type.containsKey('MacAddr')
-  #     field: observables_by_type.MacAddr.
-  #     target_field: threat.indicator.
-
-  # - rename:
-  #     if: observables_by_type.containsKey('MediaContent')
-  #     field: observables_by_type.MediaContent.
-  #     target_field: threat.indicator.
-
-  # - rename:
-  #     if: observables_by_type.containsKey('Mutex')
-  #     field: observables_by_type.Mutex.
-  #     target_field: threat.indicator.
-
-  # - rename:
-  #     if: observables_by_type.containsKey('NetworkTraffic')
-  #     field: observables_by_type.NetworkTraffic.
-  #     target_field: threat.indicator.
-
-  # - rename:
-  #     if: observables_by_type.containsKey('PaymentCartd')
-  #     field: observables_by_type.PaymentCartd.
-  #     target_field: threat.indicator.
-
-  # - rename:
-  #     if: observables_by_type.containsKey('PhoneNumber')
-  #     field: observables_by_type.PhoneNumber.
-  #     target_field: threat.indicator.
-
-  # - rename:
-  #     if: observables_by_type.containsKey('Process')
-  #     field: observables_by_type.Process.
-  #     target_field: threat.indicator.
-
-  # - rename:
-  #     if: observables_by_type.containsKey('Software')
-  #     field: observables_by_type.Software.
-  #     target_field: threat.indicator.
-
-  # - rename:
-  #     if: observables_by_type.containsKey('StixFile')
-  #     field: observables_by_type.StixFile.
-  #     target_field: threat.indicator.
-
-  # - rename:
-  #     if: observables_by_type.containsKey('Text')
-  #     field: observables_by_type.Text.
-  #     target_field: threat.indicator.
-
-  # - rename:
-  #     if: observables_by_type.containsKey('Url')
-  #     field: observables_by_type.Url.
-  #     target_field: threat.indicator.
-
-  # - rename:
-  #     if: observables_by_type.containsKey('UserAccount')
-  #     field: observables_by_type.UserAccount.
-  #     target_field: threat.indicator.
-
-  # - rename:
-  #     if: observables_by_type.containsKey('UserAgent')
-  #     field: observables_by_type.UserAgent.
-  #     target_field: threat.indicator.
-
-  # - rename:
-  #     if: observables_by_type.containsKey('WindowsRegistryKey')
-  #     field: observables_by_type.WindowsRegistryKey.
-  #     target_field: threat.indicator.
-
-  # - rename:
-  #     if: observables_by_type.containsKey('WindowsRegistryValueType')
-  #     field: observables_by_type.WindowsRegistryValueType.
-  #     target_field: threat.indicator.
-
-  - rename:
-      if: observables_by_type.containsKey('X509Certificate')
-      field: observables_by_type.X509Certificate.standard_id
-      target_field: threat.indicator.x509.opencti.standard_id
-
-
-
-
-
-  ############
-  # Clean up #
-  ############
   - remove:
-      field:
-        - confidence
-        - toStix
-        - objectMarking
-        - createdBy
-        - x_opencti_main_observable_type
-        - observables
-        - observables_by_type
+    field: observables
 
 on_failure:
 - set:
