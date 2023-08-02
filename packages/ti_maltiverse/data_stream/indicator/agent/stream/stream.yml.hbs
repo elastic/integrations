@@ -1,0 +1,29 @@
+config_version: "2"
+interval: {{ interval }}
+request.method: "GET"
+request.timeout: 50s
+request.url: {{ api_hostname }}/collection/{{ feed }}/download
+request.transforms:
+  - set:
+      target: "header.Authorization"
+      value: "Bearer {{ api_token }}"
+response.split:
+  target: body.blacklist
+  keep_parent: true
+fields_under_root: true
+fields:
+  feed: {{ feed }}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

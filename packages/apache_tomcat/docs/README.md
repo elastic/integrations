@@ -105,6 +105,18 @@ Combined Log Format + X-Forwarded-For header :- '%h %l %u %t "%r" %s %b %A %X %T
 systemctl restart tomcat
 ```
 
+## Supported log formats for Catalina and Localhost logs:
+
+- With error stack trace:
+```
+dd-MMM-yyyy HH:mm:ss.SSS [Severity] [Subsystem] [Message Text] [Error Stack Trace]
+```
+
+- Without error stack trace:
+```
+dd-MMM-yyyy HH:mm:ss.SSS [Severity] [Subsystem] [Message Text]
+```
+
 Note:
 - Restarting Apache Tomcat does not affect the virtual desktops that are currently running. It will only prevent new users from logging in for the duration of the restart process (typically several seconds).
 
