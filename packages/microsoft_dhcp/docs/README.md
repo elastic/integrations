@@ -22,11 +22,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2001-01-01T01:01:01.000-05:00",
     "agent": {
-        "ephemeral_id": "d8fa21a0-e19c-4412-917a-0b3b12afb08d",
-        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
+        "ephemeral_id": "a53c1bd7-936f-4ca8-8740-84d1504d537e",
+        "id": "4e45636b-5ca2-4145-9926-801ca8065d87",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.2"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "microsoft_dhcp.log",
@@ -37,9 +37,9 @@ An example event for `log` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
+        "id": "4e45636b-5ca2-4145-9926-801ca8065d87",
         "snapshot": false,
-        "version": "8.8.2"
+        "version": "8.9.0"
     },
     "event": {
         "action": "dhcp-dns-update",
@@ -49,13 +49,11 @@ An example event for `log` looks as following:
         ],
         "code": "35",
         "dataset": "microsoft_dhcp.log",
-        "ingested": "2023-07-24T14:29:55Z",
+        "ingested": "2023-08-01T16:33:06Z",
         "kind": "event",
         "original": "35,01/01/01,01:01:01,DNS update request failed,192.168.2.1,host.test.com,000000000000,",
         "outcome": "failure",
-        "reason": [
-            "DNS update request failed."
-        ],
+        "reason": "DNS update request failed.",
         "timezone": "America/New_York",
         "type": [
             "connection",
@@ -86,10 +84,10 @@ An example event for `log` looks as following:
     "observer": {
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.22.0.10"
+            "192.168.16.7"
         ],
         "mac": [
-            "02-42-AC-16-00-0A"
+            "02-42-C0-A8-10-07"
         ]
     },
     "tags": [
@@ -137,7 +135,8 @@ An example event for `log` looks as following:
 | microsoft.dhcp.error_code | DHCP server error code. | keyword |
 | microsoft.dhcp.probation_time | The probation time before lease ends on specific IP. | keyword |
 | microsoft.dhcp.relay_agent_info | Information about DHCP relay agent used for the DHCP request. | keyword |
-| microsoft.dhcp.result | The DHCP result type, for example "NoQuarantine", "Drop Packet" etc. | keyword |
+| microsoft.dhcp.result | The DHCP result type in numerical value, for example "NoQuarantine" is 0, "Quaratine" is 1, "Drop Packet" is 2 etc. | keyword |
+| microsoft.dhcp.result_description | The DHCP result type from numerical value, for example, 0 is "NoQuarantine", 1 is "Quarantine", 2 is "Drop Packet" etc. | keyword |
 | microsoft.dhcp.subnet_prefix | The number of bits for the subnet prefix. | keyword |
 | microsoft.dhcp.transaction_id | The DHCP transaction ID. | keyword |
 | microsoft.dhcp.user.hex | Hex representation of the user. | keyword |
