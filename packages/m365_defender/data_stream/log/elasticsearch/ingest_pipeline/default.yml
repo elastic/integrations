@@ -95,17 +95,19 @@ processors:
   - append:
       field: event.type
       value: user
-      if: ctx.json?.alerts?.entities?.entityType == 'User'
+      if: ctx.json?.alerts?.entities?.entityType == 'User' && ctx.event?.category != null && ctx.event.category.contains('process')
   - append:
       field: event.type
-      value:
-        - creation
-        - start
-      if: ctx.json?.status == 'New'
+      value: start
+      if: ctx.json?.status == 'New' && ctx.event?.category != null && !ctx.event.category.contains('malware')
   - append:
       field: event.type
       value: end
-      if: ctx.json?.status == 'Resolved'
+      if: ctx.json?.status == 'Resolved' && ctx.event?.category != null && !ctx.event.category.contains('malware')
+  - append:
+      field: event.type
+      value: info
+      if: ctx.event?.category != null && ctx.event?.type == null
   - rename:
       field: json.alerts.alertId
       target_field: event.id
