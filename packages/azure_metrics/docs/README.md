@@ -457,10 +457,10 @@ so the `period` for `container_service` should be `300s` or multiples of `300s`.
 | azure.container_service.kube_node_status_condition.avg | Statuses for various node conditions | float | gauge |
 | azure.container_service.kube_pod_status_phase.avg | Number of pods by phase | float | gauge |
 | azure.container_service.kube_pod_status_ready.avg | Number of pods in Ready state | float | gauge |
-| azure.dimensions.condition | The container name | keyword |  |
+| azure.dimensions.condition | Node conditions | keyword |  |
 | azure.dimensions.node | Node name | keyword |  |
 | azure.dimensions.pod | Pod name | keyword |  |
-| azure.dimensions.status | The container name | keyword |  |
+| azure.dimensions.status | Statuses for various node conditions | keyword |  |
 | azure.namespace | The namespace selected | keyword |  |
 | azure.resource.group | The resource group | keyword |  |
 | azure.resource.id | The id of the resource | keyword |  |
