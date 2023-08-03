@@ -88,10 +88,10 @@ An example event for `asset_host_detection` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-07-19T11:45:22.303Z",
+    "@timestamp": "2023-08-02T13:38:44.115Z",
     "agent": {
-        "ephemeral_id": "a3596394-8571-45f9-bc76-a357994aa995",
-        "id": "03a972e9-85aa-4975-a370-35fd9d7745e5",
+        "ephemeral_id": "f8ce1789-cd24-4605-99f3-4c8edbc2e353",
+        "id": "34d4af1b-e042-4964-b319-3a10baae135b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.9.0"
@@ -105,8 +105,8 @@ An example event for `asset_host_detection` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "03a972e9-85aa-4975-a370-35fd9d7745e5",
-        "snapshot": true,
+        "id": "34d4af1b-e042-4964-b319-3a10baae135b",
+        "snapshot": false,
         "version": "8.9.0"
     },
     "event": {
@@ -115,7 +115,7 @@ An example event for `asset_host_detection` looks as following:
             "host"
         ],
         "dataset": "qualys_vmdr.asset_host_detection",
-        "ingested": "2023-07-19T11:45:25Z",
+        "ingested": "2023-08-02T13:38:47Z",
         "kind": "alert",
         "type": [
             "info"
@@ -291,8 +291,8 @@ An example event for `knowledge_base` looks as following:
 {
     "@timestamp": "2023-06-29T12:20:46.000Z",
     "agent": {
-        "ephemeral_id": "2ded4b3f-fecf-4fa8-8b17-e138ff7bd374",
-        "id": "03a972e9-85aa-4975-a370-35fd9d7745e5",
+        "ephemeral_id": "59582de9-dc2f-4c69-81c2-4caca64218ee",
+        "id": "34d4af1b-e042-4964-b319-3a10baae135b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.9.0"
@@ -306,8 +306,8 @@ An example event for `knowledge_base` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "03a972e9-85aa-4975-a370-35fd9d7745e5",
-        "snapshot": true,
+        "id": "34d4af1b-e042-4964-b319-3a10baae135b",
+        "snapshot": false,
         "version": "8.9.0"
     },
     "event": {
@@ -317,7 +317,7 @@ An example event for `knowledge_base` looks as following:
         ],
         "dataset": "qualys_vmdr.knowledge_base",
         "id": "11830",
-        "ingested": "2023-07-19T11:46:28Z",
+        "ingested": "2023-08-02T13:39:40Z",
         "kind": "alert",
         "type": [
             "info"
