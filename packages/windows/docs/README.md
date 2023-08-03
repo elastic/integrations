@@ -93,11 +93,11 @@ An example event for `applocker_exe_and_dll` looks as following:
 {
     "@timestamp": "2023-07-20T15:05:03.882Z",
     "agent": {
-        "ephemeral_id": "b2baef03-a158-446a-bc59-f8fac1080b87",
-        "id": "cb65bd89-2c8d-44d1-90cc-e6b75064c4bf",
+        "ephemeral_id": "7673549c-99cc-46f7-a801-7afeb432cd53",
+        "id": "51fe65df-a759-4054-ae29-e8242662fb48",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.2"
+        "version": "8.7.1"
     },
     "data_stream": {
         "dataset": "windows.applocker_exe_and_dll",
@@ -108,22 +108,35 @@ An example event for `applocker_exe_and_dll` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "cb65bd89-2c8d-44d1-90cc-e6b75064c4bf",
+        "id": "51fe65df-a759-4054-ae29-e8242662fb48",
         "snapshot": false,
-        "version": "8.8.2"
+        "version": "8.7.1"
     },
     "event": {
         "action": "None",
         "agent_id_status": "verified",
         "category": "process",
         "code": "8003",
-        "created": "2023-07-25T14:17:57.723Z",
+        "created": "2023-08-03T01:22:19.036Z",
         "dataset": "windows.applocker_exe_and_dll",
-        "ingested": "2023-07-25T14:18:00Z",
+        "ingested": "2023-08-03T01:22:22Z",
         "kind": "event",
         "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-AppLocker' Guid='{cbda4dbf-8d5d-4f69-9578-be14aa540d22}' /\u003e\u003cEventID\u003e8003\u003c/EventID\u003e\u003cVersion\u003e0\u003c/Version\u003e\u003cLevel\u003e3\u003c/Level\u003e\u003cTask\u003e0\u003c/Task\u003e\u003cOpcode\u003e0\u003c/Opcode\u003e\u003cKeywords\u003e0x8000000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2023-07-20T15:05:03.8826518Z' /\u003e\u003cEventRecordID\u003e154247\u003c/EventRecordID\u003e\u003cCorrelation /\u003e\u003cExecution ProcessID='33848' ThreadID='12040' /\u003e\u003cChannel\u003eMicrosoft-Windows-AppLocker/EXE and DLL\u003c/Channel\u003e\u003cComputer\u003eTOPSYLL.local\u003c/Computer\u003e\u003cSecurity UserID='S-1-5-21-1133191089-1850170202-1535859923-200319' /\u003e\u003c/System\u003e\u003cUserData\u003e\u003cRuleAndFileData xmlns='http://schemas.microsoft.com/schemas/event/Microsoft.Windows/1.0.0.0'\u003e\u003cPolicyNameLength\u003e3\u003c/PolicyNameLength\u003e\u003cPolicyName\u003eEXE\u003c/PolicyName\u003e\u003cRuleId\u003e{00000000-0000-0000-0000-000000000000}\u003c/RuleId\u003e\u003cRuleNameLength\u003e1\u003c/RuleNameLength\u003e\u003cRuleName\u003e-\u003c/RuleName\u003e\u003cRuleSddlLength\u003e1\u003c/RuleSddlLength\u003e\u003cRuleSddl\u003e-\u003c/RuleSddl\u003e\u003cTargetUser\u003eS-1-5-21-1133191089-1850170202-1535859923-200319\u003c/TargetUser\u003e\u003cTargetProcessId\u003e27116\u003c/TargetProcessId\u003e\u003cFilePathLength\u003e101\u003c/FilePathLength\u003e\u003cFilePath\u003e%OSDRIVE%\\USERS\\TOPSY\\APPDATA\\LOCAL\\GITHUBDESKTOP\\APP-3.1.2\\RESOURCES\\APP\\GIT\\MINGW64\\BIN\\GIT.EXE\u003c/FilePath\u003e\u003cFileHashLength\u003e32\u003c/FileHashLength\u003e\u003cFileHash\u003e11D3940DE41D28E044CE45AB76A6D824E617D99B62C5FB44E37BE5CD7B0545F5\u003c/FileHash\u003e\u003cFqbnLength\u003e72\u003c/FqbnLength\u003e\u003cFqbn\u003eO=JOHANNES SCHINDELIN, S=NORDRHEIN-WESTFALEN, C=DE\\GIT\\GIT.EXE\\2.35.5.01\u003c/Fqbn\u003e\u003cTargetLogonId\u003e0x14fcb7\u003c/TargetLogonId\u003e\u003cFullFilePathLength\u003e94\u003c/FullFilePathLength\u003e\u003cFullFilePath\u003eC:\\Users\\TOPSY\\AppData\\Local\\GitHubDesktop\\app-3.1.2\\resources\\app\\git\\mingw64\\bin\\git.exe\u003c/FullFilePath\u003e\u003c/RuleAndFileData\u003e\u003c/UserData\u003e\u003c/Event\u003e",
         "provider": "Microsoft-Windows-AppLocker",
         "type": "start"
+    },
+    "file": {
+        "hash": {
+            "sha256": "11D3940DE41D28E044CE45AB76A6D824E617D99B62C5FB44E37BE5CD7B0545F5"
+        },
+        "name": "GIT.EXE",
+        "x509": {
+            "subject": {
+                "country": "DE",
+                "organization": "JOHANNES SCHINDELIN",
+                "state_or_province": "NORDRHEIN-WESTFALEN"
+            }
+        }
     },
     "host": {
         "name": "TOPSYLL.local"
@@ -142,6 +155,13 @@ An example event for `applocker_exe_and_dll` looks as following:
         "id": "S-1-5-21-1133191089-1850170202-1535859923-200319"
     },
     "winlog": {
+        "applocker": {
+            "fqbn": {
+                "file_name": "GIT.EXE",
+                "file_version": "2.35.5.01",
+                "product_name": "GIT"
+            }
+        },
         "channel": "Microsoft-Windows-AppLocker/EXE and DLL",
         "computer_name": "TOPSYLL.local",
         "event_id": "8003",
@@ -285,9 +305,9 @@ An example event for `applocker_exe_and_dll` looks as following:
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 | winlog.activity_id | A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity. | keyword |
 | winlog.api | The event log API type used to read the record. The possible values are "wineventlog" for the Windows Event Log API or "eventlogging" for the Event Logging API. The Event Logging API was designed for Windows Server 2003 or Windows 2000 operating systems. In Windows Vista, the event logging infrastructure was redesigned. On Windows Vista or later operating systems, the Windows Event Log API is used. Winlogbeat automatically detects which API to use for reading event logs. | keyword |
-| winlog.applocker.fqbn.filename |  | keyword |
-| winlog.applocker.fqbn.name |  | keyword |
-| winlog.applocker.fqbn.version |  | keyword |
+| winlog.applocker.fqbn.file_name |  | keyword |
+| winlog.applocker.fqbn.file_version |  | keyword |
+| winlog.applocker.fqbn.product_name |  | keyword |
 | winlog.channel | The name of the channel from which this record was read. This value is one of the names from the `event_logs` collection in the configuration. | keyword |
 | winlog.computer_name | The name of the computer that generated the record. When using Windows event forwarding, this name can differ from `agent.hostname`. | keyword |
 | winlog.event_data | The event-specific data. This field is mutually exclusive with `user_data`. If you are capturing event data on versions prior to Windows Vista, the parameters in `event_data` are named `param1`, `param2`, and so on, because event log parameters are unnamed in earlier versions of Windows. | object |
