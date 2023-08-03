@@ -20,23 +20,40 @@ request.transforms:
       target: header.Authorization
       value: "Bearer {{oauth_token}}"
 
-  # If the pagination is interrupted, then the last cursor
-  # is saved and sent in the request url to continue pagination.
-  # If pagination is complete, then the new request will have 'first_event'
-  # date as 'oldest' param and 'now' as 'latest' param 
-  {{#if this.cursor.pagination_incomplete}}
   - set:
       target: url.params.cursor
       value: '[[- .cursor.last_cursor -]]'
-  {{else}}
+      default: ''
+
   - set:
       target: url.params.oldest
-      value: '[[- .cursor.next_oldest_date -]]'
+      # If last pagination cycle was finished successully
+      # we move the oldest pointer forward
+      # else we continue processing using cursor
+      # If none of the values are in the cursor it means is a fresh start
+      # and we pick the default value.
+      value: >-
+        [[- if eq .cursor.pagination_finished "true" -]]
+          [[- .cursor.next_oldest_date -]]
+        [[- else -]]
+          ''
+        [[- end -]]
       default: '[[(now (parseDuration "-{{initial_interval}}")).Unix]]'
+
   - set:
       target: url.params.latest
-      value: '[[(now).Unix]]'
-  {{/if}}
+      # If last pagination cycle was finished successully
+      # we move the latest pointer forward
+      # else we continue processing using cursor
+      # If none of the values are in the cursor it means is a fresh start
+      # and we pick the default value.
+      value: >-
+        [[- if eq .cursor.pagination_finished "true" -]]
+          [[(now).Unix]]
+        [[- else -]]
+          ''
+        [[- end -]]
+      default: '[[(now).Unix]]'
 
   - set:
       target: url.params.limit
@@ -59,12 +76,11 @@ response.pagination:
     target: url.params.latest
           
 cursor:
-  pagination_incomplete:
+  pagination_finished:
     # Use this flag to identify if an execution was interrupted in the middle
     # of a pagination cycle.
-    value: '[[(index .last_response.body.response_metadata "next_cursor")]]'
-    fail_on_template_error: true
-    
+    value: '[[not (index .last_response.body.response_metadata "next_cursor")]]'
+
   last_cursor:
     # Use this value to be able to resume from an interrupted pagination cycle.
     value: '[[.last_response.body.response_metadata.Get "next_cursor"]]'
