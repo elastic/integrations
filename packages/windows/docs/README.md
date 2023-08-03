@@ -234,6 +234,10 @@ An example event for `applocker_exe_and_dll` looks as following:
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | file.path.text | Multi-field of `file.path`. | match_only_text |
+| file.x509.subject.country | List of country (C) code | keyword |
+| file.x509.subject.locality | List of locality names (L) | keyword |
+| file.x509.subject.organization | List of organizations (O) of subject. | keyword |
+| file.x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -281,6 +285,9 @@ An example event for `applocker_exe_and_dll` looks as following:
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 | winlog.activity_id | A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity. | keyword |
 | winlog.api | The event log API type used to read the record. The possible values are "wineventlog" for the Windows Event Log API or "eventlogging" for the Event Logging API. The Event Logging API was designed for Windows Server 2003 or Windows 2000 operating systems. In Windows Vista, the event logging infrastructure was redesigned. On Windows Vista or later operating systems, the Windows Event Log API is used. Winlogbeat automatically detects which API to use for reading event logs. | keyword |
+| winlog.applocker.fqbn.filename |  | keyword |
+| winlog.applocker.fqbn.name |  | keyword |
+| winlog.applocker.fqbn.version |  | keyword |
 | winlog.channel | The name of the channel from which this record was read. This value is one of the names from the `event_logs` collection in the configuration. | keyword |
 | winlog.computer_name | The name of the computer that generated the record. When using Windows event forwarding, this name can differ from `agent.hostname`. | keyword |
 | winlog.event_data | The event-specific data. This field is mutually exclusive with `user_data`. If you are capturing event data on versions prior to Windows Vista, the parameters in `event_data` are named `param1`, `param2`, and so on, because event log parameters are unnamed in earlier versions of Windows. | object |
@@ -396,12 +403,6 @@ An example event for `applocker_exe_and_dll` looks as following:
 | winlog.event_data.param7 |  | keyword |
 | winlog.event_data.param8 |  | keyword |
 | winlog.event_id | The event identifier. The value is specific to the source of the event. | keyword |
-| winlog.fqbn.country |  | keyword |
-| winlog.fqbn.filename |  | keyword |
-| winlog.fqbn.name |  | keyword |
-| winlog.fqbn.organization |  | keyword |
-| winlog.fqbn.state |  | keyword |
-| winlog.fqbn.version |  | keyword |
 | winlog.keywords | The keywords are used to classify an event. | keyword |
 | winlog.level | The level assigned to the event such as Information, Warning, or Critical. | keyword |
 | winlog.opcode | The opcode defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. | keyword |
