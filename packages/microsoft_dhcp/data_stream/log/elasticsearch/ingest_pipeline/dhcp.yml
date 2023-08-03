@@ -373,6 +373,25 @@ processors:
         }
         def hm = new HashMap(params[ctx.event.code]);
         hm.forEach((k, v) -> ctx.event[k] = v);
+  - script:
+      description: Set the QResult description based on numerical value.
+      lang: painless
+      tag: add_qresult_description
+      params:
+        "0": NoQuarantine
+        "1": Quarantine
+        "2": Drop Packet
+        "3": Probation
+        "6": No Quarantine Information
+      source: |-
+        if (ctx.microsoft?.dhcp?.result == null) {
+          return;
+        }
+        def desc = params.get(ctx.microsoft.dhcp.result);
+        if (desc == null) {
+          return;
+        }
+        ctx.microsoft.dhcp['result_description'] = desc; 
   - set:
       field: event.outcome
       value: success
