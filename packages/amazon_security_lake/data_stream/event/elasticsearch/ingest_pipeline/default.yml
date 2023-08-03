@@ -5,7 +5,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: 8.8.0
+      value: 8.9.0
   - rename:
       field: message
       target_field: event.original
@@ -22,16 +22,8 @@ processors:
   - convert:
       field: ocsf.class_uid
       tag: convert_class_uid_to_string
-      if: ctx.ocsf?.class_uid != ''
       type: string
       ignore_missing: true
-      on_failure:
-        - remove:
-            field: ocsf.class_uid
-            ignore_missing: true
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
       tag: set_event_kind
@@ -161,7 +153,6 @@ processors:
       tag: lowercase_event_action
       target_field: event.action
       ignore_missing: true
-      if: ctx.ocsf?.activity_name != ''
       on_failure:
         - remove:
             field: ocsf.activity_name
@@ -190,7 +181,6 @@ processors:
   - convert:
       field: ocsf.duration
       tag: convert_duration_to_long
-      if: ctx.ocsf?.duration != ''
       type: long
       ignore_missing: true
       on_failure:
@@ -206,7 +196,7 @@ processors:
       lang: painless
       if: ctx.ocsf?.duration != null
       source: >-
-        ctx.event.duration = (long)ctx.ocsf.duration * 1000000;
+        ctx.event.duration = ctx.ocsf.duration * 1000000;
   - set:
       field: event.id
       tag: set_event_id
@@ -226,7 +216,6 @@ processors:
   - convert:
       field: ocsf.metadata.sequence
       tag: convert_metadata_sequence_to_long
-      if: ctx.ocsf?.metadata?.sequence != ''
       type: long
       ignore_missing: true
       on_failure:
@@ -259,7 +248,6 @@ processors:
   - convert:
       field: ocsf.api.response.code
       tag: convert_api_response_code_to_long
-      if: ctx.ocsf?.api?.response?.code != ''
       type: long
       ignore_missing: true
       on_failure:
@@ -272,46 +260,21 @@ processors:
   - convert:
       field: ocsf.activity_id
       tag: convert_activity_id_to_string
-      if: ctx.ocsf?.activity_id != ''
       type: string
       ignore_missing: true
-      on_failure:
-        - remove:
-            field: ocsf.activity_id
-            ignore_missing: true
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.category_uid
       tag: convert_category_uid_to_string
-      if: ctx.ocsf?.category_uid != ''
       type: string
       ignore_missing: true
-      on_failure:
-        - remove:
-            field: ocsf.category_uid
-            ignore_missing: true
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.cloud.account.type_id
       tag: convert_cloud_account_type_id_to_string
-      if: ctx.ocsf?.cloud?.account?.type_id != ''
       type: string
       ignore_missing: true
-      on_failure:
-        - remove:
-            field: ocsf.cloud.account.type_id
-            ignore_missing: true
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.count
       tag: convert_count_to_long
-      if: ctx.ocsf?.count != ''
       type: long
       ignore_missing: true
       on_failure:
@@ -524,13 +487,6 @@ processors:
           tag: convert_reputation_score_id_to_string
           type: string
           ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.reputation.score_id
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ocsf.observables
       if: ctx.ocsf?.observables instanceof List
@@ -541,13 +497,6 @@ processors:
           tag: convert_type_id_to_string
           type: string
           ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.type_id
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
       tag: script_to_map_observables_into_key_value_pair
@@ -562,7 +511,6 @@ processors:
   - convert:
       field: ocsf.severity_id
       tag: convert_severity_id_to_long
-      if: ctx.ocsf?.severity_id != ''
       type: long
       ignore_missing: true
       on_failure:
@@ -618,32 +566,23 @@ processors:
   - convert:
       field: ocsf.status_id
       tag: convert_status_id_to_string
-      if: ctx.ocsf?.status_id != ''
       type: string
       ignore_missing: true
-      on_failure:
-        - remove:
-            field: ocsf.status_id
-            ignore_missing: true
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.outcome
       value: unknown
-      if: ctx.ocsf.status_id != null && ctx.ocsf.status_id == '0'
+      if: ctx.ocsf?.status_id == '0'
   - set:
       field: event.outcome
       value: success
-      if: ctx.ocsf.status_id != null && ctx.ocsf.status_id == '1'
+      if: ctx.ocsf?.status_id == '1'
   - set:
       field: event.outcome
       value: failure
-      if: ctx.ocsf.status_id != null && ctx.ocsf.status_id == '2'
+      if: ctx.ocsf?.status_id == '2'
   - convert:
       field: ocsf.timezone_offset
       tag: convert_timezone_offset_to_long
-      if: ctx.ocsf?.timezone_offset != ''
       type: long
       ignore_missing: true
       on_failure:
@@ -656,16 +595,8 @@ processors:
   - convert:
       field: ocsf.type_uid
       tag: convert_type_uid_to_string
-      if: ctx.ocsf?.type_uid != ''
       type: string
       ignore_missing: true
-      on_failure:
-        - remove:
-            field: ocsf.type_uid
-            ignore_missing: true
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - json:
       field: ocsf.raw_data
       if: ctx.ocsf?.raw_data instanceof String

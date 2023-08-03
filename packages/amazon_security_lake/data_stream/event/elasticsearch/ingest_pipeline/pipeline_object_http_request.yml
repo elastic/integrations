@@ -112,13 +112,6 @@ processors:
           tag: convert_http_request_url_category_ids_to_string
           type: string
           ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ocsf.http_request.x_forwarded_for
       if: ctx.ocsf?.http_request?.x_forwarded_for instanceof List

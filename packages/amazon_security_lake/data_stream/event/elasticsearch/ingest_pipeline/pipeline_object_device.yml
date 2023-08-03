@@ -33,7 +33,6 @@ processors:
       tag: convert_device_location_coordinates_to_double
       type: double
       ignore_missing: true
-      if: ctx.ocsf?.device?.location?.coordinates != ''
       on_failure:
         - remove:
             field: ocsf.device.location.coordinates
@@ -190,7 +189,6 @@ processors:
       tag: convert_device_risk_score_to_long
       type: long
       ignore_missing: true
-      if: ctx.ocsf?.device?.risk_score != ''
       on_failure:
         - remove:
             field: ocsf.device.risk_score
@@ -274,7 +272,6 @@ processors:
       tag: convert_device_hw_info_cpu_bits_to_long
       type: long
       ignore_missing: true
-      if: ctx.ocsf?.device?.hw_info?.cpu_bits != ''
       on_failure:
         - remove:
             field: ocsf.device.hw_info.cpu_bits
@@ -287,7 +284,6 @@ processors:
       tag: convert_device_hw_info_cpu_cores_to_long
       type: long
       ignore_missing: true
-      if: ctx.ocsf?.device?.hw_info?.cpu_cores != ''
       on_failure:
         - remove:
             field: ocsf.device.hw_info.cpu_cores
@@ -300,7 +296,6 @@ processors:
       tag: convert_device_hw_info_cpu_count_to_long
       type: long
       ignore_missing: true
-      if: ctx.ocsf?.device?.hw_info?.cpu_count != ''
       on_failure:
         - remove:
             field: ocsf.device.hw_info.cpu_count
@@ -313,7 +308,6 @@ processors:
       tag: convert_device_hw_info_cpu_speed_to_long
       type: long
       ignore_missing: true
-      if: ctx.ocsf?.device?.hw_info?.cpu_speed != ''
       on_failure:
         - remove:
             field: ocsf.device.hw_info.cpu_speed
@@ -326,7 +320,6 @@ processors:
       tag: convert_device_hw_info_desktop_display_color_depth_to_long
       type: long
       ignore_missing: true
-      if: ctx.ocsf?.device?.hw_info?.desktop_display?.color_depth != ''
       on_failure:
         - remove:
             field: ocsf.device.hw_info.desktop_display.color_depth
@@ -339,7 +332,6 @@ processors:
       tag: convert_device_hw_info_desktop_display_physical_height_to_long
       type: long
       ignore_missing: true
-      if: ctx.ocsf?.device?.hw_info?.desktop_display?.physical_height != ''
       on_failure:
         - remove:
             field: ocsf.device.hw_info.desktop_display.physical_height
@@ -352,7 +344,6 @@ processors:
       tag: convert_device_hw_info_desktop_display_physical_orientation_to_long
       type: long
       ignore_missing: true
-      if: ctx.ocsf?.device?.hw_info?.desktop_display?.physical_orientation != ''
       on_failure:
         - remove:
             field: ocsf.device.hw_info.desktop_display.physical_orientation
@@ -365,7 +356,6 @@ processors:
       tag: convert_device_hw_info_desktop_display_physical_width_to_long
       type: long
       ignore_missing: true
-      if: ctx.ocsf?.device?.hw_info?.desktop_display?.physical_width != ''
       on_failure:
         - remove:
             field: ocsf.device.hw_info.desktop_display.physical_width
@@ -378,7 +368,6 @@ processors:
       tag: convert_device_hw_info_desktop_display_scale_factor_to_long
       type: long
       ignore_missing: true
-      if: ctx.ocsf?.device?.hw_info?.desktop_display?.scale_factor != ''
       on_failure:
         - remove:
             field: ocsf.device.hw_info.desktop_display.scale_factor
@@ -391,7 +380,6 @@ processors:
       tag: convert_device_hw_info_keyboard_info_function_keys_to_long
       type: long
       ignore_missing: true
-      if: ctx.ocsf?.device?.hw_info?.keyboard_info?.function_keys != ''
       on_failure:
         - remove:
             field: ocsf.device.hw_info.keyboard_info.function_keys
@@ -404,7 +392,6 @@ processors:
       tag: convert_device_hw_info_keyboard_info_keyboard_subtype_to_long
       type: long
       ignore_missing: true
-      if: ctx.ocsf?.device?.hw_info?.keyboard_info?.keyboard_subtype != ''
       on_failure:
         - remove:
             field: ocsf.device.hw_info.keyboard_info.keyboard_subtype
@@ -417,7 +404,6 @@ processors:
       tag: convert_device_hw_info_ram_size_to_long
       type: long
       ignore_missing: true
-      if: ctx.ocsf?.device?.hw_info?.ram_size != ''
       on_failure:
         - remove:
             field: ocsf.device.hw_info.ram_size
@@ -430,7 +416,6 @@ processors:
       tag: convert_device_is_compliant_to_boolean
       type: boolean
       ignore_missing: true
-      if: ctx.ocsf?.device?.is_compliant != ''
       on_failure:
         - remove:
             field: ocsf.device.is_compliant
@@ -443,7 +428,6 @@ processors:
       tag: convert_device_is_managed_to_boolean
       type: boolean
       ignore_missing: true
-      if: ctx.ocsf?.device?.is_managed != ''
       on_failure:
         - remove:
             field: ocsf.device.is_managed
@@ -456,7 +440,6 @@ processors:
       tag: convert_device_is_personal_to_boolean
       type: boolean
       ignore_missing: true
-      if: ctx.ocsf?.device?.is_personal != ''
       on_failure:
         - remove:
             field: ocsf.device.is_personal
@@ -469,7 +452,6 @@ processors:
       tag: convert_device_is_trusted_to_boolean
       type: boolean
       ignore_missing: true
-      if: ctx.ocsf?.device?.is_trusted != ''
       on_failure:
         - remove:
             field: ocsf.device.is_trusted
@@ -510,7 +492,6 @@ processors:
       tag: convert_device_location_is_on_premises_to_boolean
       type: boolean
       ignore_missing: true
-      if: ctx.ocsf?.device?.location?.is_on_premises != ''
       on_failure:
         - remove:
             field: ocsf.device.location.is_on_premises
@@ -627,19 +608,11 @@ processors:
           tag: convert_device_network_interfaces_type_id_to_string
           type: string
           ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.type_id
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.device.os.cpu_bits
       tag: convert_device_os_cpu_bits_to_long
       type: long
       ignore_missing: true
-      if: ctx.ocsf?.device?.os?.cpu_bits != ''
       on_failure:
         - remove:
             field: ocsf.device.os.cpu_bits
@@ -652,53 +625,21 @@ processors:
       tag: convert_device_os_sp_ver_to_string
       type: string
       ignore_missing: true
-      if: ctx.ocsf?.device?.os?.sp_ver != ''
-      on_failure:
-        - remove:
-            field: ocsf.device.os.sp_ver
-            ignore_missing: true
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.device.os.type_id
       tag: convert_device_os_type_id_to_string
       type: string
       ignore_missing: true
-      if: ctx.ocsf?.device?.os?.type_id != ''
-      on_failure:
-        - remove:
-            field: ocsf.device.os.type_id
-            ignore_missing: true
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.device.risk_level_id
       tag: convert_device_risk_level_id_to_string
       type: string
       ignore_missing: true
-      if: ctx.ocsf?.device?.risk_level_id != ''
-      on_failure:
-        - remove:
-            field: ocsf.device.risk_level_id
-            ignore_missing: true
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.device.type_id
       tag: convert_device_type_id_to_string
       type: string
       ignore_missing: true
-      if: ctx.ocsf?.device?.type_id != ''
-      on_failure:
-        - remove:
-            field: ocsf.device.type_id
-            ignore_missing: true
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 on_failure:
   - append:
       field: error.message

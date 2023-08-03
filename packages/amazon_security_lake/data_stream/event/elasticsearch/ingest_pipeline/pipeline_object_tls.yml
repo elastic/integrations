@@ -113,13 +113,6 @@ processors:
           tag: convert_tls_extension_list_type_id_to_string
           type: string
           ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.type_id
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: tls.client.x509.not_after
       tag: set_tls_client_x509_not_after_from_tls_certificate_expiration_time_dt
@@ -208,7 +201,6 @@ processors:
       tag: convert_tls_alert_to_long
       type: long
       ignore_missing: true
-      if: ctx.ocsf?.tls?.alert != ''
       on_failure:
         - remove:
             field: ocsf.tls.alert
@@ -221,7 +213,6 @@ processors:
       tag: convert_tls_handshake_dur_to_long
       type: long
       ignore_missing: true
-      if: ctx.ocsf?.tls?.handshake_dur != ''
       on_failure:
         - remove:
             field: ocsf.tls.handshake_dur
@@ -279,7 +270,6 @@ processors:
       tag: convert_tls_key_length_to_long
       type: long
       ignore_missing: true
-      if: ctx.ocsf?.tls?.key_length != ''
       on_failure:
         - remove:
             field: ocsf.tls.key_length
@@ -292,27 +282,11 @@ processors:
       tag: convert_tls_ja3_hash_algorithm_id_to_string
       type: string
       ignore_missing: true
-      if: ctx.ocsf?.tls?.ja3_hash?.algorithm_id != ''
-      on_failure:
-        - remove:
-            field: ocsf.tls.ja3_hash.algorithm_id
-            ignore_missing: true
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.tls.ja3s_hash.algorithm_id
       tag: convert_tls_ja3s_hash_algorithm_id_to_string
       type: string
       ignore_missing: true
-      if: ctx.ocsf?.tls?.ja3s_hash?.algorithm_id != ''
-      on_failure:
-        - remove:
-            field: ocsf.tls.ja3s_hash.algorithm_id
-            ignore_missing: true
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ocsf.tls.certificate.fingerprints
       if: ctx.ocsf?.tls?.certificate?.fingerprints instanceof List
@@ -323,13 +297,6 @@ processors:
           tag: convert_tls_certificate_fingerprints_algorithm_id_to_string
           type: string
           ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.algorithm_id
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 on_failure:
   - append:
       field: error.message

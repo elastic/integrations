@@ -5,16 +5,8 @@ processors:
   - convert:
       field: ocsf.disposition_id
       tag: convert_disposition_id_to_string
-      if: ctx.ocsf?.disposition_id != ''
       type: string
       ignore_missing: true
-      on_failure:
-        - remove:
-            field: ocsf.disposition_id
-            ignore_missing: true
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ocsf.answers
       if: ctx.ocsf?.answers instanceof List
@@ -29,13 +21,6 @@ processors:
               tag: convert_answers_flag_ids_to_string
               type: string
               ignore_missing: true
-              on_failure:
-                - remove:
-                    field: _ingest._value
-                    ignore_missing: true
-                - append:
-                    field: error.message
-                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ocsf.answers
       if: ctx.ocsf?.answers instanceof List
@@ -46,13 +31,6 @@ processors:
           tag: convert_answers_packet_uid_to_string
           type: string
           ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.packet_uid
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ocsf.answers
       if: ctx.ocsf?.answers instanceof List
@@ -123,29 +101,13 @@ processors:
   - convert:
       field: ocsf.query.opcode_id
       tag: convert_query_opcode_id_to_string
-      if: ctx.ocsf?.query?.opcode_id != ''
       type: string
       ignore_missing: true
-      on_failure:
-        - remove:
-            field: ocsf.query.opcode_id
-            ignore_missing: true
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.query.packet_uid
       tag: convert_query_packet_uid_to_string
-      if: ctx.ocsf?.query?.packet_uid != ''
       type: string
       ignore_missing: true
-      on_failure:
-        - remove:
-            field: ocsf.query.packet_uid
-            ignore_missing: true
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: dns.question.name
       tag: set_dns_question_name
@@ -205,16 +167,8 @@ processors:
   - convert:
       field: ocsf.rcode_id
       tag: convert_rcode_id_to_string
-      if: ctx.ocsf?.rcode_id != ''
       type: string
       ignore_missing: true
-      on_failure:
-        - remove:
-            field: ocsf.rcode_id
-            ignore_missing: true
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: ocsf.response_time_dt
       tag: date_response_time_dt
