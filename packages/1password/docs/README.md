@@ -79,11 +79,11 @@ An example event for `signin_attempts` looks as following:
 {
     "@timestamp": "2021-08-11T14:28:03.000Z",
     "agent": {
-        "ephemeral_id": "a8a828b3-bb8a-4339-8bad-78fe5093d055",
-        "id": "437fe922-4551-429d-a49f-0a4ad40bf297",
+        "ephemeral_id": "9bb571f6-a939-462a-8ade-8e81db645f4c",
+        "id": "d7b99bc0-ce95-4664-af6f-80d525d96e77",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.7.1"
     },
     "data_stream": {
         "dataset": "1password.signin_attempts",
@@ -94,9 +94,9 @@ An example event for `signin_attempts` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "437fe922-4551-429d-a49f-0a4ad40bf297",
+        "id": "d7b99bc0-ce95-4664-af6f-80d525d96e77",
         "snapshot": false,
-        "version": "8.8.0"
+        "version": "8.7.1"
     },
     "event": {
         "action": "success",
@@ -104,9 +104,9 @@ An example event for `signin_attempts` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2023-05-30T15:58:35.089Z",
+        "created": "2023-07-06T16:29:08.915Z",
         "dataset": "1password.signin_attempts",
-        "ingested": "2023-05-30T15:58:38Z",
+        "ingested": "2023-07-06T16:29:09Z",
         "kind": "event",
         "outcome": "success",
         "type": [
@@ -218,11 +218,11 @@ An example event for `item_usages` looks as following:
 {
     "@timestamp": "2021-08-30T18:57:42.484Z",
     "agent": {
-        "ephemeral_id": "cb0f64dc-e67b-4c05-abab-c76b645f5d31",
-        "id": "437fe922-4551-429d-a49f-0a4ad40bf297",
+        "ephemeral_id": "9bb571f6-a939-462a-8ade-8e81db645f4c",
+        "id": "d7b99bc0-ce95-4664-af6f-80d525d96e77",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.7.1"
     },
     "data_stream": {
         "dataset": "1password.item_usages",
@@ -233,9 +233,9 @@ An example event for `item_usages` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "437fe922-4551-429d-a49f-0a4ad40bf297",
+        "id": "d7b99bc0-ce95-4664-af6f-80d525d96e77",
         "snapshot": false,
-        "version": "8.8.0"
+        "version": "8.7.1"
     },
     "event": {
         "action": "reveal",
@@ -243,9 +243,9 @@ An example event for `item_usages` looks as following:
         "category": [
             "file"
         ],
-        "created": "2023-05-30T15:57:58.916Z",
+        "created": "2023-07-06T16:28:36.877Z",
         "dataset": "1password.item_usages",
-        "ingested": "2023-05-30T15:57:59Z",
+        "ingested": "2023-07-06T16:28:37Z",
         "kind": "event",
         "type": [
             "access"
@@ -319,9 +319,19 @@ This uses the 1Password Events API to retrieve information about audit events. E
 | event.module | Event module | constant_keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Input type | keyword |
+| onepassword.actor_details.email | The email of the actor. | keyword |
+| onepassword.actor_details.name | The name of the actor. | keyword |
+| onepassword.actor_details.uuid | The UUID of the actor. | keyword |
+| onepassword.actor_uuid | The UUID of the actor. | keyword |
+| onepassword.aux_details.email | The email of the aux resource. | keyword |
+| onepassword.aux_details.name | The name of the aux resource. | keyword |
+| onepassword.aux_details.uuid | The UUID of the aux resource. | keyword |
 | onepassword.aux_id | Any auxilary id related to the event. | long |
 | onepassword.aux_info | Any auxilary info related to the event. | text |
 | onepassword.aux_uuid | Any auxilary uuid related to the event. | keyword |
+| onepassword.object_details.email | The email of the object. | keyword |
+| onepassword.object_details.name | The name of the object. | keyword |
+| onepassword.object_details.uuid | The UUID of the object. | keyword |
 | onepassword.object_type | The type of object changed by the event. | keyword |
 | onepassword.object_uuid | The UUID of the object changed by the event. | keyword |
 | onepassword.session.device_uuid | The device uuid of the session used to create the event. | keyword |
@@ -342,7 +352,10 @@ This uses the 1Password Events API to retrieve information about audit events. E
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
+| user.email | User email address. | keyword |
 | user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
 An example event for `audit_events` looks as following:
@@ -351,11 +364,11 @@ An example event for `audit_events` looks as following:
 {
     "@timestamp": "2022-10-24T21:16:52.827Z",
     "agent": {
-        "ephemeral_id": "26875e28-ac90-42f2-bcc9-5969510c2882",
-        "id": "437fe922-4551-429d-a49f-0a4ad40bf297",
+        "ephemeral_id": "9bb571f6-a939-462a-8ade-8e81db645f4c",
+        "id": "d7b99bc0-ce95-4664-af6f-80d525d96e77",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.7.1"
     },
     "data_stream": {
         "dataset": "1password.audit_events",
@@ -366,9 +379,9 @@ An example event for `audit_events` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "437fe922-4551-429d-a49f-0a4ad40bf297",
+        "id": "d7b99bc0-ce95-4664-af6f-80d525d96e77",
         "snapshot": false,
-        "version": "8.8.0"
+        "version": "8.7.1"
     },
     "event": {
         "action": "suspend",
@@ -376,9 +389,9 @@ An example event for `audit_events` looks as following:
         "category": [
             "configuration"
         ],
-        "created": "2023-05-30T15:57:13.805Z",
+        "created": "2023-07-06T16:28:01.807Z",
         "dataset": "1password.audit_events",
-        "ingested": "2023-05-30T15:57:17Z",
+        "ingested": "2023-07-06T16:28:02Z",
         "kind": "event",
         "type": [
             "access"
@@ -388,8 +401,19 @@ An example event for `audit_events` looks as following:
         "type": "httpjson"
     },
     "onepassword": {
+        "actor_uuid": "GLF6WUEKS5CSNDJ2OG6TCZD3M4",
+        "actor_details": {
+            "uuid": "GLF6WUEKS5CSNDJ2OG6TCZD3M4",
+            "name": "Test Actor",
+            "email": "test.actor@domain.com"
+        },
         "object_type": "user",
         "object_uuid": "ZRQCUD6A65AKHFETOUFO7NL4OM",
+        "object_details": {
+            "uuid": "ZRQCUD6A65AKHFETOUFO7NL4OM",
+            "name": "Test Object",
+            "email": "test.object@domain.com"
+        },
         "session": {
             "device_uuid": "rqtd557fn2husnstp5nc66w2xa",
             "login_time": "2022-10-24T21:07:34.703106271Z",
