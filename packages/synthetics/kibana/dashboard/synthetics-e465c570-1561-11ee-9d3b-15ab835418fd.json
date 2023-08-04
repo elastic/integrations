@@ -9,17 +9,16 @@
                             "store": "appState"
                         },
                         "meta": {
-                            "alias": "Private Locations (Leave negated with NOT to match service)",
+                            "alias": null,
                             "disabled": false,
-                            "field": "monitor.fleet_managed",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "monitor.fleet_managed",
-                            "negate": true,
+                            "key": "observer.geo.name",
+                            "negate": false,
                             "type": "exists"
                         },
                         "query": {
                             "exists": {
-                                "field": "monitor.fleet_managed"
+                                "field": "observer.geo.name"
                             }
                         }
                     }
@@ -41,7 +40,6 @@
             {
                 "embeddableConfig": {
                     "enhancements": {},
-                    "hidePanelTitles": false,
                     "savedVis": {
                         "data": {
                             "aggs": [],
@@ -57,7 +55,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "## How to Estimate Synthetics Service Usage / Pricing with this Dashboard\n\nThis dashboard can be used to approximate your current cost of using the Elastic Synthetics service. This dashboard does not include data transfer and data storage costs, but can be used to estimate execution costs based on your real world usage of Elastic Synthetics. Data storage utilization can be explored on the [Synthetics Settings Data Retention page](/app/synthetics/settings/data-retention). \n\n### An example\nLet's imagine your rate rate for browser monitor execution is $0.014 you can multiply the number of browser billing units shown in this dashboard to arrive at an estimated cost for the time period selected. So, if you had 1000 billing units accrued the total cost of those units would be `1000 billing units * $0.014 = $14.00` From there you can see which monitors are running the most frequently. \n\nTo get an idea of Lightweight costs count the number of live Lightweight locations within a single month, then multiply that number by your monthly cost for Lightweight locations. If you had 3 Lightweight locations, and your price per location was $35 your monthly cost would be `3  locations * $35 = $105`.\n\nThen, you can go to the [Synthetics Data Retention settings](/app/synthetics/settings/data-retention) to get an idea of storage costs for all synthetics data you've currently stored. Note that this dashboard only provides usage data for the Synthetics Service, but does not include storage, network transfer, and other associated costs for storing the results of that data on your Elastic Cloud deployment.\n\n### Limitations and disclaimers:\n- Pricing data should be determined via https://www.elastic.co/pricing/ and may vary based on your exchange rate contract terms or other factors specific to you.\n- Network transfer and data storage are not tracked by this dashboard and must be estimated independently based on ILM usage and estimated network ingress. These costs may vary depending on the number and complexity of monitors.\n- Note that this dashboard does not use the more precise metrics used by our actual cloud service to determine actual costs. Under some conditions costs may differ. Data transfer costs are loosely linked with storage costs, but may vary depending on your ingest policies and ILM settings.\n- This dashboard only queries the `synthetics-*` indices, usage of alternative data streams or indices will not show up.\n- Links out to monitors in spaces other than the default space will not work with this dashboard.\n- This dashboard is filtered to exclude fleet managed monitors, thus only showing monitors run by the Synthetics Service. Disabling this filter will result in incorrect results being shown. Alterations to this field may also impact the accuracy of this chart.\n- This dashboard is to be used for approximation purposes only, and is not considered authoritative for billing purposes.\n",
+                            "markdown": "## How to Estimate Synthetics Usage / Pricing with this Dashboard\n\nThis dashboard can be used to approximate the cost of using the Elastic Synthetics service given your current monitors. Note that it does not use the more precise metrics used by our actual cloud service to determine actual costs. In some uncommon scenarios costs may differ.\n\nThis dashboard does not distinguish monitors running in private locations from those running on the service. If all of your monitors currently run on the service you can ignore this. If your monitors currently run on private locations you can use this tool to estimate the cost of running those same monitors on the cloud.\n\nNote that pricing data should be determined via https://www.elastic.co/pricing/ , and may vary based on your exchange rate and/or contract terms. If, for instance, your rate for browser monitor execution is $0.014 you can multiply the number of browser billing units used by this number to arrive at an estimated cost. Additionally, please note that this dashboard is only useful for estimating execution costs for the synthetics service, but does not include storage, network transfer, and other associated costs.",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -73,9 +71,8 @@
                     "y": 0
                 },
                 "panelIndex": "1a8368df-8290-41b1-94d2-1075420921e9",
-                "title": "Instructions",
                 "type": "visualization",
-                "version": "8.8.1"
+                "version": "8.8.0"
             },
             {
                 "embeddableConfig": {
@@ -89,12 +86,12 @@
                             },
                             {
                                 "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
-                                "name": "be9558c3-8df6-4993-a6c4-b622fb370b83",
+                                "name": "6b4c5a50-e5b3-4286-937e-19180234d9f3",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
-                                "name": "4097fe86-b46b-4efa-a8d8-b77e76cdb6bd",
+                                "name": "71168abb-5031-44c6-a5f3-9a0fa5cb7ef7",
                                 "type": "index-pattern"
                             }
                         ],
@@ -152,7 +149,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "summary.down",
-                                        "index": "be9558c3-8df6-4993-a6c4-b622fb370b83",
+                                        "index": "6b4c5a50-e5b3-4286-937e-19180234d9f3",
                                         "key": "summary.down",
                                         "negate": false,
                                         "type": "exists",
@@ -172,7 +169,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "monitor.type",
-                                        "index": "4097fe86-b46b-4efa-a8d8-b77e76cdb6bd",
+                                        "index": "71168abb-5031-44c6-a5f3-9a0fa5cb7ef7",
                                         "key": "monitor.type",
                                         "negate": false,
                                         "params": {
@@ -215,7 +212,7 @@
                 "panelIndex": "80dd067e-cdff-4f0e-b031-daddb2c7369e",
                 "title": "Estimated Billing Units by Type",
                 "type": "lens",
-                "version": "8.8.1"
+                "version": "8.8.0"
             },
             {
                 "embeddableConfig": {
@@ -345,12 +342,12 @@
                     "i": "3bcd0e7f-4bad-496f-9e8a-1cef8af9cb10",
                     "w": 12,
                     "x": 26,
-                    "y": 0
+                    "y": 1
                 },
                 "panelIndex": "3bcd0e7f-4bad-496f-9e8a-1cef8af9cb10",
                 "title": "Browser Locations",
                 "type": "lens",
-                "version": "8.8.1"
+                "version": "8.8.0"
             },
             {
                 "embeddableConfig": {
@@ -490,7 +487,143 @@
                 "panelIndex": "60d4a656-5d83-4827-9bc6-89c02f247726",
                 "title": "Total Lightweight Locations",
                 "type": "lens",
-                "version": "8.8.1"
+                "version": "8.8.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "indexpattern-datasource-layer-42ee11c3-ab9a-4b73-a2ba-65c4ad273b2d",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "7e003f05-a106-4350-a1ab-eb70c7dd2b0a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "42ee11c3-ab9a-4b73-a2ba-65c4ad273b2d": {
+                                            "columnOrder": [
+                                                "e500b751-5940-4f43-a3ee-5fc4c8347ca8",
+                                                "2d7b32d6-d0e6-4db5-a399-6aa4341f7c76"
+                                            ],
+                                            "columns": {
+                                                "2d7b32d6-d0e6-4db5-a399-6aa4341f7c76": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Monitors",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "monitor.name"
+                                                },
+                                                "e500b751-5940-4f43-a3ee-5fc4c8347ca8": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 20 values of observer.geo.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "2d7b32d6-d0e6-4db5-a399-6aa4341f7c76",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 20
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "observer.geo.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "monitor.type",
+                                        "index": "7e003f05-a106-4350-a1ab-eb70c7dd2b0a",
+                                        "key": "monitor.type",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "browser"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "monitor.type": "browser"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "2d7b32d6-d0e6-4db5-a399-6aa4341f7c76"
+                                    },
+                                    {
+                                        "columnId": "e500b751-5940-4f43-a3ee-5fc4c8347ca8",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "42ee11c3-ab9a-4b73-a2ba-65c4ad273b2d",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "504faa9a-3d93-462b-995d-c50e940a247d",
+                    "w": 12,
+                    "x": 26,
+                    "y": 17
+                },
+                "panelIndex": "504faa9a-3d93-462b-995d-c50e940a247d",
+                "title": "Lightweight locations",
+                "type": "lens",
+                "version": "8.8.0"
             },
             {
                 "embeddableConfig": {
@@ -693,143 +826,7 @@
                 "panelIndex": "fe658793-8dd0-4c6c-860a-b9f8016fbd2e",
                 "title": "Estimated Browser Monitor Billing History",
                 "type": "lens",
-                "version": "8.8.1"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
-                                "name": "indexpattern-datasource-layer-42ee11c3-ab9a-4b73-a2ba-65c4ad273b2d",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
-                                "name": "7e003f05-a106-4350-a1ab-eb70c7dd2b0a",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "42ee11c3-ab9a-4b73-a2ba-65c4ad273b2d": {
-                                            "columnOrder": [
-                                                "e500b751-5940-4f43-a3ee-5fc4c8347ca8",
-                                                "2d7b32d6-d0e6-4db5-a399-6aa4341f7c76"
-                                            ],
-                                            "columns": {
-                                                "2d7b32d6-d0e6-4db5-a399-6aa4341f7c76": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Monitors",
-                                                    "operationType": "unique_count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "monitor.name"
-                                                },
-                                                "e500b751-5940-4f43-a3ee-5fc4c8347ca8": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top 20 values of observer.geo.name",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "2d7b32d6-d0e6-4db5-a399-6aa4341f7c76",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 20
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "observer.geo.name"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "monitor.type",
-                                        "index": "7e003f05-a106-4350-a1ab-eb70c7dd2b0a",
-                                        "key": "monitor.type",
-                                        "negate": true,
-                                        "params": {
-                                            "query": "browser"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "monitor.type": "browser"
-                                        }
-                                    }
-                                }
-                            ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "columns": [
-                                    {
-                                        "columnId": "2d7b32d6-d0e6-4db5-a399-6aa4341f7c76"
-                                    },
-                                    {
-                                        "columnId": "e500b751-5940-4f43-a3ee-5fc4c8347ca8",
-                                        "isTransposed": false
-                                    }
-                                ],
-                                "layerId": "42ee11c3-ab9a-4b73-a2ba-65c4ad273b2d",
-                                "layerType": "data"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsDatatable"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "504faa9a-3d93-462b-995d-c50e940a247d",
-                    "w": 12,
-                    "x": 26,
-                    "y": 16
-                },
-                "panelIndex": "504faa9a-3d93-462b-995d-c50e940a247d",
-                "title": "Lightweight locations",
-                "type": "lens",
-                "version": "8.8.1"
+                "version": "8.8.0"
             },
             {
                 "embeddableConfig": {
@@ -843,17 +840,17 @@
                             },
                             {
                                 "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
-                                "name": "3572e08a-9e3d-43d7-b126-6c32f827c8a8",
+                                "name": "d56bc5ac-37c2-4db8-958e-df713a2544d7",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
-                                "name": "9d6e5215-ec3f-47fe-9569-2948a2ad8678",
+                                "name": "d3bfc8e4-9bf7-4421-be2b-e2acd639dc62",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
-                                "name": "30e45789-ccf1-47a8-9a80-bd9152600a7c",
+                                "name": "59367fc9-7eff-4a02-ad14-145824e57772",
                                 "type": "index-pattern"
                             }
                         ],
@@ -965,7 +962,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "summary.down",
-                                        "index": "3572e08a-9e3d-43d7-b126-6c32f827c8a8",
+                                        "index": "d56bc5ac-37c2-4db8-958e-df713a2544d7",
                                         "key": "summary.down",
                                         "negate": false,
                                         "type": "exists",
@@ -985,7 +982,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "monitor.type",
-                                        "index": "9d6e5215-ec3f-47fe-9569-2948a2ad8678",
+                                        "index": "d3bfc8e4-9bf7-4421-be2b-e2acd639dc62",
                                         "key": "monitor.type",
                                         "negate": false,
                                         "params": {
@@ -1007,7 +1004,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "est_billing_units",
-                                        "index": "30e45789-ccf1-47a8-9a80-bd9152600a7c",
+                                        "index": "59367fc9-7eff-4a02-ad14-145824e57772",
                                         "key": "est_billing_units",
                                         "negate": false,
                                         "params": {
@@ -1075,17 +1072,19 @@
                 "panelIndex": "82239bad-4227-4fa7-8907-bdf529c211a9",
                 "title": "Top Monitors (by billed amount)",
                 "type": "lens",
-                "version": "8.8.1"
+                "version": "8.8.0"
             }
         ],
         "timeRestore": false,
         "title": "[Synthetics] Estimated Billing - Last 30 Days",
         "version": 1
     },
-    "coreMigrationVersion": "8.8.0",
-    "created_at": "2023-07-07T21:19:16.480Z",
+    "coreMigrationVersion": "8.7.0",
+    "created_at": "2023-08-04T15:02:43.944Z",
     "id": "synthetics-e465c570-1561-11ee-9d3b-15ab835418fd",
-    "managed": false,
+    "migrationVersion": {
+        "dashboard": "8.7.0"
+    },
     "references": [
         {
             "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
@@ -1099,12 +1098,12 @@
         },
         {
             "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
-            "name": "80dd067e-cdff-4f0e-b031-daddb2c7369e:be9558c3-8df6-4993-a6c4-b622fb370b83",
+            "name": "80dd067e-cdff-4f0e-b031-daddb2c7369e:6b4c5a50-e5b3-4286-937e-19180234d9f3",
             "type": "index-pattern"
         },
         {
             "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
-            "name": "80dd067e-cdff-4f0e-b031-daddb2c7369e:4097fe86-b46b-4efa-a8d8-b77e76cdb6bd",
+            "name": "80dd067e-cdff-4f0e-b031-daddb2c7369e:71168abb-5031-44c6-a5f3-9a0fa5cb7ef7",
             "type": "index-pattern"
         },
         {
@@ -1134,6 +1133,16 @@
         },
         {
             "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+            "name": "504faa9a-3d93-462b-995d-c50e940a247d:indexpattern-datasource-layer-42ee11c3-ab9a-4b73-a2ba-65c4ad273b2d",
+            "type": "index-pattern"
+        },
+        {
+            "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+            "name": "504faa9a-3d93-462b-995d-c50e940a247d:7e003f05-a106-4350-a1ab-eb70c7dd2b0a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
             "name": "fe658793-8dd0-4c6c-860a-b9f8016fbd2e:indexpattern-datasource-layer-unifiedHistogram",
             "type": "index-pattern"
         },
@@ -1149,35 +1158,24 @@
         },
         {
             "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
-            "name": "504faa9a-3d93-462b-995d-c50e940a247d:indexpattern-datasource-layer-42ee11c3-ab9a-4b73-a2ba-65c4ad273b2d",
-            "type": "index-pattern"
-        },
-        {
-            "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
-            "name": "504faa9a-3d93-462b-995d-c50e940a247d:7e003f05-a106-4350-a1ab-eb70c7dd2b0a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
             "name": "82239bad-4227-4fa7-8907-bdf529c211a9:indexpattern-datasource-layer-e1869c68-3f80-4b33-b75f-f9668b5bcd94",
             "type": "index-pattern"
         },
         {
             "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
-            "name": "82239bad-4227-4fa7-8907-bdf529c211a9:3572e08a-9e3d-43d7-b126-6c32f827c8a8",
+            "name": "82239bad-4227-4fa7-8907-bdf529c211a9:d56bc5ac-37c2-4db8-958e-df713a2544d7",
             "type": "index-pattern"
         },
         {
             "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
-            "name": "82239bad-4227-4fa7-8907-bdf529c211a9:9d6e5215-ec3f-47fe-9569-2948a2ad8678",
+            "name": "82239bad-4227-4fa7-8907-bdf529c211a9:d3bfc8e4-9bf7-4421-be2b-e2acd639dc62",
             "type": "index-pattern"
         },
         {
             "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
-            "name": "82239bad-4227-4fa7-8907-bdf529c211a9:30e45789-ccf1-47a8-9a80-bd9152600a7c",
+            "name": "82239bad-4227-4fa7-8907-bdf529c211a9:59367fc9-7eff-4a02-ad14-145824e57772",
             "type": "index-pattern"
         }
     ],
-    "type": "dashboard",
-    "typeMigrationVersion": "8.7.0"
+    "type": "dashboard"
 }
