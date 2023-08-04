@@ -1,0 +1,81 @@
+---
+description: Pipeline for processing API Activity category.
+# API Activity class docs: https://schema.ocsf.io/1.0.0-rc.3/class/graph/api_activity
+processors:
+  - foreach:
+      field: ocsf.resources
+      if: ctx.ocsf?.resources instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.owner.account.type_id
+          tag: convert_resources_owner_account_type_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: ocsf.resources
+      if: ctx.ocsf?.resources instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.owner.type_id
+          tag: convert_resources_owner_type_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: ocsf.resources
+      if: ctx.ocsf?.resources instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          tag: append_resources_owner_uid_alt_into_related_user
+          value: '{{{_ingest._value.owner.uid_alt}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ocsf.resources
+      if: ctx.ocsf?.resources instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          tag: append_resources_owner_email_addr_into_related_user
+          value: '{{{_ingest._value.owner.email_addr}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ocsf.resources
+      if: ctx.ocsf?.resources instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          tag: append_resources_owner_full_name_into_related_user
+          value: '{{{_ingest._value.owner.full_name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ocsf.resources
+      if: ctx.ocsf?.resources instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          tag: append_resources_owner_name_into_related_user
+          value: '{{{_ingest._value.owner.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ocsf.resources
+      if: ctx.ocsf?.resources instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          tag: append_resources_owner_uid_into_related_user
+          value: '{{{_ingest._value.owner.uid}}}'
+          allow_duplicates: false
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
