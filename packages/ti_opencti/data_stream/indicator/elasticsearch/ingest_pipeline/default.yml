@@ -24,155 +24,198 @@ processors:
   ############################
 
   - rename:
-    field: id
-    target_field: event.id
+      field: id
+      target_field: event.id
   - rename:
-    field: standard_id
-    target_field: opencti.indicator.standard_id
+      field: standard_id
+      target_field: opencti.indicator.standard_id
   - rename:
-    field: is_inferred
-    target_field: opencti.indicator.is_inferred
+      field: is_inferred
+      target_field: opencti.indicator.is_inferred
   - rename:
-    field: revoked
-    target_field: opencti.indicator.revoked
+      field: revoked
+      target_field: opencti.indicator.revoked
   # TODO bring back script to map confidence values
   - rename:
-    field: confidence
-    target_field: threat.indicator.confidence
+      field: confidence
+      target_field: threat.indicator.confidence
   - rename:
-    field: lang
-    target_field: opencti.indicator.lang
+      field: lang
+      target_field: opencti.indicator.lang
+  # - remove:
+  #     field: '@timestamp'
+  #     ignore_missing: true
+  # - rename:
+  #     field: created
+  #     target_field: '@timestamp'
   - rename:
-    field: created
-    target_field: '@timestamp'
+      field: modified
+      target_field: threat.indicator.modified_at
   - rename:
-    field: modified
-    target_field: threat.indicator.modified_at
+      field: pattern_type
+      target_field: opencti.indicator.pattern_type
   - rename:
-    field: pattern_type
-    target_field: opencti.indicator.pattern_type
+      field: pattern_version
+      target_field: opencti.indicator.pattern_version
   - rename:
-    field: pattern_version
-    target_field: opencti.indicator.pattern_version
+      field: pattern
+      target_field: opencti.indicator.pattern
   - rename:
-    field: pattern
-    target_field: opencti.indicator.pattern
+      field: name
+      target_field: threat.indicator.name
   - rename:
-    field: name
-    target_field: threat.indicator.name
+      field: description
+      target_field: threat.indicator.description
   - rename:
-    field: description
-    target_field: threat.indicator.description
+      field: valid_from
+      target_field: opencti.indicator.valid_from
   - rename:
-    field: valid_from
-    target_field: opencti.indicator.valid_from
+      field: valid_until
+      target_field: opencti.indicator.valid_until
   - rename:
-    field: valid_until
-    target_field: opencti.indicator.valid_until
+      field: x_opencti_score
+      target_field: opencti.indicator.score
   - rename:
-    field: x_opencti_score
-    target_field: opencti.indicator.score
+      field: x_opencti_detection
+      target_field: opencti.indicator.detection
   - rename:
-    field: x_opencti_detection
-    target_field: opencti.indicator.detection
+      field: x_opencti_main_observable_type
+      target_field: threat.indicator.type
   - rename:
-    field: x_opencti_main_observable_type
-    target_field: threat.indicator.type
+      field: createdBy.name
+      target_field: threat.indicator.provider
   - rename:
-    field: createdBy.name
-    target_field: threat.indicator.provider
-  - rename:
-    field: createdBy.identity_class
-    target_field: opencti.indicator.creator_identity_class
+      field: createdBy.identity_class
+      target_field: opencti.indicator.creator_identity_class
 
   - gsub:
-    if: '!ctx.objectMarking.edges.isEmpty() && ctx.objectMarking.edges[0].node.definition_type == "TLP"'
-    field: objectMarking.edges[0].node.definition
-    pattern: '^TLP:'
-    replacement: ''
-    target_field: threat.indicator.marking.tlp
+      if: '!ctx.objectMarking.edges.isEmpty() && ctx.objectMarking.edges[0].node.definition_type == "TLP"'
+      field: objectMarking.edges.0.node.definition
+      pattern: '^TLP:'
+      replacement: ''
+      target_field: threat.indicator.marking.tlp
+  - remove:
+      field: objectMarking
 
   - foreach:
-    field: objectLabel.edges
-    processor:
-      append:
-        field: tags
-        value: "{{{_ingest._value.node.value}}}"
+      field: objectLabel.edges
+      processor:
+        append:
+          field: tags
+          value: "{{{_ingest._value.node.value}}}"
   - remove:
-    field: objectLabel
+      field: objectLabel
 
   # TODO: fix kill chain phases to be an array of pairs
   - foreach:
-    field: killChainPhases.edges
-    processor:
-      append:
-        field: opencti.indicator.kill_chain_phase_name
-        value: "{{{_ingest._value.node.phase_name}}}"
+      field: killChainPhases.edges
+      processor:
+        append:
+          field: opencti.indicator.kill_chain_phase_name
+          value: "{{{_ingest._value.node.phase_name}}}"
   - foreach:
-    field: killChainPhases.edges
-    processor:
-      append:
-        field: opencti.indicator.kill_chain_name
-        value: "{{{_ingest._value.node.kill_chain_name}}}"
+      field: killChainPhases.edges
+      processor:
+        append:
+          field: opencti.indicator.kill_chain_name
+          value: "{{{_ingest._value.node.kill_chain_name}}}"
   - remove:
-    field: killChainPhases
+      field: killChainPhases
 
   - foreach:
-    field: externalReferences.edges
-    processor:
-      append:
-        field: opencti.indicator.external_reference
-        value: "{{{_ingest._value.node}}}"
+      field: externalReferences.edges
+      processor:
+        append:
+          field: opencti.indicator.external_reference
+          value: "{{{_ingest._value.node}}}"
   - remove:
-    field: externalReferences
+      field: externalReferences
 
   #####################
   # Observable fields #
   #####################
 
   - rename:
-    field: opencti.observables.pageInfo.globalCount
-    target_field: opencti.indicator.observables_count
+      field: observables.pageInfo.globalCount
+      target_field: opencti.indicator.observables_count
 
   - foreach:
-    field: observables.edges
-    processor:
-      pipeline:
-        processors:
-        - rename:
-            field: _ingest._value.node.observable_value
-            target_field: _ingest._value.node.value
-        - rename:
-            field: _ingest._value.node.x_opencti_description
-            target_field: _ingest._value.node.description
-            ignore_missing: true
-        - rename:
-            field: _ingest._value.node.x_opencti_additional_names
-            target_field: _ingest._value.node.additional_names
-            ignore_missing: true
-        - rename:
-            field: _ingest._value.node.obsContent
-            target_field: _ingest._value.node.content
-            ignore_missing: true
-        - foreach:
+      field: observables.edges
+      processor:
+        remove:
+          field: _ingest._value.node.value
+          ignore_missing: true
+  - foreach:
+      field: observables.edges
+      processor:
+        rename:
+          field: _ingest._value.node.observable_value
+          target_field: _ingest._value.node.value
+
+  - foreach:
+      field: observables.edges
+      processor:
+        rename:
+          field: _ingest._value.node.x_opencti_description
+          target_field: _ingest._value.node.description
+          ignore_missing: true
+
+  - foreach:
+      field: observables.edges
+      processor:
+        rename:
+          field: _ingest._value.node.x_opencti_additional_names
+          target_field: _ingest._value.node.additional_names
+          ignore_missing: true
+
+  - foreach:
+      field: observables.edges
+      processor:
+        rename:
+          field: _ingest._value.node.obsContent
+          target_field: _ingest._value.node.content
+          ignore_missing: true
+
+  - foreach:
+      field: observables.edges
+      processor:
+        foreach:
           field: _ingest._value.node.serviceDlls.edges
           ignore_missing: true
           processor:
-            pipeline:
-              processors:
-              - rename:
-                  field: _ingest._value.node.x_opencti_additional_names
-                  target_field: _ingest.node._value.additional_names
-              - rename:
-                  field: _ingest._value.node.obsContent
-                  target_field: _ingest._value.node.content
-              - rename:
-                  field: _ingest._value.node
-                  target_field: _ingest._value
-        - rename:
-            field: _ingest._value.node.serviceDlls.edges
-            target_field: _ingest._value.node.service_dlls
-            ignore_missing: true
+            rename:
+              field: _ingest._value.node.x_opencti_additional_names
+              target_field: _ingest.node._value.additional_names
+
+  - foreach:
+      field: observables.edges
+      processor:
+        foreach:
+          field: _ingest._value.node.serviceDlls.edges
+          ignore_missing: true
+          processor:
+            rename:
+              field: _ingest._value.node.obsContent
+              target_field: _ingest._value.node.content
+
+  - foreach:
+      field: observables.edges
+      processor:
+        foreach:
+          field: _ingest._value.node.serviceDlls.edges
+          ignore_missing: true
+          processor:
+            rename:
+              field: _ingest._value.node
+              target_field: _ingest._value
+
+  - foreach:
+      field: observables.edges
+      processor:
+        rename:
+          field: _ingest._value.node.serviceDlls.edges
+          target_field: _ingest._value.node.service_dlls
+          ignore_missing: true
 
   - script:
       description: Restructure hashes to ECS format
@@ -220,6 +263,7 @@ processors:
         ArrayList observables = ctx.observables.edges;
         for (int i = 0; i < observables.length; i++) {
           String entity = observables[i]['node']['entity_type'];
+          entity = entity.replace('StixFile', 'file');
           entity = entity.toLowerCase();
           entity = entity.replace('-', '_');
           if (ctx.opencti.observable.containsKey(entity)) {
@@ -228,9 +272,11 @@ processors:
             ctx.opencti.observable[entity] = observables[i]['node'];
           }
         }
-
   - remove:
-    field: observables
+      field: observables
+
+  # TODO: observables -> ecs
+  # TODO: related.*
 
 on_failure:
 - set:
