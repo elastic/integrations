@@ -358,6 +358,31 @@ missing short-lived connections.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name.text | Multi-field of `destination.as.organization.name`. | match_only_text |
+| destination.bytes | Bytes sent from the destination to the source. | long |
+| destination.domain | Destination domain. | keyword |
+| destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_code | Two-letter code representing continent's name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
+| destination.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |
+| destination.geo.region_iso_code | Region ISO code. | keyword |
+| destination.geo.region_name | Region name. | keyword |
+| destination.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.nat.ip | Translated ip of destination based NAT sessions (e.g. internet to private DMZ) Typically used with load balancers, firewalls, or routers. | ip |
+| destination.nat.port | Port the source session is translated to by NAT Device. Typically used with load balancers, firewalls, or routers. | long |
+| destination.packets | Packets sent from the destination to the source. | long |
+| destination.port | Port of the destination. | long |
+| destination.user.group.name | Name of the group. | keyword |
+| destination.user.name | Short name or login of the user. | keyword |
+| destination.user.name.text | Multi-field of `destination.user.name`. | match_only_text |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
@@ -388,8 +413,59 @@ missing short-lived connections.
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
 | process.pid | Process id. | long |
+| related.ip | All of the IPs seen on your event. | ip |
+| server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| server.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| server.as.organization.name | Organization name. | keyword |
+| server.as.organization.name.text | Multi-field of `server.as.organization.name`. | match_only_text |
+| server.bytes | Bytes sent from the server to the client. | long |
+| server.domain | Server domain. | keyword |
+| server.geo.city_name | City name. | keyword |
+| server.geo.continent_code | Two-letter code representing continent's name. | keyword |
+| server.geo.continent_name | Name of the continent. | keyword |
+| server.geo.country_iso_code | Country ISO code. | keyword |
+| server.geo.country_name | Country name. | keyword |
+| server.geo.location | Longitude and latitude. | geo_point |
+| server.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
+| server.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |
+| server.geo.region_iso_code | Region ISO code. | keyword |
+| server.geo.region_name | Region name. | keyword |
+| server.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
+| server.ip | IP address of the server (IPv4 or IPv6). | ip |
+| server.nat.ip | Translated ip of destination based NAT sessions (e.g. internet to private DMZ) Typically used with load balancers, firewalls, or routers. | ip |
+| server.nat.port | Translated port of destination based NAT sessions (e.g. internet to private DMZ) Typically used with load balancers, firewalls, or routers. | long |
+| server.packets | Packets sent from the server to the client. | long |
+| server.port | Port of the server. | long |
+| server.user.group.name | Name of the group. | keyword |
+| server.user.name | Short name or login of the user. | keyword |
+| server.user.name.text | Multi-field of `server.user.name`. | match_only_text |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
+| source.bytes | Bytes sent from the source to the destination. | long |
+| source.domain | Source domain. | keyword |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_code | Two-letter code representing continent's name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
+| source.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
+| source.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.nat.ip | Translated ip of source based NAT sessions (e.g. internal client to internet) Typically connections traversing load balancers, firewalls, or routers. | ip |
+| source.nat.port | Translated port of source based NAT sessions. (e.g. internal client to internet) Typically used with load balancers, firewalls, or routers. | long |
+| source.packets | Packets sent from the source to the destination. | long |
+| source.port | Port of the source. | long |
+| source.user.group.name | Name of the group. | keyword |
+| source.user.name | Short name or login of the user. | keyword |
+| source.user.name.text | Multi-field of `source.user.name`. | match_only_text |
 | system.socket.local.ip | Local IP address. This can be an IPv4 or IPv6 address. | ip |
 | system.socket.local.port | Local port. | long |
 | system.socket.process.cmdline | Full command line | keyword |
