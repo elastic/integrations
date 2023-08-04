@@ -40,13 +40,16 @@ The `log` dataset collects netflow logs.
 | client.bytes | Bytes sent from the client to the server. | long |
 | client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | client.geo.city_name | City name. | keyword |
+| client.geo.continent_code | Two-letter code representing continent's name. | keyword |
 | client.geo.continent_name | Name of the continent. | keyword |
 | client.geo.country_iso_code | Country ISO code. | keyword |
 | client.geo.country_name | Country name. | keyword |
 | client.geo.location | Longitude and latitude. | geo_point |
 | client.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
+| client.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |
 | client.geo.region_iso_code | Region ISO code. | keyword |
 | client.geo.region_name | Region name. | keyword |
+| client.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.mac | MAC address of the client. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | client.nat.ip | Translated IP of source based NAT sessions (e.g. internal client to internet). Typically connections traversing load balancers, firewalls, or routers. | ip |
@@ -91,13 +94,16 @@ The `log` dataset collects netflow logs.
 | destination.bytes | Bytes sent from the destination to the source. | long |
 | destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_code | Two-letter code representing continent's name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
 | destination.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
+| destination.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
+| destination.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.locality | Whether the destination IP is private or public. | keyword |
 | destination.mac | MAC address of the destination. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -210,13 +216,16 @@ The `log` dataset collects netflow logs.
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.geo.city_name | City name. | keyword |
+| host.geo.continent_code | Two-letter code representing continent's name. | keyword |
 | host.geo.continent_name | Name of the continent. | keyword |
 | host.geo.country_iso_code | Country ISO code. | keyword |
 | host.geo.country_name | Country name. | keyword |
 | host.geo.location | Longitude and latitude. | geo_point |
 | host.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
+| host.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |
 | host.geo.region_iso_code | Region ISO code. | keyword |
 | host.geo.region_name | Region name. | keyword |
+| host.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
@@ -1594,13 +1603,16 @@ The `log` dataset collects netflow logs.
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | observer.geo.city_name | City name. | keyword |
+| observer.geo.continent_code | Two-letter code representing continent's name. | keyword |
 | observer.geo.continent_name | Name of the continent. | keyword |
 | observer.geo.country_iso_code | Country ISO code. | keyword |
 | observer.geo.country_name | Country name. | keyword |
 | observer.geo.location | Longitude and latitude. | geo_point |
 | observer.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
+| observer.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |
 | observer.geo.region_iso_code | Region ISO code. | keyword |
 | observer.geo.region_name | Region name. | keyword |
+| observer.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -1667,13 +1679,16 @@ The `log` dataset collects netflow logs.
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | server.geo.city_name | City name. | keyword |
+| server.geo.continent_code | Two-letter code representing continent's name. | keyword |
 | server.geo.continent_name | Name of the continent. | keyword |
 | server.geo.country_iso_code | Country ISO code. | keyword |
 | server.geo.country_name | Country name. | keyword |
 | server.geo.location | Longitude and latitude. | geo_point |
 | server.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
+| server.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |
 | server.geo.region_iso_code | Region ISO code. | keyword |
 | server.geo.region_name | Region name. | keyword |
+| server.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.mac | MAC address of the server. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | server.nat.ip | Translated ip of destination based NAT sessions (e.g. internet to private DMZ) Typically used with load balancers, firewalls, or routers. | ip |
@@ -1707,13 +1722,16 @@ The `log` dataset collects netflow logs.
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
+| source.geo.continent_code | Two-letter code representing continent's name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
 | source.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
+| source.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
+| source.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.locality | Whether the source IP is private or public. | keyword |
 | source.mac | MAC address of the source. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
