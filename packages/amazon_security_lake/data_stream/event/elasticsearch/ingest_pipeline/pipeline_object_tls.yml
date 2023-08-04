@@ -1,0 +1,306 @@
+---
+description: Pipeline for processing TLS object.
+# TLS object docs: https://schema.ocsf.io/1.0.0-rc.3/objects/tls
+processors:
+  - set:
+      field: tls.cipher
+      tag: set_tls_cipher
+      copy_from: ocsf.tls.cipher
+      ignore_empty_value: true
+  - set:
+      field: tls.client.ja3
+      tag: set_tls_client_ja3
+      copy_from: ocsf.tls.ja3_hash.value
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_tls_client_ja3_into_related_hash
+      value: '{{{tls.client.ja3}}}'
+      allow_duplicates: false
+      if: ctx.tls?.client?.ja3 != null
+  - set:
+      field: tls.client.server_name
+      tag: set_tls_client_server_name
+      copy_from: ocsf.tls.sni
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_tls_client_server_name_into_related_hosts
+      value: '{{{tls.client.server_name}}}'
+      allow_duplicates: false
+      if: ctx.tls?.client?.server_name != null
+  - foreach:
+      field: ocsf.tls.client_ciphers
+      if: ctx.ocsf?.tls?.client_ciphers instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: tls.client.supported_ciphers
+          tag: append_tls_client_ciphers_into_tls_client_supported_ciphers
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ocsf.tls.sans
+      if: ctx.ocsf?.tls?.sans instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: tls.client.x509.alternative_names
+          tag: append_tls_sans_name_into_tls_client_x509_alternative_names
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.tls.sans
+      if: ctx.json?.tls?.sans instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.name
+          type: ip
+          target_field: _ingest._value.name_ips
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: related.hosts
+                tag: append_tls_sans_name_into_related_hosts
+                value: '{{{_ingest._value.name}}}'
+                allow_duplicates: false
+  - foreach:
+      field: json.tls.sans
+      if: ctx.json?.tls?.sans instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.ip
+          tag: append_tls_sans_name_ips_into_related_ip
+          value: '{{{_ingest._value.name_ips}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.tls.sans
+      if: ctx.json?.tls?.sans instanceof List
+      ignore_failure: true
+      processor:
+        remove:
+          field: _ingest._value.name_ips
+          tag: remove_tls_sans_name_ips
+          ignore_missing: true
+  - set:
+      field: tls.client.x509.issuer.distinguished_name
+      tag: set_tls_client_x509_issuer_distinguished_name
+      copy_from: ocsf.tls.certificate.issuer
+      ignore_empty_value: true
+  - date:
+      field: ocsf.tls.certificate.expiration_time_dt
+      tag: date_tls_certificate_expiration_time_dt
+      target_field: ocsf.tls.certificate.expiration_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.tls?.certificate?.expiration_time_dt != null && ctx.ocsf.tls.certificate.expiration_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.tls.certificate.expiration_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ocsf.tls.extension_list
+      if: ctx.ocsf?.tls?.extension_list instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.type_id
+          tag: convert_tls_extension_list_type_id_to_string
+          type: string
+          ignore_missing: true
+  - set:
+      field: tls.client.x509.not_after
+      tag: set_tls_client_x509_not_after_from_tls_certificate_expiration_time_dt
+      copy_from: ocsf.tls.certificate.expiration_time_dt
+      ignore_empty_value: true
+  - date:
+      field: ocsf.tls.certificate.expiration_time
+      tag: date_tls_certificate_expiration_time
+      target_field: ocsf.tls.certificate.expiration_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.tls?.certificate?.expiration_time != null && ctx.ocsf.tls.certificate.expiration_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.tls.certificate.expiration_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: tls.client.x509.not_after
+      tag: set_tls_client_x509_not_after_from_tls_certificate_expiration_time
+      copy_from: ocsf.tls.certificate.expiration_time
+      ignore_empty_value: true
+  - set:
+      field: tls.client.x509.serial_number
+      tag: set_tls_client_x509_serial_number
+      copy_from: ocsf.tls.certificate.serial_number
+      ignore_empty_value: true
+  - set:
+      field: tls.client.x509.subject.distinguished_name
+      tag: set_tls_client_x509_subject_distinguished_name
+      copy_from: ocsf.tls.certificate.subject
+      ignore_empty_value: true
+  - set:
+      field: tls.client.x509.version_number
+      tag: set_tls_client_x509_version_number
+      copy_from: ocsf.tls.certificate.version
+      ignore_empty_value: true
+  - set:
+      field: tls.server.ja3s
+      tag: set_tls_server_ja3s
+      copy_from: ocsf.tls.ja3s_hash.value
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_tls_server_ja3s_into_related_hash
+      value: '{{{tls.server.ja3s}}}'
+      allow_duplicates: false
+      if: ctx.tls?.server?.ja3s != null
+  - set:
+      field: tls.version
+      tag: set_tls_version
+      copy_from: ocsf.tls.version
+      ignore_empty_value: true
+  - date:
+      field: ocsf.tls.certificate.created_time_dt
+      tag: date_tls_certificate_created_time_dt
+      target_field: ocsf.tls.certificate.created_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.tls?.certificate?.created_time_dt != null && ctx.ocsf.tls.certificate.created_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.tls.certificate.created_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.tls.certificate.created_time
+      tag: date_tls_certificate_created_time
+      target_field: ocsf.tls.certificate.created_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.tls?.certificate?.created_time != null && ctx.ocsf.tls.certificate.created_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.tls.certificate.created_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.tls.alert
+      tag: convert_tls_alert_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.tls.alert
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.tls.handshake_dur
+      tag: convert_tls_handshake_dur_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.tls.handshake_dur
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Set value for tls.client.hash.*.
+      tag: script_tls_client_hash_*
+      if: ctx.ocsf?.tls?.certificate?.fingerprints != null
+      lang: painless
+      params:
+        MD5: md5
+        SHA-1: sha1
+        SHA-256: sha256
+      source: |-
+        if (ctx.tls == null) {
+          ctx.tls = new HashMap();
+        }
+        if (ctx.tls.client == null) {
+          ctx.tls.client = new HashMap();
+        }
+        if (ctx.tls.client.hash == null) {
+          ctx.tls.client.hash = new HashMap();
+        }
+        Map map = new HashMap();
+        def hashes = ctx.ocsf.tls.certificate.get('fingerprints');
+        for (def hash: hashes) {
+          def hashAlgorithm = params.get(hash.get('algorithm'));
+          if (hashAlgorithm == null) {
+            continue;
+          }
+          if (map.containsKey(hashAlgorithm)) {
+            map[hashAlgorithm].add(hash.get('value'));
+          } else {
+            Set set = new HashSet();
+            set.add(hash.get('value'));
+            map.put(hashAlgorithm, set);
+          }
+        }
+        ctx.tls.client.hash = map;
+  - foreach:
+      field: tls.client.hash
+      if: ctx.tls?.client?.hash instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.hash
+          tag: append_tls_client_hash_into_related_hash
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - convert:
+      field: ocsf.tls.key_length
+      tag: convert_tls_key_length_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.tls.key_length
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.tls.ja3_hash.algorithm_id
+      tag: convert_tls_ja3_hash_algorithm_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.tls.ja3s_hash.algorithm_id
+      tag: convert_tls_ja3s_hash_algorithm_id_to_string
+      type: string
+      ignore_missing: true
+  - foreach:
+      field: ocsf.tls.certificate.fingerprints
+      if: ctx.ocsf?.tls?.certificate?.fingerprints instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.algorithm_id
+          tag: convert_tls_certificate_fingerprints_algorithm_id_to_string
+          type: string
+          ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

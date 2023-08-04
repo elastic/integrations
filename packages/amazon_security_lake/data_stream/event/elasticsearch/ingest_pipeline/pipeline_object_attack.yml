@@ -1,0 +1,59 @@
+---
+description: Pipeline for processing Attack object.
+# Attack object docs: https://schema.ocsf.io/1.0.0-rc.3/objects/attack
+processors:
+  - foreach:
+      field: ocsf.attacks
+      if: ctx.ocsf?.attacks instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.tactics
+          ignore_failure: true
+          processor:
+            append:
+              field: threat.tactic.id
+              value: '{{{_ingest._value.uid}}}'
+              tag: append_attacks_tactics_uid_into_threat_tactic_id
+              allow_duplicates: false
+  - foreach:
+      field: ocsf.attacks
+      if: ctx.ocsf?.attacks instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.tactics
+          ignore_failure: true
+          processor:
+            append:
+              field: threat.tactic.name
+              value: '{{{_ingest._value.name}}}'
+              tag: append_attacks_tactics_name_into_threat_tactic_name
+              allow_duplicates: false
+  - foreach:
+      field: ocsf.attacks
+      if: ctx.ocsf?.attacks instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: threat.technique.name
+          value: '{{{_ingest._value.technique.name}}}'
+          tag: append_attacks_technique_name_into_threat_technique_name
+          allow_duplicates: false
+  - foreach:
+      field: ocsf.attacks
+      if: ctx.ocsf?.attacks instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: threat.technique.id
+          value: '{{{_ingest._value.technique.uid}}}'
+          tag: append_attacks_technique_uid_into_threat_technique_id
+          allow_duplicates: false
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

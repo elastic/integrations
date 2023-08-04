@@ -1,0 +1,541 @@
+---
+description: Pipeline for processing Findings category.
+# Security Findings Class docs: https://schema.ocsf.io/1.0.0-rc.3/classes/security_finding
+processors:
+  - set:
+      field: event.reference
+      tag: set_event_reference
+      copy_from: ocsf.finding.src_url
+      ignore_empty_value: true
+  - uri_parts:
+      field: ocsf.finding.src_url
+      tag: uri_parts_finding_src_url
+      if: ctx.ocsf?.finding?.src_url != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.analytic.type_id
+      tag: convert_analytic_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.confidence_id
+      tag: convert_confidence_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.confidence_score
+      tag: convert_confidence_score_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.confidence_score
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.finding.created_time_dt
+      tag: date_finding_created_time_dt
+      target_field: event.created
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.finding?.created_time_dt != null && ctx.ocsf.finding.created_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.finding.created_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.finding.created_time
+      tag: date_finding_created_time
+      target_field: event.created
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.finding?.created_time != null && ctx.ocsf.finding.created_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.finding.created_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.finding.created_time_dt
+      tag: date_finding_created_time_dt
+      target_field: ocsf.finding.created_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.finding?.created_time_dt != null && ctx.ocsf.finding.created_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.finding.created_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.finding.created_time
+      tag: date_finding_created_time
+      target_field: ocsf.finding.created_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.finding?.created_time != null && ctx.ocsf.finding.created_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.finding.created_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.finding.first_seen_time_dt
+      tag: date_finding_first_seen_time_dt
+      target_field: ocsf.finding.first_seen_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.finding?.first_seen_time_dt != null && ctx.ocsf.finding.first_seen_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.finding.first_seen_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.finding.first_seen_time
+      tag: date_finding_first_seen_time
+      target_field: ocsf.finding.first_seen_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.finding?.first_seen_time != null && ctx.ocsf.finding.first_seen_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.finding.first_seen_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.finding.last_seen_time_dt
+      tag: date_finding_last_seen_time_dt
+      target_field: ocsf.finding.last_seen_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.finding?.last_seen_time_dt != null && ctx.ocsf.finding.last_seen_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.finding.last_seen_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.finding.last_seen_time
+      tag: date_finding_last_seen_time
+      target_field: ocsf.finding.last_seen_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.finding?.last_seen_time != null && ctx.ocsf.finding.last_seen_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.finding.last_seen_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.finding.modified_time_dt
+      tag: date_finding_modified_time_dt
+      target_field: ocsf.finding.modified_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.finding?.modified_time_dt != null && ctx.ocsf.finding.modified_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.finding.modified_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.finding.modified_time
+      tag: date_finding_modified_time
+      target_field: ocsf.finding.modified_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.finding?.modified_time != null && ctx.ocsf.finding.modified_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.finding.modified_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ocsf.finding.related_events
+      if: ctx.ocsf?.finding?.related_events instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.type_uid
+          tag: convert_finding_related_events_type_uid_to_string
+          type: string
+          ignore_missing: true
+  - convert:
+      field: ocsf.impact_score
+      tag: convert_impact_score_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.impact_score
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.state_id
+      tag: convert_state_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.impact_id
+      tag: convert_impact_id_to_string
+      type: string
+      ignore_missing: true
+  - foreach:
+      field: ocsf.kill_chain
+      if: ctx.ocsf?.kill_chain instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.phase_id
+          tag: convert_kill_chain_phase_id_to_string
+          type: string
+          ignore_missing: true
+  - convert:
+      field: ocsf.risk_level_id
+      tag: convert_risk_level_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.risk_score
+      tag: convert_risk_score_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.risk_score
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.risk_score
+      tag: set_event_risk_score
+      copy_from: ocsf.risk_score
+      ignore_empty_value: true
+  - foreach:
+      field: ocsf.vulnerabilities
+      if: ctx.ocsf?.vulnerabilities instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: vulnerability.id
+          value: '{{{_ingest._value.cve.uid}}}'
+          tag: append_vulnerabilities_cve_uid_into_vulnerability_id
+          allow_duplicates: false
+  - foreach:
+      field: ocsf.vulnerabilities
+      if: ctx.ocsf?.vulnerabilities instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: vulnerability.score.version
+          value: '{{{_ingest._value.cve.cvss.version}}}'
+          tag: append_vulnerabilities_cve_cvss_version_into_vulnerability_score_version
+          allow_duplicates: false
+  - foreach:
+      field: ocsf.vulnerabilities
+      if: ctx.ocsf?.vulnerabilities instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: vulnerability.description
+          value: '{{{_ingest._value.desc}}}'
+          tag: append_vulnerabilities_desc_into_vulnerability_description
+  - foreach:
+      field: ocsf.vulnerabilities
+      if: ctx.ocsf?.vulnerabilities instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.references
+          ignore_failure: true
+          processor:
+            append:
+              field: vulnerability.reference
+              value: '{{{_ingest._value}}}'
+              tag: append_vulnerabilities_references_into_vulnerability_references
+  - foreach:
+      field: ocsf.vulnerabilities
+      if: ctx.ocsf?.vulnerabilities instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.cve.cvss.base_score
+          tag: convert_vulnerabilities_cve_cvss_base_score_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.cve.cvss.base_score
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ocsf.vulnerabilities
+      if: ctx.ocsf?.vulnerabilities instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: vulnerability.score.base
+          value: '{{{_ingest._value.cve.cvss.base_score}}}'
+          tag: append_vulnerabilities_cve_cvss_base_score_into_vulnerability_score_base
+          allow_duplicates: false
+  - foreach:
+      field: ocsf.vulnerabilities
+      if: ctx.ocsf?.vulnerabilities instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: vulnerability.severity
+          value: '{{{_ingest._value.severity}}}'
+          tag: append_vulnerabilities_severity_into_vulnerability_severity
+          allow_duplicates: false
+  - foreach:
+      field: ocsf.vulnerabilities
+      if: ctx.ocsf?.vulnerabilities instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: vulnerability.scanner.vendor
+          value: '{{{_ingest._value.vendor_name}}}'
+          tag: append_vulnerabilities_vendor_name_into_vulnerability_scanner_vendor
+          allow_duplicates: false
+  - foreach:
+      field: ocsf.vulnerabilities
+      if: ctx.ocsf?.vulnerabilities instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.cve.cvss.overall_score
+          tag: convert_vulnerabilities_cve_cvss_overall_score_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.cve.cvss.overall_score
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ocsf.vulnerabilities
+      if: ctx.ocsf?.vulnerabilities instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.cve.cvss.severity
+          tag: convert_vulnerabilities_cve_cvss_severity_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.cve.cvss.severity
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ocsf.vulnerabilities
+      if: ctx.ocsf?.vulnerabilities instanceof List
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value.cve.created_time_dt
+          target_field:  _ingest.cve.created_time_dt
+          tag: date_vulnerabilities_cve_created_time_dt
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field:  _ingest._value.cve.created_time_dt
+                ignore_missing: true
+  - foreach:
+      field: ocsf.vulnerabilities
+      if: ctx.ocsf?.vulnerabilities instanceof List
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value.cve.created_time
+          target_field:  _ingest.cve.created_time
+          tag: date_vulnerabilities_cve_created_time
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field:  _ingest._value.cve.created_time
+                ignore_missing: true
+  - foreach:
+      field: ocsf.vulnerabilities
+      if: ctx.ocsf?.vulnerabilities instanceof List
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value.cve.modified_time_dt
+          target_field:  _ingest.cve.modified_time_dt
+          tag: date_vulnerabilities_cve_modified_time_dt
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field:  _ingest._value.cve.modified_time_dt
+                ignore_missing: true
+  - foreach:
+      field: ocsf.vulnerabilities
+      if: ctx.ocsf?.vulnerabilities instanceof List
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value.cve.modified_time
+          target_field:  _ingest.cve.modified_time
+          tag: date_vulnerabilities_cve_modified_time
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field:  _ingest._value.cve.modified_time
+                ignore_missing: true
+  - foreach:
+      field: ocsf.vulnerabilities
+      if: ctx.ocsf?.vulnerabilities instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.fix_available
+          tag: convert_vulnerabilities_fix_available_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.fix_available
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ocsf.vulnerabilities
+      if: ctx.ocsf?.vulnerabilities instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.packages
+          ignore_failure: true
+          processor:
+            convert:
+              field: _ingest._value.epoch
+              tag: convert_vulnerabilities_packages_epoch_to_long
+              type: long
+              ignore_missing: true
+              on_failure:
+                  - remove:
+                      field: _ingest._value.epoch
+                      ignore_missing: true
+                  - append:
+                      field: error.message
+                      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ocsf.resources
+      if: ctx.ocsf?.resources instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          tag: append_resources_owner_email_addr_into_related_user
+          value: '{{{_ingest._value.owner.email_addr}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ocsf.resources
+      if: ctx.ocsf?.resources instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          tag: append_resources_owner_full_name_into_related_user
+          value: '{{{_ingest._value.owner.full_name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ocsf.resources
+      if: ctx.ocsf?.resources instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          tag: append_resources_owner_uid_into_related_user
+          value: '{{{_ingest._value.owner.uid}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ocsf.resources
+      if: ctx.ocsf?.resources instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          tag: append_resources_owner_name_into_related_user
+          value: '{{{_ingest._value.owner.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ocsf.resources
+      if: ctx.ocsf?.resources instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.owner.account.type_id
+          tag: convert_resources_owner_account_type_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: ocsf.resources
+      if: ctx.ocsf?.resources instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.owner.type_id
+          tag: convert_resources_owner_type_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: ocsf.resources
+      if: ctx.ocsf?.resources instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          tag: append_resources_owner_uid_alt_into_related_user
+          value: '{{{_ingest._value.owner.uid_alt}}}'
+          allow_duplicates: false
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
