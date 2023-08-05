@@ -470,7 +470,7 @@ An example event for `applocker_msi_and_script` looks as following:
 {
     "@timestamp": "2023-08-04T21:26:32.757Z",
     "agent": {
-        "ephemeral_id": "94896df9-7240-4a1f-a3f5-d9cf65e34d51",
+        "ephemeral_id": "17b8f200-259d-4f9f-898e-ccfd2f82705a",
         "id": "15b01abd-cefe-4ddd-8359-617acef7bf30",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -494,13 +494,32 @@ An example event for `applocker_msi_and_script` looks as following:
         "agent_id_status": "verified",
         "category": "process",
         "code": "8006",
-        "created": "2023-08-05T04:54:39.523Z",
+        "created": "2023-08-05T12:31:30.395Z",
         "dataset": "windows.applocker_msi_and_script",
-        "ingested": "2023-08-05T04:54:43Z",
+        "ingested": "2023-08-05T12:31:34Z",
         "kind": "event",
         "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-AppLocker' Guid='{cbda4dbf-8d5d-4f69-9578-be14aa540d22}' /\u003e\u003cEventID\u003e8006\u003c/EventID\u003e\u003cVersion\u003e0\u003c/Version\u003e\u003cLevel\u003e3\u003c/Level\u003e\u003cTask\u003e0\u003c/Task\u003e\u003cOpcode\u003e0\u003c/Opcode\u003e\u003cKeywords\u003e0x4000000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2023-08-04T21:26:32.7572144Z' /\u003e\u003cEventRecordID\u003e239\u003c/EventRecordID\u003e\u003cCorrelation ActivityID='{f64315e2-bea0-0000-6d01-d5f6a0bed901}' /\u003e\u003cExecution ProcessID='25192' ThreadID='7740' /\u003e\u003cChannel\u003eMicrosoft-Windows-AppLocker/MSI and Script\u003c/Channel\u003e\u003cComputer\u003eel33t-b00k-1\u003c/Computer\u003e\u003cSecurity UserID='S-1-5-21-2707992022-4034939591-3454028951-1001' /\u003e\u003c/System\u003e\u003cUserData\u003e\u003cRuleAndFileData xmlns='http://schemas.microsoft.com/schemas/event/Microsoft.Windows/1.0.0.0'\u003e\u003cPolicyNameLength\u003e6\u003c/PolicyNameLength\u003e\u003cPolicyName\u003eSCRIPT\u003c/PolicyName\u003e\u003cRuleId\u003e{00000000-0000-0000-0000-000000000000}\u003c/RuleId\u003e\u003cRuleNameLength\u003e1\u003c/RuleNameLength\u003e\u003cRuleName\u003e-\u003c/RuleName\u003e\u003cRuleSddlLength\u003e1\u003c/RuleSddlLength\u003e\u003cRuleSddl\u003e-\u003c/RuleSddl\u003e\u003cTargetUser\u003eS-1-5-21-2707992022-4034939591-3454028951-1001\u003c/TargetUser\u003e\u003cTargetProcessId\u003e25192\u003c/TargetProcessId\u003e\u003cFilePathLength\u003e124\u003c/FilePathLength\u003e\u003cFilePath\u003e%OSDRIVE%\\USERS\\NICPE\\.VSCODE\\EXTENSIONS\\MS-VSCODE.POWERSHELL-2023.6.0\\MODULES\\PSSCRIPTANALYZER\\1.21.0\\PSSCRIPTANALYZER.PSM1\u003c/FilePath\u003e\u003cFileHashLength\u003e32\u003c/FileHashLength\u003e\u003cFileHash\u003eD2A09AC074F8D326B4DCC8B8BE5BC003C41CCB6EB5FC35E13B73F834F2946B01\u003c/FileHash\u003e\u003cFqbnLength\u003e65\u003c/FqbnLength\u003e\u003cFqbn\u003eO=MICROSOFT CORPORATION, L=REDMOND, S=WASHINGTON, C=US\\\\\\0.0.0.00\u003c/Fqbn\u003e\u003cTargetLogonId\u003e0x4c18f\u003c/TargetLogonId\u003e\u003cFullFilePathLength\u003e117\u003c/FullFilePathLength\u003e\u003cFullFilePath\u003eC:\\Users\\nicpe\\.vscode\\extensions\\ms-vscode.powershell-2023.6.0\\modules\\PSScriptAnalyzer\\1.21.0\\PSScriptAnalyzer.psm1\u003c/FullFilePath\u003e\u003c/RuleAndFileData\u003e\u003c/UserData\u003e\u003c/Event\u003e",
         "provider": "Microsoft-Windows-AppLocker",
         "type": "start"
+    },
+    "file": {
+        "hash": {
+            "sha256": "D2A09AC074F8D326B4DCC8B8BE5BC003C41CCB6EB5FC35E13B73F834F2946B01"
+        },
+        "name": "PSScriptAnalyzer.psm1",
+        "pe": {
+            "file_version": "0.0.0.00",
+            "original_file_name": "",
+            "product": ""
+        },
+        "x509": {
+            "subject": {
+                "country": "US",
+                "locality": "REDMOND",
+                "organization": "MICROSOFT CORPORATION",
+                "state_or_province": "WASHINGTON"
+            }
+        }
     },
     "host": {
         "name": "el33t-b00k-1"
@@ -608,9 +627,17 @@ An example event for `applocker_msi_and_script` looks as following:
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | keyword |
 | file.extension | File extension, excluding the leading dot. Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
+| file.hash.sha256 | SHA256 hash. | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | file.path.text | Multi-field of `file.path`. | match_only_text |
+| file.pe.file_version |  |  |
+| file.pe.original_file_name |  |  |
+| file.pe.product |  |  |
+| file.x509.subject.country | List of country (C) code | keyword |
+| file.x509.subject.locality | List of locality names (L) | keyword |
+| file.x509.subject.organization | List of organizations (O) of subject. | keyword |
+| file.x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
