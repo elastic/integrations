@@ -219,3 +219,47 @@ rules:
                   "splunk_server": "69819b6ce1bd"
               }
           }
+  - path: /services/search/jobs/export
+    user: test
+    password: test
+    methods:
+      - post
+    query_params:
+      index_earliest: "{index_earliest:[0-9]+}"
+      index_latest: "{index_latest:[0-9]+}"
+      output_mode: json
+      search: 'search sourcetype="XmlWinEventLog:Microsoft-Windows-AppLocker/MSI and Script" | streamstats max(_indextime) AS max_indextime'
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+              "preview": false,
+              "offset": 194,
+              "lastrow": true,
+              "result": {
+                  "_bkt": "main~0~1212176D-89E1-485D-89E6-3ADC276CCA38",
+                  "_cd": "0:315",
+                  "_indextime": "1622471463",
+                  "_raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-AppLocker' Guid='{cbda4dbf-8d5d-4f69-9578-be14aa540d22}' /><EventID>8006</EventID><Version>0</Version><Level>3</Level><Task>0</Task><Opcode>0</Opcode><Keywords>0x4000000000000000</Keywords><TimeCreated SystemTime='2023-08-04T21:26:32.7572144Z' /><EventRecordID>239</EventRecordID><Correlation ActivityID='{f64315e2-bea0-0000-6d01-d5f6a0bed901}' /><Execution ProcessID='25192' ThreadID='7740' /><Channel>Microsoft-Windows-AppLocker/MSI and Script</Channel><Computer>el33t-b00k-1</Computer><Security UserID='S-1-5-21-2707992022-4034939591-3454028951-1001' /></System><UserData><RuleAndFileData xmlns='http://schemas.microsoft.com/schemas/event/Microsoft.Windows/1.0.0.0'><PolicyNameLength>6</PolicyNameLength><PolicyName>SCRIPT</PolicyName><RuleId>{00000000-0000-0000-0000-000000000000}</RuleId><RuleNameLength>1</RuleNameLength><RuleName>-</RuleName><RuleSddlLength>1</RuleSddlLength><RuleSddl>-</RuleSddl><TargetUser>S-1-5-21-2707992022-4034939591-3454028951-1001</TargetUser><TargetProcessId>25192</TargetProcessId><FilePathLength>124</FilePathLength><FilePath>%OSDRIVE%\\USERS\\NICPE\\.VSCODE\\EXTENSIONS\\MS-VSCODE.POWERSHELL-2023.6.0\\MODULES\\PSSCRIPTANALYZER\\1.21.0\\PSSCRIPTANALYZER.PSM1</FilePath><FileHashLength>32</FileHashLength><FileHash>D2A09AC074F8D326B4DCC8B8BE5BC003C41CCB6EB5FC35E13B73F834F2946B01</FileHash><FqbnLength>65</FqbnLength><Fqbn>O=MICROSOFT CORPORATION, L=REDMOND, S=WASHINGTON, C=US\\\\\\0.0.0.00</Fqbn><TargetLogonId>0x4c18f</TargetLogonId><FullFilePathLength>117</FullFilePathLength><FullFilePath>C:\\Users\\nicpe\\.vscode\\extensions\\ms-vscode.powershell-2023.6.0\\modules\\PSScriptAnalyzer\\1.21.0\\PSScriptAnalyzer.psm1</FullFilePath></RuleAndFileData></UserData></Event>",
+                  "_serial": "194",
+                  "_si": [
+                      "69819b6ce1bd",
+                      "main"
+                  ],
+                  "_sourcetype": "XmlWinEventLog:Security",
+                  "_time": "2021-05-25 13:11:45.000 UTC",
+                  "host": "VAGRANT",
+                  "index": "main",
+                  "linecount": "1",
+                  "max_indextime": "1622471606",
+                  "source": "WinEventLog:Security",
+                  "sourcetype": "XmlWinEventLog:Security",
+                  "splunk_server": "69819b6ce1bd"
+              }
+          }
