@@ -12,11 +12,10 @@ processors:
     # - '^(?:%{PROG:syslog_program}|-)?\s(?:%{POSINT:syslog_pid}|-)?\s(?:%{WORD:tag}|-)?\s?((\[([^=]+?\s)?%{DATA:_temp_.system_structured}\"\])|-)?\s?(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}:%{DATA:_temp_.unparsed.system_semi_structured}\s?$'
     # - '^(?:%{PROG:syslog_program})?\s(?:%{POSINT:syslog_pid})?\s(?:%{WORD:tag})?\s?(\[([^=]+?\s)?%{DATA:_temp_.system_structured}\"\])?\s?%{DATA:message}\s?$'
     - '^(?:%{PROG:syslog_program}|-)?\s(?:%{POSINT:syslog_pid}|-)?\s(?:%{WORD:tag}|-)?\s([-]+\s)?%{GREEDYDATA:_temp_.unparsed.system_semi_structured}\s?$'
-    - '^(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}:%{GREEDYDATA:_temp_.unparsed.system_semi_structured}\s?$'
+    - '^(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}:%{GREEDYDATA:_temp_.unparsed.system_unstructured}\s?$'
     - '^%{GREEDYDATA:message}$'
     pattern_definitions:
         CUSTOM_DATE: "%{TIMESTAMP_ISO8601}|(%{MONTH}%{SPACE}+%{MONTHDAY}%{SPACE}+%{TIME})"
-        # kmd 9159 - - IKE negotiation failed with error: Timed out. IKE Version: 1, VPN: IPSEC-AAAAA-AAA1-PROD-VPN Gateway: IKE-AAAAA-AAA1-GW, Local: 89.160.20.112/500, Remote: 67.43.156.1/500, Local IKE-ID: Not-Available, Remote IKE-ID: Not-Available, VR-ID: 5: Role: Initiator
         # CUSTOM_PROG: "(%{DATA:_temp_.to_be_parsed})?%{PROG:_temp_.syslog_sub_program}(\\[%{POSINT:syslog_pid}\\]|\\s*\\(pid=%{DATA:syslog_pid}\\))?:"
         CUSTOM_PROG: "%{PROG:_temp_.syslog_sub_program}(\\[%{POSINT:syslog_pid}\\]|\\s*\\(pid=%{DATA:syslog_pid}\\))?:"
         CUSTOM_SYSTEM_TAG: "[A-Za-z_]+"
@@ -39,33 +38,44 @@ processors:
     value: "{{{_temp_.sub_tag}}}"
     if: 'ctx._temp_?.sub_tag != null && (ctx.juniper?.srx?.tag == null || ctx.juniper?.srx?.tag == "-")'
 
+# negotiation
+- grok:
+    if: "ctx._temp_?.unparsed?.system_semi_structured != null && ctx._temp_?.unparsed?.system_semi_structured != ''"
+    tag: "grok_negotiation"
+    field: "_temp_.unparsed.system_semi_structured"
+    patterns: 
+    - "%{WORD:_temp_.negotiation.type} negotiation %{GREEDYDATA:_temp_.negotiation.message}"
+    - '^%{GREEDYDATA:_temp_.unparsed.system_semi_structured}$'
+    on_failure:
+    - append:
+        field: error.message
+        value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+
 # IKE negotiation
-# if: system_semi_structured ~ /^IKE negotiation failed.*/
+# if: negotiation.message ~ /^failed.*/
 - dissect:
-    if: "ctx._temp_?.unparsed?.system_semi_structured != null && ctx._temp_?.unparsed?.system_semi_structured.startsWith('IKE negotiation failed')"
-    tag: "dissect_sub_tag_ike_neg"
-    field: "_temp_.unparsed.system_semi_structured"
-    pattern: "IKE negotiation failed with error: %{_temp_.ike_negotiation.err_msg}. %{message}"
+    if: "ctx._temp_?.negotiation?.message != null && ctx._temp_.negotiation.message.startsWith('failed')"
+    tag: "dissect_neg_failed"
+    field: "_temp_.negotiation.message"
+    pattern: "failed with error: %{_temp_.negotiation.err_msg}. %{message}"
     on_failure:
     - append:
         field: error.message
         value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
-# if: system_semi_structured ~ /^IKE negotiation success.*/
+# if: negotiation.message ~ /^success.*/
 - dissect:
-    if: "ctx._temp_?.unparsed?.system_semi_structured != null && ctx._temp_?.unparsed?.system_semi_structured.startsWith('IKE negotiation success')"
-    tag: "dissect_sub_tag_ike_neg"
-    field: "_temp_.unparsed.system_semi_structured"
-    pattern: "IKE negotiation successfully completed. %{message}"
+    if: "ctx._temp_?.negotiation?.message != null && ctx._temp_.negotiation.message.startsWith('success')"
+    tag: "dissect_neg_success"
+    field: "_temp_.negotiation.message"
+    pattern: "successfully completed. %{message}"
     on_failure:
     - append:
         field: error.message
         value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
-
 - rename:
-    field: _temp_.ike_negotiation
-    target_field: juniper.srx.ike_negotiation
-    if: "ctx._temp_?.ike_negotiation != null && ctx.juniper?.srx?.tag == 'IKE negotiation' "
-
+    field: _temp_.negotiation
+    target_field: juniper.srx.negotiation
+    if: ctx._temp_?.negotiation != null
 
 
 # split k-v fields inside message field.
