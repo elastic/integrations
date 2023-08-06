@@ -9,47 +9,17 @@ processors:
     tag: grok_unparsed_message
     patterns:
 #   # SRX System log patterns
-    - '^(?:%{PROG:syslog_program}|-)?\s(?:%{POSINT:syslog_pid}|-)?\s(?:%{WORD:tag}|-)?\s?((\[([^=]+?\s)?%{DATA:_temp_.system_structured}\"\])|-)?\s?(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}:%{DATA:_temp_.unparsed.syslog_structured}\s?$'
-    - '^(?:%{PROG:syslog_program})?\s(?:%{POSINT:syslog_pid})?\s(?:%{WORD:tag})?\s?(\[([^=]+?\s)?%{DATA:_temp_.system_structured}\"\])?\s?%{DATA:message}\s?$'
-    - '^(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}:%{DATA:_temp_.unparsed.syslog_structured}\s?$'
+    # - '^(?:%{PROG:syslog_program}|-)?\s(?:%{POSINT:syslog_pid}|-)?\s(?:%{WORD:tag}|-)?\s?((\[([^=]+?\s)?%{DATA:_temp_.system_structured}\"\])|-)?\s?(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}:%{DATA:_temp_.unparsed.system_semi_structured}\s?$'
+    # - '^(?:%{PROG:syslog_program})?\s(?:%{POSINT:syslog_pid})?\s(?:%{WORD:tag})?\s?(\[([^=]+?\s)?%{DATA:_temp_.system_structured}\"\])?\s?%{DATA:message}\s?$'
+    - '^(?:%{PROG:syslog_program}|-)?\s(?:%{POSINT:syslog_pid}|-)?\s(?:%{WORD:tag}|-)?\s([-]+\s)?%{GREEDYDATA:_temp_.unparsed.system_semi_structured}\s?$'
+    - '^(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}:%{GREEDYDATA:_temp_.unparsed.system_semi_structured}\s?$'
     - '^%{GREEDYDATA:message}$'
     pattern_definitions:
         CUSTOM_DATE: "%{TIMESTAMP_ISO8601}|(%{MONTH}%{SPACE}+%{MONTHDAY}%{SPACE}+%{TIME})"
-        CUSTOM_PROG: "(%{DATA:_temp_.to_be_parsed})?%{PROG:_temp_.syslog_sub_program}(\\[%{POSINT:syslog_pid}\\]|\\s*\\(pid=%{DATA:syslog_pid}\\))?:"
+        # kmd 9159 - - IKE negotiation failed with error: Timed out. IKE Version: 1, VPN: IPSEC-AAAAA-AAA1-PROD-VPN Gateway: IKE-AAAAA-AAA1-GW, Local: 89.160.20.112/500, Remote: 67.43.156.1/500, Local IKE-ID: Not-Available, Remote IKE-ID: Not-Available, VR-ID: 5: Role: Initiator
+        # CUSTOM_PROG: "(%{DATA:_temp_.to_be_parsed})?%{PROG:_temp_.syslog_sub_program}(\\[%{POSINT:syslog_pid}\\]|\\s*\\(pid=%{DATA:syslog_pid}\\))?:"
+        CUSTOM_PROG: "%{PROG:_temp_.syslog_sub_program}(\\[%{POSINT:syslog_pid}\\]|\\s*\\(pid=%{DATA:syslog_pid}\\))?:"
         CUSTOM_SYSTEM_TAG: "[A-Za-z_]+"
-
-# split k-v fields inside structured data
-- kv:
-    field: _temp_.system_structured
-    if: 'ctx._temp_?.system_structured != null && ctx._temp_?.system_structured != ""'
-    field_split: " (?=[a-z0-9\\_\\-]+=)"
-    value_split: "="
-    prefix: "juniper.srx."
-    ignore_missing: true
-    ignore_failure: false
-    trim_value: "\""
-
-
-# Converts all kebab-case key names to snake_case
-- script:
-    lang: painless
-    if: ctx.juniper?.srx != null
-    source: >-
-        ctx.juniper.srx = ctx?.juniper?.srx.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().replace('-', '_'), e -> e.getValue()));
-
-
-# Removes all empty fields
-- script:
-    lang: painless
-    if: ctx.juniper?.srx != null
-    params:
-        values:
-            - "None"
-            - "UNKNOWN"
-            - "N/A"
-            - "-"
-    source: >-
-        ctx?.juniper?.srx.entrySet().removeIf(entry -> params.values.contains(entry.getValue()));
 
 # Clean up syslog_program & tag
 - set:
@@ -69,12 +39,83 @@ processors:
     value: "{{{_temp_.sub_tag}}}"
     if: 'ctx._temp_?.sub_tag != null && (ctx.juniper?.srx?.tag == null || ctx.juniper?.srx?.tag == "-")'
 
+# IKE negotiation
+# if: system_semi_structured ~ /^IKE negotiation failed.*/
+- dissect:
+    if: "ctx._temp_?.unparsed?.system_semi_structured != null && ctx._temp_?.unparsed?.system_semi_structured.startsWith('IKE negotiation failed')"
+    tag: "dissect_sub_tag_ike_neg"
+    field: "_temp_.unparsed.system_semi_structured"
+    pattern: "IKE negotiation failed with error: %{_temp_.ike_negotiation.err_msg}. %{message}"
+    on_failure:
+    - append:
+        field: error.message
+        value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+# if: system_semi_structured ~ /^IKE negotiation success.*/
+- dissect:
+    if: "ctx._temp_?.unparsed?.system_semi_structured != null && ctx._temp_?.unparsed?.system_semi_structured.startsWith('IKE negotiation success')"
+    tag: "dissect_sub_tag_ike_neg"
+    field: "_temp_.unparsed.system_semi_structured"
+    pattern: "IKE negotiation successfully completed. %{message}"
+    on_failure:
+    - append:
+        field: error.message
+        value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+
+- rename:
+    field: _temp_.ike_negotiation
+    target_field: juniper.srx.ike_negotiation
+    if: "ctx._temp_?.ike_negotiation != null && ctx.juniper?.srx?.tag == 'IKE negotiation' "
+
+
+
+# split k-v fields inside message field.
+- kv:
+    field: message
+    if: 'ctx.message != null && ctx.message != ""'
+    tag: "kv_message"
+    field_split: ",\\s(?=[a-zA-Z0-9\\_\\-\\s]+:)"
+    value_split: ":"
+    prefix: "juniper.srx.system_message."
+    ignore_missing: true
+    ignore_failure: false
+    trim_value: "\""
+
+
+# Removes spaces and converts fields into snake_case
+- script:
+    lang: painless
+    tag: "script_cleanup_system_message"
+    if: ctx.juniper?.srx?.system_message != null
+    source: >-
+        ctx.juniper.srx.system_message = ctx.juniper.srx.system_message.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().replace(' ', '_').replace('-', '_').toLowerCase(), e -> e.getValue().trim()));
+
+
+# Removes all empty fields
+- script:
+    lang: painless
+    if: ctx.juniper?.srx?.system_message != null
+    params:
+        values:
+            - "None"
+            - "UNKNOWN"
+            - "N/A"
+            - "-"
+    source: >-
+        ctx?.juniper?.srx?.system_message.entrySet().removeIf(entry -> params.values.contains(entry.getValue()));
+
+
+
+#################
+# TO BE REVIEWED
+#################
+
+
 #### Firewall (tag = FW)
 # if: tag = FW && process = PFE_FW_SYSLOG_IP
 - dissect:
-    if: "ctx._temp_?.unparsed?.syslog_structured != null && ctx.juniper?.srx?.tag == 'FW' && ctx.juniper?.srx?.process == 'PFE_FW_SYSLOG_IP'"
+    if: "ctx._temp_?.unparsed?.system_semi_structured != null && ctx.juniper?.srx?.tag == 'FW' && ctx.juniper?.srx?.process == 'PFE_FW_SYSLOG_IP'"
     tag: "dissect_sub_tag_fw_packets"
-    field: "_temp_.unparsed.syslog_structured"
+    field: "_temp_.unparsed.system_semi_structured"
     pattern: " %{_temp_.fw.interface_name} %{_temp_.fw.filter_action} %{_temp_.fw.packet_protocol} %{_temp_.fw.src_addr} %{_temp_.fw.dst_addr} %{_temp_.fw.src_port} %{_temp_.fw.dst_port} (%{_temp_.fw.packets_num} packets)"
     on_failure:
     - append:
@@ -82,9 +123,9 @@ processors:
         value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
 # if: tag = FW && process != PFE_FW_SYSLOG_IP
 - dissect:
-    if: "ctx._temp_?.unparsed?.syslog_structured != null && ctx.juniper?.srx?.tag == 'FW' && ctx.juniper?.srx?.process != 'PFE_FW_SYSLOG_IP'"
+    if: "ctx._temp_?.unparsed?.system_semi_structured != null && ctx.juniper?.srx?.tag == 'FW' && ctx.juniper?.srx?.process != 'PFE_FW_SYSLOG_IP'"
     tag: "dissect_sub_tag_fw"
-    field: "_temp_.unparsed.syslog_structured"
+    field: "_temp_.unparsed.system_semi_structured"
     pattern: " %{_temp_.fw.interface_name} %{_temp_.fw.filter_action} %{_temp_.fw.packet_protocol} %{_temp_.fw.src_addr} %{_temp_.fw.dst_addr} %{_temp_.fw.src_port} %{_temp_.fw.dst_port}"
     on_failure:
     - append:
@@ -101,9 +142,9 @@ processors:
 
 ### RTLOG_CONN_ERROR (tag = RTLOG_CONN_ERROR)
 - dissect:
-    if: "ctx._temp_?.unparsed?.syslog_structured != null && ctx.juniper?.srx?.tag == 'RTLOG_CONN_ERROR'"
+    if: "ctx._temp_?.unparsed?.system_semi_structured != null && ctx.juniper?.srx?.tag == 'RTLOG_CONN_ERROR'"
     tag: "dissect_sub_tag_rtlog_conn_err"
-    field: "_temp_.unparsed.syslog_structured"
+    field: "_temp_.unparsed.system_semi_structured"
     pattern: " Connection error %{_temp_.rtlog_conn_error.stream_name} %{_temp_.rtlog_conn_error.err_msg}"
     on_failure:
     - append:
@@ -163,9 +204,9 @@ processors:
 # PING_TEST_COMPLETED
 # if: tag = PING_TEST_COMPLETED
 - dissect:
-    if: "ctx._temp_?.unparsed?.syslog_structured != null && ctx.juniper?.srx?.tag == 'PING_TEST_COMPLETED'"
+    if: "ctx._temp_?.unparsed?.system_semi_structured != null && ctx.juniper?.srx?.tag == 'PING_TEST_COMPLETED'"
     tag: "dissect_sub_tag_ping_test"
-    field: "_temp_.unparsed.syslog_structured"
+    field: "_temp_.unparsed.system_semi_structured"
     pattern: " pingCtlOwnerIndex = %{_temp_.ping_test.owner}, pingCtlTestName = %{_temp_.ping_test.name}"
     on_failure:
     - append:
@@ -176,28 +217,12 @@ processors:
     target_field: juniper.srx.ping_test
     if: "ctx._temp_?.ping_test != null && ctx.juniper?.srx?.tag == 'PING_TEST_COMPLETED' "
 
-# IKE negotiation
-# if: tag = IKE negotiation
-- dissect:
-    if: "ctx._temp_?.unparsed?.syslog_structured != null && ctx.juniper?.srx?.tag == 'IKE negotiation'"
-    tag: "dissect_sub_tag_ike_neg"
-    field: "_temp_.unparsed.syslog_structured"
-    pattern: " failed with error: %{_temp_.ike_negotiation.err_msg}\\. IKE Version: %{_temp_.ike_negotiation.version}, VPN: %{_temp_.ike_negotiation.vpn} Gateway: %{_temp_.ike_negotiation.gateway}, Local: %{_temp_.ike_negotiation.local.ip_range}, Remote: %{_temp_.ike_negotiation.remote.ip_range}, Local IKE-ID: %{_temp_.ike_negotiation.local.ike_id}, Remote IKE-ID: %{_temp_.ike_negotiation.remote.ike_id}, VR-ID: %{_temp_.ike_negotiation.vr_id}, Role: %{_temp_.ike_negotiation.role}"
-    on_failure:
-    - append:
-        field: error.message
-        value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
-- rename:
-    field: _temp_.ike_negotiation
-    target_field: juniper.srx.ike_negotiation
-    if: "ctx._temp_?.ike_negotiation != null && ctx.juniper?.srx?.tag == 'IKE negotiation' "
-
 # KERN_ARP_ADDR_CHANGE
 # if: tag = KERN_ARP_ADDR_CHANGE
 - dissect:
-    if: "ctx._temp_?.unparsed?.syslog_structured != null && ctx.juniper?.srx?.tag == 'KERN_ARP_ADDR_CHANGE'"
+    if: "ctx._temp_?.unparsed?.system_semi_structured != null && ctx.juniper?.srx?.tag == 'KERN_ARP_ADDR_CHANGE'"
     tag: "dissect_sub_tag_kern_arp_addr"
-    field: "_temp_.unparsed.syslog_structured"
+    field: "_temp_.unparsed.system_semi_structured"
     pattern: " arp info overwritten for %{_temp_.kern_arp_addr_change.ip} from %{_temp_.kern_arp_addr_change.mac1} to %{_temp_.kern_arp_addr_change.mac2}"
     on_failure:
     - append:
@@ -222,9 +247,9 @@ processors:
 # rtslib_dfwsm_get_async_cb
 # if: tag = rtslib_dfwsm_get_async_cb
 - dissect:
-    if: "ctx._temp_?.unparsed?.syslog_structured != null && ctx.juniper?.srx?.tag == 'rtslib_dfwsm_get_async_cb'"
+    if: "ctx._temp_?.unparsed?.system_semi_structured != null && ctx.juniper?.srx?.tag == 'rtslib_dfwsm_get_async_cb'"
     tag: "dissect_sub_tag_rtslib_dfwsmr"
-    field: "_temp_.unparsed.syslog_structured"
+    field: "_temp_.unparsed.system_semi_structured"
     pattern: "u_data:%{_temp_.rtslib_dfwsm.u_data} k_usr_d:%{_temp_.rtslib_dfwsm.k_usr_d}"
     on_failure:
     - append:
