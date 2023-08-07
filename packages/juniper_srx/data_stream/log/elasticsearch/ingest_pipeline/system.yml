@@ -101,7 +101,6 @@ processors:
     target_field: juniper.srx.interface_name
     if: "ctx.juniper?.srx?.firewall?.interface_name != null"
 
-
 # message_brief ~ /^rtslib_dfwsm_get_async_cb:/
 - dissect:
     if: "ctx._temp_?.message_brief != null && ctx._temp_.message_brief.startsWith('rtslib_dfwsm_get_async_cb:')"
@@ -117,6 +116,24 @@ processors:
     target_field: juniper.srx.rtslib_dfwsm
     if: ctx._temp_?.rtslib_dfwsm != null
 
+# tag_brief = ip_mon_reth_scan
+- dissect:
+    if: "ctx._temp_?.tag_brief != null && ctx._temp_.tag_brief == 'ip_mon_reth_scan'"
+    tag: "dissect_ip_mon_reth_scan"
+    field: "_temp_.message_brief"
+    pattern: "interface %{_temp_.ip_mon_reth_scan.interface_name} trigger %{_temp_.ip_mon_reth_scan.trigger}"
+    on_failure:
+    - append:
+        field: error.message
+        value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+- rename:
+    field: _temp_.ip_mon_reth_scan
+    target_field: juniper.srx.ip_mon_reth_scan
+    if: ctx._temp_?.ip_mon_reth_scan != null
+- rename:
+    field: juniper.srx.ip_mon_reth_scan.interface_name
+    target_field: juniper.srx.interface_name
+    if: "ctx.juniper?.srx?.ip_mon_reth_scan?.interface_name != null"
 
 
 # split k-v fields inside message field.
