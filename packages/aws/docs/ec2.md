@@ -316,20 +316,11 @@ An example event for `ec2` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
 | aws.dimensions.AutoScalingGroupName | An Auto Scaling group is a collection of instances you define if you're using Auto Scaling. | keyword |
 | aws.dimensions.ImageId | This dimension filters the data you request for all instances running this Amazon EC2 Amazon Machine Image (AMI) | keyword |
 | aws.dimensions.InstanceId | Amazon EC2 instance ID | keyword |
 | aws.dimensions.InstanceType | This dimension filters the data you request for all instances running with this specified instance type. | keyword |
-| aws.ec2.cpu.credit_balance | The number of earned CPU credits that an instance has accrued since it was launched or started. | long |
-| aws.ec2.cpu.credit_usage | The number of CPU credits spent by the instance for CPU utilization. | long |
-| aws.ec2.cpu.surplus_credit_balance | The number of surplus credits that have been spent by an unlimited instance when its CPUCreditBalance value is zero. | long |
-| aws.ec2.cpu.surplus_credits_charged | The number of spent surplus credits that are not paid down by earned CPU credits, and which thus incur an additional charge. | long |
-| aws.ec2.diskio.read.bytes_per_sec | Bytes read per second from all instance store volumes available to the instance. | long |
-| aws.ec2.diskio.read.count_per_sec | Completed read operations per second from all instance store volumes available to the instance in a specified period of time. | long |
-| aws.ec2.diskio.write.bytes_per_sec | Bytes written per second to all instance store volumes available to the instance. | long |
-| aws.ec2.diskio.write.count_per_sec | Completed write operations per second to all instance store volumes available to the instance in a specified period of time. | long |
 | aws.ec2.instance.core.count | The number of CPU cores for the instance. | integer |
 | aws.ec2.instance.image.id | The ID of the image used to launch the instance. | keyword |
 | aws.ec2.instance.monitoring.state | Indicates whether detailed monitoring is enabled. | keyword |
@@ -340,13 +331,21 @@ An example event for `ec2` looks as following:
 | aws.ec2.instance.state.code | The state of the instance, as a 16-bit unsigned integer. | integer |
 | aws.ec2.instance.state.name | The state of the instance (pending | running | shutting-down | terminated | stopping | stopped). | keyword |
 | aws.ec2.instance.threads_per_core | The number of threads per CPU core. | integer |
-| aws.ec2.network.in.bytes_per_sec | The number of bytes per second received on all network interfaces by the instance. | long |
-| aws.ec2.network.in.packets_per_sec | The number of packets per second sent out on all network interfaces by the instance. | long |
-| aws.ec2.network.out.bytes_per_sec | The number of bytes per second sent out on all network interfaces by the instance. | long |
-| aws.ec2.network.out.packets_per_sec | The number of packets per second sent out on all network interfaces by the instance. | long |
-| aws.ec2.status.check_failed | Reports whether the instance has passed both the instance status check and the system status check in the last minute. | long |
-| aws.ec2.status.check_failed_instance | Reports whether the instance has passed the instance status check in the last minute. | long |
-| aws.ec2.status.check_failed_system | Reports whether the instance has passed the system status check in the last minute. | long |
+| aws.ec2.metrics.CPUCreditBalance.avg | The number of earned CPU credits that an instance has accrued since it was launched or started. | long |
+| aws.ec2.metrics.CPUCreditUsage.avg | The number of CPU credits spent by the instance for CPU utilization. | long |
+| aws.ec2.metrics.CPUSurplusCreditBalance.avg | The number of surplus credits that have been spent by an unlimited instance when its CPUCreditBalance value is zero. | long |
+| aws.ec2.metrics.CPUSurplusCreditsCharged.avg | The number of spent surplus credits that are not paid down by earned CPU credits, and which thus incur an additional charge. | long |
+| aws.ec2.metrics.DiskReadBytes.rate | Bytes read per second from all instance store volumes available to the instance. | long |
+| aws.ec2.metrics.DiskReadOps.rate | Completed read operations per second from all instance store volumes available to the instance in a specified period of time. | long |
+| aws.ec2.metrics.DiskWriteBytes.rate | Bytes written per second to all instance store volumes available to the instance. | long |
+| aws.ec2.metrics.DiskWriteOps.rate | Completed write operations per second to all instance store volumes available to the instance in a specified period of time. | long |
+| aws.ec2.metrics.NetworkIn.rate | The number of bytes per second received on all network interfaces by the instance. | long |
+| aws.ec2.metrics.NetworkOut.rate | The number of bytes per second sent out on all network interfaces by the instance. | long |
+| aws.ec2.metrics.NetworkPacketsIn.rate | The number of packets per second sent out on all network interfaces by the instance. | long |
+| aws.ec2.metrics.NetworkPacketsOut.rate | The number of packets per second sent out on all network interfaces by the instance. | long |
+| aws.ec2.metrics.StatusCheckFailed.avg | Reports whether the instance has passed both the instance status check and the system status check in the last minute. | long |
+| aws.ec2.metrics.StatusCheckFailed_Instance.avg | Reports whether the instance has passed the instance status check in the last minute. | long |
+| aws.ec2.metrics.StatusCheckFailed_System.avg | Reports whether the instance has passed the system status check in the last minute. | long |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
 | aws.tags.\* | Tag key value pairs from aws resources. | object |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
