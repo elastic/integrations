@@ -13,11 +13,11 @@ processors:
   - grok:
       field: event.original
       patterns:
-      # SRX Traffic structured log pattern
+      # 1. SRX Traffic structured log pattern
       - '^<%{POSINT:syslog_pri}>(\d{1,3}\s)?(?:%{TIMESTAMP_ISO8601:_temp_.raw_date})\s%{SYSLOGHOST:syslog_hostname}\s%{JUNIPER_TRAFFIC_PROCESS:syslog_program}\s(?:%{POSINT:syslog_pid}|-)?\s%{WORD:tag}\s\[([^=]+?\s)?%{GREEDYDATA:_temp_.traffic_structured}\]\s?$'
-      # SRX System structured log pattern (captures all structured logs when syslog_program not in JUNIPER_TRAFFIC_PROCESS)
+      # 2. SRX System structured log pattern (captures all structured logs when syslog_program not in JUNIPER_TRAFFIC_PROCESS)
       - '^<%{POSINT:syslog_pri}>(\d{1,3}\s)?(?:%{CUSTOM_DATE:_temp_.raw_date})\s%{SYSLOGHOST:syslog_hostname}\s%{PROG:syslog_program}\s(?:%{POSINT:syslog_pid}|-)?\s%{WORD:tag}\s\[([^=]+?\s)?%{GREEDYDATA:_temp_.system_structured}\](?!=)\s?%{DATA:_temp_.unparsed.message}\s?$'
-      # SRX System unstructured log patterns (further parsing done in system.yml)
+      # 3. SRX System structured-brief and unstructured log patterns (further parsing done in system.yml)
       - '^<%{POSINT:syslog_pri}>(\d{1,3}\s)?(?:%{CUSTOM_DATE:_temp_.raw_date})\s%{SYSLOGHOST:syslog_hostname}\s%{GREEDYDATA:_temp_.unparsed.message}$'
       pattern_definitions:
         CUSTOM_DATE: "%{TIMESTAMP_ISO8601}|(%{MONTH}%{SPACE}+%{MONTHDAY}%{SPACE}+%{TIME})"
