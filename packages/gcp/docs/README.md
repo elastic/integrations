@@ -2253,7 +2253,7 @@ An example event for `loadbalancing` looks as following:
                 "region": "us-central1"
             }
         },
-        "loadbalancing": {
+        "loadbalancing_metrics": {
             "l3": {
                 "internal": {
                     "egress_packets": {
