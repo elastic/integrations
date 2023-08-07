@@ -81,8 +81,6 @@ processors:
     target_field: juniper.srx.negotiation
     if: ctx._temp_?.negotiation != null
 
-
-
 #### Firewall (message_brief ~ /^FW:/)
 - grok: 
     if: "ctx._temp_?.message_brief != null && ctx._temp_.message_brief.startsWith('FW:')"
@@ -102,6 +100,23 @@ processors:
     field: juniper.srx.firewall.interface_name
     target_field: juniper.srx.interface_name
     if: "ctx.juniper?.srx?.firewall?.interface_name != null"
+
+
+# message_brief ~ /^rtslib_dfwsm_get_async_cb:/
+- dissect:
+    if: "ctx._temp_?.message_brief != null && ctx._temp_.message_brief.startsWith('rtslib_dfwsm_get_async_cb:')"
+    tag: "dissect_rtslib_dfwsmr"
+    field: "_temp_.message_brief"
+    pattern: "rtslib_dfwsm_get_async_cb:u_data:%{_temp_.rtslib_dfwsm.u_data} k_usr_d:%{_temp_.rtslib_dfwsm.k_usr_d}"
+    on_failure:
+    - append:
+        field: error.message
+        value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+- rename:
+    field: _temp_.rtslib_dfwsm
+    target_field: juniper.srx.rtslib_dfwsm
+    if: ctx._temp_?.rtslib_dfwsm != null
+
 
 
 # split k-v fields inside message field.
@@ -292,21 +307,21 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
 
-# rtslib_dfwsm_get_async_cb
-# if: tag = rtslib_dfwsm_get_async_cb
-- dissect:
-    if: "ctx._temp_?.unparsed?.system_structured_brief != null && ctx.juniper?.srx?.tag == 'rtslib_dfwsm_get_async_cb'"
-    tag: "dissect_sub_tag_rtslib_dfwsmr"
-    field: "_temp_.unparsed.system_structured_brief"
-    pattern: "u_data:%{_temp_.rtslib_dfwsm.u_data} k_usr_d:%{_temp_.rtslib_dfwsm.k_usr_d}"
-    on_failure:
-    - append:
-        field: error.message
-        value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
-- rename:
-    field: _temp_.rtslib_dfwsm
-    target_field: juniper.srx.rtslib_dfwsm
-    if: "ctx._temp_?.rtslib_dfwsm != null && ctx.juniper?.srx?.tag == 'rtslib_dfwsm_get_async_cb' "
+# # rtslib_dfwsm_get_async_cb
+# # if: tag = rtslib_dfwsm_get_async_cb
+# - dissect:
+#     if: "ctx._temp_?.unparsed?.system_structured_brief != null && ctx.juniper?.srx?.tag == 'rtslib_dfwsm_get_async_cb'"
+#     tag: "dissect_sub_tag_rtslib_dfwsmr"
+#     field: "_temp_.unparsed.system_structured_brief"
+#     pattern: "u_data:%{_temp_.rtslib_dfwsm.u_data} k_usr_d:%{_temp_.rtslib_dfwsm.k_usr_d}"
+#     on_failure:
+#     - append:
+#         field: error.message
+#         value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+# - rename:
+#     field: _temp_.rtslib_dfwsm
+#     target_field: juniper.srx.rtslib_dfwsm
+#     if: "ctx._temp_?.rtslib_dfwsm != null && ctx.juniper?.srx?.tag == 'rtslib_dfwsm_get_async_cb' "
 
 
 #########################
