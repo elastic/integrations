@@ -129,11 +129,41 @@ processors:
     tag: "grok_dpdk_eth_devstart"
     field: "_temp_.message_brief"
     patterns: 
-    - '^port %{POSINT:_temp_.dpdk.port.number} (has already been started|ifd %{DATA:_temp_.dpdk.interface_name}), (new\s)?dpdk_port_state=%{POSINT:_temp_.dpdk.port.state} dpdk_swt_port_state %{POSINT:_temp_.dpdk.swt.port.state}$'
+    - '^port %{POSINT:_temp_.dpdk.port_number} (has already been started|ifd %{DATA:_temp_.dpdk.interface_name}), (new\s)?dpdk_port_state=%{POSINT:_temp_.dpdk.port_state} dpdk_swt_port_state %{POSINT:_temp_.dpdk.swt_port_state}$'
     on_failure:
     - append:
         field: error.message
         value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+- convert:
+    field: _temp_.dpdk.port_number
+    type: integer
+    tag: convert_dpdk_port_number_to_int
+    ignore_missing: true
+    if: "ctx._temp_?.dpdk?.port_number != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: _temp_.dpdk.port_state
+    type: integer
+    tag: convert_dpdk_port_state_to_int
+    ignore_missing: true
+    if: "ctx._temp_?.dpdk?.port_state != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: _temp_.dpdk.swt_port_state
+    type: integer
+    tag: convert_swt_port_state_to_int
+    ignore_missing: true
+    if: "ctx._temp_?.dpdk?.swt_port_state != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - rename:
     field: _temp_.dpdk
     target_field: juniper.srx.dpdk
@@ -256,32 +286,76 @@ processors:
     tag: "kv_message"
     field_split: ",\\s(?=[a-zA-Z0-9\\_\\-\\s]+:)"
     value_split: ":"
-    prefix: "juniper.srx.system_message."
+    prefix: "juniper.srx.system."
     ignore_missing: true
     ignore_failure: true
     trim_value: "\""
 
-# Cleanup parsed k-v root field `juniper.srx.system_message`. Removes spaces, lowercases, and converts fields into snake_case
+# Cleanup parsed k-v root field `juniper.srx.system`. Removes spaces, lowercases, and converts fields into snake_case
 - script:
     lang: painless
-    tag: "script_cleanup_system_message"
-    if: ctx.juniper?.srx?.system_message != null
+    tag: "script_cleanup_system"
+    if: ctx.juniper?.srx?.system != null
     source: >-
-        ctx.juniper.srx.system_message = ctx.juniper.srx.system_message.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().replace(' ', '_').replace('-', '_').toLowerCase(), e -> e.getValue().trim()));
+        ctx.juniper.srx.system = ctx.juniper.srx.system.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().replace(' ', '_').replace('-', '_').toLowerCase(), e -> e.getValue().trim()));
 
+#######################
+## SRX System Fields ##
+#######################
+- convert:
+    field: juniper.srx.system.aux_spi
+    type: integer
+    tag: convert_aux_spi_to_int
+    ignore_missing: true
+    if: "ctx.juniper?.srx?.system?.aux_spi != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: juniper.srx.system.ike_version
+    type: integer
+    tag: convert_ike_version_to_int
+    ignore_missing: true
+    if: "ctx.juniper?.srx?.system?.ike_version != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: juniper.srx.system.local_gateway
+    type: ip
+    tag: convert_local_gateway_to_ip
+    ignore_missing: true
+    if: "ctx.juniper?.srx?.system?.local_gateway != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: juniper.srx.system.remote_gateway
+    type: ip
+    tag: convert_remote_gateway_to_ip
+    ignore_missing: true
+    if: "ctx.juniper?.srx?.system?.remote_gateway != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
 # Removes all empty fields
 - script:
     lang: painless
-    if: ctx.juniper?.srx?.system_message != null
+    if: ctx.juniper?.srx?.system != null
     params:
         values:
             - "None"
             - "UNKNOWN"
             - "N/A"
             - "-"
+            - "Not-Available"
     source: >-
-        ctx?.juniper?.srx?.system_message.entrySet().removeIf(entry -> params.values.contains(entry.getValue()));
+        ctx?.juniper?.srx?.system.entrySet().removeIf(entry -> params.values.contains(entry.getValue()));
 
 # Copy `message_brief` into `message` if not already exists. This ensures unpased/unstructured data to be present in `message`.
 - set:
@@ -654,6 +728,20 @@ processors:
     ignore_missing: true
     if: "ctx.juniper?.srx?.username != null"
 
+#########################
+## ECS Related Mapping ##
+#########################
+- append:
+    if: 'ctx.juniper?.srx?.system?.local_gateway != null'
+    field: related.ip
+    value: '{{juniper.srx.system.local_gateway}}'
+    allow_duplicates: false
+- append:
+    if: 'ctx.juniper?.srx?.system?.remote_gateway != null'
+    field: related.ip
+    value: '{{juniper.srx.system.remote_gateway}}'
+    allow_duplicates: false
+
 ######################
 ## ECS Observer Mapping ##
 ######################
@@ -661,7 +749,11 @@ processors:
     field: juniper.srx.interface_name
     target_field: observer.ingress.interface.name
     ignore_missing: true
-
+- rename:
+    field: syslog_hostname
+    target_field: observer.name
+    ignore_missing: true
+    if: "ctx.syslog_hostname != null && ctx.observer?.name == null"
 ######################
 ## ECS Rule Mapping ##
 ######################
@@ -711,6 +803,7 @@ processors:
     # message field can be removed if all dissect patterns are added.
     # - message
     - syslog_program
+    - syslog_hostname
     - tag
     - juniper.srx.destination_port
     - juniper.srx.nat_destination_port
