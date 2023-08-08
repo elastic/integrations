@@ -34,6 +34,10 @@ processors:
       field: json.sender
       target_field: email.from.address
       ignore_missing: true
+  - set:
+      field: email.from.address
+      value: ['{{{email.from.address}}}']
+      if: ctx.email?.from?.address instanceof String
   - rename:
       field: json.messageID
       target_field: email.message_id
@@ -42,6 +46,10 @@ processors:
       field: json.recipient
       target_field: email.to.address
       ignore_missing: true
+  - set:
+      field: email.to.address
+      value: ['{{{email.to.address}}}']
+      if: ctx.email?.to?.address instanceof String
   - date:
       field: json.clickTime
       if: ctx.json?.clickTime != null && ctx.json.clickTime != ''
