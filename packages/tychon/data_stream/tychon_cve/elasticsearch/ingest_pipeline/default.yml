@@ -36,8 +36,10 @@ processors:
               }else{
                 ctx.event.outcome = "unknown"
               }
-  - script:
-      source: ctx.host.mac = ctx.host.mac.replace(':','-')
+  - gsub:
+      field: host.mac
+      pattern: ":"
+      replacement: "-"      
   - set:
       field: event.ingested
       value: "{{_ingest.timestamp}}"
