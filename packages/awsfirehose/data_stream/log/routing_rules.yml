@@ -3,10 +3,8 @@
     - target_dataset: aws.cloudtrail
       if: ctx['aws.cloudwatch.log_stream'].contains('CloudTrail')
       namespace:
-        - "{{labels.data_stream.namespace}}"
+        - "{{data_stream.namespace}}"
         - default
-- source_dataset: awsfirehose.log
-  rules:
     - target_dataset: aws.route53_public_logs
       if: >-
         def split_log_stream_name=ctx['aws.cloudwatch.log_stream'].splitOnToken('/');
@@ -20,12 +18,10 @@
         }
         return false;
       namespace:
-        - "{{labels.data_stream.namespace}}"
+        - "{{data_stream.namespace}}"
         - default
-- source_dataset: awsfirehose.log
-  rules:
     - target_dataset: aws.firewall_logs
       if: ctx.message.contains('firewall_name') && ctx.message.contains('availability_zone') && ctx.message.contains('event_timestamp') && ctx.message.contains('event')
       namespace:
-        - "{{labels.data_stream.namespace}}"
+        - "{{data_stream.namespace}}"
         - default
