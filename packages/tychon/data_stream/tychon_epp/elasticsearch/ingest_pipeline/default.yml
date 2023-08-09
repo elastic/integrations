@@ -14,18 +14,6 @@ processors:
       field: '_id'
       value: '{{id}}'
   - set:
-      field: tychon.ipv4
-      value: "{{host.ipv4}}"
-  - set:
-      field: tychon.ipv6
-      value: "{{host.ipv6}}"
-  - remove:
-      ignore_missing: true
-      field: host.ipv4
-  - remove:
-      ignore_missing: true
-      field: host.ipv6
-  - set:
       field: '@timestamp'
       value: '{{_ingest.timestamp}}'
   - set:
@@ -46,15 +34,10 @@ processors:
   - convert:
       field: host.uptime
       type: long
-<<<<<<< HEAD
-  - script:
-      source: ctx.host.mac = ctx.host.mac.replace(':','-')
-=======
   - gsub:
       field: host.mac
       pattern: ":"
       replacement: "-"      
->>>>>>> bruceUpdates
   - convert:
       field: script.current_duration
       type: float
@@ -65,7 +48,3 @@ on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
-<<<<<<< HEAD
- 
-=======
->>>>>>> bruceUpdates
