@@ -19,13 +19,27 @@ request.transforms:
   - set:
       target: header.Authorization
       value: "Bearer {{oauth_token}}"
+
+  - set:
+      target: url.params.cursor
+      value: '[[.cursor.next_cursor]]'
+      # An empty value omits this param from being set on the request.
+      # This should be omitted if it is a new request or a request after pagination is complete.
+      default: ''
+
   - set:
       target: url.params.oldest
-      value: "[[.cursor.last_timestamp]]"
+      # If last pagination cycle was finished successully
+      # we move the oldest pointer forward
+      # else we continue processing using cursor
+      # If none of the values are in the cursor it means is a fresh start
+      # and we pick the default value.
+      value: |-
+        [[- if .cursor.pagination_finished -]]
+          [[- .cursor.next_oldest_date -]]
+        [[- end -]]
       default: '[[(now (parseDuration "-{{initial_interval}}")).Unix]]'
-  - set:
-      target: url.params.latest
-      value: '[[(now).Unix]]'
+
   - set:
       target: url.params.limit
       value: '[[{{limit}}]]'
@@ -36,15 +50,26 @@ request.rate_limit.remaining: '0' # hardcoded to 0 since slack doesn't return re
 response.split:
   target: body.entries
 response.pagination:
-- set:
-    target: url.params.cursor
-    value: '[[.last_response.body.response_metadata.next_cursor]]'
-    fail_on_template_error: true
+  - set:
+      target: url.params.cursor
+      value: '[[.last_response.body.response_metadata.next_cursor]]'
+      fail_on_template_error: true
+  - delete:
+      target: url.params.oldest
           
 cursor:
-  last_timestamp:
-    value: "[[toInt .first_event.date_create]]"
-    fail_on_template_error: true
+  pagination_finished:
+    # Use this flag to identify if an execution was interrupted in the middle
+    # of a pagination cycle.
+    # For completed pagination next_cursor is "" and if the response is not paginated
+    # then the blob response_metadata does not exist
+    value: '[[and (not (index .last_response.body "response_metadata")) (eq (.last_response.body.response_metadata.Get "next_cursor") "")]]'
+  next_cursor:
+    # Use this value to be able to resume from an interrupted pagination cycle.
+    value: '[[.last_response.body.response_metadata.Get "next_cursor"]]'
+  next_oldest_date:
+    # In order to pick the next startDate we keep the first event (newest) date.
+    value: '[[toInt .first_event.date_create]]'
 
 {{#if tags.length}}
 tags:
