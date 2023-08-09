@@ -281,7 +281,7 @@ An example event for `system` looks as following:
 | okta.client.user_agent.raw_user_agent | The raw informaton of the user agent. | keyword |
 | okta.client.zone | The zone information of the client. | keyword |
 | okta.debug_context.debug_data.device_fingerprint | The fingerprint of the device. | keyword |
-| okta.debug_context.debug_data.dt_hash | The device token token hash | keyword |
+| okta.debug_context.debug_data.dt_hash | The device token hash | keyword |
 | okta.debug_context.debug_data.factor | The factor used for authentication. | keyword |
 | okta.debug_context.debug_data.flattened | The complete debug_data object. | flattened |
 | okta.debug_context.debug_data.request_id | The identifier of the request. | keyword |
