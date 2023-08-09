@@ -627,133 +627,133 @@ The fields reported are:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| haproxy.stat.agent.check.description | Human readable version of check. | keyword |
-| haproxy.stat.agent.check.fall | Fall value of server. | integer |
-| haproxy.stat.agent.check.health | Health parameter of server. Between 0 and `agent.check.rise`+`agent.check.fall`-1. | integer |
-| haproxy.stat.agent.check.rise | Rise value of server. | integer |
-| haproxy.stat.agent.code | Value reported by agent. | integer |
-| haproxy.stat.agent.description | Human readable version of agent.status. | keyword |
-| haproxy.stat.agent.duration | Duration of the last check in ms. | integer |
-| haproxy.stat.agent.fall | Fall value of agent. | integer |
-| haproxy.stat.agent.health | Health parameter of agent. Between 0 and `agent.rise`+`agent.fall`-1. | integer |
-| haproxy.stat.agent.rise | Rise value of agent. | integer |
-| haproxy.stat.agent.status | Status of the last health check. One of:    UNK     -\> unknown   INI     -\> initializing   SOCKERR -\> socket error   L4OK    -\> check passed on layer 4, no upper layers enabled   L4TOUT  -\> layer 1-4 timeout   L4CON   -\> layer 1-4 connection problem, for example             "Connection refused" (tcp rst) or "No route to host" (icmp)   L7OK    -\> agent reported "up"   L7STS   -\> agent reported "fail", "stop" or "down" | keyword |
-| haproxy.stat.check.agent.last |  | integer |
-| haproxy.stat.check.code | Layer 5-7 code, if available. | long |
-| haproxy.stat.check.down | Number of UP-\>DOWN transitions. For backends, this value is the number of transitions to the whole backend being down, rather than the sum of the transitions for each server. | long |
-| haproxy.stat.check.duration | Time in ms that it took to finish the last health check. | long |
-| haproxy.stat.check.failed | Number of checks that failed while the server was up. | long |
-| haproxy.stat.check.health.fail | Number of failed checks. | long |
-| haproxy.stat.check.health.last | The result of the last health check. | keyword |
-| haproxy.stat.check.status | Status of the last health check. One of:    UNK     -\> unknown   INI     -\> initializing   SOCKERR -\> socket error   L4OK    -\> check passed on layer 4, no upper layers testing enabled   L4TOUT  -\> layer 1-4 timeout   L4CON   -\> layer 1-4 connection problem, for example             "Connection refused" (tcp rst) or "No route to host" (icmp)   L6OK    -\> check passed on layer 6   L6TOUT  -\> layer 6 (SSL) timeout   L6RSP   -\> layer 6 invalid response - protocol error   L7OK    -\> check passed on layer 7   L7OKC   -\> check conditionally passed on layer 7, for example 404 with             disable-on-404   L7TOUT  -\> layer 7 (HTTP/SMTP) timeout   L7RSP   -\> layer 7 invalid response - protocol error   L7STS   -\> layer 7 response error, for example HTTP 5xx | keyword |
-| haproxy.stat.client.aborted | Number of data transfers aborted by the client. | integer |
-| haproxy.stat.component_type | Component type (0=frontend, 1=backend, 2=server, or 3=socket/listener). | integer |
-| haproxy.stat.compressor.bypassed.bytes | Number of bytes that bypassed the HTTP compressor (CPU/BW limit). | long |
-| haproxy.stat.compressor.in.bytes | Number of HTTP response bytes fed to the compressor. | long |
-| haproxy.stat.compressor.out.bytes | Number of HTTP response bytes emitted by the compressor. | integer |
-| haproxy.stat.compressor.response.bytes | Number of HTTP responses that were compressed. | long |
-| haproxy.stat.connection.attempt.total | Number of connection establishment attempts. | long |
-| haproxy.stat.connection.cache.hits | Number of cache hits. | long |
-| haproxy.stat.connection.cache.lookup.total | Number of cache lookups. | long |
-| haproxy.stat.connection.idle.limit | Limit on idle connections available for reuse. | long |
-| haproxy.stat.connection.idle.total | Number of idle connections available for reuse. | long |
-| haproxy.stat.connection.rate | Number of connections over the last second. | long |
-| haproxy.stat.connection.rate_max | Highest value of connection.rate. | long |
-| haproxy.stat.connection.retried | Number of times a connection to a server was retried. | long |
-| haproxy.stat.connection.reuse.total | Number of connection reuses. | long |
-| haproxy.stat.connection.time.avg | Average connect time in ms over the last 1024 requests. | long |
-| haproxy.stat.connection.total | Cumulative number of connections. | long |
-| haproxy.stat.cookie | Cookie value of the server or the name of the cookie of the backend. | keyword |
-| haproxy.stat.downtime | Total downtime (in seconds). For backends, this value is the downtime for the whole backend, not the sum of the downtime for the servers. | long |
-| haproxy.stat.header.rewrite.failed.total | Number of failed header rewrite warnings. | long |
-| haproxy.stat.in.bytes | Bytes in. | long |
-| haproxy.stat.last_change | Number of seconds since the last UP-\>DOWN or DOWN-\>UP transition. | integer |
-| haproxy.stat.load_balancing_algorithm | Load balancing algorithm. | keyword |
-| haproxy.stat.out.bytes | Bytes out. | long |
-| haproxy.stat.proxy.id | Unique proxy ID. | integer |
-| haproxy.stat.proxy.mode | Proxy mode (tcp, http, health, unknown). | keyword |
-| haproxy.stat.proxy.name | Proxy name. | keyword |
-| haproxy.stat.queue.limit | Configured queue limit (maxqueue) for the server, or nothing if the value of maxqueue is 0 (meaning no limit). | integer |
-| haproxy.stat.queue.time.avg | The average queue time in ms over the last 1024 requests. | integer |
-| haproxy.stat.request.connection.errors | Number of requests that encountered an error trying to connect to a server. For backends, this field reports the sum of the stat for all backend servers, plus any connection errors not associated with a particular server (such as the backend having no active servers). | long |
-| haproxy.stat.request.denied | Requests denied because of security concerns.    \* For TCP this is because of a matched tcp-request content rule.   \* For HTTP this is because of a matched http-request or tarpit rule. | long |
-| haproxy.stat.request.denied_by_connection_rules | Requests denied because of TCP request connection rules. | long |
-| haproxy.stat.request.denied_by_session_rules | Requests denied because of TCP request session rules. | long |
-| haproxy.stat.request.errors | Request errors. Some of the possible causes are:    \* early termination from the client, before the request has been sent   \* read error from the client   \* client timeout   \* client closed connection   \* various bad requests from the client.   \* request was tarpitted. | long |
-| haproxy.stat.request.intercepted | Number of intercepted requests. | long |
-| haproxy.stat.request.queued.current | Current queued requests. For backends, this field reports the number of requests queued without a server assigned. | long |
-| haproxy.stat.request.queued.max | Maximum value of queued.current. | long |
-| haproxy.stat.request.rate.max | Maximum number of HTTP requests per second. | long |
-| haproxy.stat.request.rate.value | Number of HTTP requests per second over the last elapsed second. | long |
-| haproxy.stat.request.redispatched | Number of times a request was redispatched to another server. For servers, this field reports the number of times the server was switched away from. | long |
-| haproxy.stat.request.total | Total number of HTTP requests received. | long |
-| haproxy.stat.response.denied | Responses denied because of security concerns. For HTTP this is because of a matched http-request rule, or "option checkcache". | integer |
-| haproxy.stat.response.errors | Number of response errors. This value includes the number of data transfers aborted by the server (haproxy.stat.server.aborted). Some other errors are: \* write errors on the client socket (won't be counted for the server stat) \* failure applying filters to the response | long |
-| haproxy.stat.response.http.1xx | HTTP responses with 1xx code. | long |
-| haproxy.stat.response.http.2xx | HTTP responses with 2xx code. | long |
-| haproxy.stat.response.http.3xx | HTTP responses with 3xx code. | long |
-| haproxy.stat.response.http.4xx | HTTP responses with 4xx code. | long |
-| haproxy.stat.response.http.5xx | HTTP responses with 5xx code. | long |
-| haproxy.stat.response.http.other | HTTP responses with other codes (protocol error). | long |
-| haproxy.stat.response.time.avg | Average response time in ms over the last 1024 requests (0 for TCP). | long |
-| haproxy.stat.selected.total | Total number of times a server was selected, either for new sessions, or when re-dispatching. For servers, this field reports the the number of times the server was selected. | long |
-| haproxy.stat.server.aborted | Number of data transfers aborted by the server. This value is included in haproxy.stat.response.errors. | integer |
-| haproxy.stat.server.active | Number of backend servers that are active, meaning that they are healthy and can receive requests from the load balancer. | integer |
-| haproxy.stat.server.backup | Number of backend servers that are backup servers. | integer |
-| haproxy.stat.server.id | Server ID (unique inside a proxy). | integer |
-| haproxy.stat.service_name | Service name (FRONTEND for frontend, BACKEND for backend, or any name for server/listener). | keyword |
-| haproxy.stat.session.current | Number of current sessions. | long |
-| haproxy.stat.session.limit | Configured session limit. | long |
-| haproxy.stat.session.max | Maximum number of sessions. | long |
-| haproxy.stat.session.rate.limit | Configured limit on new sessions per second. | integer |
-| haproxy.stat.session.rate.max | Maximum number of new sessions per second. | integer |
-| haproxy.stat.session.rate.value | Number of sessions per second over the last elapsed second. | integer |
-| haproxy.stat.session.total | Number of all sessions. | long |
-| haproxy.stat.source.address | Address of the source. | text |
-| haproxy.stat.status | Status (UP, DOWN, NOLB, MAINT, or MAINT(via)...). | keyword |
-| haproxy.stat.throttle.pct | Current throttle percentage for the server when slowstart is active, or no value if slowstart is inactive. | scaled_float |
-| haproxy.stat.tracked.id | ID of the proxy/server if tracking is enabled. | long |
-| haproxy.stat.weight | Total weight (for backends), or server weight (for servers). | long |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| process | These fields contain information about a process. These fields can help you correlate metrics information with a process id/name from a log message.  The `process.pid` often stays in the metric itself and is copied to the global field for correlation. | group |
-| process.pid | Process id. | long |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.instance.name | Instance name of the host machine. | keyword |  |
+| cloud.machine.type | Machine type of the host machine. | keyword |  |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host is running. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| container.image.name | Name of the image the container was built on. | keyword |  |
+| container.labels | Image labels. | object |  |
+| container.name | Container name. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| haproxy.stat.agent.check.description | Human readable version of check. | keyword |  |
+| haproxy.stat.agent.check.fall | Fall value of server. | integer |  |
+| haproxy.stat.agent.check.health | Health parameter of server. Between 0 and `agent.check.rise`+`agent.check.fall`-1. | integer |  |
+| haproxy.stat.agent.check.rise | Rise value of server. | integer |  |
+| haproxy.stat.agent.code | Value reported by agent. | integer |  |
+| haproxy.stat.agent.description | Human readable version of agent.status. | keyword |  |
+| haproxy.stat.agent.duration | Duration of the last check in ms. | integer |  |
+| haproxy.stat.agent.fall | Fall value of agent. | integer |  |
+| haproxy.stat.agent.health | Health parameter of agent. Between 0 and `agent.rise`+`agent.fall`-1. | integer |  |
+| haproxy.stat.agent.rise | Rise value of agent. | integer |  |
+| haproxy.stat.agent.status | Status of the last health check. One of:    UNK     -\> unknown   INI     -\> initializing   SOCKERR -\> socket error   L4OK    -\> check passed on layer 4, no upper layers enabled   L4TOUT  -\> layer 1-4 timeout   L4CON   -\> layer 1-4 connection problem, for example             "Connection refused" (tcp rst) or "No route to host" (icmp)   L7OK    -\> agent reported "up"   L7STS   -\> agent reported "fail", "stop" or "down" | keyword |  |
+| haproxy.stat.check.agent.last |  | integer |  |
+| haproxy.stat.check.code | Layer 5-7 code, if available. | long |  |
+| haproxy.stat.check.down | Number of UP-\>DOWN transitions. For backends, this value is the number of transitions to the whole backend being down, rather than the sum of the transitions for each server. | long | counter |
+| haproxy.stat.check.duration | Time in ms that it took to finish the last health check. | long | gauge |
+| haproxy.stat.check.failed | Number of checks that failed while the server was up. | long | counter |
+| haproxy.stat.check.health.fail | Number of failed checks. | long |  |
+| haproxy.stat.check.health.last | The result of the last health check. | keyword |  |
+| haproxy.stat.check.status | Status of the last health check. One of:    UNK     -\> unknown   INI     -\> initializing   SOCKERR -\> socket error   L4OK    -\> check passed on layer 4, no upper layers testing enabled   L4TOUT  -\> layer 1-4 timeout   L4CON   -\> layer 1-4 connection problem, for example             "Connection refused" (tcp rst) or "No route to host" (icmp)   L6OK    -\> check passed on layer 6   L6TOUT  -\> layer 6 (SSL) timeout   L6RSP   -\> layer 6 invalid response - protocol error   L7OK    -\> check passed on layer 7   L7OKC   -\> check conditionally passed on layer 7, for example 404 with             disable-on-404   L7TOUT  -\> layer 7 (HTTP/SMTP) timeout   L7RSP   -\> layer 7 invalid response - protocol error   L7STS   -\> layer 7 response error, for example HTTP 5xx | keyword |  |
+| haproxy.stat.client.aborted | Number of data transfers aborted by the client. | integer | counter |
+| haproxy.stat.component_type | Component type (0=frontend, 1=backend, 2=server, or 3=socket/listener). | integer |  |
+| haproxy.stat.compressor.bypassed.bytes | Number of bytes that bypassed the HTTP compressor (CPU/BW limit). | long | counter |
+| haproxy.stat.compressor.in.bytes | Number of HTTP response bytes fed to the compressor. | long | counter |
+| haproxy.stat.compressor.out.bytes | Number of HTTP response bytes emitted by the compressor. | integer | counter |
+| haproxy.stat.compressor.response.bytes | Number of HTTP responses that were compressed. | long | counter |
+| haproxy.stat.connection.attempt.total | Number of connection establishment attempts. | long | counter |
+| haproxy.stat.connection.cache.hits | Number of cache hits. | long | counter |
+| haproxy.stat.connection.cache.lookup.total | Number of cache lookups. | long | counter |
+| haproxy.stat.connection.idle.limit | Limit on idle connections available for reuse. | long | gauge |
+| haproxy.stat.connection.idle.total | Number of idle connections available for reuse. | long | gauge |
+| haproxy.stat.connection.rate | Number of connections over the last second. | long | gauge |
+| haproxy.stat.connection.rate_max | Highest value of connection.rate. | long | gauge |
+| haproxy.stat.connection.retried | Number of times a connection to a server was retried. | long | counter |
+| haproxy.stat.connection.reuse.total | Number of connection reuses. | long | counter |
+| haproxy.stat.connection.time.avg | Average connect time in ms over the last 1024 requests. | long | gauge |
+| haproxy.stat.connection.total | Cumulative number of connections. | long | counter |
+| haproxy.stat.cookie | Cookie value of the server or the name of the cookie of the backend. | keyword |  |
+| haproxy.stat.downtime | Total downtime (in seconds). For backends, this value is the downtime for the whole backend, not the sum of the downtime for the servers. | long | counter |
+| haproxy.stat.header.rewrite.failed.total | Number of failed header rewrite warnings. | long | counter |
+| haproxy.stat.in.bytes | Bytes in. | long | counter |
+| haproxy.stat.last_change | Number of seconds since the last UP-\>DOWN or DOWN-\>UP transition. | integer | gauge |
+| haproxy.stat.load_balancing_algorithm | Load balancing algorithm. | keyword |  |
+| haproxy.stat.out.bytes | Bytes out. | long | counter |
+| haproxy.stat.proxy.id | Unique proxy ID. | integer |  |
+| haproxy.stat.proxy.mode | Proxy mode (tcp, http, health, unknown). | keyword |  |
+| haproxy.stat.proxy.name | Proxy name. | keyword |  |
+| haproxy.stat.queue.limit | Configured queue limit (maxqueue) for the server, or nothing if the value of maxqueue is 0 (meaning no limit). | integer |  |
+| haproxy.stat.queue.time.avg | The average queue time in ms over the last 1024 requests. | integer | gauge |
+| haproxy.stat.request.connection.errors | Number of requests that encountered an error trying to connect to a server. For backends, this field reports the sum of the stat for all backend servers, plus any connection errors not associated with a particular server (such as the backend having no active servers). | long | counter |
+| haproxy.stat.request.denied | Requests denied because of security concerns.    \* For TCP this is because of a matched tcp-request content rule.   \* For HTTP this is because of a matched http-request or tarpit rule. | long | counter |
+| haproxy.stat.request.denied_by_connection_rules | Requests denied because of TCP request connection rules. | long | counter |
+| haproxy.stat.request.denied_by_session_rules | Requests denied because of TCP request session rules. | long | counter |
+| haproxy.stat.request.errors | Request errors. Some of the possible causes are:    \* early termination from the client, before the request has been sent   \* read error from the client   \* client timeout   \* client closed connection   \* various bad requests from the client.   \* request was tarpitted. | long | counter |
+| haproxy.stat.request.intercepted | Number of intercepted requests. | long | counter |
+| haproxy.stat.request.queued.current | Current queued requests. For backends, this field reports the number of requests queued without a server assigned. | long | gauge |
+| haproxy.stat.request.queued.max | Maximum value of queued.current. | long | gauge |
+| haproxy.stat.request.rate.max | Maximum number of HTTP requests per second. | long | gauge |
+| haproxy.stat.request.rate.value | Number of HTTP requests per second over the last elapsed second. | long | gauge |
+| haproxy.stat.request.redispatched | Number of times a request was redispatched to another server. For servers, this field reports the number of times the server was switched away from. | long | counter |
+| haproxy.stat.request.total | Total number of HTTP requests received. | long | counter |
+| haproxy.stat.response.denied | Responses denied because of security concerns. For HTTP this is because of a matched http-request rule, or "option checkcache". | integer | counter |
+| haproxy.stat.response.errors | Number of response errors. This value includes the number of data transfers aborted by the server (haproxy.stat.server.aborted). Some other errors are: \* write errors on the client socket (won't be counted for the server stat) \* failure applying filters to the response | long | counter |
+| haproxy.stat.response.http.1xx | HTTP responses with 1xx code. | long | counter |
+| haproxy.stat.response.http.2xx | HTTP responses with 2xx code. | long | counter |
+| haproxy.stat.response.http.3xx | HTTP responses with 3xx code. | long | counter |
+| haproxy.stat.response.http.4xx | HTTP responses with 4xx code. | long | counter |
+| haproxy.stat.response.http.5xx | HTTP responses with 5xx code. | long | counter |
+| haproxy.stat.response.http.other | HTTP responses with other codes (protocol error). | long | counter |
+| haproxy.stat.response.time.avg | Average response time in ms over the last 1024 requests (0 for TCP). | long | gauge |
+| haproxy.stat.selected.total | Total number of times a server was selected, either for new sessions, or when re-dispatching. For servers, this field reports the the number of times the server was selected. | long | counter |
+| haproxy.stat.server.aborted | Number of data transfers aborted by the server. This value is included in haproxy.stat.response.errors. | integer | counter |
+| haproxy.stat.server.active | Number of backend servers that are active, meaning that they are healthy and can receive requests from the load balancer. | integer | gauge |
+| haproxy.stat.server.backup | Number of backend servers that are backup servers. | integer | gauge |
+| haproxy.stat.server.id | Server ID (unique inside a proxy). | integer |  |
+| haproxy.stat.service_name | Service name (FRONTEND for frontend, BACKEND for backend, or any name for server/listener). | keyword |  |
+| haproxy.stat.session.current | Number of current sessions. | long | gauge |
+| haproxy.stat.session.limit | Configured session limit. | long | gauge |
+| haproxy.stat.session.max | Maximum number of sessions. | long | gauge |
+| haproxy.stat.session.rate.limit | Configured limit on new sessions per second. | integer | gauge |
+| haproxy.stat.session.rate.max | Maximum number of new sessions per second. | integer | gauge |
+| haproxy.stat.session.rate.value | Number of sessions per second over the last elapsed second. | integer | gauge |
+| haproxy.stat.session.total | Number of all sessions. | long | counter |
+| haproxy.stat.source.address | Address of the source. | text |  |
+| haproxy.stat.status | Status (UP, DOWN, NOLB, MAINT, or MAINT(via)...). | keyword |  |
+| haproxy.stat.throttle.pct | Current throttle percentage for the server when slowstart is active, or no value if slowstart is inactive. | scaled_float | gauge |
+| haproxy.stat.tracked.id | ID of the proxy/server if tracking is enabled. | long |  |
+| haproxy.stat.weight | Total weight (for backends), or server weight (for servers). | long | gauge |
+| host.architecture | Operating system architecture. | keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.mac | Host mac addresses. | keyword |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
+| host.os.name | Operating system name, without the version. | keyword |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
+| process | These fields contain information about a process. These fields can help you correlate metrics information with a process id/name from a log message.  The `process.pid` often stays in the metric itself and is copied to the global field for correlation. | group |  |
+| process.pid | Process id. | long |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
