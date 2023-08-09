@@ -13,9 +13,6 @@ processors:
   - set:
       field: '_id'
       value: '{{id}}'
-  - split:
-      field: host.ip
-      separator: ","
   - set:
       field: tychon.ipv4
       value: "{{host.ipv4}}"
@@ -49,8 +46,15 @@ processors:
   - convert:
       field: host.uptime
       type: long
+<<<<<<< HEAD
   - script:
       source: ctx.host.mac = ctx.host.mac.replace(':','-')
+=======
+  - gsub:
+      field: host.mac
+      pattern: ":"
+      replacement: "-"      
+>>>>>>> bruceUpdates
   - convert:
       field: script.current_duration
       type: float
@@ -61,4 +65,7 @@ on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
+<<<<<<< HEAD
  
+=======
+>>>>>>> bruceUpdates

@@ -63,6 +63,13 @@ processors:
   - script:
       source: ctx.host.mac = ctx.host.mac.replace(':','-')
   - convert:
+      field: host.uptime
+      type: long
+  - gsub:
+      field: host.mac
+      pattern: ":"
+      replacement: "-"
+  - convert:
       field: script.current_duration
       type: float
   - convert:
@@ -75,4 +82,3 @@ on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
- 
