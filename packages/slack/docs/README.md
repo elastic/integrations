@@ -156,11 +156,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2018-03-16T15:32:23.000Z",
     "agent": {
-        "ephemeral_id": "940a985c-ceec-4a32-9a49-0dd2beb2d7d1",
-        "id": "3b4885c5-66eb-4b06-a771-04c7f3b9ed82",
+        "ephemeral_id": "09ed6137-cc14-44bf-ae25-3bfb4867008e",
+        "id": "0a5c1566-c6fd-4e91-b96d-4083445a000e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "slack.audit",
@@ -171,9 +171,9 @@ An example event for `audit` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "3b4885c5-66eb-4b06-a771-04c7f3b9ed82",
+        "id": "0a5c1566-c6fd-4e91-b96d-4083445a000e",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.9.0"
     },
     "event": {
         "action": "user_login",
@@ -182,10 +182,10 @@ An example event for `audit` looks as following:
             "authentication",
             "session"
         ],
-        "created": "2023-05-31T13:25:05.411Z",
+        "created": "2023-08-07T18:55:53.319Z",
         "dataset": "slack.audit",
         "id": "0123a45b-6c7d-8900-e12f-3456789gh0i1",
-        "ingested": "2023-05-31T13:25:06Z",
+        "ingested": "2023-08-07T18:55:54Z",
         "kind": "event",
         "original": "{\"action\":\"user_login\",\"actor\":{\"type\":\"user\",\"user\":{\"email\":\"bird@slack.com\",\"id\":\"W123AB456\",\"name\":\"Charlie Parker\"}},\"context\":{\"ip_address\":\"81.2.69.143\",\"location\":{\"domain\":\"birdland\",\"id\":\"E1701NCCA\",\"name\":\"Birdland\",\"type\":\"enterprise\"},\"ua\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36\"},\"date_create\":1521214343,\"entity\":{\"type\":\"user\",\"user\":{\"email\":\"bird@slack.com\",\"id\":\"W123AB456\",\"name\":\"Charlie Parker\"}},\"id\":\"0123a45b-6c7d-8900-e12f-3456789gh0i1\"}",
         "outcome": "success",
