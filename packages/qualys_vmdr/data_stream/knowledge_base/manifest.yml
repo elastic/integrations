@@ -1,0 +1,71 @@
+title: Collect Knowledge Base logs from Qualys VMDR platform.
+type: logs
+streams:
+  - input: cel
+    title: Knowledge Base logs
+    description: Collect Knowledge Base logs from Qualys VMDR platform.
+    template_path: input.yml.hbs
+    vars:
+      - name: url
+        type: text
+        title: URL
+        description: Base URL of the Qualys Server API.
+        required: true
+        show_user: true
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: "How far back to pull the Knowledge Base logs from Qualys VMDR. Supported units for this parameter are s, m, h."
+        multi: false
+        required: true
+        show_user: true
+        default: 120h
+      - name: interval
+        type: text
+        title: Interval
+        description: "Interval between two REST API calls. User can choose interval as per their plan mentioned in [Qualys API Limits](https://www.qualys.com/docs/qualys-api-limits.pdf). Supported units for this parameter are h/m/s."
+        default: 6h
+        multi: false
+        required: true
+        show_user: true
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: "Duration before declaring that the HTTP client connection has timed out. Give a timeout of more than 1 minute when retrieving data which is more than 15 days old. Supported time units are ns, us, ms, s, m, h."
+        multi: false
+        required: true
+        show_user: false
+        default: 3m
+      - name: input_parameters
+        type: text
+        title: Input Parameters
+        description: "Input Parameters for the URL. param1=value&param2=value&param3=....*"
+        multi: false
+        required: false
+        show_user: false
+        default: ""
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - qualys_vmdr-knowledge_base
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve qualys_vmdr.knowledge_base fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

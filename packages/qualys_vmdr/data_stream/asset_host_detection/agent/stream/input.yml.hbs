@@ -1,0 +1,533 @@
+config_version: 2
+interval: {{interval}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  user: {{username}}
+  password: {{password}}
+  batch_size: {{batch_size}}
+  params: {{input_parameters}}
+redact:
+  fields:
+    - password
+program: |
+  request("GET", (
+    !has(state.want_more) || !state.want_more ?
+      (state.url + "/api/2.0/fo/asset/host/vm/detection/?action=list&truncation_limit=" + string(state.batch_size) +
+      (has(state.params) ? "&" + state.params : ""))
+    :
+      state.url
+  )).with({
+      "Header":{
+          "X-Requested-With": ["curl"],
+          "Authorization": ["Basic "+string(base64(state.user+":"+state.password))],
+      }
+  }).do_request().as(resp, bytes(resp.Body).decode_xml('qualys_api_2_0').as(body, {
+      "events": body.doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.map(e, {
+        "message": e.encode_json(),
+      }),
+      "url": (
+        has(body.doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.WARNING) && has(body.doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.WARNING.URL)
+        ?
+          body.doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.WARNING.URL
+        :
+          state.url.parse_url().Scheme + "://" + state.url.parse_url().Host
+      ),
+      "want_more": has(body.doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.WARNING) && has(body.doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.WARNING.URL),
+      "params": has(state.params) ? state.params : "",
+      "batch_size": state.batch_size,
+      "user": state.user,
+      "password": state.password,
+  }))
+tags:
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+xsd:
+  qualys_api_2_0: |
+    <xsd:schema xmlns:xsd='http://www.w3.org/2001/XMLSchema'>
+
+      <xsd:element name='HOST_LIST_VM_DETECTION_OUTPUT'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='REQUEST' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='RESPONSE'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='REQUEST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='DATETIME'/>
+          <xsd:element ref='USER_LOGIN'/>
+          <xsd:element ref='RESOURCE'/>
+          <xsd:element ref='PARAM_LIST' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='POST_DATA' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='DATETIME' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='USER_LOGIN' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='RESOURCE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='PARAM_LIST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='PARAM' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='PARAM'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='KEY'/>
+          <xsd:element ref='VALUE'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='KEY' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='VALUE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='POST_DATA' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='RESPONSE'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='DATETIME'/>
+          <xsd:element ref='HOST_LIST' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='WARNING' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='HOST_LIST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='HOST' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='HOST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='ID'/>
+          <xsd:element ref='ASSET_ID' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='IP' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='IPV6' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='TRACKING_METHOD' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='NETWORK_ID' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='OS' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='OS_CPE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='DNS' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='DNS_DATA' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='CLOUD_PROVIDER' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='CLOUD_SERVICE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='CLOUD_RESOURCE_ID' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='EC2_INSTANCE_ID' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='NETBIOS' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='QG_HOSTID' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='LAST_SCAN_DATETIME' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='LAST_VM_SCANNED_DATE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='LAST_VM_SCANNED_DURATION' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='LAST_VM_AUTH_SCANNED_DATE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='LAST_VM_AUTH_SCANNED_DURATION' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='LAST_PC_SCANNED_DATE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='TAGS' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='METADATA' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='CLOUD_PROVIDER_TAGS' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='DETECTION_LIST'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='ID' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='ASSET_ID' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='IP' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='IPV6' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='TRACKING_METHOD' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='NETWORK_ID' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='OS' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='OS_CPE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='DNS' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='DNS_DATA'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='HOSTNAME' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='DOMAIN' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='FQDN' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='HOSTNAME' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='DOMAIN' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='FQDN' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='CLOUD_PROVIDER' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='CLOUD_SERVICE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='CLOUD_RESOURCE_ID' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='EC2_INSTANCE_ID' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='NETBIOS' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='QG_HOSTID' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='LAST_SCAN_DATETIME' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='LAST_VM_SCANNED_DATE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='LAST_VM_SCANNED_DURATION' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='LAST_VM_AUTH_SCANNED_DATE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='LAST_VM_AUTH_SCANNED_DURATION' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='LAST_PC_SCANNED_DATE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='TAGS'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='TAG' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='TAG'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='TAG_ID' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='NAME'/>
+          <xsd:element ref='COLOR' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='BACKGROUND_COLOR' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='TAG_ID' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='NAME' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='COLOR' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='BACKGROUND_COLOR' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='METADATA'>
+        <xsd:complexType>
+        <xsd:choice maxOccurs='unbounded'>
+          <xsd:element ref='EC2'/>
+          <xsd:element ref='GOOGLE'/>
+          <xsd:element ref='AZURE'/>
+        </xsd:choice>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='EC2'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='ATTRIBUTE' minOccurs='0' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='GOOGLE'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='ATTRIBUTE' minOccurs='0' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='AZURE'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='ATTRIBUTE' minOccurs='0' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='ATTRIBUTE'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='NAME'/>
+          <xsd:element ref='LAST_STATUS'/>
+          <xsd:element ref='VALUE'/>
+          <xsd:element ref='LAST_SUCCESS_DATE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='LAST_ERROR_DATE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='LAST_ERROR' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='LAST_STATUS' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='LAST_SUCCESS_DATE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='LAST_ERROR_DATE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='LAST_ERROR' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='CLOUD_PROVIDER_TAGS'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='CLOUD_TAG' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='CLOUD_TAG'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='NAME'/>
+          <xsd:element ref='VALUE'/>
+          <xsd:element ref='LAST_SUCCESS_DATE'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='DETECTION_LIST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='DETECTION' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='DETECTION'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='QID'/>
+          <xsd:element ref='TYPE'/>
+          <xsd:element ref='SEVERITY' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='PORT' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='PROTOCOL' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='FQDN' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='SSL' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='INSTANCE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='RESULTS' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='STATUS' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='FIRST_FOUND_DATETIME' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='LAST_FOUND_DATETIME' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='QDS' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='QDS_FACTORS' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='TIMES_FOUND' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='LAST_TEST_DATETIME' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='LAST_UPDATE_DATETIME' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='LAST_FIXED_DATETIME' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='FIRST_REOPENED_DATETIME' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='LAST_REOPENED_DATETIME' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='TIMES_REOPENED' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='SERVICE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='IS_IGNORED' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='IS_DISABLED' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='AFFECT_RUNNING_KERNEL' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='AFFECT_RUNNING_SERVICE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='AFFECT_EXPLOITABLE_CONFIG' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='LAST_PROCESSED_DATETIME' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='ASSET_CVE' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='QID' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='TYPE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='PORT' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='PROTOCOL' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='SSL' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='INSTANCE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='RESULTS' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='STATUS' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='SEVERITY' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='QDS'>
+        <xsd:complexType>
+        <xsd:simpleContent>
+        <xsd:extension base='xsd:string'>
+        <xsd:attribute name='severity' type='xsd:string' use='required'/>
+        </xsd:extension>
+        </xsd:simpleContent>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='QDS_FACTORS'>
+        <xsd:complexType>
+        <xsd:sequence minOccurs='0' maxOccurs='unbounded'>
+          <xsd:element ref='QDS_FACTOR'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='QDS_FACTOR'>
+        <xsd:complexType>
+        <xsd:simpleContent>
+        <xsd:extension base='xsd:string'>
+        <xsd:attribute name='name' type='xsd:string' use='required'/>
+        </xsd:extension>
+        </xsd:simpleContent>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='FIRST_FOUND_DATETIME' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='LAST_FOUND_DATETIME' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='TIMES_FOUND' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='LAST_TEST_DATETIME' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='LAST_UPDATE_DATETIME' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='LAST_FIXED_DATETIME' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='FIRST_REOPENED_DATETIME' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='LAST_REOPENED_DATETIME' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='TIMES_REOPENED' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='SERVICE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='IS_IGNORED' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='IS_DISABLED' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='AFFECT_RUNNING_KERNEL' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='AFFECT_RUNNING_SERVICE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='AFFECT_EXPLOITABLE_CONFIG' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='LAST_PROCESSED_DATETIME' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='ASSET_CVE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='WARNING'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='CODE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='TEXT'/>
+          <xsd:element ref='URL' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='CODE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='TEXT' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='URL' type='xsd:string'>
+      </xsd:element>
+      </xsd:schema>
