@@ -1095,11 +1095,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2020-09-06T12:07:55.32Z",
     "agent": {
-        "ephemeral_id": "e517dbfb-930c-40ff-86e5-6eb3ef3225a7",
-        "id": "b749ee7f-378d-45d8-8151-975dfa11ce57",
+        "ephemeral_id": "538b61a2-ee8e-4f0f-92b3-874bb25bd07c",
+        "id": "761cded5-abcb-4ec8-a5e6-f7546489e271",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.2"
+        "version": "8.7.1"
     },
     "cloud": {
         "provider": "azure"
@@ -1113,9 +1113,9 @@ An example event for `log` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "b749ee7f-378d-45d8-8151-975dfa11ce57",
+        "id": "761cded5-abcb-4ec8-a5e6-f7546489e271",
         "snapshot": false,
-        "version": "8.8.2"
+        "version": "8.7.1"
     },
     "event": {
         "action": "InitialAccess",
@@ -1128,13 +1128,16 @@ An example event for `log` looks as following:
         "duration": 0,
         "end": "2020-09-06T12:04:00Z",
         "id": "faf8edc936-85f8-a603-b800-08d8525cf099",
-        "ingested": "2023-07-21T12:36:01Z",
+        "ingested": "2023-08-08T07:59:58Z",
         "kind": "alert",
         "original": "{\"alerts\":{\"actorName\":null,\"alertId\":\"faf8edc936-85f8-a603-b800-08d8525cf099\",\"assignedTo\":\"Automation\",\"category\":\"InitialAccess\",\"classification\":null,\"creationTime\":\"2020-09-06T12:07:54.3716642Z\",\"description\":\"This alert is triggered when any email message is reported as malware or phish by users -V1.0.0.2\",\"detectionSource\":\"OfficeATP\",\"determination\":null,\"devices\":[],\"entities\":{\"aadUserId\":null,\"accountName\":null,\"clusterBy\":null,\"deliveryAction\":null,\"deviceId\":null,\"domainName\":null,\"entityType\":\"MailBox\",\"fileName\":null,\"filePath\":null,\"ipAddress\":null,\"mailboxAddress\":\"testUser3@contoso.com\",\"mailboxDisplayName\":\"test User3\",\"parentProcessCreationTime\":null,\"parentProcessId\":null,\"processCommandLine\":null,\"processCreationTime\":null,\"processId\":null,\"recipient\":null,\"registryHive\":null,\"registryKey\":null,\"registryValue\":null,\"registryValueType\":null,\"securityGroupId\":null,\"securityGroupName\":null,\"sender\":null,\"sha1\":null,\"sha256\":null,\"subject\":null,\"url\":null,\"userPrincipalName\":\"testUser3@contoso.com\",\"userSid\":null},\"firstActivity\":\"2020-09-06T12:04:00Z\",\"incidentId\":924518,\"investigationId\":null,\"investigationState\":\"Queued\",\"lastActivity\":\"2020-09-06T12:04:00Z\",\"lastUpdatedTime\":\"2020-09-06T12:37:40.88Z\",\"mitreTechniques\":[],\"resolvedTime\":null,\"serviceSource\":\"OfficeATP\",\"severity\":\"Informational\",\"status\":\"InProgress\",\"threatFamilyName\":null,\"title\":\"Email reported by user as malware or phish\"},\"assignedTo\":null,\"classification\":\"Unknown\",\"comments\":[],\"createdTime\":\"2020-09-06T12:07:55.1366667Z\",\"determination\":\"NotAvailable\",\"incidentId\":924518,\"incidentName\":\"Email reported by user as malware or phish\",\"lastUpdateTime\":\"2020-09-06T12:07:55.32Z\",\"redirectIncidentId\":null,\"severity\":\"Informational\",\"status\":\"Active\",\"tags\":[]}",
         "provider": "OfficeATP",
         "severity": 1,
         "start": "2020-09-06T12:04:00Z",
-        "timezone": "UTC"
+        "timezone": "UTC",
+        "type": [
+            "info"
+        ]
     },
     "file": {
         "hash": {}
