@@ -14,18 +14,6 @@ processors:
       field: _id
       value: "{{id}}"
   - set:
-      field: tychon.ipv4
-      value: "{{host.ipv4}}"
-  - set:
-      field: tychon.ipv6
-      value: "{{host.ipv6}}"
-  - remove:
-      ignore_missing: true
-      field: host.ipv4
-  - remove:
-      ignore_missing: true
-      field: host.ipv6
-  - set:
       field: "@timestamp"
       value: "{{_ingest.timestamp}}"
   - set:
@@ -40,19 +28,19 @@ processors:
   - set:
       field: event.category
       value: [vulnerability]
-  - split:
-      field: host.ip
-      separator: ","
   - script:
-      source: if(ctx.vulnerability?.result == 'fail'){
+      source: |
+              if(ctx.vulnerability?.result == 'fail'){
                 ctx.event.outcome = "failure"
               }else if(ctx.vulnerability?.result == 'pass'){
                 ctx.event.outcome = "success"
               }else{
                 ctx.event.outcome = "unknown"
               }
-  - script:
-      source: ctx.host.mac = ctx.host.mac.replace(':','-')
+  - gsub:
+      field: host.mac
+      pattern: ":"
+      replacement: "-"      
   - set:
       field: event.ingested
       value: "{{_ingest.timestamp}}"
@@ -87,4 +75,3 @@ on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
- 
