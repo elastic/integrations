@@ -1,0 +1,671 @@
+---
+description: Pipeline for processing Knowledge Base logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.9.0
+  - set:
+      field: event.kind
+      tag: set_event_kind_1
+      value: alert
+  - set:
+      field: event.category
+      tag: set_event_catgeory
+      value: [host]
+  - set:
+      field: event.type
+      tag: set_event_type
+      value: [info]
+  - json:
+      field: message
+      tag: json_message
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      fields:
+        - json.QID
+        - json.LAST_SERVICE_MODIFICATION_DATETIME
+      target_field: _id
+      ignore_missing: true
+  - rename:
+      field: json.CONSEQUENCE
+      tag: rename_CONSEQUENCE
+      target_field: qualys_vmdr.knowledge_base.consequence.value
+      ignore_missing: true
+  - rename:
+      field: json.CONSEQUENCE_COMMENT
+      tag: rename_CONSEQUENCE_COMMENT
+      target_field: qualys_vmdr.knowledge_base.consequence.comment
+      ignore_missing: true
+  - rename:
+      field: json.DETECTION_INFO
+      tag: rename_DETECTION_INFO
+      target_field: qualys_vmdr.knowledge_base.detection_info
+      ignore_missing: true
+  - rename:
+      field: json.COMPLIANCE_LIST.COMPLIANCE.TYPE
+      tag: rename_COMPLIANCE_LIST_COMPLIANCE_TYPE
+      target_field: qualys_vmdr.knowledge_base.compliance_list.type
+      ignore_missing: true
+  - rename:
+      field: json.COMPLIANCE_LIST.COMPLIANCE.SECTION
+      tag: rename_COMPLIANCE_LIST_COMPLIANCE_SECTION
+      target_field: qualys_vmdr.knowledge_base.compliance_list.section
+      ignore_missing: true
+  - rename:
+      field: json.COMPLIANCE_LIST.COMPLIANCE.DESCRIPTION
+      tag: rename_COMPLIANCE_LIST_COMPLIANCE_DESCRIPTION
+      target_field: qualys_vmdr.knowledge_base.compliance_list.description
+      ignore_missing: true
+  - rename:
+      field: json.CATEGORY
+      tag: rename_CATEGORY
+      target_field: qualys_vmdr.knowledge_base.category
+      ignore_missing: true
+  - append:
+      field: vulnerability.category
+      tag: append_vulnerability_category
+      value: '{{{qualys_vmdr.knowledge_base.category}}}'
+      allow_duplicates: false
+      if: ctx.qualys_vmdr?.knowledge_base?.category != null
+  - rename:
+      field: json.DIAGNOSIS
+      tag: rename_DIAGNOSIS
+      target_field: qualys_vmdr.knowledge_base.diagnosis.value
+      ignore_missing: true
+  - rename:
+      field: json.DIAGNOSIS_COMMENT
+      tag: rename_DIAGNOSIS_COMMENT
+      target_field: qualys_vmdr.knowledge_base.diagnosis.comment
+      ignore_missing: true
+  - rename:
+      field: json.PCI_REASONS.PCI_REASON
+      tag: rename_PCI_REASONS_PCI_REASON
+      target_field: qualys_vmdr.knowledge_base.pci_reasons.value
+      ignore_missing: true
+  - rename:
+      field: json.QID
+      tag: rename_QID
+      target_field: qualys_vmdr.knowledge_base.qid
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id
+      copy_from: qualys_vmdr.knowledge_base.qid
+      ignore_empty_value: true
+  - rename:
+      field: json.SOLUTION
+      tag: rename_SOLUTION
+      target_field: qualys_vmdr.knowledge_base.solution.value
+      ignore_missing: true
+  - rename:
+      field: json.SOLUTION_COMMENT
+      tag: rename_SOLUTION_COMMENT
+      target_field: qualys_vmdr.knowledge_base.solution.comment
+      ignore_missing: true
+  - rename:
+      field: json.SUPPORTED_MODULES
+      tag: rename_SUPPORTED_MODULES
+      target_field: qualys_vmdr.knowledge_base.supported_modules
+      ignore_missing: true
+  - rename:
+      field: json.TITLE
+      tag: rename_TITLE
+      target_field: qualys_vmdr.knowledge_base.title
+      ignore_missing: true
+  - rename:
+      field: json.BUGTRAQ_LIST.BUGTRAQ.ID
+      tag: rename_BUGTRAQ_LIST_BUGTRAQ_ID
+      target_field: qualys_vmdr.knowledge_base.bugtraq_list.id
+      ignore_missing: true
+  - rename:
+      field: json.BUGTRAQ_LIST.BUGTRAQ.URL
+      tag: rename_BUGTRAQ_LIST_BUGTRAQ_URL
+      target_field: qualys_vmdr.knowledge_base.bugtraq_list.url
+      ignore_missing: true
+  - rename:
+      field: json.VULN_TYPE
+      tag: rename_VULN_TYPE
+      target_field: qualys_vmdr.knowledge_base.vuln_type
+      ignore_missing: true
+  - rename:
+      field: json.CVE_LIST.CVE.ID
+      tag: rename_CVE_LIST_CVE_ID
+      target_field: qualys_vmdr.knowledge_base.cve_list.id
+      ignore_missing: true
+  - rename:
+      field: json.CVSS.BASE
+      tag: rename_CVSS.BASE
+      target_field: qualys_vmdr.knowledge_base.cvss.base
+      ignore_missing: true
+  - rename:
+      field: json.CVSS.TEMPORAL
+      tag: rename_CVSS_TEMPORAL
+      target_field: qualys_vmdr.knowledge_base.cvss.temporal
+      ignore_missing: true
+  - rename:
+      field: json.CVSS.VECTOR_STRING
+      tag: rename_CVSS_VECTOR_STRING
+      target_field: qualys_vmdr.knowledge_base.cvss.vector_string
+      ignore_missing: true
+  - rename:
+      field: json.CVSS.ACCESS.VECTOR
+      tag: rename_CVSS_ACCESS_VECTOR
+      target_field: qualys_vmdr.knowledge_base.cvss.access.vector
+      ignore_missing: true
+  - rename:
+      field: json.CVSS.ACCESS.COMPLEXITY
+      tag: rename_CVSS_ACCESS_COMPLEXITY
+      target_field: qualys_vmdr.knowledge_base.cvss.access.complexity
+      ignore_missing: true
+  - rename:
+      field: json.CVSS.IMPACT.CONFIDENTIALITY
+      tag: rename_CVSS_IMPACT_CONFIDENTIALITY
+      target_field: qualys_vmdr.knowledge_base.cvss.impact.confidentiality
+      ignore_missing: true
+  - rename:
+      field: json.CVSS.IMPACT.INTEGRITY
+      tag: rename_CVSS_IMPACT_INTEGRITY
+      target_field: qualys_vmdr.knowledge_base.cvss.impact.integrity
+      ignore_missing: true
+  - rename:
+      field: json.CVSS.IMPACT.AVAILABILITY
+      tag: rename_CVSS_IMPACT_AVAILABILITY
+      target_field: qualys_vmdr.knowledge_base.cvss.impact.availability
+      ignore_missing: true
+  - rename:
+      field: json.CVSS.AUTHENTICATION
+      tag: rename_CVSS_AUTHENTICATION
+      target_field: qualys_vmdr.knowledge_base.cvss.authentication
+      ignore_missing: true
+  - rename:
+      field: json.CVSS.EXPLOITABILITY
+      tag: rename_CVSS_EXPLOITABILITY
+      target_field: qualys_vmdr.knowledge_base.cvss.exploitability
+      ignore_missing: true
+  - rename:
+      field: json.CVSS.REMEDIATION_LEVEL
+      tag: rename_CVSS_REMEDIATION_LEVEL
+      target_field: qualys_vmdr.knowledge_base.cvss.remediation_level
+      ignore_missing: true
+  - rename:
+      field: json.CVSS.REPORT_CONFIDENCE
+      tag: rename_CVSS_REPORT_CONFIDENCE
+      target_field: qualys_vmdr.knowledge_base.cvss.report_confidence
+      ignore_missing: true
+  - rename:
+      field: json.CVSS_V3.BASE
+      tag: rename_CVSS_V3.BASE
+      target_field: qualys_vmdr.knowledge_base.cvss_v3.base
+      ignore_missing: true
+  - rename:
+      field: json.CVSS_V3.TEMPORAL
+      tag: rename_CVSS_V3_TEMPORAL
+      target_field: qualys_vmdr.knowledge_base.cvss_v3.temporal
+      ignore_missing: true
+  - rename:
+      field: json.CVSS_V3.VECTOR_STRING
+      tag: rename_CVSS_V3_VECTOR_STRING
+      target_field: qualys_vmdr.knowledge_base.cvss_v3.vector_string
+      ignore_missing: true
+  - rename:
+      field: json.CVSS_V3.CVSS3_VERSION
+      tag: rename_CVSS_V3_CVSS3_VERSION
+      target_field: qualys_vmdr.knowledge_base.cvss_v3.version
+      ignore_missing: true
+  - rename:
+      field: json.CVSS_V3.ATTACK.VECTOR
+      tag: rename_CVSS_V3_ATTACK_VECTOR
+      target_field: qualys_vmdr.knowledge_base.cvss_v3.attack.vector
+      ignore_missing: true
+  - rename:
+      field: json.CVSS_V3.ATTACK.COMPLEXITY
+      tag: rename_CVSS_V3_ATTACK_COMPLEXITY
+      target_field: qualys_vmdr.knowledge_base.cvss_v3.attack.complexity
+      ignore_missing: true
+  - rename:
+      field: json.CVSS_V3.IMPACT.CONFIDENTIALITY
+      tag: rename_CVSS_V3_IMPACT_CONFIDENTIALITY
+      target_field: qualys_vmdr.knowledge_base.cvss_v3.impact.confidentiality
+      ignore_missing: true
+  - rename:
+      field: json.CVSS_V3.IMPACT.INTEGRITY
+      tag: rename_CVSS_V3_IMPACT_INTEGRITY
+      target_field: qualys_vmdr.knowledge_base.cvss_v3.impact.integrity
+      ignore_missing: true
+  - rename:
+      field: json.CVSS_V3.IMPACT.AVAILABILITY
+      tag: rename_CVSS_V3_IMPACT_AVAILABILITY
+      target_field: qualys_vmdr.knowledge_base.cvss_v3.impact.availability
+      ignore_missing: true
+  - rename:
+      field: json.CVSS_V3.PRIVILEGES_REQUIRED
+      tag: rename_CVSS_V3_PRIVILEGES_REQUIRED
+      target_field: qualys_vmdr.knowledge_base.cvss_v3.privileges_required
+      ignore_missing: true
+  - rename:
+      field: json.CVSS_V3.USER_INTERACTION
+      tag: rename_CVSS_V3_USER_INTERACTION
+      target_field: qualys_vmdr.knowledge_base.cvss_v3.user_interaction
+      ignore_missing: true
+  - rename:
+      field: json.CVSS_V3.SCOPE
+      tag: rename_CVSS_V3_SCOPE
+      target_field: qualys_vmdr.knowledge_base.cvss_v3.scope
+      ignore_missing: true
+  - rename:
+      field: json.CVSS_V3.EXPLOIT_CODE_MATURITY
+      tag: rename_CVSS_V3_EXPLOIT_CODE_MATURITY
+      target_field: qualys_vmdr.knowledge_base.cvss_v3.exploit_code_maturity
+      ignore_missing: true
+  - rename:
+      field: json.CVSS_V3.REMEDIATION_LEVEL
+      tag: rename_CVSS_V3_REMEDIATION_LEVEL
+      target_field: qualys_vmdr.knowledge_base.cvss_v3.remediation_level
+      ignore_missing: true
+  - rename:
+      field: json.CVSS_V3.REPORT_CONFIDENCE
+      tag: rename_CVSS_V3_REPORT_CONFIDENCE
+      target_field: qualys_vmdr.knowledge_base.cvss_v3.report_confidence
+      ignore_missing: true
+  - rename:
+      field: json.AUTOMATIC_PCI_FAIL
+      tag: rename_AUTOMATIC_PCI_FAIL
+      target_field: qualys_vmdr.knowledge_base.automatic_pci_fail
+      ignore_missing: true
+  - set:
+      field: vulnerability.id
+      tag: set_vulnerability_id
+      copy_from: qualys_vmdr.knowledge_base.cve_list.id
+      ignore_empty_value: true
+  - rename:
+      field: json.CVE_LIST.CVE.URL
+      tag: rename_CVE_LIST_CVE_URL
+      target_field: qualys_vmdr.knowledge_base.cve_list.url
+      ignore_missing: true
+  - set:
+      field: vulnerability.reference
+      tag: set_vulnerability_reference
+      copy_from: qualys_vmdr.knowledge_base.cve_list.url
+      ignore_empty_value: true
+  - uri_parts:
+      field: vulnerability.reference
+      tag: 'uri_parts_to_split_vulnerability_reference'
+      if: ctx.vulnerability?.reference != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.CORRELATION.EXPLOITS.EXPLT_SRC.EXPLT_LIST.EXPLT.DESC
+      tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_DESC
+      target_field: qualys_vmdr.knowledge_base.correlation.exploits.explt_src.list.explt.desc
+      ignore_missing: true
+  - set:
+      field: vulnerability.description
+      tag: set_vulnerability_description
+      copy_from: qualys_vmdr.knowledge_base.correlation.exploits.explt_src.list.explt.desc
+      ignore_empty_value: true
+  - rename:
+      field: json.CORRELATION.EXPLOITS.EXPLT_SRC.EXPLT_LIST.EXPLT.LINK
+      tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_LINK
+      target_field: qualys_vmdr.knowledge_base.correlation.exploits.explt_src.list.explt.link
+      ignore_missing: true
+  - rename:
+      field: json.CORRELATION.EXPLOITS.EXPLT_SRC.EXPLT_LIST.EXPLT.REF
+      tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_REF
+      target_field: qualys_vmdr.knowledge_base.correlation.exploits.explt_src.list.explt.ref
+      ignore_missing: true
+  - rename:
+      field: json.CORRELATION.EXPLOITS.EXPLT_SRC.SRC_NAME
+      tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_SRC_NAME
+      target_field: qualys_vmdr.knowledge_base.correlation.exploits.explt_src.name
+      ignore_missing: true
+  - rename:
+      field: json.CORRELATION.MALWARE.MW_SRC.MW_LIST.MW_INFO.MW_ID
+      tag: rename_CORRELATION_MALWARE_MW_SRC_MW_LIST_MW_INFO_MW_ID
+      target_field: qualys_vmdr.knowledge_base.correlation.malware.src.list.info.id
+      ignore_missing: true
+  - rename:
+      field: json.CORRELATION.MALWARE.MW_SRC.SRC_NAME
+      tag: rename_CORRELATION_MALWARE_MW_SRC_SRC_NAME
+      target_field: qualys_vmdr.knowledge_base.correlation.malware.src.name
+      ignore_missing: true
+  - rename:
+      field: json.CORRELATION.MALWARE.MW_SRC.MW_LIST.MW_INFO.MW_TYPE
+      tag: rename_CORRELATION_MALWARE_MW_SRC_MW_LIST_MW_INFO_MW_TYPE
+      target_field: qualys_vmdr.knowledge_base.correlation.malware.src.list.info.type
+      ignore_missing: true
+  - rename:
+      field: json.CORRELATION.MALWARE.MW_SRC.MW_LIST.MW_INFO.MW_PLATFORM
+      tag: rename_CORRELATION_MALWARE_MW_SRC_MW_LIST_MW_INFO_MW_PLATFORM
+      target_field: qualys_vmdr.knowledge_base.correlation.malware.src.list.info.platform
+      ignore_missing: true
+  - rename:
+      field: json.CORRELATION.MALWARE.MW_SRC.MW_LIST.MW_INFO.MW_ALIAS
+      tag: rename_CORRELATION_MALWARE_MW_SRC_MW_LIST_MW_INFO_MW_ALIAS
+      target_field: qualys_vmdr.knowledge_base.correlation.malware.src.list.info.alias
+      ignore_missing: true
+  - rename:
+      field: json.CORRELATION.MALWARE.MW_SRC.MW_LIST.MW_INFO.MW_RATING
+      tag: rename_CORRELATION_MALWARE_MW_SRC_MW_LIST_MW_INFO_MW_RATING
+      target_field: qualys_vmdr.knowledge_base.correlation.malware.src.list.info.rating
+      ignore_missing: true
+  - rename:
+      field: json.CORRELATION.MALWARE.MW_SRC.MW_LIST.MW_INFO.MW_LINK
+      tag: rename_CORRELATION_MALWARE_MW_SRC_MW_LIST_MW_INFO_MW_LINK
+      target_field: qualys_vmdr.knowledge_base.correlation.malware.src.list.info.link
+      ignore_missing: true
+  - rename:
+      field: json.DISCOVERY.ADDITIONAL_INFO
+      tag: rename_DISCOVERY_ADDITIONAL_INFO
+      target_field: qualys_vmdr.knowledge_base.discovery.additional_info
+      ignore_missing: true
+  - rename:
+      field: json.DISCOVERY.AUTH_TYPE_LIST.AUTH_TYPE
+      tag: rename_DISCOVERY_AUTH_TYPE_LIST_AUTH_TYPE
+      target_field: qualys_vmdr.knowledge_base.discovery.auth_type_list.value
+      ignore_missing: true
+  - convert:
+      field: json.DISCOVERY.REMOTE
+      tag: convert_DISCOVERY_REMOTE_to_long
+      target_field: qualys_vmdr.knowledge_base.discovery.remote
+      type: long
+      ignore_missing: true
+      if: ctx.json?.DISCOVERY?.REMOTE != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.SOFTWARE_LIST.SOFTWARE.PRODUCT
+      tag: rename_SOFTWARE_LIST_SOFTWARE_PRODUCT
+      target_field: qualys_vmdr.knowledge_base.software_list.product
+      ignore_missing: true
+  - rename:
+      field: json.SOFTWARE_LIST.SOFTWARE.VENDOR
+      tag: rename_SOFTWARE_LIST_SOFTWARE_VENDOR
+      target_field: qualys_vmdr.knowledge_base.software_list.vendor
+      ignore_missing: true
+  - rename:
+      field: json.VENDOR_REFERENCE_LIST.VENDOR_REFERENCE.ID
+      tag: rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE_ID
+      target_field: qualys_vmdr.knowledge_base.vendor_reference_list.id
+      ignore_missing: true
+  - rename:
+      field: json.VENDOR_REFERENCE_LIST.VENDOR_REFERENCE.URL
+      tag: rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE_URL
+      target_field: qualys_vmdr.knowledge_base.vendor_reference_list.url
+      ignore_missing: true
+  - date:
+      field: json.LAST_SERVICE_MODIFICATION_DATETIME
+      tag: date_LAST_SERVICE_MODIFICATION_DATETIME
+      target_field: qualys_vmdr.knowledge_base.last.service_modification_datetime
+      formats:
+        - ISO8601
+      if: ctx.json?.LAST_SERVICE_MODIFICATION_DATETIME != null && ctx.json.LAST_SERVICE_MODIFICATION_DATETIME != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.LAST_SERVICE_MODIFICATION_DATETIME
+      tag: date_LAST_SERVICE_MODIFICATION_DATETIME_to_timestamp
+      formats:
+        - ISO8601
+      if: ctx.json?.LAST_SERVICE_MODIFICATION_DATETIME != null && ctx.json.LAST_SERVICE_MODIFICATION_DATETIME != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.LAST_CUSTOMIZATION.DATETIME
+      tag: date_LAST_CUSTOMIZATION_DATETIME
+      target_field: qualys_vmdr.knowledge_base.last.customization.datetime
+      formats:
+        - ISO8601
+      if: ctx.json?.LAST_CUSTOMIZATION?.DATETIME != null && ctx.json.LAST_CUSTOMIZATION.DATETIME != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.LAST_CUSTOMIZATION.USER_LOGIN
+      tag: rename_LAST_CUSTOMIZATION_USER_LOGIN
+      target_field: qualys_vmdr.knowledge_base.last.customization.user_login
+      ignore_missing: true
+  - date:
+      field: json.PUBLISHED_DATETIME
+      tag: date_PUBLISHED_DATETIME
+      target_field: qualys_vmdr.knowledge_base.published_datetime
+      formats:
+        - ISO8601
+      if: ctx.json?.PUBLISHED_DATETIME != null && ctx.json.PUBLISHED_DATETIME != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.CHANGE_LOG_LIST.CHANGE_LOG_INFO
+      tag: rename_CHANGE_LOG_LIST_CHANGE_LOG_INFO
+      target_field: qualys_vmdr.knowledge_base.changelog_list.info
+      ignore_missing: true
+  - rename:
+      field: qualys_vmdr.knowledge_base.changelog_list.info.COMMENTS
+      tag: rename_qualys_vmdr_knowledge_base_changelog_list_info_COMMENTS_1
+      target_field: qualys_vmdr.knowledge_base.changelog_list.info.comments
+      ignore_missing: true
+  - date:
+      field: qualys_vmdr.knowledge_base.changelog_list.info.CHANGE_DATE
+      tag: date_qualys_vmdr_knowledge_base_changelog_list_info_CHANGE_DATE_1
+      if: (!(ctx.qualys_vmdr?.knowledge_base?.changelog_list?.info instanceof List)) && ctx.qualys_vmdr?.knowledge_base?.changelog_list?.info?.CHANGE_DATE != null && ctx.qualys_vmdr?.knowledge_base?.changelog_list?.info?.CHANGE_DATE != ''
+      target_field: qualys_vmdr.knowledge_base.changelog_list.info.change_date
+      formats:
+      - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: qualys_vmdr.knowledge_base.changelog_list.info
+      if: ctx.qualys_vmdr?.knowledge_base?.changelog_list?.info instanceof List
+      tag: foreach_rename_COMMENTS
+      processor:
+        rename:
+          field: _ingest._value.COMMENTS
+          tag: rename_qualys_vmdr_knowledge_base_changelog_list_info_COMMENTS_2
+          target_field: _ingest._value.comments
+          ignore_missing: true
+  - foreach:
+      field: qualys_vmdr.knowledge_base.changelog_list.info
+      if: ctx.qualys_vmdr?.knowledge_base?.changelog_list?.info instanceof List
+      tag: foreach_date_CHANGE_DATE
+      processor:
+        date:
+          field: _ingest._value.CHANGE_DATE
+          tag: date_qualys_vmdr_knowledge_base_changelog_list_info_CHANGE_DATE_2
+          target_field: _ingest._value.change_date
+          formats:
+            - ISO8601
+          ignore_failure: true
+  - rename:
+      field: json.THREAT_INTELLIGENCE.THREAT_INTEL
+      tag: rename_THREAT_INTELLIGENCE_THREAT_INTEL
+      target_field: qualys_vmdr.knowledge_base.threat_intelligence.intel
+      ignore_missing: true
+  - foreach:
+      field: qualys_vmdr.knowledge_base.threat_intelligence.intel
+      if: ctx.qualys_vmdr?.knowledge_base?.threat_intelligence?.intel instanceof List
+      tag: foreach_rename_#text
+      processor:
+        rename:
+          field: _ingest._value.#text
+          tag: rename_qualys_vmdr_knowledge_base_threat_intelligence_intel_#text_1
+          target_field: _ingest._value.text
+          ignore_missing: true
+  - rename:
+      field: qualys_vmdr.knowledge_base.threat_intelligence.intel.#text
+      tag: rename_qualys_vmdr_knowledge_base_threat_intelligence_intel_#text_2
+      target_field: qualys_vmdr.knowledge_base.threat_intelligence.intel.text
+      ignore_missing: true
+  - foreach:
+      field: qualys_vmdr.knowledge_base.changelog_list.info
+      if: ctx.qualys_vmdr?.knowledge_base?.changelog_list?.info instanceof List
+      tag: foreach_remove_CHANGE_DATE
+      processor:
+        remove:
+          field: _ingest._value.CHANGE_DATE
+          tag: remove_qualys_vmdr_knowledge_base_changelog_list_info_CHANGE_DATE
+          ignore_missing: true
+  - set:
+      field: json.IS_DISABLED
+      tag: set_IS_DISABLED_true
+      value: true
+      if: ctx.json?.IS_DISABLED == '1'
+  - set:
+      field: json.IS_DISABLED
+      tag: set_IS_DISABLED_false
+      value: false
+      if: ctx.json?.IS_DISABLED == '0'
+  - convert:
+      field: json.IS_DISABLED
+      tag: convert_IS_DISABLED_to_boolean
+      target_field: qualys_vmdr.knowledge_base.is_disabled
+      type: boolean
+      ignore_missing: true
+      if: ctx.json?.IS_DISABLED != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: json.PATCHABLE
+      tag: set_PATCHABLE_true
+      value: true
+      if: ctx.json?.PATCHABLE == '1'
+  - set:
+      field: json.PATCHABLE
+      tag: set_PATCHABLE_false
+      value: false
+      if: ctx.json?.PATCHABLE == '0'
+  - convert:
+      field: json.PATCHABLE
+      tag: convert_PATCHABLE_to_boolean
+      target_field: qualys_vmdr.knowledge_base.patchable
+      type: boolean
+      ignore_missing: true
+      if: ctx.json?.PATCHABLE != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: json.PCI_FLAG
+      tag: set_PCI_FLAG_true
+      value: true
+      if: ctx.json?.PCI_FLAG == '1'
+  - set:
+      field: json.PCI_FLAG
+      tag: set_PCI_FLAG_false
+      value: false
+      if: ctx.json?.PCI_FLAG == '0'
+  - convert:
+      field: json.PCI_FLAG
+      tag: convert_PCI_FLAG_to_boolean
+      target_field: qualys_vmdr.knowledge_base.pci_flag
+      type: boolean
+      ignore_missing: true
+      if: ctx.json?.PCI_FLAG != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: qualys_vmdr.knowledge_base.severity_level
+      tag: set_qualys_vmdr_knowledge_base_severity_level
+      copy_from: json.SEVERITY_LEVEL
+      ignore_empty_value: true
+  - script:
+      lang: painless
+      tag: script_to_set_SEVERITY_LEVEL
+      description: Script to set SEVERITY_LEVEL for different ranges.
+      if: ctx.json?.SEVERITY_LEVEL != null
+      source: >-
+        def floatVal = Float.parseFloat(ctx.json.SEVERITY_LEVEL);
+        if (floatVal == 0.0){
+            ctx.json.SEVERITY_LEVEL = "None";
+        } else if (floatVal > 0.0 && floatVal <=3.9){
+            ctx.json.SEVERITY_LEVEL = "Low";
+        } else if (floatVal > 3.9 && floatVal <=6.9){
+            ctx.json.SEVERITY_LEVEL = "Medium";
+        } else if (floatVal > 6.9 && floatVal <=8.9){
+            ctx.json.SEVERITY_LEVEL = "High";
+        } else if (floatVal > 8.9 && floatVal <=10.0){
+            ctx.json.SEVERITY_LEVEL = "Critical";
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: vulnerability.severity
+      tag: set_vulnerability_severity
+      copy_from: json.SEVERITY_LEVEL
+      ignore_empty_value: true
+  - remove:
+      tag: remove_json
+      field:
+        - json
+        - message
+        - qualys_vmdr.knowledge_base.changelog_list.info.CHANGE_DATE
+      ignore_missing: true
+  - remove:
+      field:
+        - qualys_vmdr.knowledge_base.last.service_modification_datetime
+        - qualys_vmdr.knowledge_base.qid
+        - qualys_vmdr.knowledge_base.category
+        - qualys_vmdr.knowledge_base.cve_list.id
+        - qualys_vmdr.knowledge_base.cve_list.url
+        - qualys_vmdr.knowledge_base.correlation.exploits.explt_src.list.explt.desc
+        - qualys_vmdr.knowledge_base.severity_level
+      tag: remove_preserve_duplicate_custom_fields
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: script_to_remove_null_values
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_event_kind_2
+      value: pipeline_error
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

@@ -1,0 +1,71 @@
+title: Collect Asset Host Detection logs from Qualys VMDR platform.
+type: logs
+streams:
+  - input: cel
+    title: Asset Host Detection logs
+    description: Collect Asset Host Detection logs from Qualys VMDR platform.
+    template_path: input.yml.hbs
+    vars:
+      - name: url
+        type: text
+        title: URL
+        description: Base URL of the Qualys Server API.
+        required: true
+        show_user: true
+      - name: interval
+        type: text
+        title: Interval
+        description: "Interval between two REST API calls. User can choose interval as per their plan mentioned in [Qualys API Limits](https://www.qualys.com/docs/qualys-api-limits.pdf). Supported units for this parameter are h/m/s."
+        default: 4h
+        multi: false
+        required: true
+        show_user: true
+      - name: batch_size
+        type: integer
+        title: Batch Size
+        description: "Batch size for the response of the Qualys Server API. This parameter specifies the truncation limit for the response. Specify 0 for no truncation limit."
+        default: 1000
+        multi: false
+        required: true
+        show_user: false
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: "Duration before declaring that the HTTP client connection has timed out. Supported time units are ns, us, ms, s, m, h."
+        multi: false
+        required: true
+        show_user: false
+        default: 30s
+      - name: input_parameters
+        type: text
+        title: Input Parameters
+        description: "Input Parameters for the URL. param1=value&param2=value&param3=....*"
+        multi: false
+        required: false
+        show_user: false
+        default: ""
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - qualys_vmdr-asset_host_detection
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve qualys_vmdr.asset_host_detection fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

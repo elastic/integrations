@@ -16,11 +16,11 @@ An example event for `alerts` looks as following:
 {
     "@timestamp": "2020-10-21T11:31:28.980Z",
     "agent": {
-        "ephemeral_id": "4fc5e240-77aa-4a6a-9616-b7ef082ceb68",
-        "id": "7ff883c1-54e3-408a-826c-eb98e0d94b6b",
+        "ephemeral_id": "d844ab1b-e657-4caa-8809-2b9dd2a35590",
+        "id": "0a5c1566-c6fd-4e91-b96d-4083445a000e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "panw_cortex_xdr.alerts",
@@ -28,12 +28,12 @@ An example event for `alerts` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "7ff883c1-54e3-408a-826c-eb98e0d94b6b",
+        "id": "0a5c1566-c6fd-4e91-b96d-4083445a000e",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.9.0"
     },
     "event": {
         "action": "BLOCKED",
@@ -44,7 +44,7 @@ An example event for `alerts` looks as following:
         "created": "2020-10-21T11:31:28.980Z",
         "dataset": "panw_cortex_xdr.alerts",
         "id": "800800",
-        "ingested": "2023-05-12T06:32:55Z",
+        "ingested": "2023-08-07T15:40:53Z",
         "kind": "alert",
         "original": "{\"action\":\"BLOCKED\",\"action_pretty\":\"Prevented (Blocked)\",\"agent_data_collection_status\":true,\"agent_device_domain\":null,\"agent_fqdn\":\"test\",\"agent_is_vdi\":null,\"agent_os_sub_type\":\"XP\",\"agent_os_type\":\"Windows\",\"agent_version\":\"1.2.3.4\",\"alert_id\":\"1001\",\"attempt_counter\":55,\"bioc_category_enum_key\":null,\"bioc_indicator\":null,\"category\":\"Exploit\",\"deduplicate_tokens\":null,\"description\":\"Local privilege escalation prevented\",\"detection_timestamp\":1603279888980,\"end_match_attempt_ts\":1603552062824,\"endpoint_id\":\"12345678\",\"events\":{\"action_country\":\"UNKNOWN\",\"action_external_hostname\":null,\"action_file_macro_sha256\":null,\"action_file_md5\":null,\"action_file_name\":null,\"action_file_path\":null,\"action_file_sha256\":null,\"action_local_ip\":null,\"action_local_port\":null,\"action_process_causality_id\":null,\"action_process_image_command_line\":null,\"action_process_image_name\":null,\"action_process_image_sha256\":null,\"action_process_instance_id\":null,\"action_process_signature_status\":\"N/A\",\"action_process_signature_vendor\":null,\"action_registry_data\":null,\"action_registry_full_key\":null,\"action_registry_key_name\":null,\"action_registry_value_name\":null,\"action_remote_ip\":null,\"action_remote_port\":null,\"actor_causality_id\":null,\"actor_process_causality_id\":null,\"actor_process_command_line\":\"c:\\\\tmp\\\\virus.exe\",\"actor_process_image_md5\":null,\"actor_process_image_name\":\"virus.exe\",\"actor_process_image_path\":\"c:\\\\tmp\\\\virus.exe\",\"actor_process_image_sha256\":\"133ee989293f92736301280c6f14c89d521200c17dcdcecca30cd20705332d44\",\"actor_process_instance_id\":\"1234\",\"actor_process_os_pid\":1234,\"actor_process_signature_status\":\"N/A\",\"actor_process_signature_vendor\":null,\"actor_thread_thread_id\":null,\"agent_host_boot_time\":null,\"agent_install_type\":\"NA\",\"association_strength\":null,\"causality_actor_causality_id\":null,\"causality_actor_process_command_line\":null,\"causality_actor_process_execution_time\":null,\"causality_actor_process_image_md5\":null,\"causality_actor_process_image_name\":null,\"causality_actor_process_image_path\":null,\"causality_actor_process_image_sha256\":null,\"causality_actor_process_signature_status\":\"N/A\",\"causality_actor_process_signature_vendor\":null,\"dns_query_name\":null,\"dst_action_country\":null,\"dst_action_external_hostname\":null,\"dst_action_external_port\":null,\"dst_agent_id\":null,\"dst_association_strength\":null,\"dst_causality_actor_process_execution_time\":null,\"event_id\":null,\"event_sub_type\":null,\"event_timestamp\":1603279888980,\"event_type\":\"Process Execution\",\"fw_app_category\":null,\"fw_app_id\":null,\"fw_app_subcategory\":null,\"fw_app_technology\":null,\"fw_device_name\":null,\"fw_email_recipient\":null,\"fw_email_sender\":null,\"fw_email_subject\":null,\"fw_interface_from\":null,\"fw_interface_to\":null,\"fw_is_phishing\":\"N/A\",\"fw_misc\":null,\"fw_rule\":null,\"fw_rule_id\":null,\"fw_serial_number\":null,\"fw_url_domain\":null,\"fw_vsys\":null,\"fw_xff\":null,\"module_id\":\"Privilege Escalation Protection\",\"os_actor_causality_id\":null,\"os_actor_effective_username\":null,\"os_actor_process_causality_id\":null,\"os_actor_process_command_line\":null,\"os_actor_process_image_name\":null,\"os_actor_process_image_path\":null,\"os_actor_process_image_sha256\":null,\"os_actor_process_instance_id\":null,\"os_actor_process_os_pid\":null,\"os_actor_process_signature_status\":\"N/A\",\"os_actor_process_signature_vendor\":null,\"os_actor_thread_thread_id\":null,\"story_id\":null,\"user_name\":null},\"external_id\":\"800800\",\"filter_rule_id\":null,\"host_ip\":[\"10.0.255.20\"],\"host_name\":\"Test\",\"is_whitelisted\":false,\"local_insert_ts\":1603279967500,\"mac\":null,\"mac_address\":[\"00:11:22:33:44:55\"],\"matching_service_rule_id\":null,\"matching_status\":\"FAILED\",\"mitre_tactic_id_and_name\":[\"\"],\"mitre_technique_id_and_name\":[\"\"],\"name\":\"Kernel Privilege Escalation\",\"severity\":\"high\",\"source\":\"XDR Agent\",\"starred\":false}",
         "reason": "Local privilege escalation prevented",
@@ -168,10 +168,10 @@ An example event for `alerts` looks as following:
 | email.to.address | The email address of recipient | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |

@@ -3,7 +3,7 @@ description: Pipeline for Okta system logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.8.0'
+      value: '8.9.0'
   # Keep message as event.original.
   # Warn if event.original has already been set. This is most likely due to logstash ecs_compatibility setting.
   - append:
@@ -372,6 +372,11 @@ processors:
   - rename:
       field: json.debugContext.debugData.url
       target_field: okta.debug_context.debug_data.url
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.debugContext.debugData.dtHash
+      target_field: okta.debug_context.debug_data.dt_hash
       ignore_missing: true
       ignore_failure: true
   - set:

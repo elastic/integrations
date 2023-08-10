@@ -294,13 +294,13 @@ An example event for `billing` looks as following:
 | azure.billing.usage_date | The usage date | date |
 | azure.billing.usage_end | The usage end date | date |
 | azure.billing.usage_start | The usage start date | date |
-| azure.dimensions.\* | Azure metric dimensions. | flattened |
+| azure.dimensions | Azure metric dimensions. | flattened |
 | azure.metrics.\*.\* | Metrics returned. | object |
 | azure.namespace | The namespace selected | keyword |
 | azure.resource.group | The resource group | keyword |
 | azure.resource.id | The id of the resource | keyword |
 | azure.resource.name | The name of the resource | keyword |
-| azure.resource.tags.\* | Azure resource tags. | flattened |
+| azure.resource.tags | Azure resource tags. | flattened |
 | azure.resource.type | The type of the resource | keyword |
 | azure.subscription_id | The subscription ID | keyword |
 | azure.timegrain | The Azure metric timegrain | keyword |
