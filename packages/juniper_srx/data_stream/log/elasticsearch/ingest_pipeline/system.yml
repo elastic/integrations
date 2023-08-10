@@ -15,7 +15,7 @@ processors:
 
 # Parse different types of system_structured_brief messages
 - grok:
-    if: "ctx._temp_?.unparsed?.system_structured_brief != null && ctx._temp_?.unparsed?.system_structured_brief != ''"
+    if: "ctx._temp_?.unparsed?.system_structured_brief != null && ctx._temp_.unparsed.system_structured_brief != ''"
     tag: "grok_system_structured_brief"
     field: "_temp_.unparsed.system_structured_brief"
     patterns: 
@@ -41,7 +41,7 @@ processors:
 - set:
     field: juniper.srx.tag
     value: "{{{_temp_.tag_brief}}}"
-    if: 'ctx._temp_?.tag_brief != null && (ctx.juniper?.srx?.tag == null || ctx.juniper?.srx?.tag == "-")'
+    if: 'ctx._temp_?.tag_brief != null && (ctx.juniper?.srx?.tag == null || ctx.juniper.srx.tag == "-")'
 
 # Handle negotiation messages
 # 1. if: negotiation.message ~ /^failed.*/
