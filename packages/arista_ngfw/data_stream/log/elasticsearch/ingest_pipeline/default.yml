@@ -10,7 +10,7 @@ processors:
       ignore_missing: true
   - set:
       field: ecs.version
-      value: '8.8.0'
+      value: '8.9.0'
   - grok:
       field: event.original
       patterns:
@@ -376,6 +376,10 @@ processors:
   - rename:
       field: arista.sessionId
       target_field: event.id
+      ignore_missing: true
+  - convert:
+      field: event.id
+      type: string
       ignore_missing: true
   - script:
       lang: painless
@@ -801,10 +805,23 @@ processors:
       target_field: user.name
       ignore_missing: true
 
+  ######################
+  ## ECS Host Mapping ##
+  ######################
+  - rename:
+      field: arista.hostname
+      target_field: host.name
+      ignore_missing: true
+
   #########################
   ## ECS Related Mapping ##
   #########################
   # Hosts
+  - append:
+      if: ctx.host?.name != null
+      field: related.hosts
+      value: '{{{host.name}}}'
+      allow_duplicates: false
   - append:
       if: ctx.destination?.domain != null
       field: related.hosts
@@ -873,7 +890,6 @@ processors:
         - arista.clientLatitude
         - arista.clientLongitude
         - arista.filterPrefix
-        - arista.hostname
         - arista.localAddr
         - arista.remoteAddr
         - arista.httpRequestEvent.sessionEvent
