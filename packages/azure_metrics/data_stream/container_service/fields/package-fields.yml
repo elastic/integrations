@@ -4,6 +4,7 @@
   fields:
     - name: timegrain
       type: keyword
+      dimension: true
       description: >
         The Azure metric timegrain
 
@@ -25,6 +26,7 @@
 
         - name: id
           type: keyword
+          dimension: true
           description: >
             The id of the resource
 
@@ -55,17 +57,29 @@
       description: >
         The application ID
 
-    - name: dimensions.*
-      type: object
-      object_type: keyword
-      object_type_mapping_type: "*"
-      description: >
-        Azure metric dimensions.
-
-    - name: metrics.*.*
-      type: object
-      object_type: float
-      object_type_mapping_type: "*"
-      description: >
-        Metrics returned.
-
+    - name: dimensions
+      type: group
+      fields:
+        - name: node
+          type: keyword
+          dimension: true
+          description: Node name
+        - name: status
+          type: keyword
+          description: Statuses for various node conditions
+        - name: condition
+          type: keyword
+          dimension: true
+          description: Pod or Node conditions
+        - name: pod
+          type: keyword
+          dimension: true
+          description: Pod name
+        - name: namespace
+          type: keyword
+          dimension: true
+          description: Pod namespace
+        - name: phase
+          type: keyword
+          dimension: true
+          description: Pod phase
