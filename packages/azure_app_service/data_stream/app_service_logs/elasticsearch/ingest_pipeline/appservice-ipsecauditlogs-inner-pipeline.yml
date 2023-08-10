@@ -1,0 +1,69 @@
+---
+description: Pipeline for processing Azure App Service IPSec Audit logs.
+processors:
+  - rename:
+      field: azure.app_service.ResourceId
+      target_field: azure.resource.id
+      ignore_missing: true
+  - rename:
+      field: azure.app_service.Category
+      target_field: azure.app_service.category
+  - rename:
+      field: azure.app_service.OperationName
+      target_field: azure.app_service.operation_name
+  - rename:
+      field: azure.app_service.Properties
+      target_field: azure.app_service.properties
+      ignore_missing: true
+  - rename:
+      field: azure.app_service.properties.CIp
+      target_field: azure.app_service.properties.client_ip
+  - rename:
+      field: azure.app_service.properties.CsHost
+      target_field: azure.app_service.properties.cs_host
+  - rename:
+      field: azure.app_service.properties.Result
+      target_field: azure.app_service.properties.result
+  - rename:
+      field: azure.app_service.properties.Details
+      target_field: azure.app_service.properties.details
+  - rename:
+      field: azure.app_service.properties.ServiceEndpoint
+      target_field: azure.app_service.properties.service_endpoint
+  - rename:
+      field: azure.app_service.properties.XForwardedFor
+      target_field: azure.app_service.properties.xforwarded_for
+  - rename:
+      field: azure.app_service.properties.XForwardedHost
+      target_field: azure.app_service.properties.xforwarded_host
+  - rename:
+      field: azure.app_service.properties.XAzureFDID
+      target_field: azure.app_service.properties.xazurefdid
+  - rename:
+      field: azure.app_service.properties.XFDHealthProbe
+      target_field: azure.app_service.properties.xfdhealth_probe
+  - rename:
+      field: azure.app_service.properties.Type
+      target_field: azure.app_service.properties.type
+      ignore_missing: true
+  - rename:
+      field: azure.app_service.properties.TimeGenerated
+      target_field: azure.app_service.properties.time_generated
+      ignore_missing: true
+  - rename:
+      field: azure.app_service.properties.SourceSystem
+      target_field: azure.app_service.properties.source_system
+      ignore_missing: true
+  - grok:
+      field: azure.app_service.properties.client_ip
+      patterns:
+        - '%{IPORHOST:azure.app_service.properties.client_ip}:%{POSINT:azure.app_service.properties.client_port:long}'
+      ignore_failure: true
+  - convert:
+      field: azure.app_service.properties.client_ip
+      type: ip
+      ignore_missing: true
+on_failure:
+  - append:
+      field: "error.message"
+      value: "{{ _ingest.on_failure_message }} {{ _ingest.on_failure_processor_type }}"

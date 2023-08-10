@@ -82,6 +82,24 @@ the events from Windows. The filter shown below is equivalent to
 
 ## Logs reference
 
+### AppLocker/EXE and DLL
+
+The Windows `applocker_exe_and_dll` data stream provides events from the Windows
+`Microsoft-Windows-AppLocker/EXE and DLL` event log.
+
+{{event "applocker_exe_and_dll"}}
+
+{{fields "applocker_exe_and_dll"}}
+
+### AppLocker/MSI and Script
+
+The Windows `applocker_msi_and_script` data stream provides events from the Windows
+`Microsoft-Windows-AppLocker/MSI and Script` event log.
+
+{{event "applocker_msi_and_script"}}
+
+{{fields "applocker_msi_and_script"}}
+
 ### Forwarded
 
 The Windows `forwarded` data stream provides events from the Windows
