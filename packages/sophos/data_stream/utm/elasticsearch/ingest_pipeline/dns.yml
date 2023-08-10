@@ -1,0 +1,94 @@
+---
+description: Pipeline for Sophos UTM DNS logs
+processors:
+  - append:
+      field: event.type
+      value: 
+        - connection
+        - protocol
+      allow_duplicates: false
+      tag: append_type_network
+  - set:
+      field: network.protocol
+      value: dns
+      tag: set_network_protocol
+  - set:
+      field: network.transport
+      value: udp
+      tag: set_network_transport
+  - grok:
+      if: ctx._tmp?.raw_data != null && ctx._tmp.raw_data.contains('listening')
+      field: _tmp.raw_data
+      patterns:
+        - '^%{WORD:event.action} on %{WORD:network.type} interface %{WORD:observer.ingress.interface.name}, %{IP:server.ip}#%{NUMBER:server.port:long}$'
+        - '^no longer %{WORD:event.action} on %{IP:server.ip}#%{NUMBER:server.port:long}$'
+        - '^%{GREEDYDATA:message}$'
+      tag: grok_dns
+  - grok:
+      if: ctx.event?.action == null
+      field: _tmp.raw_data
+      patterns:
+        - '^%{GREEDYDATA:message}$'
+      tag: grok_dns_default
+  
+  # Lowercase fields
+  - lowercase:
+      field: event.action
+      ignore_failure: true
+      ignore_missing: true
+      tag: lowercase_event_action
+  - lowercase:
+      field: network.type
+      ignore_failure: true
+      ignore_missing: true
+      tag: lowercase_network_type
+
+  - set:
+      field: event.action
+      value: '{{{process.name}}}-{{{event.action}}}'
+      if: ctx.event?.action != null
+      tag: set_event_action_dns
+
+  # IP Geolocation Lookup
+  - geoip:
+      field: server.ip
+      target_field: server.geo
+      ignore_missing: true
+      tag: geo_server_ip
+
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: server.ip
+      target_field: server.as
+      properties:
+          - asn
+          - organization_name
+      ignore_missing: true
+      tag: geo_server_as
+  - rename:
+      field: server.as.asn
+      target_field: server.as.number
+      ignore_missing: true
+      tag: rename_server_as_number
+  - rename:
+      field: server.as.organization_name
+      target_field: server.as.organization.name
+      ignore_missing: true
+      tag: rename_server_as_org
+
+  # Fill related fields
+  - append:
+      field: related.ip
+      value: '{{{server.ip}}}'
+      allow_duplicates: false
+      if: ctx.server?.ip != null && ctx.server.ip != ''
+      tag: append_related_server_ip
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
