@@ -74,7 +74,7 @@ You can verify that metrics endpoint is enabled by making an HTTP request to
 | package_registry.labels.path | Path of the HTTP request. | keyword |  |  |
 | package_registry.labels.version | Elastic Package Registry version. | keyword |  |  |
 | package_registry.number_indexed_packages | Number of indexed packages | integer |  | gauge |
-| package_registry.start_time | Date where Elastic Package Registry started | date |  | gauge |
+| package_registry.start_time | Date where Elastic Package Registry started | date |  |  |
 | package_registry.start_time_seconds | Start time of the process since unix epoch in seconds | double | s | gauge |
 | package_registry.storage_indexer.update_index_duration_seconds.histogram | A histogram of latencies for update index processes run by the storage indexer | histogram |  |  |
 | package_registry.storage_indexer.update_index_error_total.counter | A counter for all the update index processes that finished with error in the storage indexer | long |  |  |

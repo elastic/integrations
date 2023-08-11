@@ -1,0 +1,38 @@
+{
+    "id": "5ee69b99-8f70-5daf-b784-866131aca3ba",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "All AWS Support plans include an unlimited number of account and billing support cases, with no long-term contracts. Support billing calculations are performed on a per-account basis for all plans. Enterprise Support plan customers have the option to include multiple enabled accounts in an aggregated monthly billing calculation. Monthly charges for the Business and Enterprise support plans are based on each month's AWS usage charges, subject to a monthly minimum, billed in advance.",
+            "default_value": "",
+            "references": "1. https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_managed-vs-inline.html\n2. https://aws.amazon.com/premiumsupport/pricing/\n3. https://docs.aws.amazon.com/cli/latest/reference/iam/list-policies.html\n4. https://docs.aws.amazon.com/cli/latest/reference/iam/attach-role-policy.html\n5. https://docs.aws.amazon.com/cli/latest/reference/iam/list-entities-for-policy.html",
+            "id": "5ee69b99-8f70-5daf-b784-866131aca3ba",
+            "name": "Ensure a support role has been created to manage incidents with AWS Support",
+            "profile_applicability": "* Level 1",
+            "description": "AWS provides a support center that can be used for incident notification and response, as well as technical support and customer services.\nCreate an IAM Role to allow authorized users to manage incidents with AWS Support.",
+            "rationale": "By implementing least privilege for access control, an IAM Role will require an appropriate IAM Policy to allow Support Center Access in order to manage Incidents with AWS Support.",
+            "audit": "**From Command Line:**\n\n1. List IAM policies, filter for the 'AWSSupportAccess' managed policy, and note the \"Arn\" element value:\n```\naws iam list-policies --query \"Policies[?PolicyName == 'AWSSupportAccess']\"\n```\n2. Check if the 'AWSSupportAccess' policy is attached to any role:\n\n```\naws iam list-entities-for-policy --policy-arn arn:aws:iam::aws:policy/AWSSupportAccess\n```\n\n3. In Output, Ensure `PolicyRoles` does not return empty. 'Example: Example: PolicyRoles: [ ]'\n\nIf it returns empty refer to the remediation below.",
+            "remediation": "**From Command Line:**\n\n1. Create an IAM role for managing incidents with AWS:\n - Create a trust relationship policy document that allows <iam_user> to manage AWS incidents, and save it locally as /tmp/TrustPolicy.json:\n```\n {\n \"Version\": \"2012-10-17\",\n \"Statement\": [\n {\n \"Effect\": \"Allow\",\n \"Principal\": {\n \"AWS\": \"<iam_user>\"\n },\n \"Action\": \"sts:AssumeRole\"\n }\n ]\n }\n```\n2. Create the IAM role using the above trust policy:\n```\naws iam create-role --role-name <aws_support_iam_role> --assume-role-policy-document file:///tmp/TrustPolicy.json\n```\n3. Attach 'AWSSupportAccess' managed policy to the created IAM role:\n```\naws iam attach-role-policy --policy-arn arn:aws:iam::aws:policy/AWSSupportAccess --role-name <aws_support_iam_role>\n```",
+            "section": "Identity and Access Management",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AWS",
+                "CIS 1.17",
+                "Identity and Access Management"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Web Services Foundations",
+                "version": "v1.5.0",
+                "id": "cis_aws",
+                "rule_number": "1.17",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_1_17"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

@@ -1,3 +1,5 @@
+period: 24h
+{{!-- BACKWARD COMPATIBILITY (fetchers) cloudbeat verision < 8.10 --}}
 fetchers:
   - name: aws-iam
   - name: aws-ec2-network
@@ -11,6 +13,9 @@ config:
     deployment: aws
     benchmark: cis_aws
     aws:
+      {{#if aws.account_type}}
+      account_type: {{aws.account_type}}
+      {{/if}}
       credentials:
         {{#if access_key_id}}
         access_key_id: {{access_key_id}}

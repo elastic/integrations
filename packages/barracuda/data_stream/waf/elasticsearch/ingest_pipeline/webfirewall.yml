@@ -1,0 +1,96 @@
+---
+description: Pipeline for processing web firewall logs
+processors:
+    - dissect:
+          field: _temp.remMessage
+          pattern: "%{barracuda.waf.severity_level} %{barracuda.waf.attack_description} %{_temp.clientIp} %{_temp.clientPort} %{_temp.destIp} %{_temp.destPort} %{rule.name} %{rule.category} %{barracuda.waf.action_taken} %{barracuda.waf.followup_action} %{_temp.remMessage}"
+          ignore_missing: true
+          ignore_failure: true
+    - grok:
+          field: _temp.remMessage
+          patterns:
+              - \[%{DATA:barracuda.waf.attack_details}\] %{GREEDYDATA:_temp.remMessage}
+          ignore_missing: true
+    - dissect:
+          field: _temp.remMessage
+          pattern: "%{http.request.method} %{url.path} %{barracuda.waf.protocol} %{barracuda.waf.sessionid} %{_temp.remMessage}"
+          ignore_missing: true
+          ignore_failure: true
+    - grok:
+          field: _temp.remMessage
+          patterns:
+              - \"%{DATA:user_agent.original}\"%{SPACE}%{GREEDYDATA:_temp.remMessage}
+          ignore_missing: true
+    - dissect:
+          field: _temp.remMessage
+          pattern: "%{_temp.proxyIp} %{_temp.proxyPort} %{user.name} %{http.request.referrer} %{user.id}"
+          ignore_missing: true
+          ignore_failure: true
+    - convert:
+          field: _temp.clientIp
+          target_field: client.ip
+          type: ip
+          ignore_missing: true
+    - convert:
+          field: _temp.clientPort
+          target_field: client.port
+          type: long
+          ignore_missing: true
+    - convert:
+          field: _temp.destIp
+          target_field: destination.ip
+          type: ip
+          ignore_missing: true
+    - convert:
+          field: _temp.destPort
+          target_field: destination.port
+          type: long
+          ignore_missing: true
+    - user_agent:
+          field: user_agent.original
+          ignore_missing: true
+    - convert:
+          field: _temp.proxyIp
+          target_field: network.forwarded_ip
+          type: ip
+          ignore_missing: true
+    - geoip:
+          field: destination.ip
+          target_field: destination.geo
+          ignore_missing: true
+    - geoip:
+          field: client.ip
+          target_field: client.geo
+          ignore_missing: true
+    - set:
+          field: source
+          copy_from: client
+    - set:
+          field: server
+          copy_from: destination
+
+    - set:
+          field: event.category
+          value: [network, intrusion_detection]
+    - set:
+          field: event.action
+          copy_from: barracuda.waf.action_taken
+    ################################################################
+    # Event kind for ALERT , CRITICAL , EMERGENCY type severity level
+    ################################################################
+    - set:
+          field: event.kind
+          value: alert
+          if: ctx.barracuda.waf?.severitylevel != null && ["ALER", "EMER", "CRIT", "ALERT", "CRITICAL","EMERGENCY"].contains(ctx.barracuda.waf.severity_level)
+    - set:
+          field: event.kind
+          value: event
+          if: ctx.event?.kind == null
+
+on_failure:
+    - set:
+        field: event.kind
+        value: pipeline_error
+    - append:
+        field: error.message
+        value: "{{ _ingest.on_failure_message }}"

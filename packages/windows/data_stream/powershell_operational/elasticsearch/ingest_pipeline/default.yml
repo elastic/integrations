@@ -292,7 +292,7 @@ processors:
       if: ctx?.winlog?.event_data?.ScriptBlockText != ""
 
   - split:
-      description: Split Event 800 command invocation details.
+      description: Split Event 4103 command invocation details.
       field: winlog.event_data.Payload
       separator: "\n"
       ignore_failure: true
@@ -313,7 +313,7 @@ processors:
         field: Payload
       source: |-
         def parseRawDetail(String raw) {
-            Pattern detailRegex = /^(.+)\((.+)\)\:\s*(.+)?$/;
+            Pattern detailRegex = /^([^(]+)\(([^)]+)\)\:\s*(.+)?$/;
             Pattern parameterBindingRegex = /name\=(.+);\s*value\=(.+)$/;
 
             def matcher = detailRegex.matcher(raw);

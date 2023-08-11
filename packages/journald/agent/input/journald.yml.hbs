@@ -1,0 +1,55 @@
+condition: ${host.platform} == 'linux'
+
+{{#if paths}}
+paths:
+{{#each paths as |path i|}}
+  - {{path}}
+{{/each}}
+{{/if}}
+
+{{#if include_matches}}
+include_matches:
+{{#each include_matches as |include_match i|}}
+  - '{{include_match}}'
+{{/each}}
+{{/if}}
+
+tags:
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+processors:
+# Align journald input fields to ECS.
+- convert:
+    tag: journald-to-ecs
+    mode: rename
+    ignore_missing: true
+    fields:
+      - from: message_id
+        to: event.code
+      - from: journald.code.file
+        to: log.origin.file.name
+      - from: journald.code.line
+        to: log.origin.file.line
+      - from: journald.code.func
+        to: log.origin.function
+      - from: syslog.pid
+        to: log.syslog.procid
+      - from: syslog.identifier
+        to: log.syslog.appname
+- drop_fields:
+    ignore_missing: true
+    fields:
+      - syslog
+      - container.id_truncated
+{{#if processors}}
+{{processors}}
+{{/if}}
+
+data_stream:
+  dataset: {{data_stream.dataset}}

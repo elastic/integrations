@@ -7,12 +7,12 @@ processors:
       ignore_missing: true
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.9.0'
   - grok:
       field: event.original
       patterns:
-        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\\s+%{NOTSPACE:host.domain}\\s+%{IP:host.ip}\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
-        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\\s+(%{IP:host.ip}|%{NOTSPACE:host.domain})\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
+        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\\s+%{NOTSPACE:host.domain}\\s+%{IP:_tmp.host.ip}\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
+        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\\s+(%{IP:_tmp.host.ip}|%{NOTSPACE:host.domain})\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
         - "^%{GREEDYDATA:message}$"
   - rename:
       field: _conf.tz_offset
@@ -74,22 +74,26 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline_dns" }}'
       if: ctx.infoblox_nios?.log?.type == 'DNS'
+  - set:
+      field: '@timestamp'
+      value: '{{{event.created}}}'
+      if: "ctx['@timestamp'] == null && ctx.event?.created != null"
   - convert:
-      field: host.ip
-      if: ctx.host?.ip != null && ctx.host.ip != ''
+      field: _tmp.host.ip
+      if: ctx._tmp?.host?.ip != null && ctx._tmp.host.ip != ''
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
-            field: host.ip
+            field: _tmp.host.ip
             ignore_missing: true
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      value: '{{{host.ip}}}'
-      if: ctx.host?.ip != null
+      value: '{{{_tmp.host.ip}}}'
+      if: ctx._tmp?.host?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
@@ -100,9 +104,8 @@ processors:
       ignore_failure: true
   - append:
       field: host.ip
-      value: '{{{host.ip}}}'
-      if: ctx.host?.ip != null
-      allow_duplicates: false
+      value: '{{{_tmp.host.ip}}}'
+      if: ctx._tmp?.host?.ip != null
       ignore_failure: true
   - lowercase:
       field: event.action
@@ -131,10 +134,15 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - remove:
-      field: _conf
+      field:
+        - _conf
+        - _tmp
       ignore_failure: true
       ignore_missing: true
 on_failure:
-- append:
-    field: error.message
-    value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set: 
+      field: event.kind
+      value: pipeline_error

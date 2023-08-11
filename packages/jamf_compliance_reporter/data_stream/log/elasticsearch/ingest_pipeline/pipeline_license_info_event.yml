@@ -43,3 +43,10 @@ processors:
       field: json.ComplianceReporter_license_info.version
       target_field: jamf_compliance_reporter.log.compliancereporter_license_info.version
       ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

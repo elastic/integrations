@@ -3,7 +3,7 @@ description: Pipeline for parsing m365 defender logs
 processors:
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.9.0'
   - rename:
       field: message
       target_field: event.original
@@ -26,10 +26,10 @@ processors:
       if: "ctx.json?.alerts?.entities == null || ctx.json?.alerts?.entities instanceof List"
   - fingerprint:
       fields:
+        - json.incidentId
         - json.alerts.alertId
         - json.alerts.creationTime
-        - json.alerts.entities.deviceId
-        - json.alerts.entities.evidenceCreationTime
+        - json.alerts.entities
       target_field: _id
       ignore_missing: true
   - date:
@@ -95,17 +95,19 @@ processors:
   - append:
       field: event.type
       value: user
-      if: ctx.json?.alerts?.entities?.entityType == 'User'
+      if: ctx.json?.alerts?.entities?.entityType == 'User' && ctx.event?.category != null && ctx.event.category.contains('process')
   - append:
       field: event.type
-      value:
-        - creation
-        - start
-      if: ctx.json?.status == 'New'
+      value: start
+      if: ctx.json?.status == 'New' && ctx.event?.category != null && !ctx.event.category.contains('malware')
   - append:
       field: event.type
       value: end
-      if: ctx.json?.status == 'Resolved'
+      if: ctx.json?.status == 'Resolved' && ctx.event?.category != null && !ctx.event.category.contains('malware')
+  - append:
+      field: event.type
+      value: info
+      if: ctx.event?.category != null && ctx.event?.type == null
   - rename:
       field: json.alerts.alertId
       target_field: event.id
@@ -278,6 +280,18 @@ processors:
           value: "{{ _ingest._value.deviceDnsName }}"
           allow_duplicates: false
           ignore_failure: true
+  - foreach:
+      field: json.alerts.devices
+      ignore_missing: true
+      processor:
+        append:
+          field: host.name
+          value: "{{ _ingest._value.deviceDnsName }}"
+          allow_duplicates: false
+          ignore_failure: true
+  - lowercase:
+      field: host.name
+      if: ctx.host?.name != null
 
   #############
   ## Cleanup ##

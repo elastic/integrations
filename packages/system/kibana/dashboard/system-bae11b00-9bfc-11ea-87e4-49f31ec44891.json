@@ -1,1272 +1,1592 @@
 {
-  "id": "system-bae11b00-9bfc-11ea-87e4-49f31ec44891",
-  "type": "dashboard",
-  "namespaces": [
-    "default"
-  ],
-  "updated_at": "2023-02-20T02:25:46.962Z",
-  "version": "WzUzMiwxXQ==",
-  "attributes": {
-    "description": "User logon activity dashboard.",
-    "hits": 0,
-    "kibanaSavedObjectMeta": {
-      "searchSourceJSON": {
-        "filter": [],
-        "query": {
-          "language": "kuery",
-          "query": "data_stream.dataset:windows.security OR data_stream.dataset:system.security"
-        }
-      }
-    },
-    "optionsJSON": {
-      "hidePanelTitles": false,
-      "useMargins": false
-    },
-    "panelsJSON": [
-      {
-        "embeddableConfig": {
-          "enhancements": {},
-          "savedVis": {
-            "title": "Logged on Administrators [Windows System Security]",
-            "description": "",
-            "uiState": {
-              "vis": {
-                "params": {
-                  "sort": {
-                    "columnIndex": null,
-                    "direction": null
-                  }
-                }
-              }
-            },
-            "params": {
-              "dimensions": {
-                "buckets": [
-                  {
-                    "accessor": 0,
-                    "aggType": "date_histogram",
-                    "format": {
-                      "id": "date",
-                      "params": {
-                        "pattern": "YYYY-MM-DD HH:mm"
-                      }
-                    },
-                    "label": "Fecha - Hora ",
-                    "params": {}
-                  },
-                  {
-                    "accessor": 1,
-                    "aggType": "terms",
-                    "format": {
-                      "id": "terms",
-                      "params": {
-                        "id": "string",
-                        "missingBucketLabel": "Missing",
-                        "otherBucketLabel": "Other",
-                        "parsedUrl": {
-                          "basePath": "/s/siem",
-                          "origin": "https://192.168.1.72:5601",
-                          "pathname": "/s/siem/app/kibana"
-                        }
-                      }
-                    },
-                    "label": "Usuario",
-                    "params": {}
-                  },
-                  {
-                    "accessor": 2,
-                    "aggType": "terms",
-                    "format": {
-                      "id": "terms",
-                      "params": {
-                        "id": "number",
-                        "missingBucketLabel": "Missing",
-                        "otherBucketLabel": "Other",
-                        "parsedUrl": {
-                          "basePath": "/s/siem",
-                          "origin": "https://192.168.1.72:5601",
-                          "pathname": "/s/siem/app/kibana"
-                        }
-                      }
-                    },
-                    "label": "# Thread",
-                    "params": {}
-                  },
-                  {
-                    "accessor": 3,
-                    "aggType": "terms",
-                    "format": {
-                      "id": "terms",
-                      "params": {
-                        "id": "string",
-                        "missingBucketLabel": "Missing",
-                        "otherBucketLabel": "Other",
-                        "parsedUrl": {
-                          "basePath": "/s/siem",
-                          "origin": "https://192.168.1.72:5601",
-                          "pathname": "/s/siem/app/kibana"
-                        }
-                      }
-                    },
-                    "label": "winlog.logon.id: Descending",
-                    "params": {}
-                  }
-                ],
-                "metrics": [
-                  {
-                    "accessor": 4,
-                    "aggType": "count",
-                    "format": {
-                      "id": "number"
-                    },
-                    "label": "Cantidad Eventos ",
-                    "params": {}
-                  }
-                ]
-              },
-              "perPage": 10,
-              "percentageCol": "",
-              "showMetricsAtAllLevels": false,
-              "showPartialRows": false,
-              "showToolbar": true,
-              "showTotal": false,
-              "sort": {
-                "columnIndex": null,
-                "direction": null
-              },
-              "totalFunc": "sum"
-            },
-            "type": "table",
-            "data": {
-              "aggs": [
-                {
-                  "enabled": true,
-                  "id": "1",
-                  "params": {
-                    "customLabel": ""
-                  },
-                  "schema": "metric",
-                  "type": "count"
-                },
-                {
-                  "enabled": true,
-                  "id": "3",
-                  "params": {
-                    "customLabel": "Date",
-                    "drop_partials": false,
-                    "extended_bounds": {},
-                    "field": "@timestamp",
-                    "interval": "auto",
-                    "min_doc_count": 1,
-                    "scaleMetricValues": false,
-                    "timeRange": {
-                      "from": "2020-05-20T07:35:27.496Z",
-                      "to": "2020-05-22T00:01:10.239Z"
-                    },
-                    "useNormalizedEsInterval": true
-                  },
-                  "schema": "bucket",
-                  "type": "date_histogram"
-                },
-                {
-                  "enabled": true,
-                  "id": "6",
-                  "params": {
-                    "customLabel": "user.name",
-                    "field": "user.name",
-                    "missingBucket": false,
-                    "missingBucketLabel": "Missing",
-                    "order": "desc",
-                    "orderBy": "1",
-                    "otherBucket": false,
-                    "otherBucketLabel": "Other",
-                    "size": 5
-                  },
-                  "schema": "bucket",
-                  "type": "terms"
-                },
-                {
-                  "enabled": true,
-                  "id": "8",
-                  "params": {
-                    "customLabel": "# Thread",
-                    "field": "winlog.process.thread.id",
-                    "missingBucket": false,
-                    "missingBucketLabel": "Missing",
-                    "order": "desc",
-                    "orderBy": "1",
-                    "otherBucket": false,
-                    "otherBucketLabel": "Other",
-                    "size": 5
-                  },
-                  "schema": "bucket",
-                  "type": "terms"
-                },
-                {
-                  "enabled": true,
-                  "id": "9",
-                  "params": {
-                    "customLabel": "LogonID",
-                    "field": "winlog.logon.id",
-                    "missingBucket": false,
-                    "missingBucketLabel": "Missing",
-                    "order": "desc",
-                    "orderBy": "1",
-                    "otherBucket": false,
-                    "otherBucketLabel": "Other",
-                    "size": 5
-                  },
-                  "schema": "bucket",
-                  "type": "terms"
-                }
-              ],
-              "searchSource": {
+    "attributes": {
+        "description": "User logon activity dashboard.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
                 "filter": [
-                  {
-                    "$state": {
-                      "store": "appState"
-                    },
-                    "meta": {
-                      "alias": null,
-                      "disabled": false,
-                      "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                      "key": "event.code",
-                      "negate": false,
-                      "params": [
-                        "4672"
-                      ],
-                      "type": "phrases",
-                      "value": "4672"
-                    },
-                    "query": {
-                      "bool": {
-                        "minimum_should_match": 1,
-                        "should": [
-                          {
-                            "match_phrase": {
-                              "event.code": "4672"
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": [
+                                "system.security",
+                                "windows.forwarded",
+                                "windows.security"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "system.security"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "windows.forwarded"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "windows.security"
+                                        }
+                                    }
+                                ]
                             }
-                          }
-                        ]
-                      }
-                    }
-                  }
-                ],
-                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
-                "query": {
-                  "language": "kuery",
-                  "query": "data_stream.dataset:windows.security OR data_stream.dataset:system.security"
-                }
-              }
-            }
-          }
-        },
-        "gridData": {
-          "h": 28,
-          "i": "1",
-          "w": 18,
-          "x": 0,
-          "y": 34
-        },
-        "panelIndex": "1",
-        "title": "Admin Users Sessions",
-        "type": "visualization",
-        "version": "8.0.0"
-      },
-      {
-        "embeddableConfig": {
-          "colors": {
-            "AdminLocalSta": "#890F02",
-            "SERVICIO LOCAL": "#508642"
-          },
-          "enhancements": {},
-          "legendOpen": true,
-          "vis": {
-            "colors": {
-              "AdminLocalSta": "#890F02",
-              "NETWORK SERVICE": "#1F78C1",
-              "SERVICIO LOCAL": "#508642"
-            },
-            "legendOpen": true
-          },
-          "savedVis": {
-            "title": "Administrator Users [Windows System Security]",
-            "description": "",
-            "uiState": {
-              "vis": {
-                "legendOpen": true
-              }
-            },
-            "params": {
-              "addLegend": true,
-              "addTooltip": true,
-              "dimensions": {
-                "buckets": [
-                  {
-                    "accessor": 0,
-                    "aggType": "terms",
-                    "format": {
-                      "id": "terms",
-                      "params": {
-                        "id": "string",
-                        "missingBucketLabel": "Missing",
-                        "otherBucketLabel": "Other",
-                        "parsedUrl": {
-                          "basePath": "/s/siem",
-                          "origin": "https://192.168.1.72:5601",
-                          "pathname": "/s/siem/app/kibana"
                         }
-                      }
                     },
-                    "label": "user.name: Descending",
-                    "params": {}
-                  }
-                ],
-                "metric": {
-                  "accessor": 1,
-                  "aggType": "cardinality",
-                  "format": {
-                    "id": "number"
-                  },
-                  "label": "Unique count of winlog.logon.id",
-                  "params": {}
-                }
-              },
-              "distinctColors": true,
-              "isDonut": false,
-              "labels": {
-                "last_level": true,
-                "show": false,
-                "truncate": 100,
-                "values": true
-              },
-              "legendPosition": "bottom",
-              "palette": {
-                "name": "kibana_palette",
-                "type": "palette"
-              },
-              "type": "pie"
-            },
-            "type": "pie",
-            "data": {
-              "aggs": [
-                {
-                  "enabled": true,
-                  "id": "1",
-                  "params": {
-                    "field": "winlog.logon.id"
-                  },
-                  "schema": "metric",
-                  "type": "cardinality"
-                },
-                {
-                  "enabled": true,
-                  "id": "2",
-                  "params": {
-                    "field": "user.name",
-                    "missingBucket": false,
-                    "missingBucketLabel": "Missing",
-                    "order": "desc",
-                    "orderBy": "1",
-                    "otherBucket": false,
-                    "otherBucketLabel": "Other",
-                    "size": 10
-                  },
-                  "schema": "segment",
-                  "type": "terms"
-                }
-              ],
-              "searchSource": {
-                "filter": [
-                  {
-                    "$state": {
-                      "store": "appState"
-                    },
-                    "meta": {
-                      "alias": null,
-                      "disabled": false,
-                      "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                      "key": "event.code",
-                      "negate": false,
-                      "params": {
-                        "query": "4672"
-                      },
-                      "type": "phrase"
-                    },
-                    "query": {
-                      "match": {
-                        "event.code": {
-                          "query": "4672",
-                          "type": "phrase"
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "winlog.provider_name",
+                            "negate": false,
+                            "params": {
+                                "query": "Microsoft-Windows-Security-Auditing"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "winlog.provider_name": "Microsoft-Windows-Security-Auditing"
+                            }
                         }
-                      }
                     }
-                  }
                 ],
-                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
                 "query": {
-                  "language": "kuery",
-                  "query": "data_stream.dataset:windows.security OR data_stream.dataset:system.security"
+                    "language": "kuery",
+                    "query": ""
                 }
-              }
             }
-          }
         },
-        "gridData": {
-          "h": 18,
-          "i": "3",
-          "w": 18,
-          "x": 0,
-          "y": 16
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": false
         },
-        "panelIndex": "3",
-        "title": "Administrators Logged On",
-        "type": "visualization",
-        "version": "8.0.0"
-      },
-      {
-        "embeddableConfig": {
-          "enhancements": {},
-          "savedVis": {
-            "title": "User Logon Dashboard [Windows System Security]",
-            "description": "",
-            "uiState": {},
-            "params": {
-              "fontSize": 10,
-              "markdown": "## **Logon Information Dashboard**",
-              "openLinksInNewTab": false
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-0eeae7e3-4be6-439a-8d11-e248d89729c7",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "6c0aae98-74e3-48f0-bfe4-01114857e9ea",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "0eeae7e3-4be6-439a-8d11-e248d89729c7": {
+                                            "columnOrder": [
+                                                "6c20c34d-d053-4d81-9dc7-015ef4065cc8",
+                                                "011f8ab2-fbac-408d-b01a-100820072975",
+                                                "865f73fe-058f-468a-b4dc-e67be53b290b",
+                                                "bcb7b474-2877-4665-a58e-58279b2a85a0",
+                                                "a2383fe5-f58b-45bd-bc84-7750f113121e"
+                                            ],
+                                            "columns": {
+                                                "011f8ab2-fbac-408d-b01a-100820072975": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "user.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "a2383fe5-f58b-45bd-bc84-7750f113121e",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "user.name"
+                                                },
+                                                "6c20c34d-d053-4d81-9dc7-015ef4065cc8": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "Date",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "865f73fe-058f-468a-b4dc-e67be53b290b": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": true,
+                                                    "label": "# Thread",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "a2383fe5-f58b-45bd-bc84-7750f113121e",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "winlog.process.thread.id"
+                                                },
+                                                "a2383fe5-f58b-45bd-bc84-7750f113121e": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "bcb7b474-2877-4665-a58e-58279b2a85a0": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "LogonID",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "a2383fe5-f58b-45bd-bc84-7750f113121e",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "winlog.logon.id"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "6c0aae98-74e3-48f0-bfe4-01114857e9ea",
+                                        "key": "event.code",
+                                        "negate": false,
+                                        "params": [
+                                            "4672"
+                                        ],
+                                        "type": "phrases",
+                                        "value": "4672"
+                                    },
+                                    "query": {
+                                        "bool": {
+                                            "minimum_should_match": 1,
+                                            "should": [
+                                                {
+                                                    "match_phrase": {
+                                                        "event.code": "4672"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "a2383fe5-f58b-45bd-bc84-7750f113121e"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "6c20c34d-d053-4d81-9dc7-015ef4065cc8"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "011f8ab2-fbac-408d-b01a-100820072975"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "865f73fe-058f-468a-b4dc-e67be53b290b"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "bcb7b474-2877-4665-a58e-58279b2a85a0"
+                                    }
+                                ],
+                                "headerRowHeight": "single",
+                                "layerId": "0eeae7e3-4be6-439a-8d11-e248d89729c7",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
+                                "rowHeight": "single"
+                            }
+                        },
+                        "title": "Logged on Administrators [Windows System Security]",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 28,
+                    "i": "1",
+                    "w": 18,
+                    "x": 0,
+                    "y": 34
+                },
+                "panelIndex": "1",
+                "type": "lens",
+                "version": "8.7.0"
             },
-            "type": "markdown",
-            "data": {
-              "aggs": [],
-              "searchSource": {
-                "filter": [],
-                "query": {
-                  "language": "kuery",
-                  "query": "data_stream.dataset:windows.security OR data_stream.dataset:system.security"
-                }
-              }
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-7a52b543-0c01-4543-9ed6-a89dfbdd8b87",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "c92cd2bc-c3a2-40cf-8932-aa33cee31978",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "7a52b543-0c01-4543-9ed6-a89dfbdd8b87": {
+                                            "columnOrder": [
+                                                "c1fa9bb2-329d-452b-9aea-8019bbedf069",
+                                                "6d33622e-b154-4aee-91af-31f692da9922"
+                                            ],
+                                            "columns": {
+                                                "6d33622e-b154-4aee-91af-31f692da9922": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Unique count of winlog.logon.id",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "winlog.logon.id"
+                                                },
+                                                "c1fa9bb2-329d-452b-9aea-8019bbedf069": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "user.name: Descending",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "6d33622e-b154-4aee-91af-31f692da9922",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "user.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "c92cd2bc-c3a2-40cf-8932-aa33cee31978",
+                                        "key": "event.code",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "4672"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match": {
+                                            "event.code": {
+                                                "query": "4672",
+                                                "type": "phrase"
+                                            }
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "hide",
+                                        "emptySizeRatio": 0.3,
+                                        "layerId": "7a52b543-0c01-4543-9ed6-a89dfbdd8b87",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "legendMaxLines": 1,
+                                        "legendPosition": "bottom",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "6d33622e-b154-4aee-91af-31f692da9922"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "percentDecimals": 2,
+                                        "primaryGroups": [
+                                            "c1fa9bb2-329d-452b-9aea-8019bbedf069"
+                                        ],
+                                        "secondaryGroups": [],
+                                        "showValuesInLegend": true,
+                                        "truncateLegend": true
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "Administrator Users [Windows System Security]",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 18,
+                    "i": "3",
+                    "w": 18,
+                    "x": 0,
+                    "y": 16
+                },
+                "panelIndex": "3",
+                "title": "Administrator Users [Windows System Security]",
+                "type": "lens",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "fontSize": 10,
+                            "markdown": "## **Logon Information Dashboard**",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "User Logon Dashboard [Windows System Security]",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "4",
+                    "w": 12,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "4",
+                "title": "",
+                "type": "visualization",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 46,
+                    "i": "10",
+                    "w": 23,
+                    "x": 0,
+                    "y": 62
+                },
+                "panelIndex": "10",
+                "panelRefName": "panel_10",
+                "title": "Logon Details",
+                "type": "search",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "[Windows Overview](#/dashboard/system-Windows-Dashboard) | **User Logon Information** | [Logon Failed and Account Lockout](#/dashboard/system-d401ef40-a7d5-11e9-a422-d144027429da) | [User Management Events](#/dashboard/system-71f720f0-ff18-11e9-8405-516218e3d268) | [Group Management Events](#/dashboard/system-bb858830-f412-11e9-8405-516218e3d268)",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "Dashboard links  [Windows System Security]",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "34fc9633-8a7c-444d-8d19-06095b55fb43",
+                    "w": 36,
+                    "x": 12,
+                    "y": 0
+                },
+                "panelIndex": "34fc9633-8a7c-444d-8d19-06095b55fb43",
+                "title": "",
+                "type": "visualization",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "tsvb_ad_hoc_logs-*/@timestamp": {
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "tsvb_ad_hoc_logs-*/@timestamp",
+                                    "name": "logs-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-*"
+                                }
+                            },
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "3dfd861c-68d7-44e0-9755-de21ecd15ba1": {
+                                            "columnOrder": [
+                                                "a278011b-444a-4e01-af26-6395f2f54bf1"
+                                            ],
+                                            "columns": {
+                                                "a278011b-444a-4e01-af26-6395f2f54bf1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "((data_stream.dataset:windows.security OR data_stream.dataset:system.security) AND event.code: \"4672\")"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Administrator Logons",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "tsvb_ad_hoc_logs-*/@timestamp",
+                                    "name": "indexpattern-datasource-layer-3dfd861c-68d7-44e0-9755-de21ecd15ba1",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "accessor": "a278011b-444a-4e01-af26-6395f2f54bf1",
+                                "layerId": "3dfd861c-68d7-44e0-9755-de21ecd15ba1",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "TSVB visualization",
+                        "type": "lens",
+                        "visualizationType": "lnsLegacyMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "f2925b5d-a820-428f-83dc-a547186bcbe6",
+                    "w": 9,
+                    "x": 0,
+                    "y": 6
+                },
+                "panelIndex": "f2925b5d-a820-428f-83dc-a547186bcbe6",
+                "title": "",
+                "type": "lens",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "tsvb_ad_hoc_logs-*/@timestamp": {
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "tsvb_ad_hoc_logs-*/@timestamp",
+                                    "name": "logs-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-*"
+                                }
+                            },
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "83d20141-1b90-44a1-ac90-a024a460e2f7": {
+                                            "columnOrder": [
+                                                "f6e7fa4a-d41d-41e3-b8cb-112a3d34d3be"
+                                            ],
+                                            "columns": {
+                                                "f6e7fa4a-d41d-41e3-b8cb-112a3d34d3be": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "((data_stream.dataset:windows.security OR data_stream.dataset:system.security) AND event.code: \"4624\")"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Logons ",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "tsvb_ad_hoc_logs-*/@timestamp",
+                                    "name": "indexpattern-datasource-layer-83d20141-1b90-44a1-ac90-a024a460e2f7",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "accessor": "f6e7fa4a-d41d-41e3-b8cb-112a3d34d3be",
+                                "layerId": "83d20141-1b90-44a1-ac90-a024a460e2f7",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "TSVB visualization",
+                        "type": "lens",
+                        "visualizationType": "lnsLegacyMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "b6b45344-9881-4adf-ae69-4b892d976e63",
+                    "w": 9,
+                    "x": 9,
+                    "y": 6
+                },
+                "panelIndex": "b6b45344-9881-4adf-ae69-4b892d976e63",
+                "title": "",
+                "type": "lens",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "tsvb_ad_hoc_logs-*/@timestamp": {
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "tsvb_ad_hoc_logs-*/@timestamp",
+                                    "name": "logs-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-*"
+                                }
+                            },
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "e6fef655-e731-4662-95d5-1d528e81aa31": {
+                                            "columnOrder": [
+                                                "d2c3177a-a480-4200-9cd1-e40f87f81192",
+                                                "23784821-7b5a-4a62-ba6f-000d1600ac1f",
+                                                "c496f94a-303f-4786-a5cf-16ffbda12881"
+                                            ],
+                                            "columns": {
+                                                "23784821-7b5a-4a62-ba6f-000d1600ac1f": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Filters",
+                                                    "operationType": "filters",
+                                                    "params": {
+                                                        "filters": [
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "event.code: \"4672\""
+                                                                },
+                                                                "label": "Admin logons"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "event.code: \"4624\""
+                                                                },
+                                                                "label": "Logon Events"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "scale": "ordinal"
+                                                },
+                                                "c496f94a-303f-4786-a5cf-16ffbda12881": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "d2c3177a-a480-4200-9cd1-e40f87f81192": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "tsvb_ad_hoc_logs-*/@timestamp",
+                                    "name": "indexpattern-datasource-layer-e6fef655-e731-4662-95d5-1d528e81aa31",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fillOpacity": 0.5,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "c496f94a-303f-4786-a5cf-16ffbda12881"
+                                        ],
+                                        "layerId": "e6fef655-e731-4662-95d5-1d528e81aa31",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "splitAccessor": "23784821-7b5a-4a62-ba6f-000d1600ac1f",
+                                        "xAccessor": "d2c3177a-a480-4200-9cd1-e40f87f81192",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#68BC00",
+                                                "forAccessor": "c496f94a-303f-4786-a5cf-16ffbda12881"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightScale": "linear"
+                            }
+                        },
+                        "title": "Logon Events Timeline",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "e6bde0c0-6365-4c2a-b6d1-232e936d592e",
+                    "w": 30,
+                    "x": 18,
+                    "y": 6
+                },
+                "panelIndex": "e6bde0c0-6365-4c2a-b6d1-232e936d592e",
+                "title": "Logon Events Timeline",
+                "type": "lens",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-674fcc58-08d6-4ab5-b6cb-671d86391a1f",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "0b35b218-725a-492d-8a26-fc07ece4cefa",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "674fcc58-08d6-4ab5-b6cb-671d86391a1f": {
+                                            "columnOrder": [
+                                                "d3920133-e719-4f21-96b0-de104644c62d",
+                                                "c5eeb90d-c93c-45c6-a105-cd6dd7de45c9"
+                                            ],
+                                            "columns": {
+                                                "c5eeb90d-c93c-45c6-a105-cd6dd7de45c9": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Unique count of winlog.logon.id",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "winlog.logon.id"
+                                                },
+                                                "d3920133-e719-4f21-96b0-de104644c62d": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "winlog.logon.type: Descending",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "c5eeb90d-c93c-45c6-a105-cd6dd7de45c9",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 20
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "winlog.logon.type"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "0b35b218-725a-492d-8a26-fc07ece4cefa",
+                                        "key": "event.code",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "4624"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.code": "4624"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "hide",
+                                        "emptySizeRatio": 0.3,
+                                        "layerId": "674fcc58-08d6-4ab5-b6cb-671d86391a1f",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "legendMaxLines": 1,
+                                        "legendPosition": "right",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "c5eeb90d-c93c-45c6-a105-cd6dd7de45c9"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "percentDecimals": 2,
+                                        "primaryGroups": [
+                                            "d3920133-e719-4f21-96b0-de104644c62d"
+                                        ],
+                                        "secondaryGroups": [],
+                                        "showValuesInLegend": true,
+                                        "truncateLegend": true
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "Logon Types  [Windows System Security]",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "cf50b48e-453c-46fb-ad35-7ccfb7b03de0",
+                    "w": 15,
+                    "x": 18,
+                    "y": 19
+                },
+                "panelIndex": "cf50b48e-453c-46fb-ad35-7ccfb7b03de0",
+                "title": "Logon Types  [Windows System Security]",
+                "type": "lens",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-00652829-18f8-4bed-9423-c1b08879fa96",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "b48f02eb-a573-4758-a23f-ab02a2379751",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "00652829-18f8-4bed-9423-c1b08879fa96": {
+                                            "columnOrder": [
+                                                "028821e7-2e7e-4604-ac9d-25e9d90bbb0d",
+                                                "0d65d110-92d0-42b0-a150-f5d7c154122c"
+                                            ],
+                                            "columns": {
+                                                "028821e7-2e7e-4604-ac9d-25e9d90bbb0d": {
+                                                    "customLabel": true,
+                                                    "dataType": "ip",
+                                                    "isBucketed": true,
+                                                    "label": "Logon Source IP",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "0d65d110-92d0-42b0-a150-f5d7c154122c",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "source.ip"
+                                                },
+                                                "0d65d110-92d0-42b0-a150-f5d7c154122c": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "b48f02eb-a573-4758-a23f-ab02a2379751",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": [
+                                            "windows.security",
+                                            "system.security"
+                                        ],
+                                        "type": "phrases",
+                                        "value": [
+                                            "windows.security",
+                                            "system.security"
+                                        ]
+                                    },
+                                    "query": {
+                                        "bool": {
+                                            "minimum_should_match": 1,
+                                            "should": [
+                                                {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "windows.security"
+                                                    }
+                                                },
+                                                {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "system.security"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "0d65d110-92d0-42b0-a150-f5d7c154122c"
+                                        ],
+                                        "layerId": "00652829-18f8-4bed-9423-c1b08879fa96",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_horizontal",
+                                        "showGridlines": false,
+                                        "xAccessor": "028821e7-2e7e-4604-ac9d-25e9d90bbb0d"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_horizontal",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "2ccb4f49-c9ee-48a0-b602-f86fa0e21504",
+                    "w": 15,
+                    "x": 33,
+                    "y": 19
+                },
+                "panelIndex": "2ccb4f49-c9ee-48a0-b602-f86fa0e21504",
+                "title": "Logon Sources [Windows System Security]",
+                "type": "lens",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 28,
+                    "i": "454bb008-9720-455e-8ab9-b2f47d25aa4f",
+                    "w": 18,
+                    "x": 18,
+                    "y": 34
+                },
+                "panelIndex": "454bb008-9720-455e-8ab9-b2f47d25aa4f",
+                "panelRefName": "panel_454bb008-9720-455e-8ab9-b2f47d25aa4f",
+                "title": "RDP Reconnections and Desconnections",
+                "type": "search",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-4a1aa374-6802-4ad3-aaa8-5178d0944859",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "d5b55106-1b94-4e5d-af4a-30edbe70102e",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "4a1aa374-6802-4ad3-aaa8-5178d0944859": {
+                                            "columnOrder": [
+                                                "8bb80378-dfd5-4dbc-bc6c-6a311530b1f0",
+                                                "71ed13d3-5581-4cb5-a9fd-c2137e961d1e",
+                                                "c46bc820-0dbe-4560-8250-1c4c414bbfc0",
+                                                "8602e508-3dc5-4e7e-a87e-8fd9ddf7b1d9",
+                                                "c8f202eb-e9fe-469f-8a65-72c55a8755f9"
+                                            ],
+                                            "columns": {
+                                                "71ed13d3-5581-4cb5-a9fd-c2137e961d1e": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "subjectUserName",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "c8f202eb-e9fe-469f-8a65-72c55a8755f9",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "winlog.event_data.SubjectUserName"
+                                                },
+                                                "8602e508-3dc5-4e7e-a87e-8fd9ddf7b1d9": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "LogonID",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "c8f202eb-e9fe-469f-8a65-72c55a8755f9",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "winlog.logon.id"
+                                                },
+                                                "8bb80378-dfd5-4dbc-bc6c-6a311530b1f0": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "user.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "c8f202eb-e9fe-469f-8a65-72c55a8755f9",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 200
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "user.name"
+                                                },
+                                                "c46bc820-0dbe-4560-8250-1c4c414bbfc0": {
+                                                    "customLabel": true,
+                                                    "dataType": "ip",
+                                                    "isBucketed": true,
+                                                    "label": "source.ip",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "c8f202eb-e9fe-469f-8a65-72c55a8755f9",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "source.ip"
+                                                },
+                                                "c8f202eb-e9fe-469f-8a65-72c55a8755f9": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "d5b55106-1b94-4e5d-af4a-30edbe70102e",
+                                        "key": "event.code",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "4648"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.code": "4648"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "c8f202eb-e9fe-469f-8a65-72c55a8755f9"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "8bb80378-dfd5-4dbc-bc6c-6a311530b1f0"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "71ed13d3-5581-4cb5-a9fd-c2137e961d1e"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "c46bc820-0dbe-4560-8250-1c4c414bbfc0"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "8602e508-3dc5-4e7e-a87e-8fd9ddf7b1d9"
+                                    }
+                                ],
+                                "headerRowHeight": "single",
+                                "layerId": "4a1aa374-6802-4ad3-aaa8-5178d0944859",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
+                                "rowHeight": "single"
+                            }
+                        },
+                        "title": "Logon with Explicit Credentials [Windows System Security]",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 28,
+                    "i": "29a0e70a-ab23-4d48-8d4e-9a39c5af47ad",
+                    "w": 12,
+                    "x": 36,
+                    "y": 34
+                },
+                "panelIndex": "29a0e70a-ab23-4d48-8d4e-9a39c5af47ad",
+                "title": "Logon with Explicit Credentials [Windows System Security]",
+                "type": "lens",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 46,
+                    "i": "28115147-8399-4fcd-95ce-ed0a4f4239e3",
+                    "w": 25,
+                    "x": 23,
+                    "y": 62
+                },
+                "panelIndex": "28115147-8399-4fcd-95ce-ed0a4f4239e3",
+                "panelRefName": "panel_28115147-8399-4fcd-95ce-ed0a4f4239e3",
+                "title": "Logout Details",
+                "type": "search",
+                "version": "8.7.0"
             }
-          }
+        ],
+        "timeRestore": false,
+        "title": "[System Windows Security] User Logons",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.7.1",
+    "created_at": "2023-05-04T21:59:59.346Z",
+    "id": "system-bae11b00-9bfc-11ea-87e4-49f31ec44891",
+    "migrationVersion": {
+        "dashboard": "8.7.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         },
-        "gridData": {
-          "h": 6,
-          "i": "4",
-          "w": 12,
-          "x": 0,
-          "y": 0
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
         },
-        "panelIndex": "4",
-        "title": "",
-        "type": "visualization",
-        "version": "8.0.0"
-      },
-      {
-        "embeddableConfig": {
-          "enhancements": {}
+        {
+            "id": "logs-*",
+            "name": "1:indexpattern-datasource-layer-0eeae7e3-4be6-439a-8d11-e248d89729c7",
+            "type": "index-pattern"
         },
-        "gridData": {
-          "h": 47,
-          "i": "10",
-          "w": 23,
-          "x": 0,
-          "y": 62
+        {
+            "id": "logs-*",
+            "name": "1:6c0aae98-74e3-48f0-bfe4-01114857e9ea",
+            "type": "index-pattern"
         },
-        "panelIndex": "10",
-        "panelRefName": "panel_10",
-        "title": "Logon Details",
-        "type": "search",
-        "version": "8.1.0"
-      },
-      {
-        "embeddableConfig": {
-          "enhancements": {},
-          "savedVis": {
-            "title": "Dashboard links  [Windows System Security]",
-            "description": "",
-            "uiState": {},
-            "params": {
-              "fontSize": 12,
-              "markdown": "[Windows Overview](#/dashboard/system-Windows-Dashboard) | [User Logon Information](#/dashboard/system-bae11b00-9bfc-11ea-87e4-49f31ec44891) |  [Logon Failed and Account Lockout](#/dashboard/system-d401ef40-a7d5-11e9-a422-d144027429da) | [User Management Events](#/dashboard/system-71f720f0-ff18-11e9-8405-516218e3d268) | [Group Management Events](#/dashboard/system-bb858830-f412-11e9-8405-516218e3d268)",
-              "openLinksInNewTab": false
-            },
-            "type": "markdown",
-            "data": {
-              "aggs": [],
-              "searchSource": {
-                "filter": [],
-                "query": {
-                  "language": "kuery",
-                  "query": "data_stream.dataset:windows.security OR data_stream.dataset:system.security"
-                }
-              }
-            }
-          }
+        {
+            "id": "logs-*",
+            "name": "3:indexpattern-datasource-layer-7a52b543-0c01-4543-9ed6-a89dfbdd8b87",
+            "type": "index-pattern"
         },
-        "gridData": {
-          "h": 6,
-          "i": "34fc9633-8a7c-444d-8d19-06095b55fb43",
-          "w": 36,
-          "x": 12,
-          "y": 0
+        {
+            "id": "logs-*",
+            "name": "3:c92cd2bc-c3a2-40cf-8932-aa33cee31978",
+            "type": "index-pattern"
         },
-        "panelIndex": "34fc9633-8a7c-444d-8d19-06095b55fb43",
-        "title": "",
-        "type": "visualization",
-        "version": "8.0.0"
-      },
-      {
-        "embeddableConfig": {
-          "colors": {
-            "CachedInteractive": "#6ED0E0",
-            "Interactive": "#2F575E",
-            "Network": "#447EBC",
-            "RemoteInteractive": "#64B0C8",
-            "Service": "#6ED0E0",
-            "Unlock": "#BADFF4"
-          },
-          "enhancements": {},
-          "legendOpen": true,
-          "vis": {
-            "colors": {
-              "CachedInteractive": "#6ED0E0",
-              "Interactive": "#2F575E",
-              "Network": "#447EBC",
-              "RemoteInteractive": "#64B0C8",
-              "Service": "#65C5DB",
-              "Unlock": "#BADFF4"
-            },
-            "legendOpen": true
-          },
-          "savedVis": {
-            "title": "Logon Types  [Windows System Security]",
-            "description": "",
-            "uiState": {
-              "vis": {
-                "legendOpen": true
-              }
-            },
-            "params": {
-              "addLegend": true,
-              "addTooltip": true,
-              "dimensions": {
-                "buckets": [
-                  {
-                    "accessor": 0,
-                    "aggType": "terms",
-                    "format": {
-                      "id": "terms",
-                      "params": {
-                        "id": "string",
-                        "missingBucketLabel": "Missing",
-                        "otherBucketLabel": "Other",
-                        "parsedUrl": {
-                          "basePath": "/s/siem",
-                          "origin": "https://192.168.1.72:5601",
-                          "pathname": "/s/siem/app/kibana"
-                        }
-                      }
-                    },
-                    "label": "user.name: Descending",
-                    "params": {}
-                  }
-                ],
-                "metric": {
-                  "accessor": 1,
-                  "aggType": "cardinality",
-                  "format": {
-                    "id": "number"
-                  },
-                  "label": "Unique count of winlog.logon.id",
-                  "params": {}
-                }
-              },
-              "distinctColors": true,
-              "isDonut": false,
-              "labels": {
-                "last_level": true,
-                "show": false,
-                "truncate": 100,
-                "values": true
-              },
-              "legendPosition": "right",
-              "palette": {
-                "name": "kibana_palette",
-                "type": "palette"
-              },
-              "type": "pie"
-            },
-            "type": "pie",
-            "data": {
-              "aggs": [
-                {
-                  "enabled": true,
-                  "id": "1",
-                  "params": {
-                    "field": "winlog.logon.id"
-                  },
-                  "schema": "metric",
-                  "type": "cardinality"
-                },
-                {
-                  "enabled": true,
-                  "id": "2",
-                  "params": {
-                    "field": "winlog.logon.type",
-                    "missingBucket": false,
-                    "missingBucketLabel": "Missing",
-                    "order": "desc",
-                    "orderBy": "1",
-                    "otherBucket": false,
-                    "otherBucketLabel": "Other",
-                    "size": 20
-                  },
-                  "schema": "segment",
-                  "type": "terms"
-                }
-              ],
-              "searchSource": {
-                "filter": [
-                  {
-                    "$state": {
-                      "store": "appState"
-                    },
-                    "meta": {
-                      "alias": null,
-                      "disabled": false,
-                      "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                      "key": "event.code",
-                      "negate": false,
-                      "params": {
-                        "query": "4624"
-                      },
-                      "type": "phrase"
-                    },
-                    "query": {
-                      "match_phrase": {
-                        "event.code": "4624"
-                      }
-                    }
-                  }
-                ],
-                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
-                "query": {
-                  "language": "kuery",
-                  "query": "data_stream.dataset:windows.security OR data_stream.dataset:system.security"
-                }
-              }
-            }
-          }
+        {
+            "id": "system-ce71c9a0-a25e-11e9-a422-d144027429da",
+            "name": "10:panel_10",
+            "type": "search"
         },
-        "gridData": {
-          "h": 15,
-          "i": "cf50b48e-453c-46fb-ad35-7ccfb7b03de0",
-          "w": 15,
-          "x": 18,
-          "y": 19
+        {
+            "id": "logs-*",
+            "name": "cf50b48e-453c-46fb-ad35-7ccfb7b03de0:indexpattern-datasource-layer-674fcc58-08d6-4ab5-b6cb-671d86391a1f",
+            "type": "index-pattern"
         },
-        "panelIndex": "cf50b48e-453c-46fb-ad35-7ccfb7b03de0",
-        "title": "Logon Types",
-        "type": "visualization",
-        "version": "8.0.0"
-      },
-      {
-        "embeddableConfig": {
-          "enhancements": {},
-          "savedVis": {
-            "title": "Logon Sources [Windows System Security]",
-            "description": "",
-            "uiState": {},
-            "params": {
-              "maxFontSize": 72,
-              "minFontSize": 18,
-              "orientation": "single",
-              "palette": {
-                "name": "kibana_palette",
-                "type": "palette"
-              },
-              "scale": "linear",
-              "showLabel": false
-            },
-            "type": "tagcloud",
-            "data": {
-              "aggs": [
-                {
-                  "enabled": true,
-                  "id": "1",
-                  "params": {},
-                  "schema": "metric",
-                  "type": "count"
-                },
-                {
-                  "enabled": true,
-                  "id": "2",
-                  "params": {
-                    "field": "source.ip",
-                    "missingBucket": false,
-                    "missingBucketLabel": "Missing",
-                    "order": "desc",
-                    "orderBy": "1",
-                    "otherBucket": false,
-                    "otherBucketLabel": "Other",
-                    "size": 15
-                  },
-                  "schema": "segment",
-                  "type": "terms"
-                }
-              ],
-              "searchSource": {
-                "filter": [],
-                "query": {
-                  "language": "kuery",
-                  "query": "data_stream.dataset:windows.security OR data_stream.dataset:system.security "
-                }
-              }
-            }
-          }
+        {
+            "id": "logs-*",
+            "name": "cf50b48e-453c-46fb-ad35-7ccfb7b03de0:0b35b218-725a-492d-8a26-fc07ece4cefa",
+            "type": "index-pattern"
         },
-        "gridData": {
-          "h": 15,
-          "i": "a743ffe5-a2ac-4c0b-9b6f-a81563140c42",
-          "w": 15,
-          "x": 33,
-          "y": 19
+        {
+            "id": "logs-*",
+            "name": "2ccb4f49-c9ee-48a0-b602-f86fa0e21504:indexpattern-datasource-layer-00652829-18f8-4bed-9423-c1b08879fa96",
+            "type": "index-pattern"
         },
-        "panelIndex": "a743ffe5-a2ac-4c0b-9b6f-a81563140c42",
-        "type": "visualization",
-        "version": "8.0.0"
-      },
-      {
-        "embeddableConfig": {
-          "enhancements": {}
+        {
+            "id": "logs-*",
+            "name": "2ccb4f49-c9ee-48a0-b602-f86fa0e21504:b48f02eb-a573-4758-a23f-ab02a2379751",
+            "type": "index-pattern"
         },
-        "gridData": {
-          "h": 28,
-          "i": "454bb008-9720-455e-8ab9-b2f47d25aa4f",
-          "w": 18,
-          "x": 18,
-          "y": 34
+        {
+            "id": "system-6f4071a0-7a78-11ea-bc9a-0baf2ca323a3",
+            "name": "454bb008-9720-455e-8ab9-b2f47d25aa4f:panel_454bb008-9720-455e-8ab9-b2f47d25aa4f",
+            "type": "search"
         },
-        "panelIndex": "454bb008-9720-455e-8ab9-b2f47d25aa4f",
-        "panelRefName": "panel_454bb008-9720-455e-8ab9-b2f47d25aa4f",
-        "title": "RDP Reconnections and Desconnections",
-        "type": "search",
-        "version": "8.1.0"
-      },
-      {
-        "embeddableConfig": {
-          "enhancements": {},
-          "savedVis": {
-            "title": "Logon with Explicit Credentials [Windows System Security]",
-            "description": "",
-            "uiState": {
-              "vis": {
-                "params": {
-                  "sort": {
-                    "columnIndex": null,
-                    "direction": null
-                  }
-                }
-              }
-            },
-            "params": {
-              "perPage": 10,
-              "percentageCol": "",
-              "showMetricsAtAllLevels": false,
-              "showPartialRows": false,
-              "showToolbar": true,
-              "showTotal": false,
-              "sort": {
-                "columnIndex": null,
-                "direction": null
-              },
-              "totalFunc": "sum"
-            },
-            "type": "table",
-            "data": {
-              "aggs": [
-                {
-                  "enabled": true,
-                  "id": "1",
-                  "params": {},
-                  "schema": "metric",
-                  "type": "count"
-                },
-                {
-                  "enabled": true,
-                  "id": "2",
-                  "params": {
-                    "customLabel": "user.name",
-                    "field": "user.name",
-                    "missingBucket": false,
-                    "missingBucketLabel": "Missing",
-                    "order": "desc",
-                    "orderBy": "1",
-                    "otherBucket": false,
-                    "otherBucketLabel": "Other",
-                    "size": 200
-                  },
-                  "schema": "bucket",
-                  "type": "terms"
-                },
-                {
-                  "enabled": true,
-                  "id": "4",
-                  "params": {
-                    "customLabel": "subjectUserName",
-                    "field": "winlog.event_data.SubjectUserName",
-                    "missingBucket": false,
-                    "missingBucketLabel": "Missing",
-                    "order": "desc",
-                    "orderBy": "1",
-                    "otherBucket": false,
-                    "otherBucketLabel": "Other",
-                    "size": 5
-                  },
-                  "schema": "bucket",
-                  "type": "terms"
-                },
-                {
-                  "enabled": true,
-                  "id": "5",
-                  "params": {
-                    "customLabel": "source.ip",
-                    "field": "source.ip",
-                    "json": "{\"missing\": \"::\"}",
-                    "missingBucket": false,
-                    "missingBucketLabel": "Missing",
-                    "order": "desc",
-                    "orderBy": "1",
-                    "otherBucket": false,
-                    "otherBucketLabel": "Other",
-                    "size": 5
-                  },
-                  "schema": "bucket",
-                  "type": "terms"
-                },
-                {
-                  "enabled": true,
-                  "id": "6",
-                  "params": {
-                    "customLabel": "LogonID",
-                    "field": "winlog.logon.id",
-                    "missingBucket": false,
-                    "missingBucketLabel": "Missing",
-                    "order": "desc",
-                    "orderBy": "1",
-                    "otherBucket": false,
-                    "otherBucketLabel": "Other",
-                    "size": 5
-                  },
-                  "schema": "bucket",
-                  "type": "terms"
-                }
-              ],
-              "searchSource": {
-                "filter": [
-                  {
-                    "$state": {
-                      "store": "appState"
-                    },
-                    "meta": {
-                      "alias": null,
-                      "disabled": false,
-                      "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                      "key": "event.code",
-                      "negate": false,
-                      "params": {
-                        "query": "4648"
-                      },
-                      "type": "phrase"
-                    },
-                    "query": {
-                      "match_phrase": {
-                        "event.code": "4648"
-                      }
-                    }
-                  }
-                ],
-                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
-                "query": {
-                  "language": "kuery",
-                  "query": "data_stream.dataset:windows.security OR data_stream.dataset:system.security"
-                }
-              }
-            }
-          }
+        {
+            "id": "logs-*",
+            "name": "29a0e70a-ab23-4d48-8d4e-9a39c5af47ad:indexpattern-datasource-layer-4a1aa374-6802-4ad3-aaa8-5178d0944859",
+            "type": "index-pattern"
         },
-        "gridData": {
-          "h": 28,
-          "i": "29a0e70a-ab23-4d48-8d4e-9a39c5af47ad",
-          "w": 12,
-          "x": 36,
-          "y": 34
+        {
+            "id": "logs-*",
+            "name": "29a0e70a-ab23-4d48-8d4e-9a39c5af47ad:d5b55106-1b94-4e5d-af4a-30edbe70102e",
+            "type": "index-pattern"
         },
-        "panelIndex": "29a0e70a-ab23-4d48-8d4e-9a39c5af47ad",
-        "type": "visualization",
-        "version": "8.0.0"
-      },
-      {
-        "embeddableConfig": {
-          "enhancements": {}
-        },
-        "gridData": {
-          "h": 46,
-          "i": "28115147-8399-4fcd-95ce-ed0a4f4239e3",
-          "w": 25,
-          "x": 23,
-          "y": 62
-        },
-        "panelIndex": "28115147-8399-4fcd-95ce-ed0a4f4239e3",
-        "panelRefName": "panel_28115147-8399-4fcd-95ce-ed0a4f4239e3",
-        "title": "Logout Details",
-        "type": "search",
-        "version": "8.1.0"
-      },
-      {
-        "embeddableConfig": {
-          "enhancements": {},
-          "savedVis": {
-            "data": {
-              "aggs": [],
-              "searchSource": {}
-            },
-            "description": "",
-            "params": {
-              "axis_formatter": "number",
-              "axis_position": "left",
-              "axis_scale": "normal",
-              "background_color_rules": [
-                {
-                  "background_color": "rgba(204,204,204,1)",
-                  "id": "d5bcde50-9bfc-11ea-aaa3-618beeff2d9c",
-                  "operator": "lte",
-                  "value": 0
-                },
-                {
-                  "background_color": "rgba(181,49,0,1)",
-                  "id": "16018150-9bfd-11ea-aaa3-618beeff2d9c",
-                  "operator": "gte",
-                  "value": 0
-                },
-                {
-                  "background_color": "rgba(181,49,0,1)",
-                  "id": "91c5eea1-3e43-4ad2-8361-bb4a2d45c61f",
-                  "operator": "empty",
-                  "value": null
-                }
-              ],
-              "drop_last_bucket": 1,
-              "filter": {
-                "language": "kuery",
-                "query": "((data_stream.dataset:windows.security OR data_stream.dataset:system.security) AND event.code: \"4672\")"
-              },
-              "hide_last_value_indicator": true,
-              "id": "61ca57f0-469d-11e7-af02-69e470af7417",
-              "index_pattern": "logs-*",
-              "interval": "90d",
-              "isModelInvalid": false,
-              "max_lines_legend": 1,
-              "series": [
-                {
-                  "axis_position": "right",
-                  "chart_type": "line",
-                  "color": "#68BC00",
-                  "fill": 0.5,
-                  "formatter": "number",
-                  "id": "61ca57f1-469d-11e7-af02-69e470af7417",
-                  "label": "Administrator Logons",
-                  "line_width": 1,
-                  "metrics": [
-                    {
-                      "id": "61ca57f2-469d-11e7-af02-69e470af7417",
-                      "type": "count"
-                    }
-                  ],
-                  "point_size": 1,
-                  "separate_axis": 0,
-                  "split_color_mode": "gradient",
-                  "split_mode": "everything",
-                  "stacked": "none"
-                }
-              ],
-              "show_grid": 1,
-              "show_legend": 1,
-              "time_field": "@timestamp",
-              "time_range_mode": "entire_time_range",
-              "tooltip_mode": "show_all",
-              "truncate_legend": 1,
-              "type": "metric",
-              "use_kibana_indexes": false
-            },
-            "type": "metrics",
-            "uiState": {}
-          }
-        },
-        "gridData": {
-          "h": 10,
-          "i": "f2925b5d-a820-428f-83dc-a547186bcbe6",
-          "w": 9,
-          "x": 0,
-          "y": 6
-        },
-        "panelIndex": "f2925b5d-a820-428f-83dc-a547186bcbe6",
-        "title": "",
-        "type": "visualization",
-        "version": "8.1.0"
-      },
-      {
-        "embeddableConfig": {
-          "enhancements": {},
-          "savedVis": {
-            "data": {
-              "aggs": [],
-              "searchSource": {}
-            },
-            "description": "",
-            "params": {
-              "axis_formatter": "number",
-              "axis_position": "left",
-              "axis_scale": "normal",
-              "background_color_rules": [
-                {
-                  "background_color": "rgba(204,204,204,1)",
-                  "id": "d5bcde50-9bfc-11ea-aaa3-618beeff2d9c",
-                  "operator": "lte",
-                  "value": 0
-                },
-                {
-                  "background_color": "rgba(7,139,141,1)",
-                  "id": "16018150-9bfd-11ea-aaa3-618beeff2d9c",
-                  "operator": "gte",
-                  "value": 0
-                },
-                {
-                  "background_color": "rgba(7,139,141,1)",
-                  "id": "f347f7a5-3bd2-4dde-a65f-84130a0c4a12",
-                  "operator": "empty",
-                  "value": null
-                }
-              ],
-              "drop_last_bucket": 1,
-              "filter": {
-                "language": "kuery",
-                "query": "((data_stream.dataset:windows.security OR data_stream.dataset:system.security) AND event.code: \"4624\")"
-              },
-              "hide_last_value_indicator": true,
-              "id": "61ca57f0-469d-11e7-af02-69e470af7417",
-              "index_pattern": "logs-*",
-              "interval": "90d",
-              "isModelInvalid": false,
-              "max_lines_legend": 1,
-              "series": [
-                {
-                  "axis_position": "right",
-                  "chart_type": "line",
-                  "color": "#68BC00",
-                  "fill": 0.5,
-                  "formatter": "number",
-                  "id": "61ca57f1-469d-11e7-af02-69e470af7417",
-                  "label": "Logons ",
-                  "line_width": 1,
-                  "metrics": [
-                    {
-                      "id": "61ca57f2-469d-11e7-af02-69e470af7417",
-                      "type": "count"
-                    }
-                  ],
-                  "point_size": 1,
-                  "separate_axis": 0,
-                  "split_color_mode": "gradient",
-                  "split_mode": "everything",
-                  "stacked": "none"
-                }
-              ],
-              "show_grid": 1,
-              "show_legend": 1,
-              "time_field": "@timestamp",
-              "time_range_mode": "entire_time_range",
-              "tooltip_mode": "show_all",
-              "truncate_legend": 1,
-              "type": "metric",
-              "use_kibana_indexes": false
-            },
-            "type": "metrics",
-            "uiState": {}
-          }
-        },
-        "gridData": {
-          "h": 10,
-          "i": "b6b45344-9881-4adf-ae69-4b892d976e63",
-          "w": 9,
-          "x": 9,
-          "y": 6
-        },
-        "panelIndex": "b6b45344-9881-4adf-ae69-4b892d976e63",
-        "title": "",
-        "type": "visualization",
-        "version": "8.1.0"
-      },
-      {
-        "embeddableConfig": {
-          "enhancements": {},
-          "savedVis": {
-            "data": {
-              "aggs": [],
-              "searchSource": {}
-            },
-            "description": "",
-            "params": {
-              "axis_formatter": "number",
-              "axis_position": "left",
-              "axis_scale": "normal",
-              "drop_last_bucket": 1,
-              "filter": {
-                "language": "kuery",
-                "query": "event.code: \"4672\" or event.code: \"4624\" "
-              },
-              "id": "61ca57f0-469d-11e7-af02-69e470af7417",
-              "index_pattern": "logs-*",
-              "interval": "",
-              "isModelInvalid": false,
-              "max_lines_legend": 1,
-              "series": [
-                {
-                  "axis_position": "right",
-                  "chart_type": "line",
-                  "color": "#68BC00",
-                  "fill": 0.5,
-                  "formatter": "number",
-                  "id": "61ca57f1-469d-11e7-af02-69e470af7417",
-                  "label": "",
-                  "line_width": 1,
-                  "metrics": [
-                    {
-                      "id": "61ca57f2-469d-11e7-af02-69e470af7417",
-                      "type": "count"
-                    }
-                  ],
-                  "point_size": 1,
-                  "separate_axis": 0,
-                  "split_color_mode": "gradient",
-                  "split_filters": [
-                    {
-                      "color": "rgba(226,115,0,1)",
-                      "filter": {
-                        "language": "kuery",
-                        "query": "event.code: \"4672\""
-                      },
-                      "id": "7560ee50-685f-11ea-8d46-c19e41702dd4",
-                      "label": "Admin logons"
-                    },
-                    {
-                      "color": "rgba(164,221,243,1)",
-                      "filter": {
-                        "language": "kuery",
-                        "query": "event.code: \"4624\""
-                      },
-                      "id": "80e7fb10-685f-11ea-8d46-c19e41702dd4",
-                      "label": "Logon Events"
-                    }
-                  ],
-                  "split_mode": "filters",
-                  "stacked": "none",
-                  "type": "timeseries"
-                }
-              ],
-              "show_grid": 1,
-              "show_legend": 1,
-              "time_field": "@timestamp",
-              "tooltip_mode": "show_all",
-              "truncate_legend": 1,
-              "type": "timeseries",
-              "use_kibana_indexes": false
-            },
-            "type": "metrics",
-            "uiState": {}
-          }
-        },
-        "gridData": {
-          "h": 13,
-          "i": "e6bde0c0-6365-4c2a-b6d1-232e936d592e",
-          "w": 30,
-          "x": 18,
-          "y": 6
-        },
-        "panelIndex": "e6bde0c0-6365-4c2a-b6d1-232e936d592e",
-        "title": "Logon Events Timeline",
-        "type": "visualization",
-        "version": "8.1.0"
-      }
+        {
+            "id": "system-06b6b060-7a80-11ea-bc9a-0baf2ca323a3",
+            "name": "28115147-8399-4fcd-95ce-ed0a4f4239e3:panel_28115147-8399-4fcd-95ce-ed0a4f4239e3",
+            "type": "search"
+        }
     ],
-    "timeRestore": false,
-    "title": "[System Windows Security] User Logons",
-    "version": 1
-  },
-  "references": [
-    {
-      "id": "system-ce71c9a0-a25e-11e9-a422-d144027429da",
-      "name": "10:panel_10",
-      "type": "search"
-    },
-    {
-      "id": "system-6f4071a0-7a78-11ea-bc9a-0baf2ca323a3",
-      "name": "454bb008-9720-455e-8ab9-b2f47d25aa4f:panel_454bb008-9720-455e-8ab9-b2f47d25aa4f",
-      "type": "search"
-    },
-    {
-      "id": "system-06b6b060-7a80-11ea-bc9a-0baf2ca323a3",
-      "name": "28115147-8399-4fcd-95ce-ed0a4f4239e3:panel_28115147-8399-4fcd-95ce-ed0a4f4239e3",
-      "type": "search"
-    },
-    {
-      "type": "index-pattern",
-      "name": "1:kibanaSavedObjectMeta.searchSourceJSON.index",
-      "id": "logs-*"
-    },
-    {
-      "type": "index-pattern",
-      "name": "1:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-      "id": "logs-*"
-    },
-    {
-      "type": "index-pattern",
-      "name": "3:kibanaSavedObjectMeta.searchSourceJSON.index",
-      "id": "logs-*"
-    },
-    {
-      "type": "index-pattern",
-      "name": "3:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-      "id": "logs-*"
-    },
-    {
-      "type": "index-pattern",
-      "name": "cf50b48e-453c-46fb-ad35-7ccfb7b03de0:kibanaSavedObjectMeta.searchSourceJSON.index",
-      "id": "logs-*"
-    },
-    {
-      "type": "index-pattern",
-      "name": "cf50b48e-453c-46fb-ad35-7ccfb7b03de0:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-      "id": "logs-*"
-    },
-    {
-      "type": "search",
-      "name": "a743ffe5-a2ac-4c0b-9b6f-a81563140c42:search_0",
-      "id": "system-7e178c80-fee1-11e9-8405-516218e3d268"
-    },
-    {
-      "type": "index-pattern",
-      "name": "29a0e70a-ab23-4d48-8d4e-9a39c5af47ad:kibanaSavedObjectMeta.searchSourceJSON.index",
-      "id": "logs-*"
-    },
-    {
-      "type": "index-pattern",
-      "name": "29a0e70a-ab23-4d48-8d4e-9a39c5af47ad:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-      "id": "logs-*"
-    }
-  ],
-  "migrationVersion": {
-    "dashboard": "8.1.0"
-  },
-  "coreMigrationVersion": "8.1.0"
+    "type": "dashboard"
 }
