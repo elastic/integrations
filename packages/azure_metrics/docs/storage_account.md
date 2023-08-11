@@ -73,8 +73,10 @@ Authentication: we are handling authentication on our side (creating/renewing th
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| agent.id |  | keyword |
 | azure.application_id | The application ID | keyword |
-| azure.dimensions.\* | Azure metric dimensions. | object |
+| azure.dimensions.api_name | API name such as EntityGroupTransaction, GetBlobServiceProperties, etc. | keyword |
+| azure.dimensions.response_type | Response Type such as Success, ClientOtherError, etc. | keyword |
 | azure.metrics.\*.\* | Metrics returned. | object |
 | azure.namespace | The namespace selected | keyword |
 | azure.resource.group | The resource group | keyword |
