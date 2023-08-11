@@ -1,29 +1,29 @@
 # TSDB Guideline for Integration Developers
 
-* [Background](#a-idbackgrounda-background)
-* [Resources](#a-idresourcesa-resources)
-* [Steps for migrating an existing package](#a-idmigration-stepsa-steps-for-migrating-an-existing-package)
-* [Best practices](#a-idbest-practicesa-best-practices)
+* [Background](#background)
+* [Resources](#resources)
+* [Steps for migrating an existing package](#steps-for-migrating-an-existing-package)
+* [Best practices](#best-practices)
 
 
-## <a id="background"></a> Background
+## Background
 
 You can find a detailed description on what is TSDB and why is it important in this [TSDB design page](https://github.com/elastic/elasticsearch-adrs/blob/master/analytics/tsdb/tsdb-design.md). After understand the main concepts of it (metric type, dimensions etc) you should be ready to follow this guide on TSDB migration.
 
 
 
-## <a id="resources"></a> Resources
+## Resources
 
 - You can find examples on the package migrations in [this issue](https://github.com/elastic/integrations/issues/5233).
 - The testing kit used for the migrations can be found in the [TSDB migration test kit](https://github.com/elastic/TSDB-migration-test-kit) repository.
 
 
 
-## <a id="migration-steps"></a> Steps for migrating an existing package
+## Steps for migrating an existing package
 
 > **Note**: Only metrics data streams can be migrated to TSDB.
 
-### <a id="step-1"></a> Step 1: Set the dimension fields
+### Step 1: Set the dimension fields
 
 To set a dimension field, you only have to add `dimension: true`. Example:
 
@@ -47,7 +47,7 @@ You should also be mindful of the number of fields you set as dimension, as [the
 
 
 
-### <a id="step-2"></a> Step 2: Set the metric type
+### Step 2: Set the metric type
 
 To set the metric type to a field you can add `metric_type: <metric-type>`. Example for a `gauge` field:
 
@@ -59,7 +59,7 @@ To set the metric type to a field you can add `metric_type: <metric-type>`. Exam
 ```
 
 
-### <a id="step-3"></a> Step 3: Set the index mode
+### Step 3: Set the index mode
 
 At this time, you should have already tested your changes to know if they did not cause any loss of data. You can know more about how to do that [here](https://github.com/elastic/TSDB-migration-test-kit).
 
@@ -73,7 +73,7 @@ elasticsearch:
 In the `manifest.yml` file.
 
 
-## <a id="best-practices"></a> Best practices
+## Best practices
 
 - Always assess the number of unique values the field that is selected to be dimension would hold, especially if it is a numeric field.  
 A field that holds millions of unique values may not be an ideal candidate for becoming a dimension field.
