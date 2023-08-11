@@ -30,7 +30,7 @@ WebSockets:
 
 Beyond the standard Log Formats we provide, you have the option to use a wide range of fields for each API type when enabling Custom Access Logging.
 
-To utilize these fields in the integration, simply create custom pipelines. These pipelines will process field names or values. You'll also need to create custom mapping to store your data efficiently. For more information on how to do this, check out our [official documentation](https://www.elastic.co/guide/en/fleet/current/data-streams-pipeline-tutorial.html).
+To utilize these fields in the integration, create custom pipelines. These pipelines will process field names or values. You'll also need to create custom mapping to store your data efficiently. For more information on how to do this, check out our [official documentation](-https://www.elastic.co/guide/en/fleet/current/data-streams-pipeline-tutorial.html).
 
 See more details in the [Logs reference](#logs-reference).
 
