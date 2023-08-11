@@ -81,6 +81,7 @@ Authentication: we are handling authentication on our side (creating/renewing th
 | azure.container_registry.successful_push_count.total | Number of successful image pushes | float |  | gauge |
 | azure.container_registry.total_pull_count.total | Number of image pulls in total | float |  | gauge |
 | azure.container_registry.total_push_count.total | Number of image pushes in total | float |  | gauge |
+| azure.dimensions.geolocation | Geolocation of the container registry | keyword |  |  |
 | azure.namespace | The namespace selected | keyword |  |  |
 | azure.resource.group | The resource group | keyword |  |  |
 | azure.resource.id | The id of the resource | keyword |  |  |
