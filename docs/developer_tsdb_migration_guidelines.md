@@ -20,7 +20,7 @@ Integration is one of the biggest sources of input data to elasticsearch. Enabli
 
 
 1. **Datastream having type `logs` can be excluded from TSDB migration.**
-2. **Modify the `kibana.version` to 8.8.2 within the manifest.yml file of the package.**
+2. **Modify the `kibana.version` to 8.8.0 within the manifest.yml file of the package.**
    ```
    conditions:
      kibana.version: "^8.8.0"
