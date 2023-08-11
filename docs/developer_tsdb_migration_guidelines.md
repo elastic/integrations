@@ -165,3 +165,4 @@ Reference : https://github.com/elastic/elasticsearch/issues/93539
 
 - [Oracle integration](https://github.com/elastic/integrations/tree/main/packages/oracle)
 - [Redis integrations](https://github.com/elastic/integrations/tree/main/packages/redis)
+- [AWS Redshift integration](https://github.com/elastic/integrations/tree/main/packages/aws/data_stream/redshift)
