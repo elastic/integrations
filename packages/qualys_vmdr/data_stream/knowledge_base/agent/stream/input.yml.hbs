@@ -1,0 +1,704 @@
+config_version: 2
+interval: {{interval}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  user: {{username}}
+  password: {{password}}
+  params: {{input_parameters}}
+  initial_interval: {{initial_interval}}
+redact:
+  fields:
+    - password
+program: |
+  request("GET", state.url + "/api/2.0/fo/knowledge_base/vuln/?action=list&last_modified_after=" +
+    (has(state.cursor) && has(state.cursor.last_modified) && state.cursor.last_modified != null
+    ?
+      state.cursor.last_modified.parse_time(time_layout.RFC3339)
+    :
+      (now() - duration(state.initial_interval))).format(time_layout.RFC3339) + "&" +
+      (has(state.params) ? "&" + state.params : "")
+  ).with({
+      "Header":{
+          "X-Requested-With": ["curl"],
+          "Authorization": ["Basic "+string(base64(state.user+":"+state.password))],
+      }
+  }).do_request().as(resp, bytes(resp.Body).decode_xml('qualys_api_2_0').as(body, {
+      "events": body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.map(e, {
+        "message": e.encode_json(),
+      }),
+      "cursor": {
+        "last_modified": (
+          has(body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN) && body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.size() > 0
+          ?
+            body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.map(e, e.LAST_SERVICE_MODIFICATION_DATETIME).max()
+          :
+            (
+              has(state.cursor) && has(state.cursor.last_modified)
+              ?
+                state.cursor.last_modified
+              :
+                null
+            )
+        )
+      },
+      "user": state.user,
+      "password": state.password,
+      "params": has(state.params) ? state.params : "",
+      "initial_interval": state.initial_interval
+  }))
+tags:
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+xsd:
+  qualys_api_2_0: |
+    <xsd:schema xmlns:xsd='http://www.w3.org/2001/XMLSchema'>
+
+      <xsd:element name='KNOWLEDGE_BASE_VULN_LIST_OUTPUT'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='REQUEST' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='RESPONSE'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='REQUEST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='DATETIME'/>
+          <xsd:element ref='USER_LOGIN'/>
+          <xsd:element ref='RESOURCE'/>
+          <xsd:element ref='PARAM_LIST' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='POST_DATA' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='DATETIME' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='USER_LOGIN' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='RESOURCE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='PARAM_LIST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='PARAM' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='PARAM'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='KEY'/>
+          <xsd:element ref='VALUE'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='KEY' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='VALUE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='POST_DATA' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='RESPONSE'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='DATETIME'/>
+          <xsd:choice minOccurs='0' maxOccurs='1'>
+          <xsd:element ref='VULN_LIST'/>
+          <xsd:element ref='ID_SET'/>
+          </xsd:choice>
+          <xsd:element ref='WARNING' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='VULN_LIST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='VULN' minOccurs='0' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='VULN'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='QID'/>
+          <xsd:element ref='VULN_TYPE'/>
+          <xsd:element ref='SEVERITY_LEVEL'/>
+          <xsd:element ref='TITLE'/>
+          <xsd:element ref='CATEGORY' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='DETECTION_INFO' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='LAST_CUSTOMIZATION' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='LAST_SERVICE_MODIFICATION_DATETIME' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='PUBLISHED_DATETIME'/>
+          <xsd:element ref='BUGTRAQ_LIST' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='PATCHABLE'/>
+          <xsd:element ref='SOFTWARE_LIST' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='VENDOR_REFERENCE_LIST' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='CVE_LIST' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='DIAGNOSIS' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='DIAGNOSIS_COMMENT' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='CONSEQUENCE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='CONSEQUENCE_COMMENT' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='SOLUTION' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='SOLUTION_COMMENT' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='COMPLIANCE_LIST' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='CORRELATION' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='CVSS' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='CVSS_V3' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='PCI_FLAG' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='AUTOMATIC_PCI_FAIL' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='PCI_REASONS' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='THREAT_INTELLIGENCE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='SUPPORTED_MODULES' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='DISCOVERY'/>
+          <xsd:element ref='IS_DISABLED' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='CHANGE_LOG_LIST' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='QID' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='VULN_TYPE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='SEVERITY_LEVEL' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='TITLE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='CATEGORY' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='DETECTION_INFO' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='LAST_CUSTOMIZATION'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='DATETIME'/>
+          <xsd:element ref='USER_LOGIN' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='LAST_SERVICE_MODIFICATION_DATETIME' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='PUBLISHED_DATETIME' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='BUGTRAQ_LIST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='BUGTRAQ' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='BUGTRAQ'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='ID'/>
+          <xsd:element ref='URL'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='ID' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='URL' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='PATCHABLE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='SOFTWARE_LIST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='SOFTWARE' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='SOFTWARE'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='PRODUCT'/>
+          <xsd:element ref='VENDOR'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='PRODUCT' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='VENDOR' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='VENDOR_REFERENCE_LIST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='VENDOR_REFERENCE' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='VENDOR_REFERENCE'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='ID'/>
+          <xsd:element ref='URL'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='CVE_LIST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='CVE' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='CVE'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='ID'/>
+          <xsd:element ref='URL'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='DIAGNOSIS' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='DIAGNOSIS_COMMENT' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='CONSEQUENCE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='CONSEQUENCE_COMMENT' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='SOLUTION' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='SOLUTION_COMMENT' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='COMPLIANCE_LIST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='COMPLIANCE' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='COMPLIANCE'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='TYPE'/>
+          <xsd:element ref='SECTION'/>
+          <xsd:element ref='DESCRIPTION'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='TYPE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='SECTION' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='DESCRIPTION' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='CORRELATION'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='EXPLOITS' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='MALWARE' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='EXPLOITS'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='EXPLT_SRC' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='EXPLT_SRC'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='SRC_NAME'/>
+          <xsd:element ref='EXPLT_LIST'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='SRC_NAME' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='EXPLT_LIST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='EXPLT' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='EXPLT'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='REF'/>
+          <xsd:element ref='DESC'/>
+          <xsd:element ref='LINK' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='REF' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='DESC' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='LINK' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='MALWARE'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='MW_SRC' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='MW_SRC'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='SRC_NAME'/>
+          <xsd:element ref='MW_LIST'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='MW_LIST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='MW_INFO' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='MW_INFO'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='MW_ID'/>
+          <xsd:element ref='MW_TYPE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='MW_PLATFORM' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='MW_ALIAS' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='MW_RATING' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='MW_LINK' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='MW_ID' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='MW_TYPE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='MW_PLATFORM' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='MW_ALIAS' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='MW_RATING' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='MW_LINK' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='CVSS'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='BASE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='TEMPORAL' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='VECTOR_STRING' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='ACCESS' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='IMPACT' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='AUTHENTICATION' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='EXPLOITABILITY' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='REMEDIATION_LEVEL' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='REPORT_CONFIDENCE' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='BASE'>
+        <xsd:complexType>
+        <xsd:simpleContent>
+        <xsd:extension base='xsd:string'>
+        <xsd:attribute name='source' type='xsd:string' use='optional'/>
+        </xsd:extension>
+        </xsd:simpleContent>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='TEMPORAL' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='VECTOR_STRING' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='CVSS3_VERSION' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='ACCESS'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='VECTOR' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='COMPLEXITY' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='VECTOR' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='COMPLEXITY' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='IMPACT'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='CONFIDENTIALITY' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='INTEGRITY' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='AVAILABILITY' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='CONFIDENTIALITY' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='INTEGRITY' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='AVAILABILITY' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='AUTHENTICATION' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='EXPLOITABILITY' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='REMEDIATION_LEVEL' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='REPORT_CONFIDENCE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='CVSS_V3'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='BASE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='TEMPORAL' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='VECTOR_STRING' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='CVSS3_VERSION' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='ATTACK' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='IMPACT' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='PRIVILEGES_REQUIRED' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='USER_INTERACTION' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='SCOPE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='EXPLOIT_CODE_MATURITY' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='REMEDIATION_LEVEL' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='REPORT_CONFIDENCE' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='ATTACK'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='VECTOR' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='COMPLEXITY' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='PRIVILEGES_REQUIRED' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='USER_INTERACTION' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='SCOPE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='EXPLOIT_CODE_MATURITY' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='PCI_FLAG' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='AUTOMATIC_PCI_FAIL' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='PCI_REASONS'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='PCI_REASON' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='PCI_REASON' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='THREAT_INTELLIGENCE'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='THREAT_INTEL' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='THREAT_INTEL'>
+        <xsd:complexType>
+        <xsd:simpleContent>
+        <xsd:extension base='xsd:string'>
+        <xsd:attribute name='id' type='xsd:string' use='required'/>
+        </xsd:extension>
+        </xsd:simpleContent>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='SUPPORTED_MODULES' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='DISCOVERY'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='REMOTE'/>
+          <xsd:element ref='AUTH_TYPE_LIST' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='ADDITIONAL_INFO' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='REMOTE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='AUTH_TYPE_LIST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='AUTH_TYPE' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='AUTH_TYPE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='ADDITIONAL_INFO' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='IS_DISABLED' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='CHANGE_LOG_LIST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='CHANGE_LOG_INFO' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='CHANGE_LOG_INFO'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='CHANGE_DATE'/>
+          <xsd:element ref='COMMENTS'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='CHANGE_DATE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='COMMENTS' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='ID_SET'>
+        <xsd:complexType>
+        <xsd:choice maxOccurs='unbounded'>
+          <xsd:element ref='ID'/>
+          <xsd:element ref='ID_RANGE'/>
+        </xsd:choice>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='ID_RANGE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='WARNING'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='CODE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='TEXT'/>
+          <xsd:element ref='URL' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='CODE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='TEXT' type='xsd:string'>
+      </xsd:element>
+      </xsd:schema>

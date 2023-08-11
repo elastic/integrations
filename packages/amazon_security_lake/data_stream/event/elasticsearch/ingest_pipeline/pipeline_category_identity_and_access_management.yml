@@ -1,0 +1,1734 @@
+---
+description: Pipeline for processing Identity & Access Management category.
+# Account Change Class docs: https://schema.ocsf.io/1.0.0-rc.3/classes/account_change
+# Authentication Class docs: https://schema.ocsf.io/1.0.0-rc.3/classes/authentication
+processors:
+  - set:
+      field: user.changes.domain
+      tag: set_user_changes_domain
+      copy_from: ocsf.user_result.domain
+      ignore_empty_value: true
+  - set:
+      field: user.changes.email
+      tag: set_user_changes_email
+      copy_from: ocsf.user_result.email_addr
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_user_result_email_addr_into_related_user
+      value: '{{{ocsf.user_result.email_addr}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.user_result?.email_addr != null
+  - set:
+      field: user.changes.full_name
+      tag: set_user_changes_full_name
+      copy_from: ocsf.user_result.full_name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_user_result_full_name_into_related_user
+      value: '{{{ocsf.user_result.full_name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.user_result?.full_name != null
+  - foreach:
+      field: ocsf.user_result.groups
+      if: ctx.ocsf?.user_result?.groups instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: user.changes.group.id
+          value: '{{{_ingest._value.uid}}}'
+          tag: append_user_result_groups_uid_into_user_changes_group_id
+          allow_duplicates: false
+  - foreach:
+      field: ocsf.user_result.groups
+      if: ctx.ocsf?.user_result?.groups instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: user.changes.group.name
+          value: '{{{_ingest._value.name}}}'
+          tag: append_user_result_groups_name_into_user_changes_group_name
+          allow_duplicates: false
+  - set:
+      field: user.changes.id
+      tag: set_user_changes_id
+      copy_from: ocsf.user_result.uid
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_user_result_uid_into_related_user
+      value: '{{{ocsf.user_result.uid}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.user_result?.uid != null
+  - set:
+      field: user.changes.name
+      tag: set_user_changes_name
+      copy_from: ocsf.user_result.name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_user_result_name_into_related_user
+      value: '{{{ocsf.user_result.name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.user_result?.name != null
+  - convert:
+      field: ocsf.user_result.account.type_id
+      tag: convert_user_result_account_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.user_result.type_id
+      tag: convert_user_result_type_id_to_string
+      type: string
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_user_result_uid_alt_into_related_user
+      value: '{{{ocsf.user_result.uid_alt}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.user_result?.uid_alt != null
+  - convert:
+      field: ocsf.auth_protocol_id
+      tag: convert_auth_protocol_id_to_string
+      type: string
+      ignore_missing: true
+  - date:
+      field: ocsf.certificate.created_time_dt
+      tag: date_certificate_created_time_dt
+      target_field: ocsf.certificate.created_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.certificate?.created_time_dt != null && ctx.ocsf.certificate.created_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.certificate.created_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.certificate.created_time
+      tag: date_certificate_created_time
+      target_field: ocsf.certificate.created_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.certificate?.created_time != null && ctx.ocsf.certificate.created_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.certificate.created_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.certificate.expiration_time_dt
+      tag: date_certificate_expiration_time_dt
+      target_field: ocsf.certificate.expiration_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.certificate?.expiration_time_dt != null && ctx.ocsf.certificate.expiration_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.certificate.expiration_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.certificate.expiration_time
+      tag: date_certificate_expiration_time
+      target_field: ocsf.certificate.expiration_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.certificate?.expiration_time != null && ctx.ocsf.certificate.expiration_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.certificate.expiration_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ocsf.certificate.fingerprints
+      if: ctx.ocsf?.certificate?.fingerprints instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.hash
+          value: '{{{_ingest._value.value}}}'
+          tag: append_certificate_fingerprints_value_into_related_hash
+          allow_duplicates: false
+  - convert:
+      field: ocsf.is_cleartext
+      tag: convert_is_cleartext_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.is_cleartext
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hash
+      tag: append_logon_process_container_hash_value_into_related_hash
+      value: '{{{ocsf.logon_process.container.hash.value}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.container?.hash?.value != null
+  - date:
+      field: ocsf.logon_process.file.accessed_time_dt
+      target_field: ocsf.logon_process.file.accessed_time_dt
+      tag: date_logon_process_file_accessed_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.logon_process?.file?.accessed_time_dt != null && ctx.ocsf.logon_process.file.accessed_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.file.accessed_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.file.accessed_time
+      target_field: ocsf.logon_process.file.accessed_time
+      tag: date_logon_process_file_accessed_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.logon_process?.file?.accessed_time != null && ctx.ocsf.logon_process.file.accessed_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.file.accessed_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.file.created_time_dt
+      target_field: ocsf.logon_process.file.created_time_dt
+      tag: date_logon_process_file_created_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.logon_process?.file?.created_time_dt != null && ctx.ocsf.logon_process.file.created_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.file.created_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.file.created_time
+      target_field: ocsf.logon_process.file.created_time
+      tag: date_logon_process_file_created_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.logon_process?.file?.created_time != null && ctx.ocsf.logon_process.file.created_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.file.created_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ocsf.logon_process.file.hashes
+      if: ctx.ocsf?.logon_process?.file?.hashes instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.hash
+          tag: append_logon_process_file_hashes_value_into_related_hash
+          value: '{{{_ingest._value.value}}}'
+          allow_duplicates: false
+  - date:
+      field: ocsf.logon_process.file.modified_time_dt
+      target_field: ocsf.logon_process.file.modified_time_dt
+      tag: date_logon_process_file_modified_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.logon_process?.file?.modified_time_dt != null && ctx.ocsf.logon_process.file.modified_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.file.modified_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.file.modified_time
+      target_field: ocsf.logon_process.file.modified_time
+      tag: date_logon_process_file_modified_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.logon_process?.file?.modified_time != null && ctx.ocsf.logon_process.file.modified_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.file.modified_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_logon_process_file_owner_name_into_related_user
+      value: '{{{ocsf.logon_process.file.owner.name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.file?.owner?.name != null
+  - convert:
+      field: ocsf.logon_process.file.size
+      tag: convert_logon_process_file_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.file.size
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_logon_process_file_owner_uid_into_related_user
+      value: '{{{ocsf.logon_process.file.owner.uid}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.file?.owner?.uid != null
+  - date:
+      field: ocsf.logon_process.file.signature.certificate.expiration_time_dt
+      target_field: ocsf.logon_process.file.signature.certificate.expiration_time_dt
+      tag: date_logon_process_file_signature_certificate_expiration_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.logon_process?.file?.signature?.certificate?.expiration_time_dt != null && ctx.ocsf.logon_process.file.signature.certificate.expiration_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.file.signature.certificate.expiration_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.file.signature.certificate.expiration_time
+      target_field: ocsf.logon_process.file.signature.certificate.expiration_time
+      tag: date_logon_process_file_signature_certificate_expiration_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.logon_process?.file?.signature?.certificate?.expiration_time != null && ctx.ocsf.logon_process.file.signature.certificate.expiration_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.file.signature.certificate.expiration_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.terminated_time_dt
+      target_field: ocsf.logon_process.terminated_time_dt
+      tag: date_logon_process_terminated_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.logon_process?.terminated_time_dt != null && ctx.ocsf.logon_process.terminated_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.terminated_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.terminated_time
+      target_field: ocsf.logon_process.terminated_time
+      tag: date_logon_process_terminated_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.logon_process?.terminated_time != null && ctx.ocsf.logon_process.terminated_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.terminated_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.logon_process.egid
+      tag: convert_logon_process_egid_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.pid
+      tag: convert_logon_process_pid_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.pid
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.created_time_dt
+      target_field: ocsf.logon_process.created_time_dt
+      tag: date_logon_process_created_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.logon_process?.created_time_dt != null && ctx.ocsf.logon_process.created_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.created_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.created_time
+      target_field: ocsf.logon_process.created_time
+      tag: date_logon_process_created_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.logon_process?.created_time != null && ctx.ocsf.logon_process.created_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.created_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.logon_process.tid
+      tag: convert_logon_process_tid_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.tid
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_logon_process_user_email_addr_into_related_user
+      value: '{{{ocsf.logon_process.user.email_addr}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.user?.email_addr != null
+  - append:
+      field: related.user
+      tag: append_logon_process_user_full_name_into_related_user
+      value: '{{{ocsf.logon_process.user.full_name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.user?.full_name != null
+  - convert:
+      field: ocsf.logon_process.euid
+      tag: convert_logon_process_euid_to_string
+      type: string
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_logon_process_euid_into_related_user
+      value: '{{{ocsf.logon_process.euid}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.euid != null
+  - append:
+      field: related.user
+      tag: append_logon_process_uid_into_related_user
+      value: '{{{ocsf.logon_process.user.uid}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.user?.uid != null
+  - append:
+      field: related.user
+      tag: append_logon_process_user_name_into_related_user
+      value: '{{{ocsf.logon_process.user.name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.user?.name != null
+  - convert:
+      field: ocsf.logon_process.container.hash.algorithm_id
+      tag: convert_logon_process_container_hash_algorithm_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.auid
+      tag: convert_logon_process_auid_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.container.size
+      tag: convert_logon_process_container_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.container.size
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.logon_process.file.accessor.account.type_id
+      tag: convert_logon_process_file_accessor_account_type_id_to_string
+      type: string
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_logon_process_file_accessor_uid_alt_into_related_user
+      value: '{{{ocsf.logon_process.file.accessor.uid_alt}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.file?.accessor?.uid_alt != null
+  - append:
+      field: related.user
+      tag: append_logon_process_file_accessor_email_addr_into_related_user
+      value: '{{{ocsf.logon_process.file.accessor.email_addr}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.file?.accessor?.email_addr != null
+  - append:
+      field: related.user
+      tag: append_logon_process_file_accessor_full_name_into_related_user
+      value: '{{{ocsf.logon_process.file.accessor.full_name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.file?.accessor?.full_name != null
+  - append:
+      field: related.user
+      tag: append_logon_process_file_accessor_name_into_related_user
+      value: '{{{ocsf.logon_process.file.accessor.name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.file?.accessor?.name != null
+  - append:
+      field: related.user
+      tag: append_logon_process_file_accessor_uid_into_related_user
+      value: '{{{ocsf.logon_process.file.accessor.uid}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.file?.accessor?.uid != null
+  - convert:
+      field: ocsf.logon_process.file.accessor.type_id
+      tag: convert_logon_process_file_accessor_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.file.attributes
+      tag: convert_logon_process_file_attributes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.file.attributes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.logon_process.file.confidentiality_id
+      tag: convert_logon_process_file_confidentiality_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.file.creator.account.type_id
+      tag: convert_logon_process_file_creator_account_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.file.creator.type_id
+      tag: convert_logon_process_file_creator_type_id_to_string
+      type: string
+      ignore_missing: true
+  - foreach:
+      field: ocsf.logon_process.file.signature.certificate.fingerprints
+      if: ctx.ocsf?.logon_process?.file?.signature?.certificate?.fingerprints instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.algorithm_id
+          tag: convert_logon_process_file_signature_certificate_fingerprints_algorithm_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: ocsf.logon_process.file.signature.certificate.fingerprints
+      if: ctx.ocsf?.logon_process?.file?.signature?.certificate?.fingerprints instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.hash
+          tag: append_logon_process_file_signature_certificate_fingerprints_value_into_related_hash
+          value: '{{{_ingest._value.value}}}'
+          allow_duplicates: false
+  - convert:
+      field: ocsf.logon_process.file.signature.algorithm_id
+      tag: convert_logon_process_file_signature_algorithm_id_to_string
+      type: string
+      ignore_missing: true
+  - append:
+      field: related.hash
+      tag: append_logon_process_file_signature_value_into_related_hash
+      value: '{{{ocsf.logon_process.file.signature.value}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.file?.signature?.value != null
+  - date:
+      field: ocsf.logon_process.file.signature.certificate.created_time_dt
+      target_field: ocsf.logon_process.file.signature.certificate.created_time_dt
+      tag: date_logon_process_file_signature_certificate_created_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.logon_process?.file?.signature?.certificate?.created_time_dt != null && ctx.ocsf.logon_process.file.signature.certificate.created_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.file.signature.certificate.created_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.file.signature.certificate.created_time
+      target_field: ocsf.logon_process.file.signature.certificate.created_time
+      tag: date_logon_process_file_signature_certificate_created_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.logon_process?.file?.signature?.certificate?.created_time != null && ctx.ocsf.logon_process.file.signature.certificate.created_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.file.signature.certificate.created_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.file.signature.created_time_dt
+      target_field: ocsf.logon_process.file.signature.created_time_dt
+      tag: date_logon_process_file_signature_created_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.logon_process?.file?.signature?.created_time_dt != null && ctx.ocsf.logon_process.file.signature.created_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.file.signature.created_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.file.signature.created_time
+      target_field: ocsf.logon_process.file.signature.created_time
+      tag: date_logon_process_file_signature_created_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.logon_process?.file?.signature?.created_time != null && ctx.ocsf.logon_process.file.signature.created_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.file.signature.created_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.logon_process.file.signature.digest.algorithm_id
+      tag: convert_logon_process_file_signature_digest_algorithm_id_to_string
+      type: string
+      ignore_missing: true
+  - append:
+      field: related.hash
+      tag: append_logon_process_file_signature_digest_value_into_related_hash
+      value: '{{{ocsf.logon_process.file.signature.digest.value}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.file?.signature?.digest?.value != null
+  - foreach:
+      field: ocsf.logon_process.file.hashes
+      if: ctx.ocsf?.logon_process?.file?.hashes instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.algorithm_id
+          tag: convert_logon_process_file_hashes_algorithm_id_to_string
+          type: string
+          ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.file.modifier.account.type_id
+      tag: convert_logon_process_file_modifier_account_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.file.modifier.type_id
+      tag: convert_logon_process_file_modifier_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.file.owner.account.type_id
+      tag: convert_logon_process_file_owner_account_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.file.owner.type_id
+      tag: convert_logon_process_file_owner_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.file.is_system
+      tag: convert_logon_process_file_is_system_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.file.is_system
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.logon_process.file.type_id
+      tag: convert_logon_process_file_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.integrity_id
+      tag: convert_logon_process_integrity_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.namespace_pid
+      tag: convert_logon_process_namespace_pid_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.namespace_pid
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Stringify the parent_process object if its depth_limit is greater than 20.
+      if: ctx.ocsf?.logon_process?.parent_process != null
+      tag: script_logon_process_parent_process_stringify
+      lang: painless
+      source: |-
+        def process = ctx.ocsf.logon_process.parent_process;
+        def count = 0;
+        while (true) {
+          if (process != null && process.parent_process != null) {
+            count += 1;
+            process = process.parent_process;
+          } else {
+            break;
+          }
+        }
+        if (count >= 15) {
+          ctx.ocsf.logon_process.parent_process.put("parent_process_keyword", ctx.ocsf.logon_process.parent_process.parent_process.toString());
+          ctx.ocsf.logon_process.parent_process.remove("parent_process");
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hash
+      tag: append_logon_process_parent_process_container_hash_value_into_related_hash
+      value: '{{{ocsf.logon_process.parent_process.container.hash.value}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.container?.hash?.value != null
+  - date:
+      field: ocsf.logon_process.parent_process.file.accessed_time_dt
+      target_field: ocsf.logon_process.parent_process.file.accessed_time_dt
+      tag: date_logon_process_parent_process_file_accessed_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.accessed_time_dt != null && ctx.ocsf.logon_process.parent_process.file.accessed_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.file.accessed_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.parent_process.file.accessed_time
+      target_field: ocsf.logon_process.parent_process.file.accessed_time
+      tag: date_logon_process_parent_process_file_accessed_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.accessed_time != null && ctx.ocsf.logon_process.parent_process.file.accessed_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.file.accessed_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.parent_process.file.created_time_dt
+      target_field: ocsf.logon_process.parent_process.file.created_time_dt
+      tag: date_logon_process_parent_process_file_created_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.created_time_dt != null && ctx.ocsf.logon_process.parent_process.file.created_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.file.created_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.parent_process.file.created_time
+      target_field: ocsf.logon_process.parent_process.file.created_time
+      tag: date_logon_process_parent_process_file_created_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.created_time != null && ctx.ocsf.logon_process.parent_process.file.created_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.file.created_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ocsf.logon_process.parent_process.file.hashes
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.hashes instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.hash
+          tag: append_logon_process_parent_process_file_hashes_value_into_related_hash
+          value: '{{{_ingest._value.value}}}'
+          allow_duplicates: false
+  - date:
+      field: ocsf.logon_process.parent_process.file.modified_time_dt
+      target_field: ocsf.logon_process.parent_process.file.modified_time_dt
+      tag: date_logon_process_parent_process_file_modified_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.modified_time_dt != null && ctx.ocsf.logon_process.parent_process.file.modified_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.file.modified_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.parent_process.file.modified_time
+      target_field: ocsf.logon_process.parent_process.file.modified_time
+      tag: date_logon_process_parent_process_file_modified_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.modified_time != null && ctx.ocsf.logon_process.parent_process.file.modified_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.file.modified_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_file_owner_name_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.file.owner.name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.owner?.name != null
+  - convert:
+      field: ocsf.logon_process.parent_process.file.size
+      tag: convert_logon_process_parent_process_file_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.file.size
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_file_owner_uid_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.file.owner.uid}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.owner?.uid != null
+  - date:
+      field: ocsf.logon_process.parent_process.file.signature.certificate.expiration_time_dt
+      target_field: ocsf.logon_process.parent_process.file.signature.certificate.expiration_time_dt
+      tag: date_logon_process_parent_process_file_signature_certificate_expiration_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.signature?.certificate?.expiration_time_dt != null && ctx.ocsf.logon_process.parent_process.file.signature.certificate.expiration_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.file.signature.certificate.expiration_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.parent_process.file.signature.certificate.expiration_time
+      target_field: ocsf.logon_process.parent_process.file.signature.certificate.expiration_time
+      tag: date_logon_process_parent_process_file_signature_certificate_expiration_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.signature?.certificate?.expiration_time != null && ctx.ocsf.logon_process.parent_process.file.signature.certificate.expiration_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.file.signature.certificate.expiration_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.parent_process.terminated_time_dt
+      target_field: ocsf.logon_process.parent_process.terminated_time_dt
+      tag: date_logon_process_parent_process_terminated_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.logon_process?.parent_process?.terminated_time_dt != null && ctx.ocsf.logon_process.parent_process.terminated_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.terminated_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.parent_process.terminated_time
+      target_field: ocsf.logon_process.parent_process.terminated_time
+      tag: date_logon_process_parent_process_terminated_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.logon_process?.parent_process?.terminated_time != null && ctx.ocsf.logon_process.parent_process.terminated_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.terminated_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.logon_process.parent_process.egid
+      tag: convert_logon_process_parent_process_egid_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.parent_process.pid
+      tag: convert_logon_process_parent_process_pid_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.pid
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.parent_process.created_time_dt
+      target_field: ocsf.logon_process.parent_process.created_time_dt
+      tag: date_logon_process_parent_process_created_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.logon_process?.parent_process?.created_time_dt != null && ctx.ocsf.logon_process.parent_process.created_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.created_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.parent_process.created_time
+      target_field: ocsf.logon_process.parent_process.created_time
+      tag: date_logon_process_parent_process_created_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.logon_process?.parent_process?.created_time != null && ctx.ocsf.logon_process.parent_process.created_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.created_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.logon_process.parent_process.tid
+      tag: convert_logon_process_parent_process_tid_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.tid
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_user_email_addr_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.user.email_addr}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.user?.email_addr != null
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_user_full_name_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.user.full_name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.user?.full_name != null
+  - convert:
+      field: ocsf.logon_process.parent_process.euid
+      tag: convert_logon_process_parent_process_euid_to_string
+      type: string
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_euid_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.euid}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.euid != null
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_uid_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.user.uid}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.user?.uid != null
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_user_name_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.user.name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.user?.name != null
+  - convert:
+      field: ocsf.logon_process.parent_process.container.hash.algorithm_id
+      tag: convert_logon_process_parent_process_container_hash_algorithm_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.parent_process.auid
+      tag: convert_logon_process_parent_process_auid_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.parent_process.container.size
+      tag: convert_logon_process_parent_process_container_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.container.size
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.logon_process.parent_process.file.accessor.account.type_id
+      tag: convert_logon_process_parent_process_file_accessor_account_type_id_to_string
+      type: string
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_file_accessor_uid_alt_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.file.accessor.uid_alt}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.accessor?.uid_alt != null
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_file_accessor_email_addr_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.file.accessor.email_addr}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.accessor?.email_addr != null
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_file_accessor_full_name_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.file.accessor.full_name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.accessor?.full_name != null
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_file_accessor_name_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.file.accessor.name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.accessor?.name != null
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_file_accessor_uid_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.file.accessor.uid}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.accessor?.uid != null
+  - convert:
+      field: ocsf.logon_process.parent_process.file.accessor.type_id
+      tag: convert_logon_process_parent_process_file_accessor_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.parent_process.file.attributes
+      tag: convert_logon_process_parent_process_file_attributes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.file.attributes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.logon_process.parent_process.file.confidentiality_id
+      tag: convert_logon_process_parent_process_file_confidentiality_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.parent_process.file.creator.account.type_id
+      tag: convert_logon_process_parent_process_file_creator_account_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.parent_process.file.creator.type_id
+      tag: convert_logon_process_parent_process_file_creator_type_id_to_string
+      type: string
+      ignore_missing: true
+  - foreach:
+      field: ocsf.logon_process.parent_process.file.signature.certificate.fingerprints
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.signature?.certificate?.fingerprints instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.algorithm_id
+          tag: convert_logon_process_parent_process_file_signature_certificate_fingerprints_algorithm_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: ocsf.logon_process.parent_process.file.signature.certificate.fingerprints
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.signature?.certificate?.fingerprints instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.hash
+          tag: append_logon_process_parent_process_file_signature_certificate_fingerprints_value_into_related_hash
+          value: '{{{_ingest._value.value}}}'
+          allow_duplicates: false
+  - convert:
+      field: ocsf.logon_process.parent_process.file.signature.algorithm_id
+      tag: convert_logon_process_parent_process_file_signature_algorithm_id_to_string
+      type: string
+      ignore_missing: true
+  - append:
+      field: related.hash
+      tag: append_logon_process_parent_process_file_signature_value_into_related_hash
+      value: '{{{ocsf.logon_process.parent_process.file.signature.value}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.signature?.value != null
+  - date:
+      field: ocsf.logon_process.parent_process.file.signature.certificate.created_time_dt
+      target_field: ocsf.logon_process.parent_process.file.signature.certificate.created_time_dt
+      tag: date_logon_process_parent_process_file_signature_certificate_created_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.signature?.certificate?.created_time_dt != null && ctx.ocsf.logon_process.parent_process.file.signature.certificate.created_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.file.signature.certificate.created_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.parent_process.file.signature.certificate.created_time
+      target_field: ocsf.logon_process.parent_process.file.signature.certificate.created_time
+      tag: date_logon_process_parent_process_file_signature_certificate_created_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.signature?.certificate?.created_time != null && ctx.ocsf.logon_process.parent_process.file.signature.certificate.created_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.file.signature.certificate.created_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.parent_process.file.signature.created_time_dt
+      target_field: ocsf.logon_process.parent_process.file.signature.created_time_dt
+      tag: date_logon_process_parent_process_file_signature_created_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.signature?.created_time_dt != null && ctx.ocsf.logon_process.parent_process.file.signature.created_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.file.signature.created_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.parent_process.file.signature.created_time
+      target_field: ocsf.logon_process.parent_process.file.signature.created_time
+      tag: date_logon_process_parent_process_file_signature_created_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.signature?.created_time != null && ctx.ocsf.logon_process.parent_process.file.signature.created_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.file.signature.created_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.logon_process.parent_process.file.signature.digest.algorithm_id
+      tag: convert_logon_process_parent_process_file_signature_digest_algorithm_id_to_string
+      type: string
+      ignore_missing: true
+  - append:
+      field: related.hash
+      tag: append_logon_process_parent_process_file_signature_digest_value_into_related_hash
+      value: '{{{ocsf.logon_process.parent_process.file.signature.digest.value}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.signature?.digest?.value != null
+  - foreach:
+      field: ocsf.logon_process.parent_process.file.hashes
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.hashes instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.algorithm_id
+          tag: convert_logon_process_parent_process_file_hashes_algorithm_id_to_string
+          type: string
+          ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.parent_process.file.modifier.account.type_id
+      tag: convert_logon_process_parent_process_file_modifier_account_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.parent_process.file.modifier.type_id
+      tag: convert_logon_process_parent_process_file_modifier_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.parent_process.file.owner.account.type_id
+      tag: convert_logon_process_parent_process_file_owner_account_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.parent_process.file.owner.type_id
+      tag: convert_logon_process_parent_process_file_owner_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.parent_process.file.is_system
+      tag: convert_logon_process_parent_process_file_is_system_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.file.is_system
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.logon_process.parent_process.file.type_id
+      tag: convert_logon_process_parent_process_file_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.parent_process.integrity_id
+      tag: convert_logon_process_parent_process_integrity_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.parent_process.namespace_pid
+      tag: convert_logon_process_parent_process_namespace_pid_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.namespace_pid
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.parent_process.session.created_time_dt
+      target_field: ocsf.logon_process.parent_process.session.created_time_dt
+      tag: date_logon_process_parent_process_session_created_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.logon_process?.parent_process?.session?.created_time_dt != null && ctx.ocsf.logon_process.parent_process.session.created_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.session.created_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.parent_process.session.created_time
+      target_field: ocsf.logon_process.parent_process.session.created_time
+      tag: date_logon_process_parent_process_session_created_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.logon_process?.parent_process?.session?.created_time != null && ctx.ocsf.logon_process.parent_process.session.created_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.session.created_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.parent_process.session.expiration_time_dt
+      target_field: ocsf.logon_process.parent_process.session.expiration_time_dt
+      tag: date_logon_process_parent_process_session_expiration_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.logon_process?.parent_process?.session?.expiration_time_dt != null && ctx.ocsf.logon_process.parent_process.session.expiration_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.session.expiration_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.parent_process.session.expiration_time
+      target_field: ocsf.logon_process.parent_process.session.expiration_time
+      tag: date_logon_process_parent_process_session_expiration_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.logon_process?.parent_process?.session?.expiration_time != null && ctx.ocsf.logon_process.parent_process.session.expiration_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.session.expiration_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.logon_process.parent_process.session.mfa
+      tag: convert_logon_process_parent_process_session_mfa_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.session.mfa
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.logon_process.parent_process.session.is_remote
+      tag: convert_logon_process_parent_process_session_is_remote_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.parent_process.session.is_remote
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.logon_process.parent_process.user.account.type_id
+      tag: convert_logon_process_parent_process_user_account_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.parent_process.user.type_id
+      tag: convert_logon_process_parent_process_user_type_id_to_string
+      type: string
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_file_creator_uid_alt_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.file.creator.uid_alt}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.creator?.uid_alt != null
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_file_creator_email_addr_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.file.creator.email_addr}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.creator?.email_addr != null
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_file_creator_full_name_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.file.creator.full_name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.creator?.full_name != null
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_file_creator_name_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.file.creator.name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.creator?.name != null
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_file_creator_uid_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.file.creator.uid}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.creator?.uid != null
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_file_modifier_uid_alt_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.file.modifier.uid_alt}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.modifier?.uid_alt != null
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_file_modifier_email_addr_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.file.modifier.email_addr}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.modifier?.email_addr != null
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_file_modifier_full_name_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.file.modifier.full_name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.modifier?.full_name != null
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_file_modifier_name_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.file.modifier.name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.modifier?.name != null
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_file_modifier_uid_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.file.modifier.uid}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.modifier?.uid != null
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_file_owner_uid_alt_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.file.owner.uid_alt}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.owner?.uid_alt != null
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_file_owner_email_addr_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.file.owner.email_addr}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.owner?.email_addr != null
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_file_owner_full_name_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.file.owner.full_name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.file?.owner?.full_name != null
+  - append:
+      field: related.user
+      tag: append_logon_process_parent_process_user_uid_alt_into_related_user
+      value: '{{{ocsf.logon_process.parent_process.user.uid_alt}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.parent_process?.user?.uid_alt != null
+  - date:
+      field: ocsf.logon_process.session.created_time_dt
+      target_field: ocsf.logon_process.session.created_time_dt
+      tag: date_logon_process_session_created_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.logon_process?.session?.created_time_dt != null && ctx.ocsf.logon_process.session.created_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.session.created_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.session.created_time
+      target_field: ocsf.logon_process.session.created_time
+      tag: date_logon_process_session_created_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.logon_process?.session?.created_time != null && ctx.ocsf.logon_process.session.created_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.session.created_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.session.expiration_time_dt
+      target_field: ocsf.logon_process.session.expiration_time_dt
+      tag: date_logon_process_session_expiration_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.logon_process?.session?.expiration_time_dt != null && ctx.ocsf.logon_process.session.expiration_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.session.expiration_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.logon_process.session.expiration_time
+      target_field: ocsf.logon_process.session.expiration_time
+      tag: date_logon_process_session_expiration_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.logon_process?.session?.expiration_time != null && ctx.ocsf.logon_process.session.expiration_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.session.expiration_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.logon_process.session.mfa
+      tag: convert_logon_process_session_mfa_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.session.mfa
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.logon_process.session.is_remote
+      tag: convert_logon_process_session_is_remote_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.logon_process.session.is_remote
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.logon_process.user.account.type_id
+      tag: convert_logon_process_user_account_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.logon_process.user.type_id
+      tag: convert_logon_process_user_type_id_to_string
+      type: string
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_logon_process_file_creator_uid_alt_into_related_user
+      value: '{{{ocsf.logon_process.file.creator.uid_alt}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.file?.creator?.uid_alt != null
+  - append:
+      field: related.user
+      tag: append_logon_process_file_creator_email_addr_into_related_user
+      value: '{{{ocsf.logon_process.file.creator.email_addr}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.file?.creator?.email_addr != null
+  - append:
+      field: related.user
+      tag: append_logon_process_file_creator_full_name_into_related_user
+      value: '{{{ocsf.logon_process.file.creator.full_name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.file?.creator?.full_name != null
+  - append:
+      field: related.user
+      tag: append_logon_process_file_creator_name_into_related_user
+      value: '{{{ocsf.logon_process.file.creator.name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.file?.creator?.name != null
+  - append:
+      field: related.user
+      tag: append_logon_process_file_creator_uid_into_related_user
+      value: '{{{ocsf.logon_process.file.creator.uid}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.file?.creator?.uid != null
+  - append:
+      field: related.user
+      tag: append_logon_process_file_modifier_uid_alt_into_related_user
+      value: '{{{ocsf.logon_process.file.modifier.uid_alt}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.file?.modifier?.uid_alt != null
+  - append:
+      field: related.user
+      tag: append_logon_process_file_modifier_email_addr_into_related_user
+      value: '{{{ocsf.logon_process.file.modifier.email_addr}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.file?.modifier?.email_addr != null
+  - append:
+      field: related.user
+      tag: append_logon_process_file_modifier_full_name_into_related_user
+      value: '{{{ocsf.logon_process.file.modifier.full_name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.file?.modifier?.full_name != null
+  - append:
+      field: related.user
+      tag: append_logon_process_file_modifier_name_into_related_user
+      value: '{{{ocsf.logon_process.file.modifier.name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.file?.modifier?.name != null
+  - append:
+      field: related.user
+      tag: append_logon_process_file_modifier_uid_into_related_user
+      value: '{{{ocsf.logon_process.file.modifier.uid}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.file?.modifier?.uid != null
+  - append:
+      field: related.user
+      tag: append_logon_process_file_owner_uid_alt_into_related_user
+      value: '{{{ocsf.logon_process.file.owner.uid_alt}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.file?.owner?.uid_alt != null
+  - append:
+      field: related.user
+      tag: append_logon_process_file_owner_email_addr_into_related_user
+      value: '{{{ocsf.logon_process.file.owner.email_addr}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.file?.owner?.email_addr != null
+  - append:
+      field: related.user
+      tag: append_logon_process_file_owner_full_name_into_related_user
+      value: '{{{ocsf.logon_process.file.owner.full_name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.file?.owner?.full_name != null
+  - append:
+      field: related.user
+      tag: append_logon_process_user_uid_alt_into_related_user
+      value: '{{{ocsf.logon_process.user.uid_alt}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.logon_process?.user?.uid_alt != null
+  - convert:
+      field: ocsf.logon_type_id
+      tag: convert_logon_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.is_mfa
+      tag: convert_is_mfa_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.is_mfa
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.is_new_logon
+      tag: convert_is_new_logon_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.is_new_logon
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.is_remote
+      tag: convert_is_remote_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.is_remote
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: service.name
+      tag: set_service_name
+      copy_from: ocsf.service.name
+      ignore_empty_value: true
+  - set:
+      field: service.id
+      tag: set_service_id
+      copy_from: ocsf.service.uid
+      ignore_empty_value: true
+  - set:
+      field: service.version
+      tag: set_service_version
+      copy_from: ocsf.service.version
+      ignore_empty_value: true
+  - date:
+      field: ocsf.session.created_time_dt
+      tag: date_session_created_time_dt
+      target_field: ocsf.session.created_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.session?.created_time_dt != null && ctx.ocsf.session.created_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.session.created_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.session.created_time
+      tag: date_session_created_time
+      target_field: ocsf.session.created_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.session?.created_time != null && ctx.ocsf.session.created_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.session.created_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.session.expiration_time_dt
+      tag: date_session_expiration_time_dt
+      target_field: ocsf.session.expiration_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.session?.expiration_time_dt != null && ctx.ocsf.session.expiration_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.session.expiration_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.session.expiration_time
+      tag: date_session_expiration_time
+      target_field: ocsf.session.expiration_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.session?.expiration_time != null && ctx.ocsf.session.expiration_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.session.expiration_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.session.is_remote
+      tag: convert_session_is_remote_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.session.is_remote
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.session.mfa
+      tag: convert_session_mfa_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.session.mfa
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
