@@ -120,13 +120,13 @@ An example event for `feed` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-25T02:59:05.404Z",
+    "@timestamp": "2023-08-08T18:44:20.288Z",
     "agent": {
-        "ephemeral_id": "6d30ac65-9d55-4014-9a2a-2fbcf8816fff",
-        "id": "f599fd51-b36d-45b4-a90f-4d63240b8477",
+        "ephemeral_id": "01cfb0f6-6879-48c3-a90f-2f8c5274de1f",
+        "id": "0a5c1566-c6fd-4e91-b96d-4083445a000e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.3.2"
+        "version": "8.9.0"
     },
     "cif3": {
         "itype": "ipv4",
@@ -142,19 +142,23 @@ An example event for `feed` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "f599fd51-b36d-45b4-a90f-4d63240b8477",
+        "id": "0a5c1566-c6fd-4e91-b96d-4083445a000e",
         "snapshot": false,
-        "version": "8.3.2"
+        "version": "8.9.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "threat",
-        "created": "2022-07-25T02:59:05.404Z",
+        "category": [
+            "threat"
+        ],
+        "created": "2023-08-08T18:44:20.288Z",
         "dataset": "ti_cif3.feed",
-        "ingested": "2022-07-25T02:59:08Z",
+        "ingested": "2023-08-08T18:44:23Z",
         "kind": "enrichment",
         "original": "{\"application\":\"https\",\"asn\":8075,\"asn_desc\":\"microsoft-corp-msn-as-block\",\"cc\":\"br\",\"city\":\"campinas\",\"confidence\":10,\"count\":1,\"firsttime\":\"2022-07-20T20:25:53.000000Z\",\"group\":[\"everyone\"],\"indicator\":\"20.206.75.106\",\"indicator_ipv4\":\"20.206.75.106\",\"itype\":\"ipv4\",\"lasttime\":\"2022-07-20T20:25:53.000000Z\",\"latitude\":-22.9035,\"location\":[-47.0565,-22.9035],\"longitude\":-47.0565,\"portlist\":\"443\",\"protocol\":\"tcp\",\"provider\":\"sslbl.abuse.ch\",\"reference\":\"https://sslbl.abuse.ch/blacklist/sslipblacklist.csv\",\"region\":\"sao paulo\",\"reporttime\":\"2022-07-21T20:33:26.585967Z\",\"tags\":[\"botnet\"],\"timezone\":\"america/sao_paulo\",\"tlp\":\"white\",\"uuid\":\"ac240898-1443-4d7e-a98a-1daed220c162\"}",
-        "type": "indicator"
+        "type": [
+            "indicator"
+        ]
     },
     "input": {
         "type": "httpjson"
