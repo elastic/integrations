@@ -218,6 +218,7 @@ so the `period` for `compute_vm_scaleset` should be `300s` or multiples of `300s
 | azure.compute_vm_scaleset.outbound_flows.avg | Outbound Flows are number of current flows in the outbound direction (traffic going out of the VM) | float |  | gauge |
 | azure.compute_vm_scaleset.outbound_flows_maximum_creation_rate.avg | The maximum creation rate of outbound flows (traffic going out of the VM) | float |  | gauge |
 | azure.compute_vm_scaleset.percentage_cpu.avg | The percentage of allocated compute units that are currently in use by the Virtual Machine(s) | float | percent | gauge |
+| azure.dimensions.lun | Logical Unit Number is a number that is used to identify a specific storage device | keyword |  |  |
 | azure.dimensions.virtual_machine | The VM name | keyword |  |  |
 | azure.dimensions.vmname | The VM name | keyword |  |  |
 | azure.namespace | The namespace selected | keyword |  |  |
