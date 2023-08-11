@@ -20,18 +20,23 @@ Integration is one of the biggest sources of input data to elasticsearch. Enabli
 
 
 1. **Datastream having type `logs` can be excluded from TSDB migration.**
+2. **Modify the `kibana.version` to 8.8.2 within the manifest.yml file of the package.**
+   ```
+   conditions:
+     kibana.version: "^8.8.0"
+   ```
 2. **Add the changes to the manifest.yml file of the datastream as below to enable the timeseries index mode**
     ```
     elasticsearch:
       index_mode: "time_series"
     ```
-    If your datastream has more number of dimension fields, you can modify this limit by modifying index.mapping.dimension_fields.limit value as below. Please note, this feature is available only from Kibana version 8.6.
+    Should your datastream contain an increased count of dimension fields, you have the option to adjust this restriction by altering the index.mapping.dimension_fields.limit value as indicated below. The default maximum limit stands at 21. 
     ```
     elasticsearch:
       index_mode: "time_series"
       index_template:
        settings:
-         # Defaults to 16
+         # Defaults to 21
          index.mapping.dimension_fields.limit: 32
     ```
     
@@ -47,40 +52,51 @@ Integration is one of the biggest sources of input data to elasticsearch. Enabli
 
     From the context of integrations that are related to products that are deployed on-premise, there exist certain fields that are part of every package and they are potential candidates of becoming dimension fields
 
-    * host.name
-    * service.address
-    * agent.id
+    * `host.name`
+    * `service.address`
+    * `agent.id`
+    * `container.id`
     
-    When metrics are collected from a resource running in the cloud or in a container, certain fields are potential candidates of becoming dimension fields  
+    For products that are capable of running both on-premise and in a public cloud environment (by being deployed on public cloud virtual machines), it is recommended to annotate the ECS fields listed below as dimension fields.
+    * `host.name`
+    * `service.address`
+    * `container.id`
+    * `cloud.account.id`
+    * `cloud.provider`
+    * `cloud.region`
+    * `cloud.availability_zone`
+    * `agent.id`
+    * `cloud.instance.id`
 
-    * host.name
-    * service.address
-    * agent.id
-    * cloud.project.id
-    * cloud.instance.id
-    * cloud.provider
-    * container.id  
-
-    *Warning: Choosing an insufficient number of dimension fields may lead to data loss*  
-
-    *Hint: Fields having type [keyword](https://www.elastic.co/guide/en/elasticsearch/reference/current/keyword.html#keyword-field-type) in your datastream are very good candidates of becoming dimension fields*
-
+    For products operating as managed services within cloud providers like AWS, Azure, and GCP, it is advised to label the fields listed below as dimension fields.
+    * `cloud.account.id`
+    * `cloud.region`
+    * `cloud.availability_zone`
+    * `cloud.provider`
+    * `agent.id ` 
+    
 
 4. **Annotating the integration specific fields as dimension**
 
     `files.yml` file has the field mappings specific to a datastream of an integration. This step is needed when the dimension fields in ECS is not sufficient enough to create a unique [_tsid](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds.html#tsid) value for the documents stored in elasticsearch. Annotate the field with `dimension: true` to tag the field as dimension field. 
 
+    Adding an inline comment prior to the dimension annotation is advised, detailing the rationale behind the choice of a particular field as a dimension field.
+
     ```
     - name: wait_class
       type: keyword
-      description: Every wait event belongs to a class of wait events.
+      # Multiple events are generated based on the values of wait_class. Hence, it is a dimension
       dimension: true
+      description: Every wait event belongs to a class of wait events.
     ```
     *Notes:*
-    * *There exists a limit on how many dimension fields can have. By default this value is 16. Out of this, 8 are reserved for ecs fields.*
+    * *There exists a limit on how many dimension fields can have. By default this value is 21.*
     * *Dimension keys have a hard limit of 512b. Documents are rejected if this limit is reached.*
-    * *Dimension values have a hard limit of 1024b. Documents are rejected if this limit is reached*
+    * *Dimension values have a hard limit of 1024b. Documents are rejected if this limit is reached*  
 
+    **Warning:** Choosing an insufficient number of dimension fields may lead to data loss
+
+    **Hint:** Fields having type [keyword](https://www.elastic.co/guide/en/elasticsearch/reference/current/keyword.html#keyword-field-type) in your datastream are very good candidates of becoming dimension fields
 
 5. **Annotating Metric Types values for all applicable fields** 
 
@@ -105,7 +121,7 @@ Integration is one of the biggest sources of input data to elasticsearch. Enabli
  
 - After migration, verify if the dashboard is rendering the data properly. If certain visualisation do not work, consider migrating to [Lens](https://www.elastic.co/guide/en/kibana/current/lens.html)
 
-  Certain aggregation functions are not supported when a field is having a metric_type ‘counter’. Example avg(). Replace such aggregation functions with a supported aggregation type such as max(). 
+  Certain aggregation functions are not supported when a field is having a metric_type `counter`. Example `avg()`. Replace such aggregation functions with a supported aggregation type such as `max()` or `min()`. 
 
 - It is recommended to compare the number of documents within a certain time frame before enabling the TSDB and after enabling TSDB index mode. If the count differs, please check if there exists a field that is not annotated as dimension field.  
 
