@@ -318,36 +318,36 @@ Examples:
 | @timestamp | Event timestamp. | date |
 | azure.application_id | The application ID | keyword |
 | azure.dimensions.\* | Azure metric dimensions. | object |
-| azure.metrics.app_connections.average | The number of bound sockets existing in the sandbox (w3wp.exe and its child processes). A bound socket is created by calling bind()/connect() APIs and remains until said socket is closed with CloseHandle()/closesocket(). For WebApps and FunctionApps.. | long |
-| azure.metrics.average_memory_working_set.average | The average amount of memory used by the app, in MiB. For WebApps and FunctionApps. | long |
-| azure.metrics.bytes_received.total | The amount of incoming bandwidth consumed by the app, in MiB. | long |
-| azure.metrics.bytes_sent.total | The amount of outgoing bandwidth consumed by the app, in MiB. | long |
-| azure.metrics.current_assemblies.average | The current number of Assemblies loaded across all AppDomains in this application. | long |
-| azure.metrics.file_system_usage.average | Percentage of filesystem quota consumed by the app. | long |
-| azure.metrics.function_execution_count.total | Function Execution Count. For FunctionApps only. | long |
-| azure.metrics.function_execution_units.total | Function Execution Units. For FunctionApps only. | long |
-| azure.metrics.gen_0_collections.total | The number of times the generation 0 objects are garbage collected since the start of the app process. Higher generation GCs include all lower generation GCs. | long |
-| azure.metrics.gen_1_collections.total | The number of times the generation 1 objects are garbage collected since the start of the app process. Higher generation GCs include all lower generation GCs. | long |
-| azure.metrics.gen_2_collections.total | The number of times the generation 2 objects are garbage collected since the start of the app process. Higher generation GCs include all lower generation GCs. | long |
-| azure.metrics.handles.average | The total number of handles currently open by the app process. | long |
-| azure.metrics.health_check_status.average | Health check status. | long |
-| azure.metrics.http_2xx.total | The count of requests resulting in an HTTP status code \>= 200 but \< 300. | long |
-| azure.metrics.http_3xx.total | The count of requests resulting in an HTTP status code \>= 300 but \< 400. | long |
-| azure.metrics.http_4xx.total | The count of requests resulting in an HTTP status code \>= 400 but \< 500. | long |
-| azure.metrics.http_5xx.total | The count of requests resulting in an HTTP status code \>= 500 but \< 600. | long |
-| azure.metrics.io_other_bytes_per_second.total | The rate at which the app process is issuing bytes to I/O operations that don't involve data, such as control operations. | long |
-| azure.metrics.io_other_operations_per_second.total | The rate at which the app process is issuing I/O operations that aren't read or write operations. | long |
-| azure.metrics.io_read_bytes_per_second.total | The rate at which the app process is reading bytes from I/O operations. | long |
-| azure.metrics.io_read_operations_per_second.total | The rate at which the app process is issuing read I/O operations. | long |
-| azure.metrics.io_write_bytes_per_second.total | The rate at which the app process is writing bytes to I/O operations. | long |
-| azure.metrics.io_write_operations_per_second.total | The rate at which the app process is issuing write I/O operations. | long |
-| azure.metrics.memory_working_set.average | The current amount of memory used by the app, in MiB. | long |
-| azure.metrics.private_bytes.average | Private Bytes is the current size, in bytes, of memory that the app process has allocated that can't be shared with other processes. | long |
-| azure.metrics.requests.total | The total number of requests regardless of their resulting HTTP status code. | long |
-| azure.metrics.requests_in_application_queue.average | The number of requests in the application request queue. | long |
-| azure.metrics.threads.average | The number of threads currently active in the app process. | long |
-| azure.metrics.total_app_domains.average | The current number of AppDomains loaded in this application. | long |
-| azure.metrics.total_app_domains_unloaded.average | The total number of AppDomains unloaded since the start of the application. | long |
+| azure.functions.app_connections.average | The number of bound sockets existing in the sandbox (w3wp.exe and its child processes). A bound socket is created by calling bind()/connect() APIs and remains until said socket is closed with CloseHandle()/closesocket(). For WebApps and FunctionApps.. | long |
+| azure.functions.average_memory_working_set.average | The average amount of memory used by the app, in MiB. For WebApps and FunctionApps. | long |
+| azure.functions.bytes_received.total | The amount of incoming bandwidth consumed by the app, in MiB. | long |
+| azure.functions.bytes_sent.total | The amount of outgoing bandwidth consumed by the app, in MiB. | long |
+| azure.functions.current_assemblies.average | The current number of Assemblies loaded across all AppDomains in this application. | long |
+| azure.functions.file_system_usage.average | Percentage of filesystem quota consumed by the app. | long |
+| azure.functions.function_execution_count.total | Function Execution Count. For FunctionApps only. | long |
+| azure.functions.function_execution_units.total | Function Execution Units. For FunctionApps only. | long |
+| azure.functions.gen_0_collections.total | The number of times the generation 0 objects are garbage collected since the start of the app process. Higher generation GCs include all lower generation GCs. | long |
+| azure.functions.gen_1_collections.total | The number of times the generation 1 objects are garbage collected since the start of the app process. Higher generation GCs include all lower generation GCs. | long |
+| azure.functions.gen_2_collections.total | The number of times the generation 2 objects are garbage collected since the start of the app process. Higher generation GCs include all lower generation GCs. | long |
+| azure.functions.handles.average | The total number of handles currently open by the app process. | long |
+| azure.functions.health_check_status.average | Health check status. | long |
+| azure.functions.http_2xx.total | The count of requests resulting in an HTTP status code \>= 200 but \< 300. | long |
+| azure.functions.http_3xx.total | The count of requests resulting in an HTTP status code \>= 300 but \< 400. | long |
+| azure.functions.http_4xx.total | The count of requests resulting in an HTTP status code \>= 400 but \< 500. | long |
+| azure.functions.http_5xx.total | The count of requests resulting in an HTTP status code \>= 500 but \< 600. | long |
+| azure.functions.io_other_bytes_per_second.total | The rate at which the app process is issuing bytes to I/O operations that don't involve data, such as control operations. | long |
+| azure.functions.io_other_operations_per_second.total | The rate at which the app process is issuing I/O operations that aren't read or write operations. | long |
+| azure.functions.io_read_bytes_per_second.total | The rate at which the app process is reading bytes from I/O operations. | long |
+| azure.functions.io_read_operations_per_second.total | The rate at which the app process is issuing read I/O operations. | long |
+| azure.functions.io_write_bytes_per_second.total | The rate at which the app process is writing bytes to I/O operations. | long |
+| azure.functions.io_write_operations_per_second.total | The rate at which the app process is issuing write I/O operations. | long |
+| azure.functions.memory_working_set.average | The current amount of memory used by the app, in MiB. | long |
+| azure.functions.private_bytes.average | Private Bytes is the current size, in bytes, of memory that the app process has allocated that can't be shared with other processes. | long |
+| azure.functions.requests.total | The total number of requests regardless of their resulting HTTP status code. | long |
+| azure.functions.requests_in_application_queue.average | The number of requests in the application request queue. | long |
+| azure.functions.threads.average | The number of threads currently active in the app process. | long |
+| azure.functions.total_app_domains.average | The current number of AppDomains loaded in this application. | long |
+| azure.functions.total_app_domains_unloaded.average | The total number of AppDomains unloaded since the start of the application. | long |
 | azure.namespace | The namespace selected | keyword |
 | azure.resource.group | The resource group | keyword |
 | azure.resource.id | The id of the resource | keyword |
