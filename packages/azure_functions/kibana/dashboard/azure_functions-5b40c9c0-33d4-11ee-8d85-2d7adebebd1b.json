@@ -9,7 +9,26 @@
         "description": "",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "azure.resource.name",
+                            "negate": false,
+                            "type": "exists"
+                        },
+                        "query": {
+                            "exists": {
+                                "field": "azure.resource.name"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -30,7 +49,7 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-c309d909-deb9-42a7-9912-6df5bd479a80",
+                                "name": "indexpattern-datasource-layer-f6c3c469-2e64-4120-b144-997fb70575e2",
                                 "type": "index-pattern"
                             }
                         ],
@@ -39,22 +58,135 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "c309d909-deb9-42a7-9912-6df5bd479a80": {
+                                        "f6c3c469-2e64-4120-b144-997fb70575e2": {
                                             "columnOrder": [
-                                                "5f823749-67f9-4e1c-8708-d7afe999fa78"
+                                                "b0f015a9-aab1-4b26-b28f-65ce55f354de"
                                             ],
                                             "columns": {
-                                                "5f823749-67f9-4e1c-8708-d7afe999fa78": {
+                                                "b0f015a9-aab1-4b26-b28f-65ce55f354de": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Requests in Application Queue",
-                                                    "operationType": "average",
+                                                    "label": "Active Function Apps",
+                                                    "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": true
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "azure.metrics.requests_inapplication_queue.avg"
+                                                    "sourceField": "azure.resource.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "f6c3c469-2e64-4120-b144-997fb70575e2",
+                                "layerType": "data",
+                                "metricAccessor": "b0f015a9-aab1-4b26-b28f-65ce55f354de",
+                                "showBar": false
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "58a522e8-acf6-4ad1-a5cc-a699ce9c26c0",
+                    "w": 10,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "58a522e8-acf6-4ad1-a5cc-a699ce9c26c0",
+                "title": "Number of Active Function Apps",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-8e323fe9-19c2-405d-bbf6-ba61dc9a190f",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "8e323fe9-19c2-405d-bbf6-ba61dc9a190f": {
+                                            "columnOrder": [
+                                                "c4d0be17-9d74-468d-8e55-a064664300d1",
+                                                "2cbcc3e5-5848-4a88-910b-7c845618ae2e",
+                                                "b37bb938-9515-453c-a5ff-f384a7351317"
+                                            ],
+                                            "columns": {
+                                                "2cbcc3e5-5848-4a88-910b-7c845618ae2e": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total number of invocations",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.metrics.requests.total"
+                                                },
+                                                "b37bb938-9515-453c-a5ff-f384a7351317": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Success",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.metrics.http2xx.total"
+                                                },
+                                                "c4d0be17-9d74-468d-8e55-a064664300d1": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 Function Apps",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "2cbcc3e5-5848-4a88-910b-7c845618ae2e",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.resource.name"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -73,62 +205,72 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "layerId": "c309d909-deb9-42a7-9912-6df5bd479a80",
-                                "layerType": "data",
-                                "metricAccessor": "5f823749-67f9-4e1c-8708-d7afe999fa78"
+                                "columns": [
+                                    {
+                                        "columnId": "c4d0be17-9d74-468d-8e55-a064664300d1",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "colorMode": "cell",
+                                        "columnId": "2cbcc3e5-5848-4a88-910b-7c845618ae2e",
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "positive",
+                                            "params": {
+                                                "stops": [
+                                                    {
+                                                        "color": "#d6e9e4",
+                                                        "stop": 20
+                                                    },
+                                                    {
+                                                        "color": "#aed3ca",
+                                                        "stop": 40
+                                                    },
+                                                    {
+                                                        "color": "#85bdb1",
+                                                        "stop": 60
+                                                    },
+                                                    {
+                                                        "color": "#5aa898",
+                                                        "stop": 80
+                                                    },
+                                                    {
+                                                        "color": "#209280",
+                                                        "stop": 100
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        },
+                                        "summaryRow": "none"
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "b37bb938-9515-453c-a5ff-f384a7351317",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "8e323fe9-19c2-405d-bbf6-ba61dc9a190f",
+                                "layerType": "data"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsDatatable"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": true
-                },
-                "gridData": {
-                    "h": 9,
-                    "i": "67f3ea1d-3ef8-40c5-b299-7b793c6ce5f7",
-                    "w": 10,
-                    "x": 0,
-                    "y": 0
-                },
-                "panelIndex": "67f3ea1d-3ef8-40c5-b299-7b793c6ce5f7",
-                "type": "lens",
-                "version": "8.7.1"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 9,
-                    "i": "6f3e52f5-fd68-4c07-98f9-c87ab14cd3b1",
-                    "w": 38,
-                    "x": 10,
-                    "y": 0
-                },
-                "panelIndex": "6f3e52f5-fd68-4c07-98f9-c87ab14cd3b1",
-                "panelRefName": "panel_6f3e52f5-fd68-4c07-98f9-c87ab14cd3b1",
-                "title": "HTTP Response Time(in seconds)",
-                "type": "lens",
-                "version": "8.7.1"
-            },
-            {
-                "embeddableConfig": {
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "96b12503-3f63-4f80-9419-f8d25b7356fc",
-                    "w": 24,
-                    "x": 0,
-                    "y": 9
+                    "i": "44c459b4-623b-4534-ba78-8904669ae9cb",
+                    "w": 38,
+                    "x": 10,
+                    "y": 0
                 },
-                "panelIndex": "96b12503-3f63-4f80-9419-f8d25b7356fc",
-                "panelRefName": "panel_96b12503-3f63-4f80-9419-f8d25b7356fc",
-                "title": "Top 10 Function Apps by Bytes Received",
+                "panelIndex": "44c459b4-623b-4534-ba78-8904669ae9cb",
+                "title": "Success Rate",
                 "type": "lens",
                 "version": "8.7.1"
             },
@@ -138,7 +280,7 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-fa95f5df-3ddf-44ed-88b8-793641935e0a",
+                                "name": "indexpattern-datasource-layer-b0c25d59-67fb-4970-8b15-1da58db41925",
                                 "type": "index-pattern"
                             }
                         ],
@@ -147,14 +289,146 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "fa95f5df-3ddf-44ed-88b8-793641935e0a": {
+                                        "b0c25d59-67fb-4970-8b15-1da58db41925": {
                                             "columnOrder": [
-                                                "a3174d15-f56d-4533-b4e8-2006a55c51d4",
-                                                "4a76dd12-cd30-4e95-8b20-015379b31cf4",
-                                                "6d32a3d7-e8d2-4061-9d93-eeca1d25d957"
+                                                "87ec7063-bff9-4d15-87e7-8f1da7b3f12b",
+                                                "bf6104e4-667c-4384-b819-842c52698256"
                                             ],
                                             "columns": {
-                                                "4a76dd12-cd30-4e95-8b20-015379b31cf4": {
+                                                "87ec7063-bff9-4d15-87e7-8f1da7b3f12b": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of azure.resource.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "accuracyMode": false,
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "bf6104e4-667c-4384-b819-842c52698256",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.resource.name"
+                                                },
+                                                "bf6104e4-667c-4384-b819-842c52698256": {
+                                                    "customLabel": false,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Sum of azure.metrics.requests.total",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.metrics.requests.total"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "layerId": "b0c25d59-67fb-4970-8b15-1da58db41925",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "legendPosition": "right",
+                                        "metrics": [
+                                            "bf6104e4-667c-4384-b819-842c52698256"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "87ec7063-bff9-4d15-87e7-8f1da7b3f12b"
+                                        ]
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "9196bdde-1f73-46f5-97f6-09db15a28b61",
+                    "w": 10,
+                    "x": 0,
+                    "y": 6
+                },
+                "panelIndex": "9196bdde-1f73-46f5-97f6-09db15a28b61",
+                "title": "Total Number of Invocations across Function Apps",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "Number of Function invocations that resulted in a HTTP 2xx response code",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-4689dc73-dc78-4c03-b975-62264d68c33b",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "4689dc73-dc78-4c03-b975-62264d68c33b": {
+                                            "columnOrder": [
+                                                "cb555077-660a-4e41-8974-9ad2d8e3b235",
+                                                "a3e51351-a9f0-414d-857e-d908e3919b15",
+                                                "a074efc1-3210-40c8-af5b-ba97da2de1ac"
+                                            ],
+                                            "columns": {
+                                                "a074efc1-3210-40c8-af5b-ba97da2de1ac": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Sum of azure.metrics.http2xx.total",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.metrics.http2xx.total"
+                                                },
+                                                "a3e51351-a9f0-414d-857e-d908e3919b15": {
                                                     "dataType": "date",
                                                     "isBucketed": true,
                                                     "label": "@timestamp",
@@ -167,24 +441,7 @@
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
                                                 },
-                                                "6d32a3d7-e8d2-4061-9d93-eeca1d25d957": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Sum of azure.metrics.bytes_sent.total",
-                                                    "operationType": "sum",
-                                                    "params": {
-                                                        "emptyAsNull": true,
-                                                        "format": {
-                                                            "id": "bytes",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "azure.metrics.bytes_sent.total"
-                                                },
-                                                "a3174d15-f56d-4533-b4e8-2006a55c51d4": {
+                                                "cb555077-660a-4e41-8974-9ad2d8e3b235": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
                                                     "label": "Top 10 values of azure.resource.name",
@@ -196,7 +453,7 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "6d32a3d7-e8d2-4061-9d93-eeca1d25d957",
+                                                            "columnId": "a074efc1-3210-40c8-af5b-ba97da2de1ac",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -227,8 +484,8 @@
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
+                                    "x": false,
+                                    "yLeft": false,
                                     "yRight": true
                                 },
                                 "fittingFunction": "None",
@@ -245,22 +502,22 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "6d32a3d7-e8d2-4061-9d93-eeca1d25d957"
+                                            "a074efc1-3210-40c8-af5b-ba97da2de1ac"
                                         ],
-                                        "layerId": "fa95f5df-3ddf-44ed-88b8-793641935e0a",
+                                        "layerId": "4689dc73-dc78-4c03-b975-62264d68c33b",
                                         "layerType": "data",
                                         "position": "top",
-                                        "seriesType": "line",
+                                        "seriesType": "bar",
                                         "showGridlines": false,
-                                        "splitAccessor": "a3174d15-f56d-4533-b4e8-2006a55c51d4",
-                                        "xAccessor": "4a76dd12-cd30-4e95-8b20-015379b31cf4"
+                                        "splitAccessor": "cb555077-660a-4e41-8974-9ad2d8e3b235",
+                                        "xAccessor": "a3e51351-a9f0-414d-857e-d908e3919b15"
                                     }
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "position": "right"
+                                    "position": "bottom"
                                 },
-                                "preferredSeriesType": "line",
+                                "preferredSeriesType": "bar",
                                 "tickLabelsVisibilitySettings": {
                                     "x": true,
                                     "yLeft": true,
@@ -277,14 +534,333 @@
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 15,
-                    "i": "578f6fe3-6edb-4678-b13c-1e9510f1942b",
-                    "w": 24,
-                    "x": 24,
-                    "y": 9
+                    "h": 14,
+                    "i": "5430e8a9-47ae-4c82-96b7-b0287026409f",
+                    "w": 16,
+                    "x": 0,
+                    "y": 15
                 },
-                "panelIndex": "578f6fe3-6edb-4678-b13c-1e9510f1942b",
-                "title": "Top 10 Function Apps by Bytes Sent",
+                "panelIndex": "5430e8a9-47ae-4c82-96b7-b0287026409f",
+                "title": "HTTP 2xx Requests",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-54edca01-9fb6-444a-8d98-ddb0ff36f9be",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "54edca01-9fb6-444a-8d98-ddb0ff36f9be": {
+                                            "columnOrder": [
+                                                "6eddce7c-5301-479c-ab7b-8c574999c145",
+                                                "38a86941-b5ec-4a83-9684-0f70bb14a361",
+                                                "94937bdd-d5bb-469e-83b9-89e34f3a4614"
+                                            ],
+                                            "columns": {
+                                                "38a86941-b5ec-4a83-9684-0f70bb14a361": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "6eddce7c-5301-479c-ab7b-8c574999c145": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of azure.resource.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "94937bdd-d5bb-469e-83b9-89e34f3a4614",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.resource.name"
+                                                },
+                                                "94937bdd-d5bb-469e-83b9-89e34f3a4614": {
+                                                    "customLabel": false,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Sum of azure.metrics.http4xx.total",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.metrics.http4xx.total"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "94937bdd-d5bb-469e-83b9-89e34f3a4614"
+                                        ],
+                                        "layerId": "54edca01-9fb6-444a-8d98-ddb0ff36f9be",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar",
+                                        "showGridlines": false,
+                                        "splitAccessor": "6eddce7c-5301-479c-ab7b-8c574999c145",
+                                        "xAccessor": "38a86941-b5ec-4a83-9684-0f70bb14a361"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "bottom"
+                                },
+                                "preferredSeriesType": "bar",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "7a4bc820-cc0e-40fb-9aee-83ccf7615fa2",
+                    "w": 16,
+                    "x": 16,
+                    "y": 15
+                },
+                "panelIndex": "7a4bc820-cc0e-40fb-9aee-83ccf7615fa2",
+                "title": "HTTP 4xx",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "Number of server errors or exceptions. ",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-419ba4b9-c54a-4e44-b7dc-475a2b04e4a8",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "419ba4b9-c54a-4e44-b7dc-475a2b04e4a8": {
+                                            "columnOrder": [
+                                                "ed0b46b6-3210-492d-b67b-027e0b427588",
+                                                "f4765a92-4ba2-4936-afa3-7e8648c99a8d",
+                                                "8d98f3f5-27bb-4ad2-82ec-277d763ab9cc"
+                                            ],
+                                            "columns": {
+                                                "8d98f3f5-27bb-4ad2-82ec-277d763ab9cc": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Sum of azure.metrics.http5xx.total",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.metrics.http5xx.total"
+                                                },
+                                                "ed0b46b6-3210-492d-b67b-027e0b427588": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of azure.resource.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "8d98f3f5-27bb-4ad2-82ec-277d763ab9cc",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.resource.name"
+                                                },
+                                                "f4765a92-4ba2-4936-afa3-7e8648c99a8d": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "8d98f3f5-27bb-4ad2-82ec-277d763ab9cc"
+                                        ],
+                                        "layerId": "419ba4b9-c54a-4e44-b7dc-475a2b04e4a8",
+                                        "layerType": "data",
+                                        "seriesType": "bar",
+                                        "splitAccessor": "ed0b46b6-3210-492d-b67b-027e0b427588",
+                                        "xAccessor": "f4765a92-4ba2-4936-afa3-7e8648c99a8d"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "bottom"
+                                },
+                                "preferredSeriesType": "bar",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "266a1bc1-c35b-4959-96c1-5d799a98754c",
+                    "w": 16,
+                    "x": 32,
+                    "y": 15
+                },
+                "panelIndex": "266a1bc1-c35b-4959-96c1-5d799a98754c",
+                "title": "HTTP 5xx Errors",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "The time taken for the app to serve requests.",
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "6f3e52f5-fd68-4c07-98f9-c87ab14cd3b1",
+                    "w": 24,
+                    "x": 0,
+                    "y": 29
+                },
+                "panelIndex": "6f3e52f5-fd68-4c07-98f9-c87ab14cd3b1",
+                "panelRefName": "panel_6f3e52f5-fd68-4c07-98f9-c87ab14cd3b1",
+                "title": "Response Time(in seconds)",
                 "type": "lens",
                 "version": "8.7.1"
             },
@@ -383,8 +959,8 @@
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
+                                    "x": false,
+                                    "yLeft": false,
                                     "yRight": true
                                 },
                                 "fittingFunction": "None",
@@ -414,7 +990,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "position": "right"
+                                    "position": "bottom"
                                 },
                                 "preferredSeriesType": "area",
                                 "tickLabelsVisibilitySettings": {
@@ -429,6 +1005,7 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
+                    "description": "The current amount of memory used by the app. ",
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
@@ -436,11 +1013,11 @@
                     "h": 15,
                     "i": "4f589bdd-7bbf-4b5e-88f7-68272155780d",
                     "w": 24,
-                    "x": 0,
-                    "y": 24
+                    "x": 24,
+                    "y": 29
                 },
                 "panelIndex": "4f589bdd-7bbf-4b5e-88f7-68272155780d",
-                "title": "Memory Usage by Function Apps",
+                "title": "Memory Working Set by Function Apps",
                 "type": "lens",
                 "version": "8.7.1"
             },
@@ -450,7 +1027,7 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-419ba4b9-c54a-4e44-b7dc-475a2b04e4a8",
+                                "name": "indexpattern-datasource-layer-fa95f5df-3ddf-44ed-88b8-793641935e0a",
                                 "type": "index-pattern"
                             }
                         ],
@@ -459,50 +1036,14 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "419ba4b9-c54a-4e44-b7dc-475a2b04e4a8": {
+                                        "fa95f5df-3ddf-44ed-88b8-793641935e0a": {
                                             "columnOrder": [
-                                                "ed0b46b6-3210-492d-b67b-027e0b427588",
-                                                "f4765a92-4ba2-4936-afa3-7e8648c99a8d",
-                                                "8d98f3f5-27bb-4ad2-82ec-277d763ab9cc"
+                                                "a3174d15-f56d-4533-b4e8-2006a55c51d4",
+                                                "4a76dd12-cd30-4e95-8b20-015379b31cf4",
+                                                "6d32a3d7-e8d2-4061-9d93-eeca1d25d957"
                                             ],
                                             "columns": {
-                                                "8d98f3f5-27bb-4ad2-82ec-277d763ab9cc": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Sum of azure.metrics.http5xx.total",
-                                                    "operationType": "sum",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "azure.metrics.http5xx.total"
-                                                },
-                                                "ed0b46b6-3210-492d-b67b-027e0b427588": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top 10 values of azure.resource.name",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "8d98f3f5-27bb-4ad2-82ec-277d763ab9cc",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "azure.resource.name"
-                                                },
-                                                "f4765a92-4ba2-4936-afa3-7e8648c99a8d": {
+                                                "4a76dd12-cd30-4e95-8b20-015379b31cf4": {
                                                     "dataType": "date",
                                                     "isBucketed": true,
                                                     "label": "@timestamp",
@@ -514,6 +1055,48 @@
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
+                                                },
+                                                "6d32a3d7-e8d2-4061-9d93-eeca1d25d957": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Sum of azure.metrics.bytes_sent.total",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.metrics.bytes_sent.total"
+                                                },
+                                                "a3174d15-f56d-4533-b4e8-2006a55c51d4": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of azure.resource.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "6d32a3d7-e8d2-4061-9d93-eeca1d25d957",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.resource.name"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -533,8 +1116,8 @@
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
+                                    "x": false,
+                                    "yLeft": false,
                                     "yRight": true
                                 },
                                 "fittingFunction": "None",
@@ -551,20 +1134,22 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "8d98f3f5-27bb-4ad2-82ec-277d763ab9cc"
+                                            "6d32a3d7-e8d2-4061-9d93-eeca1d25d957"
                                         ],
-                                        "layerId": "419ba4b9-c54a-4e44-b7dc-475a2b04e4a8",
+                                        "layerId": "fa95f5df-3ddf-44ed-88b8-793641935e0a",
                                         "layerType": "data",
-                                        "seriesType": "bar_stacked",
-                                        "splitAccessor": "ed0b46b6-3210-492d-b67b-027e0b427588",
-                                        "xAccessor": "f4765a92-4ba2-4936-afa3-7e8648c99a8d"
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "a3174d15-f56d-4533-b4e8-2006a55c51d4",
+                                        "xAccessor": "4a76dd12-cd30-4e95-8b20-015379b31cf4"
                                     }
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "position": "right"
+                                    "position": "bottom"
                                 },
-                                "preferredSeriesType": "bar_stacked",
+                                "preferredSeriesType": "line",
                                 "tickLabelsVisibilitySettings": {
                                     "x": true,
                                     "yLeft": true,
@@ -577,18 +1162,38 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
+                    "description": "The amount of outgoing bandwidth sent by the app. ",
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "266a1bc1-c35b-4959-96c1-5d799a98754c",
+                    "i": "578f6fe3-6edb-4678-b13c-1e9510f1942b",
                     "w": 24,
                     "x": 24,
-                    "y": 39
+                    "y": 44
                 },
-                "panelIndex": "266a1bc1-c35b-4959-96c1-5d799a98754c",
-                "title": "HTTP 5xx",
+                "panelIndex": "578f6fe3-6edb-4678-b13c-1e9510f1942b",
+                "title": "Top 10 Function Apps by Bytes Sent ",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "The amount of incoming bandwidth consumed by the app. ",
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "96b12503-3f63-4f80-9419-f8d25b7356fc",
+                    "w": 24,
+                    "x": 0,
+                    "y": 44
+                },
+                "panelIndex": "96b12503-3f63-4f80-9419-f8d25b7356fc",
+                "panelRefName": "panel_96b12503-3f63-4f80-9419-f8d25b7356fc",
+                "title": "Top 10 Function Apps by Bytes Received ",
                 "type": "lens",
                 "version": "8.7.1"
             },
@@ -598,7 +1203,7 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-e16f3e88-0dc5-490a-b45d-86b3dbd359a3",
+                                "name": "indexpattern-datasource-layer-0efd9b40-6f73-459b-8a6d-22bb9ea9f8f5",
                                 "type": "index-pattern"
                             }
                         ],
@@ -607,32 +1212,31 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "e16f3e88-0dc5-490a-b45d-86b3dbd359a3": {
+                                        "0efd9b40-6f73-459b-8a6d-22bb9ea9f8f5": {
                                             "columnOrder": [
-                                                "c5f39387-452a-4a77-8c48-831ecf41d972",
-                                                "d59f84c1-e509-4b82-bb73-8b30500124ec",
-                                                "32a41b5b-b737-4fd0-8b22-4a009d9c5555"
+                                                "bf621d88-b10b-4d8b-86fc-33034ed0fdc9",
+                                                "e2344323-fc84-49dc-9a63-ff7cc0ac618a",
+                                                "017dace0-c878-45e7-8d98-bfba5bdade86"
                                             ],
                                             "columns": {
-                                                "32a41b5b-b737-4fd0-8b22-4a009d9c5555": {
+                                                "017dace0-c878-45e7-8d98-bfba5bdade86": {
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Sum of azure.metrics.io_read_operations_per_second.total",
+                                                    "label": "Sum of azure.metrics.io_write_bytes_per_second.total",
                                                     "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": true,
                                                         "format": {
                                                             "id": "bytes",
                                                             "params": {
-                                                                "decimals": 0,
-                                                                "suffix": "/s"
+                                                                "decimals": 0
                                                             }
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "azure.metrics.io_read_operations_per_second.total"
+                                                    "sourceField": "azure.metrics.io_write_bytes_per_second.total"
                                                 },
-                                                "c5f39387-452a-4a77-8c48-831ecf41d972": {
+                                                "bf621d88-b10b-4d8b-86fc-33034ed0fdc9": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
                                                     "label": "Top 10 values of azure.resource.name",
@@ -644,7 +1248,7 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "32a41b5b-b737-4fd0-8b22-4a009d9c5555",
+                                                            "columnId": "017dace0-c878-45e7-8d98-bfba5bdade86",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -657,7 +1261,7 @@
                                                     "scale": "ordinal",
                                                     "sourceField": "azure.resource.name"
                                                 },
-                                                "d59f84c1-e509-4b82-bb73-8b30500124ec": {
+                                                "e2344323-fc84-49dc-9a63-ff7cc0ac618a": {
                                                     "dataType": "date",
                                                     "isBucketed": true,
                                                     "label": "@timestamp",
@@ -706,23 +1310,22 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "32a41b5b-b737-4fd0-8b22-4a009d9c5555"
+                                            "017dace0-c878-45e7-8d98-bfba5bdade86"
                                         ],
-                                        "layerId": "e16f3e88-0dc5-490a-b45d-86b3dbd359a3",
+                                        "layerId": "0efd9b40-6f73-459b-8a6d-22bb9ea9f8f5",
                                         "layerType": "data",
                                         "position": "top",
-                                        "seriesType": "line",
+                                        "seriesType": "bar_stacked",
                                         "showGridlines": false,
-                                        "splitAccessor": "c5f39387-452a-4a77-8c48-831ecf41d972",
-                                        "xAccessor": "d59f84c1-e509-4b82-bb73-8b30500124ec"
+                                        "splitAccessor": "bf621d88-b10b-4d8b-86fc-33034ed0fdc9",
+                                        "xAccessor": "e2344323-fc84-49dc-9a63-ff7cc0ac618a"
                                     }
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "position": "right"
+                                    "position": "bottom"
                                 },
-                                "preferredSeriesType": "line",
-                                "showCurrentTimeMarker": false,
+                                "preferredSeriesType": "bar_stacked",
                                 "tickLabelsVisibilitySettings": {
                                     "x": true,
                                     "yLeft": true,
@@ -735,18 +1338,19 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
+                    "description": "The rate at which the app process is writing bytes to I/O operations.",
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "dc27d0ce-7296-4640-8bcd-d23a8f4830ab",
+                    "i": "ba3dfc7e-d929-4dac-ba7e-d979652ec83a",
                     "w": 24,
-                    "x": 0,
-                    "y": 39
+                    "x": 24,
+                    "y": 59
                 },
-                "panelIndex": "dc27d0ce-7296-4640-8bcd-d23a8f4830ab",
-                "title": "IO Read Operations Per Second",
+                "panelIndex": "ba3dfc7e-d929-4dac-ba7e-d979652ec83a",
+                "title": "IO Write Bytes Per Second",
                 "type": "lens",
                 "version": "8.7.1"
             },
@@ -868,7 +1472,7 @@
                                         "layerId": "cc027ebf-f1dc-44ef-8907-7b7a407a7fe0",
                                         "layerType": "data",
                                         "position": "top",
-                                        "seriesType": "bar_stacked",
+                                        "seriesType": "bar",
                                         "showGridlines": false,
                                         "splitAccessor": "d3c92de9-3de0-4478-a4a6-432e2c42c0ab",
                                         "xAccessor": "10d4106f-6c96-4dc2-8866-3f1fe7e81898"
@@ -876,9 +1480,9 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "position": "right"
+                                    "position": "bottom"
                                 },
-                                "preferredSeriesType": "bar_stacked",
+                                "preferredSeriesType": "bar",
                                 "tickLabelsVisibilitySettings": {
                                     "x": true,
                                     "yLeft": true,
@@ -891,6 +1495,7 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
+                    "description": "The rate at which the app process is reading bytes from I/O operation",
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
@@ -898,117 +1503,11 @@
                     "h": 15,
                     "i": "f7c59600-cc99-4d51-b8f8-20976818476a",
                     "w": 24,
-                    "x": 24,
-                    "y": 24
+                    "x": 0,
+                    "y": 59
                 },
                 "panelIndex": "f7c59600-cc99-4d51-b8f8-20976818476a",
                 "title": "IO Read Bytes Per Second",
-                "type": "lens",
-                "version": "8.7.1"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-b0c25d59-67fb-4970-8b15-1da58db41925",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "b0c25d59-67fb-4970-8b15-1da58db41925": {
-                                            "columnOrder": [
-                                                "87ec7063-bff9-4d15-87e7-8f1da7b3f12b",
-                                                "bf6104e4-667c-4384-b819-842c52698256"
-                                            ],
-                                            "columns": {
-                                                "87ec7063-bff9-4d15-87e7-8f1da7b3f12b": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top 10 values of azure.resource.name",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "accuracyMode": false,
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "bf6104e4-667c-4384-b819-842c52698256",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "azure.resource.name"
-                                                },
-                                                "bf6104e4-667c-4384-b819-842c52698256": {
-                                                    "customLabel": false,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Sum of azure.metrics.requests.total",
-                                                    "operationType": "sum",
-                                                    "params": {
-                                                        "emptyAsNull": true,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "azure.metrics.requests.total"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "breakdownByAccessor": "87ec7063-bff9-4d15-87e7-8f1da7b3f12b",
-                                "layerId": "b0c25d59-67fb-4970-8b15-1da58db41925",
-                                "layerType": "data",
-                                "metricAccessor": "bf6104e4-667c-4384-b819-842c52698256"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "9196bdde-1f73-46f5-97f6-09db15a28b61",
-                    "w": 24,
-                    "x": 0,
-                    "y": 54
-                },
-                "panelIndex": "9196bdde-1f73-46f5-97f6-09db15a28b61",
-                "title": "Total Number of Invocations by Function Apps",
                 "type": "lens",
                 "version": "8.7.1"
             },
@@ -1140,7 +1639,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "position": "right"
+                                    "position": "bottom"
                                 },
                                 "preferredSeriesType": "line",
                                 "tickLabelsVisibilitySettings": {
@@ -1155,6 +1654,7 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
+                    "description": "The rate at which the app process is issuing wite I/O operations.",
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
@@ -1163,10 +1663,169 @@
                     "i": "f907a3c8-a7aa-4cb8-8708-e316bb3cdeb6",
                     "w": 24,
                     "x": 24,
-                    "y": 54
+                    "y": 74
                 },
                 "panelIndex": "f907a3c8-a7aa-4cb8-8708-e316bb3cdeb6",
                 "title": "IO Write Operations Per Second",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-e16f3e88-0dc5-490a-b45d-86b3dbd359a3",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "e16f3e88-0dc5-490a-b45d-86b3dbd359a3": {
+                                            "columnOrder": [
+                                                "c5f39387-452a-4a77-8c48-831ecf41d972",
+                                                "d59f84c1-e509-4b82-bb73-8b30500124ec",
+                                                "32a41b5b-b737-4fd0-8b22-4a009d9c5555"
+                                            ],
+                                            "columns": {
+                                                "32a41b5b-b737-4fd0-8b22-4a009d9c5555": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Sum of azure.metrics.io_read_operations_per_second.total",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.metrics.io_read_operations_per_second.total"
+                                                },
+                                                "c5f39387-452a-4a77-8c48-831ecf41d972": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of azure.resource.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "32a41b5b-b737-4fd0-8b22-4a009d9c5555",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.resource.name"
+                                                },
+                                                "d59f84c1-e509-4b82-bb73-8b30500124ec": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "32a41b5b-b737-4fd0-8b22-4a009d9c5555"
+                                        ],
+                                        "layerId": "e16f3e88-0dc5-490a-b45d-86b3dbd359a3",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "c5f39387-452a-4a77-8c48-831ecf41d972",
+                                        "xAccessor": "d59f84c1-e509-4b82-bb73-8b30500124ec"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "bottom"
+                                },
+                                "preferredSeriesType": "line",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "The rate at which the app process is issuing read I/O operations.",
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "dc27d0ce-7296-4640-8bcd-d23a8f4830ab",
+                    "w": 24,
+                    "x": 0,
+                    "y": 74
+                },
+                "panelIndex": "dc27d0ce-7296-4640-8bcd-d23a8f4830ab",
+                "title": "IO Read Operations Per Second",
                 "type": "lens",
                 "version": "8.7.1"
             }
@@ -1176,7 +1835,7 @@
         "version": 1
     },
     "coreMigrationVersion": "8.7.1",
-    "created_at": "2023-08-06T22:10:23.159Z",
+    "created_at": "2023-08-11T21:08:22.618Z",
     "id": "azure_functions-5b40c9c0-33d4-11ee-8d85-2d7adebebd1b",
     "migrationVersion": {
         "dashboard": "8.7.0"
@@ -1184,42 +1843,17 @@
     "references": [
         {
             "id": "metrics-*",
-            "name": "67f3ea1d-3ef8-40c5-b299-7b793c6ce5f7:indexpattern-datasource-layer-c309d909-deb9-42a7-9912-6df5bd479a80",
-            "type": "index-pattern"
-        },
-        {
-            "id": "azure_functions-1e62d580-3491-11ee-8d85-2d7adebebd1b",
-            "name": "6f3e52f5-fd68-4c07-98f9-c87ab14cd3b1:panel_6f3e52f5-fd68-4c07-98f9-c87ab14cd3b1",
-            "type": "lens"
-        },
-        {
-            "id": "azure_functions-7f0826e0-33b2-11ee-8d85-2d7adebebd1b",
-            "name": "96b12503-3f63-4f80-9419-f8d25b7356fc:panel_96b12503-3f63-4f80-9419-f8d25b7356fc",
-            "type": "lens"
-        },
-        {
-            "id": "metrics-*",
-            "name": "578f6fe3-6edb-4678-b13c-1e9510f1942b:indexpattern-datasource-layer-fa95f5df-3ddf-44ed-88b8-793641935e0a",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "4f589bdd-7bbf-4b5e-88f7-68272155780d:indexpattern-datasource-layer-750303c4-2d5f-4b67-8018-cba6ccc3e3f8",
+            "name": "58a522e8-acf6-4ad1-a5cc-a699ce9c26c0:indexpattern-datasource-layer-f6c3c469-2e64-4120-b144-997fb70575e2",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "266a1bc1-c35b-4959-96c1-5d799a98754c:indexpattern-datasource-layer-419ba4b9-c54a-4e44-b7dc-475a2b04e4a8",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "dc27d0ce-7296-4640-8bcd-d23a8f4830ab:indexpattern-datasource-layer-e16f3e88-0dc5-490a-b45d-86b3dbd359a3",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "f7c59600-cc99-4d51-b8f8-20976818476a:indexpattern-datasource-layer-cc027ebf-f1dc-44ef-8907-7b7a407a7fe0",
+            "name": "44c459b4-623b-4534-ba78-8904669ae9cb:indexpattern-datasource-layer-8e323fe9-19c2-405d-bbf6-ba61dc9a190f",
             "type": "index-pattern"
         },
         {
@@ -1229,7 +1863,57 @@
         },
         {
             "id": "metrics-*",
+            "name": "5430e8a9-47ae-4c82-96b7-b0287026409f:indexpattern-datasource-layer-4689dc73-dc78-4c03-b975-62264d68c33b",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "7a4bc820-cc0e-40fb-9aee-83ccf7615fa2:indexpattern-datasource-layer-54edca01-9fb6-444a-8d98-ddb0ff36f9be",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "266a1bc1-c35b-4959-96c1-5d799a98754c:indexpattern-datasource-layer-419ba4b9-c54a-4e44-b7dc-475a2b04e4a8",
+            "type": "index-pattern"
+        },
+        {
+            "id": "azure_functions-1e62d580-3491-11ee-8d85-2d7adebebd1b",
+            "name": "6f3e52f5-fd68-4c07-98f9-c87ab14cd3b1:panel_6f3e52f5-fd68-4c07-98f9-c87ab14cd3b1",
+            "type": "lens"
+        },
+        {
+            "id": "metrics-*",
+            "name": "4f589bdd-7bbf-4b5e-88f7-68272155780d:indexpattern-datasource-layer-750303c4-2d5f-4b67-8018-cba6ccc3e3f8",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "578f6fe3-6edb-4678-b13c-1e9510f1942b:indexpattern-datasource-layer-fa95f5df-3ddf-44ed-88b8-793641935e0a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "azure_functions-7f0826e0-33b2-11ee-8d85-2d7adebebd1b",
+            "name": "96b12503-3f63-4f80-9419-f8d25b7356fc:panel_96b12503-3f63-4f80-9419-f8d25b7356fc",
+            "type": "lens"
+        },
+        {
+            "id": "metrics-*",
+            "name": "ba3dfc7e-d929-4dac-ba7e-d979652ec83a:indexpattern-datasource-layer-0efd9b40-6f73-459b-8a6d-22bb9ea9f8f5",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "f7c59600-cc99-4d51-b8f8-20976818476a:indexpattern-datasource-layer-cc027ebf-f1dc-44ef-8907-7b7a407a7fe0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
             "name": "f907a3c8-a7aa-4cb8-8708-e316bb3cdeb6:indexpattern-datasource-layer-effd480b-5d45-4c7e-9883-114e91117829",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "dc27d0ce-7296-4640-8bcd-d23a8f4830ab:indexpattern-datasource-layer-e16f3e88-0dc5-490a-b45d-86b3dbd359a3",
             "type": "index-pattern"
         },
         {
