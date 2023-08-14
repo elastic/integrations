@@ -19,7 +19,7 @@ Integration is one of the biggest sources of input data to elasticsearch. Enabli
 # <a id="migration-steps"></a> Steps for migrating an existing package
 
 
-1. **Datastream having type `logs` can be excluded from TSDB migration.**
+1. **Datastream having type `logs` are excluded from TSDB migration.**
 2. **Modify the `kibana.version` to 8.8.0 within the manifest.yml file of the package.**
    ```
    conditions:
