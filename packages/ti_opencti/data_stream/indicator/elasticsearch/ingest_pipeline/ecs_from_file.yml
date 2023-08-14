@@ -1,0 +1,85 @@
+---
+description: Build ECS fields from an OpenCTI file observable
+processors:
+
+  - set:
+      field: threat.indicator._file.accessed
+      value: "{{_ingest._value.atime}}"
+      ignore_empty_value: true
+
+  - set:
+      field: threat.indicator._file.created
+      value: "{{_ingest._value.ctime}}"
+      ignore_empty_value: true
+
+  - set:
+      field: threat.indicator._file.mtime
+      value: "{{_ingest._value.mtime}}"
+      ignore_empty_value: true
+
+  - append:
+      field: threat.indicator._file.name
+      value: "{{_ingest._value.name}}"
+      allow_duplicates: false
+  - foreach:
+      field: _ingest._value.additional_names
+      ignore_missing: true
+      processor:
+        append:
+          field: threat.indicator._file.name
+          value: "{{_ingest._value}}"
+          allow_duplicates: false
+  - script:
+      description: Remove null or empty names, remove name field if no names
+      lang: painless
+      source: |
+        if (ctx.threat?.indicator?._file?.name != null) {
+          def result = [];
+          for (name in ctx.threat.indicator._file.name) {
+              if (name != null && name != '') {
+                  result.add(name);
+              }
+          }
+          if (result.length == 0) {
+            ctx.threat.indicator._file.remove("name");
+          } else if (result.length == 1) {
+            ctx.threat.indicator._file.name = result[0];
+          } else {
+            ctx.threat.indicator._file.name = result;
+          }
+        }
+
+  # TODO: extract extension from names?
+
+  - set:
+      field: threat.indicator._file.mime_type
+      value: "{{_ingest._value.mime_type}}"
+      ignore_empty_value: true
+
+  - set:
+      field: threat.indicator._file.size
+      value: "{{_ingest._value.size}}"
+      ignore_empty_value: true
+
+  - set:
+      field: threat.indicator._file.type
+      value: "file"
+      ignore_empty_value: true
+
+  - set:
+      field: threat.indicator._file.hash
+      copy_from: _ingest._value.hash
+      ignore_empty_value: true
+
+  # append object
+  - append:
+      field: threat.indicator.file
+      value: []
+  - script:
+      description: Append to the destination
+      lang: painless
+      source: |
+        ctx.threat.indicator.file.add(ctx.threat.indicator._file);
+
+  - remove:
+      field: threat.indicator._file

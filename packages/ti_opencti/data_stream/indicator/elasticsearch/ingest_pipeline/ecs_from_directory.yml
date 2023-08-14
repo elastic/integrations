@@ -1,0 +1,43 @@
+---
+description: Build ECS fields from an OpenCTI directory observable
+processors:
+
+  - set:
+      field: threat.indicator._file.accessed
+      value: "{{_ingest._value.atime}}"
+      ignore_empty_value: true
+
+  - set:
+      field: threat.indicator._file.created
+      value: "{{_ingest._value.ctime}}"
+      ignore_empty_value: true
+
+  - set:
+      field: threat.indicator._file.mtime
+      value: "{{_ingest._value.mtime}}"
+      ignore_empty_value: true
+
+  - append:
+      field: threat.indicator._file.path
+      value: "{{_ingest._value.path}}"
+      allow_duplicates: false
+
+  # TODO: extract drive_letter, directory from path?
+
+  - set:
+      field: threat.indicator._file.type
+      value: "dir"
+      ignore_empty_value: true
+
+  # append object
+  - append:
+      field: threat.indicator.file
+      value: []
+  - script:
+      description: Append to the destination
+      lang: painless
+      source: |
+        ctx.threat.indicator.file.add(ctx.threat.indicator._file);
+
+  - remove:
+      field: threat.indicator._file

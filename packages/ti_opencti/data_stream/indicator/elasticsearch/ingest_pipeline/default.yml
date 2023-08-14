@@ -19,6 +19,8 @@ processors:
       field: event.type
       value: indicator
 
+  # TODO: threat.feed.* static fields
+
   ############################
   # Generic indicator fields #
   ############################
@@ -42,6 +44,7 @@ processors:
   - rename:
       field: lang
       target_field: opencti.indicator.lang
+  # TODO set @timestamp right https://www.elastic.co/guide/en/elasticsearch/reference/current/ingest.html#access-ingest-metadata
   # - remove:
   #     field: '@timestamp'
   #     ignore_missing: true
@@ -57,6 +60,7 @@ processors:
   - rename:
       field: pattern_version
       target_field: opencti.indicator.pattern_version
+      ignore_missing: true
   - rename:
       field: pattern
       target_field: opencti.indicator.pattern
@@ -81,6 +85,14 @@ processors:
   - rename:
       field: x_opencti_main_observable_type
       target_field: threat.indicator.type
+  - script:
+      description: Reformat indicator type
+      lang: painless
+      source: |
+        String type = ctx.threat.indicator.type;
+        type = type.toLowerCase();
+        type = type.replace('stixfile', 'file');
+        ctx.threat.indicator.type = type;
   - rename:
       field: createdBy.name
       target_field: threat.indicator.provider
@@ -103,6 +115,7 @@ processors:
         append:
           field: tags
           value: "{{{_ingest._value.node.value}}}"
+          allow_duplicates: false
   - remove:
       field: objectLabel
 
@@ -138,6 +151,7 @@ processors:
   - rename:
       field: observables.pageInfo.globalCount
       target_field: opencti.indicator.observables_count
+      ignore_missing: true
 
   - foreach:
       field: observables.edges
@@ -266,17 +280,330 @@ processors:
           entity = entity.replace('StixFile', 'file');
           entity = entity.toLowerCase();
           entity = entity.replace('-', '_');
-          if (ctx.opencti.observable.containsKey(entity)) {
-            ctx.opencti.observable[entity].append(observables[i]['node'])
-          } else {
-            ctx.opencti.observable[entity] = observables[i]['node'];
+          if (!ctx.opencti.observable.containsKey(entity)) {
+            ctx.opencti.observable[entity] = [];
           }
+          ctx.opencti.observable[entity].add(observables[i]['node']);
         }
   - remove:
       field: observables
 
-  # TODO: observables -> ecs
-  # TODO: related.*
+  #########################################
+  # ECS indicator fields from observables #
+  #########################################
+
+  - foreach:
+      field: opencti.observable.email_addr
+      ignore_missing: true
+      processor:
+        append:
+          field: threat.indicator.email.address
+          value: "{{_ingest._value.value}}"
+          allow_duplicates: false
+
+  - foreach:
+      field: opencti.observable.ipv4_addr
+      ignore_missing: true
+      processor:
+        append:
+          field: threat.indicator.ip
+          value: "{{_ingest._value.value}}"
+          allow_duplicates: false
+
+  - foreach:
+      field: opencti.observable.ipv6_addr
+      ignore_missing: true
+      processor:
+        append:
+          field: threat.indicator.ip
+          value: "{{_ingest._value.value}}"
+          allow_duplicates: false
+
+  - foreach:
+      field: opencti.observable.network_traffic
+      ignore_missing: true
+      processor:
+        append:
+          field: threat.indicator.port
+          value: "{{_ingest._value.src_port}}"
+          allow_duplicates: false
+  - foreach:
+      field: opencti.observable.network_traffic
+      ignore_missing: true
+      processor:
+        append:
+          field: threat.indicator.port
+          value: "{{_ingest._value.dst_port}}"
+          allow_duplicates: false
+
+  - foreach:
+      field: opencti.observable.autonomous_system
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "ecs_from_autonomous_system" }}'
+
+  - foreach:
+      field: opencti.observable.windows_registry_key
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "ecs_from_windows_registry_key" }}'
+
+  - foreach:
+      field: opencti.observable.windows_registry_value_type
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "ecs_from_windows_registry_value_type" }}'
+
+  - foreach:
+      field: opencti.observable.x509_certificate
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "ecs_from_x509_certificate" }}'
+
+  - foreach:
+      field: opencti.observable.url
+      ignore_missing: true
+      processor:
+        append:
+          field: _tmp_found_urls
+          value: "{{_ingest._value.value}}"
+          allow_duplicates: false
+  - foreach:
+      field: opencti.observable.artifact
+      ignore_missing: true
+      processor:
+        append:
+          field: _tmp_found_urls
+          value: "{{_ingest._value.url}}"
+          allow_duplicates: false
+  - foreach:
+      field: opencti.observable.file
+      ignore_missing: true
+      processor:
+        append:
+          field: _tmp_found_urls
+          value: "{{_ingest._value.content?.url}}"
+          allow_duplicates: false
+  - foreach:
+      field: opencti.observable.media_content
+      ignore_missing: true
+      processor:
+        append:
+          field: _tmp_found_urls
+          value: "{{_ingest._value.url}}"
+          allow_duplicates: false
+  - foreach:
+      field: opencti.observable.process
+      ignore_missing: true
+      processor:
+        foreach:
+          field: _ingest._value.service_dll
+          ignore_missing: true
+          processor:
+            append:
+              field: _tmp_found_urls
+              value: "{{_ingest._value.content?.url}}"
+              allow_duplicates: false
+  - script:
+      description: Remove null or empty items
+      lang: painless
+      source: |
+        if (ctx._tmp_found_urls != null) {
+          def result = [];
+          for (item in ctx._tmp_found_urls) {
+              if (item != null && item != '') {
+                  result.add(item);
+              }
+          }
+          ctx._tmp_found_urls = result;
+        }
+  - foreach:
+      field: _tmp_found_urls
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "ecs_from_url_field" }}'
+  - remove:
+      field: _tmp_found_urls
+      ignore_missing: true
+
+  - foreach:
+      field: opencti.observable.file
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "ecs_from_file" }}'
+
+  - foreach:
+      field: opencti.observable.process
+      ignore_missing: true
+      processor:
+        foreach:
+          field: _ingest._value.service_dll
+          ignore_missing: true
+          processor:
+            pipeline:
+              name: '{{ IngestPipeline "ecs_from_file" }}'
+
+  - foreach:
+      field: opencti.observable.directory
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "ecs_from_directory" }}'
+
+  - foreach:
+      field: opencti.observable.artifact
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "ecs_from_artifact" }}'
+
+  ######################
+  # ECS related fields #
+  ######################
+
+  - foreach:
+      field: opencti.observable.x509_certificate
+      ignore_missing: true
+      processor:
+        foreach:
+          field: _ingest._value.hash
+          ignore_missing: true
+          processor:
+            append:
+              field: "related.hash.{{_ingest._key}}"
+              value: "{{_ingest._value}}"
+              allow_duplicates: false
+  - foreach:
+      field: opencti.observable.file
+      ignore_missing: true
+      processor:
+        foreach:
+          field: _ingest._value.hash
+          ignore_missing: true
+          processor:
+            append:
+              field: "related.hash.{{_ingest._key}}"
+              value: "{{_ingest._value}}"
+              allow_duplicates: false
+  - foreach:
+      field: opencti.observable.artifact
+      ignore_missing: true
+      processor:
+        foreach:
+          field: _ingest._value.hash
+          ignore_missing: true
+          processor:
+            append:
+              field: "related.hash.{{_ingest._key}}"
+              value: "{{_ingest._value}}"
+              allow_duplicates: false
+  - foreach:
+      field: opencti.observable.process
+      ignore_missing: true
+      processor:
+        foreach:
+          field: _ingest._value.service_dll
+          ignore_missing: true
+          processor:
+            foreach:
+              field: _ingest._value.hash
+              ignore_missing: true
+              processor:
+                append:
+                  field: "related.hash.{{_ingest._key}}"
+                  value: "{{_ingest._value}}"
+                  allow_duplicates: false
+
+  - foreach:
+      field: opencti.observable.hostname
+      ignore_missing: true
+      processor:
+        append:
+          field: related.hosts
+          value: "{{_ingest._value.value}}"
+          allow_duplicates: false
+  - foreach:
+      field: threat.indicator.url
+      ignore_missing: true
+      processor:
+        append:
+          field: related.hosts
+          value: "{{_ingest._value.domain}}"
+          allow_duplicates: false
+  - script:
+      description: Remove null or empty items
+      lang: painless
+      source: |
+        if (ctx.related?.hosts != null) {
+          def result = [];
+          for (item in ctx.related.hosts) {
+              if (item != null && item != '') {
+                  result.add(item);
+              }
+          }
+          ctx.related.hosts = result;
+        }
+
+  - set:
+      field: related.ip
+      copy_from: threat.indicator.ip
+      if: ctx.threat.indicator.ip instanceof List
+
+  - foreach:
+      field: opencti.observable.email_addr
+      ignore_missing: true
+      processor:
+        append:
+          field: related.user
+          value: "{{_ingest._value.value}}"
+          allow_duplicates: false
+  - foreach:
+      field: threat.indicator.url
+      ignore_missing: true
+      processor:
+        append:
+          field: related.user
+          value: "{{_ingest._value.username}}"
+          allow_duplicates: false
+  - foreach:
+      field: opencti.observable.user_account
+      ignore_missing: true
+      processor:
+        append:
+          field: related.user
+          value: "{{_ingest._value.user_id}}"
+          allow_duplicates: false
+  - foreach:
+      field: opencti.observable.user_account
+      ignore_missing: true
+      processor:
+        append:
+          field: related.user
+          value: "{{_ingest._value.account_login}}"
+          allow_duplicates: false
+  - script:
+      description: Remove null or empty items
+      lang: painless
+      source: |
+        if (ctx.related?.user != null) {
+          def result = [];
+          for (item in ctx.related.user) {
+              if (item != null && item != '') {
+                  result.add(item);
+              }
+          }
+          ctx.related.user = result;
+        }
+
+###################
+# Failure handler #
+###################
 
 on_failure:
 - set:
