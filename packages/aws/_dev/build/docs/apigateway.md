@@ -15,6 +15,23 @@ The API Gateway integration collects two types of data: metrics and logs.
 **Logs** help you keep a record of events happening in Amazon API Gateway.
 Logs collected by the Amazon API Gateway integration include the HTTP method, status code, request details and more. 
 
+AWS API Gateway allows you to set up Custom Access Logging to gain deeper insights into the requests and responses through your API by making use of context variables ([HTTP](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-logging-variables.html), [WebSockets](https://docs.aws.amazon.com/apigateway/latest/developerguide/websocket-api-logging.html)), input, stage and util variables ([REST](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-mapping-template-reference.html)).
+
+The Elastic integration for AWS API Gateway supports the following Log Format by API type:
+
+HTTP:  
+```{"requestId": "$context.requestId","ip": "$context.identity.sourceIp","requestTime": "$context.requestTime","httpMethod": "$context.httpMethod","routeKey": "$context.routeKey","status": "$context.status","protocol": "$context.protocol","responseLength": "$context.responseLength",apiId": "$context.apiId", "domainName": "$context.domainName", "stage": "$context.stage"}```
+
+REST:  
+```{"requestId": "$context.requestId","ip": "$context.identity.sourceIp","caller": "$context.identity.caller","user": "$context.identity.user""requestTime": "$context.requestTime","httpMethod": "$context.httpMethod","resourcePath": "$context.resourcePath","status": "$context.status","protocol": "$context.protocol","responseLength": "$context.responseLength",apiId": "$context.apiId", "domainName": "$context.domainName", "stage": "$context.stage"}```
+
+WebSockets:  
+```{"requestId": "$context.requestId","ip": "$context.identity.sourceIp","caller": "$context.identity.caller","user": "$context.identity.user","requestTime": "$context.requestTime","eventType": "$context.eventType","routeKey": "$context.routeKey","status": "$context.status","connectionId": "$context.connectionId", apiId": "$context.apiId", "domainName": "$context.domainName", "stage": "$context.stage"}```
+
+Beyond the standard Log Formats we provide, you can use a wide range of fields for each API type when enabling Custom Access Logging.
+
+To utilize these fields in the integration, create custom pipelines. These pipelines will process field names or values. You'll also need to create a custom mapping to store your data efficiently. For more information on how to do this, check out our [official documentation](https://www.elastic.co/guide/en/fleet/current/data-streams-pipeline-tutorial.html).
+
 See more details in the [Logs reference](#logs-reference).
 
 **Metrics** give you insight into the state of API Gateway.
