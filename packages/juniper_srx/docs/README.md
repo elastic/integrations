@@ -357,6 +357,9 @@ The following processes and tags are supported:
 | juniper.srx.context_value | context value | keyword |
 | juniper.srx.context_value_hit_rate | context value hit rate | integer |
 | juniper.srx.ddos_application_name | ddos application name | keyword |
+| juniper.srx.dpdk.port_number |  | integer |
+| juniper.srx.dpdk.port_state |  | integer |
+| juniper.srx.dpdk.swt_port_state |  | integer |
 | juniper.srx.dscp_value | apbr rule type | integer |
 | juniper.srx.dst_nat_rule_name | dst nat rule name | keyword |
 | juniper.srx.dst_nat_rule_type | dst nat rule type | keyword |
@@ -376,21 +379,12 @@ The following processes and tags are supported:
 | juniper.srx.function_name |  | keyword |
 | juniper.srx.hostname | hostname | keyword |
 | juniper.srx.icmp_type | icmp type | integer |
-| juniper.srx.ike_negotiation.err_msg |  | keyword |
-| juniper.srx.ike_negotiation.gateway |  | keyword |
-| juniper.srx.ike_negotiation.local.ike_id |  | keyword |
-| juniper.srx.ike_negotiation.local.ip_range |  | keyword |
-| juniper.srx.ike_negotiation.remote.ike_id |  | keyword |
-| juniper.srx.ike_negotiation.remote.ip_range |  | keyword |
-| juniper.srx.ike_negotiation.role |  | keyword |
-| juniper.srx.ike_negotiation.version |  | keyword |
-| juniper.srx.ike_negotiation.vpn |  | keyword |
-| juniper.srx.ike_negotiation.vr_id |  | keyword |
 | juniper.srx.inbound_bytes | bytes from server | integer |
 | juniper.srx.inbound_packets | packets from server | integer |
 | juniper.srx.index | index | keyword |
 | juniper.srx.index1 |  | keyword |
 | juniper.srx.index2 |  | keyword |
+| juniper.srx.ip_mon_reth_scan.trigger |  | keyword |
 | juniper.srx.kern_arp_addr_change.ip |  | ip |
 | juniper.srx.kern_arp_addr_change.mac1 |  | keyword |
 | juniper.srx.kern_arp_addr_change.mac2 |  | keyword |
@@ -403,6 +397,9 @@ The following processes and tags are supported:
 | juniper.srx.mode |  | keyword |
 | juniper.srx.name | name | keyword |
 | juniper.srx.nat_connection_tag | nat connection tag | keyword |
+| juniper.srx.negotiation.err_msg |  | keyword |
+| juniper.srx.negotiation.message |  | keyword |
+| juniper.srx.negotiation.type |  | keyword |
 | juniper.srx.nested_application | nested application | keyword |
 | juniper.srx.obj | url path | keyword |
 | juniper.srx.occur_count | occur count | integer |
@@ -453,6 +450,24 @@ The following processes and tags are supported:
 | juniper.srx.state | state | keyword |
 | juniper.srx.status | status | keyword |
 | juniper.srx.sub_category | sub category | keyword |
+| juniper.srx.system.aux_spi |  | integer |
+| juniper.srx.system.direction |  | keyword |
+| juniper.srx.system.ike_version |  | integer |
+| juniper.srx.system.local |  | keyword |
+| juniper.srx.system.local_gateway |  | ip |
+| juniper.srx.system.local_id |  | keyword |
+| juniper.srx.system.local_ike_id |  | keyword |
+| juniper.srx.system.mode |  | keyword |
+| juniper.srx.system.remote |  | keyword |
+| juniper.srx.system.remote_gateway |  | keyword |
+| juniper.srx.system.remote_id |  | keyword |
+| juniper.srx.system.remote_ike_id |  | keyword |
+| juniper.srx.system.role |  | keyword |
+| juniper.srx.system.spi |  | keyword |
+| juniper.srx.system.traffic_selector |  | keyword |
+| juniper.srx.system.type |  | keyword |
+| juniper.srx.system.vpn |  | keyword |
+| juniper.srx.system.vr_id |  | keyword |
 | juniper.srx.tag | system log message tag, which uniquely identifies the message. | keyword |
 | juniper.srx.temporary_filename | temporary_filename | keyword |
 | juniper.srx.tenant_id | tenant id | keyword |
