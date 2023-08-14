@@ -8,84 +8,74 @@ processors:
     if: ctx._temp_?.unparsed?.message != null && ctx._temp_?.unparsed?.message != ""
     tag: grok_unparsed_message
     patterns:
-#   # SRX System log patterns
-    - '^(?:%{PROG:syslog_program}|-)?\s(?:%{POSINT:syslog_pid}|-)?\s(?:%{WORD:tag}|-)?\s?((\[([^=]+?\s)?%{DATA:_temp_.system_structured}\"\])|-)?\s?(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}:%{DATA:_temp_.unparsed.syslog_structured}\s?$'
-    - '^(?:%{PROG:syslog_program})?\s(?:%{POSINT:syslog_pid})?\s(?:%{WORD:tag})?\s?(\[([^=]+?\s)?%{DATA:_temp_.system_structured}\"\])?\s?%{DATA:message}\s?$'
-    - '^(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}:%{DATA:_temp_.unparsed.syslog_structured}\s?$'
+    # 1. SRX System Structured Brief
+    - '^(?:%{PROG:syslog_program}|-)?\s(?:%{POSINT:syslog_pid}|-)?\s(?:%{WORD:tag}|-)?\s([-]+\s)?%{GREEDYDATA:_temp_.unparsed.system_structured_brief}\s?$'
+    # 2. SRX System Unstructured
+    - '^%{GREEDYDATA:message}$'
+
+# Parse different types of system_structured_brief messages
+- grok:
+    if: "ctx._temp_?.unparsed?.system_structured_brief != null && ctx._temp_.unparsed.system_structured_brief != ''"
+    tag: "grok_system_structured_brief"
+    field: "_temp_.unparsed.system_structured_brief"
+    patterns: 
+    # 1. Has word 'negotiation'
+    - '^%{WORD:_temp_.negotiation.type} negotiation %{GREEDYDATA:_temp_.negotiation.message}$'
+    # 2. Optionally contain hostname, tag, pid, and rest of message is parsed into _temp_.message_brief
+    - '^(%{SYSLOGHOST:syslog_hostname}\s)?(%{CUSTOM_TAG_BRIEF:_temp_.tag_brief}(\s\(pid=%{DATA:syslog_pid}\))?(:\s))?%{GREEDYDATA:_temp_.message_brief}$'
+    # 3. Match all
     - '^%{GREEDYDATA:message}$'
     pattern_definitions:
-        CUSTOM_DATE: "%{TIMESTAMP_ISO8601}|(%{MONTH}%{SPACE}+%{MONTHDAY}%{SPACE}+%{TIME})"
-        CUSTOM_PROG: "(%{DATA:_temp_.to_be_parsed})?%{PROG:_temp_.syslog_sub_program}(\\[%{POSINT:syslog_pid}\\]|\\s*\\(pid=%{DATA:syslog_pid}\\))?:"
-        CUSTOM_SYSTEM_TAG: "[A-Za-z_]+"
+        CUSTOM_TAG_BRIEF: "(?!FW)[A-Za-z_]+"
+    on_failure:
+    - append:
+        field: error.message
+        value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
 
-# split k-v fields inside structured data
-- kv:
-    field: _temp_.system_structured
-    if: 'ctx._temp_?.system_structured != null && ctx._temp_?.system_structured != ""'
-    field_split: " (?=[a-z0-9\\_\\-]+=)"
-    value_split: "="
-    prefix: "juniper.srx."
-    ignore_missing: true
-    ignore_failure: false
-    trim_value: "\""
-
-
-# Converts all kebab-case key names to snake_case
-- script:
-    lang: painless
-    if: ctx.juniper?.srx != null
-    source: >-
-        ctx.juniper.srx = ctx?.juniper?.srx.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().replace('-', '_'), e -> e.getValue()));
-
-
-# Removes all empty fields
-- script:
-    lang: painless
-    if: ctx.juniper?.srx != null
-    params:
-        values:
-            - "None"
-            - "UNKNOWN"
-            - "N/A"
-            - "-"
-    source: >-
-        ctx?.juniper?.srx.entrySet().removeIf(entry -> params.values.contains(entry.getValue()));
-
-# Clean up syslog_program & tag
+# Cleanup process and tag fields.
+# If juniper.srx.process and juniper.srx.tag fields are not already set, or has `-`, then set them using newly parsed grok pattern in system_structured_brief
 - set:
     field: juniper.srx.process
     value: "{{{syslog_program}}}"
     if: 'ctx.syslog_program != null && (ctx.juniper?.srx?.process == null || ctx.juniper?.srx?.process == "-")'
 - set:
-    field: juniper.srx.process
-    value: "{{{_temp_.syslog_sub_program}}}"
-    if: 'ctx._temp_?.syslog_sub_program != null && (ctx.juniper?.srx?.process == null || ctx.juniper?.srx?.process == "-")'
-- set:
     field: juniper.srx.tag
-    value: "{{{tag}}}"
-    if: 'ctx.tag != null && (ctx.juniper?.srx?.tag == null || ctx.juniper?.srx?.tag == "-")'
-- set:
-    field: juniper.srx.tag
-    value: "{{{_temp_.sub_tag}}}"
-    if: 'ctx._temp_?.sub_tag != null && (ctx.juniper?.srx?.tag == null || ctx.juniper?.srx?.tag == "-")'
+    value: "{{{_temp_.tag_brief}}}"
+    if: 'ctx._temp_?.tag_brief != null && (ctx.juniper?.srx?.tag == null || ctx.juniper.srx.tag == "-")'
 
-#### Firewall (tag = FW)
-# if: tag = FW && process = PFE_FW_SYSLOG_IP
+# Handle negotiation messages
+# 1. if: negotiation.message ~ /^failed.*/
 - dissect:
-    if: "ctx._temp_?.unparsed?.syslog_structured != null && ctx.juniper?.srx?.tag == 'FW' && ctx.juniper?.srx?.process == 'PFE_FW_SYSLOG_IP'"
-    tag: "dissect_sub_tag_fw_packets"
-    field: "_temp_.unparsed.syslog_structured"
-    pattern: " %{_temp_.fw.interface_name} %{_temp_.fw.filter_action} %{_temp_.fw.packet_protocol} %{_temp_.fw.src_addr} %{_temp_.fw.dst_addr} %{_temp_.fw.src_port} %{_temp_.fw.dst_port} (%{_temp_.fw.packets_num} packets)"
+    if: "ctx._temp_?.negotiation?.message != null && ctx._temp_.negotiation.message.startsWith('failed')"
+    tag: "dissect_neg_failed"
+    field: "_temp_.negotiation.message"
+    pattern: "failed with error: %{_temp_.negotiation.err_msg}. %{message}"
     on_failure:
     - append:
         field: error.message
         value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
-# if: tag = FW && process != PFE_FW_SYSLOG_IP
+# 2. if: negotiation.message ~ /^success.*/
 - dissect:
-    if: "ctx._temp_?.unparsed?.syslog_structured != null && ctx.juniper?.srx?.tag == 'FW' && ctx.juniper?.srx?.process != 'PFE_FW_SYSLOG_IP'"
-    tag: "dissect_sub_tag_fw"
-    field: "_temp_.unparsed.syslog_structured"
-    pattern: " %{_temp_.fw.interface_name} %{_temp_.fw.filter_action} %{_temp_.fw.packet_protocol} %{_temp_.fw.src_addr} %{_temp_.fw.dst_addr} %{_temp_.fw.src_port} %{_temp_.fw.dst_port}"
+    if: "ctx._temp_?.negotiation?.message != null && ctx._temp_.negotiation.message.startsWith('success')"
+    tag: "dissect_neg_success"
+    field: "_temp_.negotiation.message"
+    pattern: "successfully completed. %{message}"
+    on_failure:
+    - append:
+        field: error.message
+        value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+- rename:
+    field: _temp_.negotiation
+    target_field: juniper.srx.negotiation
+    if: ctx._temp_?.negotiation != null
+
+# Handle Firewall messages (message_brief ~ /^FW:/)
+- grok: 
+    if: "ctx._temp_?.message_brief != null && ctx._temp_.message_brief.startsWith('FW:')"
+    tag: "grok_message_brief"
+    field: "_temp_.message_brief"
+    patterns: 
+    - '^FW:\s%{NOTSPACE:_temp_.fw.interface_name}\s%{NOTSPACE:_temp_.fw.filter_action}\s%{NOTSPACE:_temp_.fw.packet_protocol}\s%{NOTSPACE:_temp_.fw.src_addr}\s%{NOTSPACE:_temp_.fw.dst_addr}\s%{NOTSPACE:_temp_.fw.src_port}\s%{NOTSPACE:_temp_.fw.dst_port}\s(\(%{NOTSPACE:_temp_.fw.packets_num} packets\))?\s?$'
     on_failure:
     - append:
         field: error.message
@@ -93,17 +83,102 @@ processors:
 - rename:
     field: _temp_.fw
     target_field: juniper.srx.firewall
-    if: "ctx._temp_?.fw != null && ctx.juniper?.srx?.tag == 'FW' "
+    if: ctx._temp_?.fw != null
 - rename:
     field: juniper.srx.firewall.interface_name
     target_field: juniper.srx.interface_name
     if: "ctx.juniper?.srx?.firewall?.interface_name != null"
 
+# Handle rtslib_dfwsm_get_async_cb messages (message_brief ~ /^rtslib_dfwsm_get_async_cb:/)
+- dissect:
+    if: "ctx._temp_?.message_brief != null && ctx._temp_.message_brief.startsWith('rtslib_dfwsm_get_async_cb:')"
+    tag: "dissect_rtslib_dfwsmr"
+    field: "_temp_.message_brief"
+    pattern: "rtslib_dfwsm_get_async_cb:u_data:%{_temp_.rtslib_dfwsm.u_data} k_usr_d:%{_temp_.rtslib_dfwsm.k_usr_d}"
+    on_failure:
+    - append:
+        field: error.message
+        value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+- rename:
+    field: _temp_.rtslib_dfwsm
+    target_field: juniper.srx.rtslib_dfwsm
+    if: ctx._temp_?.rtslib_dfwsm != null
+
+# Handle ip_mon_reth_scan messages (tag_brief == ip_mon_reth_scan)
+- dissect:
+    if: "ctx._temp_?.tag_brief != null && ctx._temp_.tag_brief == 'ip_mon_reth_scan'"
+    tag: "dissect_ip_mon_reth_scan"
+    field: "_temp_.message_brief"
+    pattern: "interface %{_temp_.ip_mon_reth_scan.interface_name} trigger %{_temp_.ip_mon_reth_scan.trigger}"
+    on_failure:
+    - append:
+        field: error.message
+        value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+- rename:
+    field: _temp_.ip_mon_reth_scan
+    target_field: juniper.srx.ip_mon_reth_scan
+    if: ctx._temp_?.ip_mon_reth_scan != null
+- rename:
+    field: juniper.srx.ip_mon_reth_scan.interface_name
+    target_field: juniper.srx.interface_name
+    if: "ctx.juniper?.srx?.ip_mon_reth_scan?.interface_name != null"
+
+# Handle dpdk_eth_devstart messages (tag_brief == dpdk_eth_devstart)
+- grok:
+    if: "ctx._temp_?.tag_brief != null && ctx._temp_.tag_brief == 'dpdk_eth_devstart'"
+    tag: "grok_dpdk_eth_devstart"
+    field: "_temp_.message_brief"
+    patterns: 
+    - '^port %{POSINT:_temp_.dpdk.port_number} (has already been started|ifd %{DATA:_temp_.dpdk.interface_name}), (new\s)?dpdk_port_state=%{POSINT:_temp_.dpdk.port_state} dpdk_swt_port_state %{POSINT:_temp_.dpdk.swt_port_state}$'
+    on_failure:
+    - append:
+        field: error.message
+        value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+- convert:
+    field: _temp_.dpdk.port_number
+    type: integer
+    tag: convert_dpdk_port_number_to_int
+    ignore_missing: true
+    if: "ctx._temp_?.dpdk?.port_number != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: _temp_.dpdk.port_state
+    type: integer
+    tag: convert_dpdk_port_state_to_int
+    ignore_missing: true
+    if: "ctx._temp_?.dpdk?.port_state != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: _temp_.dpdk.swt_port_state
+    type: integer
+    tag: convert_swt_port_state_to_int
+    ignore_missing: true
+    if: "ctx._temp_?.dpdk?.swt_port_state != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- rename:
+    field: _temp_.dpdk
+    target_field: juniper.srx.dpdk
+    if: ctx._temp_?.dpdk != null
+- rename:
+    field: juniper.srx.dpdk.interface_name
+    target_field: juniper.srx.interface_name
+    if: "ctx.juniper?.srx?.dpdk?.interface_name != null"
+
+
 ### RTLOG_CONN_ERROR (tag = RTLOG_CONN_ERROR)
 - dissect:
-    if: "ctx._temp_?.unparsed?.syslog_structured != null && ctx.juniper?.srx?.tag == 'RTLOG_CONN_ERROR'"
-    tag: "dissect_sub_tag_rtlog_conn_err"
-    field: "_temp_.unparsed.syslog_structured"
+    if: "ctx._temp_?.unparsed?.system_structured_brief != null && ctx.juniper?.srx?.tag == 'RTLOG_CONN_ERROR'"
+    tag: "dissect_tag_rtlog_conn_err"
+    field: "_temp_.unparsed.system_structured_brief"
     pattern: " Connection error %{_temp_.rtlog_conn_error.stream_name} %{_temp_.rtlog_conn_error.err_msg}"
     on_failure:
     - append:
@@ -163,9 +238,9 @@ processors:
 # PING_TEST_COMPLETED
 # if: tag = PING_TEST_COMPLETED
 - dissect:
-    if: "ctx._temp_?.unparsed?.syslog_structured != null && ctx.juniper?.srx?.tag == 'PING_TEST_COMPLETED'"
-    tag: "dissect_sub_tag_ping_test"
-    field: "_temp_.unparsed.syslog_structured"
+    if: "ctx._temp_?.unparsed?.system_structured_brief != null && ctx.juniper?.srx?.tag == 'PING_TEST_COMPLETED'"
+    tag: "dissect_tag_ping_test"
+    field: "_temp_.unparsed.system_structured_brief"
     pattern: " pingCtlOwnerIndex = %{_temp_.ping_test.owner}, pingCtlTestName = %{_temp_.ping_test.name}"
     on_failure:
     - append:
@@ -176,28 +251,12 @@ processors:
     target_field: juniper.srx.ping_test
     if: "ctx._temp_?.ping_test != null && ctx.juniper?.srx?.tag == 'PING_TEST_COMPLETED' "
 
-# IKE negotiation
-# if: tag = IKE negotiation
-- dissect:
-    if: "ctx._temp_?.unparsed?.syslog_structured != null && ctx.juniper?.srx?.tag == 'IKE negotiation'"
-    tag: "dissect_sub_tag_ike_neg"
-    field: "_temp_.unparsed.syslog_structured"
-    pattern: " failed with error: %{_temp_.ike_negotiation.err_msg}\\. IKE Version: %{_temp_.ike_negotiation.version}, VPN: %{_temp_.ike_negotiation.vpn} Gateway: %{_temp_.ike_negotiation.gateway}, Local: %{_temp_.ike_negotiation.local.ip_range}, Remote: %{_temp_.ike_negotiation.remote.ip_range}, Local IKE-ID: %{_temp_.ike_negotiation.local.ike_id}, Remote IKE-ID: %{_temp_.ike_negotiation.remote.ike_id}, VR-ID: %{_temp_.ike_negotiation.vr_id}, Role: %{_temp_.ike_negotiation.role}"
-    on_failure:
-    - append:
-        field: error.message
-        value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
-- rename:
-    field: _temp_.ike_negotiation
-    target_field: juniper.srx.ike_negotiation
-    if: "ctx._temp_?.ike_negotiation != null && ctx.juniper?.srx?.tag == 'IKE negotiation' "
-
 # KERN_ARP_ADDR_CHANGE
 # if: tag = KERN_ARP_ADDR_CHANGE
 - dissect:
-    if: "ctx._temp_?.unparsed?.syslog_structured != null && ctx.juniper?.srx?.tag == 'KERN_ARP_ADDR_CHANGE'"
-    tag: "dissect_sub_tag_kern_arp_addr"
-    field: "_temp_.unparsed.syslog_structured"
+    if: "ctx._temp_?.unparsed?.system_structured_brief != null && ctx.juniper?.srx?.tag == 'KERN_ARP_ADDR_CHANGE'"
+    tag: "dissect_tag_kern_arp_addr"
+    field: "_temp_.unparsed.system_structured_brief"
     pattern: " arp info overwritten for %{_temp_.kern_arp_addr_change.ip} from %{_temp_.kern_arp_addr_change.mac1} to %{_temp_.kern_arp_addr_change.mac2}"
     on_failure:
     - append:
@@ -219,26 +278,91 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
 
-# rtslib_dfwsm_get_async_cb
-# if: tag = rtslib_dfwsm_get_async_cb
-- dissect:
-    if: "ctx._temp_?.unparsed?.syslog_structured != null && ctx.juniper?.srx?.tag == 'rtslib_dfwsm_get_async_cb'"
-    tag: "dissect_sub_tag_rtslib_dfwsmr"
-    field: "_temp_.unparsed.syslog_structured"
-    pattern: "u_data:%{_temp_.rtslib_dfwsm.u_data} k_usr_d:%{_temp_.rtslib_dfwsm.k_usr_d}"
+# After System Structured, Structured-Brief, and Unstructured messages: there are optional key-value pairs seperated by ", ". These should now be in `message` field
+# split k-v fields inside message field.
+- kv:
+    field: message
+    if: 'ctx.message != null && ctx.message != ""'
+    tag: "kv_message"
+    field_split: ',\s(?=[a-zA-Z0-9\_\-\s]+:)'
+    value_split: ":"
+    prefix: "juniper.srx.system."
+    ignore_missing: true
+    ignore_failure: true
+    trim_value: '"'
+
+# Cleanup parsed k-v root field `juniper.srx.system`. Removes spaces, lowercases, and converts fields into snake_case
+- script:
+    lang: painless
+    tag: "script_cleanup_system"
+    if: ctx.juniper?.srx?.system != null
+    source: >-
+        ctx.juniper.srx.system = ctx.juniper.srx.system.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().replace(' ', '_').replace('-', '_').toLowerCase(), e -> e.getValue().trim()));
+
+#######################
+## SRX System Fields ##
+#######################
+- convert:
+    field: juniper.srx.system.aux_spi
+    type: integer
+    tag: convert_aux_spi_to_int
+    ignore_missing: true
+    if: "ctx.juniper?.srx?.system?.aux_spi != null"
     on_failure:
-    - append:
-        field: error.message
-        value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
-- rename:
-    field: _temp_.rtslib_dfwsm
-    target_field: juniper.srx.rtslib_dfwsm
-    if: "ctx._temp_?.rtslib_dfwsm != null && ctx.juniper?.srx?.tag == 'rtslib_dfwsm_get_async_cb' "
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: juniper.srx.system.ike_version
+    type: integer
+    tag: convert_ike_version_to_int
+    ignore_missing: true
+    if: "ctx.juniper?.srx?.system?.ike_version != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: juniper.srx.system.local_gateway
+    type: ip
+    tag: convert_local_gateway_to_ip
+    ignore_missing: true
+    if: "ctx.juniper?.srx?.system?.local_gateway != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: juniper.srx.system.remote_gateway
+    type: ip
+    tag: convert_remote_gateway_to_ip
+    ignore_missing: true
+    if: "ctx.juniper?.srx?.system?.remote_gateway != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
+# Removes all empty fields
+- script:
+    lang: painless
+    if: ctx.juniper?.srx?.system != null
+    params:
+        values:
+            - "None"
+            - "UNKNOWN"
+            - "N/A"
+            - "-"
+            - "Not-Available"
+    source: >-
+        ctx?.juniper?.srx?.system.entrySet().removeIf(entry -> params.values.contains(entry.getValue()));
 
-#########################
-## SRX System fields ##
-#########################
+# Copy `message_brief` into `message` if not already exists. This ensures unpased/unstructured data to be present in `message`.
+- set:
+    field: message
+    copy_from: _temp_.message_brief
+    if: "ctx._temp_?.message_brief != null && ctx.message == null"
+
 
 #######################
 ## ECS Event Mapping ##
@@ -604,6 +728,20 @@ processors:
     ignore_missing: true
     if: "ctx.juniper?.srx?.username != null"
 
+#########################
+## ECS Related Mapping ##
+#########################
+- append:
+    if: 'ctx.juniper?.srx?.system?.local_gateway != null'
+    field: related.ip
+    value: '{{juniper.srx.system.local_gateway}}'
+    allow_duplicates: false
+- append:
+    if: 'ctx.juniper?.srx?.system?.remote_gateway != null'
+    field: related.ip
+    value: '{{juniper.srx.system.remote_gateway}}'
+    allow_duplicates: false
+
 ######################
 ## ECS Observer Mapping ##
 ######################
@@ -611,7 +749,11 @@ processors:
     field: juniper.srx.interface_name
     target_field: observer.ingress.interface.name
     ignore_missing: true
-
+- rename:
+    field: syslog_hostname
+    target_field: observer.name
+    ignore_missing: true
+    if: "ctx.syslog_hostname != null && ctx.observer?.name == null"
 ######################
 ## ECS Rule Mapping ##
 ######################
@@ -649,6 +791,10 @@ processors:
     ignore_missing: true
     if: "ctx.juniper?.srx?.message != null"
 
+- remove:
+    field: juniper.srx.process
+    if: "ctx.juniper?.srx?.process != null && ['-','N/A','UNKNOWN','None'].contains(ctx.juniper.srx.process)"
+
 #############
 ## Cleanup ##
 #############
@@ -657,6 +803,7 @@ processors:
     # message field can be removed if all dissect patterns are added.
     # - message
     - syslog_program
+    - syslog_hostname
     - tag
     - juniper.srx.destination_port
     - juniper.srx.nat_destination_port
