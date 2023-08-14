@@ -611,6 +611,38 @@ processors:
       target_field: network.transport
       ignore_missing: true
   - script:
+      description: Calculate network.bytes
+      if: (ctx.source?.bytes != null || ctx.destination?.bytes != null) && ctx.network?.bytes == null
+      ignore_failure: true
+      lang: painless
+      source: |
+        if (ctx.network == null) {
+          ctx.network = new HashMap();
+        }
+        if (ctx.source.bytes != null && ctx.destination.bytes != null) {
+          ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes
+        } else if (ctx.source.bytes == null && ctx.destination.bytes != null) {
+          ctx.network.bytes = ctx.destination.bytes
+        } else if (ctx.source.bytes != null && ctx.destination.bytes == null) {
+          ctx.network.bytes = ctx.source.bytes
+        }
+  - script:
+      description: Calculate network.packets
+      if: (ctx.source?.packets != null || ctx.destination?.packets != null) && ctx.network?.packets == null
+      ignore_failure: true
+      lang: painless
+      source: |
+        if (ctx.network == null) {
+          ctx.network = new HashMap();
+        }
+        if (ctx.source.packets != null && ctx.destination.packets != null) {
+          ctx.network.packets = ctx.source.packets + ctx.destination.packets
+        } else if (ctx.source.packets == null && ctx.destination.packets != null) {
+          ctx.network.packets = ctx.destination.packets
+        } else if (ctx.source.packets != null && ctx.destination.packets == null) {
+          ctx.network.packets = ctx.source.packets
+        }
+  - script:
       description: Calculate network.direction if zones are not configured
       lang: painless
       if: "ctx?.source?.ip != null &&

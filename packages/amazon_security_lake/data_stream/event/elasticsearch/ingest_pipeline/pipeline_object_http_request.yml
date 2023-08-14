@@ -1,0 +1,131 @@
+---
+description: Pipeline for processing Http Request object.
+# Http Request object docs: https://schema.ocsf.io/1.0.0-rc.3/objects/http_request
+processors:
+  - set:
+      field: http.request.id
+      tag: set_http_request_id
+      copy_from: ocsf.http_request.uid
+      ignore_empty_value: true
+  - set:
+      field: http.request.method
+      tag: set_http_request_method
+      copy_from: ocsf.http_request.http_method
+      ignore_empty_value: true
+  - set:
+      field: http.request.referrer
+      tag: set_http_request_referrer
+      copy_from: ocsf.http_request.referrer
+      ignore_empty_value: true
+  - set:
+      field: http.version
+      tag: set_http_version
+      copy_from: ocsf.http_request.version
+      ignore_empty_value: true
+  - set:
+      field: url.domain
+      tag: set_url_domain
+      copy_from: ocsf.http_request.url.hostname
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_url_domain_into_related_hosts
+      value: '{{{url.domain}}}'
+      allow_duplicates: false
+      if: ctx.url?.domain != null
+  - set:
+      field: url.original
+      tag: set_url_original
+      copy_from: ocsf.http_request.url.url_string
+      ignore_empty_value: true
+  - set:
+      field: url.path
+      tag: set_url_path
+      copy_from: ocsf.http_request.url.path
+      ignore_empty_value: true
+  - convert:
+      field: ocsf.http_request.url.port
+      tag: convert_http_request_url_port_to_long
+      type: long
+      ignore_missing: true
+      if: ctx.ocsf?.http_request?.url?.port != ''
+      on_failure:
+        - remove:
+            field: ocsf.http_request.url.port
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - set:
+      field: url.port
+      tag: set_url_port
+      copy_from: ocsf.http_request.url.port
+      ignore_empty_value: true
+  - set:
+      field: url.query
+      tag: set_url_query
+      copy_from: ocsf.http_request.url.query_string
+      ignore_empty_value: true
+  - set:
+      field: url.scheme
+      tag: set_url_scheme
+      copy_from: ocsf.http_request.url.scheme
+      ignore_empty_value: true
+  - set:
+      field: url.subdomain
+      tag: set_url_subdomain
+      copy_from: ocsf.http_request.url.subdomain
+      ignore_empty_value: true
+  - user_agent:
+      field: ocsf.http_request.user_agent
+      ignore_missing: true
+  - set:
+      field: user_agent.original
+      tag: set_user_agent_original
+      copy_from: ocsf.http_request.user_agent
+      ignore_empty_value: true
+  - foreach:
+      field: ocsf.http_request.x_forwarded_for
+      if: ctx.ocsf?.http_request?.x_forwarded_for instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_http_request_x_forwarded_for_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ocsf.http_request.url.category_ids
+      if: ctx.ocsf?.http_request?.url?.category_ids instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_http_request_url_category_ids_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: ocsf.http_request.x_forwarded_for
+      if: ctx.ocsf?.http_request?.x_forwarded_for instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.ip
+          tag: append_http_request_x_forwarded_for_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
