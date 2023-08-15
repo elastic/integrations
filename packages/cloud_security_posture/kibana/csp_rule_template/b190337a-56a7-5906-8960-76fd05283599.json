@@ -1,0 +1,38 @@
+{
+    "id": "b190337a-56a7-5906-8960-76fd05283599",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Deleting instance(s) acting as routers/packet forwarders may break the network connectivity.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/vpc/docs/using-routes#canipforward",
+            "id": "b190337a-56a7-5906-8960-76fd05283599",
+            "name": "Ensure That IP Forwarding Is Not Enabled on Instances",
+            "profile_applicability": "* Level 1",
+            "description": "Compute Engine instance cannot forward a packet unless the source IP address of the packet matches the IP address of the instance.\nSimilarly, GCP won't deliver a packet whose destination IP address is different than the IP address of the instance receiving the packet.\nHowever, both capabilities are required if you want to use instances to help route packets.\n\nForwarding of data packets should be disabled to prevent data loss or information disclosure.",
+            "rationale": "Compute Engine instance cannot forward a packet unless the source IP address of the packet matches the IP address of the instance.\nSimilarly, GCP won't deliver a packet whose destination IP address is different than the IP address of the instance receiving the packet.\nHowever, both capabilities are required if you want to use instances to help route packets.\nTo enable this source and destination IP check, disable the `canIpForward` field, which allows an instance to send and receive packets with non-matching destination or source IPs.",
+            "audit": "**From Google Cloud Console**\n\n1. Go to the `VM Instances` page by visiting: [https://console.cloud.google.com/compute/instances](https://console.cloud.google.com/compute/instances). \n2. For every instance, click on its name to go to the `VM instance details` page.\n3. Under the `Network interfaces` section, ensure that `IP forwarding` is set to `Off` for every network interface.\n\n**From Google Cloud CLI**\n\n4. List all instances:\n```\ngcloud compute instances list --format='table(name,canIpForward)'\n```\n5. Ensure that `CAN_IP_FORWARD` column in the output of above command does not contain `True` for any VM instance.\n\n**Exception:**\nInstances created by GKE should be excluded because they need to have IP forwarding enabled and cannot be changed.\nInstances created by GKE have names that start with \"gke-\".",
+            "remediation": "You only edit the `canIpForward` setting at instance creation time.\nTherefore, you need to delete the instance and create a new one where `canIpForward` is set to `false`.\n\n**From Google Cloud Console**\n\n1. Go to the `VM Instances` page by visiting: [https://console.cloud.google.com/compute/instances](https://console.cloud.google.com/compute/instances). \n2. Select the `VM Instance` you want to remediate.\n3. Click the `Delete` button.\n4. On the 'VM Instances' page, click `CREATE INSTANCE'.\n5. Create a new instance with the desired configuration. By default, the instance is configured to not allow IP forwarding.\n\n**From Google Cloud CLI**\n\n6. Delete the instance:\n```\ngcloud compute instances delete INSTANCE_NAME\n```\n\n7. Create a new instance to replace it, with `IP forwarding` set to `Off`\n```\ngcloud compute instances create\n```",
+            "section": "Virtual Machines",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 4.6",
+                "Virtual Machines"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "4.6",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_4_6"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
