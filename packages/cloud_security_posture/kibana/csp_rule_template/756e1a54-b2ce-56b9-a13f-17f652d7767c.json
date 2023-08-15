@@ -1,0 +1,38 @@
+{
+    "id": "756e1a54-b2ce-56b9-a13f-17f652d7767c",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Enabling of logging may result in your project being charged for the additional logs usage.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/logging/docs/logs-based-metrics/\n2. https://cloud.google.com/monitoring/custom-metrics/\n3. https://cloud.google.com/monitoring/alerts/\n4. https://cloud.google.com/logging/docs/reference/tools/gcloud-logging\n5. https://cloud.google.com/logging/docs/audit/configure-data-access#getiampolicy-setiampolicy",
+            "id": "756e1a54-b2ce-56b9-a13f-17f652d7767c",
+            "name": "Ensure That the Log Metric Filter and Alerts Exist for Audit Configuration Changes",
+            "profile_applicability": "* Level 1",
+            "description": "Google Cloud Platform (GCP) services write audit log entries to the Admin Activity and Data Access logs to help answer the questions of, \"who did what, where, and when?\" within GCP projects.\n\nCloud audit logging records information includes the identity of the API caller, the time of the API call, the source IP address of the API caller, the request parameters, and the response elements returned by GCP services.\nCloud audit logging provides a history of GCP API calls for an account, including API calls made via the console, SDKs, command-line tools, and other GCP services.",
+            "rationale": "Admin activity and data access logs produced by cloud audit logging enable security analysis, resource change tracking, and compliance auditing.\n\nConfiguring the metric filter and alerts for audit configuration changes ensures the recommended state of audit configuration is maintained so that all activities in the project are audit-able at any point in time.",
+            "audit": "**From Google Cloud Console**\n\n**Ensure the prescribed log metric is present:**\n\n1. Go to `Logging/Logs-based Metrics` by visiting [https://console.cloud.google.com/logs/metrics](https://console.cloud.google.com/logs/metrics).\n\n2. In the `User-defined Metrics` section, ensure that at least one metric `<Log_Metric_Name>` is present with the filter text:\n```\nprotoPayload.methodName=\"SetIamPolicy\" AND\nprotoPayload.serviceData.policyDelta.auditConfigDeltas:*\n```\n**Ensure that the prescribed alerting policy is present:**\n\n3. Go to `Alerting` by visiting [https://console.cloud.google.com/monitoring/alerting](https://console.cloud.google.com/monitoring/alerting).\n\n4. Under the `Policies` section, ensure that at least one alert policy exists for the log metric above. Clicking on the policy should show that it is configured with a condition. For example, `Violates when: Any logging.googleapis.com/user/<Log Metric Name> stream` `is above a threshold of 0 for greater than zero(0) seconds`, means that the alert will trigger for any new owner change. Verify that the chosen alerting thresholds make sense for the user's organization.\n\n5. Ensure that appropriate notifications channels have been set up.\n\n**From Google Cloud CLI**\n\n**Ensure that the prescribed log metric is present:**\n\n6. List the log metrics:\n```\ngcloud beta logging metrics list --format json\n```\n7. Ensure that the output contains at least one metric with the filter set to: \n```\nprotoPayload.methodName=\"SetIamPolicy\" AND\nprotoPayload.serviceData.policyDelta.auditConfigDeltas:*\n```\n8. Note the value of the property `metricDescriptor.type` for the identified metric, in the format `logging.googleapis.com/user/<Log Metric Name>`.\n\n**Ensure that the prescribed alerting policy is present:**\n\n9. List the alerting policies:\n```\ngcloud alpha monitoring policies list --format json\n```\n10. Ensure that the output contains at least one alert policy where:\n- `conditions.conditionThreshold.filter` is set to `metric.type=\\\"logging.googleapis.com/user/<Log Metric Name>\\\"`\n- AND `enabled` is set to `true`",
+            "remediation": "**From Google Cloud Console**\n\n**Create the prescribed log metric:**\n\n1. Go to `Logging/Logs-based Metrics` by visiting [https://console.cloud.google.com/logs/metrics](https://console.cloud.google.com/logs/metrics) and click \"CREATE METRIC\".\n\n2. Click the down arrow symbol on the `Filter Bar` at the rightmost corner and select `Convert to Advanced Filter`.\n\n3. Clear any text and add: \n```\nprotoPayload.methodName=\"SetIamPolicy\" AND\nprotoPayload.serviceData.policyDelta.auditConfigDeltas:*\n```\n4. Click `Submit Filter`. Display logs appear based on the filter text entered by the user.\n\n5. In the `Metric Editor` menu on the right, fill out the name field. Set `Units` to `1` (default) and `Type` to `Counter`. This will ensure that the log metric counts the number of log entries matching the user's advanced logs query.\n\n6. Click `Create Metric`. \n\n**Create a prescribed Alert Policy:** \n\n7. Identify the new metric the user just created, under the section `User-defined Metrics` at [https://console.cloud.google.com/logs/metrics](https://console.cloud.google.com/logs/metrics).\n\n8. Click the 3-dot icon in the rightmost column for the new metric and select `Create alert from Metric`. A new page opens.\n\n9. Fill out the alert policy configuration and click `Save`. Choose the alerting threshold and configuration that makes sense for the organization. For example, a threshold of zero(0) for the most recent value will ensure that a notification is triggered for every owner change in the project:\n```\nSet `Aggregator` to `Count`\n\nSet `Configuration`:\n\n- Condition: above\n\n- Threshold: 0\n\n- For: most recent value\n```\n10. Configure the desired notifications channels in the section `Notifications`.\n\n11. Name the policy and click `Save`.\n\n**From Google Cloud CLI**\n\nCreate a prescribed Log Metric:\n- Use the command: gcloud beta logging metrics create \n- Reference for command usage: [https://cloud.google.com/sdk/gcloud/reference/beta/logging/metrics/create\n](https://cloud.google.com/sdk/gcloud/reference/beta/logging/metrics/create)\nCreate prescribed Alert Policy \n- Use the command: gcloud alpha monitoring policies create\n- Reference for command usage: [https://cloud.google.com/sdk/gcloud/reference/alpha/monitoring/policies/create](https://cloud.google.com/sdk/gcloud/reference/alpha/monitoring/policies/create)",
+            "section": "Logging and Monitoring",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 2.5",
+                "Logging and Monitoring"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "2.5",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_2_5"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
