@@ -27,37 +27,22 @@ processors:
         - panw_cortex.xdr.incident_id
       target_field: "_id"
       ignore_missing: true
-  - script:
-      description: Drops null/empty values recursively
-      lang: painless
-      source: |
-        boolean drop(Object o) {
-          if (o == null || o == "") {
-            return true;
-          } else if (o instanceof Map) {
-            ((Map) o).values().removeIf(v -> drop(v));
-            return (((Map) o).size() == 0);
-          } else if (o instanceof List) {
-            ((List) o).removeIf(v -> drop(v));
-            return (((List) o).length == 0);
-          }
-          return false;
-        }
-        drop(ctx);
   - date:
       field: panw_cortex.xdr.creation_time
+      target_field: panw_cortex.xdr.creation_time
       formats:
         - UNIX_MS
       if: ctx.panw_cortex?.xdr?.creation_time != null
   - date:
       field: panw_cortex.xdr.modification_time
+      target_field: panw_cortex.xdr.modification_time
       formats:
         - UNIX_MS
       if: ctx.panw_cortex?.xdr?.modification_time != null
-  - rename:
-      field: panw_cortex.xdr.name
-      target_field: message
-      ignore_missing: true
+  - set:
+      field: "@timestamp"
+      copy_from: panw_cortex.xdr.creation_time
+      if: ctx.panw_cortex?.xdr?.creation_time != null
   - set:
       field: event.severity
       value: 0
@@ -87,39 +72,24 @@ processors:
       target_field: event.reason
       ignore_missing: true
       if: "ctx.panw_cortex?.xdr?.description != null && ctx.panw_cortex.xdr.description instanceof String"
-  #---------------------------------------------
-  - rename:
-      field: panw_cortex.xdr.agent_device_domain
-      target_field: host.domain
-      ignore_missing: true
-  - rename:
-      field: panw_cortex.xdr.agent_fqdn
-      target_field: host.hostname
-      ignore_missing: true
-  - rename:
-      field: panw_cortex.xdr.host_name
-      target_field: host.hostname
-      ignore_missing: true
-      if: ctx.host?.hostname == null
-  - lowercase:
-      target_field: host.name
-      field: host.hostname
-      if: ctx.host?.hostname != null
-  - rename:
-      field: panw_cortex.xdr.endpoint_id
-      target_field: host.id
-      ignore_missing: true
-  - split:
-      field: panw_cortex.xdr.mac
-      target_field: host.mac
-      separator: ","
-      ignore_missing: true
-      if: ctx.host?.mac == null
-  - remove:
-      field:
-        - panw_cortex.xdr.mac
-      ignore_missing: true
-      if: ctx.host?.mac != null
+  - set:
+      field: related.hosts
+      copy_from: panw_cortex.xdr.hosts
+      if: ctx.panw_cortex?.xdr?.hosts != null
+  - set:
+      field: related.user
+      copy_from: panw_cortex.xdr.users
+      if: ctx.panw_cortex?.xdr?.users != null
+  - gsub:
+      field: related.hosts
+      pattern: ":.*"
+      replacement: ""
+      if: ctx.related?.hosts != null
+  - gsub:
+      field: related.user
+      pattern: ".*\\\\"
+      replacement: ""
+      if: ctx.related?.user != null
   - script:
       if: ctx.panw_cortex?.xdr?.mitre_techniques_ids_and_names != null
       lang: painless
@@ -180,43 +150,16 @@ processors:
       field: threat.framework
       value: "MITRE ATT&CK"
       if: "ctx.threat?.technique != null || ctx.threat?.tactic != null"
-
-  
-  - append:
-      field: related.hash
-      value: "{{{process.parent.hash.md5}}}"
-      allow_duplicates: false
-      if: ctx.process?.parent?.hash?.md5 != null
-  - append:
-      field: related.hash
-      value: "{{{process.parent.hash.sha256}}}"
-      allow_duplicates: false
-      if: ctx.process?.parent?.hash?.sha256 != null
-  - append:
-      field: related.hash
-      value: "{{{process.hash.md5}}}"
-      allow_duplicates: false
-      if: ctx.process?.hash?.md5 != null
-  - append:
-      field: related.hash
-      value: "{{{process.hash.sha256}}}"
-      allow_duplicates: false
-      if: ctx.process?.hash?.sha256 != null
-  - append:
-      field: related.hash
-      value: "{{{file.hash.sha256}}}"
-      allow_duplicates: false
-      if: ctx.file?.hash?.sha256 != null
-  - append:
-      field: related.hash
-      value: "{{{file.hash.md5}}}"
-      allow_duplicates: false
-      if: ctx.file?.hash?.md5 != null
   - append:
       field: related.user
       value: "{{{user.name}}}"
       allow_duplicates: false
       if: ctx.user?.name != null
+  - append:
+      field: related.host
+      value: "{{{host.name}}}"
+      allow_duplicates: false
+      if: ctx.host?.name != null
   - foreach:
       field: panw_cortex.xdr.tags
       if: ctx.panw_cortex?.xdr?.tags != null
@@ -225,10 +168,25 @@ processors:
           field: tags
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
-      
+  - script:
+      description: Drops null/empty values recursively
+      lang: painless
+      source: |
+        boolean drop(Object o) {
+          if (o == null || o == "") {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
   - remove:
       field:
-        - panw_cortex.xdr.host_name
         - panw_cortex.xdr.severity
         - panw_cortex.xdr.tags
         - panw_cortex.xdr.mitre_techniques_id_and_names
