@@ -49,7 +49,7 @@ processors:
   - set:
       field: event.type
       if: ctx.event?.action?.contains('log in') || ctx.event?.action?.contains('login to admin console') || ctx.event?.action?.contains('saml login') || ctx.event?.action?.contains('open secure note') || ctx.event?.action?.contains('failed login attempt')
-      value: [access]
+      value: [start]
   - set:
       field: event.type
       if: ctx.event?.action?.contains('make admin')
@@ -86,11 +86,22 @@ processors:
       field: event.outcome
       if: ctx.event?.action?.contains('require password change') || ctx.event?.action?.contains('reporting')
       value: unknown
+  # Set timezone based on config or locale. Defaults to US/Eastern due to
+  # https://support.lastpass.com/s/document-item?language=en_US&bundleId=lastpass&topicId=LastPass/api_event_reporting.html&_LANG=enus.
+  - rename:
+      field: _conf.tz_offset
+      target_field: event.timezone
+      if: ctx._conf?.tz_offset != null
+      ignore_failure: true
+  - set:
+      field: event.timezone
+      value: US/Eastern
+      override: false
   - date:
       field: json.Time
-      if: ctx.json?.Time != null && ctx.json.Time != ''
+      if: ctx.json?.Time != null && ctx.json.Time != '' && ctx.event?.timezone != null
       target_field: lastpass.event_report.time
-      timezone: "US/Eastern"
+      timezone: '{{{event.timezone}}}'
       formats:
         - ISO8601
         - yyyy-MM-dd HH:mm:ss
