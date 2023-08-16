@@ -1,0 +1,38 @@
+{
+    "id": "4b11956d-7985-524e-900e-20405e2baaca",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Deleting an API key will break dependent applications (if any).",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/docs/authentication/api-keys\n2. https://cloud.google.com/sdk/gcloud/reference/services/api-keys/list\n3. https://cloud.google.com/docs/authentication\n4. https://cloud.google.com/sdk/gcloud/reference/alpha/services/api-keys/delete",
+            "id": "4b11956d-7985-524e-900e-20405e2baaca",
+            "name": "Ensure API Keys Only Exist for Active Services",
+            "profile_applicability": "* Level 2",
+            "description": "API Keys should only be used for services in cases where other authentication methods are unavailable.\nUnused keys with their permissions in tact may still exist within a project.\nKeys are insecure because they can be viewed publicly, such as from within a browser, or they can be accessed on a device where the key resides.\nIt is recommended to use standard authentication flow instead.",
+            "rationale": "To avoid the security risk in using API keys, it is recommended to use standard authentication flow instead.\nSecurity risks involved in using API-Keys appear below:\n\n- API keys are simple encrypted strings\n\n- API keys do not identify the user or the application making the API request\n\n- API keys are typically accessible to clients, making it easy to discover and steal an API key",
+            "audit": "**From Console:**\n\n1. From within the Project you wish to audit Go to `APIs & Services\\Credentials`. \n\n2. In the section `API Keys`, no API key should be listed.\n\n**From Google Cloud Command Line**\n\n3. Run the following from within the project you wish to audit **`gcloud services api-keys list --filter`**.\n\n4. There should be no keys listed at the project level.",
+            "remediation": "**From Console:**\n\n1. Go to `APIs & Services\\Credentials` using\n\n2. In the section `API Keys`, to delete API Keys: Click the `Delete Bin Icon` in front of every `API Key Name`.\n\n**From Google Cloud Command Line**\n\n3. Run the following from within the project you wish to audit **`gcloud services api-keys list --filter`**\n\n4. **Pipe the results into ** \n``gcloud alpha services api-keys delete``",
+            "section": "Identity and Access Management",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 1.12",
+                "Identity and Access Management"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "1.12",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_1_12"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
