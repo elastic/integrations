@@ -13,7 +13,7 @@ To inspect the installed assets, you can navigate to **Stack Management > Data >
 |---------------------------|--------|----------------|-------------------------------------------------------------------------|
 | beaconing.pivot_transform |	Flags beaconing activity in your environment| 	logs-*        |	ml_beaconing_default|
 
-## Dashboard
+## Dashboards
 
 The **Network Beaconing Detection** has three set of dashboards: 
 * **Network Beaconing**: the main dashboard to monitor beaconing activity
