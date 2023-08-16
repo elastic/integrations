@@ -27,5 +27,3 @@ For the dashboards to work as expected, the following settings need to be config
     - Index pattern : `ml_beaconing_default`
     - Name: `ml_beaconing_default`
     - Custom data view ID: `ml_beaconing_default`
-## Licensing
-Usage in production requires that you have a license key that permits use of machine learning features.
