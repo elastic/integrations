@@ -15,7 +15,10 @@ To inspect the installed assets, you can navigate to **Stack Management > Data >
 
 ## Dashboard
 
-The **Network Beaconing Detection** has three set of dashboards namely - **Network Beaconing**, which is the main dashboard to monitor beaconing activity, **Beaconing Drilldown** to drilldown into relevant event logs and some statistics related to the beaconing activity, and finally, **Hosts Affected Over Time By Process Name** to monitor the reach of beaconing processes across hosts in your environment.
+The **Network Beaconing Detection** has three set of dashboards: 
+* **Network Beaconing**: the main dashboard to monitor beaconing activity
+* **Beaconing Drilldown**: drill down into relevant event logs and some statistics related to the beaconing activity
+* **Hosts Affected Over Time By Process Name**: monitor the reach of beaconing processes across hosts in your environment.
 
 For the dashboards to work as expected, the following settings need to be configured in Kibana. 
 1. Ensure the pivot transform is installed and running.
