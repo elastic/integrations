@@ -16,8 +16,8 @@ An example event for `alerts` looks as following:
 {
     "@timestamp": "2020-10-21T11:31:28.980Z",
     "agent": {
-        "ephemeral_id": "8f03f3c4-cf5e-4f98-b2cf-b050aacc0764",
-        "id": "e1c40489-ae37-4589-ba69-1dc7aaefbf73",
+        "ephemeral_id": "72caa6c1-909e-48b7-b4f8-52f192cb0502",
+        "id": "a5aa6980-0f6e-42e1-a759-20bd69b972a5",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.9.0"
@@ -31,7 +31,7 @@ An example event for `alerts` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "e1c40489-ae37-4589-ba69-1dc7aaefbf73",
+        "id": "a5aa6980-0f6e-42e1-a759-20bd69b972a5",
         "snapshot": false,
         "version": "8.9.0"
     },
@@ -44,7 +44,7 @@ An example event for `alerts` looks as following:
         "created": "2020-10-21T11:31:28.980Z",
         "dataset": "panw_cortex_xdr.alerts",
         "id": "800800",
-        "ingested": "2023-08-15T12:59:19Z",
+        "ingested": "2023-08-16T12:36:38Z",
         "kind": "alert",
         "original": "{\"action\":\"BLOCKED\",\"action_pretty\":\"Prevented (Blocked)\",\"agent_data_collection_status\":true,\"agent_device_domain\":null,\"agent_fqdn\":\"test\",\"agent_is_vdi\":null,\"agent_os_sub_type\":\"XP\",\"agent_os_type\":\"Windows\",\"agent_version\":\"1.2.3.4\",\"alert_id\":\"1001\",\"attempt_counter\":55,\"bioc_category_enum_key\":null,\"bioc_indicator\":null,\"category\":\"Exploit\",\"deduplicate_tokens\":null,\"description\":\"Local privilege escalation prevented\",\"detection_timestamp\":1603279888980,\"end_match_attempt_ts\":1603552062824,\"endpoint_id\":\"12345678\",\"events\":{\"action_country\":\"UNKNOWN\",\"action_external_hostname\":null,\"action_file_macro_sha256\":null,\"action_file_md5\":null,\"action_file_name\":null,\"action_file_path\":null,\"action_file_sha256\":null,\"action_local_ip\":null,\"action_local_port\":null,\"action_process_causality_id\":null,\"action_process_image_command_line\":null,\"action_process_image_name\":null,\"action_process_image_sha256\":null,\"action_process_instance_id\":null,\"action_process_signature_status\":\"N/A\",\"action_process_signature_vendor\":null,\"action_registry_data\":null,\"action_registry_full_key\":null,\"action_registry_key_name\":null,\"action_registry_value_name\":null,\"action_remote_ip\":null,\"action_remote_port\":null,\"actor_causality_id\":null,\"actor_process_causality_id\":null,\"actor_process_command_line\":\"c:\\\\tmp\\\\virus.exe\",\"actor_process_image_md5\":null,\"actor_process_image_name\":\"virus.exe\",\"actor_process_image_path\":\"c:\\\\tmp\\\\virus.exe\",\"actor_process_image_sha256\":\"133ee989293f92736301280c6f14c89d521200c17dcdcecca30cd20705332d44\",\"actor_process_instance_id\":\"1234\",\"actor_process_os_pid\":1234,\"actor_process_signature_status\":\"N/A\",\"actor_process_signature_vendor\":null,\"actor_thread_thread_id\":null,\"agent_host_boot_time\":null,\"agent_install_type\":\"NA\",\"association_strength\":null,\"causality_actor_causality_id\":null,\"causality_actor_process_command_line\":null,\"causality_actor_process_execution_time\":null,\"causality_actor_process_image_md5\":null,\"causality_actor_process_image_name\":null,\"causality_actor_process_image_path\":null,\"causality_actor_process_image_sha256\":null,\"causality_actor_process_signature_status\":\"N/A\",\"causality_actor_process_signature_vendor\":null,\"dns_query_name\":null,\"dst_action_country\":null,\"dst_action_external_hostname\":null,\"dst_action_external_port\":null,\"dst_agent_id\":null,\"dst_association_strength\":null,\"dst_causality_actor_process_execution_time\":null,\"event_id\":null,\"event_sub_type\":null,\"event_timestamp\":1603279888980,\"event_type\":\"Process Execution\",\"fw_app_category\":null,\"fw_app_id\":null,\"fw_app_subcategory\":null,\"fw_app_technology\":null,\"fw_device_name\":null,\"fw_email_recipient\":null,\"fw_email_sender\":null,\"fw_email_subject\":null,\"fw_interface_from\":null,\"fw_interface_to\":null,\"fw_is_phishing\":\"N/A\",\"fw_misc\":null,\"fw_rule\":null,\"fw_rule_id\":null,\"fw_serial_number\":null,\"fw_url_domain\":null,\"fw_vsys\":null,\"fw_xff\":null,\"module_id\":\"Privilege Escalation Protection\",\"os_actor_causality_id\":null,\"os_actor_effective_username\":null,\"os_actor_process_causality_id\":null,\"os_actor_process_command_line\":null,\"os_actor_process_image_name\":null,\"os_actor_process_image_path\":null,\"os_actor_process_image_sha256\":null,\"os_actor_process_instance_id\":null,\"os_actor_process_os_pid\":null,\"os_actor_process_signature_status\":\"N/A\",\"os_actor_process_signature_vendor\":null,\"os_actor_thread_thread_id\":null,\"story_id\":null,\"user_name\":null},\"external_id\":\"800800\",\"filter_rule_id\":null,\"host_ip\":[\"10.0.255.20\"],\"host_name\":\"Test\",\"is_whitelisted\":false,\"local_insert_ts\":1603279967500,\"mac\":null,\"mac_address\":[\"00:11:22:33:44:55\"],\"matching_service_rule_id\":null,\"matching_status\":\"FAILED\",\"mitre_tactic_id_and_name\":[\"\"],\"mitre_technique_id_and_name\":[\"\"],\"name\":\"Kernel Privilege Escalation\",\"severity\":\"high\",\"source\":\"XDR Agent\",\"starred\":false}",
         "reason": "Local privilege escalation prevented",
@@ -360,8 +360,8 @@ An example event for `incidents` looks as following:
 {
     "@timestamp": "2023-08-14T01:20:00.230Z",
     "agent": {
-        "ephemeral_id": "4c46a333-2159-4dbf-82d3-4336d2e482b2",
-        "id": "e1c40489-ae37-4589-ba69-1dc7aaefbf73",
+        "ephemeral_id": "745c970c-5daa-4e12-a9cb-2548da654020",
+        "id": "a5aa6980-0f6e-42e1-a759-20bd69b972a5",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.9.0"
@@ -375,7 +375,7 @@ An example event for `incidents` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "e1c40489-ae37-4589-ba69-1dc7aaefbf73",
+        "id": "a5aa6980-0f6e-42e1-a759-20bd69b972a5",
         "snapshot": false,
         "version": "8.9.0"
     },
@@ -384,10 +384,10 @@ An example event for `incidents` looks as following:
         "category": [
             "malware"
         ],
-        "created": "2023-08-15T12:59:52.233Z",
+        "created": "2023-08-16T12:37:11.804Z",
         "dataset": "panw_cortex_xdr.incidents",
         "id": "893",
-        "ingested": "2023-08-15T12:59:55Z",
+        "ingested": "2023-08-16T12:37:14Z",
         "kind": "alert",
         "original": "{\"aggregated_score\":5,\"alert_categories\":[\"Exfiltration\"],\"alert_count\":1,\"alerts_grouping_status\":\"Enabled\",\"assigned_user_mail\":null,\"assigned_user_pretty_name\":null,\"creation_time\":1691976000230,\"critical_severity_alert_count\":0,\"description\":\"'Large Upload (Generic)' generated by XDR Analytics detected on host test1234 involving user nt authority\\\\system\",\"detection_time\":null,\"high_severity_alert_count\":0,\"host_count\":1,\"hosts\":[\"test1234:b567c1a651e66999158aef5d864dad25\"],\"incident_id\":\"893\",\"incident_name\":null,\"incident_sources\":[\"XDR Analytics\"],\"low_severity_alert_count\":1,\"manual_description\":null,\"manual_score\":null,\"manual_severity\":null,\"med_severity_alert_count\":0,\"mitre_tactics_ids_and_names\":[\"TA0010 - Exfiltration\"],\"mitre_techniques_ids_and_names\":[\"T1048 - Exfiltration Over Alternative Protocol\"],\"modification_time\":1691976000230,\"notes\":null,\"original_tags\":[\"DS:PANW/XDR Agent\",\"EG:win-server-ex-ransomeware_report\",\"EG:win-server-default\"],\"predicted_score\":5,\"resolve_comment\":null,\"resolved_timestamp\":null,\"rule_based_score\":null,\"severity\":\"low\",\"starred\":false,\"status\":\"new\",\"tags\":[\"DS:PANW/XDR Agent\",\"EG:win-server-default\",\"EG:win-server-ex-ransomeware_report\"],\"user_count\":1,\"users\":[\"nt authority\\\\system\"],\"wildfire_hits\":0,\"xdr_url\":\"https://test.xdr.eu.paloaltonetworks.com/incident-view?caseId=893\"}",
         "reason": "'Large Upload (Generic)' generated by XDR Analytics detected on host test1234 involving user nt authority\\system",
