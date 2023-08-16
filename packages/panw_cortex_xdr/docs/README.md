@@ -526,30 +526,41 @@ An example event for `incidents` looks as following:
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| panw_cortex.xdr.aggregated_score |  | long |
-| panw_cortex.xdr.alert_categories |  | keyword |
-| panw_cortex.xdr.alert_count |  | long |
-| panw_cortex.xdr.alerts_grouping_status |  | keyword |
-| panw_cortex.xdr.creation_time |  | date |
-| panw_cortex.xdr.critical_severity_alert_count |  | long |
-| panw_cortex.xdr.high_severity_alert_count |  | long |
-| panw_cortex.xdr.host_count |  | long |
-| panw_cortex.xdr.hosts |  | keyword |
-| panw_cortex.xdr.incident_id |  | keyword |
-| panw_cortex.xdr.incident_sources |  | keyword |
-| panw_cortex.xdr.low_severity_alert_count |  | long |
-| panw_cortex.xdr.med_severity_alert_count |  | long |
-| panw_cortex.xdr.mitre_tactics_ids_and_names |  | keyword |
-| panw_cortex.xdr.mitre_techniques_ids_and_names |  | keyword |
-| panw_cortex.xdr.modification_time |  | date |
+| panw_cortex.xdr.aggregated_score | Aggregated incident score. | long |
+| panw_cortex.xdr.alert_categories | Categories for alerts contained in the incident. | keyword |
+| panw_cortex.xdr.alert_count | Count of alerts. | long |
+| panw_cortex.xdr.alerts_grouping_status | Is alert grouping enabled for this incident. | keyword |
+| panw_cortex.xdr.assigned_user_mail | Email for the assigned user. | keyword |
+| panw_cortex.xdr.assigned_user_pretty_name | Pretty name for the assigned user. | keyword |
+| panw_cortex.xdr.creation_time | Incident creation time. | date |
+| panw_cortex.xdr.critical_severity_alert_count | Count of critical severity alerts for this incident. | long |
+| panw_cortex.xdr.detection_time | Detection time. | object |
+| panw_cortex.xdr.high_severity_alert_count | Count of high severity alerts for this incident. | long |
+| panw_cortex.xdr.host_count | Count of hosts related to this incident. | long |
+| panw_cortex.xdr.hosts | Host names and host ID's related to this incident. | keyword |
+| panw_cortex.xdr.incident_id | Incident ID | keyword |
+| panw_cortex.xdr.incident_name | Incident name | keyword |
+| panw_cortex.xdr.incident_sources | Detection sources for this incident. | keyword |
+| panw_cortex.xdr.low_severity_alert_count | Count of low severity alerts for this incident. | long |
+| panw_cortex.xdr.manual_description | Manual incident description. | keyword |
+| panw_cortex.xdr.manual_score | Manual incident score. | object |
+| panw_cortex.xdr.manual_severity | Manual incident severity. | keyword |
+| panw_cortex.xdr.med_severity_alert_count | Count of medium severity alerts for this incident. | long |
+| panw_cortex.xdr.mitre_tactics_ids_and_names | MITRE tactic ID's and names | keyword |
+| panw_cortex.xdr.mitre_techniques_ids_and_names | MITRE technique ID's and names | keyword |
+| panw_cortex.xdr.modification_time | Incident modification time. | date |
+| panw_cortex.xdr.notes | Incident notes. | keyword |
 | panw_cortex.xdr.original_tags | Original tags for the asset. | keyword |
-| panw_cortex.xdr.predicted_score |  | long |
-| panw_cortex.xdr.starred |  | boolean |
-| panw_cortex.xdr.status |  | keyword |
-| panw_cortex.xdr.user_count |  | long |
-| panw_cortex.xdr.users |  | keyword |
-| panw_cortex.xdr.wildfire_hits |  | long |
-| panw_cortex.xdr.xdr_url |  | keyword |
+| panw_cortex.xdr.predicted_score | Predicted incident score. | long |
+| panw_cortex.xdr.resolve_comment | Incident resolution comment. | keyword |
+| panw_cortex.xdr.resolved_timestamp | Incident resolution timestamp. | date |
+| panw_cortex.xdr.rule_based_score | Rule based incident score. | long |
+| panw_cortex.xdr.starred | Starred incident. | boolean |
+| panw_cortex.xdr.status | Incident status. | keyword |
+| panw_cortex.xdr.user_count | Count of users related to the incident. | long |
+| panw_cortex.xdr.users | Usernames related to the incident. | keyword |
+| panw_cortex.xdr.wildfire_hits | Count of Wildfire hits. | long |
+| panw_cortex.xdr.xdr_url | URL to Cortex XDR incident. | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
