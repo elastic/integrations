@@ -347,6 +347,7 @@ An example event for `ec2` looks as following:
 | aws.ec2.metrics.CPUSurplusCreditsCharged.avg | The number of spent surplus credits that are not paid down by earned CPU credits, and which thus incur an additional charge. | long |
 | aws.ec2.metrics.CPUUtilization.avg | The average percentage of physical CPU time that Amazon EC2 uses to run the EC2 instance. | long |
 | aws.ec2.metrics.DiskReadBytes.rate | Bytes read per second from all instance store volumes available to the instance. | long |
+| aws.ec2.metrics.DiskReadBytes.sum | Total bytes read from all instance store volumes available to the instance. | long |
 | aws.ec2.metrics.DiskReadOps.rate | Completed read operations per second from all instance store volumes available to the instance in a specified period of time. | long |
 | aws.ec2.metrics.DiskReadOps.sum | Total completed read operations from all instance store volumes available to the instance in a specified period of time. | long |
 | aws.ec2.metrics.DiskWriteBytes.rate | Bytes written per second to all instance store volumes available to the instance. | long |
