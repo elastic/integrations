@@ -348,8 +348,11 @@ An example event for `ec2` looks as following:
 | aws.ec2.metrics.CPUUtilization.avg | The average percentage of physical CPU time that Amazon EC2 uses to run the EC2 instance. | long |
 | aws.ec2.metrics.DiskReadBytes.rate | Bytes read per second from all instance store volumes available to the instance. | long |
 | aws.ec2.metrics.DiskReadOps.rate | Completed read operations per second from all instance store volumes available to the instance in a specified period of time. | long |
+| aws.ec2.metrics.DiskReadOps.sum | Total completed read operations from all instance store volumes available to the instance in a specified period of time. | long |
 | aws.ec2.metrics.DiskWriteBytes.rate | Bytes written per second to all instance store volumes available to the instance. | long |
+| aws.ec2.metrics.DiskWriteBytes.sum | Total bytes written to all instance store volumes available to the instance. | long |
 | aws.ec2.metrics.DiskWriteOps.rate | Completed write operations per second to all instance store volumes available to the instance in a specified period of time. | long |
+| aws.ec2.metrics.DiskWriteOps.sum | Total completed write operations to all instance store volumes available to the instance in a specified period of time. | long |
 | aws.ec2.metrics.NetworkIn.rate | The number of bytes per second received on all network interfaces by the instance. | long |
 | aws.ec2.metrics.NetworkIn.sum | The number of bytes total received on all network interfaces by the instance. | long |
 | aws.ec2.metrics.NetworkOut.rate | The number of bytes per second sent out on all network interfaces by the instance. | long |
