@@ -3,6 +3,7 @@
   description: ""
   fields:
     - name: timegrain
+      dimension: true
       type: keyword
       description: >
         The Azure metric timegrain
@@ -25,6 +26,7 @@
 
         - name: id
           type: keyword
+          dimension: true
           description: >
             The id of the resource
 
@@ -55,17 +57,18 @@
       description: >
         The application ID
 
-    - name: dimensions.*
-      type: object
-      object_type: keyword
-      object_type_mapping_type: "*"
-      description: >
-        Azure metric dimensions.
-
-    - name: metrics.*.*
-      type: object
-      object_type: float
-      object_type_mapping_type: "*"
-      description: >
-        Metrics returned.
-
+    - name: dimensions
+      type: group
+      fields:
+        - name: "vmname"
+          type: keyword
+          dimension: true
+          description: The VM name
+        - name: "virtual_machine"
+          type: keyword
+          dimension: true
+          description: The VM name
+        - name: "lun"
+          type: keyword
+          dimension: true
+          description: Logical Unit Number is a number that is used to identify a specific storage device
