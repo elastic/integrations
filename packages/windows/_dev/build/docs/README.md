@@ -100,6 +100,15 @@ The Windows `applocker_msi_and_script` data stream provides events from the Wind
 
 {{fields "applocker_msi_and_script"}}
 
+### AppLocker/Packaged app-Deployment
+
+The Windows `applocker_packaged_app_deployment` data stream provides events from the Windows
+`Microsoft-Windows-AppLocker/Packaged app-Deployment` event log.
+
+{{event "applocker_packaged_app_deployment"}}
+
+{{fields "applocker_packaged_app_deployment"}}
+
 ### Forwarded
 
 The Windows `forwarded` data stream provides events from the Windows
