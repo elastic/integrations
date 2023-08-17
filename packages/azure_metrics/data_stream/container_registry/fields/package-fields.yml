@@ -4,6 +4,7 @@
   fields:
     - name: timegrain
       type: keyword
+      dimension: true
       description: >
         The Azure metric timegrain
 
@@ -25,6 +26,7 @@
 
         - name: id
           type: keyword
+          dimension: true
           description: >
             The id of the resource
 
@@ -55,17 +57,10 @@
       description: >
         The application ID
 
-    - name: dimensions.*
-      type: object
-      object_type: keyword
-      object_type_mapping_type: "*"
-      description: >
-        Azure metric dimensions.
-
-    - name: metrics.*.*
-      type: object
-      object_type: float
-      object_type_mapping_type: "*"
-      description: >
-        Metrics returned.
-
+    - name: dimensions
+      type: group
+      fields:
+        - name: "geolocation"
+          type: keyword
+          dimension: true
+          description: Geolocation of the container registry
