@@ -1,6 +1,6 @@
 # Palo Alto Cortex XDR Integration
 
-The PANW XDR integration collects alerts with multiple events from the [Cortex XDR API,](https://docs.paloaltonetworks.com/cortex/cortex-xdr/cortex-xdr-api/cortex-xdr-apis/incident-management/get-alerts).
+The PANW XDR integration collects alerts with multiple events from the [Cortex XDR Alerts API](https://docs-cortex.paloaltonetworks.com/r/Cortex-XDR-REST-API/Get-all-Alerts) and incidents from [Cortex XDR Incidents API](https://docs-cortex.paloaltonetworks.com/r/Cortex-XDR-REST-API/IncidentManagement).
 
 ## Logs
 
@@ -16,8 +16,8 @@ An example event for `alerts` looks as following:
 {
     "@timestamp": "2020-10-21T11:31:28.980Z",
     "agent": {
-        "ephemeral_id": "d844ab1b-e657-4caa-8809-2b9dd2a35590",
-        "id": "0a5c1566-c6fd-4e91-b96d-4083445a000e",
+        "ephemeral_id": "d1f9377a-0b86-44ab-8ba3-2be0e35e75fc",
+        "id": "6245802f-8bd9-4634-b1db-411601495ab1",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.9.0"
@@ -31,7 +31,7 @@ An example event for `alerts` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "0a5c1566-c6fd-4e91-b96d-4083445a000e",
+        "id": "6245802f-8bd9-4634-b1db-411601495ab1",
         "snapshot": false,
         "version": "8.9.0"
     },
@@ -44,7 +44,7 @@ An example event for `alerts` looks as following:
         "created": "2020-10-21T11:31:28.980Z",
         "dataset": "panw_cortex_xdr.alerts",
         "id": "800800",
-        "ingested": "2023-08-07T15:40:53Z",
+        "ingested": "2023-08-17T06:15:07Z",
         "kind": "alert",
         "original": "{\"action\":\"BLOCKED\",\"action_pretty\":\"Prevented (Blocked)\",\"agent_data_collection_status\":true,\"agent_device_domain\":null,\"agent_fqdn\":\"test\",\"agent_is_vdi\":null,\"agent_os_sub_type\":\"XP\",\"agent_os_type\":\"Windows\",\"agent_version\":\"1.2.3.4\",\"alert_id\":\"1001\",\"attempt_counter\":55,\"bioc_category_enum_key\":null,\"bioc_indicator\":null,\"category\":\"Exploit\",\"deduplicate_tokens\":null,\"description\":\"Local privilege escalation prevented\",\"detection_timestamp\":1603279888980,\"end_match_attempt_ts\":1603552062824,\"endpoint_id\":\"12345678\",\"events\":{\"action_country\":\"UNKNOWN\",\"action_external_hostname\":null,\"action_file_macro_sha256\":null,\"action_file_md5\":null,\"action_file_name\":null,\"action_file_path\":null,\"action_file_sha256\":null,\"action_local_ip\":null,\"action_local_port\":null,\"action_process_causality_id\":null,\"action_process_image_command_line\":null,\"action_process_image_name\":null,\"action_process_image_sha256\":null,\"action_process_instance_id\":null,\"action_process_signature_status\":\"N/A\",\"action_process_signature_vendor\":null,\"action_registry_data\":null,\"action_registry_full_key\":null,\"action_registry_key_name\":null,\"action_registry_value_name\":null,\"action_remote_ip\":null,\"action_remote_port\":null,\"actor_causality_id\":null,\"actor_process_causality_id\":null,\"actor_process_command_line\":\"c:\\\\tmp\\\\virus.exe\",\"actor_process_image_md5\":null,\"actor_process_image_name\":\"virus.exe\",\"actor_process_image_path\":\"c:\\\\tmp\\\\virus.exe\",\"actor_process_image_sha256\":\"133ee989293f92736301280c6f14c89d521200c17dcdcecca30cd20705332d44\",\"actor_process_instance_id\":\"1234\",\"actor_process_os_pid\":1234,\"actor_process_signature_status\":\"N/A\",\"actor_process_signature_vendor\":null,\"actor_thread_thread_id\":null,\"agent_host_boot_time\":null,\"agent_install_type\":\"NA\",\"association_strength\":null,\"causality_actor_causality_id\":null,\"causality_actor_process_command_line\":null,\"causality_actor_process_execution_time\":null,\"causality_actor_process_image_md5\":null,\"causality_actor_process_image_name\":null,\"causality_actor_process_image_path\":null,\"causality_actor_process_image_sha256\":null,\"causality_actor_process_signature_status\":\"N/A\",\"causality_actor_process_signature_vendor\":null,\"dns_query_name\":null,\"dst_action_country\":null,\"dst_action_external_hostname\":null,\"dst_action_external_port\":null,\"dst_agent_id\":null,\"dst_association_strength\":null,\"dst_causality_actor_process_execution_time\":null,\"event_id\":null,\"event_sub_type\":null,\"event_timestamp\":1603279888980,\"event_type\":\"Process Execution\",\"fw_app_category\":null,\"fw_app_id\":null,\"fw_app_subcategory\":null,\"fw_app_technology\":null,\"fw_device_name\":null,\"fw_email_recipient\":null,\"fw_email_sender\":null,\"fw_email_subject\":null,\"fw_interface_from\":null,\"fw_interface_to\":null,\"fw_is_phishing\":\"N/A\",\"fw_misc\":null,\"fw_rule\":null,\"fw_rule_id\":null,\"fw_serial_number\":null,\"fw_url_domain\":null,\"fw_vsys\":null,\"fw_xff\":null,\"module_id\":\"Privilege Escalation Protection\",\"os_actor_causality_id\":null,\"os_actor_effective_username\":null,\"os_actor_process_causality_id\":null,\"os_actor_process_command_line\":null,\"os_actor_process_image_name\":null,\"os_actor_process_image_path\":null,\"os_actor_process_image_sha256\":null,\"os_actor_process_instance_id\":null,\"os_actor_process_os_pid\":null,\"os_actor_process_signature_status\":\"N/A\",\"os_actor_process_signature_vendor\":null,\"os_actor_thread_thread_id\":null,\"story_id\":null,\"user_name\":null},\"external_id\":\"800800\",\"filter_rule_id\":null,\"host_ip\":[\"10.0.255.20\"],\"host_name\":\"Test\",\"is_whitelisted\":false,\"local_insert_ts\":1603279967500,\"mac\":null,\"mac_address\":[\"00:11:22:33:44:55\"],\"matching_service_rule_id\":null,\"matching_status\":\"FAILED\",\"mitre_tactic_id_and_name\":[\"\"],\"mitre_technique_id_and_name\":[\"\"],\"name\":\"Kernel Privilege Escalation\",\"severity\":\"high\",\"source\":\"XDR Agent\",\"starred\":false}",
         "reason": "Local privilege escalation prevented",
@@ -334,6 +334,237 @@ An example event for `alerts` looks as following:
 | source.geo.location | Longitude and latitude. | geo_point |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
+| tags | List of keywords used to tag each event. | keyword |
+| threat.framework | Name of the threat framework used to further categorize and classify the tactic and technique of the reported threat. Framework classification can be provided by detecting systems, evaluated at ingest time, or retrospectively tagged to events. | keyword |
+| threat.tactic.id | The id of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/ ) | keyword |
+| threat.tactic.name | Name of the type of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/) | keyword |
+| threat.technique.id | The id of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
+| threat.technique.name | The name of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
+| threat.technique.name.text | Multi-field of `threat.technique.name`. | match_only_text |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.email | User email address. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
+
+
+### Incidents
+
+The Cortex XDR Incidents API is used to retrieve incidents generated by Cortex XDR based on raw endpoint data. A single incident might include one or more local endpoint events, each event generating its own document on Elasticsearch.
+
+The Palo Alto XDR integration requires both an API key and API key ID, both which can be retrieved from the Cortex XDR UI. See: [Get Started with Cortex XDR API](https://docs.paloaltonetworks.com/cortex/cortex-xdr/cortex-xdr-api/cortex-xdr-api-overview/get-started-with-cortex-xdr-apis.html)
+
+An example event for `incidents` looks as following:
+
+```json
+{
+    "@timestamp": "2023-08-14T01:20:00.230Z",
+    "agent": {
+        "ephemeral_id": "02205f80-afa5-4cf8-a320-018c29c153fe",
+        "id": "6245802f-8bd9-4634-b1db-411601495ab1",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.9.0"
+    },
+    "data_stream": {
+        "dataset": "panw_cortex_xdr.incidents",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.9.0"
+    },
+    "elastic_agent": {
+        "id": "6245802f-8bd9-4634-b1db-411601495ab1",
+        "snapshot": false,
+        "version": "8.9.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "malware"
+        ],
+        "created": "2023-08-17T06:15:40.867Z",
+        "dataset": "panw_cortex_xdr.incidents",
+        "id": "893",
+        "ingested": "2023-08-17T06:15:43Z",
+        "kind": "alert",
+        "original": "{\"aggregated_score\":5,\"alert_categories\":[\"Exfiltration\"],\"alert_count\":1,\"alerts_grouping_status\":\"Enabled\",\"assigned_user_mail\":null,\"assigned_user_pretty_name\":null,\"creation_time\":1691976000230,\"critical_severity_alert_count\":0,\"description\":\"'Large Upload (Generic)' generated by XDR Analytics detected on host test1234 involving user nt authority\\\\system\",\"detection_time\":null,\"high_severity_alert_count\":0,\"host_count\":1,\"hosts\":[\"test1234:b567c1a651e66999158aef5d864dad25\"],\"incident_id\":\"893\",\"incident_name\":null,\"incident_sources\":[\"XDR Analytics\"],\"low_severity_alert_count\":1,\"manual_description\":null,\"manual_score\":null,\"manual_severity\":null,\"med_severity_alert_count\":0,\"mitre_tactics_ids_and_names\":[\"TA0010 - Exfiltration\"],\"mitre_techniques_ids_and_names\":[\"T1048 - Exfiltration Over Alternative Protocol\"],\"modification_time\":1691976000230,\"notes\":null,\"original_tags\":[\"DS:PANW/XDR Agent\",\"EG:win-server-ex-ransomeware_report\",\"EG:win-server-default\"],\"predicted_score\":5,\"resolve_comment\":null,\"resolved_timestamp\":null,\"rule_based_score\":null,\"severity\":\"low\",\"starred\":false,\"status\":\"new\",\"tags\":[\"DS:PANW/XDR Agent\",\"EG:win-server-default\",\"EG:win-server-ex-ransomeware_report\"],\"user_count\":1,\"users\":[\"nt authority\\\\system\"],\"wildfire_hits\":0,\"xdr_url\":\"https://test.xdr.eu.paloaltonetworks.com/incident-view?caseId=893\"}",
+        "reason": "'Large Upload (Generic)' generated by XDR Analytics detected on host test1234 involving user nt authority\\system",
+        "severity": 2,
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "panw_cortex": {
+        "xdr": {
+            "aggregated_score": 5,
+            "alert_categories": [
+                "Exfiltration"
+            ],
+            "alert_count": 1,
+            "alerts_grouping_status": "Enabled",
+            "creation_time": "2023-08-14T01:20:00.230Z",
+            "critical_severity_alert_count": 0,
+            "high_severity_alert_count": 0,
+            "host_count": 1,
+            "hosts": [
+                "test1234:b567c1a651e66999158aef5d864dad25"
+            ],
+            "incident_sources": [
+                "XDR Analytics"
+            ],
+            "low_severity_alert_count": 1,
+            "med_severity_alert_count": 0,
+            "mitre_tactics_ids_and_names": [
+                "TA0010 - Exfiltration"
+            ],
+            "mitre_techniques_ids_and_names": [
+                "T1048 - Exfiltration Over Alternative Protocol"
+            ],
+            "modification_time": "2023-08-14T01:20:00.230Z",
+            "original_tags": [
+                "DS:PANW/XDR Agent",
+                "EG:win-server-ex-ransomeware_report",
+                "EG:win-server-default"
+            ],
+            "predicted_score": 5,
+            "starred": false,
+            "status": "new",
+            "user_count": 1,
+            "users": [
+                "nt authority\\system"
+            ],
+            "wildfire_hits": 0,
+            "xdr_url": "https://test.xdr.eu.paloaltonetworks.com/incident-view?caseId=893"
+        }
+    },
+    "related": {
+        "hosts": [
+            "test1234"
+        ],
+        "user": [
+            "system"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "panw_cortex_xdr",
+        "DS:PANW/XDR Agent",
+        "EG:win-server-default",
+        "EG:win-server-ex-ransomeware_report"
+    ],
+    "threat": {
+        "framework": "MITRE ATT\u0026CK",
+        "tactic": {
+            "id": [
+                "TA0010"
+            ],
+            "name": [
+                "Exfiltration"
+            ]
+        },
+        "technique": {
+            "id": [
+                "T1048"
+            ],
+            "name": [
+                "Exfiltration Over Alternative Protocol"
+            ]
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.file.path | Path to the log file. | keyword |
+| log.flags | Flags for the log file. | keyword |
+| log.offset | Offset of the entry in the log file. | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| panw_cortex.xdr.aggregated_score | Aggregated incident score. | long |
+| panw_cortex.xdr.alert_categories | Categories for alerts contained in the incident. | keyword |
+| panw_cortex.xdr.alert_count | Count of alerts. | long |
+| panw_cortex.xdr.alerts_grouping_status | Is alert grouping enabled for this incident. | keyword |
+| panw_cortex.xdr.assigned_user_mail | Email for the assigned user. | keyword |
+| panw_cortex.xdr.assigned_user_pretty_name | Pretty name for the assigned user. | keyword |
+| panw_cortex.xdr.creation_time | Incident creation time. | date |
+| panw_cortex.xdr.critical_severity_alert_count | Count of critical severity alerts for this incident. | long |
+| panw_cortex.xdr.detection_time | Detection time. | object |
+| panw_cortex.xdr.high_severity_alert_count | Count of high severity alerts for this incident. | long |
+| panw_cortex.xdr.host_count | Count of hosts related to this incident. | long |
+| panw_cortex.xdr.hosts | Host names and host ID's related to this incident. | keyword |
+| panw_cortex.xdr.incident_id | Incident ID | keyword |
+| panw_cortex.xdr.incident_name | Incident name | keyword |
+| panw_cortex.xdr.incident_sources | Detection sources for this incident. | keyword |
+| panw_cortex.xdr.low_severity_alert_count | Count of low severity alerts for this incident. | long |
+| panw_cortex.xdr.manual_description | Manual incident description. | keyword |
+| panw_cortex.xdr.manual_score | Manual incident score. | object |
+| panw_cortex.xdr.manual_severity | Manual incident severity. | keyword |
+| panw_cortex.xdr.med_severity_alert_count | Count of medium severity alerts for this incident. | long |
+| panw_cortex.xdr.mitre_tactics_ids_and_names | MITRE tactic ID's and names | keyword |
+| panw_cortex.xdr.mitre_techniques_ids_and_names | MITRE technique ID's and names | keyword |
+| panw_cortex.xdr.modification_time | Incident modification time. | date |
+| panw_cortex.xdr.notes | Incident notes. | keyword |
+| panw_cortex.xdr.original_tags | Original tags for the asset. | keyword |
+| panw_cortex.xdr.predicted_score | Predicted incident score. | long |
+| panw_cortex.xdr.resolve_comment | Incident resolution comment. | keyword |
+| panw_cortex.xdr.resolved_timestamp | Incident resolution timestamp. | date |
+| panw_cortex.xdr.rule_based_score | Rule based incident score. | long |
+| panw_cortex.xdr.starred | Starred incident. | boolean |
+| panw_cortex.xdr.status | Incident status. | keyword |
+| panw_cortex.xdr.user_count | Count of users related to the incident. | long |
+| panw_cortex.xdr.users | Usernames related to the incident. | keyword |
+| panw_cortex.xdr.wildfire_hits | Count of Wildfire hits. | long |
+| panw_cortex.xdr.xdr_url | URL to Cortex XDR incident. | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
+| rule.name | The name of the rule or signature generating the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | threat.framework | Name of the threat framework used to further categorize and classify the tactic and technique of the reported threat. Framework classification can be provided by detecting systems, evaluated at ingest time, or retrospectively tagged to events. | keyword |
 | threat.tactic.id | The id of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/ ) | keyword |
