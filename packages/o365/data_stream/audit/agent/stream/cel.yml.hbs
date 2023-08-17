@@ -49,7 +49,7 @@ resource.rate_limit.burst: {{resource_rate_limit_burst}}
 {{/if}}
 
 {{#if enable_request_tracer}}
-resource.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
 {{/if}}
 
 state:
@@ -78,10 +78,17 @@ program: |
                                 // if NextPageUri does not exist, but content_type_state_created_at exists in state
                                 state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)
                                     .as(content_type_state, content_type_state[0].content_created_at.as(content_type_state_created_at, 
+                                        // if saved time inside state is more than 7 days old, then change it to 7 days.
+                                        (content_type_state_created_at.parse_time(time_layout.RFC3339).as(state_created_at, 
+                                            state_created_at < (now() - duration("168h")) ?
+                                                now() - duration("168h")
+                                            :
+                                                state_created_at
+                                        )).as(state_created_at_calc, 
                                         (state.base.list_contents_url + content_type + "&PublisherIdentifier={{azure_tenant_id}}" 
-                                            + "&startTime=" + (content_type_state_created_at.parse_time(time_layout.RFC3339) + duration("1s")).format(time_layout.RFC3339) 
-                                            + "&endTime=" + ((content_type_state_created_at.parse_time(time_layout.RFC3339) + duration("24h")).as(calc_end_time, 
-                                                calc_end_time <= now() ? calc_end_time : now())).format(time_layout.RFC3339) ) ))
+                                            + "&startTime=" + (state_created_at_calc + duration("1s")).format(time_layout.RFC3339) 
+                                            + "&endTime=" + ((state_created_at_calc + duration("24h")).as(calc_end_time, 
+                                                calc_end_time <= now() ? calc_end_time : now())).format(time_layout.RFC3339) ) )))
                             :
                                 // initial run when no cursor state exists i.e., polling from initial_interval
                                 state.base.list_contents_url + content_type + "&PublisherIdentifier={{azure_tenant_id}}"  
