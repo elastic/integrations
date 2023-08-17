@@ -2417,7 +2417,7 @@ The Windows `service` data stream provides service details.
 | windows.service.start_name | Account name under which a service runs. | keyword |  |
 | windows.service.start_type | The startup type of the service. The possible values are `Automatic`, `Boot`, `Disabled`, `Manual`, and `System`. | keyword |  |
 | windows.service.state | The actual state of the service. The possible values are `Continuing`, `Pausing`, `Paused`, `Running`, `Starting`, `Stopping`, and `Stopped`. | keyword |  |
-| windows.service.uptime.ms | The service's uptime specified in milliseconds. | long | counter |
+| windows.service.uptime.ms | The service's uptime specified in milliseconds. | long | gauge |
 
 
 ### Perfmon
