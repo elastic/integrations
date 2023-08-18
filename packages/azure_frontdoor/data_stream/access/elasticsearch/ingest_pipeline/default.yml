@@ -135,18 +135,15 @@ processors:
       field: http.response.status_code
       type: long
       ignore_missing: true
-
   - date:
       field: azure.frontdoor.access.time
       target_field: "@timestamp"
       formats:
         - ISO8601
-
   - dissect:
       field: azure.frontdoor.access.properties.securityProtocol
       pattern: "%{tls.version_protocol} %{tls.version}"
       ignore_missing: true
-
   - remove:
       field:
         - azure.frontdoor.access.properties.securityProtocol
@@ -154,7 +151,6 @@ processors:
         - azure.frontdoor.access.time
         - azure.frontdoor.access.properties
       ignore_missing: true
-
   - geoip:
       field: client.ip
       target_field: source.geo
