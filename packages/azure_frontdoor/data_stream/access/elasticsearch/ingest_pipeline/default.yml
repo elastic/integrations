@@ -153,7 +153,6 @@ processors:
         - azure.frontdoor.access.properties.httpStatusDetails
         - azure.frontdoor.access.time
         - azure.frontdoor.access.properties
-        - event.original
       ignore_missing: true
 
   - geoip:
@@ -178,6 +177,11 @@ processors:
       ignore_missing: true
   - user_agent:
       field: user_agent.original
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
       ignore_missing: true
 
 on_failure:
