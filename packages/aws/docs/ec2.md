@@ -152,34 +152,28 @@ An example event for `ec2` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-05-26T12:40:00.000Z",
-    "agent": {
-        "name": "docker-fleet-agent",
-        "id": "24d50340-a9d0-4d5d-9f42-fe9cb4b8c95d",
-        "type": "metricbeat",
-        "ephemeral_id": "f8282deb-ebc7-4d1f-9386-207f56657244",
-        "version": "8.2.0"
-    },
-    "elastic_agent": {
-        "id": "24d50340-a9d0-4d5d-9f42-fe9cb4b8c95d",
-        "version": "8.2.0",
-        "snapshot": false
-    },
+    "@timestamp": "2023-08-07T18:35:00.000Z",
     "cloud": {
-        "availability_zone": "us-east-1c",
+        "availability_zone": "eu-north-1c",
         "instance": {
-            "name": "elastic-package-test-33138",
-            "id": "i-0de58890d94dda2e3"
+            "id": "i-0c08512debca266ab"
         },
         "provider": "aws",
         "machine": {
-            "type": "t1.micro"
+            "type": "t3.medium"
         },
-        "region": "us-east-1",
+        "region": "eu-north-1",
         "account": {
-            "name": "elastic-beats",
-            "id": "428152502467"
+            "name": "MonitoringAccount",
+            "id": "627286350134"
         }
+    },
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "72314f01-98f2-477f-978a-e98d109c640c",
+        "type": "metricbeat",
+        "ephemeral_id": "b8cd4414-f528-43f4-b43f-0edbcc69b46f",
+        "version": "8.8.1"
     },
     "ecs": {
         "version": "8.0.0"
@@ -194,107 +188,121 @@ An example event for `ec2` looks as following:
     },
     "host": {
         "hostname": "docker-fleet-agent",
-        "disk": {
-            "read": {
-                "bytes": 0
-            },
-            "write": {
-                "bytes": 0
-            }
-        },
         "os": {
-            "kernel": "5.10.47-linuxkit",
+            "kernel": "5.15.49-linuxkit-pr",
             "codename": "focal",
             "name": "Ubuntu",
             "type": "linux",
             "family": "debian",
-            "version": "20.04.4 LTS (Focal Fossa)",
+            "version": "20.04.6 LTS (Focal Fossa)",
             "platform": "ubuntu"
         },
-        "containerized": true,
+        "containerized": false,
         "ip": [
-            "192.168.80.7"
+            "172.20.0.7"
         ],
-        "name": "elastic-package-test-33138",
+        "name": "docker-fleet-agent",
         "cpu": {
-            "usage": 0.08265027322397175
+            "usage": 2.8849988898518673
         },
-        "id": "i-0de58890d94dda2e3",
+        "id": "d08b346fbb8f49f5a2bb1a477f8ceb54",
         "mac": [
-            "02:42:c0:a8:50:07"
+            "02-42-AC-14-00-07"
         ],
-        "architecture": "x86_64",
+        "architecture": "aarch64",
         "network": {
             "ingress": {
-                "bytes": 1992
+                "bytes": 1608959,
+                "packets": 5334
             },
             "egress": {
-                "bytes": 1800
+                "bytes": 626755,
+                "packets": 4977
             }
         }
+    },
+    "elastic_agent": {
+        "id": "72314f01-98f2-477f-978a-e98d109c640c",
+        "version": "8.8.1",
+        "snapshot": false
     },
     "metricset": {
         "period": 300000,
         "name": "cloudwatch"
     },
     "event": {
-        "duration": 15936070000,
+        "duration": 5858967919,
         "agent_id_status": "verified",
-        "ingested": "2022-05-26T12:44:52Z",
+        "ingested": "2023-08-07T18:41:31Z",
         "module": "aws",
         "dataset": "aws.ec2_metrics"
     },
     "aws": {
         "ec2": {
-            "diskio": {
-                "read": {
-                    "count_per_sec": 0,
-                    "bytes_per_sec": 0
-                },
-                "write": {
-                    "count_per_sec": 0,
-                    "bytes_per_sec": 0
-                }
-            },
             "instance": {
                 "image": {
-                    "id": "ami-0ff900168d0231cd3"
+                    "id": "ami-00b8290583a865359"
                 },
                 "core": {
                     "count": 1
                 },
                 "private": {
-                    "ip": "172.31.16.45",
-                    "dns_name": "ip-172-31-16-45.ec2.internal"
+                    "ip": "172.31.13.154",
+                    "dns_name": "ip-172-31-13-154.eu-north-1.compute.internal"
                 },
-                "threads_per_core": 1,
+                "threads_per_core": 2,
                 "public": {
-                    "ip": "54.90.153.147",
-                    "dns_name": "ec2-54-90-153-147.compute-1.amazonaws.com"
+                    "ip": "16.16.138.5",
+                    "dns_name": "ec2-16-16-138-5.eu-north-1.compute.amazonaws.com"
                 },
                 "state": {
                     "code": 16,
                     "name": "running"
                 },
                 "monitoring": {
-                    "state": "enabled"
+                    "state": "disabled"
                 }
             },
-            "cpu": {
-                "credit_balance": 144,
-                "credit_usage": 0.004121
-            },
-            "status": {
-                "check_failed": 0,
-                "check_failed_instance": 0,
-                "check_failed_system": 0
-            },
-            "network": {
-                "in": {
-                    "bytes_per_sec": 33.2
+            "metrics": {
+                "NetworkOut": {
+                    "rate": 10445.916666666666,
+                    "sum": 626755
                 },
-                "out": {
-                    "bytes_per_sec": 30
+                "CPUUtilization": {
+                    "avg": 2.8849988898518673
+                },
+                "StatusCheckFailed_Instance": {
+                    "avg": 0
+                },
+                "CPUCreditUsage": {
+                    "avg": 0.29100543333333334
+                },
+                "CPUCreditBalance": {
+                    "avg": 576
+                },
+                "NetworkPacketsOut": {
+                    "rate": 82.95,
+                    "sum": 4977
+                },
+                "NetworkPacketsIn": {
+                    "rate": 88.9,
+                    "sum": 5334
+                },
+                "NetworkIn": {
+                    "rate": 26815.983333333334,
+                    "sum": 1608959
+                },
+                "StatusCheckFailed": {
+                    "avg": 0
+                },
+                "CPUSurplusCreditsCharged": {
+                    "avg": 0
+                },
+                "CPUSurplusCreditBalance": {
+                    "avg": 0
+                },
+                "StatusCheckFailed_System": {
+                    "avg": 0
                 }
             }
         },
@@ -302,10 +310,12 @@ An example event for `ec2` looks as following:
             "namespace": "AWS/EC2"
         },
         "dimensions": {
-            "InstanceId": "i-0de58890d94dda2e3"
+            "InstanceId": "i-0c08512debca266ab"
         },
         "tags": {
-            "Name": "elastic-package-test-33138"
+            "aws:autoscaling:groupName": "eks-firehose-50c386d7-c8b1-bde8-5d42-d3841ca7ecfe",
+            "aws:ec2launchtemplate:version": "1",
+            "aws:ec2launchtemplate:id": "lt-09e1cdf590e35c687"
         }
     }
 }
@@ -316,20 +326,11 @@ An example event for `ec2` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
 | aws.dimensions.AutoScalingGroupName | An Auto Scaling group is a collection of instances you define if you're using Auto Scaling. | keyword |
 | aws.dimensions.ImageId | This dimension filters the data you request for all instances running this Amazon EC2 Amazon Machine Image (AMI) | keyword |
 | aws.dimensions.InstanceId | Amazon EC2 instance ID | keyword |
 | aws.dimensions.InstanceType | This dimension filters the data you request for all instances running with this specified instance type. | keyword |
-| aws.ec2.cpu.credit_balance | The number of earned CPU credits that an instance has accrued since it was launched or started. | long |
-| aws.ec2.cpu.credit_usage | The number of CPU credits spent by the instance for CPU utilization. | long |
-| aws.ec2.cpu.surplus_credit_balance | The number of surplus credits that have been spent by an unlimited instance when its CPUCreditBalance value is zero. | long |
-| aws.ec2.cpu.surplus_credits_charged | The number of spent surplus credits that are not paid down by earned CPU credits, and which thus incur an additional charge. | long |
-| aws.ec2.diskio.read.bytes_per_sec | Bytes read per second from all instance store volumes available to the instance. | long |
-| aws.ec2.diskio.read.count_per_sec | Completed read operations per second from all instance store volumes available to the instance in a specified period of time. | long |
-| aws.ec2.diskio.write.bytes_per_sec | Bytes written per second to all instance store volumes available to the instance. | long |
-| aws.ec2.diskio.write.count_per_sec | Completed write operations per second to all instance store volumes available to the instance in a specified period of time. | long |
 | aws.ec2.instance.core.count | The number of CPU cores for the instance. | integer |
 | aws.ec2.instance.image.id | The ID of the image used to launch the instance. | keyword |
 | aws.ec2.instance.monitoring.state | Indicates whether detailed monitoring is enabled. | keyword |
@@ -340,13 +341,30 @@ An example event for `ec2` looks as following:
 | aws.ec2.instance.state.code | The state of the instance, as a 16-bit unsigned integer. | integer |
 | aws.ec2.instance.state.name | The state of the instance (pending | running | shutting-down | terminated | stopping | stopped). | keyword |
 | aws.ec2.instance.threads_per_core | The number of threads per CPU core. | integer |
-| aws.ec2.network.in.bytes_per_sec | The number of bytes per second received on all network interfaces by the instance. | long |
-| aws.ec2.network.in.packets_per_sec | The number of packets per second sent out on all network interfaces by the instance. | long |
-| aws.ec2.network.out.bytes_per_sec | The number of bytes per second sent out on all network interfaces by the instance. | long |
-| aws.ec2.network.out.packets_per_sec | The number of packets per second sent out on all network interfaces by the instance. | long |
-| aws.ec2.status.check_failed | Reports whether the instance has passed both the instance status check and the system status check in the last minute. | long |
-| aws.ec2.status.check_failed_instance | Reports whether the instance has passed the instance status check in the last minute. | long |
-| aws.ec2.status.check_failed_system | Reports whether the instance has passed the system status check in the last minute. | long |
+| aws.ec2.metrics.CPUCreditBalance.avg | The number of earned CPU credits that an instance has accrued since it was launched or started. | long |
+| aws.ec2.metrics.CPUCreditUsage.avg | The number of CPU credits spent by the instance for CPU utilization. | long |
+| aws.ec2.metrics.CPUSurplusCreditBalance.avg | The number of surplus credits that have been spent by an unlimited instance when its CPUCreditBalance value is zero. | long |
+| aws.ec2.metrics.CPUSurplusCreditsCharged.avg | The number of spent surplus credits that are not paid down by earned CPU credits, and which thus incur an additional charge. | long |
+| aws.ec2.metrics.CPUUtilization.avg | The average percentage of physical CPU time that Amazon EC2 uses to run the EC2 instance. | long |
+| aws.ec2.metrics.DiskReadBytes.rate | Bytes read per second from all instance store volumes available to the instance. | long |
+| aws.ec2.metrics.DiskReadBytes.sum | Total bytes read from all instance store volumes available to the instance. | long |
+| aws.ec2.metrics.DiskReadOps.rate | Completed read operations per second from all instance store volumes available to the instance in a specified period of time. | long |
+| aws.ec2.metrics.DiskReadOps.sum | Total completed read operations from all instance store volumes available to the instance in a specified period of time. | long |
+| aws.ec2.metrics.DiskWriteBytes.rate | Bytes written per second to all instance store volumes available to the instance. | long |
+| aws.ec2.metrics.DiskWriteBytes.sum | Total bytes written to all instance store volumes available to the instance. | long |
+| aws.ec2.metrics.DiskWriteOps.rate | Completed write operations per second to all instance store volumes available to the instance in a specified period of time. | long |
+| aws.ec2.metrics.DiskWriteOps.sum | Total completed write operations to all instance store volumes available to the instance in a specified period of time. | long |
+| aws.ec2.metrics.NetworkIn.rate | The number of bytes per second received on all network interfaces by the instance. | long |
+| aws.ec2.metrics.NetworkIn.sum | The number of bytes total received on all network interfaces by the instance. | long |
+| aws.ec2.metrics.NetworkOut.rate | The number of bytes per second sent out on all network interfaces by the instance. | long |
+| aws.ec2.metrics.NetworkOut.sum | The number of bytes total sent out on all network interfaces by the instance. | long |
+| aws.ec2.metrics.NetworkPacketsIn.rate | The number of packets per second sent out on all network interfaces by the instance. | long |
+| aws.ec2.metrics.NetworkPacketsIn.sum | The number of packets total sent out on all network interfaces by the instance. | long |
+| aws.ec2.metrics.NetworkPacketsOut.rate | The number of packets per second sent out on all network interfaces by the instance. | long |
+| aws.ec2.metrics.NetworkPacketsOut.sum | The number of packets total sent out on all network interfaces by the instance. | long |
+| aws.ec2.metrics.StatusCheckFailed.avg | Reports whether the instance has passed both the instance status check and the system status check in the last minute. | long |
+| aws.ec2.metrics.StatusCheckFailed_Instance.avg | Reports whether the instance has passed the instance status check in the last minute. | long |
+| aws.ec2.metrics.StatusCheckFailed_System.avg | Reports whether the instance has passed the system status check in the last minute. | long |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
 | aws.tags.\* | Tag key value pairs from aws resources. | object |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
