@@ -31,9 +31,13 @@ processors:
   - remove:
       field: message
       ignore_missing: true
-  - dissect:
+  - grok:
       field: event.original
-      pattern: '%{_temp_.header} %%{message}'
+      patterns:
+        - '%{DATA:_temp_.header} %%{GREEDYDATA:message}'
+        - '%{DATA:_temp_.header} %{NTP_MESSAGE:ntp_message}'
+      pattern_definitions:
+        NTP_MESSAGE: 'NTP %{GREEDYDATA}'
       tag: dissect_header
   - grok:
       field: _temp_.header
@@ -135,6 +139,12 @@ processors:
       tag: grok_message
       patterns:
         - "%{DATA:cisco.ios.facility}-%{POSINT:event.severity}-%{DATA:event.code}:\\s+(\\w+\\d+(\\/\\d+)?\\:\\s+)?([a-zA-Z0-9_]+\\:\\s+)?%{GREEDYDATA:message}"
+      ignore_missing: true
+  - rename:
+      field: ntp_message
+      target_field: message
+      tag: rename_ntp_message
+      if: ctx.ntp_message != null
   - convert:
       field: event.severity
       type: long
