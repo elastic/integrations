@@ -731,7 +731,7 @@ The fields reported are:
 | haproxy.stat.session.rate.max | Maximum number of new sessions per second. | integer | gauge |
 | haproxy.stat.session.rate.value | Number of sessions per second over the last elapsed second. | integer | gauge |
 | haproxy.stat.session.total | Number of all sessions. | long | counter |
-| haproxy.stat.source.address | Address of the source. | text |  |
+| haproxy.stat.source.address | Address of the source. | keyword |  |
 | haproxy.stat.status | Status (UP, DOWN, NOLB, MAINT, or MAINT(via)...). | keyword |  |
 | haproxy.stat.throttle.pct | Current throttle percentage for the server when slowstart is active, or no value if slowstart is inactive. | scaled_float | gauge |
 | haproxy.stat.tracked.id | ID of the proxy/server if tracking is enabled. | long |  |
