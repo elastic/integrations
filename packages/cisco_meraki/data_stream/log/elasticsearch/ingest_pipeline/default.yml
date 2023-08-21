@@ -32,7 +32,7 @@ processors:
           value: 'failed to parse time field ({{{ _temp.ts_nano }}}): {{{ _ingest.on_failure_message }}}'
 - pipeline:
     name: '{{ IngestPipeline "flows" }}'
-    if: ctx.cisco_meraki.event_type == 'flows'
+    if: "['flows', 'firewall', 'vpn_firewall', 'cellular_firewall', 'bridge_anyconnect_client_vpn_firewall'].contains(ctx.cisco_meraki.event_type)"
 - pipeline:
     name: '{{ IngestPipeline "ipflows" }}'
     if: ctx.cisco_meraki.event_type == 'ip_flow_start' || ctx.cisco_meraki.event_type == 'ip_flow_end'

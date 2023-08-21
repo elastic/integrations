@@ -1,0 +1,38 @@
+{
+    "id": "bac65dd0-771b-5bfb-8e5f-3b1dc8962684",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "The Cloud SQL database instance would not be available to public IP addresses.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/sql/docs/mysql/configure-ip\n2. https://console.cloud.google.com/iam-admin/orgpolicies/sql-restrictAuthorizedNetworks\n3. https://cloud.google.com/resource-manager/docs/organization-policy/org-policy-constraints\n4. https://cloud.google.com/sql/docs/mysql/connection-org-policy",
+            "id": "bac65dd0-771b-5bfb-8e5f-3b1dc8962684",
+            "name": "Ensure That Cloud SQL Database Instances Do Not Implicitly Whitelist All Public IP Addresses",
+            "profile_applicability": "* Level 1",
+            "description": "Database Server should accept connections only from trusted Network(s)/IP(s) and restrict access from public IP addresses.",
+            "rationale": "To minimize attack surface on a Database server instance, only trusted/known and required IP(s) should be white-listed to connect to it.\n\nAn authorized network should not have IPs/networks configured to `0.0.0.0/0` which will allow access to the instance from anywhere in the world.\nNote that authorized networks apply only to instances with public IPs.",
+            "audit": "**From Google Cloud Console**\n\n1. Go to the Cloud SQL Instances page in the Google Cloud Console by visiting [https://console.cloud.google.com/sql/instances](https://console.cloud.google.com/sql/instances).\n2. Click the instance name to open its `Instance details` page.\n3. Under the `Configuration` section click `Edit configurations`\n4. Under `Configuration options` expand the `Connectivity` section.\n5. Ensure that no authorized network is configured to allow `0.0.0.0/0`.\n\n**From Google Cloud CLI**\n\n6. Get detailed configuration for every Cloud SQL database instance.\n\n```\ngcloud sql instances list --format=json\n```\n\nEnsure that the section `settings: ipConfiguration : authorizedNetworks` does not have any parameter `value` containing `0.0.0.0/0`.",
+            "remediation": "**From Google Cloud Console**\n\n1. Go to the Cloud SQL Instances page in the Google Cloud Console by visiting [https://console.cloud.google.com/sql/instances](https://console.cloud.google.com/sql/instances).\n\n2. Click the instance name to open its `Instance details` page.\n3. Under the `Configuration` section click `Edit configurations`\n4. Under `Configuration options` expand the `Connectivity` section.\n5. Click the `delete` icon for the authorized network `0.0.0.0/0`.\n6. Click `Save` to update the instance.\n\n**From Google Cloud CLI**\n\nUpdate the authorized network list by dropping off any addresses.\n\n```\ngcloud sql instances patch <INSTANCE_NAME> --authorized-networks=IP_ADDR1,IP_ADDR2...\n```\n\n**Prevention:**\n\nTo prevent new SQL instances from being configured to accept incoming connections from any IP addresses, set up a `Restrict Authorized Networks on Cloud SQL instances` Organization Policy at: [https://console.cloud.google.com/iam-admin/orgpolicies/sql-restrictAuthorizedNetworks](https://console.cloud.google.com/iam-admin/orgpolicies/sql-restrictAuthorizedNetworks).",
+            "section": "Cloud SQL Database Services",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 6.5",
+                "Cloud SQL Database Services"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "6.5",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_6_5"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
