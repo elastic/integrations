@@ -14,10 +14,10 @@ processors:
       value: enrichment
   - set:
       field: event.category
-      value: threat
+      value: ['threat']
   - set:
       field: event.type
-      value: indicator
+      value: ['indicator']
 
   # TODO: threat.feed.* static fields
 
@@ -37,20 +37,37 @@ processors:
   - rename:
       field: revoked
       target_field: opencti.indicator.revoked
-  # TODO bring back script to map confidence values
-  - rename:
+  - set:
+      field: threat.indicator.confidence
+      value: 'Not Specified'
+  - script:
+      # based on https://stix2.readthedocs.io/en/latest/api/confidence/stix2.confidence.scales.html#stix2.confidence.scales.value_to_none_low_medium_high
+      lang: painless
+      source: |
+        if (ctx.confidence == null) {
+          ctx.threat.indicator.confidence = 'Not Specified';
+        } else if (ctx.confidence == 0) {
+          ctx.threat.indicator.confidence = 'None';
+        } else if (1 <= ctx.confidence && ctx.confidence <= 29) {
+          ctx.threat.indicator.confidence = 'Low';
+        } else if (30 <= ctx.confidence && ctx.confidence <= 69) {
+          ctx.threat.indicator.confidence = 'Med';
+        } else if (70 <= ctx.confidence && ctx.confidence <= 100) {
+          ctx.threat.indicator.confidence = 'High';
+        } else {
+          ctx.threat.indicator.confidence = 'Not Specified';
+        }
+  - remove:
       field: confidence
-      target_field: threat.indicator.confidence
   - rename:
       field: lang
       target_field: opencti.indicator.lang
-  # TODO set @timestamp right https://www.elastic.co/guide/en/elasticsearch/reference/current/ingest.html#access-ingest-metadata
-  # - remove:
-  #     field: '@timestamp'
-  #     ignore_missing: true
-  # - rename:
-  #     field: created
-  #     target_field: '@timestamp'
+  - remove:
+      field: '@timestamp'
+      ignore_missing: true
+  - rename:
+      field: created
+      target_field: '@timestamp'
   - rename:
       field: modified
       target_field: threat.indicator.modified_at
@@ -60,6 +77,10 @@ processors:
   - rename:
       field: pattern_version
       target_field: opencti.indicator.pattern_version
+      if: ctx.pattern_version != null
+      ignore_missing: true
+  - remove:
+      field: pattern_version
       ignore_missing: true
   - rename:
       field: pattern
@@ -155,12 +176,14 @@ processors:
 
   - foreach:
       field: observables.edges
+      ignore_missing: true
       processor:
         remove:
           field: _ingest._value.node.value
           ignore_missing: true
   - foreach:
       field: observables.edges
+      ignore_missing: true
       processor:
         rename:
           field: _ingest._value.node.observable_value
@@ -168,6 +191,7 @@ processors:
 
   - foreach:
       field: observables.edges
+      ignore_missing: true
       processor:
         rename:
           field: _ingest._value.node.x_opencti_description
@@ -176,6 +200,7 @@ processors:
 
   - foreach:
       field: observables.edges
+      ignore_missing: true
       processor:
         rename:
           field: _ingest._value.node.x_opencti_additional_names
@@ -184,6 +209,7 @@ processors:
 
   - foreach:
       field: observables.edges
+      ignore_missing: true
       processor:
         rename:
           field: _ingest._value.node.obsContent
@@ -192,6 +218,7 @@ processors:
 
   - foreach:
       field: observables.edges
+      ignore_missing: true
       processor:
         foreach:
           field: _ingest._value.node.serviceDlls.edges
@@ -203,6 +230,7 @@ processors:
 
   - foreach:
       field: observables.edges
+      ignore_missing: true
       processor:
         foreach:
           field: _ingest._value.node.serviceDlls.edges
@@ -214,6 +242,7 @@ processors:
 
   - foreach:
       field: observables.edges
+      ignore_missing: true
       processor:
         foreach:
           field: _ingest._value.node.serviceDlls.edges
@@ -225,6 +254,7 @@ processors:
 
   - foreach:
       field: observables.edges
+      ignore_missing: true
       processor:
         rename:
           field: _ingest._value.node.serviceDlls.edges
@@ -287,6 +317,42 @@ processors:
         }
   - remove:
       field: observables
+      ignore_missing: true
+
+  - script:
+      description: Remove null values from observables
+      lang: painless
+      source: |
+        def dropNulls(Object obj) {
+          if (obj instanceof Map) {
+            def map = (Map) obj;
+            Map result = [:];
+            for (def key : map.keySet()) {
+              if (map[key] instanceof Map || map[key] instanceof List) {
+                result[key] = dropNulls(map[key]);
+              } else if (map[key] != null) {
+                result[key] = map[key];
+              }
+            }
+            return result;
+          } else if (obj instanceof List) {
+            def list = (List) obj;
+            List result = [];
+            for (def item : list) {
+              if (item instanceof Map || item instanceof List) {
+                result.add(dropNulls(item));
+              } else if (item != null) {
+                result.add(item);
+              }
+            }
+            return result;
+          } else {
+            return obj;
+          }
+        }
+        if (ctx.opencti?.containsKey('observable')) {
+          ctx.opencti.observable = dropNulls(ctx.opencti.observable);
+        }
 
   #########################################
   # ECS indicator fields from observables #
@@ -599,6 +665,75 @@ processors:
               }
           }
           ctx.related.user = result;
+        }
+
+  ##############################################
+  # Restructure to avoid non-leaf lists, under #
+  # - opencti.observable.*                     #
+  # - threat.indicator.as                      #
+  # - threat.indicator.file                    #
+  # - threat.indicator.registry                #
+  # - threat.indicator.url                     #
+  # - threat.indicator.x509                    #
+  ##############################################
+
+  - script:
+      description: Restructure some lists of maps to avoid non-leaf lists
+      lang: painless
+      source: |
+        def mergeMaps(Map map1, Map map2) {
+          for (def key : map2.keySet()) {
+            if (map1.containsKey(key) && map1[key] != map2[key]) {
+              if (map1[key] instanceof Map && map2[key] instanceof Map) {
+                map1[key] = mergeMaps(map1[key], map2[key]);
+              } else {
+                if (!(map1[key] instanceof List)) {
+                  map1[key] = [map1[key]];
+                }
+                def combined = new HashSet(map1[key]);
+                if (map2[key] instanceof List) {
+                  combined.addAll(map2[key]);
+                } else {
+                  combined.add(map2[key]);
+                }
+                map1[key] = new ArrayList(combined);
+              }
+            } else {
+              map1[key] = map2[key];
+            }
+          }
+          return map1;
+        }
+        def mergeListOfMaps(List list) {
+          def merged = new HashMap();
+          for (def map : list) {
+            merged = mergeMaps(merged, map);
+          }
+          return merged;
+        }
+        if (ctx.opencti?.containsKey('observable')) {
+          for (def key : ctx.opencti.observable.keySet()) {
+            if (ctx.opencti.observable[key].size() == 0) {
+              ctx.opencti.observable.remove(key);
+            } else {
+              ctx.opencti.observable[key] = mergeListOfMaps(ctx.opencti.observable[key]);
+            }
+          }
+        }
+        if (ctx.threat.indicator.containsKey('file')) {
+          ctx.threat.indicator.file = mergeListOfMaps(ctx.threat.indicator.file);
+        }
+        if (ctx.threat.indicator.containsKey('as')) {
+          ctx.threat.indicator.as = mergeListOfMaps(ctx.threat.indicator.as);
+        }
+        if (ctx.threat.indicator.containsKey('url')) {
+          ctx.threat.indicator.url = mergeListOfMaps(ctx.threat.indicator.url);
+        }
+        if (ctx.threat.indicator.containsKey('registry')) {
+          ctx.threat.indicator.registry = mergeListOfMaps(ctx.threat.indicator.registry);
+        }
+        if (ctx.threat.indicator.containsKey('x509')) {
+          ctx.threat.indicator.x509 = mergeListOfMaps(ctx.threat.indicator.x509);
         }
 
 ###################
