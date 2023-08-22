@@ -1,6 +1,6 @@
 # Network Beaconing Detection
 
-The Network Beaconing Detection package consists of a pivot transform required to stand up a framework to identify beaconing activity in your environment. The framework enables significant indicators of compromise (IoCs) for threat hunters and analysts to use as a starting point for an investigation in addition to helping them monitor network traffic for beaconing activities. 
+The Network Beaconing Identification package consists of a framework to identify beaconing activity in your environment. The framework surfaces significant indicators of compromise (IoCs) for threat hunters and analysts to use as a starting point for an investigation in addition to helping them monitor network traffic for beaconing activities. 
 This package requires a Platinum subscription. Please ensure that you have a Trial, Platinum, or Enterprise subscription before proceeding. This package is licensed under Elastic License 2.0..
 
 ## Installation
