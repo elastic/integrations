@@ -271,7 +271,7 @@ The `audit` dataset collects audit logs of administrative activities and accesse
 | gcp.audit.request_metadata.caller_ip | The IP address of the caller. | ip |
 | gcp.audit.request_metadata.caller_supplied_user_agent | The user agent of the caller. This information is not authenticated and  should be treated accordingly. | keyword |
 | gcp.audit.request_metadata.raw.caller_ip | The raw IP address of the caller. | keyword |
-| gcp.audit.resource_location.current_locations | Current locations of the resource. | array |
+| gcp.audit.resource_location.current_locations | Current locations of the resource. | keyword |
 | gcp.audit.resource_name | The resource or collection that is the target of the operation.  The name is a scheme-less URI, not including the API service name.  For example, 'shelves/SHELF_ID/books'. | keyword |
 | gcp.audit.response |  | flattened |
 | gcp.audit.service_name | The name of the API service performing the operation.  For example, datastore.googleapis.com. | keyword |
@@ -358,11 +358,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2019-12-19T00:44:25.051Z",
     "agent": {
-        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "ephemeral_id": "7780bdcf-661a-4891-83bd-dd5233873f9d",
+        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.7.1"
     },
     "client": {
         "user": {
@@ -384,9 +384,9 @@ An example event for `audit` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
+        "snapshot": false,
+        "version": "8.7.1"
     },
     "event": {
         "action": "beta.compute.instances.aggregatedList",
@@ -395,10 +395,10 @@ An example event for `audit` looks as following:
             "network",
             "configuration"
         ],
-        "created": "2023-01-13T14:59:20.459Z",
+        "created": "2023-07-19T18:53:36.388Z",
         "dataset": "gcp.audit",
         "id": "yonau2dg2zi",
-        "ingested": "2023-01-13T14:59:21Z",
+        "ingested": "2023-07-19T18:53:40Z",
         "kind": "event",
         "outcome": "success",
         "provider": "data_access",
@@ -540,7 +540,7 @@ The `firewall` dataset collects logs from Firewall Rules in your Virtual Private
 | gcp.firewall.rule_details.action | Action that the rule performs on match. | keyword |
 | gcp.firewall.rule_details.destination_range | List of destination ranges that the firewall applies to. | keyword |
 | gcp.firewall.rule_details.direction | Direction of traffic that matches this rule. | keyword |
-| gcp.firewall.rule_details.ip_port_info | List of ip protocols and applicable port ranges for rules. | array |
+| gcp.firewall.rule_details.ip_port_info | List of ip protocols and applicable port ranges for rules. | nested |
 | gcp.firewall.rule_details.priority | The priority for the firewall rule. | long |
 | gcp.firewall.rule_details.reference | Reference to the firewall rule. | keyword |
 | gcp.firewall.rule_details.source_range | List of source ranges that the firewall rule applies to. | keyword |
@@ -611,11 +611,11 @@ An example event for `firewall` looks as following:
 {
     "@timestamp": "2019-10-30T13:52:42.191Z",
     "agent": {
-        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "ephemeral_id": "cf009128-e43c-42e4-9158-9b088bd6f3f5",
+        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.7.1"
     },
     "cloud": {
         "availability_zone": "us-east1-b",
@@ -640,20 +640,25 @@ An example event for `firewall` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
+        "snapshot": false,
+        "version": "8.7.1"
     },
     "event": {
         "action": "firewall-rule",
         "agent_id_status": "verified",
-        "category": "network",
-        "created": "2023-01-13T15:01:23.807Z",
+        "category": [
+            "network"
+        ],
+        "created": "2023-07-19T18:55:10.718Z",
         "dataset": "gcp.firewall",
         "id": "1f21ciqfpfssuo",
-        "ingested": "2023-01-13T15:01:24Z",
+        "ingested": "2023-07-19T18:55:14Z",
         "kind": "event",
-        "type": "connection"
+        "type": [
+            "allowed",
+            "connection"
+        ]
     },
     "gcp": {
         "destination": {
@@ -859,14 +864,19 @@ An example event for `vpcflow` looks as following:
 {
     "@timestamp": "2019-06-14T03:50:10.845Z",
     "agent": {
-        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "ephemeral_id": "a47f1e8b-f681-4e3b-87cd-6b2d54144577",
+        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.7.1"
     },
     "cloud": {
-        "provider": "gcp"
+        "availability_zone": "us-east1-b",
+        "project": {
+            "id": "my-sample-project"
+        },
+        "provider": "gcp",
+        "region": "us-east1"
     },
     "data_stream": {
         "dataset": "gcp.vpcflow",
@@ -874,30 +884,46 @@ An example event for `vpcflow` looks as following:
         "type": "logs"
     },
     "destination": {
-        "address": "10.87.40.76",
+        "address": "67.43.156.13",
+        "as": {
+            "number": 35908
+        },
         "domain": "kibana",
-        "ip": "10.87.40.76",
-        "port": 5601
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
+        "ip": "67.43.156.13",
+        "port": 33548
     },
     "ecs": {
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
+        "snapshot": false,
+        "version": "8.7.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "network",
-        "created": "2023-01-13T15:03:19.118Z",
+        "category": [
+            "network"
+        ],
+        "created": "2023-07-19T18:56:47.758Z",
         "dataset": "gcp.vpcflow",
-        "end": "2019-06-14T03:40:37.048196137Z",
-        "id": "ut8lbrffooxzf",
-        "ingested": "2023-01-13T15:03:20Z",
+        "end": "2019-06-14T03:49:56.393651211Z",
+        "id": "ut8lbrffooxz4",
+        "ingested": "2023-07-19T18:56:51Z",
         "kind": "event",
-        "start": "2019-06-14T03:40:36.895188084Z",
-        "type": "connection"
+        "start": "2019-06-14T03:40:05.147252064Z",
+        "type": [
+            "connection"
+        ]
     },
     "gcp": {
         "destination": {
@@ -912,10 +938,22 @@ An example event for `vpcflow` looks as following:
                 "vpc_name": "default"
             }
         },
+        "source": {
+            "instance": {
+                "project_id": "my-sample-project",
+                "region": "us-east1",
+                "zone": "us-east1-b"
+            },
+            "vpc": {
+                "project_id": "my-sample-project",
+                "subnetwork_name": "default",
+                "vpc_name": "default"
+            }
+        },
         "vpcflow": {
-            "reporter": "DEST",
+            "reporter": "SRC",
             "rtt": {
-                "ms": 36
+                "ms": 50
             }
         }
     },
@@ -926,33 +964,28 @@ An example event for `vpcflow` looks as following:
         "logger": "projects/my-sample-project/logs/compute.googleapis.com%2Fvpc_flows"
     },
     "network": {
-        "bytes": 1464,
-        "community_id": "1:++9/JiESSUdwTGGcxwXk4RA0lY8=",
-        "direction": "inbound",
+        "bytes": 159704,
+        "community_id": "1:+S3/6PF+UXU7wlJD68HIrz0Mo6c=",
+        "direction": "internal",
         "iana_number": "6",
-        "packets": 7,
+        "name": "default",
+        "packets": 241,
         "transport": "tcp",
         "type": "ipv4"
     },
     "related": {
         "ip": [
-            "192.168.2.117",
-            "10.87.40.76"
+            "10.139.99.242",
+            "67.43.156.13"
         ]
     },
     "source": {
-        "address": "192.168.2.117",
-        "as": {
-            "number": 15169
-        },
-        "bytes": 1464,
-        "geo": {
-            "continent_name": "America",
-            "country_name": "usa"
-        },
-        "ip": "192.168.2.117",
-        "packets": 7,
-        "port": 50646
+        "address": "10.139.99.242",
+        "bytes": 159704,
+        "domain": "elasticsearch",
+        "ip": "10.139.99.242",
+        "packets": 241,
+        "port": 9200
     },
     "tags": [
         "forwarded",
@@ -2131,35 +2164,35 @@ The `loadbalancing_metrics` dataset is designed to fetch HTTPS, HTTP, and Layer 
 | gcp.labels.resource.\* |  | object |
 | gcp.labels.system.\* |  | object |
 | gcp.labels.user.\* |  | object |
-| gcp.loadbalancing.https.backend_latencies.value | A distribution of the latency calculated from when the request was sent by the proxy to the backend until the proxy received from the backend the last byte of response. | object |
-| gcp.loadbalancing.https.backend_request.bytes | The number of bytes sent as requests from HTTP/S load balancer to backends. | long |
-| gcp.loadbalancing.https.backend_request.count | The number of requests served by backends of HTTP/S load balancer. | long |
-| gcp.loadbalancing.https.backend_response.bytes | The number of bytes sent as responses from backends (or cache) to external HTTP(S) load balancer. | long |
-| gcp.loadbalancing.https.external.regional.backend_latencies.value | A distribution of the latency calculated from when the request was sent by the proxy to the backend until the proxy received from the backend the last byte of response. | object |
-| gcp.loadbalancing.https.external.regional.total_latencies.value | A distribution of the latency calculated from when the request was received by the proxy until the proxy got ACK from client on last response byte. | object |
-| gcp.loadbalancing.https.frontend_tcp_rtt.value | A distribution of the RTT measured for each connection between client and proxy. | object |
-| gcp.loadbalancing.https.internal.backend_latencies.value | A distribution of the latency calculated from when the request was sent by the internal HTTP/S load balancer proxy to the backend until the proxy received from the backend the last byte of response. | object |
-| gcp.loadbalancing.https.internal.total_latencies.value | A distribution of the latency calculated from when the request was received by the internal HTTP/S load balancer proxy until the proxy got ACK from client on last response byte. | object |
-| gcp.loadbalancing.https.request.bytes | The number of bytes sent as requests from clients to HTTP/S load balancer. | long |
-| gcp.loadbalancing.https.request.count | The number of requests served by HTTP/S load balancer. | long |
-| gcp.loadbalancing.https.response.bytes | The number of bytes sent as responses from HTTP/S load balancer to clients. | long |
-| gcp.loadbalancing.https.total_latencies.value | A distribution of the latency calculated from when the request was received by the external HTTP/S load balancer proxy until the proxy got ACK from client on last response byte. | object |
-| gcp.loadbalancing.l3.external.egress.bytes | The number of bytes sent from external TCP/UDP network load balancer backend to client of the flow. For TCP flows it's counting bytes on application stream only. | long |
-| gcp.loadbalancing.l3.external.egress_packets.count | The number of packets sent from external TCP/UDP network load balancer backend to client of the flow. | long |
-| gcp.loadbalancing.l3.external.ingress.bytes | The number of bytes sent from client to external TCP/UDP network load balancer backend. For TCP flows it's counting bytes on application stream only. | long |
-| gcp.loadbalancing.l3.external.ingress_packets.count | The number of packets sent from client to external TCP/UDP network load balancer backend. | long |
-| gcp.loadbalancing.l3.external.rtt_latencies.value | A distribution of the round trip time latency, measured over TCP connections for the external network load balancer. | object |
-| gcp.loadbalancing.l3.internal.egress.bytes | The number of bytes sent from ILB backend to client (for TCP flows it's counting bytes on application stream only). | long |
-| gcp.loadbalancing.l3.internal.egress_packets.count | The number of packets sent from ILB backend to client of the flow. | long |
-| gcp.loadbalancing.l3.internal.ingress.bytes | The number of bytes sent from client to ILB backend (for TCP flows it's counting bytes on application stream only). | long |
-| gcp.loadbalancing.l3.internal.ingress_packets.count | The number of packets sent from client to ILB backend. | long |
-| gcp.loadbalancing.l3.internal.rtt_latencies.value | A distribution of RTT measured over TCP connections for internal TCP/UDP load balancer flows. | object |
-| gcp.loadbalancing.tcp_ssl_proxy.closed_connections.value | Number of connections that were terminated over TCP/SSL proxy. | long |
-| gcp.loadbalancing.tcp_ssl_proxy.egress.bytes | Number of bytes sent from VM to client using proxy. | long |
-| gcp.loadbalancing.tcp_ssl_proxy.frontend_tcp_rtt.value | A distribution of the smoothed RTT (in ms) measured by the proxy's TCP stack, each minute application layer bytes pass from proxy to client. | object |
-| gcp.loadbalancing.tcp_ssl_proxy.ingress.bytes | Number of bytes sent from client to VM using proxy. | long |
-| gcp.loadbalancing.tcp_ssl_proxy.new_connections.value | Number of connections that were created over TCP/SSL proxy. | long |
-| gcp.loadbalancing.tcp_ssl_proxy.open_connections.value | Current number of outstanding connections through the TCP/SSL proxy. | long |
+| gcp.loadbalancing_metrics.https.backend_latencies.value | A distribution of the latency calculated from when the request was sent by the proxy to the backend until the proxy received from the backend the last byte of response. | object |
+| gcp.loadbalancing_metrics.https.backend_request.bytes | The number of bytes sent as requests from HTTP/S load balancer to backends. | long |
+| gcp.loadbalancing_metrics.https.backend_request.count | The number of requests served by backends of HTTP/S load balancer. | long |
+| gcp.loadbalancing_metrics.https.backend_response.bytes | The number of bytes sent as responses from backends (or cache) to external HTTP(S) load balancer. | long |
+| gcp.loadbalancing_metrics.https.external.regional.backend_latencies.value | A distribution of the latency calculated from when the request was sent by the proxy to the backend until the proxy received from the backend the last byte of response. | object |
+| gcp.loadbalancing_metrics.https.external.regional.total_latencies.value | A distribution of the latency calculated from when the request was received by the proxy until the proxy got ACK from client on last response byte. | object |
+| gcp.loadbalancing_metrics.https.frontend_tcp_rtt.value | A distribution of the RTT measured for each connection between client and proxy. | object |
+| gcp.loadbalancing_metrics.https.internal.backend_latencies.value | A distribution of the latency calculated from when the request was sent by the internal HTTP/S load balancer proxy to the backend until the proxy received from the backend the last byte of response. | object |
+| gcp.loadbalancing_metrics.https.internal.total_latencies.value | A distribution of the latency calculated from when the request was received by the internal HTTP/S load balancer proxy until the proxy got ACK from client on last response byte. | object |
+| gcp.loadbalancing_metrics.https.request.bytes | The number of bytes sent as requests from clients to HTTP/S load balancer. | long |
+| gcp.loadbalancing_metrics.https.request.count | The number of requests served by HTTP/S load balancer. | long |
+| gcp.loadbalancing_metrics.https.response.bytes | The number of bytes sent as responses from HTTP/S load balancer to clients. | long |
+| gcp.loadbalancing_metrics.https.total_latencies.value | A distribution of the latency calculated from when the request was received by the external HTTP/S load balancer proxy until the proxy got ACK from client on last response byte. | object |
+| gcp.loadbalancing_metrics.l3.external.egress.bytes | The number of bytes sent from external TCP/UDP network load balancer backend to client of the flow. For TCP flows it's counting bytes on application stream only. | long |
+| gcp.loadbalancing_metrics.l3.external.egress_packets.count | The number of packets sent from external TCP/UDP network load balancer backend to client of the flow. | long |
+| gcp.loadbalancing_metrics.l3.external.ingress.bytes | The number of bytes sent from client to external TCP/UDP network load balancer backend. For TCP flows it's counting bytes on application stream only. | long |
+| gcp.loadbalancing_metrics.l3.external.ingress_packets.count | The number of packets sent from client to external TCP/UDP network load balancer backend. | long |
+| gcp.loadbalancing_metrics.l3.external.rtt_latencies.value | A distribution of the round trip time latency, measured over TCP connections for the external network load balancer. | object |
+| gcp.loadbalancing_metrics.l3.internal.egress.bytes | The number of bytes sent from ILB backend to client (for TCP flows it's counting bytes on application stream only). | long |
+| gcp.loadbalancing_metrics.l3.internal.egress_packets.count | The number of packets sent from ILB backend to client of the flow. | long |
+| gcp.loadbalancing_metrics.l3.internal.ingress.bytes | The number of bytes sent from client to ILB backend (for TCP flows it's counting bytes on application stream only). | long |
+| gcp.loadbalancing_metrics.l3.internal.ingress_packets.count | The number of packets sent from client to ILB backend. | long |
+| gcp.loadbalancing_metrics.l3.internal.rtt_latencies.value | A distribution of RTT measured over TCP connections for internal TCP/UDP load balancer flows. | object |
+| gcp.loadbalancing_metrics.tcp_ssl_proxy.closed_connections.value | Number of connections that were terminated over TCP/SSL proxy. | long |
+| gcp.loadbalancing_metrics.tcp_ssl_proxy.egress.bytes | Number of bytes sent from VM to client using proxy. | long |
+| gcp.loadbalancing_metrics.tcp_ssl_proxy.frontend_tcp_rtt.value | A distribution of the smoothed RTT (in ms) measured by the proxy's TCP stack, each minute application layer bytes pass from proxy to client. | object |
+| gcp.loadbalancing_metrics.tcp_ssl_proxy.ingress.bytes | Number of bytes sent from client to VM using proxy. | long |
+| gcp.loadbalancing_metrics.tcp_ssl_proxy.new_connections.value | Number of connections that were created over TCP/SSL proxy. | long |
+| gcp.loadbalancing_metrics.tcp_ssl_proxy.open_connections.value | Current number of outstanding connections through the TCP/SSL proxy. | long |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -2220,7 +2253,7 @@ An example event for `loadbalancing` looks as following:
                 "region": "us-central1"
             }
         },
-        "loadbalancing": {
+        "loadbalancing_metrics": {
             "l3": {
                 "internal": {
                     "egress_packets": {
@@ -2289,7 +2322,7 @@ The `redis` dataset is designed to fetch metrics from [GCP Memorystore](https://
 | gcp.redis.keyspace.avg_ttl.sec | Average TTL for keys in this database. | double | s | gauge |
 | gcp.redis.keyspace.keys.count | Number of keys stored in this database. | long |  | gauge |
 | gcp.redis.keyspace.keys_with_expiration.count | Number of keys with an expiration in this database. | long |  | gauge |
-| gcp.redis.persistence.rdb.bgsave_in_progress | Flag indicating a RDB save is on-going. | boolean |  |  |
+| gcp.redis.persistence.rdb.bgsave_in_progress | Flag indicating a RDB save is on-going. | long |  | gauge |
 | gcp.redis.replication.master.slaves.lag.sec | The number of seconds that replica is lagging behind primary. | long | s | gauge |
 | gcp.redis.replication.master.slaves.offset.bytes | The number of bytes that have been acknowledged by replicas. | long | byte | gauge |
 | gcp.redis.replication.master_repl_offset.bytes | The number of bytes that master has produced and sent to replicas. | long | byte | gauge |

@@ -1,0 +1,880 @@
+---
+processors:
+  - rename:
+      field: json.asset.osInventory.osInfo.architecture
+      target_field: google_scc.asset.os_inventory.os_info.architecture
+      tag: rename_asset_osInventory_osInfo_architecture
+      ignore_missing: true
+  - rename:
+      field: json.asset.osInventory.osInfo.hostname
+      target_field: google_scc.asset.os_inventory.os_info.hostname
+      tag: rename_asset_osInventory_osInfo_hostname
+      ignore_missing: true
+  - rename:
+      field: json.asset.name
+      target_field: google_scc.asset.name
+      tag: rename_asset_name
+      ignore_missing: true
+  - rename:
+      field: json.asset.osInventory.osInfo.shortName
+      target_field: google_scc.asset.os_inventory.os_info.short_name
+      tag: rename_asset_osInventory_osInfo_shortName
+      ignore_missing: true
+  - rename:
+      field: json.asset.osInventory.osInfo.longName
+      target_field: google_scc.asset.os_inventory.os_info.long_name
+      tag: rename_asset_osInventory_osInfo_longName
+      ignore_missing: true
+  - rename:
+      field: json.asset.osInventory.osInfo.kernelVersion
+      target_field: google_scc.asset.os_inventory.os_info.kernel.version
+      tag: rename_asset_osInventory_osInfo_kernelVersion
+      ignore_missing: true
+  - rename:
+      field: json.asset.osInventory.osInfo.version
+      target_field: google_scc.asset.os_inventory.os_info.version
+      tag: rename_asset_osInventory_osInfo_version
+      ignore_missing: true
+  - rename:
+      field: json.asset.assetType
+      target_field: google_scc.asset.type
+      tag: rename_asset_assetType
+      ignore_missing: true
+  - rename:
+      field: json.asset.accessLevel.basic.combiningFunction
+      target_field: json.asset.accessLevel.basic.combining_function
+      tag: rename_asset_accessLevel_basic_combiningFunction
+      ignore_missing: true
+  - rename:
+      field: json.asset.accessLevel.custom.expr.expression
+      target_field: json.asset.accessLevel.custom.expr.text
+      tag: rename_asset_accessLevel_custom_expr_expression
+      ignore_missing: true
+  - rename:
+      field: json.asset.accessLevel.custom.expr
+      target_field: json.asset.accessLevel.custom.expression
+      tag: rename_asset_accessLevel_custom_expr
+      ignore_missing: true
+  - foreach:
+      field: json.asset.accessLevel.basic.conditions
+      if: ctx.json?.asset?.accessLevel?.basic?.conditions instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.devicePolicy.osConstraints
+          ignore_failure: true
+          processor:
+            convert:
+              field: _ingest._value.requireVerifiedChromeOs
+              tag: convert_requireVerifiedChromeOs_to_boolean
+              type: boolean
+              ignore_missing: true
+              on_failure:
+                  - remove:
+                      field: _ingest._value.devicePolicy.requireCorpOwned
+                  - append:
+                      field: error.message
+                      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.asset.accessLevel.basic.conditions
+      if: ctx.json?.asset?.accessLevel?.basic?.conditions instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.devicePolicy.requireScreenlock
+          tag: convert_devicePolicy_requireScreenlock_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.devicePolicy.requireScreenlock
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.asset.accessLevel.basic.conditions
+      if: ctx.json?.asset?.accessLevel?.basic?.conditions instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.devicePolicy.requireAdminApproval
+          tag: convert_devicePolicy_requireAdminApproval_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.devicePolicy.requireAdminApproval
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.asset.accessLevel.basic.conditions
+      if: ctx.json?.asset?.accessLevel?.basic?.conditions instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.negate
+          tag: convert_negate_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.negate
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      description: This script processor rename the fields under the accessLevel.basic.conditions objects.
+      if: ctx.json?.asset?.accessLevel?.basic?.conditions != null
+      params:
+        "conditions": "conditions"
+        "requiredAccessLevels": "required_access_levels"
+        "devicePolicy": "device_policy"
+        "requireScreenlock": "require_screenlock"
+        "allowedEncryptionStatuses": "allowed_encryption_statuses"
+        "osConstraints": "os_constraints"
+        "osType": "os_type"
+        "minimumVersion": "minimum_version"
+        "requireVerifiedChromeOs": "require_verified_chrome_os"
+        "allowedDeviceManagementLevels": "allowed_device_management_levels"
+        "requireAdminApproval": "require_admin_approval"
+        "requireCorpOwned": "require_corp_owned"
+        "ipSubnetworks": "sub_networks"
+      tag: painless_to_rename_fields_under_accessLevel_basic_conditions_object
+      source: |
+        def renameKeys(Map json, Map keyMap) {
+          def updatedJson = new HashMap();
+          for (def entry: json.entrySet()) {
+            def key = entry.getKey();
+            def value = entry.getValue();
+            if (value instanceof Map) {
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = renameKeys(value, keyMap);
+              } else {
+                updatedJson[key] = renameKeys(value, keyMap);
+              }
+            } else if (value instanceof List) {
+              def updatedList = [];
+              for (def item: value) {
+                if (item instanceof Map) {
+                  updatedList.add(renameKeys(item, keyMap));
+                } else {
+                  updatedList.add(item);
+                }
+              }
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = updatedList;
+              } else {
+                updatedJson[key] = value;
+              }
+            } else {
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = value;
+              } else {
+                updatedJson[key] = value;
+              }
+            }
+          }
+          return updatedJson;
+        }
+
+        def conditions = new ArrayList();
+        for(entity in ctx.json.asset.accessLevel.basic.conditions){
+          conditions.add(renameKeys(entity, params));
+        }
+        ctx.json.asset.accessLevel.basic.remove('conditions');
+        ctx.json.asset.accessLevel.basic.put('conditions',conditions);
+  - rename:
+      field: json.asset.accessLevel
+      target_field: google_scc.asset.access_level
+      tag: rename_asset_accessLevel
+      ignore_missing: true
+  - rename:
+      field: json.asset.accessPolicy
+      target_field: google_scc.asset.access_policy
+      tag: rename_asset_accessPolicy
+      ignore_missing: true
+  - rename:
+      field: json.asset.ancestors
+      target_field: google_scc.asset.ancestors
+      tag: rename_asset_ancestors
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: This script processor rename the fields under the iamPolicy.auditConfigs objects.
+      if: ctx.json?.asset?.iamPolicy?.auditConfigs != null
+      params:
+        "auditConfigs": "audit_configs"
+        "auditLogConfigs": "audit_log_configs"
+        "logType": "log_type"
+        "exemptedMembers": "exemted_members"
+      tag: painless_to_rename_fields_under_iamPolicy_auditConfigs_object
+      source: |
+        def renameKeys(Map json, Map keyMap) {
+          def updatedJson = new HashMap();
+          for (def entry: json.entrySet()) {
+            def key = entry.getKey();
+            def value = entry.getValue();
+            if (value instanceof Map) {
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = renameKeys(value, keyMap);
+              } else {
+                updatedJson[key] = renameKeys(value, keyMap);
+              }
+            } else if (value instanceof List) {
+              def updatedList = [];
+              for (def item: value) {
+                if (item instanceof Map) {
+                  updatedList.add(renameKeys(item, keyMap));
+                } else {
+                  updatedList.add(item);
+                }
+              }
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = updatedList;
+              } else {
+                updatedJson[key] = value;
+              }
+            } else {
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = value;
+              } else {
+                updatedJson[key] = value;
+              }
+            }
+          }
+          return updatedJson;
+        }
+
+        def audit_configs = new ArrayList();
+        for(entity in ctx.json.asset.iamPolicy.auditConfigs){
+          audit_configs.add(renameKeys(entity, params));
+        }
+        ctx.json.asset.iamPolicy.remove('auditConfigs');
+        ctx.json.asset.iamPolicy.put('audit_configs',audit_configs);
+  - convert:
+      field: json.asset.iamPolicy.version
+      tag: convert_asset_iamPolicy_version
+      if: ctx.json?.asset?.iamPolicy?.version != ''
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.asset.iamPolicy
+      target_field: google_scc.asset.iam_policy
+      tag: rename_asset_iamPolicy
+      ignore_missing: true
+  - foreach:
+      field: json.asset.orgPolicy
+      if: ctx.json?.asset?.orgPolicy instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.version
+          tag: convert_asset_orgPolicy_version
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.version
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.asset.orgPolicy
+      if: ctx.json?.asset?.orgPolicy instanceof List
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value.updateTime
+          target_field:  _ingest._value.updateTime
+          tag: date_updateTime
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field:  _ingest._value.updateTime
+                ignore_missing: true
+  - foreach:
+      field: json.asset.orgPolicy
+      if: ctx.json?.asset?.orgPolicy instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.listPolicy.inheritFromParent
+          tag: convert_orgPolicy_listPolicy_inheritFromParent_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.listPolicy.inheritFromParent
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.asset.orgPolicy
+      if: ctx.json?.asset?.orgPolicy instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.booleanPolicy.enforced
+          tag: convert_orgPolicy_booleanPolicy_enforced_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.inbooleanPolicy.enforcedheritFromParent
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      description: This script processor rename the fields under the orgPolicy objects.
+      if: ctx.json?.asset?.orgPolicy != null
+      params:
+        "orgPolicy": "organization_policy"
+        "listPolicy": "list_policy"
+        "allowedValues": "allowed_values"
+        "deniedValues": "denied_values"
+        "allValues": "all_values"
+        "suggestedValue": "suggested_value"
+        "restoreDefault": "restore_default"
+        "updateTime": "update_time"
+        "inheritFromParent": "inherit_from_parent"
+        "booleanPolicy": "boolean_policy"
+      tag: painless_to_rename_fields_under_orgPolicy_object
+      source: |
+        def renameKeys(Map json, Map keyMap) {
+          def updatedJson = new HashMap();
+          for (def entry: json.entrySet()) {
+            def key = entry.getKey();
+            def value = entry.getValue();
+            if (value instanceof Map) {
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = renameKeys(value, keyMap);
+              } else {
+                updatedJson[key] = renameKeys(value, keyMap);
+              }
+            } else if (value instanceof List) {
+              def updatedList = [];
+              for (def item: value) {
+                if (item instanceof Map) {
+                  updatedList.add(renameKeys(item, keyMap));
+                } else {
+                  updatedList.add(item);
+                }
+              }
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = updatedList;
+              } else {
+                updatedJson[key] = value;
+              }
+            } else {
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = value;
+              } else {
+                updatedJson[key] = value;
+              }
+            }
+          }
+          return updatedJson;
+        }
+
+        def organization_policy = new ArrayList();
+        for(entity in ctx.json.asset.orgPolicy){
+          organization_policy.add(renameKeys(entity, params));
+        }
+        ctx.json.asset.remove('orgPolicy');
+        ctx.google_scc.asset.put('organization_policy',organization_policy);
+  - rename:
+      field: json.asset.osInventory.name
+      target_field: google_scc.asset.os_inventory.name
+      tag: rename_asset_osInventory_name
+      ignore_missing: true
+  - rename:
+      field: json.asset.osInventory.osInfo.kernelRelease
+      target_field: google_scc.asset.os_inventory.os_info.kernel.release
+      tag: rename_asset_osInventory_osInfo_kernelRelease
+      ignore_missing: true
+  - rename:
+      field: json.asset.osInventory.osInfo.osconfigAgentVersion
+      target_field: google_scc.asset.os_inventory.os_info.os_config_agent_version
+      tag: rename_asset_osInventory_osInfo_osconfigAgentVersion
+      ignore_missing: true
+  - date:
+      field: json.asset.osInventory.updateTime
+      target_field: google_scc.asset.os_inventory.update_time
+      tag: date_asset_osInventory_updateTime
+      formats:
+        - ISO8601
+      if: ctx.json?.asset?.osInventory?.updateTime != null && ctx.json.asset.osInventory.updateTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.asset.relatedAsset.ancestors
+      target_field: google_scc.asset.related_asset.ancestors
+      tag: rename_asset_relatedAsset_ancestors
+      ignore_missing: true
+  - rename:
+      field: json.asset.relatedAsset.asset
+      target_field: google_scc.asset.related_asset.name
+      tag: rename_asset_relatedAsset_asset
+      ignore_missing: true
+  - rename:
+      field: json.asset.relatedAsset.relationshipType
+      target_field: google_scc.asset.related_asset.relationship_type
+      tag: rename_asset_relatedAsset_relationshipType
+      ignore_missing: true
+  - rename:
+      field: json.asset.relatedAsset.assetType
+      target_field: google_scc.asset.related_asset.type
+      tag: rename_asset_relatedAsset_assetType
+      ignore_missing: true
+  - rename:
+      field: json.asset.relatedAssets.relationshipAttributes.action
+      target_field: json.asset.relatedAssets.relationship_attributes.action
+      tag: rename_asset_relatedAssets_relationshipAttributes_action
+      ignore_missing: true
+  - rename:
+      field: json.asset.relatedAssets.relationshipAttributes.sourceResourceType
+      target_field: json.asset.relatedAssets.relationship_attributes.source_resource_type
+      tag: rename_asset_relatedAssets_relationshipAttributes_sourceResourceType
+      ignore_missing: true
+  - rename:
+      field: json.asset.relatedAssets.relationshipAttributes.targetResourceType
+      target_field: json.asset.relatedAssets.relationship_attributes.target_resource_type
+      tag: rename_asset_relatedAssets_relationshipAttributes_targetResourceType
+      ignore_missing: true
+  - rename:
+      field: json.asset.relatedAssets.relationshipAttributes.type
+      target_field: json.asset.relatedAssets.relationship_attributes.type
+      tag: rename_asset_relatedAssets_relationshipAttributes_type
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: This script processor rename the fields under the relatedAssets.assets objects.
+      if: ctx.json?.asset?.relatedAssets?.assets != null
+      params:
+        "assets": "assets"
+        "assetType": "type"
+        "asset": "name"
+        "relationshipType": "relationship_type"
+      tag: painless_to_rename_fields_under_relatedAssets_assets_object
+      source: |
+        def renameKeys(Map json, Map keyMap) {
+          def updatedJson = new HashMap();
+          for (def entry: json.entrySet()) {
+            def key = entry.getKey();
+            def value = entry.getValue();
+            if (value instanceof Map) {
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = renameKeys(value, keyMap);
+              } else {
+                updatedJson[key] = renameKeys(value, keyMap);
+              }
+            } else if (value instanceof List) {
+              def updatedList = [];
+              for (def item: value) {
+                if (item instanceof Map) {
+                  updatedList.add(renameKeys(item, keyMap));
+                } else {
+                  updatedList.add(item);
+                }
+              }
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = updatedList;
+              } else {
+                updatedJson[key] = value;
+              }
+            } else {
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = value;
+              } else {
+                updatedJson[key] = value;
+              }
+            }
+          }
+          return updatedJson;
+        }
+
+        def assets = new ArrayList();
+        for(entity in ctx.json.asset.relatedAssets.assets){
+          assets.add(renameKeys(entity, params));
+        }
+        ctx.json.asset.relatedAssets.put('assets',assets);
+  - rename:
+      field: json.asset.relatedAssets
+      target_field: google_scc.asset.related_assets
+      tag: rename_asset_relatedAssets
+      ignore_missing: true
+  - rename:
+      field: json.asset.resource.discoveryDocumentUri
+      target_field: google_scc.asset.resource.discovery.document_uri
+      tag: rename_asset_resource_discoveryDocumentUri
+      ignore_missing: true
+  - rename:
+      field: json.asset.resource.discoveryName
+      target_field: google_scc.asset.resource.discovery.name
+      tag: rename_asset_resource_discoveryName
+      ignore_missing: true
+  - rename:
+      field: json.asset.resource.location
+      target_field: google_scc.asset.resource.location
+      tag: rename_asset_resource_location
+      ignore_missing: true
+  - rename:
+      field: json.asset.resource.parent
+      target_field: google_scc.asset.resource.parent
+      tag: rename_asset_resource_parent
+      ignore_missing: true
+  - rename:
+      field: json.asset.resource.resourceUrl
+      target_field: google_scc.asset.resource.url
+      tag: rename_asset_resource_resourceUrl
+      ignore_missing: true
+  - rename:
+      field: json.asset.resource.version
+      target_field: google_scc.asset.resource.version
+      tag: rename_asset_resource_version
+      ignore_missing: true
+  - rename:
+      field: json.asset.resource.data
+      target_field: google_scc.asset.resource.data
+      tag: rename_asset_resource_data
+      ignore_missing: true
+  - rename:
+      field: json.asset.servicePerimeter.spec.accessLevels
+      target_field: json.asset.servicePerimeter.spec.access_levels
+      tag: rename_asset_servicePerimeter_spec_accessLevels
+      ignore_missing: true
+  - rename:
+      field: json.asset.servicePerimeter.spec.restrictedServices
+      target_field: json.asset.servicePerimeter.spec.restricted_services
+      tag: rename_asset_servicePerimeter_spec_restrictedServices
+      ignore_missing: true
+  - rename:
+      field: json.asset.servicePerimeter.spec.vpcAccessibleServices.allowedServices
+      target_field: json.asset.servicePerimeter.spec.vpc_accessible_services.allowed_services
+      tag: rename_asset_servicePerimeter_spec_vpcAccessibleServices_allowedServices
+      ignore_missing: true
+  - convert:
+      field: json.asset.servicePerimeter.spec.vpcAccessibleServices.enableRestriction
+      target_field: json.asset.servicePerimeter.spec.vpc_accessible_services.enable_restriction
+      tag: convert_asset_servicePerimeter_spec_vpcAccessibleServices_enableRestriction_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.json?.asset?.servicePerimeter?.spec?.vpcAccessibleServices?.enableRestriction != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.asset.servicePerimeter.status.restrictedServices
+      target_field: json.asset.servicePerimeter.status.restricted_services
+      tag: rename_asset_servicePerimeter_status_restrictedServices
+      ignore_missing: true
+  - rename:
+      field: json.asset.servicePerimeter.status.vpcAccessibleServices.allowedServices
+      target_field: json.asset.servicePerimeter.status.vpc_accessible_services.allowed_services
+      tag: rename_asset_servicePerimeter_status_vpcAccessibleServices_allowedServices
+      ignore_missing: true
+  - convert:
+      field: json.asset.servicePerimeter.status.vpcAccessibleServices.enableRestriction
+      target_field: json.asset.servicePerimeter.status.vpc_accessible_services.enable_restriction
+      tag: convert_asset_servicePerimeter_status_vpcAccessibleServices_enableRestriction_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.json?.asset?.servicePerimeter?.status?.vpcAccessibleServices?.enableRestriction != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.asset.servicePerimeter.status.accessLevels
+      target_field: json.asset.servicePerimeter.status.access_levels
+      tag: rename_asset_servicePerimeter_status_accessLevels
+      ignore_missing: true
+  - rename:
+      field: json.asset.servicePerimeter.perimeterType
+      target_field: json.asset.servicePerimeter.type
+      tag: rename_asset_servicePerimeter_perimeterType
+      ignore_missing: true
+  - convert:
+      field: json.asset.servicePerimeter.useExplicitDryRunSpec
+      target_field: json.asset.servicePerimeter.use_explicit_dry_run_spec
+      tag: convert_asset_servicePerimeter_useExplicitDryRunSpec_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.json?.asset?.servicePerimeter?.useExplicitDryRunSpec != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      description: This script processor rename the fields under the servicePerimeter.status.egressPolicies objects.
+      if: ctx.json?.asset?.servicePerimeter?.status?.egressPolicies != null
+      params:
+        "egressPolicies": "egress_policies"
+        "egressFrom": "egress_from"
+        "sources": "sources"
+        "accessLevel": "access_level"
+        "identityType": "identity_type"
+        "egressTo": "egress_to"
+        "operations": "operations"
+        "methodSelectors": "method_selectors"
+        "serviceName": "service_name"
+      tag: painless_to_rename_fields_under_servicePerimeter_status_egressPolicies_object
+      source: |
+        def renameKeys(Map json, Map keyMap) {
+          def updatedJson = new HashMap();
+          for (def entry: json.entrySet()) {
+            def key = entry.getKey();
+            def value = entry.getValue();
+            if (value instanceof Map) {
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = renameKeys(value, keyMap);
+              } else {
+                updatedJson[key] = renameKeys(value, keyMap);
+              }
+            } else if (value instanceof List) {
+              def updatedList = [];
+              for (def item: value) {
+                if (item instanceof Map) {
+                  updatedList.add(renameKeys(item, keyMap));
+                } else {
+                  updatedList.add(item);
+                }
+              }
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = updatedList;
+              } else {
+                updatedJson[key] = value;
+              }
+            } else {
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = value;
+              } else {
+                updatedJson[key] = value;
+              }
+            }
+          }
+          return updatedJson;
+        }
+
+        def egress_policies = new ArrayList();
+        for(entity in ctx.json.asset.servicePerimeter.status.egressPolicies){
+          egress_policies.add(renameKeys(entity, params));
+        }
+        ctx.json.asset.servicePerimeter.status.remove('egressPolicies');
+        ctx.json.asset.servicePerimeter.status.put('egress_policies',egress_policies);
+  - script:
+      lang: painless
+      description: This script processor rename the fields under the servicePerimeter.spec.egressPolicies objects.
+      if: ctx.json?.asset?.servicePerimeter?.spec?.egressPolicies != null
+      params:
+        "egressPolicies": "egress_policies"
+        "egressFrom": "egress_from"
+        "sources": "sources"
+        "accessLevel": "access_level"
+        "identityType": "identity_type"
+        "egressTo": "egress_to"
+        "operations": "operations"
+        "methodSelectors": "method_selectors"
+        "serviceName": "service_name"
+      tag: painless_to_rename_fields_under_servicePerimeter_spec_egressPolicies_object
+      source: |
+        def renameKeys(Map json, Map keyMap) {
+          def updatedJson = new HashMap();
+          for (def entry: json.entrySet()) {
+            def key = entry.getKey();
+            def value = entry.getValue();
+            if (value instanceof Map) {
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = renameKeys(value, keyMap);
+              } else {
+                updatedJson[key] = renameKeys(value, keyMap);
+              }
+            } else if (value instanceof List) {
+              def updatedList = [];
+              for (def item: value) {
+                if (item instanceof Map) {
+                  updatedList.add(renameKeys(item, keyMap));
+                } else {
+                  updatedList.add(item);
+                }
+              }
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = updatedList;
+              } else {
+                updatedJson[key] = value;
+              }
+            } else {
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = value;
+              } else {
+                updatedJson[key] = value;
+              }
+            }
+          }
+          return updatedJson;
+        }
+
+        def egress_policies = new ArrayList();
+        for(entity in ctx.json.asset.servicePerimeter.spec.egressPolicies){
+          egress_policies.add(renameKeys(entity, params));
+        }
+        ctx.json.asset.servicePerimeter.spec.remove('egressPolicies');
+        ctx.json.asset.servicePerimeter.spec.put('egress_policies',egress_policies);
+  - script:
+      lang: painless
+      description: This script processor rename the fields under the servicePerimeter.spec.ingressPolicies objects.
+      if: ctx.json?.asset?.servicePerimeter?.spec?.ingressPolicies != null
+      params:
+        "ingressPolicies": "ingress_policies"
+        "ingressFrom": "ingress_from"
+        "sources": "sources"
+        "accessLevel": "access_level"
+        "identityType": "identity_type"
+        "ingressTo": "ingress_to"
+        "operations": "operations"
+        "methodSelectors": "method_selectors"
+        "serviceName": "service_name"
+      tag: painless_to_rename_fields_under_servicePerimeter_spec_ingressPolicies_object
+      source: |
+        def renameKeys(Map json, Map keyMap) {
+          def updatedJson = new HashMap();
+          for (def entry: json.entrySet()) {
+            def key = entry.getKey();
+            def value = entry.getValue();
+            if (value instanceof Map) {
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = renameKeys(value, keyMap);
+              } else {
+                updatedJson[key] = renameKeys(value, keyMap);
+              }
+            } else if (value instanceof List) {
+              def updatedList = [];
+              for (def item: value) {
+                if (item instanceof Map) {
+                  updatedList.add(renameKeys(item, keyMap));
+                } else {
+                  updatedList.add(item);
+                }
+              }
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = updatedList;
+              } else {
+                updatedJson[key] = value;
+              }
+            } else {
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = value;
+              } else {
+                updatedJson[key] = value;
+              }
+            }
+          }
+          return updatedJson;
+        }
+
+        def ingress_policies = new ArrayList();
+        for(entity in ctx.json.asset.servicePerimeter.spec.ingressPolicies){
+          ingress_policies.add(renameKeys(entity, params));
+        }
+        ctx.json.asset.servicePerimeter.spec.remove('ingressPolicies');
+        ctx.json.asset.servicePerimeter.spec.put('ingress_policies',ingress_policies);
+  - script:
+      lang: painless
+      description: This script processor rename the fields under the servicePerimeter.status.ingressPolicies objects.
+      if: ctx.json?.asset?.servicePerimeter?.status?.ingressPolicies != null
+      params:
+        "ingressPolicies": "ingress_policies"
+        "ingressFrom": "ingress_from"
+        "sources": "sources"
+        "accessLevel": "access_level"
+        "identityType": "identity_type"
+        "ingressTo": "ingress_to"
+        "operations": "operations"
+        "methodSelectors": "method_selectors"
+        "serviceName": "service_name"
+      tag: painless_to_rename_fields_under_servicePerimeter_status_ingressPolicies_object
+      source: |
+        def renameKeys(Map json, Map keyMap) {
+          def updatedJson = new HashMap();
+          for (def entry: json.entrySet()) {
+            def key = entry.getKey();
+            def value = entry.getValue();
+            if (value instanceof Map) {
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = renameKeys(value, keyMap);
+              } else {
+                updatedJson[key] = renameKeys(value, keyMap);
+              }
+            } else if (value instanceof List) {
+              def updatedList = [];
+              for (def item: value) {
+                if (item instanceof Map) {
+                  updatedList.add(renameKeys(item, keyMap));
+                } else {
+                  updatedList.add(item);
+                }
+              }
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = updatedList;
+              } else {
+                updatedJson[key] = value;
+              }
+            } else {
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = value;
+              } else {
+                updatedJson[key] = value;
+              }
+            }
+          }
+          return updatedJson;
+        }
+
+        def ingress_policies = new ArrayList();
+        for(entity in ctx.json.asset.servicePerimeter.status.ingressPolicies){
+          ingress_policies.add(renameKeys(entity, params));
+        }
+        ctx.json.asset.servicePerimeter.status.remove('ingressPolicies');
+        ctx.json.asset.servicePerimeter.status.put('ingress_policies',ingress_policies);
+  - rename:
+      field: json.asset.servicePerimeter
+      target_field: google_scc.asset.service_perimeter
+      tag: rename_asset_servicePerimeter
+      ignore_missing: true
+  - date:
+      field: json.asset.updateTime
+      target_field: google_scc.asset.update_time
+      tag: date_asset_updateTime
+      formats:
+        - ISO8601
+      if: ctx.json?.asset?.updateTime != null && ctx.json.asset.updateTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field:
+        - google_scc.asset.service_perimeter.spec.vpcAccessibleServices.enableRestriction
+        - google_scc.asset.service_perimeter.status.vpcAccessibleServices.enableRestriction
+        - google_scc.asset.service_perimeter.useExplicitDryRunSpec
+      tag: remove_converted_fields
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

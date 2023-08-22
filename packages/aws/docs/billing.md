@@ -131,6 +131,7 @@ An example event for `billing` looks as following:
 | aws.billing.UsageQuantity.unit | Usage quantity unit. | keyword |  |
 | aws.billing.end_date | End date for retrieving AWS costs. | keyword |  |
 | aws.billing.group_by | Cost explorer group by key values. | object |  |
+| aws.billing.group_by.fingerprint |  | keyword |  |
 | aws.billing.group_definition.key | The string that represents a key for a specified group. | keyword |  |
 | aws.billing.group_definition.type | The string that represents the type of group. | keyword |  |
 | aws.billing.start_date | Start date for retrieving AWS costs. | keyword |  |
