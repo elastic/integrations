@@ -26,10 +26,10 @@ exposing metrics in Prometheus format.
 | cloud.project.id | Name of the project in Google Cloud. | keyword |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
 | cloud.region | Region in which this host is running. | keyword |  |
-| cockroachdb.status.\*.counter | Prometheus counter metric | double | counter |
+| cockroachdb.status.\*.counter | Prometheus counter metric | object | counter |
 | cockroachdb.status.\*.histogram | Prometheus histogram metric | object |  |
-| cockroachdb.status.\*.rate | Prometheus rated counter metric | double | counter |
-| cockroachdb.status.\*.value | Prometheus gauge metric | double | gauge |
+| cockroachdb.status.\*.rate | Prometheus rated counter metric | object | counter |
+| cockroachdb.status.\*.value | Prometheus gauge metric | object | gauge |
 | cockroachdb.status.labels.advertise_addr | The IP address/hostname and port to tell other nodes to use. | keyword |  |
 | cockroachdb.status.labels.go_version | The version of Go in which the source code is written. | keyword |  |
 | cockroachdb.status.labels.http_addr | The IP address/hostname and port to listen on for DB Console HTTP requests. | keyword |  |
