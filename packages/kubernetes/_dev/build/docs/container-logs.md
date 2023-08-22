@@ -68,5 +68,5 @@ Here are the labels available for customization:
 
 | Label                  | Description                                  |
 | ---------------------- | -------------------------------------------- |
-| `elastic.co/dataset`   | Defines the target dataset for this pod. |
-| `elastic.co/namespace` | Defines the target namespace for this pod.    |
+| `elastic.co/dataset`   | Defines the target dataset for this pod.     |
+| `elastic.co/namespace` | Defines the target namespace for this pod.   |

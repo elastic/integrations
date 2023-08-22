@@ -84,6 +84,12 @@ the masters won't be visible. In these cases it won't be possible to use `schedu
 The container-logs dataset requires access to the log files in each Kubernetes node where the container logs are stored.
 This defaults to `/var/log/containers/*${kubernetes.container.id}.log`.
 
+#### Routing
+
+The container-logs data stream allows routing logs to a different *dataset* or *namespace* using pod labels. For example, by setting the pod label `elastic.co/dataset: nginx`, the integration will send all the container logs to the `nginx` dataset.
+
+To learn more about routing container-logs, see https://docs.elastic.co/integrations/kubernetes/container-logs.
+
 ### audit-logs
 
 The audit-logs dataset requires access to the log files on each Kubernetes node where the audit logs are stored.
