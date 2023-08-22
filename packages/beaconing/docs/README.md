@@ -17,7 +17,7 @@ To inspect the installed assets, you can navigate to **Stack Management > Data >
 
 The **Network Beaconing Detection** has three dashboards: 
 * **Network Beaconing**: the main dashboard to monitor beaconing activity
-* **Beaconing Drilldown**: drill down into relevant event logs and some statistics related to the beaconing activity
+* **Beaconing Drilldown**: Drilldown into relevant event logs and some statistics related to the beaconing activity
 * **Hosts Affected Over Time By Process Name**: monitor the reach of beaconing processes across hosts in your environment.
 
 For the dashboards to work as expected, the following settings need to be configured in Kibana. 
