@@ -20,7 +20,7 @@ For additional information on the transform's inner workings and the signals it 
 The **Network Beaconing Identification** has three dashboards: 
 * **Network Beaconing**: The main dashboard to monitor beaconing activity
 * **Beaconing Drilldown**: Drilldown into relevant event logs and some statistics related to the beaconing activity
-* **Hosts Affected Over Time By Process Name**: Monitor the spread of beaconing processes across hosts in your environment.
+* **Hosts Affected Over Time By Process Name**: Monitor the spread of beaconing processes across hosts in your environment
 
 For the dashboards to work as expected, the following settings need to be configured in Kibana. 
 1. Ensure the pivot transform is installed and running.
