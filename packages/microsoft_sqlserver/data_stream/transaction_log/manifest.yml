@@ -1,5 +1,5 @@
 type: metrics
-title: Microsoft SQL Server transaction_log metrics
+title: Microsoft SQL Server transaction log metrics
 streams:
   - input: sql/metrics
     vars:
@@ -16,9 +16,17 @@ streams:
         multi: true
         required: true
         show_user: true
-        description: Default system databases are preloaded. For user defined databases please add additional rows and enter the database name.
+        description: Database names to query the transaction logs metrics from. User-defined and system database names can be provided as input. The system databases are automatically included by default.
         default: ["master", "model", "tempdb", "msdb"]
-    title: Microsoft SQL Server transaction_log metrics
-    description: Collect Microsoft SQL Server transaction_log metrics
+      - name: fetch_from_all_databases
+        type: bool
+        title: Fetch from all databases
+        multi: false
+        required: false
+        show_user: false
+        description: Option to enable fetching the transaction logs metrics from all databases including system and user-defined databases. Overrides database names provided in the "Databases" field and instead considers all databases.
+        default: false
+    title: Microsoft SQL Server transaction log metrics
+    description: Collect Microsoft SQL Server transaction log metrics
 elasticsearch:
   index_mode: "time_series"
