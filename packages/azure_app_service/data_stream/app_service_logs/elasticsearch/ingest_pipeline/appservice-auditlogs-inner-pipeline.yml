@@ -1,0 +1,42 @@
+---
+description: Pipeline for processing Azure App Service Console Logs
+processors:
+  - rename:
+      field: azure.app_service.ResourceId
+      target_field: azure.resource.id
+      ignore_missing: true
+  - rename:
+      field: azure.app_service.Category
+      target_field: azure.app_service.category
+  - rename:
+      field: azure.app_service.OperationName
+      target_field: azure.app_service.operation_name
+  - rename:
+      field: azure.app_service.Properties
+      target_field: azure.app_service.properties
+      ignore_missing: true
+  - rename:
+      field: azure.app_service.properties.Protocol
+      target_field: azure.app_service.properties.protocol
+  - rename:
+      field: azure.app_service.properties.User
+      target_field: azure.app_service.properties.user
+  - rename:
+      field: azure.app_service.properties.UserAddress
+      target_field: azure.app_service.properties.client_ip
+  - rename:
+      field: azure.app_service.properties.UserDisplayName
+      target_field: azure.app_service.properties.user_display_name
+  - grok:
+      field: azure.app_service.properties.client_ip
+      patterns:
+        - '%{IPORHOST:azure.app_service.properties.client_ip}:%{POSINT:azure.app_service.properties.client_port:long}'
+      ignore_failure: true
+  - convert:
+      field: azure.app_service.properties.client_ip
+      type: ip
+      ignore_missing: true
+on_failure:
+  - append:
+      field: "error.message"
+      value: "{{ _ingest.on_failure_message }} {{ _ingest.on_failure_processor_type }}"

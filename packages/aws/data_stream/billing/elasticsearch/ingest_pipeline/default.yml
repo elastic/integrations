@@ -1,0 +1,11 @@
+---
+description: "Pipeline for AWS Billing"
+processors:
+  - fingerprint:
+      fields: ["aws.billing.group_by"]
+      target_field: 'aws.billing.group_by.fingerprint'
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"

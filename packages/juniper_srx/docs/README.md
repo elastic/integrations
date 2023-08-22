@@ -192,14 +192,14 @@ The following processes and tags are supported:
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
-| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
+| event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
+| event.end | `event.end` contains the date when the event ended or when the activity was last observed. | date |
 | event.hash | Hash (perhaps logstash fingerprint) of raw field to be able to demonstrate log integrity. | keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
@@ -210,7 +210,7 @@ The following processes and tags are supported:
 | event.risk_score_norm | Normalized risk score or priority of the event, on a scale of 0 to 100. This is mainly useful if you use more than one system that assigns risk scores, and you want to see a normalized value across all systems. | float |
 | event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
-| event.start | event.start contains the date when the event started or when the activity was first observed. | date |
+| event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | event.url | URL linking to an external system to continue investigation of this event. This URL links to another system where in-depth investigation of the specific occurrence of this event can take place. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
@@ -357,6 +357,9 @@ The following processes and tags are supported:
 | juniper.srx.context_value | context value | keyword |
 | juniper.srx.context_value_hit_rate | context value hit rate | integer |
 | juniper.srx.ddos_application_name | ddos application name | keyword |
+| juniper.srx.dpdk.port_number |  | integer |
+| juniper.srx.dpdk.port_state |  | integer |
+| juniper.srx.dpdk.swt_port_state |  | integer |
 | juniper.srx.dscp_value | apbr rule type | integer |
 | juniper.srx.dst_nat_rule_name | dst nat rule name | keyword |
 | juniper.srx.dst_nat_rule_type | dst nat rule type | keyword |
@@ -376,21 +379,12 @@ The following processes and tags are supported:
 | juniper.srx.function_name |  | keyword |
 | juniper.srx.hostname | hostname | keyword |
 | juniper.srx.icmp_type | icmp type | integer |
-| juniper.srx.ike_negotiation.err_msg |  | keyword |
-| juniper.srx.ike_negotiation.gateway |  | keyword |
-| juniper.srx.ike_negotiation.local.ike_id |  | keyword |
-| juniper.srx.ike_negotiation.local.ip_range |  | keyword |
-| juniper.srx.ike_negotiation.remote.ike_id |  | keyword |
-| juniper.srx.ike_negotiation.remote.ip_range |  | keyword |
-| juniper.srx.ike_negotiation.role |  | keyword |
-| juniper.srx.ike_negotiation.version |  | keyword |
-| juniper.srx.ike_negotiation.vpn |  | keyword |
-| juniper.srx.ike_negotiation.vr_id |  | keyword |
 | juniper.srx.inbound_bytes | bytes from server | integer |
 | juniper.srx.inbound_packets | packets from server | integer |
 | juniper.srx.index | index | keyword |
 | juniper.srx.index1 |  | keyword |
 | juniper.srx.index2 |  | keyword |
+| juniper.srx.ip_mon_reth_scan.trigger |  | keyword |
 | juniper.srx.kern_arp_addr_change.ip |  | ip |
 | juniper.srx.kern_arp_addr_change.mac1 |  | keyword |
 | juniper.srx.kern_arp_addr_change.mac2 |  | keyword |
@@ -403,6 +397,9 @@ The following processes and tags are supported:
 | juniper.srx.mode |  | keyword |
 | juniper.srx.name | name | keyword |
 | juniper.srx.nat_connection_tag | nat connection tag | keyword |
+| juniper.srx.negotiation.err_msg |  | keyword |
+| juniper.srx.negotiation.message |  | keyword |
+| juniper.srx.negotiation.type |  | keyword |
 | juniper.srx.nested_application | nested application | keyword |
 | juniper.srx.obj | url path | keyword |
 | juniper.srx.occur_count | occur count | integer |
@@ -453,6 +450,24 @@ The following processes and tags are supported:
 | juniper.srx.state | state | keyword |
 | juniper.srx.status | status | keyword |
 | juniper.srx.sub_category | sub category | keyword |
+| juniper.srx.system.aux_spi |  | integer |
+| juniper.srx.system.direction |  | keyword |
+| juniper.srx.system.ike_version |  | integer |
+| juniper.srx.system.local |  | keyword |
+| juniper.srx.system.local_gateway |  | ip |
+| juniper.srx.system.local_id |  | keyword |
+| juniper.srx.system.local_ike_id |  | keyword |
+| juniper.srx.system.mode |  | keyword |
+| juniper.srx.system.remote |  | keyword |
+| juniper.srx.system.remote_gateway |  | keyword |
+| juniper.srx.system.remote_id |  | keyword |
+| juniper.srx.system.remote_ike_id |  | keyword |
+| juniper.srx.system.role |  | keyword |
+| juniper.srx.system.spi |  | keyword |
+| juniper.srx.system.traffic_selector |  | keyword |
+| juniper.srx.system.type |  | keyword |
+| juniper.srx.system.vpn |  | keyword |
+| juniper.srx.system.vr_id |  | keyword |
 | juniper.srx.tag | system log message tag, which uniquely identifies the message. | keyword |
 | juniper.srx.temporary_filename | temporary_filename | keyword |
 | juniper.srx.tenant_id | tenant id | keyword |
