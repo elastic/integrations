@@ -39,7 +39,7 @@ To reindex the data, the following steps must be performed.
 
 1. Stop the data stream by going to `Integrations -> PHP-FPM -> Integration policies` open the configuration of PHP-FPM and disable the `Collect PHP-FPM metrics` toggle to reindex metrics data stream and save the integration.
 
-2. Perform the following steps in the Dev tools
+2. Copy data into the temporary index and delete the existing data stream and index template by performing the following steps in the Dev tools.
 
 ```
 POST _reindex
@@ -82,7 +82,7 @@ DELETE _index_template/logs-php_fpm.pool
 ```
 3. Go to `Integrations -> PHP-FPM -> Settings` and click on `Reinstall PHP-FPM`.
 
-4. Perform the following steps in the Dev tools
+4. Copy data from temporary index to new index by performing the following steps in the Dev tools.
 
 ```
 POST _reindex
@@ -118,7 +118,7 @@ POST _reindex
 
 6. Start the data stream by going to the `Integrations -> PHP-FPM -> Integration policies` and open configuration of integration and enable the `Collect PHP-FPM metrics` toggle and save the integration.
 
-7. Perform the following step in the Dev tools
+7. Delete temporary index by performing the following step in the Dev tools.
 
 ```
 DELETE temp_index
