@@ -109,3 +109,21 @@ rules:
       - status_code: 200
         body: |
           [{ "data": { "schema": "KvR3_Gn5cwCA8TYgASeP_A", "payload": { "EventDate": "2022-12-29T11:38:54Z", "EventIdentifier": "06ce4a9d-8d6b-4a71-aad8-04d28c9a43df", "SourceIp": "81.2.69.142", "CreatedById": "0055j000000q9s7AAA", "Username": "user@elastic.co", "UserId": "0055j000000utlPAAQ", "RelatedEventIdentifier": null, "SessionKey": "6/HAElgoPCwskqBU", "CreatedDate": "2022-12-29T11:38:54Z", "LoginKey": "CuRVtbMjat6xxbTH", "SessionLevel": "STANDARD" }, "event": { "replayId": 14168970 } }, "channel": "/event/LogoutEventStream" }]
+  - path: /services/data/v54.0/query
+    methods: ["GET"]
+    query_params:
+      q: ["SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = 'Hourly' AND (EventType = 'AuraRequest') ORDER BY LogDate ASC NULLS FIRST"]
+    responses:
+      - status_code: 200
+        body: '{"done":true,"records":[{"CreatedDate":"2022-10-01T23:22:27.000+0000","Id":"0AT8X00000ClnP6WAJ","LogDate":"2022-09-30T00:00:00.000+0000","LogFile":"/services/data/v54.0/sobjects/EventLogFile/0AT8X00000ClnP6WAJ/LogFile","attributes":{"type":"EventLogFile","url":"/services/data/v54.0/sobjects/EventLogFile/0AT8X00000ClnP6WAJ"}}],"totalSize":1}'
+        headers:
+          content-type: ["text/json"]
+  - path: /services/data/v54.0/sobjects/EventLogFile/0AT8X00000ClnP6WAJ/LogFile
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/csv"]
+        body: |-
+          "EVENT_TYPE","TIMESTAMP","REQUEST_ID","ORGANIZATION_ID","USER_ID","RUN_TIME","CPU_TIME","URI","SESSION_KEY","LOGIN_KEY","USER_TYPE","REQUEST_STATUS","DB_TOTAL_TIME","USER_AGENT","REQUEST_METHOD","ACTION_MESSAGE","TIMESTAMP_DERIVED","USER_ID_DERIVED","CLIENT_IP","URI_ID_DERIVED"
+          "AuraRequest","20230822020000.172","TID:55385000005e8064f8","HAMnK91aKEIbm8r9","Gee1Xf7aaWerror","38","30","/aura","gSZdH7BEuq","kJLJ9Pk7YMvkSAiP","Standard","","6066941","Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36","POST","1$aura://RelatedListUiController/ACTION$getRelatedListInfoByApiName=22","2023-08-22T02:00:00.172Z","00561AAG","81.2.69.192",""
