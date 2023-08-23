@@ -305,10 +305,8 @@ This data stream uses the `/api/task_manager/metrics` API of Kibana, which is av
 | kibana.task_manager_metrics.metrics.task_claim.value.success |  | long |
 | kibana.task_manager_metrics.metrics.task_claim.value.total |  | long |
 | kibana.task_manager_metrics.metrics.task_run.timestamp |  | date |
-| kibana.task_manager_metrics.metrics.task_run.value.by_type.actions.success |  | long |
-| kibana.task_manager_metrics.metrics.task_run.value.by_type.actions.total |  | long |
-| kibana.task_manager_metrics.metrics.task_run.value.by_type.alerting.success |  | long |
-| kibana.task_manager_metrics.metrics.task_run.value.by_type.alerting.total |  | long |
+| kibana.task_manager_metrics.metrics.task_run.value.by_type.\*.success |  | long |
+| kibana.task_manager_metrics.metrics.task_run.value.by_type.\*.total |  | long |
 | kibana.task_manager_metrics.metrics.task_run.value.overall.success |  | long |
 | kibana.task_manager_metrics.metrics.task_run.value.overall.total |  | long |
 | kibana.task_manager_metrics.process_uuid |  | keyword |
