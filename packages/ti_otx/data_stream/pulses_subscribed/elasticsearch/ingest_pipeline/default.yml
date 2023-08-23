@@ -25,14 +25,10 @@ processors:
       target_field: event.original
       tag: rename_message
       ignore_missing: true
-#   - json:
-#       field: event.original
-#       target_field: otx
-#       tag: json_event_original
-#   - set:
-#       field: otx
-#       copy_from: event.original
-#       tag: set_otx
+  - json:
+      field: event.original
+      target_field: otx
+      tag: json_event_original
   - fingerprint:
       fields:
         - otx.id
@@ -49,6 +45,9 @@ processors:
       field: "@timestamp"
       copy_from: otx.created
       if: "ctx.otx?.created != null"
+  - remove:
+      field: otx.expiration
+      if: ctx.otx?.expiration != null && ctx.otx.expiration == 0
   - date:
       field: otx.expiration
       target_field: otx.expiration
@@ -76,30 +75,10 @@ processors:
       field: otx.revision
       type: integer
       if: "ctx.otx?.revision != null"
-  - set:
-      field: otx.is_active
-      value: true
-      tag: set_is_active_true
-      if: "ctx.otx?.is_active != null && ctx.otx.is_active instanceof Integer && ctx.otx.is_active == 1"
-  - set:
-      field: otx.is_active
-      value: false
-      tag: set_is_active_false
-      if: "ctx.otx?.is_active != null && ctx.otx.is_active instanceof Integer && ctx.otx.is_active == 0"
-#   - json:
-#       field: otx.pulse
-#       target_field: otx.pulse
-#       tag: json_otx_pulse
-  - set:
-      field: otx.pulse.public
-      value: true
-      tag: set_pulse_public_true
-      if: "ctx.otx?.pulse?.public != null && ctx.otx.pulse.public instanceof Integer && ctx.otx.pulse.public == 1"
-  - set:
-      field: otx.pulse.public
-      value: false
-      tag: set_pulse_public_false
-      if: "ctx.otx?.pulse?.public != null && ctx.otx.pulse.public instanceof Integer && ctx.otx.pulse.public == 0"
+  - json:
+      field: otx.pulse_raw
+      target_field: otx.pulse
+      tag: json_otx_pulse_raw
   - date:
       field: otx.pulse.created
       target_field: otx.pulse.created
@@ -279,9 +258,7 @@ processors:
         - otx.type
         - otx.id
         - otx.pulse.tags
-        # - otx.count
-        # - otx.next
-        # - otx.previous
+        - otx.pulse_raw
       ignore_missing: true
       if: ctx.threat?.indicator?.type != null
   - remove:
