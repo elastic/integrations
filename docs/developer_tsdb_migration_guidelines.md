@@ -90,7 +90,7 @@ Integration is one of the biggest sources of input data to elasticsearch. Enabli
       description: Every wait event belongs to a class of wait events.
     ```
     *Notes:*
-    * *There exists a limit on how many dimension fields can have. By default this value is 21.*
+    * *There exists a limit on how many dimension fields can have. By [default this value is 21](https://github.com/elastic/elasticsearch/blob/6417a4f80f32ace48b8ad682ad46b19b57e49d60/server/src/main/java/org/elasticsearch/index/mapper/MapperService.java#L114)).*
     * *Dimension keys have a hard limit of 512b. Documents are rejected if this limit is reached.*
     * *Dimension values have a hard limit of 1024b. Documents are rejected if this limit is reached*  
 
