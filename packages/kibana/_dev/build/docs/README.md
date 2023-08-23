@@ -44,6 +44,7 @@ This data stream uses the `/api/task_manager/metrics` API of Kibana, which is av
 {{fields "task_manager_metrics"}}
 
 {{event "task_manager_metrics"}}
+
 ## Metrics
 
 ### Stats
