@@ -45,7 +45,105 @@ After the integration is successfully configured, clicking on the Assets tab of 
 
 ### Troubleshooting
 
+#### Dummy values
+
 There could be a possibility that for some of the fields, Citrix ADC sets dummy values. For example, a field `cpuusagepcnt` is represented by `citrix_adc.system.cpu.utilization.pct`. `cpuusagepcnt` is set to `4294967295` for some [instances](https://github.com/citrix/citrix-adc-metrics-exporter/issues/44). If you also encounter it for some fields please reach out to the [Citrix ADC support team](https://support.citrix.com/plp/products/citrix_adc/tabs/popular-solutions).
+
+
+#### Type conflicts
+
+Conflicts in any field in any data stream can be solved by reindexing the data. 
+If host.ip is shown conflicted under ``logs-*`` data view, then this issue can be solved by reindexing the ``Interface``, ``LBVserver``, ``Service``, ``System``, and ``VPN`` data stream's indices.
+To reindex the data, the following steps must be performed.
+
+1. Stop the data stream by going to `Integrations -> Citrix ADC -> Integration policies` open the configuration of Citrix ADC and disable the `Collect Citrix ADC metrics` toggle to reindex logs data stream and save the integration.
+
+2. Copy data into the temporary index and delete the existing data stream and index template by performing the following steps in the Dev tools.
+
+```
+POST _reindex
+{
+  "source": {
+    "index": "<index_name>"
+  },
+  "dest": {
+    "index": "temp_index"
+  }
+}  
+```
+Example:
+```
+POST _reindex
+{
+  "source": {
+    "index": "logs-citrix_adc.interface-default"
+  },
+  "dest": {
+    "index": "temp_index"
+  }
+}
+```
+
+```
+DELETE /_data_stream/<data_stream>
+```
+Example:
+```
+DELETE /_data_stream/logs-citrix_adc.interface-default
+```
+
+```
+DELETE _index_template/<index_template>
+```
+Example:
+```
+DELETE _index_template/logs-citrix_adc.interface
+```
+3. Go to `Integrations -> Citrix ADC -> Settings` and click on `Reinstall Citrix ADC`.
+
+4. Copy data from temporary index to new index by performing the following steps in the Dev tools.
+
+```
+POST _reindex
+{
+  "conflicts": "proceed",
+  "source": {
+    "index": "temp_index"
+  },
+  "dest": {
+    "index": "<index_name>",
+    "op_type": "create"
+
+  }
+}
+```
+Example:
+```
+POST _reindex
+{
+  "conflicts": "proceed",
+  "source": {
+    "index": "temp_index"
+  },
+  "dest": {
+    "index": "logs-citrix_adc.interface-default",
+    "op_type": "create"
+
+  }
+}
+```
+
+5. Verify data is reindexed completely.
+
+6. Start the data stream by going to the `Integrations -> Citrix ADC -> Integration policies` and open configuration of integration and enable the `Collect Citrix ADC metrics` toggle and save the integration.
+
+7. Delete temporary index by performing the following step in the Dev tools.
+
+```
+DELETE temp_index
+```
+
+More details about reindexing can be found [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-reindex.html).
 
 ## Metrics reference
 
