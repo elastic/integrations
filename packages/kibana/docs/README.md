@@ -325,131 +325,211 @@ An example event for `task_manager` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-05-11T16:41:30.793Z",
+    "@timestamp": "2023-08-23T15:16:50.293Z",
     "agent": {
-        "ephemeral_id": "a8cb0dfc-d83d-4928-8836-decae307ed1a",
-        "id": "48b3ac4e-1e5d-4c6c-a76a-6c18ae017df9",
         "name": "docker-fleet-agent",
+        "id": "8e1f023e-e70d-40a7-905a-f1ff1271b631",
         "type": "metricbeat",
-        "version": "8.9.0"
-    },
-    "data_stream": {
-        "dataset": "kibana.task_manager_metrics",
-        "namespace": "default",
-        "type": "metrics"
+        "ephemeral_id": "7a40c3bb-4628-496b-ba5f-7f0fb82e1767",
+        "version": "8.10.0"
     },
     "ecs": {
         "version": "8.0.0"
     },
-    "elastic_agent": {
-        "id": "48b3ac4e-1e5d-4c6c-a76a-6c18ae017df9",
-        "snapshot": true,
-        "version": "8.9.0"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "dataset": "kibana.task_manager_metrics",
-        "duration": 23467000,
-        "ingested": "2023-05-11T16:41:31Z",
-        "module": "http"
-    },
-    "host": {
-        "architecture": "aarch64",
-        "containerized": false,
-        "hostname": "docker-fleet-agent",
-        "id": "2928cd5a7c374273b53f983d5bd5a3c9",
-        "ip": [
-            "172.26.0.7"
-        ],
-        "mac": [
-            "02-42-AC-1A-00-07"
-        ],
-        "name": "docker-fleet-agent",
-        "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "5.15.49-linuxkit",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
-            "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
-        }
-    },
-    "kibana": {
-        "task_manager_metrics": {
-            "last_update": "2023-05-11T16:41:27.977Z",
-            "metrics": {
-                "task_claim": {
-                    "timestamp": "2023-05-11T16:41:27.977Z",
-                    "value": {
-                        "duration": {
-                            "counts": [
-                                1,
-                                2,
-                                1,
-                                1
-                            ],
-                            "values": [
-                                111,
-                                120,
-                                500,
-                                504
-                            ]
-                        },
-                        "success": 4,
-                        "total": 4
-                    }
-                },
-                "task_run": {
-                    "timestamp": "2023-05-11T16:41:27.977Z",
-                    "value": {
-                        "overall": {
-                            "success": 100,
-                            "total": 101
-                        },
-                        "by_type": {
-                            "actions": {
-                                "success": 75,
-                                "total": 100
-                            },
-                            "alerting": {
-                                "success": 20,
-                                "total": 20
-                            },
-                            "alerting:.index-threshold": {
-                                "success": 20,
-                                "total": 20
-                            },
-                            "endpoint:user-artifact-packager": {
-                                "success": 28,
-                                "total": 28
-                            },
-                            "reports:monitor": {
-                                "success": 291,
-                                "total": 291
-                            },
-                            "ML:saved-objects-sync": {
-                                "success": 1,
-                                "total": 1
-                            }
-                        }
-                    }
-                }
-            },
-            "process_uuid": "5547afe7-b651-4c95-b2e4-dc23ac1e5a8d",
-            "timestamp": "2023-05-11T16:41:30.813Z"
-        }
-    },
-    "metricset": {
-        "name": "json",
-        "period": 10000
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "kibana.task_manager_metrics"
     },
     "service": {
         "address": "https://kibana:5601/api/task_manager/metrics",
         "type": "http"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.15.49-linuxkit",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "family": "debian",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)",
+            "platform": "ubuntu"
+        },
+        "containerized": false,
+        "ip": [
+            "172.23.0.7"
+        ],
+        "name": "docker-fleet-agent",
+        "id": "0d43b8a597974fa28645b1e16ce2db8d",
+        "mac": [
+            "02-42-AC-17-00-07"
+        ],
+        "architecture": "aarch64"
+    },
+    "elastic_agent": {
+        "id": "8e1f023e-e70d-40a7-905a-f1ff1271b631",
+        "version": "8.10.0",
+        "snapshot": true
+    },
+    "metricset": {
+        "period": 10000,
+        "name": "json"
+    },
+    "http": {},
+    "kibana": {
+        "task_manager_metrics": {
+            "last_update": "2023-08-23T15:16:49.213Z",
+            "process_uuid": "2b4126d2-f102-4d6c-9070-9763d142ed14",
+            "metrics": {
+                "task_run": {
+                    "value": {
+                        "overall": {
+                            "total": 1,
+                            "success": 1
+                        },
+                        "by_type": {
+                            "cases-telemetry-task": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "apm-telemetry-task": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "osquery:telemetry-saved-queries": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "security:telemetry-detection-rules": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "alerting_telemetry": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "alerts_invalidate_api_keys": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "security:endpoint-diagnostics": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "endpoint:user-artifact-packager": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "security:telemetry-filterlist-artifact": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "session_cleanup": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "osquery:telemetry-configs": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "security:telemetry-timelines": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "Fleet-Usage-Sender": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "security:endpoint-meta-telemetry": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "ML:saved-objects-sync": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "security:telemetry-prebuilt-rule-alerts": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "osquery:telemetry-packs": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "dashboard_telemetry": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "Fleet-Usage-Logger": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "security:telemetry-lists": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "actions_telemetry": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "apm-source-map-migration-task": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "security:telemetry-configuration": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "endpoint:metadata-check-transforms-task": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "fleet:check-deleted-files-task": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "alerting_health_check": {
+                                "total": 0,
+                                "success": 0
+                            },
+                            "reports:monitor": {
+                                "total": 1,
+                                "success": 1
+                            }
+                        }
+                    },
+                    "timestamp": "2023-08-23T15:16:46.327Z"
+                },
+                "task_claim": {
+                    "value": {
+                        "duration": {
+                            "counts": [
+                                3
+                            ],
+                            "values": [
+                                100
+                            ]
+                        },
+                        "total": 3,
+                        "success": 3
+                    },
+                    "timestamp": "2023-08-23T15:16:49.213Z"
+                }
+            },
+            "timestamp": "2023-08-23T15:16:49.213Z"
+        }
+    },
+    "event": {
+        "duration": 19616583,
+        "agent_id_status": "verified",
+        "ingested": "2023-08-23T15:16:51Z",
+        "module": "http",
+        "dataset": "kibana.task_manager_metrics"
     }
 }
 ```
+
 ## Metrics
 
 ### Stats
