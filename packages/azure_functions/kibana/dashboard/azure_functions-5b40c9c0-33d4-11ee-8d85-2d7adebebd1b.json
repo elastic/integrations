@@ -100,6 +100,152 @@
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "Health Check Status indicates if there are any unhealthy instances and if they need replacing. A value of 100 means all instances of the App reported a healthy status. ",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-113434b9-c581-4b79-9344-13864154c598",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "bd951446-5799-4606-868b-e20ed8e2e49b",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "113434b9-c581-4b79-9344-13864154c598": {
+                                            "columnOrder": [
+                                                "daefd92f-2e9e-4bd7-8d4a-aee989ae985e",
+                                                "6439d7ec-458f-4daf-a97a-101e6f025660"
+                                            ],
+                                            "columns": {
+                                                "6439d7ec-458f-4daf-a97a-101e6f025660": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "azure.functions.health_check_status.avg: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "HealthCheckStatus",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.functions.health_check_status.avg"
+                                                },
+                                                "daefd92f-2e9e-4bd7-8d4a-aee989ae985e": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of azure.resource.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "6439d7ec-458f-4daf-a97a-101e6f025660",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.resource.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": "azure.functions.health_check_status.avg: *",
+                                        "disabled": false,
+                                        "index": "bd951446-5799-4606-868b-e20ed8e2e49b",
+                                        "key": "query",
+                                        "negate": false,
+                                        "type": "custom",
+                                        "value": "{\"bool\":{\"must\":[],\"filter\":[{\"bool\":{\"should\":[{\"exists\":{\"field\":\"azure.functions.health_check_status.avg\"}}],\"minimum_should_match\":1}}],\"should\":[],\"must_not\":[]}}"
+                                    },
+                                    "query": {
+                                        "bool": {
+                                            "filter": [
+                                                {
+                                                    "bool": {
+                                                        "minimum_should_match": 1,
+                                                        "should": [
+                                                            {
+                                                                "exists": {
+                                                                    "field": "azure.functions.health_check_status.avg"
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            ],
+                                            "must": [],
+                                            "must_not": [],
+                                            "should": []
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "breakdownByAccessor": "daefd92f-2e9e-4bd7-8d4a-aee989ae985e",
+                                "layerId": "113434b9-c581-4b79-9344-13864154c598",
+                                "layerType": "data",
+                                "metricAccessor": "6439d7ec-458f-4daf-a97a-101e6f025660"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "b9d5606f-9607-4c90-a75f-c2857b266bfa",
+                    "w": 15,
+                    "x": 10,
+                    "y": 0
+                },
+                "panelIndex": "b9d5606f-9607-4c90-a75f-c2857b266bfa",
+                "title": "Health check status by Function Apps",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
                         "references": [
                             {
                                 "id": "metrics-*",
@@ -116,7 +262,10 @@
                                             "columnOrder": [
                                                 "c4d0be17-9d74-468d-8e55-a064664300d1",
                                                 "2cbcc3e5-5848-4a88-910b-7c845618ae2e",
-                                                "b37bb938-9515-453c-a5ff-f384a7351317"
+                                                "b37bb938-9515-453c-a5ff-f384a7351317",
+                                                "b37bb938-9515-453c-a5ff-f384a7351317X1",
+                                                "b37bb938-9515-453c-a5ff-f384a7351317X0",
+                                                "b37bb938-9515-453c-a5ff-f384a7351317X2"
                                             ],
                                             "columns": {
                                                 "2cbcc3e5-5848-4a88-910b-7c845618ae2e": {
@@ -135,13 +284,73 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Success",
+                                                    "label": "Success Percentage",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "formula": "sum(azure.functions.http2xx.total) / sum(azure.functions.requests.total) ",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "b37bb938-9515-453c-a5ff-f384a7351317X2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "b37bb938-9515-453c-a5ff-f384a7351317X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Success Percentage",
                                                     "operationType": "sum",
                                                     "params": {
-                                                        "emptyAsNull": true
+                                                        "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "azure.functions.http2xx.total"
+                                                },
+                                                "b37bb938-9515-453c-a5ff-f384a7351317X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Success Percentage",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.functions.requests.total"
+                                                },
+                                                "b37bb938-9515-453c-a5ff-f384a7351317X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Success Percentage",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "b37bb938-9515-453c-a5ff-f384a7351317X0",
+                                                                "b37bb938-9515-453c-a5ff-f384a7351317X1"
+                                                            ],
+                                                            "location": {
+                                                                "max": 73,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "sum(azure.functions.http2xx.total) / sum(azure.functions.requests.total) ",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "b37bb938-9515-453c-a5ff-f384a7351317X0",
+                                                        "b37bb938-9515-453c-a5ff-f384a7351317X1"
+                                                    ],
+                                                    "scale": "ratio"
                                                 },
                                                 "c4d0be17-9d74-468d-8e55-a064664300d1": {
                                                     "customLabel": true,
@@ -227,7 +436,7 @@
                                         "summaryRow": "none"
                                     },
                                     {
-                                        "alignment": "center",
+                                        "alignment": "left",
                                         "columnId": "b37bb938-9515-453c-a5ff-f384a7351317",
                                         "isTransposed": false
                                     }
@@ -240,14 +449,15 @@
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
+                    "description": "Shows the number of successful invocations as a percentage of the total invocations per function app. ",
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
                     "i": "44c459b4-623b-4534-ba78-8904669ae9cb",
-                    "w": 38,
-                    "x": 10,
+                    "w": 23,
+                    "x": 25,
                     "y": 0
                 },
                 "panelIndex": "44c459b4-623b-4534-ba78-8904669ae9cb",
@@ -522,7 +732,7 @@
                     "y": 15
                 },
                 "panelIndex": "5430e8a9-47ae-4c82-96b7-b0287026409f",
-                "title": "HTTP 2xx Requests",
+                "title": "HTTP 2xx Responses",
                 "type": "lens",
                 "version": "8.7.1"
             },
@@ -662,6 +872,7 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
+                    "description": "Number of Function invocations that resulted in a HTTP 2xx response code",
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
@@ -673,7 +884,7 @@
                     "y": 15
                 },
                 "panelIndex": "7a4bc820-cc0e-40fb-9aee-83ccf7615fa2",
-                "title": "HTTP 4xx",
+                "title": "HTTP 4xx Responses",
                 "type": "lens",
                 "version": "8.7.1"
             },
@@ -822,7 +1033,7 @@
                     "y": 15
                 },
                 "panelIndex": "266a1bc1-c35b-4959-96c1-5d799a98754c",
-                "title": "HTTP 5xx Errors",
+                "title": "HTTP 5xx Error Responses",
                 "type": "lens",
                 "version": "8.7.1"
             },
@@ -1955,7 +2166,7 @@
         "version": 1
     },
     "coreMigrationVersion": "8.7.1",
-    "created_at": "2023-08-13T19:37:53.443Z",
+    "created_at": "2023-08-23T20:07:32.985Z",
     "id": "azure_functions-5b40c9c0-33d4-11ee-8d85-2d7adebebd1b",
     "migrationVersion": {
         "dashboard": "8.7.0"
@@ -1964,6 +2175,16 @@
         {
             "id": "metrics-*",
             "name": "58a522e8-acf6-4ad1-a5cc-a699ce9c26c0:indexpattern-datasource-layer-f6c3c469-2e64-4120-b144-997fb70575e2",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "b9d5606f-9607-4c90-a75f-c2857b266bfa:indexpattern-datasource-layer-113434b9-c581-4b79-9344-13864154c598",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "b9d5606f-9607-4c90-a75f-c2857b266bfa:bd951446-5799-4606-868b-e20ed8e2e49b",
             "type": "index-pattern"
         },
         {
