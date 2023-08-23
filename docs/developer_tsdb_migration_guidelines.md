@@ -30,7 +30,7 @@ Integration is one of the biggest sources of input data to elasticsearch. Enabli
     elasticsearch:
       index_mode: "time_series"
     ```
-    Should your datastream contain an increased count of dimension fields, you have the option to adjust this restriction by altering the index.mapping.dimension_fields.limit value as indicated below. The default maximum limit stands at 21. 
+    Should your datastream contain an increased count of dimension fields, you have the option to adjust this restriction by altering the index.mapping.dimension_fields.limit value as indicated below. The default [maximum limit](https://github.com/elastic/elasticsearch/blob/6417a4f80f32ace48b8ad682ad46b19b57e49d60/server/src/main/java/org/elasticsearch/index/mapper/MapperService.java#L114) stands at 21. 
     ```
     elasticsearch:
       index_mode: "time_series"
@@ -140,10 +140,6 @@ A field that holds millions of unique values may not be an ideal candidate for b
 # <a id="troubleshooting"></a> Troubleshooting
 
 **Identification of Write Index**: When mappings are modified for a datastream, index rollover happens and a new index is created under the datastream. Even if there exists a new index, the data continues to go to the old index until the timestamp matches `index.time_series.start_time` of the newly created index.  
-
-**Automatic Rollover**: Automatic datastream rollover does not happen when fields are tagged and untagged as dimensional fields.  Also, automatic datastream rollover does not happen when the value of index.mapping.dimension_fields.limit is modified. 
-
-When a package upgrade with the above mentiond change is applied, the changes are made only on the index template. This means, the user need to wait until `index.time_series.end_time` of the current write index before seeing the change, following a package upgrade. 
 
 An enhancement [request](https://github.com/elastic/kibana/issues/150549) for Kibana is created to indicate the write index. Until then, refer to the index.time_series.start_time of indices and compare with the current time to identify the write index. 
 
