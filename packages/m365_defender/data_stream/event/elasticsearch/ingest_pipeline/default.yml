@@ -18,22 +18,8 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - date:
-      field: json.properties.Timestamp
-      target_field: m365_defender.event.timestamp
-      formats:
-        - ISO8601
-      tag: date_json_properties_Timestamp
-      if: ctx.json?.properties?.Timestamp != null
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - set:
-      field: '@timestamp'
-      copy_from: m365_defender.event.timestamp
-      tag: set_timestamp
-      ignore_empty_value: true
+  
+  # Rename processors
   - rename:
       field: json.category
       target_field: m365_defender.event.category
@@ -54,6 +40,8 @@ processors:
       target_field: m365_defender.event.tenant.id
       tag: rename_json_tenantId
       ignore_missing: true
+  
+  # Date processors
   - date:
       field: json.time
       target_field: m365_defender.event.time
@@ -65,6 +53,24 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.properties.Timestamp
+      target_field: m365_defender.event.timestamp
+      formats:
+        - ISO8601
+      tag: date_json_properties_Timestamp
+      if: ctx.json?.properties?.Timestamp != null
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      copy_from: m365_defender.event.timestamp
+      tag: set_timestamp
+      ignore_empty_value: true
+  
+  # Pipeline Processors
   - pipeline:
       name: '{{ IngestPipeline "pipeline_alert" }}'
       tag: pipeline_alert
@@ -81,6 +87,8 @@ processors:
       name: '{{ IngestPipeline "pipeline_app_and_identity" }}'
       tag: pipeline_app_and_identity
       if: ctx.m365_defender?.event?.category?.toLowerCase().contains('identity') || ctx.m365_defender?.event?.category?.toLowerCase().contains('cloudappevents')
+
+  # Cleanup
   - remove:
       field: json
       tag: remove_json

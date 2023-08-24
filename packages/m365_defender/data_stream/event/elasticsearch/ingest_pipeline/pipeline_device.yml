@@ -937,6 +937,76 @@ processors:
       target_field: m365_defender.event.previous.registry_value_name
       tag: rename_json_properties_PreviousRegistryValueName
       ignore_missing: true
+  - rename:
+      field: json.properties.FileOriginIP
+      target_field: m365_defender.event.file.origin_ip
+      tag: rename_json_properties_FileOriginIp
+      ignore_missing: true
+  - rename:
+      field: json.properties.RemoteIP
+      target_field: m365_defender.event.remote.ip
+      tag: rename_json_properties_RemoteIP
+      ignore_missing: true
+  - rename:
+      field: json.properties.LocalIP
+      target_field: m365_defender.event.local.ip
+      tag: rename_json_properties_LocalIP
+      ignore_missing: true
+  - rename:
+      field: json.properties.RequestSourceIP
+      target_field: m365_defender.event.request.source_ip
+      tag: rename_json_properties_RequestSourceIP
+      ignore_missing: true
+  - rename:
+      field: json.properties.RequestSourcePort
+      target_field: m365_defender.event.request.source_port
+      tag: rename_json_properties_RequestSourcePort
+      ignore_missing: true
+  - rename:
+      field: json.properties.RemotePort
+      target_field: m365_defender.event.remote.port
+      tag: rename_json_properties_RemotePort
+      ignore_missing: true
+  - rename:
+      field: json.properties.LocalPort
+      target_field: m365_defender.event.local.port
+      tag: rename_json_properties_LocalPort
+      ignore_missing: true
+  - rename:
+      field: json.properties.PublicIP
+      target_field: m365_defender.event.public_ip.value
+      tag: rename_json_properties_PublicIP
+      ignore_missing: true
+  - rename:
+      field: json.properties.IsRootSignerMicrosoft
+      target_field: m365_defender.event.is_root_signer_microsoft
+      tag: rename_json_properties_IsRootSignerMicrosoft
+      ignore_missing: true
+  - rename:
+      field: json.properties.IsSigned
+      target_field: m365_defender.event.is_signed
+      tag: rename_json_properties_IsSigned
+      ignore_missing: true
+  - rename:
+      field: json.properties.IsTrusted
+      target_field: m365_defender.event.is_trusted
+      tag: rename_json_properties_IsTrusted
+      ignore_missing: true
+  - rename:
+      field: json.properties.IsAzureInfoProtectionApplied
+      target_field: m365_defender.event.is_azure_info_protection_applied
+      tag: rename_json_properties_IsAzureInfoProtectionApplied
+      ignore_missing: true
+  - rename:
+      field: json.properties.IsAzureADJoined
+      target_field: m365_defender.event.is_azure_ad_joined
+      tag: rename_json_properties_IsAzureADJoined
+      ignore_missing: true
+  - rename:
+      field: json.properties.IsLocalAdmin
+      target_field: m365_defender.event.is_local_admin
+      tag: rename_json_properties_IsLocalAdmin
+      ignore_missing: true
 
   # File mappings (Only when its not DeviceProcessEvent or DeviceEvent, else it means something else)    
   - set:
@@ -1712,6 +1782,13 @@ processors:
             }
           }
         }
+
+  # Geo mapping
+  - geoip:
+      if: ctx.m365_defender?.event?.public_ip?.value != null
+      field: host.ip
+      tag: geoip_host_ip
+      target_field: host.geo
 
   # Related fields
   - append:
