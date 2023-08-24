@@ -470,9 +470,9 @@ An example event for `metrics` looks as following:
 | azure.functions.file_system_usage.avg | Percentage of filesystem quota consumed by the app. | long | byte | gauge |
 | azure.functions.function_execution_count.total | Function Execution Count. For FunctionApps only. | long |  | counter |
 | azure.functions.function_execution_units.total | Function Execution Units. For FunctionApps only. | long |  | counter |
-| azure.functions.gen_0_collections.total | The number of times the generation 0 objects are garbage collected since the start of the app process. Higher generation GCs include all lower generation GCs. | long |  | gauge |
-| azure.functions.gen_1_collections.total | The number of times the generation 1 objects are garbage collected since the start of the app process. Higher generation GCs include all lower generation GCs. | long |  | gauge |
-| azure.functions.gen_2_collections.total | The number of times the generation 2 objects are garbage collected since the start of the app process. Higher generation GCs include all lower generation GCs. | long |  | gauge |
+| azure.functions.gen_0_collections.total | The number of times the generation 0 objects are garbage collected since the start of the app process. Higher generation GCs include all lower generation GCs. | long |  | counter |
+| azure.functions.gen_1_collections.total | The number of times the generation 1 objects are garbage collected since the start of the app process. Higher generation GCs include all lower generation GCs. | long |  | counter |
+| azure.functions.gen_2_collections.total | The number of times the generation 2 objects are garbage collected since the start of the app process. Higher generation GCs include all lower generation GCs. | long |  | counter |
 | azure.functions.handles.avg | The total number of handles currently open by the app process. | long |  | counter |
 | azure.functions.health_check_status.avg | Health check status. | long |  | gauge |
 | azure.functions.http2xx.total | The count of requests resulting in an HTTP status code \>= 200 but \< 300. | long |  | counter |
