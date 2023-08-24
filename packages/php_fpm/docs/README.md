@@ -145,7 +145,7 @@ An example event for `pool` looks as following:
 | php_fpm.pool.process_manager.type | The process manager type - static, dynamic or ondemand. | keyword |  |  |
 | php_fpm.pool.processes.active.count | The number of processes that are currently processing requests. | long |  | gauge |
 | php_fpm.pool.processes.active.max | The maximum number of concurrently active processes. | long |  | gauge |
-| php_fpm.pool.processes.children_reached.max | Has the maximum number of processes ever been reached? If so the displayed value is 1 otherwise the value is 0. | long |  |  |
+| php_fpm.pool.processes.children_reached.max | Has the maximum number of processes ever been reached? If so the displayed value is 1 otherwise the value is 0. | long |  | gauge |
 | php_fpm.pool.processes.count | The current total number of processes. | long |  | gauge |
 | php_fpm.pool.processes.idle | The number of processes that are currently idle (waiting for requests). | long |  | gauge |
 | php_fpm.pool.slow_requests | The total number of requests that have hit the configured request_slowlog_timeout. | long |  | counter |
@@ -270,10 +270,10 @@ An example event for `process` looks as following:
 | php_fpm.process.request.count | The total number of requests served. | long |  | counter |
 | php_fpm.process.request.duration | The duration in microseconds of the requests. | long | micros | gauge |
 | php_fpm.process.request.last.cpu.pct | The %cpu of the last request. This will be 0 if the process is not Idle because the calculation is done when the request processing is complete. | long | percent | gauge |
-| php_fpm.process.request.last.memory | The maximum amount of memory consumed by the last request. This will be 0 if the process is not Idle because the calculation is done when the request processing is complete. | long |  | gauge |
+| php_fpm.process.request.last.memory | The maximum amount of memory consumed by the last request. This will be 0 if the process is not Idle because the calculation is done when the request processing is complete. | long | byte | gauge |
 | php_fpm.process.script | The full path of the script executed by the last request. This will be '-' if not applicable (eg. status page requests). | keyword |  |  |
 | php_fpm.process.start_since | The number of seconds since the process started. | long | s | counter |
-| php_fpm.process.start_time | The date/time at which the process started. | long |  |  |
+| php_fpm.process.start_time | The date/time at which the process started. | long |  | counter |
 | php_fpm.process.state | The state of the process. | keyword |  |  |
 | process.pid | Process id. | long |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |
