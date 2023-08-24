@@ -75,6 +75,11 @@ processors:
       value: change
       tag: append_event_type_change
       if: ctx.json?.properties?.ActionType != null && (ctx.json.properties.ActionType.toLowerCase().contains('registrykeyrenamed') || ctx.json.properties.ActionType.toLowerCase().contains('registryvalueset'))
+  # Certain processors requires access to the additional_fields object, if its an empty string it causes issues with if conditions later.
+  - remove: 
+      field: json.properties.AdditionalFields
+      tag: remove_additional_fields
+      if: ctx.json?.properties?.AdditionalFields != null && ctx.json?.properties.AdditionalFields == ''
   - json:
       field: json.properties.AdditionalFields
       tag: json_json_properties_AdditionalFields
@@ -405,13 +410,13 @@ processors:
       copy_from: m365_defender.event.remote.ip
       ignore_empty_value: true
       tag: set_source_ip
-      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields != null && ctx.m365_defender?.event?.additional_fields?.direction == 'In'
+      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields?.direction == 'In'
   - set:
       field: destination.ip
       copy_from: m365_defender.event.remote.ip
       ignore_empty_value: true
       tag: set_destination_ip
-      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields != null && ctx.m365_defender?.event?.additional_fields?.direction == 'Out'
+      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields?.direction == 'Out'
   - set:
       field: destination.ip
       copy_from: m365_defender.event.remote.ip
@@ -440,13 +445,13 @@ processors:
       copy_from: m365_defender.event.local.ip
       ignore_empty_value: true
       tag: set_destination_ip
-      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields != null && ctx.m365_defender?.event?.additional_fields?.direction == 'In'
+      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields?.direction == 'In'
   - set:
       field: source.ip
       copy_from: m365_defender.event.local.ip
       ignore_empty_value: true
       tag: set_source_ip
-      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields != null && ctx.m365_defender?.event?.additional_fields?.direction == 'Out'
+      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields?.direction == 'Out'
   - convert:
       field: json.properties.RequestSourceIP
       target_field: m365_defender.event.request.source_ip
@@ -492,13 +497,13 @@ processors:
       copy_from: m365_defender.event.remote.port
       ignore_empty_value: true
       tag: set_source_port
-      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields != null && ctx.m365_defender?.event?.additional_fields?.direction == 'In'
+      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields?.direction == 'In'
   - set:
       field: destination.port
       copy_from: m365_defender.event.remote.port
       ignore_empty_value: true
       tag: set_destination_port
-      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields != null && ctx.m365_defender?.event?.additional_fields?.direction == 'Out'
+      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields?.direction == 'Out'
   - convert:
       field: json.properties.LocalPort
       target_field: m365_defender.event.local.port
@@ -521,13 +526,13 @@ processors:
       copy_from: m365_defender.event.local.port
       ignore_empty_value: true
       tag: set_destination_port
-      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields != null && ctx.m365_defender?.event?.additional_fields?.direction == 'In'
+      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields?.direction == 'In'
   - set:
       field: source.port
       copy_from: m365_defender.event.local.port
       ignore_empty_value: true
       tag: set_source_port
-      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields != null && ctx.m365_defender?.event?.additional_fields?.direction == 'Out'
+      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields?.direction == 'Out'
   - convert:
       field: json.properties.RequestSourcePort
       target_field: m365_defender.event.request.source_port
@@ -1691,12 +1696,12 @@ processors:
       field: network.direction
       value: inbound
       tag: set_network_direction_inbound
-      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields != null && ctx.m365_defender?.event?.additional_fields?.direction == 'In'
+      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields?.direction == 'In'
   - set:
       field: network.direction
       value: outbound
       tag: set_network_direction_outbound
-      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields != null && ctx.m365_defender?.event?.additional_fields?.direction == 'In'
+      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields?.direction == 'Out'
   - set:
       field: network.direction
       value: outbound
