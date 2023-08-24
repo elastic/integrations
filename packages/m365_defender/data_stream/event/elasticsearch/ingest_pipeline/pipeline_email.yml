@@ -3,22 +3,22 @@ description: Pipeline for processing Email Event logs.
 processors:
   - set:
       field: event.kind
-      value: [event]
-  - set:
+      value: event
+  - append:
       field: event.category
-      value: [email]
+      value: email
       if: '!ctx.m365_defender?.event?.category?.toLowerCase().contains("urlclickevents")'
   - append:
       field: event.category
-      value: [file]
+      value: file
       if: ctx.json?.properties?.FileType != null
-  - set:
+  - append:
       field: event.type
-      value: [info]
+      value: info
       if: '!ctx.m365_defender?.event?.category?.toLowerCase().contains("urlclickevents")'
-  - set:
+  - append:
       field: event.type
-      value: [info]
+      value: info
       if: ctx.event?.type == null
   - rename:
       field: json.properties.SenderFromAddress
@@ -39,7 +39,7 @@ processors:
       target_field: m365_defender.event.network.message_id
       ignore_missing: true
   - set:
-      field: email.local_id
+      field: email.message_id
       copy_from: m365_defender.event.network.message_id
       ignore_empty_value: true
   - rename:
@@ -313,6 +313,10 @@ processors:
       field: json.properties.InternetMessageId
       target_field: m365_defender.event.internet_message_id
       ignore_missing: true
+  - set:
+      field: email.local_id
+      copy_from: m365_defender.event.internet_message_id
+      ignore_empty_value: true
   - rename:
       field: json.properties.OrgLevelAction
       target_field: m365_defender.event.org_level.action
