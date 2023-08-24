@@ -451,218 +451,6 @@ An example event for `metrics` looks as following:
             }
         },
         "namespace": "Microsoft.Web/sites"
-    },
-    "fields": {
-        "azure.functions.app_connections.avg": [
-            0
-        ],
-        "azure.resource.id": [
-            "/subscriptions/12hjkls-78tyu-404f-a3d2-1dc9982f45ds/resourceGroups/test-rg/providers/Microsoft.Web/sites/return-of-the-jedi"
-        ],
-        "elastic_agent.version": [
-            "8.7.1"
-        ],
-        "host.os.name.text": [
-            "Ubuntu"
-        ],
-        "azure.functions.memory_working_set.avg": [
-            328533059
-        ],
-        "azure.functions.bytes_received.total": [
-            28804
-        ],
-        "azure.resource.name": [
-            "return-of-the-jedi"
-        ],
-        "host.hostname": [
-            "docker-fleet-agent"
-        ],
-        "azure.subscription_id": [
-            "12hjkls-78tyu-404f-a3d2-1dc9982f45ds"
-        ],
-        "host.mac": [
-            "02-42-AC-13-00-09"
-        ],
-        "azure.functions.handles.avg": [
-            0
-        ],
-        "azure.functions.requests_inapplication_queue.avg": [
-            0
-        ],
-        "service.type": [
-            "azure"
-        ],
-        "host.os.version": [
-            "20.04.6 LTS (Focal Fossa)"
-        ],
-        "host.os.name": [
-            "Ubuntu"
-        ],
-        "agent.name": [
-            "docker-fleet-agent"
-        ],
-        "host.name": [
-            "docker-fleet-agent"
-        ],
-        "event.agent_id_status": [
-            "verified"
-        ],
-        "azure.functions.function_execution_count.total": [
-            0
-        ],
-        "cloud.region": [
-            "eastus"
-        ],
-        "host.os.type": [
-            "linux"
-        ],
-        "azure.functions.http_response_time.avg": [
-            0.02796875
-        ],
-        "azure.functions.io_other_operations_per_second.total": [
-            0
-        ],
-        "azure.functions.http5xx.total": [
-            16
-        ],
-        "data_stream.type": [
-            "metrics"
-        ],
-        "azure.functions.average_memory_working_set.avg": [
-            328533059
-        ],
-        "azure.functions.total_app_domains_unloaded.avg": [
-            0
-        ],
-        "host.architecture": [
-            "x86_64"
-        ],
-        "cloud.provider": [
-            "azure"
-        ],
-        "azure.resource.type": [
-            "Microsoft.Web/sites"
-        ],
-        "agent.id": [
-            "ae16c4cf-2550-452a-860d-cef5e5182e94"
-        ],
-        "ecs.version": [
-            "8.0.0"
-        ],
-        "host.containerized": [
-            false
-        ],
-        "azure.functions.io_other_bytes_per_second.total": [
-            0
-        ],
-        "agent.version": [
-            "8.7.1"
-        ],
-        "azure.functions.total_app_domains.avg": [
-            0
-        ],
-        "azure.functions.http3xx.total": [
-            0
-        ],
-        "host.os.family": [
-            "debian"
-        ],
-        "azure.functions.io_write_bytes_per_second.total": [
-            0
-        ],
-        "azure.functions.io_read_operations_per_second.total": [
-            0
-        ],
-        "azure.functions.requests.total": [
-            32
-        ],
-        "azure.functions.function_execution_units.total": [
-            0
-        ],
-        "azure.resource.tags.hidden-link: /app-insights-resource-id": [
-            "/subscriptions/12hjkls-78tyu-404f-a3d2-1dc9982f45ds/resourceGroups/test-rg/providers/Microsoft.Insights/components/return-of-the-jedi"
-        ],
-        "host.ip": [
-            "172.19.0.9"
-        ],
-        "azure.resource.group": [
-            "test-rg"
-        ],
-        "agent.type": [
-            "metricbeat"
-        ],
-        "event.module": [
-            "azure"
-        ],
-        "host.os.kernel": [
-            "5.15.49-linuxkit"
-        ],
-        "elastic_agent.snapshot": [
-            false
-        ],
-        "azure.functions.io_write_operations_per_second.total": [
-            0
-        ],
-        "host.id": [
-            "fd2c4b0943e444508c12855a04d117c7"
-        ],
-        "azure.namespace": [
-            "Microsoft.Web/sites"
-        ],
-        "azure.functions.http2xx.total": [
-            16
-        ],
-        "elastic_agent.id": [
-            "ae16c4cf-2550-452a-860d-cef5e5182e94"
-        ],
-        "data_stream.namespace": [
-            "default"
-        ],
-        "metricset.period": [
-            300000
-        ],
-        "azure.functions.http4xx.total": [
-            0
-        ],
-        "host.os.codename": [
-            "focal"
-        ],
-        "azure.functions.bytes_sent.total": [
-            8192
-        ],
-        "azure.functions.io_read_bytes_per_second.total": [
-            31879
-        ],
-        "metricset.name": [
-            "monitor"
-        ],
-        "event.duration": [
-            42827917228
-        ],
-        "azure.timegrain": [
-            "PT5M"
-        ],
-        "event.ingested": [
-            "2023-08-23T12:25:34.000Z"
-        ],
-        "@timestamp": [
-            "2023-08-23T12:20:00.000Z"
-        ],
-        "host.os.platform": [
-            "ubuntu"
-        ],
-        "cloud.account.id": [
-            "12hjkls-78tyu-404f-a3d2-1dc9982f45ds"
-        ],
-        "data_stream.dataset": [
-            "azure.function"
-        ],
-        "agent.ephemeral_id": [
-            "7511408f-f109-4e34-a405-98ad479fc097"
-        ],
-        "event.dataset": [
-            "azure.function"
-        ]
     }
 }
 ```
@@ -674,37 +462,37 @@ An example event for `metrics` looks as following:
 | @timestamp | Event timestamp. | date |  |  |
 | azure.application_id | The application ID | keyword |  |  |
 | azure.dimensions.\* | Azure metric dimensions. | object |  |  |
-| azure.functions.app_connections.average | The number of bound sockets existing in the sandbox (w3wp.exe and its child processes). A bound socket is created by calling bind()/connect() APIs and remains until said socket is closed with CloseHandle()/closesocket(). For WebApps and FunctionApps.. | long |  | counter |
-| azure.functions.average_memory_working_set.average | The average amount of memory used by the app, in MiB. For WebApps and FunctionApps. | long | byte | gauge |
+| azure.functions.app_connections.avg | The number of bound sockets existing in the sandbox (w3wp.exe and its child processes). A bound socket is created by calling bind()/connect() APIs and remains until said socket is closed with CloseHandle()/closesocket(). For WebApps and FunctionApps.. | long |  | counter |
+| azure.functions.average_memory_working_set.avg | The average amount of memory used by the app, in MiB. For WebApps and FunctionApps. | long | byte | gauge |
 | azure.functions.bytes_received.total | The amount of incoming bandwidth consumed by the app, in MiB. | long | byte | gauge |
 | azure.functions.bytes_sent.total | The amount of outgoing bandwidth consumed by the app, in MiB. | long | byte | gauge |
-| azure.functions.current_assemblies.average | The current number of Assemblies loaded across all AppDomains in this application. | long |  | gauge |
-| azure.functions.file_system_usage.average | Percentage of filesystem quota consumed by the app. | long | byte | gauge |
+| azure.functions.current_assemblies.avg | The current number of Assemblies loaded across all AppDomains in this application. | long |  | gauge |
+| azure.functions.file_system_usage.avg | Percentage of filesystem quota consumed by the app. | long | byte | gauge |
 | azure.functions.function_execution_count.total | Function Execution Count. For FunctionApps only. | long |  | counter |
 | azure.functions.function_execution_units.total | Function Execution Units. For FunctionApps only. | long |  | counter |
-| azure.functions.gen_0_collections.total | The number of times the generation 0 objects are garbage collected since the start of the app process. Higher generation GCs include all lower generation GCs. | long |  |  |
+| azure.functions.gen_0_collections.total | The number of times the generation 0 objects are garbage collected since the start of the app process. Higher generation GCs include all lower generation GCs. | long |  | gauge |
 | azure.functions.gen_1_collections.total | The number of times the generation 1 objects are garbage collected since the start of the app process. Higher generation GCs include all lower generation GCs. | long |  | gauge |
 | azure.functions.gen_2_collections.total | The number of times the generation 2 objects are garbage collected since the start of the app process. Higher generation GCs include all lower generation GCs. | long |  | gauge |
-| azure.functions.handles.average | The total number of handles currently open by the app process. | long |  | counter |
-| azure.functions.health_check_status.average | Health check status. | long |  | gauge |
-| azure.functions.http_2xx.total | The count of requests resulting in an HTTP status code \>= 200 but \< 300. | long |  | counter |
-| azure.functions.http_3xx.total | The count of requests resulting in an HTTP status code \>= 300 but \< 400. | long |  | counter |
-| azure.functions.http_4xx.total | The count of requests resulting in an HTTP status code \>= 400 but \< 500. | long |  | counter |
-| azure.functions.http_5xx.total | The count of requests resulting in an HTTP status code \>= 500 but \< 600. | long |  | counter |
+| azure.functions.handles.avg | The total number of handles currently open by the app process. | long |  | counter |
+| azure.functions.health_check_status.avg | Health check status. | long |  | gauge |
+| azure.functions.http2xx.total | The count of requests resulting in an HTTP status code \>= 200 but \< 300. | long |  | counter |
+| azure.functions.http3xx.total | The count of requests resulting in an HTTP status code \>= 300 but \< 400. | long |  | counter |
+| azure.functions.http4xx.total | The count of requests resulting in an HTTP status code \>= 400 but \< 500. | long |  | counter |
+| azure.functions.http5xx.total | The count of requests resulting in an HTTP status code \>= 500 but \< 600. | long |  | counter |
+| azure.functions.http_response_time.avg | The time taken for the app to serve requests, in seconds. | long | s | gauge |
 | azure.functions.io_other_bytes_per_second.total | The rate at which the app process is issuing bytes to I/O operations that don't involve data, such as control operations. Shown as bytespersecond. | long |  | gauge |
 | azure.functions.io_other_operations_per_second.total | The rate at which the app process is issuing I/O operations that aren't read or write operations. Shown as bytespersecond. | long |  | gauge |
 | azure.functions.io_read_bytes_per_second.total | The rate at which the app process is reading bytes from I/O operations. Shown as bytespersecond. | long |  | gauge |
 | azure.functions.io_read_operations_per_second.total | The rate at which the app process is issuing read I/O operations. Shown as bytespersecond. | long |  | gauge |
 | azure.functions.io_write_bytes_per_second.total | The rate at which the app process is writing bytes to I/O operations. Shown as bytespersecond. | long |  | gauge |
 | azure.functions.io_write_operations_per_second.total | The rate at which the app process is issuing write I/O operations. Shown as bytespersecond. | long |  | gauge |
-| azure.functions.memory_working_set.average | The current amount of memory used by the app, in MiB. | long | byte | gauge |
-| azure.functions.private_bytes.average | Private Bytes is the current size, in bytes, of memory that the app process has allocated that can't be shared with other processes. | long | byte | gauge |
+| azure.functions.memory_working_set.avg | The current amount of memory used by the app, in MiB. | long | byte | gauge |
+| azure.functions.private_bytes.avg | Private Bytes is the current size, in bytes, of memory that the app process has allocated that can't be shared with other processes. | long | byte | gauge |
 | azure.functions.requests.total | The total number of requests regardless of their resulting HTTP status code. | long |  | counter |
-| azure.functions.requests_in_application_queue.average | The number of requests in the application request queue. | long |  | counter |
-| azure.functions.response_time.average | The time taken for the app to serve requests, in seconds. | long | s | gauge |
-| azure.functions.threads.average | The number of threads currently active in the app process. | long |  | gauge |
-| azure.functions.total_app_domains.average | The current number of AppDomains loaded in this application. | long |  | gauge |
-| azure.functions.total_app_domains_unloaded.average | The total number of AppDomains unloaded since the start of the application. | long |  | gauge |
+| azure.functions.requests_inapplication_queue.avg | The number of requests in the application request queue. | long |  | counter |
+| azure.functions.threads.avg | The number of threads currently active in the app process. | long |  | gauge |
+| azure.functions.total_app_domains.avg | The current number of AppDomains loaded in this application. | long |  | gauge |
+| azure.functions.total_app_domains_unloaded.avg | The total number of AppDomains unloaded since the start of the application. | long |  | gauge |
 | azure.namespace | The namespace selected | keyword |  |  |
 | azure.resource.group | The resource group | keyword |  |  |
 | azure.resource.id | The id of the resource | keyword |  |  |
