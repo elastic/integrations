@@ -1055,11 +1055,11 @@ processors:
       copy_from: m365_defender.event.certificate.serial_number
       tag: set_file_x509_serial_number
       ignore_empty_value: true
-  - set:
+  - append:
       field: file.x509.issuer.common_name
-      copy_from: m365_defender.event.issuer
-      tag: set_file_x509_issuer_common_name
-      ignore_empty_value: true
+      value: '{{{m365_defender.event.issuer}}}'
+      tag: append_file_x509_issuer_common_name
+      if: ctx.m365_defender?.event?.issuer != null
   - set:
       field: file.code_signature.subject_name
       copy_from: m365_defender.event.signer
@@ -1896,6 +1896,7 @@ processors:
       value: '{{{m365_defender.event.signer_hash}}}'
       if: ctx.m365_defender?.event?.signer_hash != null
       allow_duplicates: false
+
   # Duplicate Custom fields are disabled by default and will therefore remove these fields.
   # Can be enabled in the UI when configuring the integration.
   - remove:
