@@ -15,16 +15,21 @@ resource.timeout: {{http_client_timeout}}
 resource.url: {{url}}
 state:
   api_key: {{api_key}}
-  modified_since: (now() - duration("{{first_interval}}")).format(time_layout.RFC3339)
   want_more: false
-{{!-- redact:
+redact:
   fields:
-    - api_key --}}
+    - api_key
 program: |
   request("GET", (
     has(state.want_more) && !state.want_more
     ?
-      state.url + "?modified_since=" + state.modified_since
+      state.url + "?modified_since=" + (
+      (has(state.modified_since) &&  state.modified_since != "")
+      ?
+        state.modified_since
+      :
+        (now() - duration("{{first_interval}}")).format(time_layout.RFC3339)
+      )
     :
       state.url
   )).with({

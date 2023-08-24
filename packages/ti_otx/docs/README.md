@@ -101,13 +101,13 @@ An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-12-21T09:24:01.501Z",
+    "@timestamp": "2023-08-23T11:40:57.306Z",
     "agent": {
-        "ephemeral_id": "32ac7970-c892-46ef-baf2-d8a0ce377748",
-        "id": "a7d83bcb-0b6d-41f4-8edf-aa29923f67ec",
+        "ephemeral_id": "800c6d8d-62f2-4aeb-9e5c-cffda9c74844",
+        "id": "2f12e25a-31dc-4363-8f06-f2e33972cf13",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.3.3"
+        "version": "8.8.1"
     },
     "data_stream": {
         "dataset": "ti_otx.threat",
@@ -118,16 +118,16 @@ An example event for `threat` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "a7d83bcb-0b6d-41f4-8edf-aa29923f67ec",
+        "id": "2f12e25a-31dc-4363-8f06-f2e33972cf13",
         "snapshot": false,
-        "version": "8.3.3"
+        "version": "8.8.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2022-12-21T09:24:01.501Z",
+        "created": "2023-08-23T11:40:57.306Z",
         "dataset": "ti_otx.threat",
-        "ingested": "2022-12-21T09:24:02Z",
+        "ingested": "2023-08-23T11:41:00Z",
         "kind": "enrichment",
         "original": "{\"count\":40359,\"next\":\"https://otx.alienvault.com/api/v1/indicators/export?types=domain%2CIPv4%2Chostname%2Curl%2CFileHash-SHA256\\u0026modified_since=2020-11-29T01%3A10%3A00+00%3A00\\u0026page=2\",\"previous\":null,\"results\":{\"content\":\"\",\"description\":null,\"id\":1251,\"indicator\":\"info.3000uc.com\",\"title\":null,\"type\":\"hostname\"}}",
         "type": "indicator"
