@@ -16,7 +16,7 @@ request.transforms:
   - set:
       target: url.params.q
       value: "SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = 'Hourly' AND LogDate > [[.cursor.last_published_aurarequest]] AND (EventType = 'AuraRequest') ORDER BY LogDate ASC NULLS FIRST"
-      default: "SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = 'Hourly' AND (EventType = 'AuraRequest') AND LogDate > [[ formatDate (now (parseDuration \"{{initial_interval}}\")) ]]  ORDER BY LogDate ASC NULLS FIRST"
+      default: "SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = 'Hourly' AND (EventType = 'AuraRequest') AND LogDate > [[ formatDate (now (parseDuration \"-{{initial_interval}}\")) ]]  ORDER BY LogDate ASC NULLS FIRST"
 response.pagination:
 - set:
     target: url.value
