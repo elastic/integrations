@@ -199,4 +199,6 @@ Examples:
 
 #### Metrics Reference
 
+{{event "metrics"}}
+
 {{fields "metrics"}}
