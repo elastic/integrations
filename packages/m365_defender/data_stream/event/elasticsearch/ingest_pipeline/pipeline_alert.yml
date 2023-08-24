@@ -590,23 +590,12 @@ processors:
       ignore_empty_value: true
   
   # Related mapping
-  - append:
-      field: related.user
-      value: '{{{m365_defender.event.account.object_id}}}'
-      tag: append_related_user
-      if: ctx.m365_defender?.event?.account?.object_id != null
-      allow_duplicates: false
+  ## Host
   - append:
       field: related.hosts
       value: '{{{host.name}}}'
       tag: append_related_hosts
       if: ctx.host?.name != null
-      allow_duplicates: false
-  - append:
-      field: related.ip
-      value: '{{{m365_defender.event.local.ip}}}'
-      tag: append_related_ip
-      if: ctx.m365_defender?.event?.local?.ip != null
       allow_duplicates: false
   - append:
       field: related.hosts
@@ -615,11 +604,38 @@ processors:
       if: ctx.user?.domain != null
       allow_duplicates: false
   - append:
+      field: related.hosts
+      value: '{{{host.id}}}'
+      tag: append_related_hosts
+      if: ctx.host?.id != null
+      allow_duplicates: false
+  ## User
+  - append:
+      field: related.user
+      value: '{{{m365_defender.event.account.object_id}}}'
+      tag: append_related_user
+      if: ctx.m365_defender?.event?.account?.object_id != null
+      allow_duplicates: false
+  - append:
       field: related.user
       value: '{{{user.name}}}'
       tag: append_related_user
       if: ctx.user?.name != null
       allow_duplicates: false
+  ## IP
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      tag: append_related_ip
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      tag: append_related_ip
+      if: ctx.destination?.ip != null
+      allow_duplicates: false
+  ## Hash
   - append:
       field: related.hash
       value: '{{{m365_defender.event.sha256}}}'
@@ -631,18 +647,6 @@ processors:
       value: '{{{m365_defender.event.sha1}}}'
       tag: append_related_hash
       if: ctx.m365_defender?.event?.sha1 != null
-      allow_duplicates: false
-  - append:
-      field: related.ip
-      value: '{{{destination.ip}}}'
-      tag: append_related_ip
-      if: ctx.destination?.ip != null
-      allow_duplicates: false
-  - append:
-      field: related.hosts
-      value: '{{{host.id}}}'
-      tag: append_related_hosts
-      if: ctx.host?.id != null
       allow_duplicates: false
 
   # Duplicate Custom fields are disabled by default and will therefore remove these fields.

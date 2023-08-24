@@ -1791,6 +1791,7 @@ processors:
       target_field: host.geo
 
   # Related fields
+  ## Hosts
   - append:
       field: related.hosts
       value: '{{{host.id}}}'
@@ -1798,12 +1799,103 @@ processors:
       if: ctx.host?.id != null
       allow_duplicates: false
   - append:
-      field: related.user
-      value: '{{{m365_defender.event.request.account_name}}}'
-      tag: append_related_user
-      if: ctx.m365_defender?.event?.request?.account_name != null
+      field: related.hosts
+      value: '{{{host.name}}}'
+      if: ctx.host?.name != null
       allow_duplicates: false
-
+  - append:
+      field: related.hosts
+      value: '{{{user.domain}}}'
+      if: ctx.user?.domain != null
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      value: '{{{m365_defender.event.initiating_process.account_domain}}}'
+      if: ctx.m365_defender?.event?.initiating_process?.account_domain != null
+      allow_duplicates: false
+  ## Users
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      if: ctx.user?.name != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: '{{{m365_defender.event.initiating_process.account_name}}}'
+      if: ctx.m365_defender?.event?.initiating_process?.account_name != null
+      allow_duplicates: false
+  ## IP
+  - append:
+      field: related.ip
+      value: '{{{m365_defender.event.file.origin_ip}}}'
+      if: ctx.m365_defender?.event?.file?.origin_ip != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      if: ctx.destination?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{host.ip}}}'
+      if: ctx.host?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{m365_defender.event.ipv4_dhcp}}}'
+      if: ctx.m365_defender?.event?.ipv4_dhcp != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{m365_defender.event.ipv6_dhcp}}}'
+      if: ctx.m365_defender?.event?.ipv6_dhcp != null
+      allow_duplicates: false
+  ## Hash
+  - append:
+      field: related.hash
+      value: '{{{file.hash.md5}}}'
+      if: ctx.file?.hash?.md5 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: '{{{file.hash.sha1}}}'
+      if: ctx.file?.hash?.sha1 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: '{{{file.hash.sha256}}}'
+      if: ctx.file?.hash?.sha256 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: '{{{process.hash.md5}}}'
+      if: ctx.process?.hash?.md5 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: '{{{process.hash.sha1}}}'
+      if: ctx.process?.hash?.sha1 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: '{{{process.hash.sha256}}}'
+      if: ctx.process?.hash?.sha256 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: '{{{m365_defender.event.issuer_hash}}}'
+      if: ctx.m365_defender?.event?.issuer_hash != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: '{{{m365_defender.event.signer_hash}}}'
+      if: ctx.m365_defender?.event?.signer_hash != null
+      allow_duplicates: false
   # Duplicate Custom fields are disabled by default and will therefore remove these fields.
   # Can be enabled in the UI when configuring the integration.
   - remove:
