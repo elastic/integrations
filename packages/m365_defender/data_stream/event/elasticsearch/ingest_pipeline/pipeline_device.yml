@@ -39,7 +39,7 @@ processors:
       field: event.type
       value: info
       tag: append_event_type_info
-      if: (ctx.event?.category != null && (ctx.event.category.contains('authentication') || ctx.event.category.contains('host') || ctx.event.category.contains('file'))) || (ctx.json?.properties?.ActionType != null && (ctx.json.properties.ActionType.toLowerCase().contains('openprocess') || ctx.json.properties.ActionType.toLowerCase().contains('connectionfound') || ctx.json.properties.ActionType.toLowerCase().contains('networksignatureinspected'))) || ctx.m365_defender?.event?.category?.toLowerCase().contains('devicenetworkinfo')
+      if: (ctx.event?.category != null && (ctx.event?.category.contains('authentication') || ctx.event?.category.contains('host') || ctx.event?.category.contains('file'))) || (ctx.json?.properties?.ActionType != null && (ctx.json.properties.ActionType.toLowerCase().contains('openprocess') || ctx.json.properties.ActionType.toLowerCase().contains('connectionfound') || ctx.json.properties.ActionType.toLowerCase().contains('networksignatureinspected'))) || ctx.m365_defender?.event?.category?.toLowerCase().contains('devicenetworkinfo')
   - append:
       field: event.type
       value: end
@@ -75,11 +75,6 @@ processors:
       value: change
       tag: append_event_type_change
       if: ctx.json?.properties?.ActionType != null && (ctx.json.properties.ActionType.toLowerCase().contains('registrykeyrenamed') || ctx.json.properties.ActionType.toLowerCase().contains('registryvalueset'))
-  # Certain processors requires access to the additional_fields object, if its an empty string it causes issues with if conditions later.
-  - remove: 
-      field: json.properties.AdditionalFields
-      tag: remove_additional_fields
-      if: ctx.json?.properties?.AdditionalFields != null && ctx.json?.properties.AdditionalFields == ''
   - json:
       field: json.properties.AdditionalFields
       tag: json_json_properties_AdditionalFields
@@ -93,6 +88,13 @@ processors:
       target_field: m365_defender.event.additional_fields
       tag: rename_json_properties_AdditionalFields
       ignore_missing: true
+  # We require the network direction field from AdditionalFields, it should always be a single JSON object, but we check for Map just in case
+  - rename:
+      field: m365_defender.event.additional_fields.direction
+      target_field: m365_defender.event.network_direction
+      tag: rename_additional_fields_direction
+      ignore_missing: true
+      if: ctx.m365_defender?.event?.additional_fields != null && ctx.m365_defender?.event?.additional_fields instanceof Map
   - rename:
       field: json.properties.FolderPath
       target_field: m365_defender.event.folder_path
@@ -103,13 +105,13 @@ processors:
       copy_from: m365_defender.event.folder_path
       ignore_empty_value: true
       tag: set_file_directory
-      if: ctx.event?.category != null && ctx.event.category != 'process' && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && !ctx.event?.category.contains('process') && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
   - set:
       field: process.executable
       copy_from: m365_defender.event.folder_path
       ignore_empty_value: true
       tag: set_process_executable
-      if: ctx.event?.category != null && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceimageloadevents') && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceimageloadevents') && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - set:
       field: dll.path
       copy_from: m365_defender.event.folder_path
@@ -126,13 +128,13 @@ processors:
       copy_from: m365_defender.event.md5
       ignore_empty_value: true
       tag: set_file_hash_md5
-      if: ctx.event?.category != null && ctx.event.category != 'process' && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && !ctx.event?.category.contains('process') && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
   - set:
       field: process.hash.md5
       copy_from: m365_defender.event.md5
       ignore_empty_value: true
       tag: set_process_hash_md5
-      if: ctx.event?.category != null && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceimageloadevents') && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceimageloadevents') && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - set:
       field: dll.hash.md5
       copy_from: m365_defender.event.md5
@@ -149,13 +151,13 @@ processors:
       copy_from: m365_defender.event.sha1
       ignore_empty_value: true
       tag: set_file_hash_sha1
-      if: ctx.event?.category != null && ctx.event.category != 'process' && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && !ctx.event?.category.contains('process') && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
   - set:
       field: process.hash.sha1
       copy_from: m365_defender.event.sha1
       ignore_empty_value: true
       tag: set_process_hash_sha1
-      if: ctx.event?.category != null && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceimageloadevents') && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceimageloadevents') && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - set:
       field: dll.hash.sha1
       copy_from: m365_defender.event.sha1
@@ -172,13 +174,13 @@ processors:
       copy_from: m365_defender.event.sha256
       ignore_empty_value: true
       tag: set_file_hash_sha256
-      if: ctx.event?.category != null && ctx.event.category != 'process' && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && !ctx.event?.category.contains('process') && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
   - set:
       field: process.hash.sha256
       copy_from: m365_defender.event.sha256
       ignore_empty_value: true
       tag: set_process_hash_sha256
-      if: ctx.event?.category != null && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceimageloadevents') && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceimageloadevents') && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - set:
       field: dll.hash.sha256
       copy_from: m365_defender.event.sha256
@@ -195,13 +197,13 @@ processors:
       copy_from: m365_defender.event.file.name
       ignore_empty_value: true
       tag: set_file_name
-      if: ctx.event?.category != null && ctx.event.category != 'process' && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && !ctx.event?.category.contains('process') && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
   - set:
       field: process.name
       copy_from: m365_defender.event.file.name
       ignore_empty_value: true
       tag: set_process_name
-      if: ctx.event?.category != null && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceimageloadevents') && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceimageloadevents') && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - set:
       field: dll.name
       copy_from: m365_defender.event.file.name
@@ -218,13 +220,13 @@ processors:
       copy_from: m365_defender.event.file.size
       ignore_empty_value: true
       tag: set_file_size
-      if: ctx.event?.category != null && ctx.event.category != 'process' && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && !ctx.event?.category.contains('process') && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
   - set:
       field: process.pe.sections.physical_size
       copy_from: m365_defender.event.file.size
       ignore_empty_value: true
       tag: set_process_pe_sections_physical_size
-      if: ctx.event?.category != null && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceimageloadevents') && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceimageloadevents') && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - set:
       field: dll.pe.sections.physical_size
       copy_from: m365_defender.event.file.size
@@ -265,13 +267,13 @@ processors:
       copy_from: m365_defender.event.initiating_process.command_line
       ignore_empty_value: true
       tag: set_process_command_line
-      if: ctx.event?.category != null && ctx.event.category != 'process' && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && !ctx.event?.category.contains('process') && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
   - set:
       field: process.parent.command_line
       copy_from: m365_defender.event.initiating_process.command_line
       ignore_empty_value: true
       tag: set_process_parent_command_line
-      if: ctx.event?.category != null && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - rename:
       field: json.properties.InitiatingProcessMD5
       target_field: m365_defender.event.initiating_process.md5
@@ -282,13 +284,13 @@ processors:
       copy_from: m365_defender.event.initiating_process.md5
       ignore_empty_value: true
       tag: set_process_hash_md5
-      if: ctx.event?.category != null && ctx.event.category != 'process' && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && !ctx.event?.category.contains('process') && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
   - set:
       field: process.parent.hash.md5
       copy_from: m365_defender.event.initiating_process.md5
       ignore_empty_value: true
       tag: set_process_parent_hash_md5
-      if: ctx.event?.category != null && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - rename:
       field: json.properties.InitiatingProcessSHA1
       target_field: m365_defender.event.initiating_process.sha1
@@ -299,13 +301,13 @@ processors:
       copy_from: m365_defender.event.initiating_process.sha1
       ignore_empty_value: true
       tag: set_process_hash_sha1
-      if: ctx.event?.category != null && ctx.event.category != 'process' && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && !ctx.event?.category.contains('process') && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
   - set:
       field: process.parent.hash.sha1
       copy_from: m365_defender.event.initiating_process.sha1
       ignore_empty_value: true
       tag: set_process_parent_hash_sha1
-      if: ctx.event?.category != null && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - rename:
       field: json.properties.InitiatingProcessSHA256
       target_field: m365_defender.event.initiating_process.sha256
@@ -316,13 +318,13 @@ processors:
       copy_from: m365_defender.event.initiating_process.sha256
       ignore_empty_value: true
       tag: set_process_hash_sha256
-      if: ctx.event?.category != null && ctx.event.category != 'process' && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && !ctx.event?.category.contains('process') && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
   - set:
       field: process.parent.hash.sha256
       copy_from: m365_defender.event.initiating_process.sha256
       ignore_empty_value: true
       tag: set_process_parent_hash_sha256
-      if: ctx.event?.category != null && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - rename:
       field: json.properties.InitiatingProcessParentId
       target_field: m365_defender.event.initiating_process.parent_id
@@ -333,13 +335,13 @@ processors:
       copy_from: m365_defender.event.initiating_process.parent_id
       ignore_empty_value: true
       tag: set_process_parent_pid
-      if: ctx.event?.category != null && ctx.event.category != 'process' && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && !ctx.event?.category.contains('process') && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
   - set:
       field: process.parent.group_leader.pid
       copy_from: m365_defender.event.initiating_process.parent_id
       ignore_empty_value: true
       tag: set_process_parent_group_leader_pid
-      if: ctx.event?.category != null && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - rename:
       field: json.properties.InitiatingProcessId
       target_field: m365_defender.event.initiating_process.id
@@ -350,13 +352,13 @@ processors:
       copy_from: m365_defender.event.initiating_process.id
       ignore_empty_value: true
       tag: set_process_pid
-      if: ctx.event?.category != null && ctx.event.category != 'process' && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && !ctx.event?.category.contains('process') && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
   - set:
       field: process.parent.pid
       copy_from: m365_defender.event.initiating_process.id
       ignore_empty_value: true
       tag: set_process_parent_pid
-      if: ctx.event?.category != null && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - rename:
       field: json.properties.RegistryKey
       target_field: m365_defender.event.registry.key
@@ -404,25 +406,25 @@ processors:
       copy_from: m365_defender.event.remote.ip
       ignore_empty_value: true
       tag: set_source_ip
-      if: ctx.event?.category != null && ctx.event.category == 'authentication'
+      if: ctx.event?.category != null && ctx.event?.category.contains('authentication')
   - set:
       field: source.ip
       copy_from: m365_defender.event.remote.ip
       ignore_empty_value: true
       tag: set_source_ip
-      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields?.direction == 'In'
+      if: ctx.event?.category != null && ctx.event?.category.contains('network') && ctx.m365_defender?.event?.network_direction == 'In'
   - set:
       field: destination.ip
       copy_from: m365_defender.event.remote.ip
       ignore_empty_value: true
       tag: set_destination_ip
-      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields?.direction == 'Out'
+      if: ctx.event?.category != null && ctx.event?.category.contains('network') && ctx.m365_defender?.event?.network_direction == 'Out'
   - set:
       field: destination.ip
       copy_from: m365_defender.event.remote.ip
       ignore_empty_value: true
       tag: set_destination_ip
-      if: ctx.event?.category != null && ctx.event.category != 'authentication' && ctx.m365_defender?.event?.additional_fields?.direction == null
+      if: ctx.event?.category != null && !ctx.event?.category.contains('authentication') && ctx.m365_defender?.event?.network_direction == null
   - convert:
       field: json.properties.LocalIP
       target_field: m365_defender.event.local.ip
@@ -439,19 +441,19 @@ processors:
       copy_from: m365_defender.event.local.ip
       ignore_empty_value: true
       tag: set_source_ip
-      if: ctx.event?.category != null && ctx.event.category != 'authentication' && ctx.m365_defender?.event?.additional_fields?.direction == null
+      if: ctx.event?.category != null && !ctx.event?.category.contains('authentication') && ctx.m365_defender?.event?.network_direction == null
   - set:
       field: destination.ip
       copy_from: m365_defender.event.local.ip
       ignore_empty_value: true
       tag: set_destination_ip
-      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields?.direction == 'In'
+      if: ctx.event?.category != null && ctx.event?.category.contains('network') && ctx.m365_defender?.event?.network_direction == 'In'
   - set:
       field: source.ip
       copy_from: m365_defender.event.local.ip
       ignore_empty_value: true
       tag: set_source_ip
-      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields?.direction == 'Out'
+      if: ctx.event?.category != null && ctx.event?.category.contains('network') && ctx.m365_defender?.event?.network_direction == 'Out'
   - convert:
       field: json.properties.RequestSourceIP
       target_field: m365_defender.event.request.source_ip
@@ -468,7 +470,7 @@ processors:
       copy_from: m365_defender.event.request.source_ip
       ignore_empty_value: true
       tag: set_source_ip
-      if: ctx.event?.category != null && ctx.event.category == 'file'
+      if: ctx.event?.category != null && ctx.event?.category.contains('file')
   - convert:
       field: json.properties.RemotePort
       target_field: m365_defender.event.remote.port
@@ -485,25 +487,25 @@ processors:
       copy_from: m365_defender.event.remote.port
       ignore_empty_value: true
       tag: set_source_port
-      if: ctx.event?.category != null && ctx.event.category == 'authentication'
+      if: ctx.event?.category != null && ctx.event?.category.contains('authentication')
   - set:
       field: destination.port
       copy_from: m365_defender.event.remote.port
       ignore_empty_value: true
       tag: set_destination_port
-      if: ctx.event?.category != null && ctx.event.category != 'authentication' && ctx.m365_defender?.event?.additional_fields?.direction == null
+      if: ctx.event?.category != null && !ctx.event?.category.contains('authentication') && ctx.m365_defender?.event?.network_direction == null
   - set:
       field: source.port
       copy_from: m365_defender.event.remote.port
       ignore_empty_value: true
       tag: set_source_port
-      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields?.direction == 'In'
+      if: ctx.event?.category != null && ctx.event?.category.contains('network') && ctx.m365_defender?.event?.network_direction == 'In'
   - set:
       field: destination.port
       copy_from: m365_defender.event.remote.port
       ignore_empty_value: true
       tag: set_destination_port
-      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields?.direction == 'Out'
+      if: ctx.event?.category != null && ctx.event?.category.contains('network') && ctx.m365_defender?.event?.network_direction == 'Out'
   - convert:
       field: json.properties.LocalPort
       target_field: m365_defender.event.local.port
@@ -520,19 +522,19 @@ processors:
       copy_from: m365_defender.event.local.port
       ignore_empty_value: true
       tag: set_source_port
-      if: ctx.event?.category != null && ctx.event.category != 'authentication'
+      if: ctx.event?.category != null && !ctx.event?.category.contains('authentication')
   - set:
       field: destination.port
       copy_from: m365_defender.event.local.port
       ignore_empty_value: true
       tag: set_destination_port
-      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields?.direction == 'In'
+      if: ctx.event?.category != null && ctx.event?.category.contains('network') && ctx.m365_defender?.event?.network_direction == 'In'
   - set:
       field: source.port
       copy_from: m365_defender.event.local.port
       ignore_empty_value: true
       tag: set_source_port
-      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields?.direction == 'Out'
+      if: ctx.event?.category != null && ctx.event?.category.contains('network') && ctx.m365_defender?.event?.network_direction == 'Out'
   - convert:
       field: json.properties.RequestSourcePort
       target_field: m365_defender.event.request.source_port
@@ -842,13 +844,13 @@ processors:
       copy_from: m365_defender.event.initiating_process.creation_time
       ignore_empty_value: true
       tag: set_process_start
-      if: ctx.event?.category != null && ctx.event.category != 'process' && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && !ctx.event?.category.contains('process') && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
   - set:
       field: process.parent.start
       copy_from: m365_defender.event.initiating_process.creation_time
       ignore_empty_value: true
       tag: set_process_parent_start
-      if: ctx.event?.category != null && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - rename:
       field: json.properties.InitiatingProcessFileName
       target_field: m365_defender.event.initiating_process.file_name
@@ -859,13 +861,13 @@ processors:
       copy_from: m365_defender.event.initiating_process.file_name
       ignore_empty_value: true
       tag: set_process_name
-      if: ctx.event?.category != null && ctx.event.category != 'process' && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && !ctx.event?.category.contains('process') && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
   - set:
       field: process.parent.name
       copy_from: m365_defender.event.initiating_process.file_name
       ignore_empty_value: true
       tag: set_process_parent_name
-      if: ctx.event?.category != null && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - convert:
       field: json.properties.InitiatingProcessFileSize
       target_field: m365_defender.event.initiating_process.file_size
@@ -882,13 +884,13 @@ processors:
       copy_from: m365_defender.event.initiating_process.file_size
       ignore_empty_value: true
       tag: set_process_pe_sections_physical_size
-      if: ctx.event?.category != null && ctx.event.category != 'process' && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && !ctx.event?.category.contains('process') && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
   - set:
       field: process.parent.pe.sections.physical_size
       copy_from: m365_defender.event.initiating_process.file_size
       ignore_empty_value: true
       tag: set_process_parent_pe_sections_physical_size
-      if: ctx.event?.category != null && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - rename:
       field: json.properties.InitiatingProcessFolderPath
       target_field: m365_defender.event.initiating_process.folder_path
@@ -899,13 +901,13 @@ processors:
       copy_from: m365_defender.event.initiating_process.folder_path
       ignore_empty_value: true
       tag: set_process_executable
-      if: ctx.event?.category != null && ctx.event.category != 'process' && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && !ctx.event?.category.contains('process') && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
   - set:
       field: process.parent.executable
       copy_from: m365_defender.event.initiating_process.folder_path
       ignore_empty_value: true
       tag: set_process_parent_executable
-      if: ctx.event?.category != null && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - convert:
       field: json.properties.InitiatingProcessLogonId
       target_field: m365_defender.event.initiating_process.logon_id
@@ -933,13 +935,13 @@ processors:
       copy_from: m365_defender.event.initiating_process.parent_creation_time
       ignore_empty_value: true
       tag: set_process_parent_start
-      if: ctx.event?.category != null && ctx.event.category != 'process' && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && !ctx.event?.category.contains('process') && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
   - set:
       field: process.parent.group_leader.start
       copy_from: m365_defender.event.initiating_process.parent_creation_time
       ignore_empty_value: true
       tag: set_process_parent_group_leader_start
-      if: ctx.event?.category != null && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - rename:
       field: json.properties.InitiatingProcessParentFileName
       target_field: m365_defender.event.initiating_process.parent_file_name
@@ -950,13 +952,13 @@ processors:
       copy_from: m365_defender.event.initiating_process.parent_file_name
       ignore_empty_value: true
       tag: set_process_parent_name
-      if: ctx.event?.category != null && ctx.event.category != 'process' && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && !ctx.event?.category.contains('process') && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
   - set:
       field: process.parent.group_leader.name
       copy_from: m365_defender.event.initiating_process.parent_file_name
       ignore_empty_value: true
       tag: set_process_parent_group_leader_name
-      if: ctx.event?.category != null && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - rename:
       field: json.properties.InitiatingProcessVersionInfoCompanyName
       target_field: m365_defender.event.initiating_process.version_info_company_name
@@ -967,13 +969,13 @@ processors:
       copy_from: m365_defender.event.initiating_process.version_info_company_name
       ignore_empty_value: true
       tag: set_process_pe_company
-      if: ctx.event?.category != null && ctx.event.category != 'process' && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && !ctx.event?.category.contains('process') && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
   - set:
       field: process.parent.pe.company
       copy_from: m365_defender.event.initiating_process.version_info_company_name
       ignore_empty_value: true
       tag: set_process_parent_pe_company
-      if: ctx.event?.category != null && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - rename:
       field: json.properties.InitiatingProcessVersionInfoFileDescription
       target_field: m365_defender.event.initiating_process.version_info_file_description
@@ -984,13 +986,13 @@ processors:
       copy_from: m365_defender.event.initiating_process.version_info_file_description
       ignore_empty_value: true
       tag: set_process_pe_description
-      if: ctx.event?.category != null && ctx.event.category != 'process' && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && !ctx.event?.category.contains('process') && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
   - set:
       field: process.parent.pe.description
       copy_from: m365_defender.event.initiating_process.version_info_file_description
       ignore_empty_value: true
       tag: set_process_parent_pe_description
-      if: ctx.event?.category != null && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - rename:
       field: json.properties.InitiatingProcessVersionInfoInternalFileName
       target_field: m365_defender.event.initiating_process.version_info_internal_file_name
@@ -1006,13 +1008,13 @@ processors:
       copy_from: m365_defender.event.initiating_process.version_info_original_file_name
       ignore_empty_value: true
       tag: set_process_pe_original_file_name
-      if: ctx.event?.category != null && ctx.event.category != 'process' && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && !ctx.event?.category.contains('process') && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
   - set:
       field: process.parent.pe.original_file_name
       copy_from: m365_defender.event.initiating_process.version_info_original_file_name
       ignore_empty_value: true
       tag: set_process_parent_pe_original_file_name
-      if: ctx.event?.category != null && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - rename:
       field: json.properties.InitiatingProcessVersionInfoProductName
       target_field: m365_defender.event.initiating_process.version_info_product_name
@@ -1023,13 +1025,13 @@ processors:
       copy_from: m365_defender.event.initiating_process.version_info_product_name
       ignore_empty_value: true
       tag: set_process_pe_product
-      if: ctx.event?.category != null && ctx.event.category != 'process' && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && !ctx.event?.category.contains('process') && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
   - set:
       field: process.parent.pe.product
       copy_from: m365_defender.event.initiating_process.version_info_product_name
       ignore_empty_value: true
       tag: set_process_parent_pe_product
-      if: ctx.event?.category != null && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - rename:
       field: json.properties.InitiatingProcessVersionInfoProductVersion
       target_field: m365_defender.event.initiating_process.version_info_product_version
@@ -1040,13 +1042,13 @@ processors:
       copy_from: m365_defender.event.initiating_process.version_info_product_version
       ignore_empty_value: true
       tag: set_process_pe_file_version
-      if: ctx.event?.category != null && ctx.event.category != 'process' && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && !ctx.event?.category.contains('process') && !ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents')
   - set:
       field: process.parent.pe.file_version
       copy_from: m365_defender.event.initiating_process.version_info_product_version
       ignore_empty_value: true
       tag: set_process_parent_pe_file_version
-      if: ctx.event?.category != null && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - convert:
       field: json.properties.LogonId
       target_field: m365_defender.event.logon.id
@@ -1068,7 +1070,7 @@ processors:
       copy_from: m365_defender.event.process.command_line
       ignore_empty_value: true
       tag: set_process_command_line
-      if: ctx.event?.category != null && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - date:
       field: json.properties.ProcessCreationTime
       target_field: m365_defender.event.process.creation_time
@@ -1085,7 +1087,7 @@ processors:
       copy_from: m365_defender.event.process.creation_time
       ignore_empty_value: true
       tag: set_process_start
-      if: ctx.event?.category != null && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - convert:
       field: json.properties.ProcessId
       target_field: m365_defender.event.process.id
@@ -1102,7 +1104,7 @@ processors:
       copy_from: m365_defender.event.process.id
       ignore_empty_value: true
       tag: set_process_pid
-      if: ctx.event?.category != null && (ctx.event.category == 'process' || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
+      if: ctx.event?.category != null && (ctx.event?.category.contains('process') || ctx.m365_defender?.event?.category?.toLowerCase().contains('deviceevents'))
   - rename:
       field: json.properties.ProcessTokenElevation
       target_field: m365_defender.event.process.token_elevation
@@ -1696,17 +1698,17 @@ processors:
       field: network.direction
       value: inbound
       tag: set_network_direction_inbound
-      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields?.direction == 'In'
+      if: ctx.event?.category != null && ctx.event?.category.contains('network') && ctx.m365_defender?.event?.network_direction == 'In'
   - set:
       field: network.direction
       value: outbound
       tag: set_network_direction_outbound
-      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields?.direction == 'Out'
+      if: ctx.event?.category != null && ctx.event?.category.contains('network') && ctx.m365_defender?.event?.network_direction == 'Out'
   - set:
       field: network.direction
-      value: outbound
+      value: unknown
       tag: set_network_direction_unknown
-      if: ctx.event?.category != null && ctx.event.category == 'network' && ctx.m365_defender?.event?.additional_fields?.direction == null
+      if: ctx.event?.category != null && ctx.event?.category.contains('network') && ctx.m365_defender?.event?.network_direction == null
   - script:
       description: Splits up the command line to populate more processor fields.
       lang: painless
