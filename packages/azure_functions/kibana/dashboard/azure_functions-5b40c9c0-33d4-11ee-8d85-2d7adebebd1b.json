@@ -109,7 +109,7 @@
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "bd951446-5799-4606-868b-e20ed8e2e49b",
+                                "name": "60014cf3-d9b4-46e8-ae69-999d31086fbc",
                                 "type": "index-pattern"
                             }
                         ],
@@ -120,7 +120,8 @@
                                     "layers": {
                                         "113434b9-c581-4b79-9344-13864154c598": {
                                             "columnOrder": [
-                                                "daefd92f-2e9e-4bd7-8d4a-aee989ae985e",
+                                                "68c19ae2-0676-4b4a-90e7-c60d2ca556ac",
+                                                "8952901b-a1b3-4bb5-9605-c68a31cef340",
                                                 "6439d7ec-458f-4daf-a97a-101e6f025660"
                                             ],
                                             "columns": {
@@ -132,15 +133,15 @@
                                                         "query": "azure.functions.health_check_status.avg: *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "HealthCheckStatus",
-                                                    "operationType": "average",
+                                                    "label": "ExecutionCount",
+                                                    "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": true
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "azure.functions.health_check_status.avg"
+                                                    "sourceField": "azure.functions.function_execution_count.total"
                                                 },
-                                                "daefd92f-2e9e-4bd7-8d4a-aee989ae985e": {
+                                                "68c19ae2-0676-4b4a-90e7-c60d2ca556ac": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
                                                     "label": "Top 10 values of azure.resource.name",
@@ -164,6 +165,19 @@
                                                     },
                                                     "scale": "ordinal",
                                                     "sourceField": "azure.resource.name"
+                                                },
+                                                "8952901b-a1b3-4bb5-9605-c68a31cef340": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -183,11 +197,11 @@
                                     "meta": {
                                         "alias": "azure.functions.health_check_status.avg: *",
                                         "disabled": false,
-                                        "index": "bd951446-5799-4606-868b-e20ed8e2e49b",
+                                        "index": "60014cf3-d9b4-46e8-ae69-999d31086fbc",
                                         "key": "query",
                                         "negate": false,
                                         "type": "custom",
-                                        "value": "{\"bool\":{\"must\":[],\"filter\":[{\"bool\":{\"should\":[{\"exists\":{\"field\":\"azure.functions.health_check_status.avg\"}}],\"minimum_should_match\":1}}],\"should\":[],\"must_not\":[]}}"
+                                        "value": "{\"bool\":{\"filter\":[{\"bool\":{\"minimum_should_match\":1,\"should\":[{\"exists\":{\"field\":\"azure.functions.health_check_status.avg\"}}]}}],\"must\":[],\"must_not\":[],\"should\":[]}}"
                                     },
                                     "query": {
                                         "bool": {
@@ -218,16 +232,52 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "breakdownByAccessor": "daefd92f-2e9e-4bd7-8d4a-aee989ae985e",
-                                "layerId": "113434b9-c581-4b79-9344-13864154c598",
-                                "layerType": "data",
-                                "metricAccessor": "6439d7ec-458f-4daf-a97a-101e6f025660"
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "6439d7ec-458f-4daf-a97a-101e6f025660"
+                                        ],
+                                        "layerId": "113434b9-c581-4b79-9344-13864154c598",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "splitAccessor": "68c19ae2-0676-4b4a-90e7-c60d2ca556ac",
+                                        "xAccessor": "8952901b-a1b3-4bb5-9605-c68a31cef340"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "bottom"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsXY"
                     },
+                    "description": "Captures the number of execution of the function app. ",
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
@@ -239,7 +289,7 @@
                     "y": 0
                 },
                 "panelIndex": "b9d5606f-9607-4c90-a75f-c2857b266bfa",
-                "title": "Health check status by Function Apps",
+                "title": "Function Execution Count",
                 "type": "lens",
                 "version": "8.7.1"
             },
@@ -2162,11 +2212,11 @@
             }
         ],
         "timeRestore": false,
-        "title": "[Azure Functions ] Overview",
+        "title": "[Azure Functions] Overview",
         "version": 1
     },
     "coreMigrationVersion": "8.7.1",
-    "created_at": "2023-08-23T20:07:32.985Z",
+    "created_at": "2023-08-25T08:59:09.755Z",
     "id": "azure_functions-5b40c9c0-33d4-11ee-8d85-2d7adebebd1b",
     "migrationVersion": {
         "dashboard": "8.7.0"
@@ -2184,7 +2234,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "b9d5606f-9607-4c90-a75f-c2857b266bfa:bd951446-5799-4606-868b-e20ed8e2e49b",
+            "name": "b9d5606f-9607-4c90-a75f-c2857b266bfa:60014cf3-d9b4-46e8-ae69-999d31086fbc",
             "type": "index-pattern"
         },
         {
