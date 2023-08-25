@@ -385,6 +385,16 @@ processors:
           value: "{{_ingest._value.value}}"
           allow_duplicates: false
 
+  # For ECS, remove any subnet mask from IP values arriving in CIDR notation
+  - foreach:
+      field: threat.indicator.ip
+      ignore_missing: true
+      processor:
+        gsub:
+          field: _ingest._value
+          pattern: "/\\d+$"
+          replacement: ""
+
   - foreach:
       field: opencti.observable.network_traffic
       ignore_missing: true
