@@ -1,9 +1,28 @@
 rules:
+  # Oauth2 token endpoint
+  - path: /oauth2/v1/token
+    methods: ["POST"]
+    request_headers:
+      Content-Type: "application/x-www-form-urlencoded"
+    request_body:
+      grant_type: "client_credentials"
+      scope: "okta.logs.read"
+      client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
+      client_assertion: "{client_assertion:.*}"
+    responses:
+      - status_code: 200
+        body: |-
+          {
+            "token_type": "Bearer",
+            "expires_in": 3600,
+            "access_token": "eyJraWQiOiJOdlV4a1RMZWFhZTBCSTlSb2s.2cEVCVXNuLXR6cnJMMmZsUy00TEZqZkNVIiwiYWxnIjoiUlMyNTYifQ",
+            "scope": "okta.logs.read",
+          }
   # New request after interval - cursor test
   - path: /api/v1/logs
     methods: ["GET"]
     request_headers:
-      authorization: "SSWS testing"
+      authorization: "Bearer eyJraWQiOiJOdlV4a1RMZWFhZTBCSTlSb2s.2cEVCVXNuLXR6cnJMMmZsUy00TEZqZkNVIiwiYWxnIjoiUlMyNTYifQ"
     query_params:
       since: "{since:2020-02-14.*}"
     responses:
@@ -109,7 +128,7 @@ rules:
   - path: /api/v1/logs
     methods: ["GET"]
     request_headers:
-      authorization: "SSWS testing"
+      authorization: "Bearer eyJraWQiOiJOdlV4a1RMZWFhZTBCSTlSb2s.2cEVCVXNuLXR6cnJMMmZsUy00TEZqZkNVIiwiYWxnIjoiUlMyNTYifQ"
     query_params:
       since: "{since:.*}"
     responses:
@@ -306,7 +325,7 @@ rules:
   - path: /api/v1/logs
     methods: ["GET"]
     request_headers:
-      authorization: "SSWS testing"
+      authorization: "Bearer eyJraWQiOiJOdlV4a1RMZWFhZTBCSTlSb2s.2cEVCVXNuLXR6cnJMMmZsUy00TEZqZkNVIiwiYWxnIjoiUlMyNTYifQ"
     query_params:
       after: "1"
     responses:
@@ -429,7 +448,7 @@ rules:
   - path: /api/v1/logs
     methods: ["GET"]
     request_headers:
-      authorization: "SSWS testing"
+      authorization: "Bearer eyJraWQiOiJOdlV4a1RMZWFhZTBCSTlSb2s.2cEVCVXNuLXR6cnJMMmZsUy00TEZqZkNVIiwiYWxnIjoiUlMyNTYifQ"
     query_params:
       after: "2"
     responses:
@@ -444,7 +463,7 @@ rules:
   - path: /api/v1/logs
     methods: ["GET"]
     request_headers:
-      authorization: "SSWS testing"
+      authorization: "Bearer eyJraWQiOiJOdlV4a1RMZWFhZTBCSTlSb2s.2cEVCVXNuLXR6cnJMMmZsUy00TEZqZkNVIiwiYWxnIjoiUlMyNTYifQ"
     query_params:
       after: "1"
     responses:
