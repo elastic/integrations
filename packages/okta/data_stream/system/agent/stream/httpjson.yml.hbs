@@ -16,7 +16,9 @@ request.timeout: {{http_client_timeout}}
 request.proxy_url: {{proxy_url}}
 {{/if}}
 {{! conditional auth.oauth2 section}}
-{{#if (and (not api_key) okta_domain_url client_id)}}
+{{#unless api_key}}
+{{#if okta_domain_url}}
+{{#if client_id}}
 auth.oauth2.provider: okta
 auth.oauth2.token_url: {{okta_domain_url}}/oauth2/v1/token
 auth.oauth2.client.id: {{client_id}}
@@ -31,17 +33,23 @@ auth.oauth2.okta.jwk_json: {{jwk_json}}
 auth.oauth2.okta.jwk_file: {{jwk_file}}
 {{/if}}
 {{/if}}
+{{/if}}
+{{/unless}}
 
 request.rate_limit:
   limit: '[[.last_response.header.Get "X-Rate-Limit-Limit"]]'
   remaining: '[[.last_response.header.Get "X-Rate-Limit-Remaining"]]'
   reset: '[[.last_response.header.Get "X-Rate-Limit-Reset"]]'
 request.transforms:
-{{#if (and api_key (not okta_domain_url) (not client_id))}}
+{{#unless client_id}}
+{{#unless okta_domain_url}}
+{{#if api_key }}
   - set:
       target: header.Authorization
       value: "SSWS {{api_key}}"
 {{/if}}
+{{/unless}}
+{{/unless}}
   - set:
       target: url.params.limit
       value: '1000'

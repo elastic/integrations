@@ -1,28 +1,28 @@
 rules:
   # Oauth2 token endpoint
   - path: /oauth2/v1/token
-    methods: ["POST"]
+    methods: [POST]
     request_headers:
-      Content-Type: "application/x-www-form-urlencoded"
-    request_body:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    query_params:
       grant_type: "client_credentials"
       scope: "okta.logs.read"
       client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
       client_assertion: "{client_assertion:.*}"
     responses:
       - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
         body: |-
-          {
-            "token_type": "Bearer",
-            "expires_in": 3600,
-            "access_token": "eyJraWQiOiJOdlV4a1RMZWFhZTBCSTlSb2s.2cEVCVXNuLXR6cnJMMmZsUy00TEZqZkNVIiwiYWxnIjoiUlMyNTYifQ",
-            "scope": "okta.logs.read",
-          }
-  # New request after interval - cursor test
+          {"token_type": "Bearer","expires_in": 3600,"access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN","scope": "okta.logs.read"}
+  # Syetem log endpoint
   - path: /api/v1/logs
-    methods: ["GET"]
+    methods: [GET]
     request_headers:
-      authorization: "Bearer eyJraWQiOiJOdlV4a1RMZWFhZTBCSTlSb2s.2cEVCVXNuLXR6cnJMMmZsUy00TEZqZkNVIiwiYWxnIjoiUlMyNTYifQ"
+      Authorization:
+        - "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN"
     query_params:
       since: "{since:2020-02-14.*}"
     responses:
@@ -126,9 +126,10 @@ rules:
               }
           ]
   - path: /api/v1/logs
-    methods: ["GET"]
+    methods: [GET]
     request_headers:
-      authorization: "Bearer eyJraWQiOiJOdlV4a1RMZWFhZTBCSTlSb2s.2cEVCVXNuLXR6cnJMMmZsUy00TEZqZkNVIiwiYWxnIjoiUlMyNTYifQ"
+      Authorization:
+        - "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN"
     query_params:
       since: "{since:.*}"
     responses:
@@ -323,9 +324,10 @@ rules:
               }
           ]
   - path: /api/v1/logs
-    methods: ["GET"]
+    methods: [GET]
     request_headers:
-      authorization: "Bearer eyJraWQiOiJOdlV4a1RMZWFhZTBCSTlSb2s.2cEVCVXNuLXR6cnJMMmZsUy00TEZqZkNVIiwiYWxnIjoiUlMyNTYifQ"
+      Authorization:
+        - "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN"
     query_params:
       after: "1"
     responses:
@@ -446,9 +448,10 @@ rules:
             }
           ]
   - path: /api/v1/logs
-    methods: ["GET"]
+    methods: [GET]
     request_headers:
-      authorization: "Bearer eyJraWQiOiJOdlV4a1RMZWFhZTBCSTlSb2s.2cEVCVXNuLXR6cnJMMmZsUy00TEZqZkNVIiwiYWxnIjoiUlMyNTYifQ"
+      Authorization:
+        - "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN"
     query_params:
       after: "2"
     responses:
@@ -461,9 +464,11 @@ rules:
           []
   # "null" in ipAddress
   - path: /api/v1/logs
-    methods: ["GET"]
+    methods: [GET]
     request_headers:
-      authorization: "Bearer eyJraWQiOiJOdlV4a1RMZWFhZTBCSTlSb2s.2cEVCVXNuLXR6cnJMMmZsUy00TEZqZkNVIiwiYWxnIjoiUlMyNTYifQ"
+    request_headers:
+      Authorization:
+        - "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN"
     query_params:
       after: "1"
     responses:
