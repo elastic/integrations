@@ -4,7 +4,7 @@
             "chainingSystem": "HIERARCHICAL",
             "controlStyle": "oneLine",
             "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
-            "panelsJSON": "{\"5aa7709e-6beb-4736-9381-4d115fa1fe7d\":{\"type\":\"optionsListControl\",\"order\":0,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"5aa7709e-6beb-4736-9381-4d115fa1fe7d\",\"fieldName\":\"azure.subscription_id\",\"title\":\"Subscription ID\",\"enhancements\":{}}}}"
+            "panelsJSON": "{\"4fb2028e-7099-4758-adf4-d4025aaad5b1\":{\"type\":\"optionsListControl\",\"order\":0,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"4fb2028e-7099-4758-adf4-d4025aaad5b1\",\"fieldName\":\"azure.app_service.host\",\"title\":\"Host\",\"enhancements\":{},\"selectedOptions\":[\"lw0sdlwk00098S\"]}},\"da42936f-8acb-481d-bb2d-78eba62afa9d\":{\"type\":\"optionsListControl\",\"order\":2,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"da42936f-8acb-481d-bb2d-78eba62afa9d\",\"fieldName\":\"azure.app_service.level\",\"title\":\"Level\",\"enhancements\":{}}},\"1edf6fe8-f511-4640-836c-7864a5538053\":{\"type\":\"optionsListControl\",\"order\":3,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"1edf6fe8-f511-4640-836c-7864a5538053\",\"fieldName\":\"azure.app_service.event_ip_address\",\"title\":\"Event IP Address\",\"enhancements\":{}}},\"ee6c5d15-29e5-4f71-bbc1-744f4af8cae0\":{\"type\":\"optionsListControl\",\"order\":1,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"ee6c5d15-29e5-4f71-bbc1-744f4af8cae0\",\"fieldName\":\"azure.app_service.container_id\",\"title\":\"Container ID\",\"selectedOptions\":[\"219304993c55b5ceec863f1a66a3fa9d81c54b0084f6eb70de28022a866fbe9a\"],\"enhancements\":{}}}}"
         },
         "description": "Dashboard providing statistics about logs ingested from the Console Log events.",
         "kibanaSavedObjectMeta": {
@@ -31,11 +31,33 @@
                                 "data_stream.dataset": "azure_app_service.app_service_logs"
                             }
                         }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "azure.app_service.category",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "azure.app_service.category",
+                            "negate": false,
+                            "params": {
+                                "query": "AppServiceConsoleLogs"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "azure.app_service.category": "AppServiceConsoleLogs"
+                            }
+                        }
                     }
                 ],
                 "query": {
                     "language": "kuery",
-                    "query": ""
+                    "query": "azure.app_service.category: \"AppServiceConsoleLogs\" "
                 }
             }
         },
@@ -50,6 +72,7 @@
             {
                 "embeddableConfig": {
                     "enhancements": {},
+                    "hidePanelTitles": true,
                     "savedVis": {
                         "data": {
                             "aggs": [],
@@ -76,12 +99,528 @@
                 "gridData": {
                     "h": 15,
                     "i": "33474786-feeb-4e7c-bf5c-20b2a8556a4c",
-                    "w": 24,
+                    "w": 14,
                     "x": 0,
                     "y": 0
                 },
                 "panelIndex": "33474786-feeb-4e7c-bf5c-20b2a8556a4c",
                 "type": "visualization",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-99782148-61ca-4d91-94db-86fa44d3388e",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "99782148-61ca-4d91-94db-86fa44d3388e": {
+                                            "columnOrder": [
+                                                "62b4b891-05b7-4063-9c45-56e10a454117",
+                                                "c7e9152f-00fd-42e1-a13c-b6a84e1293aa"
+                                            ],
+                                            "columns": {
+                                                "62b4b891-05b7-4063-9c45-56e10a454117": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top Results Descriptions",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "c7e9152f-00fd-42e1-a13c-b6a84e1293aa",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 20
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.app_service.result_description"
+                                                },
+                                                "c7e9152f-00fd-42e1-a13c-b6a84e1293aa": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "62b4b891-05b7-4063-9c45-56e10a454117"
+                                    },
+                                    {
+                                        "columnId": "c7e9152f-00fd-42e1-a13c-b6a84e1293aa"
+                                    }
+                                ],
+                                "layerId": "99782148-61ca-4d91-94db-86fa44d3388e",
+                                "layerType": "data",
+                                "sorting": {
+                                    "columnId": "c7e9152f-00fd-42e1-a13c-b6a84e1293aa",
+                                    "direction": "desc"
+                                }
+                            }
+                        },
+                        "title": "Top Details",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "15dacc8d-d24b-4fa6-92b9-d3618727db5b",
+                    "w": 16,
+                    "x": 14,
+                    "y": 0
+                },
+                "panelIndex": "15dacc8d-d24b-4fa6-92b9-d3618727db5b",
+                "title": "",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-99782148-61ca-4d91-94db-86fa44d3388e",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "99782148-61ca-4d91-94db-86fa44d3388e": {
+                                            "columnOrder": [
+                                                "df8e553f-b64e-403d-93c2-021a38411265",
+                                                "c7e9152f-00fd-42e1-a13c-b6a84e1293aa"
+                                            ],
+                                            "columns": {
+                                                "c7e9152f-00fd-42e1-a13c-b6a84e1293aa": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "df8e553f-b64e-403d-93c2-021a38411265": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top Operation Names",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "c7e9152f-00fd-42e1-a13c-b6a84e1293aa",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.app_service.operation_name"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "c7e9152f-00fd-42e1-a13c-b6a84e1293aa"
+                                    },
+                                    {
+                                        "columnId": "df8e553f-b64e-403d-93c2-021a38411265",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "99782148-61ca-4d91-94db-86fa44d3388e",
+                                "layerType": "data",
+                                "sorting": {
+                                    "columnId": "c7e9152f-00fd-42e1-a13c-b6a84e1293aa",
+                                    "direction": "desc"
+                                }
+                            }
+                        },
+                        "title": "Top Details",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "734ac09e-1016-4050-939e-7a02b19058d3",
+                    "w": 17,
+                    "x": 30,
+                    "y": 0
+                },
+                "panelIndex": "734ac09e-1016-4050-939e-7a02b19058d3",
+                "title": "",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-cb0ceeef-76e7-4d8c-afdc-af12519e45d2",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "cb0ceeef-76e7-4d8c-afdc-af12519e45d2": {
+                                            "columnOrder": [
+                                                "1b30a891-8f67-4355-b653-26b3d6943c65",
+                                                "715da999-e787-41d2-8c45-33d2a9aac1d1",
+                                                "cf2b5754-60d0-4d62-92e2-c14aa2bbcd47"
+                                            ],
+                                            "columns": {
+                                                "1b30a891-8f67-4355-b653-26b3d6943c65": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of azure.app_service.level",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderAgg": {
+                                                            "dataType": "number",
+                                                            "isBucketed": false,
+                                                            "label": "Count of records",
+                                                            "operationType": "count",
+                                                            "params": {},
+                                                            "scale": "ratio",
+                                                            "sourceField": "___records___"
+                                                        },
+                                                        "orderBy": {
+                                                            "type": "custom"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.app_service.level"
+                                                },
+                                                "715da999-e787-41d2-8c45-33d2a9aac1d1": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "60s"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "cf2b5754-60d0-4d62-92e2-c14aa2bbcd47": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fillOpacity": 0.5,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "cf2b5754-60d0-4d62-92e2-c14aa2bbcd47"
+                                        ],
+                                        "layerId": "cb0ceeef-76e7-4d8c-afdc-af12519e45d2",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "area",
+                                        "splitAccessor": "1b30a891-8f67-4355-b653-26b3d6943c65",
+                                        "xAccessor": "715da999-e787-41d2-8c45-33d2a9aac1d1",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#68BC00",
+                                                "forAccessor": "cf2b5754-60d0-4d62-92e2-c14aa2bbcd47"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightScale": "linear"
+                            }
+                        },
+                        "title": "Azure Spring Cloud Logs Overview Level [Logs Azure] (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "17c04ba8-869b-43d9-8596-1c43f0e2d2e7",
+                    "w": 29,
+                    "x": 0,
+                    "y": 15
+                },
+                "panelIndex": "17c04ba8-869b-43d9-8596-1c43f0e2d2e7",
+                "title": "Log Level",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-67b15dd3-4510-48d8-aa91-dc5ef4ea30a1",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "67b15dd3-4510-48d8-aa91-dc5ef4ea30a1": {
+                                            "columnOrder": [
+                                                "be19dd63-f1e6-41bd-8d79-bcd6c2400307",
+                                                "d721f77a-9856-4938-b709-9e87aadc4cc6"
+                                            ],
+                                            "columns": {
+                                                "be19dd63-f1e6-41bd-8d79-bcd6c2400307": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of azure.app_service.level",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "d721f77a-9856-4938-b709-9e87aadc4cc6",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.app_service.level"
+                                                },
+                                                "d721f77a-9856-4938-b709-9e87aadc4cc6": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "layerId": "67b15dd3-4510-48d8-aa91-dc5ef4ea30a1",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "d721f77a-9856-4938-b709-9e87aadc4cc6"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "be19dd63-f1e6-41bd-8d79-bcd6c2400307"
+                                        ]
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "f142b3b3-0437-4176-9577-1647c0211870",
+                    "w": 18,
+                    "x": 29,
+                    "y": 15
+                },
+                "panelIndex": "f142b3b3-0437-4176-9577-1647c0211870",
+                "title": "Level Breakdown",
+                "type": "lens",
                 "version": "8.7.1"
             }
         ],
@@ -90,7 +629,7 @@
         "version": 1
     },
     "coreMigrationVersion": "8.7.1",
-    "created_at": "2023-08-24T13:22:58.040Z",
+    "created_at": "2023-08-25T09:49:08.914Z",
     "id": "azure_app_service-b1283dd0-4277-11ee-aa47-21430b181482",
     "migrationVersion": {
         "dashboard": "8.7.0"
@@ -103,7 +642,47 @@
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_5aa7709e-6beb-4736-9381-4d115fa1fe7d:optionsListDataView",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "15dacc8d-d24b-4fa6-92b9-d3618727db5b:indexpattern-datasource-layer-99782148-61ca-4d91-94db-86fa44d3388e",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "734ac09e-1016-4050-939e-7a02b19058d3:indexpattern-datasource-layer-99782148-61ca-4d91-94db-86fa44d3388e",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "17c04ba8-869b-43d9-8596-1c43f0e2d2e7:indexpattern-datasource-layer-cb0ceeef-76e7-4d8c-afdc-af12519e45d2",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "f142b3b3-0437-4176-9577-1647c0211870:indexpattern-datasource-layer-67b15dd3-4510-48d8-aa91-dc5ef4ea30a1",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_4fb2028e-7099-4758-adf4-d4025aaad5b1:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_da42936f-8acb-481d-bb2d-78eba62afa9d:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_1edf6fe8-f511-4640-836c-7864a5538053:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_ee6c5d15-29e5-4f71-bbc1-744f4af8cae0:optionsListDataView",
             "type": "index-pattern"
         }
     ],
