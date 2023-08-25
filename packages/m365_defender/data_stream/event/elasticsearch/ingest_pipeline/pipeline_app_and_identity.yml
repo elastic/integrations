@@ -41,7 +41,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  # Date Processors
+
   # Convert Processors
   - convert:
       field: json.properties.DestinationIPAddress
@@ -110,47 +110,48 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
 
-  # Numbers to boolean
+  # Numbers to boolean (Undocumented field types like string, numeric etc is possible, have to check all of them)
+  ## While the if conditions are long, the first one should be the correct one, and the rest is to ensure it works with other value types.
   - set:
-      field: json.properties.IsAdminOperation
+      field: m365_defender.event.is_admin_operation
       value: true
-      tag: set_json_properties_IsAdminOperation
-      if: ctx.json?.properties?.IsAdminOperation == 1 || ctx.json?.properties?.IsAdminOperation == '1'
+      tag: set_m365_defender_event_is_admin_operation
+      if: ctx.json?.properties?.IsAdminOperation != null && ((ctx.json?.properties?.IsAdminOperation instanceof Boolean && ctx.json?.properties?.IsAdminOperation == true) || (ctx.json?.properties?.IsAdminOperation instanceof String && ctx.json?.properties?.IsAdminOperation == '1' || ctx.json?.properties?.IsAdminOperation == 'true') || (ctx.json?.properties?.IsAdminOperation instanceof Integer && ctx.json?.properties?.IsAdminOperation == 1))
   - set:
-      field: json.properties.IsAdminOperation
+      field: m365_defender.event.is_admin_operation
       value: false
-      tag: set_json_properties_IsAdminOperation
-      if: ctx.json?.properties?.IsAdminOperation == 0 || ctx.json?.properties?.IsAdminOperation == '0'
+      tag: set_m365_defender_event_is_admin_operation
+      if: ctx.json?.properties?.IsAdminOperation != null && ((ctx.json?.properties?.IsAdminOperation instanceof Boolean && ctx.json?.properties?.IsAdminOperation == false) || (ctx.json?.properties?.IsAdminOperation instanceof String && ctx.json?.properties?.IsAdminOperation == '0' || ctx.json?.properties?.IsAdminOperation == 'false') || (ctx.json?.properties?.IsAdminOperation instanceof Integer && ctx.json?.properties?.IsAdminOperation == 0))
   - set:
-      field: json.properties.IsAnonymousProxy
+      field: m365_defender.event.is_anonymous_proxy
       value: true
-      tag: set_json_properties_IsAnonymousProxy
-      if: ctx.json?.properties?.IsAnonymousProxy == 1 || ctx.json?.properties?.IsAnonymousProxy == '1'
+      tag: set_m365_defender_event_is_anonymous_proxy
+      if: ctx.json?.properties?.IsAnonymousProxy != null && ((ctx.json?.properties?.IsAnonymousProxy instanceof Boolean && ctx.json?.properties?.IsAnonymousProxy == true) || (ctx.json?.properties?.IsAnonymousProxy instanceof String && ctx.json?.properties?.IsAnonymousProxy == '1' || ctx.json?.properties?.IsAnonymousProxy == 'true') || (ctx.json?.properties?.IsAnonymousProxy instanceof Integer && ctx.json?.properties?.IsAnonymousProxy == 1))
   - set:
-      field: json.properties.IsAnonymousProxy
+      field: m365_defender.event.is_anonymous_proxy
       value: false
-      tag: set_json_properties_IsAnonymousProxy
-      if: ctx.json?.properties?.IsAnonymousProxy == 0 || ctx.json?.properties?.IsAnonymousProxy == '0'
+      tag: set_m365_defender_event_is_anonymous_proxy
+      if: ctx.json?.properties?.IsAnonymousProxy != null && ((ctx.json?.properties?.IsAnonymousProxy instanceof Boolean && ctx.json?.properties?.IsAnonymousProxy == false) || (ctx.json?.properties?.IsAnonymousProxy instanceof String && ctx.json?.properties?.IsAnonymousProxy == '0' || ctx.json?.properties?.IsAnonymousProxy == 'false') || (ctx.json?.properties?.IsAnonymousProxy instanceof Integer && ctx.json?.properties?.IsAnonymousProxy == 0))
   - set:
-      field: json.properties.IsExternalUser
+      field: m365_defender.event.is_external_user
       value: true
-      tag: set_json_properties_IsExternalUser
-      if: ctx.json?.properties?.IsExternalUser == 1 || ctx.json?.properties?.IsExternalUser == '1'
+      tag: set_m365_defender_event_is_external_user
+      if: ctx.json?.properties?.IsExternalUser != null && ((ctx.json?.properties?.IsExternalUser instanceof Boolean && ctx.json?.properties?.IsExternalUser == true) || (ctx.json?.properties?.IsExternalUser instanceof String && ctx.json?.properties?.IsExternalUser == '1' || ctx.json?.properties?.IsExternalUser == 'true') || (ctx.json?.properties?.IsExternalUser instanceof Integer && ctx.json?.properties?.IsExternalUser == 1))
   - set:
-      field: json.properties.IsExternalUser
+      field: m365_defender.event.is_external_user
       value: false
-      tag: set_json_properties_IsExternalUser
-      if: ctx.json?.properties?.IsExternalUser == 0 || ctx.json?.properties?.IsExternalUser == '0'
+      tag: set_m365_defender_event_is_external_user
+      if: ctx.json?.properties?.IsExternalUser != null && ((ctx.json?.properties?.IsExternalUser instanceof Boolean && ctx.json?.properties?.IsExternalUser == false) || (ctx.json?.properties?.IsExternalUser instanceof String && ctx.json?.properties?.IsExternalUser == '0' || ctx.json?.properties?.IsExternalUser == 'false') || (ctx.json?.properties?.IsExternalUser instanceof Integer && ctx.json?.properties?.IsExternalUser == 0))
   - set:
-      field: json.properties.IsImpersonated
+      field: m365_defender.event.is_impersonated
       value: true
-      tag: set_json_properties_IsImpersonated
-      if: ctx.json?.properties?.IsImpersonated == 1 || ctx.json?.properties?.IsImpersonated == '1'
+      tag: set_m365_defender_event_is_impersonated
+      if: ctx.json?.properties?.IsImpersonated != null && ((ctx.json?.properties?.IsImpersonated instanceof Boolean && ctx.json?.properties?.IsImpersonated == true) || (ctx.json?.properties?.IsImpersonated instanceof String && ctx.json?.properties?.IsImpersonated == '1' || ctx.json?.properties?.IsImpersonated == 'true') || (ctx.json?.properties?.IsImpersonated instanceof Integer && ctx.json?.properties?.IsImpersonated == 1))
   - set:
-      field: json.properties.IsImpersonated
+      field: m365_defender.event.is_impersonated
       value: false
-      tag: set_json_properties_IsImpersonated
-      if: ctx.json?.properties?.IsImpersonated == 0 || ctx.json?.properties?.IsImpersonated == '0'
+      tag: set_m365_defender_event_is_impersonated
+      if: ctx.json?.properties?.IsImpersonated != null && ((ctx.json?.properties?.IsImpersonated instanceof Boolean && ctx.json?.properties?.IsImpersonated == false) || (ctx.json?.properties?.IsImpersonated instanceof String && ctx.json?.properties?.IsImpersonated == '0' || ctx.json?.properties?.IsImpersonated == 'false') || (ctx.json?.properties?.IsImpersonated instanceof Integer && ctx.json?.properties?.IsImpersonated == 0))
 
   # Rename Processors
   - rename:
@@ -352,26 +353,6 @@ processors:
       field: json.properties.UserAgentTags
       target_field: m365_defender.event.user_agent_tags
       tag: rename_json_properties_UserAgentTags
-      ignore_missing: true
-  - rename:
-      field: json.properties.IsAnonymousProxy
-      target_field: m365_defender.event.is_anonymous_proxy
-      tag: rename_json_properties_IsAnonymousProxy
-      ignore_missing: true
-  - rename:
-      field: json.properties.IsExternalUser
-      target_field: m365_defender.event.is_external_user
-      tag: rename_json_properties_IsExternalUser
-      ignore_missing: true
-  - rename:
-      field: json.properties.IsImpersonated
-      target_field: m365_defender.event.is_impersonated
-      tag: rename_json_properties_IsImpersonated
-      ignore_missing: true
-  - rename:
-      field: json.properties.IsAdminOperation
-      target_field: m365_defender.event.is_admin_operation
-      tag: rename_json_properties_IsAdminOperation
       ignore_missing: true
   
   # Destination mapping

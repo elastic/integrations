@@ -55,15 +55,15 @@ processors:
   
   # Change numbers to bool values
   - set:
-      field: json.properties.IsClickedThrough
+      field: m365_defender.event.is_clicked_through
       value: true
-      tag: set_is_clicked_through
-      if: ctx.json?.properties?.IsClickedThrough == 1 || ctx.json?.properties?.IsClickedThrough == '1'
+      tag: set_m365_defender_event_is_clicked_through
+      if: ctx.json?.properties?.IsClickedThrough != null && ((ctx.json?.properties?.IsClickedThrough instanceof Boolean && ctx.json?.properties?.IsClickedThrough == true) || (ctx.json?.properties?.IsClickedThrough instanceof String && ctx.json?.properties?.IsClickedThrough == '1' || ctx.json?.properties?.IsClickedThrough == 'true') || (ctx.json?.properties?.IsClickedThrough instanceof Integer && ctx.json?.properties?.IsClickedThrough == 1))
   - set:
-      field: json.properties.IsClickedThrough
+      field: m365_defender.event.is_clicked_through
       value: false
-      tag: set_is_clicked_through
-      if: ctx.json?.properties?.IsClickedThrough == 0 || ctx.json?.properties?.IsClickedThrough == '0'
+      tag: set_m365_defender_event_is_clicked_through
+      if: ctx.json?.properties?.IsClickedThrough != null && ((ctx.json?.properties?.IsClickedThrough instanceof Boolean && ctx.json?.properties?.IsClickedThrough == false) || (ctx.json?.properties?.IsClickedThrough instanceof String && ctx.json?.properties?.IsClickedThrough == '0' || ctx.json?.properties?.IsClickedThrough == 'false') || (ctx.json?.properties?.IsClickedThrough instanceof Integer && ctx.json?.properties?.IsClickedThrough == 0))
 
   # Convert Processors
   - convert:
@@ -369,11 +369,6 @@ processors:
       field: json.properties.Workload
       target_field: m365_defender.event.workload
       tag: rename_workload
-      ignore_missing: true
-  - rename:
-      field: json.properties.IsClickedThrough
-      target_field: m365_defender.event.is_clicked_through
-      tag: rename_is_clicked_through
       ignore_missing: true
 
   # File mappings
