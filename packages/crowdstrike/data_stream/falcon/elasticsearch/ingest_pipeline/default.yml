@@ -43,36 +43,33 @@ processors:
         if : ctx?.crowdstrike?.event != null
         params:
             values:
-            - null
-            - ''
-            - '-'
-            - 'N/A'
-            - 'NA'
-            - 0
+                - 'StartTime'
+                - 'EndTime'
+                - 'ContextTimeStamp'
+                - 'EndTimestamp'
+                - 'IncidentEndTime'
+                - 'IncidentStartTime'
+                - 'ItemPostedTimestamp'
+                - 'MatchedTimestamp'
+                - 'MostRecentActivityTimeStamp'
+                - 'PrecedingActivityTimeStamp'
+                - 'StartTimestamp'
+                - 'UTCTimestamp'
+# In Windows NT, the timestamp is a 64-bit value representing the number of 100-nanosecond intervals that have elapsed since January 1, 1601 (UTC). 
+# The high bit of this value is set to 1 to indicate that it's a Windows NT timestamp.
+# The condition longValue > 0x0100000000000000L checks if the high bit of the 64-bit value is set, which indicates that it's a Windows NT timestamp. 
+# If this condition is true, it means the timestamp is a Windows NT timestamp and needs to be converted to a Unix timestamp. 
+# The conversion involves dividing the value by 10000000 to convert from 100-nanosecond intervals to seconds 
+# and then subtracting the offset 11644473600L to account for the difference between Windows NT and Unix epoch times.
         source: |
             def convertToUnix(def longValue) {
                 if (longValue > 0x0100000000000000L) {
-                return (longValue / 10000000) - 11644473600L;
+                    return (longValue / 10000000) - 11644473600L;
                 }
                 return longValue;
             }
 
-            def timestampFields = [
-                'StartTime',
-                'EndTime',
-                'ContextTimeStamp',
-                'EndTimestamp',
-                'IncidentEndTime',
-                'IncidentStartTime',
-                'ItemPostedTimestamp',
-                'MatchedTimestamp',
-                'MostRecentActivityTimeStamp',
-                'PrecedingActivityTimeStamp',
-                'StartTimestamp',
-                'UTCTimestamp'
-            ];
-
-            for (def field : timestampFields) {
+            for (def field : params.values) {
                 def fieldValue = ctx.crowdstrike.event[field];
                 if (fieldValue != null) {
                     if (fieldValue instanceof long) {
