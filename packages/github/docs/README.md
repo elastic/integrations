@@ -39,7 +39,9 @@ To use this integration, the following prerequisites must be met:
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | github.category | GitHub action category | keyword |
 | github.org | GitHub organization name | keyword |
+| github.permission | GitHub user permissions for the event. | keyword |
 | github.repo | GitHub repository name | keyword |
+| github.repository_public | Whether the GitHub repository is publicly visible. | boolean |
 | github.team | GitHub team name | keyword |
 | group.name | Name of the group. | keyword |
 | host.architecture | Operating system architecture. | keyword |

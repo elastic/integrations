@@ -70,6 +70,12 @@ processors:
     field: json.repo
     target_field: github.repo
     ignore_missing: true
+- convert:
+    field: json.repository_public
+    target_field: github.repository_public
+    type: boolean
+    ignore_missing: true
+    ignore_failure: true
 - rename:
     field: json.team
     target_field: github.team
@@ -79,6 +85,10 @@ processors:
     target_field: github.team
     ignore_missing: true
     if: ctx.github?.team == null
+- rename:
+    field: json.permission
+    target_field: github.permission
+    ignore_missing: true
 - set:
     field: group.name
     copy_from: github.team
