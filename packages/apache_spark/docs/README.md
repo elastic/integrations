@@ -65,7 +65,6 @@ Follow the same set of steps for Spark Worker, Driver and Executor.
 
 ### Troubleshooting
 
-Conflicts in any field in any data stream can be solved by reindexing the data. 
 If host.ip is shown conflicted under ``metrics-*`` data view, then this issue can be solved by reindexing the ``Application``, ``Driver``, ``Executor`` and ``Node`` data stream's indices.
 To reindex the data, the following steps must be performed.
 
