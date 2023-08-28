@@ -51,8 +51,7 @@ There could be a possibility that for some of the fields, Citrix ADC sets dummy 
 
 
 #### Type conflicts
-
-Conflicts in any field in any data stream can be solved by reindexing the data. 
+ 
 If host.ip is shown conflicted under ``logs-*`` data view, then this issue can be solved by reindexing the ``Interface``, ``LBVserver``, ``Service``, ``System``, and ``VPN`` data stream's indices.
 To reindex the data, the following steps must be performed.
 
