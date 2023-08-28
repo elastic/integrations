@@ -29,14 +29,14 @@ statsd_prefix =
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | agent.id |  | keyword |  |
-| airflow.\*.count | Airflow counters | double | counter |
+| airflow.\*.count | Airflow counters | object | counter |
 | airflow.\*.max | Airflow max timers metric | object |  |
 | airflow.\*.mean | Airflow mean timers metric | object |  |
 | airflow.\*.mean_rate | Airflow mean rate timers metric | object |  |
 | airflow.\*.median | Airflow median timers metric | object |  |
 | airflow.\*.min | Airflow min timers metric | object |  |
 | airflow.\*.stddev | Airflow standard deviation timers metric | object |  |
-| airflow.\*.value | Airflow gauges | double | gauge |
+| airflow.\*.value | Airflow gauges | object | gauge |
 | airflow.dag_file | Airflow dag file metadata | keyword |  |
 | airflow.dag_id | Airflow dag id metadata | keyword |  |
 | airflow.job_name | Airflow job name metadata | keyword |  |
