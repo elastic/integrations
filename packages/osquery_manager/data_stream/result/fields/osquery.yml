@@ -1576,6 +1576,7 @@
         bpf_process_events.cmdline - Command line arguments
         docker_container_processes.cmdline - Complete argv
         es_process_events.cmdline - Command line arguments (argv)
+        process_etw_events.cmdline - Command Line
         process_events.cmdline - Command line arguments (argv)
         processes.cmdline - Complete argv
       type: keyword
@@ -2489,6 +2490,7 @@
       description: |-
         crashes.datetime - Date/Time at which the crash occurred
         powershell_events.datetime - System time at which the Powershell script event occurred
+        process_etw_events.datetime - Event timestamp in DATETIME format
         syslog_events.datetime - Time known to syslog
         time.datetime - Current date and time (ISO format) in UTC
         windows_crashes.datetime - Timestamp (log format) of the crash
@@ -2617,6 +2619,7 @@
         drivers.description - Driver description
         firefox_addons.description - Addon-supplied description string
         interface_details.description - Short description of the object a one-line string.
+        kernel_keys.description - The key description.
         keychain_acls.description - The description included with the ACL entry
         keychain_items.description - Optional item description
         logical_drives.description - The canonical description of the drive, e.g. 'Logical Fixed Disk', 'CD-ROM Disk'.
@@ -3201,6 +3204,7 @@
         file_events.eid - Event ID
         hardware_events.eid - Event ID
         ntfs_journal_events.eid - Event ID
+        process_etw_events.eid - Event ID
         process_events.eid - Event ID
         process_file_events.eid - Event ID
         selinux_events.eid - Event ID
@@ -3660,6 +3664,7 @@
         bpf_process_events.exit_code - Exit code of the system call
         bpf_socket_events.exit_code - Exit code of the system call
         es_process_events.exit_code - Exit code of a process in case of an exit event
+        process_etw_events.exit_code - Exit Code - Present only on ProcessStop events
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -4034,7 +4039,7 @@
           type: long
           default_field: false
     - name: flags
-      description: "device_partitions.flags - \ndns_cache.flags - DNS record flags\ninterface_details.flags - Flags (netdevice) for the device\nmounts.flags - Mounted device flags\npipes.flags - The flags indicating whether this pipe connection is a server or client end, and if the pipe for sending messages or bytes\nroutes.flags - Flags to describe route"
+      description: "device_partitions.flags - \ndns_cache.flags - DNS record flags\ninterface_details.flags - Flags (netdevice) for the device\nkernel_keys.flags - A set of flags describing the state of the key.\nmounts.flags - Mounted device flags\npipes.flags - The flags indicating whether this pipe connection is a server or client end, and if the pipe for sending messages or bytes\nprocess_etw_events.flags - Process Flags\nroutes.flags - Flags to describe route"
       type: keyword
       ignore_above: 1024
     - name: folder_id
@@ -4196,6 +4201,7 @@
         file.gid - Owning group ID
         file_events.gid - Owning group ID
         groups.gid - Unsigned int64 group ID
+        kernel_keys.gid - The group ID of the key.
         package_bom.gid - Expected group of file or directory
         process_events.gid - Group ID at process start
         process_file_events.gid - The gid of the process performing the action
@@ -4464,6 +4470,14 @@
         - name: text
           type: text
           norms: false
+          default_field: false
+    - name: header_pid
+      description: process_etw_events.header_pid - Process ID of the process reporting the event
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
           default_field: false
     - name: header_size
       description: smbios_tables.header_size - Header size in bytes
@@ -6161,6 +6175,15 @@
         - name: number
           type: long
           default_field: false
+    - name: mandatory_label
+      description: process_etw_events.mandatory_label - Primary token mandatory label sid - Present only on ProcessStart events
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: manifest_hash
       description: chrome_extensions.manifest_hash - The SHA256 hash of the manifest.json file
       type: keyword
@@ -6486,6 +6509,14 @@
           default_field: false
     - name: memory_available
       description: memory_info.memory_available - The amount of physical RAM, in bytes, available for starting new applications, without swapping
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: memory_cached
+      description: docker_container_stats.memory_cached - Memory cached
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -7211,6 +7242,22 @@
           type: text
           norms: false
           default_field: false
+    - name: number_of_efficiency_cores
+      description: cpu_info.number_of_efficiency_cores - The number of efficiency cores of the CPU. Only available on Apple Silicon
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: number_of_performance_cores
+      description: cpu_info.number_of_performance_cores - The number of performance cores of the CPU. Only available on Apple Silicon
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: object_name
       description: winbaseobj.object_name - Object Name
       type: keyword
@@ -7713,6 +7760,14 @@
         processes.parent - Process parent's PID
       type: keyword
       ignore_above: 1024
+    - name: parent_process_sequence_number
+      description: process_etw_events.parent_process_sequence_number - Parent Process Sequence Number - Present only on ProcessStart events
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: parent_ref_number
       description: ntfs_journal_events.parent_ref_number - The ordinal that associates a journal record with a filename's parent directory
       type: keyword
@@ -7903,6 +7958,7 @@
         package_receipts.path - Path of receipt plist
         plist.path - (required) read preferences from a plist
         prefetch.path - Prefetch file path.
+        process_etw_events.path - Path of executed binary
         process_events.path - Path of executed file
         process_file_events.path - The path associated with the event
         process_memory_map.path - Path to mapped file or mapped type
@@ -8087,6 +8143,7 @@
     - name: permissions
       description: |-
         chrome_extensions.permissions - The permissions required by the extension
+        kernel_keys.permissions - The key permissions, expressed as four hexadecimalbytes containing, from left to right, thepossessor, user, group, and other permissions.
         process_memory_map.permissions - r=read, w=write, x=execute, p=private (cow)
         shared_memory.permissions - Memory segment permissions
         suid_bin.permissions - Binary permissions
@@ -8184,6 +8241,7 @@
         osquery_info.pid - Process (or thread/handle) ID
         pipes.pid - Process ID of the process to which the pipe belongs
         process_envs.pid - Process (or thread) ID
+        process_etw_events.pid - Process ID
         process_events.pid - Process (or thread) ID
         process_file_events.pid - Process ID
         process_memory_map.pid - Process (or thread) ID
@@ -8236,6 +8294,7 @@
         suid_bin.pid_with_namespace - Pids that contain a namespace
         user_ssh_keys.pid_with_namespace - Pids that contain a namespace
         users.pid_with_namespace - Pids that contain a namespace
+        yara.pid_with_namespace - Pids that contain a namespace
         yum_sources.pid_with_namespace - Pids that contain a namespace
       type: keyword
       ignore_above: 1024
@@ -8432,7 +8491,9 @@
           type: long
           default_field: false
     - name: ppid
-      description: process_file_events.ppid - Parent process ID
+      description: |-
+        process_etw_events.ppid - Parent Process ID
+        process_file_events.ppid - Parent process ID
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -8556,6 +8617,14 @@
           default_field: false
     - name: process_being_tapped
       description: event_taps.process_being_tapped - The process ID of the target application
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: process_sequence_number
+      description: process_etw_events.process_sequence_number - Process Sequence Number - Present only on ProcessStart events
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -9639,6 +9708,14 @@
         - name: number
           type: long
           default_field: false
+    - name: secure_mode
+      description: "secureboot.secure_mode - Secure mode for Intel-based macOS: 0 disabled, 1 full security, 2 medium security"
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: secure_process
       description: processes.secure_process - Process is secure (IUM) yes=1, no=0
       type: keyword
@@ -9759,6 +9836,7 @@
         authenticode.serial_number - The certificate serial number
         battery.serial_number - The battery's unique serial number
         curl_certificate.serial_number - Certificate serial number
+        kernel_keys.serial_number - The serial key of the key.
         memory_devices.serial_number - Serial number of memory device
       type: keyword
       ignore_above: 1024
@@ -9881,6 +9959,7 @@
     - name: session_id
       description: |-
         logon_sessions.session_id - The Terminal Services session identifier.
+        process_etw_events.session_id - Session ID
         winbaseobj.session_id - Terminal Services Session Id
       type: keyword
       ignore_above: 1024
@@ -11120,6 +11199,7 @@
         ntfs_journal_events.time - Time of file event
         package_install_history.time - Label date as UNIX timestamp
         powershell_events.time - Timestamp the event was received by the osquery event publisher
+        process_etw_events.time - Event timestamp in Unix format
         process_events.time - Time of execution in UNIX time
         process_file_events.time - Time of execution in UNIX time
         seccomp_events.time - Time of execution in UNIX time
@@ -11151,10 +11231,19 @@
           type: text
           norms: false
           default_field: false
+    - name: time_windows
+      description: process_etw_events.time_windows - Event timestamp in Windows format
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: timeout
       description: |-
         authorizations.timeout - Label top-level key
         curl_certificate.timeout - Set this value to the timeout in seconds to complete the TLS handshake (default 4s, use 0 for no timeout)
+        kernel_keys.timeout - The amount of time until the key will expire,expressed in human-readable form. The string perm heremeans that the key is permanent (no timeout).  Thestring expd means that the key has already expired.
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11195,6 +11284,23 @@
       description: |-
         cups_jobs.title - Title of the printed job
         windows_update_history.title - Title of an update
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: token_elevation_status
+      description: process_etw_events.token_elevation_status - Primary token elevation status - Present only on ProcessStart events
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: token_elevation_type
+      description: process_etw_events.token_elevation_type - Primary token elevation type - Present only on ProcessStart events
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11292,7 +11398,7 @@
           type: long
           default_field: false
     - name: type
-      description: "apparmor_events.type - Event type\nappcompat_shims.type - Type of the SDB database.\nblock_devices.type - Block device type string\nbpf_socket_events.type - The socket type\ncrashes.type - Type of crash log\ndevice_file.type - File status\ndevice_firmware.type - Type of device\ndevice_partitions.type - \ndisk_encryption.type - Description of cipher type and mode if available\ndisk_info.type - The interface type of the disk.\ndns_cache.type - DNS record type\ndns_resolvers.type - Address type: sortlist, nameserver, search\ndocker_container_mounts.type - Type of mount (bind, volume)\ndocker_container_ports.type - Protocol (tcp, udp)\ndocker_volumes.type - Volume type\nfile.type - File status\nfirefox_addons.type - Extension, addon, webapp\nhardware_events.type - Type of hardware and hardware event\ninterface_addresses.type - Type of address. One of dhcp, manual, auto, other, unknown\ninterface_details.type - Interface type (includes virtual)\nkeychain_items.type - Keychain item type (class)\nlast.type - Entry type, according to ut_type types (utmp.h)\nlogged_in_users.type - Login type\nlogical_drives.type - Deprecated (always 'Unknown').\nlxd_certificates.type - Type of the certificate\nlxd_networks.type - Type of network\nmounts.type - Mounted device type\nntfs_acl_permissions.type - Type of access mode for the access control entry.\nnvram.type - Data type (CFData, CFString, etc)\nosquery_events.type - Either publisher or subscriber\nosquery_extensions.type - SDK extension type: core, extension, or module\nosquery_flags.type - Flag type\nprocess_open_pipes.type - Pipe Type: named vs unnamed/anonymous\nregistry.type - Type of the registry value, or 'subkey' if item is a subkey\nroutes.type - Type of route\nselinux_events.type - Event type\nshared_resources.type - Type of resource being shared. Types include: disk drives, print queues, interprocess communications (IPC), and general devices.\nsmbios_tables.type - Table entry type\nsmc_keys.type - SMC-reported type literal type\nstartup_items.type - Startup Item or Login Item\nsystem_controls.type - Data type\nulimit_info.type - System resource to be limited\nuser_events.type - The file description for the process socket\nusers.type - Whether the account is roaming (domain), local, or a system profile\nwindows_crashes.type - Type of crash log\nwindows_security_products.type - Type of security product\nxprotect_meta.type - Either plugin or extension"
+      description: "apparmor_events.type - Event type\nappcompat_shims.type - Type of the SDB database.\nblock_devices.type - Block device type string\nbpf_socket_events.type - The socket type\ncrashes.type - Type of crash log\ndevice_file.type - File status\ndevice_firmware.type - Type of device\ndevice_partitions.type - \ndisk_encryption.type - Description of cipher type and mode if available\ndisk_info.type - The interface type of the disk.\ndns_cache.type - DNS record type\ndns_resolvers.type - Address type: sortlist, nameserver, search\ndocker_container_mounts.type - Type of mount (bind, volume)\ndocker_container_ports.type - Protocol (tcp, udp)\ndocker_volumes.type - Volume type\nfile.type - File status\nfirefox_addons.type - Extension, addon, webapp\nhardware_events.type - Type of hardware and hardware event\ninterface_addresses.type - Type of address. One of dhcp, manual, auto, other, unknown\ninterface_details.type - Interface type (includes virtual)\nkernel_keys.type - The key type.\nkeychain_items.type - Keychain item type (class)\nlast.type - Entry type, according to ut_type types (utmp.h)\nlogged_in_users.type - Login type\nlogical_drives.type - Deprecated (always 'Unknown').\nlxd_certificates.type - Type of the certificate\nlxd_networks.type - Type of network\nmounts.type - Mounted device type\nntfs_acl_permissions.type - Type of access mode for the access control entry.\nnvram.type - Data type (CFData, CFString, etc)\nosquery_events.type - Either publisher or subscriber\nosquery_extensions.type - SDK extension type: core, extension, or module\nosquery_flags.type - Flag type\nprocess_etw_events.type - Event Type (ProcessStart, ProcessStop)\nprocess_open_pipes.type - Pipe Type: named vs unnamed/anonymous\nregistry.type - Type of the registry value, or 'subkey' if item is a subkey\nroutes.type - Type of route\nselinux_events.type - Event type\nshared_resources.type - Type of resource being shared. Types include: disk drives, print queues, interprocess communications (IPC), and general devices.\nsmbios_tables.type - Table entry type\nsmc_keys.type - SMC-reported type literal type\nstartup_items.type - Startup Item or Login Item\nsystem_controls.type - Data type\nulimit_info.type - System resource to be limited\nuser_events.type - The file description for the process socket\nusers.type - Whether the account is roaming (domain), local, or a system profile\nwindows_crashes.type - Type of crash log\nwindows_security_products.type - Type of security product\nxprotect_meta.type - Either plugin or extension"
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11330,6 +11436,7 @@
         file.uid - Owning user ID
         file_events.uid - Owning user ID
         firefox_addons.uid - The local user that owns the addon
+        kernel_keys.uid - The user ID of the key owner.
         known_hosts.uid - The local user that owns the known_hosts file
         launchd_overrides.uid - User ID applied to the override, 0 applies to all
         package_bom.uid - Expected user of file or directory
@@ -11383,6 +11490,15 @@
           default_field: false
     - name: unique_chip_id
       description: ibridge_info.unique_chip_id - Unique id of the iBridge controller
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: unit_file_state
+      description: systemd_units.unit_file_state - Whether the unit file is enabled, e.g. `enabled`, `masked`, `disabled`, etc
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11540,6 +11656,14 @@
           type: text
           norms: false
           default_field: false
+    - name: usage
+      description: kernel_keys.usage - the number of threads and open file references thatrefer to this key.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: usb_address
       description: usb_devices.usb_address - USB Device used address
       type: keyword
@@ -11663,6 +11787,7 @@
         launchd.username - Run this daemon or agent as this username
         managed_policies.username - Policy applies only this user
         preferences.username - (optional) read preferences for a specific user
+        process_etw_events.username - User rights - primary token username
         rpm_package_files.username - File default username from info DB
         shadow.username - Username
         startup_items.username - The user associated with the startup item
