@@ -10,19 +10,75 @@
 
 
 ## Returned Data Fields
+### ARP Table Information
+
+TYCHON scans Endpoint ARP Tables and returns the results.  
+
+**Exported fields**
+{{fields "tychon_arp"}}
+
 ### Vulnerablities
 
-TYCHON scans for endpoint vulenrabilites and returns the results.  
+TYCHON scans for Endpoint CPU's and returns the results.  
+
+**Exported fields**
+{{fields "tychon_cpu"}}
+
+### Vulnerablities
+
+TYCHON scans for Endpoint vulenrabilites and returns the results.  
 
 **Exported fields**
 {{fields "tychon_cve"}}
 
 ### Endpoint Protection Platform
 
-TYCHON scans the endpoint's Windows Defender and returns protection status and version details.  
+TYCHON scans the Endpoint's Windows Defender and returns protection status and version details.  
 
 **Exported fields**
 {{fields "tychon_epp"}}
+
+### Endpoint Exposed Services Information
+
+The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/XCCDF issues and returns information.  
+
+**Exported fields**
+{{fields "tychon_exposedservice"}}
+
+### Endpoint Hard Drive Information
+
+The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/XCCDF issues and returns information.  
+
+**Exported fields**
+{{fields "tychon_harddrive"}}
+
+### Endpoint Hardware Information
+
+The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/XCCDF issues and returns information.  
+
+**Exported fields**
+{{fields "tychon_hardware"}}
+
+### Endpoint Host OS Information
+
+The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/XCCDF issues and returns information.  
+
+**Exported fields**
+{{fields "tychon_host"}}
+
+### Endpoint Network Adapters Information
+
+The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/XCCDF issues and returns information.  
+
+**Exported fields**
+{{fields "tychon_networkadapter"}}
+
+### Endpoint Software Inventory Information
+
+The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/XCCDF issues and returns information.  
+
+**Exported fields**
+{{fields "tychon_softwareinventory"}}
 
 ### Endpoint STIG Information
 
@@ -30,3 +86,10 @@ The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/X
 
 **Exported fields**
 {{fields "tychon_stig"}}
+
+### Endpoint Volume Information
+
+The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/XCCDF issues and returns information.  
+
+**Exported fields**
+{{fields "tychon_volume"}}

@@ -1,21 +1,21 @@
 ---
-description: Pipeline for parsing TYCHON Vulnerability Scan Results
+description: CVE Pipeline for parsing TYCHON Vulnerability Scan Results
 processors:
   - dot_expander:
       field: "*"
-  - set:
-      if: ctx.containsKey("tychon") && ctx.tychon.containsKey("id")
-      field: host.id
-      value: "{{tychon.id}}"
-  - remove:
-      if: ctx.containsKey("tychon") && ctx.tychon.containsKey("id")
-      field: 'tychon'
   - set:
       field: _id
       value: "{{id}}"
   - set:
       field: "@timestamp"
       value: "{{_ingest.timestamp}}"
+  - set:
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - set:
+      field: vulnerability.due_date
+      value: "1970-01-01T00:00:01Z"
+      if: ctx.vulnerability.due_date == ''
   - set:
       field: ecs.version
       value: 8.8.0
@@ -25,6 +25,15 @@ processors:
   - set:
       field: event.module
       value: tychon
+  - split:
+      field: host.uptime
+      separator: "\\.+"
+      target_field: tempuptime
+  - set:
+      field: host.uptime
+      value: "{{tempuptime.0}}"
+  - remove:
+      field: tempuptime
   - set:
       field: event.category
       value: [vulnerability]
@@ -41,9 +50,6 @@ processors:
       field: host.mac
       pattern: ":"
       replacement: "-"      
-  - set:
-      field: event.ingested
-      value: "{{_ingest.timestamp}}"
   - convert:
       field: script.current_duration
       type: float
