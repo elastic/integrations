@@ -1,0 +1,38 @@
+{
+    "id": "be1197db-90d0-58db-b780-f0a939264bd0",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Turning on logging will increase the required storage over time. Mismanaged logs may cause your storage costs to increase. Setting custom flags via command line on certain instances will cause all omitted flags to be reset to defaults. This may cause you to lose custom flags and could result in unforeseen complications or instance restarts. Because of this, it is recommended you apply these flags changes during a period of low usage.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/sql/docs/postgres/flags\n2. https://www.postgresql.org/docs/9.6/runtime-config-logging.html#RUNTIME-CONFIG-LOGGING-WHAT",
+            "id": "be1197db-90d0-58db-b780-f0a939264bd0",
+            "name": "Ensure That the \u2018Log_connections\u2019 Database Flag for Cloud SQL PostgreSQL Instance Is Set to \u2018On\u2019",
+            "profile_applicability": "* Level 1",
+            "description": "Enabling the `log_connections` setting causes each attempted connection to the server to be logged, along with successful completion of client authentication.\nThis parameter cannot be changed after the session starts.",
+            "rationale": "PostgreSQL does not log attempted connections by default.\nEnabling the `log_connections` setting will create log entries for each attempted connection as well as successful completion of client authentication which can be useful in troubleshooting issues and to determine any unusual connection attempts to the server.\nThis recommendation is applicable to PostgreSQL database instances.",
+            "audit": "**From Google Cloud Console**\n\n1. Go to the Cloud SQL Instances page in the Google Cloud Console by visiting [https://console.cloud.google.com/sql/instances](https://console.cloud.google.com/sql/instances).\n2. Select the instance to open its `Instance Overview` page.\n3. Go to the `Configuration` card.\n4. Under `Database flags`, check the value of `log_connections` flag to determine if it is configured as expected.\n\n**From Google Cloud CLI**\n\n5. Ensure the below command returns `on` for every Cloud SQL PostgreSQL database instance:\n```\ngcloud sql instances list --format=json | jq '.settings.databaseFlags[] | select(.name==\"log_connections\")|.value'\n```",
+            "remediation": "**From Google Cloud Console**\n\n1. Go to the Cloud SQL Instances page in the Google Cloud Console by visiting https://console.cloud.google.com/sql/instances.\n2. Select the PostgreSQL instance for which you want to enable the database flag.\n3. Click `Edit`.\n4. Scroll down to the `Flags` section.\n5. To set a flag that has not been set on the instance before, click `Add item`, choose the flag `log_connections` from the drop-down menu and set the value as `on`.\n6. Click `Save`.\n7. Confirm the changes under `Flags` on the Overview page.\n\n**From Google Cloud CLI**\n\n8. Configure the `log_connections` database flag for every Cloud SQL PosgreSQL database instance using the below command.\n```\ngcloud sql instances patch <INSTANCE_NAME> --database-flags log_connections=on\n```\n```\nNote: \nThis command will overwrite all previously set database flags.\nTo keep those and add new ones, include the values for all flags to be set on the instance; any flag not specifically included is set to its default value.\nFor flags that do not take a value, specify the flag name followed by an equals sign (\"=\").\n```",
+            "section": "PostgreSQL Database",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 6.2.2",
+                "PostgreSQL Database"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "6.2.2",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_6_2_2"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
