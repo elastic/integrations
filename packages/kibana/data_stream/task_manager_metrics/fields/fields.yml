@@ -1,0 +1,48 @@
+- name: kibana
+  type: group
+  fields:
+    - name: task_manager_metrics
+      type: group
+      fields:
+        - name: last_update
+          type: date
+        - name: metrics
+          type: group
+          fields:
+            - name: task_claim
+              type: group
+              fields:
+                - name: timestamp
+                  type: date
+                - name: value
+                  type: group
+                  fields:
+                    - name: success
+                      type: long
+                    - name: total
+                      type: long
+                    - name: duration
+                      type: histogram
+            - name: task_run
+              type: group
+              fields:
+                - name: timestamp
+                  type: date
+                - name: value
+                  type: group
+                  fields:
+                    - name: overall
+                      type: group
+                      fields:
+                        - name: success
+                          type: long
+                        - name: total
+                          type: long
+                    - name: 'by_type.*.success'
+                      type: long
+                    - name: 'by_type.*.total'
+                      type: long
+        - name: process_uuid
+          type: keyword
+        - name: timestamp
+          type: date
