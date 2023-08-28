@@ -3,6 +3,7 @@
   fields:
     - name: id
       type: keyword
+      dimension: true
       description: |
         A unique ID for the service. It is a hash of the machine's GUID and the service name.
     - name: name
@@ -27,6 +28,8 @@
         Fully qualified path to the file that implements the service, including arguments.
     - name: state
       type: keyword
+      #Reason to add as dimension field: There is no associated pid in more than one state, and multiple instances of the same service can be instantiated at a given time.
+      dimension: true
       description: |
         The actual state of the service. The possible values are `Continuing`, `Pausing`, `Paused`, `Running`, `Starting`, `Stopping`, and `Stopped`.
     - name: exit_code
@@ -35,6 +38,8 @@
         For `Stopped` services this is the error code that service reports when starting to stopping. This will be the generic Windows service error code unless the service provides a service-specific error code.
     - name: pid
       type: long
+      #Reason to add as dimension field: Uniquely identify the running process, is important when service restarts and continues with the same service id.
+      dimension: true
       description: |
         For `Running` services this is the associated process PID.
     - name: uptime.ms
