@@ -2599,7 +2599,7 @@ An example event for `sysmon_operational` looks as following:
 | winlog.event_data.CorruptionActionState |  | keyword |
 | winlog.event_data.CreationUtcTime |  | keyword |
 | winlog.event_data.Description |  | keyword |
-| winlog.event_data.Detail |  | keyword |
+| winlog.event_data.Details |  | keyword |
 | winlog.event_data.DeviceName |  | keyword |
 | winlog.event_data.DeviceNameLength |  | keyword |
 | winlog.event_data.DeviceTime |  | keyword |
