@@ -2743,7 +2743,6 @@ The Windows `service` data stream provides service details.
 
 **Exported fields**
 
-
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
