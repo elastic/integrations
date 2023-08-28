@@ -1,0 +1,29 @@
+metricsets: ["json"]
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+{{#if basepath}}
+basepath: {{basepath}}
+{{/if}}
+{{#if username}}
+username: {{username}}
+{{/if}}
+{{#if password}}
+password: {{password}}
+{{/if}}
+period: {{period}}
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
+namespace: "task_manager_metrics"
+path: "/api/task_manager/metrics"
+method: "GET"
+processors:
+  - rename:
+      fields:
+        - from: http.task_manager_metrics
+          to: kibana.task_manager_metrics
+      ignore_missing: true
+      fail_on_error: false
+
