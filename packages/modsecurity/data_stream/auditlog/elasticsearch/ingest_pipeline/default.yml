@@ -23,12 +23,16 @@ processors:
       field: modsec.audit.server
       copy_from: json.transaction.response.headers.Server
       ignore_empty_value: true
+  - set:
+      field: modsec.audit.connector
+      copy_from: json.transaction.producer.connector
+      ignore_empty_value: true
   - pipeline:
       name: '{{ IngestPipeline "nginx-modsec" }}'
-      if: ctx.modsec.audit.server.toLowerCase().contains('nginx')
+      if: (ctx.modsec?.audit?.server != null && ctx.modsec.audit.server.toLowerCase().contains('nginx')) || (ctx.modsec?.audit?.connector != null && ctx.modsec.audit.connector.toLowerCase().contains('nginx'))
   - pipeline:
       name: '{{ IngestPipeline "apache-modsec" }}'
-      if: ctx.modsec.audit.server.toLowerCase().contains('apache')
+      if: (ctx.modsec?.audit?.server != null && ctx.modsec.audit.server.toLowerCase().contains('apache')) || (ctx.modsec?.audit?.connector != null && ctx.modsec.audit.connector.toLowerCase().contains('apache'))
 
 on_failure:
   - set:
