@@ -2599,7 +2599,7 @@ An example event for `sysmon_operational` looks as following:
 | winlog.event_data.CorruptionActionState |  | keyword |
 | winlog.event_data.CreationUtcTime |  | keyword |
 | winlog.event_data.Description |  | keyword |
-| winlog.event_data.Detail |  | keyword |
+| winlog.event_data.Details |  | keyword |
 | winlog.event_data.DeviceName |  | keyword |
 | winlog.event_data.DeviceNameLength |  | keyword |
 | winlog.event_data.DeviceTime |  | keyword |
@@ -2743,9 +2743,11 @@ The Windows `service` data stream provides service details.
 
 **Exported fields**
 
+
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
+| agent.id |  | keyword |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
