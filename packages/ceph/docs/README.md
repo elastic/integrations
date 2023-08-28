@@ -89,7 +89,6 @@ After the integration is successfully configured, clicking on the Assets tab of 
 
 ### Troubleshooting
 
-Conflicts in any field in any data stream can be solved by reindexing the data. 
 If host.ip is shown conflicted under ``logs-*`` data view, then this issue can be solved by reindexing the ``Cluster Disk``, ``Cluster Health``, ``Cluster Status``, ``OSD Performance``, ``OSD Pool Stats``, ``OSD Tree`` and ``Pool Disk`` data stream's indices.
 To reindex the data, the following steps must be performed.
 
