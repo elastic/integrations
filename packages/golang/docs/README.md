@@ -37,7 +37,6 @@ For step-by-step instructions on how to set up an integration, see the [Getting 
 
 ### Troubleshooting
 
-Conflicts in any field in any data stream can be solved by reindexing the data. 
 If host.ip is shown conflicted under ``logs-*`` data view, then this issue can be solved by reindexing the ``Heap`` and ``Expvar`` data stream's indices.
 To reindex the data, the following steps must be performed.
 
