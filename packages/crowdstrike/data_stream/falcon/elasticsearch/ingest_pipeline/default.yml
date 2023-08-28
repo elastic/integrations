@@ -55,12 +55,8 @@ processors:
                 - 'PrecedingActivityTimeStamp'
                 - 'StartTimestamp'
                 - 'UTCTimestamp'
-# In Windows NT, the timestamp is a 64-bit value representing the number of 100-nanosecond intervals that have elapsed since January 1, 1601 (UTC). 
-# The high bit of this value is set to 1 to indicate that it's a Windows NT timestamp.
-# The condition longValue > 0x0100000000000000L checks if the high bit of the 64-bit value is set, which indicates that it's a Windows NT timestamp. 
-# If this condition is true, it means the timestamp is a Windows NT timestamp and needs to be converted to a Unix timestamp. 
-# The conversion involves dividing the value by 10000000 to convert from 100-nanosecond intervals to seconds 
-# and then subtracting the offset 11644473600L to account for the difference between Windows NT and Unix epoch times.
+# Process to convert LDAP/WIN32 FILETIME to Unix timestamp. 
+# More details can be found here: https://devblogs.microsoft.com/oldnewthing/20030905-02/?p=42653 and here https://www.epochconverter.com/ldap
         source: |
             def convertToUnix(def longValue) {
                 if (longValue > 0x0100000000000000L) {
