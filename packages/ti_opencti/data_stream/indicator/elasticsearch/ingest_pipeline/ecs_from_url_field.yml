@@ -2,10 +2,15 @@
 description: Build ECS fields from a url field
 processors:
 
-  - uri_parts:
+  - rename:
       field: _ingest._value
+      target_field: threat.indicator._url.original
+
+  - uri_parts:
+      field: threat.indicator._url.original
       target_field: threat.indicator._url
       keep_original: true
+      ignore_failure: true
 
   - remove:
       field: threat.indicator._url.user_info
