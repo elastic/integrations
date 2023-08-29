@@ -31,6 +31,100 @@ Status path configuration format: `/path`
 
 Example Status path configuration: `/status` 
 
+### Troubleshooting
+
+If host.ip is shown conflicted under ``logs-*`` data view, then this issue can be solved by reindexing the ``Pool`` and ``Process`` data stream's indices.
+To reindex the data, the following steps must be performed.
+
+1. Stop the data stream by going to `Integrations -> PHP-FPM -> Integration policies` open the configuration of PHP-FPM and disable the `Collect PHP-FPM metrics` toggle to reindex metrics data stream and save the integration.
+
+2. Copy data into the temporary index and delete the existing data stream and index template by performing the following steps in the Dev tools.
+
+```
+POST _reindex
+{
+  "source": {
+    "index": "<index_name>"
+  },
+  "dest": {
+    "index": "temp_index"
+  }
+}  
+```
+Example:
+```
+POST _reindex
+{
+  "source": {
+    "index": "logs-php_fpm.pool-default"
+  },
+  "dest": {
+    "index": "temp_index"
+  }
+}
+```
+
+```
+DELETE /_data_stream/<data_stream>
+```
+Example:
+```
+DELETE /_data_stream/logs-php_fpm.pool-default
+```
+
+```
+DELETE _index_template/<index_template>
+```
+Example:
+```
+DELETE _index_template/logs-php_fpm.pool
+```
+3. Go to `Integrations -> PHP-FPM -> Settings` and click on `Reinstall PHP-FPM`.
+
+4. Copy data from temporary index to new index by performing the following steps in the Dev tools.
+
+```
+POST _reindex
+{
+  "conflicts": "proceed",
+  "source": {
+    "index": "temp_index"
+  },
+  "dest": {
+    "index": "<index_name>",
+    "op_type": "create"
+
+  }
+}
+```
+Example:
+```
+POST _reindex
+{
+  "conflicts": "proceed",
+  "source": {
+    "index": "temp_index"
+  },
+  "dest": {
+    "index": "logs-php_fpm.pool-default",
+    "op_type": "create"
+
+  }
+}
+```
+
+5. Verify data is reindexed completely.
+
+6. Start the data stream by going to the `Integrations -> PHP-FPM -> Integration policies` and open configuration of integration and enable the `Collect PHP-FPM metrics` toggle and save the integration.
+
+7. Delete temporary index by performing the following step in the Dev tools.
+
+```
+DELETE temp_index
+```
+
+More details about reindexing can be found [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-reindex.html).
+
 ## Metrics reference
 
 ### Pool
@@ -136,6 +230,7 @@ An example event for `pool` looks as following:
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |  |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
 | input.type | Type of Filebeat input. | keyword |  |  |
 | php_fpm.pool.connections.accepted | The total number of accepted connections. | long |  | counter |
 | php_fpm.pool.connections.listen_queue.max_size | The maximum allowed size of the listen queue. | long |  | gauge |
@@ -263,6 +358,7 @@ An example event for `process` looks as following:
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |  |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
 | http.request.body.bytes | Size in bytes of the request body. | long |  |  |
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |  |  |
 | input.type | Type of Filebeat input. | keyword |  |  |
