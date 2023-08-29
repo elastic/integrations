@@ -106,6 +106,17 @@ contains TCP/UDP/ICMP connection data.
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| corelight.connection.history | Flags indicating the history of the session. | keyword |
+| corelight.connection.icmp.code | ICMP message code. | integer |
+| corelight.connection.icmp.type | ICMP message type. | integer |
+| corelight.connection.inner_vlan | VLAN identifier. | integer |
+| corelight.connection.local_orig | Indicates whether the session is originated locally. | boolean |
+| corelight.connection.local_resp | Indicates whether the session is responded locally. | boolean |
+| corelight.connection.missed_bytes | Missed bytes for the session. | long |
+| corelight.connection.state | Code indicating the state of the session. | keyword |
+| corelight.connection.state_message | The state of the session. | keyword |
+| corelight.connection.vlan | VLAN identifier. | integer |
+| corelight.session_id | A unique identifier of the session | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -183,17 +194,6 @@ contains TCP/UDP/ICMP connection data.
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| zeek.connection.history | Flags indicating the history of the session. | keyword |
-| zeek.connection.icmp.code | ICMP message code. | integer |
-| zeek.connection.icmp.type | ICMP message type. | integer |
-| zeek.connection.inner_vlan | VLAN identifier. | integer |
-| zeek.connection.local_orig | Indicates whether the session is originated locally. | boolean |
-| zeek.connection.local_resp | Indicates whether the session is responded locally. | boolean |
-| zeek.connection.missed_bytes | Missed bytes for the session. | long |
-| zeek.connection.state | Code indicating the state of the session. | keyword |
-| zeek.connection.state_message | The state of the session. | keyword |
-| zeek.connection.vlan | VLAN identifier. | integer |
-| zeek.session_id | A unique identifier of the session | keyword |
 
 
 ### dce_rpc
@@ -219,6 +219,11 @@ contains Distributed Computing Environment/RPC data.
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| corelight.dce_rpc.endpoint | Endpoint name looked up from the uuid. | keyword |
+| corelight.dce_rpc.named_pipe | Remote pipe name. | keyword |
+| corelight.dce_rpc.operation | Operation seen in the call. | keyword |
+| corelight.dce_rpc.rtt | Round trip time from the request to the response. If either the request or response wasn't seen, this will be null. | integer |
+| corelight.session_id | A unique identifier of the session | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -289,11 +294,6 @@ contains Distributed Computing Environment/RPC data.
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| zeek.dce_rpc.endpoint | Endpoint name looked up from the uuid. | keyword |
-| zeek.dce_rpc.named_pipe | Remote pipe name. | keyword |
-| zeek.dce_rpc.operation | Operation seen in the call. | keyword |
-| zeek.dce_rpc.rtt | Round trip time from the request to the response. If either the request or response wasn't seen, this will be null. | integer |
-| zeek.session_id | A unique identifier of the session | keyword |
 
 
 ### dhcp
@@ -320,6 +320,26 @@ DHCP lease data.
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| corelight.dhcp.address.assigned | IP address assigned by the server. | ip |
+| corelight.dhcp.address.client | IP address of the client. If a transaction is only a client sending INFORM messages then there is no lease information exchanged so this is helpful to know who sent the messages. Getting an address in this field does require that the client sources at least one DHCP message using a non-broadcast address. | ip |
+| corelight.dhcp.address.mac | Client's hardware address. | keyword |
+| corelight.dhcp.address.requested | IP address requested by the client. | ip |
+| corelight.dhcp.address.server | IP address of the DHCP server. | ip |
+| corelight.dhcp.client_fqdn | FQDN given by client in Client FQDN option 81. | keyword |
+| corelight.dhcp.domain | Domain given by the server in option 15. | keyword |
+| corelight.dhcp.duration | Duration of the DHCP session representing the time from the first message to the last, in seconds. | double |
+| corelight.dhcp.hostname | Name given by client in Hostname option 12. | keyword |
+| corelight.dhcp.id.circuit | (present if policy/protocols/dhcp/sub-opts.bro is loaded) Added by DHCP relay agents which terminate switched or permanent circuits. It encodes an agent-local identifier of the circuit from which a DHCP client-to-server packet was received. Typically it should represent a router or switch interface number. | keyword |
+| corelight.dhcp.id.remote_agent | (present if policy/protocols/dhcp/sub-opts.bro is loaded) A globally unique identifier added by relay agents to identify the remote host end of the circuit. | keyword |
+| corelight.dhcp.id.subscriber | (present if policy/protocols/dhcp/sub-opts.bro is loaded) The subscriber ID is a value independent of the physical network configuration so that a customer's DHCP configuration can be given to them correctly no matter where they are physically connected. | keyword |
+| corelight.dhcp.lease_time | IP address lease interval in seconds. | integer |
+| corelight.dhcp.msg.client | Message typically accompanied with a DHCP_DECLINE so the client can tell the server why it rejected an address. | keyword |
+| corelight.dhcp.msg.origin | (present if policy/protocols/dhcp/msg-orig.bro is loaded) The address that originated each message from the msg.types field. | ip |
+| corelight.dhcp.msg.server | Message typically accompanied with a DHCP_NAK to let the client know why it rejected the request. | keyword |
+| corelight.dhcp.msg.types | List of DHCP message types seen in this exchange. | keyword |
+| corelight.dhcp.software.client | (present if policy/protocols/dhcp/software.bro is loaded) Software reported by the client in the vendor_class option. | keyword |
+| corelight.dhcp.software.server | (present if policy/protocols/dhcp/software.bro is loaded) Software reported by the client in the vendor_class option. | keyword |
+| corelight.session_id | A unique identifier of the session | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -367,25 +387,6 @@ DHCP lease data.
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| zeek.dhcp.address.assigned | IP address assigned by the server. | ip |
-| zeek.dhcp.address.client | IP address of the client. If a transaction is only a client sending INFORM messages then there is no lease information exchanged so this is helpful to know who sent the messages. Getting an address in this field does require that the client sources at least one DHCP message using a non-broadcast address. | ip |
-| zeek.dhcp.address.mac | Client's hardware address. | keyword |
-| zeek.dhcp.address.requested | IP address requested by the client. | ip |
-| zeek.dhcp.address.server | IP address of the DHCP server. | ip |
-| zeek.dhcp.client_fqdn | FQDN given by client in Client FQDN option 81. | keyword |
-| zeek.dhcp.domain | Domain given by the server in option 15. | keyword |
-| zeek.dhcp.duration | Duration of the DHCP session representing the time from the first message to the last, in seconds. | double |
-| zeek.dhcp.hostname | Name given by client in Hostname option 12. | keyword |
-| zeek.dhcp.id.circuit | (present if policy/protocols/dhcp/sub-opts.bro is loaded) Added by DHCP relay agents which terminate switched or permanent circuits. It encodes an agent-local identifier of the circuit from which a DHCP client-to-server packet was received. Typically it should represent a router or switch interface number. | keyword |
-| zeek.dhcp.id.remote_agent | (present if policy/protocols/dhcp/sub-opts.bro is loaded) A globally unique identifier added by relay agents to identify the remote host end of the circuit. | keyword |
-| zeek.dhcp.id.subscriber | (present if policy/protocols/dhcp/sub-opts.bro is loaded) The subscriber ID is a value independent of the physical network configuration so that a customer's DHCP configuration can be given to them correctly no matter where they are physically connected. | keyword |
-| zeek.dhcp.lease_time | IP address lease interval in seconds. | integer |
-| zeek.dhcp.msg.client | Message typically accompanied with a DHCP_DECLINE so the client can tell the server why it rejected an address. | keyword |
-| zeek.dhcp.msg.origin | (present if policy/protocols/dhcp/msg-orig.bro is loaded) The address that originated each message from the msg.types field. | ip |
-| zeek.dhcp.msg.server | Message typically accompanied with a DHCP_NAK to let the client know why it rejected the request. | keyword |
-| zeek.dhcp.msg.types | List of DHCP message types seen in this exchange. | keyword |
-| zeek.dhcp.software.client | (present if policy/protocols/dhcp/software.bro is loaded) Software reported by the client in the vendor_class option. | keyword |
-| zeek.dhcp.software.server | (present if policy/protocols/dhcp/software.bro is loaded) Software reported by the client in the vendor_class option. | keyword |
 | zeek.session_id | A unique identifier of the session | keyword |
 
 
