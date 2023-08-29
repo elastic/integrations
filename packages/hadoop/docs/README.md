@@ -12,7 +12,7 @@ This integration uses Resource Manager API and JMX API to collect above metrics.
 
 ## Compatibility
 
-This integration has been tested against Hadoop versions `3.3.1`.
+This integration has been tested against Hadoop version `3.3.6`.
 
 ### Troubleshooting
 
