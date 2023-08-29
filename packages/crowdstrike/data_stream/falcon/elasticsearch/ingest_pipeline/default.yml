@@ -35,7 +35,49 @@ processors:
       type: string
       tag: convert_pattern_id
       ignore_missing: true
+  # Script to convert windows NT timestamp to unix timestamp
+  - script:
+        tag: convert-nt-timestamp-to-unix
+        description: Convert Windows NT timestamps to UNIX timestamps for multiple fields.
+        lang: painless
+        if : ctx.crowdstrike?.event != null
+        params:
+            values:
+                - 'StartTime'
+                - 'EndTime'
+                - 'ContextTimeStamp'
+                - 'EndTimestamp'
+                - 'IncidentEndTime'
+                - 'IncidentStartTime'
+                - 'ItemPostedTimestamp'
+                - 'MatchedTimestamp'
+                - 'MostRecentActivityTimeStamp'
+                - 'PrecedingActivityTimeStamp'
+                - 'StartTimestamp'
+                - 'UTCTimestamp'
+# Process to convert LDAP/WIN32 FILETIME to Unix timestamp. 
+# More details can be found here https://devblogs.microsoft.com/oldnewthing/20030905-02/?p=42653 and here https://www.epochconverter.com/ldap
+        source: |
+            def convertToUnix(def longValue) {
+                if (longValue > 0x0100000000000000L) {
+                    return (longValue / 10000000) - 11644473600L;
+                }
+                return longValue;
+            }
 
+            for (def field : params.values) {
+                def fieldValue = ctx.crowdstrike.event[field];
+                if (fieldValue != null) {
+                    if (fieldValue instanceof long) {
+                         ctx.crowdstrike.event[field] = convertToUnix(fieldValue);
+                    } else if (fieldValue instanceof String) {
+                        if (!fieldValue.contains('.')) {
+                           def timestamp = Long.parseLong(fieldValue);
+                            ctx.crowdstrike.event[field] = convertToUnix(timestamp);
+                        }
+                    }
+                } 
+            }
   # UTCTimestamp should exist in each event, however on the off-chance it might not be (Like RemoteSession Start/End), then we have to use eventCreation time.
   - date:
       field: crowdstrike.event.UTCTimestamp
