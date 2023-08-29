@@ -1,8 +1,8 @@
 # Microsoft SQL Server Integration
 
-The Microsoft SQL Server integration package allows you to search, observe and visualize the SQL Server audit logs and performance and transaction log metrics through Elasticsearch. 
+The Microsoft SQL Server integration package allows you to search, observe and visualize the SQL Server audit logs and performance and transaction log metrics through Elasticsearch.
 
-Auditing an instance of the SQL Server Database Engine or an individual database involves tracking and logging events that occur on the Database Engine. 
+Auditing an instance of the SQL Server Database Engine or an individual database involves tracking and logging events that occur on the Database Engine.
 
 SQL Server audit lets you create server audits, which can contain server audit specifications for server-level events, and database audit specifications for database-level events.
 
@@ -66,39 +66,45 @@ See: [Instructions on how to enable auditing for SQL Server](https://docs.micros
 
 > Note: For the integration package to be able to read and send audit events the event target must be configured to be Windows event log.
 
-### audit events
+### Audit events
 
-Enable to collect SQL Server audit events from the specified windows event log channel.
+Collects SQL Server audit events from the specified windows event log channel.
 
-### log
+### Log
 
 The SQL Server `log` contains user-defined events and certain system events you can use for troubleshooting.
 
 See: [View the SQL Server error log in SQL Server Management Studio](https://docs.microsoft.com/en-us/sql/relational-databases/performance/view-the-sql-server-error-log-sql-server-management-studio?view=sql-server-ver16)
 
-### performance metrics
+### Performance metrics
 
 Collects the `performance` counter metrics. The dynamic counter feature provides flexibility to collect metrics by providing the counter as an input.
 This input can be a regular expression which will filter results based on pattern.
 For example, if %grant% is given as input, it will enable metrics collection for all of the counters with names like 'Memory Grants Pending', 'Active memory grants count' etc.
-MSSQL supports a limited set of regular expression, See [here] (https://learn.microsoft.com/en-us/previous-versions/sql/sql-server-2008-r2/ms187489(v=sql.105)?redirectedfrom=MSDN) for details.
+MSSQL supports a limited set of regular expressions, See [here] (https://learn.microsoft.com/en-us/previous-versions/sql/sql-server-2008-r2/ms187489(v=sql.105)?redirectedfrom=MSDN) for details.
 
-> Note: Dynamic counters will go through some basic ingest pipeline post-processing to make counter names in lower case and remove special characters and these fields will not have any static field mappings.
+> Note: Dynamic counters will go through some basic ingest pipeline post-processing to make counter names in lowercase and remove special characters and these fields will not have any static field mappings.
 
-The feature `merge_results` has been introduced in 8.4 beats which create a single event by combining the metrics together in a single event. See [here](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-sql.html#_example_merge_multiple_queries_to_single_event) for details.
+The feature `merge_results` has been introduced in 8.4 beats which creates a single event by combining the metrics together in a single event. See [here](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-sql.html#_example_merge_multiple_queries_to_single_event) for details.
 
 See: [Instructions about each performance counter metrics](https://docs.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver15)
 
-### transaction_log metrics
+### Transaction log metrics
 
 Collects system level `transaction_log` metrics information for SQL Server instance.
-Metrics for user level databases can be collected by providing list of user dbs for which metrics is to be collected.
+Metrics for user-level databases can be collected by providing a list of user databases for which metrics are to be collected.
 
 See: [Instructions and the operations supported by transaction log](https://docs.microsoft.com/en-us/sql/relational-databases/logs/the-transaction-log-sql-server?view=sql-server-ver15)
 
 ### Password URL encoding
 
 When there are special characters in the password, pass the special characters by using URL encoding.
+
+### Fetch from all databases
+
+To simplify the process of fetching metrics from all databases on the server, you can enable the `fetch_from_all_databases` (boolean field) when configuring the integration. This field overrides manually entered database names in the `Databases` field and instead fetches the required `transaction_log` metrics from all databases, including system and user-defined databases. 
+
+Keep in mind that this feature is set to `false` by default and needs to be manually set to `true` to be activated.
 
 ## Logs
 
@@ -269,7 +275,7 @@ The SQL Server audit dataset provides events from the configured Windows event l
 
 ### log
 
-The Microsoft SQL Server `log` dataset parses error logs created by Microsoft SQL server.
+The Microsoft SQL Server `log` dataset parses error logs created by the Microsoft SQL server.
 
 An example event for `log` looks as following:
 
@@ -409,7 +415,7 @@ An example event for `log` looks as following:
 
 ### performance
 
-The Microsoft SQL Server `performance` dataset provides metrics from the performance counter table. All `performance` metrics will be available in `sqlserver.metrics` field group.
+The Microsoft SQL Server `performance` dataset provides metrics from the performance counter table. All `performance` metrics will be available in the `sqlserver.metrics` field group.
 
 An example event for `performance` looks as following:
 
@@ -583,7 +589,7 @@ An example event for `performance` looks as following:
 
 ### transaction_log
 
-The Microsoft SQL Server `transaction_log` dataset provides metrics from the log space usage and log stats tables of the system databases. All `transaction_log` metrics will be available in `sqlserver.metrics` field group.
+The Microsoft SQL Server `transaction_log` dataset provides metrics from the log space usage and log stats tables of the system databases. All `transaction_log` metrics will be available in the `sqlserver.metrics` field group.
 
 An example event for `transaction_log` looks as following:
 
