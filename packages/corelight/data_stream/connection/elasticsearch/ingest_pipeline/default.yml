@@ -1,0 +1,251 @@
+---
+description: Corelight Connection pipeline. 
+processors:
+- set:
+    field: temporary_metadata_index_name_suffix
+    value: conn
+    ignore_failure: false
+- set:
+    field: event.category
+    value: network
+- rename:
+    field: proto
+    target_field: network.transport
+    ignore_missing: true
+- rename:
+    field: suri_ids
+    target_field: log.id.suri_ids
+    ignore_missing: true
+- rename:
+    field: tunnel_parents
+    target_field: log.id.tunnel_parents
+    ignore_missing: true
+- rename:
+    field: orig_bytes
+    target_field: source.bytes
+    ignore_missing: true
+- rename:
+    field: orig_ip_bytes
+    target_field: source.ip_bytes
+    ignore_missing: true
+- rename:
+    field: resp_ip_bytes
+    target_field: destination.ip_bytes
+    ignore_missing: true
+- rename:
+    field: orig_l2_addr
+    target_field: source.mac
+    ignore_missing: true
+- script:
+    source: if (ctx?.local_orig == null || ctx?.local_resp == null) {ctx.network.direction
+      = "unknown"; return;} if (ctx.local_orig == true && ctx.local_resp == true)
+      {ctx.network.direction = "internal"; return;} if (ctx.local_orig == true &&ctx.local_resp
+      == false) {ctx.network.direction = "outbound"; return;} if (ctx.local_orig ==
+      false &&ctx.local_resp == true) {ctx.network.direction = "inbound"; return;}
+      if (ctx.local_orig == false && ctx.local_resp == false) {ctx.network.direction
+      = "external"; return;}
+- rename:
+    field: network_direction
+    target_field: network.direction
+    ignore_missing: true
+- rename:
+    field: local_orig
+    target_field: conn.local_orig
+    ignore_missing: true
+- rename:
+    field: local_resp
+    target_field: conn.local_resp
+    ignore_missing: true
+- script:
+    lang: painless
+    source: ctx.event.duration = Math.round(ctx.duration * params.multiply_by); ctx.remove('duration')
+    params:
+      multiply_by: 1000000000
+    ignore_failure: false
+    if: ctx.duration != null
+- rename:
+    field: resp_bytes
+    target_field: destination.bytes
+    ignore_missing: true
+- script:
+    lang: painless
+    source: ctx.network_bytes = ctx.source.bytes + ctx.destination.bytes
+    ignore_failure: true
+- rename:
+    field: network_bytes
+    target_field: network.bytes
+    ignore_missing: true
+- rename:
+    field: history
+    target_field: network.connection.history
+    ignore_missing: true
+- script:
+    lang: painless
+    source: ctx.network_ip_bytes = ctx.source.ip_bytes + ctx.destination.ip_bytes
+    ignore_failure: true
+- rename:
+    field: network_ip_bytes
+    target_field: network.ip_bytes
+    ignore_missing: true
+- rename:
+    field: missed_bytes
+    target_field: network.missed_bytes
+    ignore_missing: true
+- rename:
+    field: orig_pkts
+    target_field: source.packets
+    ignore_missing: true
+- rename:
+    field: resp_pkts
+    target_field: destination.packets
+    ignore_missing: true
+- script:
+    lang: painless
+    source: ctx.network.packets = ctx.source.packets + ctx.destination.packets
+    ignore_failure: true
+- rename:
+    field: service
+    target_field: network.protocol
+    ignore_missing: true
+- rename:
+    field: resp_l2_addr
+    target_field: destination.mac
+    ignore_missing: true
+- rename:
+    field: cache_add_rx_ev
+    target_field: conn.cache_add_rx_ev
+    ignore_missing: true
+- rename:
+    field: cache_add_rx_mpg
+    target_field: conn.cache_add_rx_mpg
+    ignore_missing: true
+- rename:
+    field: cache_add_rx_new
+    target_field: conn.cache_add_rx_new
+    ignore_missing: true
+- rename:
+    field: cache_add_tx_ev
+    target_field: conn.cache_add_tx_ev
+    ignore_missing: true
+- rename:
+    field: cache_add_tx_mpg
+    target_field: conn.cache_add_tx_mpg
+    ignore_missing: true
+- rename:
+    field: cache_del_mpg
+    target_field: conn.cache_del_mpg
+    ignore_missing: true
+- rename:
+    field: cache_entries
+    target_field: conn.cache_entries
+    ignore_missing: true
+- rename:
+    field: community_id
+    target_field: network.community_id
+    ignore_missing: true
+- rename:
+    field: corelight_shunted
+    target_field: conn.corelight_shunted
+    ignore_missing: true
+- dot_expander:
+    field: id.orig_h_name.src
+    ignore_failure: true
+    if: "(ctx['id.orig_h_name.src'] != null )"
+- dot_expander:
+    field: id.orig_h_name.vals
+    ignore_failure: true
+    if: "(ctx['id.orig_h_name.vals'] != null )"
+- dot_expander:
+    field: id.resp_h_name.src
+    ignore_failure: true
+    if: "(ctx['id.resp_h_name.src'] != null )"
+- dot_expander:
+    field: id.resp_h_name.vals
+    ignore_failure: true
+    if: "(ctx['id.resp_h_name.vals'] != null )"
+- rename:
+    field: id.orig_h_name.src
+    target_field: conn.id.orig_h_name.src
+    ignore_failure: true
+- rename:
+    field: id.orig_h_name.vals
+    target_field: conn.id.orig_h_name.vals
+    ignore_missing: true
+- rename:
+    field: id.resp_h_name.src
+    target_field: conn.id.resp_h_name.src
+    ignore_missing: true
+- rename:
+    field: id.resp_h_name.vals
+    target_field: conn.id.resp_h_name.vals
+    ignore_missing: true
+- rename:
+    field: orig_shunted_bytes
+    target_field: conn.orig_shunted_bytes
+    ignore_missing: true
+- rename:
+    field: orig_shunted_pkts
+    target_field: conn.orig_shunted_pkts
+    ignore_missing: true
+- rename:
+    field: resp_shunted_bytes
+    target_field: conn.resp_shunted_bytes
+    ignore_missing: true
+- rename:
+    field: resp_shunted_pkts
+    target_field: conn.resp_shunted_pkts
+    ignore_missing: true
+- rename:
+    field: app
+    target_field: network.application
+    ignore_missing: true
+- remove:
+    field:
+    - id
+    - id.orig_h_name.src
+    - id.orig_h_name.vals
+    - id.resp_h_name.src
+    - id.resp_h_name.vals
+    ignore_failure: true
+    ignore_missing: true
+- rename:
+    field: resp_cc
+    target_field: destination.geo.country_iso_code
+    ignore_missing: true
+- rename:
+    field: orig_cc
+    target_field: source.geo.country_iso_code
+    ignore_missing: true
+- dot_expander:
+    field: spcap.rule
+    ignore_failure: true
+    if: "(ctx['spcap.rule'] != null )"
+- dot_expander:
+    field: spcap.trigger
+    ignore_failure: true
+    if: "(ctx['spcap.trigger'] != null )"
+- dot_expander:
+    field: spcap.url
+    ignore_failure: true
+    if: "(ctx['spcap.url'] != null )"
+- rename:
+    field: spcap.rule
+    target_field: labels.corelight.spcap.rule
+    ignore_missing: true
+- rename:
+    field: spcap.trigger
+    target_field: labels.corelight.spcap_trigger
+    ignore_missing: true
+- rename:
+    field: spcap.url
+    target_field: labels.corelight.spcap_url
+    ignore_missing: true
+- rename:
+    field: id_vlan
+    target_field: network.vlan.id
+    if: ctx?.id_vlan != null && ctx?.network?.vlan?.id == null
+- remove:
+    field:
+    - id
+    - id_vlan
+    ignore_missing: true

@@ -1,0 +1,84 @@
+type: logs
+title: Zeek files logs
+streams:
+  - input: logfile
+    vars:
+      - name: filenames
+        type: text
+        title: Filename of the files log file
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - files.log
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - zeek-files
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+    template_path: log.yml.hbs
+    title: Zeek files.log
+    description: Collect Zeek files logs
+  - input: httpjson
+    title: Zeek files logs via Splunk Enterprise REST API
+    description: Collect Zeek files logs via Splunk Enterprise REST API
+    enabled: false
+    template_path: httpjson.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval to query Splunk Enterprise REST API
+        description: Go Duration syntax (eg. 10s)
+        show_user: true
+        required: true
+        default: 10s
+      - name: search
+        type: text
+        title: Splunk search string
+        show_user: true
+        required: true
+        default: "search sourcetype=\"files-*\""
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        default:
+          - forwarded
+          - zeek-files
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

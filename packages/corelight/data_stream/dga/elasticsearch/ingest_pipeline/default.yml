@@ -1,0 +1,77 @@
+---
+description: Corelight DGA pipeline. 
+processors:
+- set:
+    field: temporary_metadata_index_name_suffix
+    value: various
+    ignore_failure: false
+- set:
+    field: event.category
+    value: intrusion_detection
+    ignore_failure: true
+- set:
+    field: network.protocol
+    value: dns
+    ignore_failure: true
+- set:
+    field: event.id
+    value: "{{id}}"
+    ignore_failure: true
+    if: ctx.id != null
+- rename:
+    field: id
+    target_field: log.id.id
+    ignore_failure: true
+- rename:
+    field: qtype_name
+    target_field: dns.question.type
+    ignore_failure: true
+- set:
+    field: destination.domain
+    value: "{{query}}"
+    ignore_failure: true
+    if: ctx.query != null
+- script:
+    lang: painless
+    source: ctx.length = ctx.query.length()
+    if: ctx.query != null
+- rename:
+    field: length
+    target_field: labels.dns.query_length
+    ignore_failure: true
+- script:
+    lang: painless
+    source: ctx.dns.question.registered_domain = ctx.destination.domain.substring(ctx.destination.domain.indexOf('.')+1)
+    ignore_failure: true
+- rename:
+    field: query
+    target_field: dns.question.name
+    ignore_failure: true
+- rename:
+    field: rcode
+    target_field: dns.status_code
+    ignore_failure: true
+- rename:
+    field: qtype_name
+    target_field: dns.question.type
+    ignore_failure: true
+- set:
+    field: rule.name
+    value: DGA
+    ignore_failure: true
+- set:
+    field: rule.category
+    value: "{{family}}"
+    ignore_failure: true
+- rename:
+    field: family
+    target_field: dga.family
+    ignore_failure: true
+- rename:
+    field: is_collision_heavy
+    target_field: dga.is_collision_heavy
+    ignore_failure: true
+- rename:
+    field: ruse
+    target_field: dga.ruse
+    ignore_failure: true

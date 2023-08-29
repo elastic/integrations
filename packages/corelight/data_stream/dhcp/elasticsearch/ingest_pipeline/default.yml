@@ -1,0 +1,134 @@
+---
+description: Corelight DHCP pipeline. 
+processors:
+- set:
+    field: temporary_metadata_index_name_suffix
+    value: various
+    ignore_failure: false
+- set:
+    field: event.category
+    value: network
+    ignore_failure: true
+- set:
+    field: event.id
+    value: "{{uids}}"
+    ignore_failure: true
+    if: ctx.uids != null
+- set:
+    field: log.id.uids
+    value: "{{uids}}"
+    ignore_failure: true
+    if: ctx.uids != null
+- remove:
+    field: uids
+    ignore_failure: true
+    ignore_missing: true
+- set:
+    field: source.address
+    value: "{{client_addr}}"
+    ignore_failure: true
+    if: ctx.client_addr != null
+- rename:
+    field: client_addr
+    target_field: source.ip
+    ignore_failure: true
+- set:
+    field: destination.address
+    value: "{{server_addr}}"
+    ignore_failure: true
+    if: ctx.server_addr != null
+- rename:
+    field: server_addr
+    target_field: destination.ip
+    ignore_failure: true
+- rename:
+    field: host_name
+    target_field: source.hostname
+    ignore_failure: true
+- rename:
+    field: lease_time
+    target_field: dhcp.lease_time
+    ignore_failure: true
+- rename:
+    field: agent_remote_id
+    target_field: dhcp.agent_remote_id
+    ignore_failure: true
+- rename:
+    field: assigned_addr
+    target_field: dhcp.assigned_addr
+    ignore_failure: true
+- rename:
+    field: circuit_id
+    target_field: dhcp.circuit_id
+    ignore_failure: true
+- rename:
+    field: client_message
+    target_field: dhcp.client_message
+    ignore_failure: true
+- rename:
+    field: client_fqdn
+    target_field: source.fqdn
+    ignore_failure: true
+- rename:
+    field: mac
+    target_field: source.mac
+    ignore_failure: true
+- rename:
+    field: msg_orig
+    target_field: dhcp.msg_orig
+    ignore_failure: true
+- rename:
+    field: msg_types
+    target_field: dhcp.msg_types
+    ignore_failure: true
+- set:
+    field: source.port
+    value: 68
+    ignore_failure: true
+- set:
+    field: destination.port
+    value: 67
+    ignore_failure: true
+- rename:
+    field: requested_addr
+    target_field: dhcp.requested_addr
+    ignore_failure: true
+- rename:
+    field: server_message
+    target_field: dhcp.server_message
+    ignore_failure: true
+- rename:
+    field: domain
+    target_field: source.domain
+    ignore_failure: true
+- rename:
+    field: subscriber_id
+    target_field: dhcp.subscriber_id
+    ignore_failure: true
+- rename:
+    field: client_software
+    target_field: source.software.original
+    ignore_failure: true
+- rename:
+    field: server_software
+    target_field: destination.software.original
+    ignore_failure: true
+- set:
+    field: network.transport
+    value: udp
+    ignore_failure: true
+- convert:
+    field: duration
+    type: float
+    ignore_failure: true
+- script:
+    lang: painless
+    source: ctx.event.duration = (long)(ctx.duration * params.param_c)
+    params:
+      param_c: 1000000000
+    ignore_failure: true
+- remove:
+    field:
+    - duration
+    - id
+    ignore_failure: true
