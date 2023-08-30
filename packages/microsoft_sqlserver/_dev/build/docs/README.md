@@ -96,15 +96,15 @@ Metrics for user-level databases can be collected by providing a list of user da
 
 See: [Instructions and the operations supported by transaction log](https://docs.microsoft.com/en-us/sql/relational-databases/logs/the-transaction-log-sql-server?view=sql-server-ver15)
 
+### Fetch from all databases
+
+To simplify the process of fetching metrics from all databases on the server, you can enable the `fetch_from_all_databases` toggle when configuring the integration. This field overrides manually entered database names in the `Databases` input and instead fetches the required `transaction_log` metrics from all databases, including system and user-defined databases.
+
+Keep in mind that this feature is disabled by default and needs to be manually enabled to be activated.
+
 ### Password URL encoding
 
 When there are special characters in the password, pass the special characters by using URL encoding.
-
-### Fetch from all databases
-
-To simplify the process of fetching metrics from all databases on the server, you can enable the `fetch_from_all_databases` (boolean field) when configuring the integration. This field overrides manually entered database names in the `Databases` field and instead fetches the required `transaction_log` metrics from all databases, including system and user-defined databases. 
-
-Keep in mind that this feature is set to `false` by default and needs to be manually set to `true` to be activated.
 
 ## Logs
 
