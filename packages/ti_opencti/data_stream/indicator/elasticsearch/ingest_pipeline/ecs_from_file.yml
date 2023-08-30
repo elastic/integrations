@@ -42,14 +42,33 @@ processors:
           }
           if (result.length == 0) {
             ctx.threat.indicator._file.remove("name");
-          } else if (result.length == 1) {
-            ctx.threat.indicator._file.name = result[0];
           } else {
             ctx.threat.indicator._file.name = result;
           }
         }
 
-  # TODO: extract extension from names?
+  - script:
+      description: Get file extensions from file names
+      lang: painless
+      source: |
+        if (ctx.threat.indicator._file.name != null) {
+          def result = [];
+          for (fullname in ctx.threat.indicator._file.name) {
+            // name shouldn't have a directory, but do strip it if it's there
+            def parts = /[\/\\]/.split(fullname);
+            def name = parts[parts.length - 1];
+            if (name.contains(".")) {
+              def nameParts = /\./.split(name);
+              def extension = nameParts[nameParts.length - 1];
+              if (extension.length() > 0) {
+                result.add(extension);
+              }
+            }
+          }
+          if (result.length > 0) {
+            ctx.threat.indicator._file.extension = result;
+          }
+        }
 
   - set:
       field: threat.indicator._file.mime_type
