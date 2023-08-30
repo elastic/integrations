@@ -30,3 +30,29 @@
       type: keyword
       ignore_above: 1024
       description: Elastic agent version.
+
+# Metrics currently logged in "Non-zero metrics in the last 30s" logs
+# TODO: Update Agent to move these to the "metrics" data streams
+# Note: none of thes metric_type fields are used on logs data streams
+- name: monitoring.metrics.libbeat.pipeline
+  type: group
+  fields:
+    - name: events
+      type: group
+      fields:
+        - name: active
+          type: long
+          metric_type: gauge
+          description: Number of events currently in the pipeline
+        - name: published
+          type: long
+          metric_type: counter
+          description: Number of events published by the pipeline
+        - name: total
+          type: long
+          metric_type: counter
+          description: Number of events by the pipeline
+    - name: queue.acked
+      type: long
+      metric_type: counter
+      description: Number of events by the pipeline
