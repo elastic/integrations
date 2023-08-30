@@ -123,6 +123,10 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline_identity_stores_diagnostics" }}'
       if: ctx.cisco_ise?.log?.category?.name == "CISE_Identity_Stores_Diagnostics"
+  - set:
+      field: host.ip
+      value: ['{{{host.ip}}}']
+      if: ctx.host?.ip instanceof String
   - convert:
       field: cisco_ise.log.log_details.ConfigVersionId
       target_field: cisco_ise.log.config_version.id
