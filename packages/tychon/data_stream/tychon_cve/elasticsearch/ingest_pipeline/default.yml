@@ -4,9 +4,6 @@ processors:
   - dot_expander:
       field: "*"
   - set:
-      field: _id
-      value: "{{id}}"
-  - set:
       field: "@timestamp"
       value: "{{_ingest.timestamp}}"
   - set:
@@ -25,6 +22,9 @@ processors:
   - set:
       field: event.module
       value: tychon
+  - set:
+      field: host.uptime
+      value: "{{host.uptime}}"
   - split:
       field: host.uptime
       separator: "\\.+"
@@ -36,7 +36,7 @@ processors:
       field: tempuptime
   - set:
       field: event.category
-      value: [vulnerability]
+      value: vulnerability
   - script:
       source: |
               if(ctx.vulnerability?.result == 'fail'){
@@ -64,7 +64,7 @@ processors:
       value: tychon
   - set:
       field: vulnerability.category
-      value: [oval]
+      value: oval
   - set:
       field: vulnerability.classification
       value: cvss

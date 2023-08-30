@@ -4,13 +4,6 @@ processors:
   - dot_expander:
       field: "*"
   - set:
-      if: "!(ctx.containsKey('id'))"
-      field: id
-      value: '{{host.id}}'  
-  - set:      
-      field: _id
-      value: '{{id}}'     
-  - set:
       field: '@timestamp'
       value: '{{_ingest.timestamp}}'
   - set:
@@ -34,10 +27,16 @@ processors:
       value: tychon
   - set:
       field: event.category
-      value: [host]
-  - convert:
+      value: stig
+  - split:
       field: host.uptime
-      type: long
+      separator: "\\.+"
+      target_field: tempuptime
+  - set:
+      field: host.uptime
+      value: "{{tempuptime.0}}"
+  - remove:
+      field: tempuptime
   - convert:
       field: host.uptime
       type: long
