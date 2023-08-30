@@ -61,6 +61,12 @@ Here is an example where we route the container logs for a pod running the Elast
 kubectl -n kube-system label pods elastic-agent-managed-daemonset-6p22g elastic.co/dataset=kubernetes.container_logs.agents
 ```
 
+Here's a similar example to change the namespace on a pod running Nginx:
+
+```shell
+kubectl -n kube-system label pods elastic-agent-managed-daemonset-6p22g elastic.co/namespace=nginx
+```
+
 ### Labels Reference
 
 Here are the labels available for customization:
