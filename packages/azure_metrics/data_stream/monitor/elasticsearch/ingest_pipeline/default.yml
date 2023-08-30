@@ -1,0 +1,14 @@
+---
+description: Pipeline for parsing azure monitor metrics.
+processors:
+  - fingerprint:
+      fields: ["azure.dimensions"]
+      target_field: 'azure.dimensions.fingerprint'
+      ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - set:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
