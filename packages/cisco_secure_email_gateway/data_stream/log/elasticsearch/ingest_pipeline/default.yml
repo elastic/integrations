@@ -109,6 +109,14 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline_consolidated_event" }}'
       if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'consolidated_event'
+  - set:
+      field: email.from.address
+      value: ['{{{email.from.address}}}']
+      if: ctx.email?.from?.address instanceof String
+  - set:
+      field: email.to.address
+      value: ['{{{email.to.address}}}']
+      if: ctx.email?.to?.address instanceof String
   - remove:
       field:
         - _tmp
