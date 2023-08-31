@@ -202,11 +202,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2023-03-17T18:24:37.000Z",
     "agent": {
-        "ephemeral_id": "ad16a5f3-74d8-4f65-96c6-5d2fd1d8d0c0",
-        "id": "057e0b9b-e20a-4d3b-9276-cb2e5cb7bb53",
+        "ephemeral_id": "8bbd9c9d-bc30-42ce-bf39-89d3f9b042c3",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.9.1"
     },
     "cisco_secure_email_gateway": {
         "log": {
@@ -225,9 +225,9 @@ An example event for `log` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "057e0b9b-e20a-4d3b-9276-cb2e5cb7bb53",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.9.1"
     },
     "email": {
         "attachments": {
@@ -242,7 +242,7 @@ An example event for `log` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "cisco_secure_email_gateway.log",
-        "ingested": "2023-04-07T06:11:54Z",
+        "ingested": "2023-08-29T17:41:06Z",
         "kind": "event",
         "timezone": "UTC"
     },
@@ -252,7 +252,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "info",
         "source": {
-            "address": "172.30.0.7:52815"
+            "address": "172.21.0.4:41169"
         },
         "syslog": {
             "priority": 166
@@ -328,7 +328,7 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.details | Additional information. | text |
 | cisco_secure_email_gateway.log.device_direction |  | keyword |
 | cisco_secure_email_gateway.log.disk_io | Disk I/O Utilization. | long |
-| cisco_secure_email_gateway.log.disposition |  | keyword |
+| cisco_secure_email_gateway.log.disposition | The file reputation disposition values are: MALICIOUS CLEAN FILE UNKNOWN - When the reputation score is zero. VERDICT UNKNOWN - When the disposition is FILE UNKNOWN and score is non-zero. LOW RISK - When no dynamic content is found in a file after file analysis, the verdict is Low Risk. The file is not sent for file analysis, and the message continues through the email pipeline. | keyword |
 | cisco_secure_email_gateway.log.dns.hard_bounces | DNS Hard Bounces. | long |
 | cisco_secure_email_gateway.log.dns.requests | DNS Requests. | long |
 | cisco_secure_email_gateway.log.dropped_messages | Dropped Messages. | long |
@@ -449,7 +449,7 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.unattempted_recipients | Unattempted Recipients. | long |
 | cisco_secure_email_gateway.log.update.timestamp | The date and time at which the file analysis for the file is complete. | date |
 | cisco_secure_email_gateway.log.upload.action | The upload action value recommended by the file reputation server to take on the given file  0 - Need not send for upload. 1 - Send file for upload. Note 	 The email gateway uploads the file when the upload action value is ‘1.’. 2 - Do not send file for upload. 3 - Send only metadata for upload. | keyword |
-| cisco_secure_email_gateway.log.upload.priority |  | keyword |
+| cisco_secure_email_gateway.log.upload.priority | Upload priority values are: High - For all selected file types, except PDF file type. Low - For only PDF file types. | keyword |
 | cisco_secure_email_gateway.log.vendor_action |  | keyword |
 | cisco_secure_email_gateway.log.verdict | The file retrospective verdict value is malicious or clean. | keyword |
 | cisco_secure_email_gateway.log.verified |  | keyword |
@@ -513,7 +513,7 @@ An example event for `log` looks as following:
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
-| input.type |  | keyword |
+| input.type | Input type. | keyword |
 | log.file.path | File path from which the log event was read / sent from. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Log offset. | long |
