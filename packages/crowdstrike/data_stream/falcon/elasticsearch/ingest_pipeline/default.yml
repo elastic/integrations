@@ -78,6 +78,33 @@ processors:
                     }
                 } 
             }
+  # Handle event Tags
+  - split:
+      field: ctx.crowdstrike.event?.Tags
+      if: ctx.crowdstrike.event?.Tags != null && ctx.crowdstrike.event?.Tags instanceof String
+      separator: ",\\s?"
+      ignore_missing: true
+      ignore_failure: true
+  - script:
+      tag: convert-Tags-and-copy-to-tags
+      description: Convert tags to nested type.
+      lang: painless
+      ignore_failure: true
+      if : ctx.crowdstrike?.event != null && ctx.crowdstrike.event.Tags != null
+      source: |
+            if (ctx.crowdstrike.event.Tags instanceof List) {
+                for (tag in ctx.crowdstrike.event.Tags) {
+                    if (tag instanceof Map) {
+                      ctx.tags.add(tag["Key"] + ":" + tag["ValueString"]);
+                    } else if (tag instanceof String) {
+                        ctx.tags.add(tag);
+                    } else if (tag instanceof String){
+                        ctx.tags.add(tag);
+                    }
+                }
+            } else if (ctx.crowdstrike.event.Tags instanceof String) {
+                ctx.tags.add(ctx.crowdstrike.event.Tags);
+            }
   # UTCTimestamp should exist in each event, however on the off-chance it might not be (Like RemoteSession Start/End), then we have to use eventCreation time.
   - date:
       field: crowdstrike.event.UTCTimestamp
@@ -366,6 +393,7 @@ processors:
         - crowdstrike.event.StartTime
         - crowdstrike.event.Disposition
         - crowdstrike.event.MatchedTimestamp
+        - crowdstrike.event.Tags
       ignore_missing: true
 
 on_failure:
