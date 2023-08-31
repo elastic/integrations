@@ -26,3 +26,50 @@
       ignore_above: 1024
       description: Elastic agent version.
       example: 7.11.0
+
+- name: component
+  type: group
+  description: Agent component that the log message is about, only available on Elastic Agent 8.6.0+
+  fields:
+    - name: id
+      type: wildcard
+      ignore_above: 1024
+      description: Component id
+    - name: type
+      type: keyword
+      ignore_above: 1024
+      description: The type of the component
+    - name: binary
+      type: keyword
+      ignore_above: 1024
+      description: The binary that exeuctes the component
+      example: filebeat
+    - name: dataset
+      type: keyword
+      ignore_above: 1024
+
+# Metrics currently logged in "Non-zero metrics in the last 30s" logs
+# TODO: Update Agent to move these to the "metrics" data streams
+# Note: none of thes metric_type fields are used on logs data streams
+- name: monitoring.metrics.libbeat.pipeline
+  type: group
+  fields:
+    - name: events
+      type: group
+      fields:
+        - name: active
+          type: long
+          metric_type: gauge
+          description: Number of events currently in the pipeline. The maximum size is the configured queue size plus one event per event pipeline client.
+        - name: published
+          type: long
+          metric_type: counter
+          description: Number of events published by the pipeline
+        - name: total
+          type: long
+          metric_type: counter
+          description: Number of events processed by the pipeline
+    - name: queue.acked
+      type: long
+      metric_type: counter
+      description: Number of events successfully acknowledged by the output
