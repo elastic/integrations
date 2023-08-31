@@ -16,70 +16,66 @@ An example event for `am_access` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-10-05T18:21:48.248Z",
-    "client": {
-        "ip": "1.128.0.0"
+    "@timestamp": "2022-11-06T18:16:43.813Z",
+    "agent": {
+        "ephemeral_id": "d7b5cd10-b6c7-4ab2-8d07-043fb6d42e2b",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.9.1"
+    },
+    "data_stream": {
+        "dataset": "forgerock.am_access",
+        "namespace": "ep",
+        "type": "logs"
     },
     "ecs": {
         "version": "8.9.0"
     },
+    "elastic_agent": {
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "snapshot": false,
+        "version": "8.9.1"
+    },
     "event": {
-        "action": "AM-ACCESS-ATTEMPT",
-        "id": "45463f84-ff1b-499f-aa84-8d4bd93150de-256203",
+        "action": "AM-SESSION-IDLE_TIMED_OUT",
+        "agent_id_status": "verified",
+        "created": "2023-08-29T18:23:25.132Z",
+        "dataset": "forgerock.am_access",
+        "id": "688b24d9-968e-4a20-b471-9bd78f1e46ec-79599",
+        "ingested": "2023-08-29T18:23:28Z",
         "type": "access"
     },
     "forgerock": {
-        "eventName": "AM-ACCESS-ATTEMPT",
-        "http": {
-            "request": {
-                "headers": {
-                    "accept": [
-                        "text/plain,*/*"
-                    ],
-                    "content-type": [
-                        "application/x-www-form-urlencoded"
-                    ],
-                    "host": [
-                        "openam-chico-poc.forgeblocks.com"
-                    ],
-                    "user-agent": [
-                        "Jersey/2.34 (HttpUrlConnection 11.0.9)"
-                    ],
-                    "x-forwarded-for": [
-                        "34.94.38.177, 34.149.144.150, 10.168.0.8"
-                    ],
-                    "x-forwarded-proto": [
-                        "https"
-                    ]
-                },
-                "secure": true
-            }
-        },
+        "eventName": "AM-SESSION-IDLE_TIMED_OUT",
         "level": "INFO",
+        "objectId": "688b24d9-968e-4a20-b471-9bd78f1e46ec-13901",
         "realm": "/",
-        "request": {
-            "detail": {
-                "grant_type": "client_credentials",
-                "scope": "fr:idm:*"
-            }
-        },
         "source": "audit",
-        "topic": "access"
+        "topic": "activity",
+        "trackingIds": [
+            "688b24d9-968e-4a20-b471-9bd78f1e46ec-13901"
+        ]
     },
-    "http": {
-        "request": {
-            "Path": "https://openam-chico-poc.forgeblocks.com/am/oauth2/access_token",
-            "method": "POST"
-        }
+    "input": {
+        "type": "httpjson"
     },
     "observer": {
         "vendor": "ForgeRock Identity Platform"
     },
     "service": {
-        "name": "OAuth"
+        "name": "Session"
     },
+    "tags": [
+        "forwarded",
+        "forgerock-audit",
+        "forgerock-am-access"
+    ],
     "transaction": {
-        "id": "1664994108247-9f138d8fc9f59d23164c-26466/0"
+        "id": "688b24d9-968e-4a20-b471-9bd78f1e46ec-1"
+    },
+    "user": {
+        "id": "id=d7cd65bf-743c-4753-a78f-a20daae7e3bf,ou=user,ou=am-config"
     }
 }
 ```
@@ -164,12 +160,33 @@ An example event for `am_activity` looks as following:
 ```json
 {
     "@timestamp": "2022-10-05T20:55:59.966Z",
+    "agent": {
+        "ephemeral_id": "6af93045-8737-4c3a-87a6-6b24d24d94c3",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.9.1"
+    },
+    "data_stream": {
+        "dataset": "forgerock.am_activity",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
         "version": "8.9.0"
     },
+    "elastic_agent": {
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "snapshot": false,
+        "version": "8.9.1"
+    },
     "event": {
         "action": "AM-SESSION-CREATED",
+        "agent_id_status": "verified",
+        "created": "2023-08-29T18:24:18.086Z",
+        "dataset": "forgerock.am_activity",
         "id": "45463f84-ff1b-499f-aa84-8d4bd93150de-438366",
+        "ingested": "2023-08-29T18:24:21Z",
         "reason": "CREATE"
     },
     "forgerock": {
@@ -182,12 +199,20 @@ An example event for `am_activity` looks as following:
             "45463f84-ff1b-499f-aa84-8d4bd93150de-438033"
         ]
     },
+    "input": {
+        "type": "httpjson"
+    },
     "observer": {
         "vendor": "ForgeRock Identity Platform"
     },
     "service": {
         "name": "Session"
     },
+    "tags": [
+        "forwarded",
+        "forgerock-audit",
+        "forgerock-am-activity"
+    ],
     "transaction": {
         "id": "5ff83988-8f23-4108-9359-42658fcfc4d1-request-3/0"
     },
@@ -244,13 +269,34 @@ An example event for `am_authentication` looks as following:
 ```json
 {
     "@timestamp": "2022-10-05T18:21:48.253Z",
+    "agent": {
+        "ephemeral_id": "3a49e2d0-3cf1-4a2f-8f79-88f5bcc4f5bb",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.9.1"
+    },
+    "data_stream": {
+        "dataset": "forgerock.am_authentication",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
         "version": "8.9.0"
     },
+    "elastic_agent": {
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "snapshot": false,
+        "version": "8.9.1"
+    },
     "event": {
         "action": "AM-LOGIN-COMPLETED",
+        "agent_id_status": "verified",
         "category": "authentication",
+        "created": "2023-08-29T18:25:11.183Z",
+        "dataset": "forgerock.am_authentication",
         "id": "45463f84-ff1b-499f-aa84-8d4bd93150de-256208",
+        "ingested": "2023-08-29T18:25:14Z",
         "outcome": "success"
     },
     "forgerock": {
@@ -277,12 +323,20 @@ An example event for `am_authentication` looks as following:
             "45463f84-ff1b-499f-aa84-8d4bd93150de-256204"
         ]
     },
+    "input": {
+        "type": "httpjson"
+    },
     "observer": {
         "vendor": "ForgeRock Identity Platform"
     },
     "service": {
         "name": "Authentication"
     },
+    "tags": [
+        "forwarded",
+        "forgerock-audit",
+        "forgerock-am-authentication"
+    ],
     "transaction": {
         "id": "1664994108247-9f138d8fc9f59d23164c-26466/0"
     },
@@ -330,13 +384,36 @@ An example event for `am_config` looks as following:
 ```json
 {
     "@timestamp": "2022-09-20T14:40:10.664Z",
+    "agent": {
+        "ephemeral_id": "8b20ca54-fc63-4851-8782-615436bf1368",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.9.1"
+    },
+    "data_stream": {
+        "dataset": "forgerock.am_config",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
         "version": "8.9.0"
     },
+    "elastic_agent": {
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "snapshot": false,
+        "version": "8.9.1"
+    },
     "event": {
         "action": "AM-CONFIG-CHANGE",
-        "category": "configuration",
-        "id": "4e8550cd-71d6-4a08-b5b0-bb63bcbbc960-20605"
+        "agent_id_status": "verified",
+        "category": [
+            "configuration"
+        ],
+        "created": "2023-08-29T18:26:03.247Z",
+        "dataset": "forgerock.am_config",
+        "id": "4e8550cd-71d6-4a08-b5b0-bb63bcbbc960-20605",
+        "ingested": "2023-08-29T18:26:06Z"
     },
     "forgerock": {
         "level": "INFO",
@@ -349,9 +426,17 @@ An example event for `am_config` looks as following:
             "4e8550cd-71d6-4a08-b5b0-bb63bcbbc960-5563"
         ]
     },
+    "input": {
+        "type": "httpjson"
+    },
     "observer": {
         "vendor": "ForgeRock Identity Platform"
     },
+    "tags": [
+        "forwarded",
+        "forgerock-audit",
+        "forgerock-am-config"
+    ],
     "transaction": {
         "id": "1663684810619-c42f8145dec437c43428-2465/0"
     },
@@ -404,14 +489,38 @@ An example event for `am_core` looks as following:
 ```json
 {
     "@timestamp": "2022-12-05T19:29:20.845Z",
+    "agent": {
+        "ephemeral_id": "a4c66cb1-05e2-4a3c-bf9f-b1ba82d619a3",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.9.1"
+    },
+    "data_stream": {
+        "dataset": "forgerock.am_core",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
         "version": "8.9.0"
     },
+    "elastic_agent": {
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "snapshot": false,
+        "version": "8.9.1"
+    },
     "event": {
+        "agent_id_status": "verified",
+        "created": "2023-08-29T18:26:55.131Z",
+        "dataset": "forgerock.am_core",
+        "ingested": "2023-08-29T18:26:58Z",
         "reason": "Connection attempt failed: availableConnections=0, maxPoolSize=10"
     },
     "forgerock": {
         "context": "default"
+    },
+    "input": {
+        "type": "httpjson"
     },
     "log": {
         "level": "DEBUG",
@@ -422,7 +531,12 @@ An example event for `am_core` looks as following:
     },
     "process": {
         "name": "LDAP SDK Default Scheduler"
-    }
+    },
+    "tags": [
+        "forwarded",
+        "forgerock-debug",
+        "forgerock-am-core"
+    ]
 }
 ```
 
@@ -460,16 +574,37 @@ An example event for `idm_access` looks as following:
 ```json
 {
     "@timestamp": "2022-11-01T15:04:50.110Z",
+    "agent": {
+        "ephemeral_id": "21bbe733-0623-4805-af6d-e7cb05b45003",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.9.1"
+    },
     "client": {
-        "ip": "1.128.0.0",
+        "ip": "216.160.83.56",
         "port": 56278
+    },
+    "data_stream": {
+        "dataset": "forgerock.idm_access",
+        "namespace": "ep",
+        "type": "logs"
     },
     "ecs": {
         "version": "8.9.0"
     },
+    "elastic_agent": {
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "snapshot": false,
+        "version": "8.9.1"
+    },
     "event": {
+        "agent_id_status": "verified",
+        "created": "2023-08-29T18:27:48.240Z",
+        "dataset": "forgerock.idm_access",
         "duration": 2000000,
         "id": "a9a32d9e-7029-45e6-b581-eafb5d502273-49025",
+        "ingested": "2023-08-29T18:27:51Z",
         "outcome": "success",
         "type": "access"
     },
@@ -510,12 +645,20 @@ An example event for `idm_access` looks as following:
             "status_code": 200
         }
     },
+    "input": {
+        "type": "httpjson"
+    },
     "observer": {
         "vendor": "ForgeRock Identity Platform"
     },
     "server": {
-        "ip": "175.16.199.0"
+        "ip": "81.2.69.142"
     },
+    "tags": [
+        "forwarded",
+        "forgerock-audit",
+        "forgerock-idm-access"
+    ],
     "transaction": {
         "id": "a9a32d9e-7029-45e6-b581-eafb5d502273-49021"
     },
@@ -569,35 +712,65 @@ An example event for `idm_activity` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-11-01T17:55:08.523Z",
+    "@timestamp": "2022-11-01T18:02:39.882Z",
+    "agent": {
+        "ephemeral_id": "353ff5a3-0662-4599-99a0-3cff15bab6d7",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.9.1"
+    },
+    "data_stream": {
+        "dataset": "forgerock.idm_activity",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
         "version": "8.9.0"
     },
+    "elastic_agent": {
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "snapshot": false,
+        "version": "8.9.1"
+    },
     "event": {
-        "id": "a9a32d9e-7029-45e6-b581-eafb5d502273-259113",
+        "agent_id_status": "verified",
+        "created": "2023-08-29T18:28:40.611Z",
+        "dataset": "forgerock.idm_activity",
+        "id": "a9a32d9e-7029-45e6-b581-eafb5d502273-268906",
+        "ingested": "2023-08-29T18:28:43Z",
         "outcome": "success"
     },
     "forgerock": {
-        "eventName": "activity",
+        "eventName": "relationship_created",
         "level": "INFO",
-        "objectId": "internal/role/8713dd4e-3f4a-480d-9172-3a70a2dea73f",
-        "operation": "PATCH",
+        "message": "Relationship originating from managed/alpha_organization/e6df3df4-c798-4187-ba06-db8e6ae3db88 via the relationship field parent and referencing managed/alpha_organization/c4de605d-9d1b-439e-9ea8-9aba47e01008  was created.",
+        "objectId": "managed/alpha_organization/e6df3df4-c798-4187-ba06-db8e6ae3db88/parent/bb20cd10-e6ad-48fd-8ef1-e8d4c3f7859f",
+        "operation": "CREATE",
         "passwordChanged": false,
         "revision": "00000000478fd92b",
         "source": "audit",
         "topic": "activity"
     },
+    "input": {
+        "type": "httpjson"
+    },
     "observer": {
         "vendor": "ForgeRock Identity Platform"
     },
+    "tags": [
+        "forwarded",
+        "forgerock-audit",
+        "forgerock-idm-activity"
+    ],
     "transaction": {
-        "id": "1667325297350-5f3959fa550528a7ef3d-23359/0"
+        "id": "1667325742545-ee41d6454a6b4a815b69-24798/0"
     },
     "user": {
         "effective": {
-            "id": "d7cd65bf-743c-4753-a78f-a20daae7e3bf"
+            "id": "9120c7db-d7e6-4b51-b805-07bbee7a4bb9"
         },
-        "id": "d7cd65bf-743c-4753-a78f-a20daae7e3bf"
+        "id": "9120c7db-d7e6-4b51-b805-07bbee7a4bb9"
     }
 }
 ```
@@ -640,12 +813,33 @@ An example event for `idm_authentication` looks as following:
 ```json
 {
     "@timestamp": "2022-10-05T18:21:48.253Z",
+    "agent": {
+        "ephemeral_id": "c42575e9-a330-406b-a3b5-04edf383bb2e",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.9.1"
+    },
+    "data_stream": {
+        "dataset": "forgerock.idm_authentication",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
         "version": "8.9.0"
     },
+    "elastic_agent": {
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "snapshot": false,
+        "version": "8.9.1"
+    },
     "event": {
+        "agent_id_status": "verified",
         "category": "authentication",
+        "created": "2023-08-29T18:29:35.619Z",
+        "dataset": "forgerock.idm_authentication",
         "id": "45463f84-ff1b-499f-aa84-8d4bd93150de-256208",
+        "ingested": "2023-08-29T18:29:38Z",
         "outcome": "success"
     },
     "forgerock": {
@@ -672,9 +866,17 @@ An example event for `idm_authentication` looks as following:
             "45463f84-ff1b-499f-aa84-8d4bd93150de-256204"
         ]
     },
+    "input": {
+        "type": "httpjson"
+    },
     "observer": {
         "vendor": "ForgeRock Identity Platform"
     },
+    "tags": [
+        "forwarded",
+        "forgerock-audit",
+        "forgerock-idm-authentication"
+    ],
     "transaction": {
         "id": "1664994108247-9f138d8fc9f59d23164c-26466/0"
     },
@@ -720,12 +922,33 @@ An example event for `idm_config` looks as following:
 ```json
 {
     "@timestamp": "2022-10-19T16:12:12.549Z",
+    "agent": {
+        "ephemeral_id": "e0c45592-0c85-42cf-a413-86e1a9ea0fba",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.9.1"
+    },
+    "data_stream": {
+        "dataset": "forgerock.idm_config",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
         "version": "8.9.0"
     },
+    "elastic_agent": {
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "snapshot": false,
+        "version": "8.9.1"
+    },
     "event": {
+        "agent_id_status": "verified",
         "category": "configuration",
-        "id": "5e787c05-c32f-40d3-9e77-666376f6738f-134332"
+        "created": "2023-08-29T18:30:25.437Z",
+        "dataset": "forgerock.idm_config",
+        "id": "5e787c05-c32f-40d3-9e77-666376f6738f-134332",
+        "ingested": "2023-08-29T18:30:28Z"
     },
     "forgerock": {
         "changedFields": [
@@ -737,9 +960,17 @@ An example event for `idm_config` looks as following:
         "source": "audit",
         "topic": "config"
     },
+    "input": {
+        "type": "httpjson"
+    },
     "observer": {
         "vendor": "ForgeRock Identity Platform"
     },
+    "tags": [
+        "forwarded",
+        "forgerock-audit",
+        "forgerock-idm-config"
+    ],
     "transaction": {
         "id": "1666195908296-b802a87436c00618a43e-13149/0"
     },
@@ -787,15 +1018,44 @@ An example event for `idm_core` looks as following:
 ```json
 {
     "@timestamp": "2022-12-05T20:01:34.448Z",
+    "agent": {
+        "ephemeral_id": "6afff7c3-5136-4b5c-bd1e-41176dfda962",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.9.1"
+    },
+    "data_stream": {
+        "dataset": "forgerock.idm_core",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
         "version": "8.9.0"
     },
+    "elastic_agent": {
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "snapshot": false,
+        "version": "8.9.1"
+    },
     "event": {
+        "agent_id_status": "verified",
+        "created": "2023-08-29T18:31:16.370Z",
+        "dataset": "forgerock.idm_core",
+        "ingested": "2023-08-29T18:31:19Z",
         "reason": "Dec 05, 2022 8:01:34 PM org.forgerock.openidm.internal.InternalObjectSet readInstance"
+    },
+    "input": {
+        "type": "httpjson"
     },
     "observer": {
         "vendor": "ForgeRock Identity Platform"
-    }
+    },
+    "tags": [
+        "forwarded",
+        "forgerock-debug",
+        "forgerock-idm-core"
+    ]
 }
 ```
 
@@ -824,11 +1084,32 @@ An example event for `idm_sync` looks as following:
 ```json
 {
     "@timestamp": "2022-10-19T16:09:17.900Z",
+    "agent": {
+        "ephemeral_id": "de52dbc7-9ccf-4400-8b31-2299929a4a11",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.9.1"
+    },
+    "data_stream": {
+        "dataset": "forgerock.idm_sync",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
         "version": "8.9.0"
     },
+    "elastic_agent": {
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "snapshot": false,
+        "version": "8.9.1"
+    },
     "event": {
+        "agent_id_status": "verified",
+        "created": "2023-08-29T18:32:10.406Z",
+        "dataset": "forgerock.idm_sync",
         "id": "5e787c05-c32f-40d3-9e77-666376f6738f-130280",
+        "ingested": "2023-08-29T18:32:13Z",
         "outcome": "success"
     },
     "forgerock": {
@@ -842,9 +1123,17 @@ An example event for `idm_sync` looks as following:
         "sourceObjectId": "managed/alpha_user/9d88b635-9b7a-48d3-9a57-1978b99a5f41",
         "topic": "sync"
     },
+    "input": {
+        "type": "httpjson"
+    },
     "observer": {
         "vendor": "ForgeRock Identity Platform"
     },
+    "tags": [
+        "forwarded",
+        "forgerock-audit",
+        "forgerock-idm-sync"
+    ],
     "transaction": {
         "id": "1666195747447-56a35455016b7da218a6-11991/0"
     },
