@@ -1,8 +1,17 @@
 # Amazon Kinesis Data Firehose
-Amazon Kinesis Data Firehose integration offers users a way to stream logs from Firehose to Elastic stack.
-This integration includes predefined routing rules that can help sending documents into different data streams.
-Please make sure when using this integration, `es_datastream_name` parameter is set to `logs-awsfirehose.log-default` in
-Amazon Kinesis Data Firehose.
+Amazon Kinesis Data Firehose integration offers users a way to stream logs from Firehose to Elastic Cloud.
+This integration includes predefined rules that automatically route AWS service logs to the respective integrations, which
+include field mappings, ingest pipelines, predefined dashboards and ect. Here is a list of log types that are supported
+by this integration:
+
+| AWS service log    | Log destination |
+|--------------------|-----------------|
+| CloudTrail         | CloudWatch      |
+| Network Firewall   | Firehose        |
+| Route53 Public DNS | CloudWatch      |
+| Route53 Resolver   | Firehose        |
+| VPC Flow           | Firehose        |
+| WAF                | Firehose        |
 
 ## Limitation
 It is not possible to configure a delivery stream to send data to Elastic Cloud via PrivateLink (VPC endpoint). 
@@ -62,7 +71,7 @@ This is a current limitation in Firehose, which we are working with AWS to resol
 
     7. **Parameters**
 
-       1. Elastic recommends setting the `es_datastream_name` parameter to `logs-awsfirehose.log-default` in order to
+       1. Elastic recommends setting the `es_datastream_name` parameter to `logs-awsfirehose.logs-default` in order to
        leverage the routing rules defined in this integration. If this parameter is not specified, data is sent to the
        `logs-generic-default` data stream by default.
        ![Firehose Destination Settings](../img/destination-settings.png)
@@ -81,21 +90,3 @@ This is a current limitation in Firehose, which we are working with AWS to resol
 
     Consult the [AWS documentation](https://docs.aws.amazon.com/firehose/latest/dev/basic-write.html) for details on how to
     configure a variety of log sources to send data to Firehose delivery streams.
-
-## Routing rules
-This integration includes predefined routing rules to send documents to different data streams. 
-Logs sent to Elasticsearch through Amazon Kinesis Firehose data stream are stored into `logs-awsfirehose.log-default` 
-by default. When a routing rule is met, this log document will get routed to the new target data stream.
-
-For example: If the value of `aws.cloudwatch.log_stream` contains `CloudTrail`, the document will be route to 
-`logs-aws.cloudtrail-default`. If the value of `aws.kinesis.name` contains `aws-waf-logs-`, this document will
-be routed to `logs-aws.waf-default` data stream.
-```
-- source_dataset: awsfirehose.log
-  rules:
-    - target_dataset: aws.cloudtrail
-      if: ctx['aws.cloudwatch.log_stream'] != null && ctx['aws.cloudwatch.log_stream'].contains('CloudTrail')
-    - target_dataset: aws.waf
-      if: >-
-        ctx['aws.kinesis.name'] != null && ctx['aws.kinesis.name'].contains('aws-waf-logs-')
-```
