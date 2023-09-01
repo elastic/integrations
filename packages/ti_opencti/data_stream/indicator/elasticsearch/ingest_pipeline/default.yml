@@ -156,19 +156,12 @@ processors:
   - remove:
       field: objectLabel
 
-  # TODO: fix kill chain phases to be an array of pairs
   - foreach:
       field: killChainPhases.edges
       processor:
         append:
-          field: opencti.indicator.kill_chain_phase_name
-          value: "{{{_ingest._value.node.phase_name}}}"
-  - foreach:
-      field: killChainPhases.edges
-      processor:
-        append:
-          field: opencti.indicator.kill_chain_name
-          value: "{{{_ingest._value.node.kill_chain_name}}}"
+          field: opencti.indicator.kill_chain_phase
+          value: "[{{_ingest._value.node.kill_chain_name}}] {{_ingest._value.node.phase_name}}"
   - remove:
       field: killChainPhases
 
