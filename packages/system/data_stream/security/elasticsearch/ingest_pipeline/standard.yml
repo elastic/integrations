@@ -2584,8 +2584,13 @@ processors:
             ctx.related.user.add(memberName);
           }
           if (memberNameParts.length >= 4) {
-            def domain = memberNameParts[3].replace("DC=", "").replace("dc=", "");
-            ctx.user.target.put("domain", domain);
+            for (int i = 0; i < memberNameParts.length; i++) {
+              def domainString = memberNameParts[i];
+              if ((domainString.contains("DC=") || domainString.contains("dc=")) && ctx.user.target.domain != null) {
+                def domain = domainString.replace("DC=", "").replace("dc=", "");
+                ctx.user.target.put("domain", domain);
+              }
+            }
           }
         }
         if (ctx.winlog?.event_data?.TargetUserSid != null) {
