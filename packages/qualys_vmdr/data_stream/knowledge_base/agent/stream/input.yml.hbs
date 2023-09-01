@@ -33,11 +33,11 @@ program: |
       }
   }).do_request().as(resp, bytes(resp.Body).decode_xml('qualys_api_2_0').as(body, {
       "events": (has(body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST) ?
-        body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.map(e,{
-          "message": e.encode_json()
-        })
+          body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.map(e,{
+            "message": e.encode_json()
+          })
         :
-        body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.ID_SET
+          body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.ID_SET
       ),
       "cursor": {
         "last_modified": (
