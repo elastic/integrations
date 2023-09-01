@@ -1,13 +1,13 @@
 # Living off the Land Attack Detection 
 
-The Living off the Land Attack (LotL) Detection package contains a supervised machine learning model, called [ProblemChild and associated assets](https://www.elastic.co/blog/problemchild-generate-alerts-to-detect-living-off-the-land-attacks), which are used to detect living off the land (LotL) activity in your environment.
+The Living off the Land Attack (LotL) Detection package contains a supervised machine learning model, called [ProblemChild and associated assets](https://www.elastic.co/security-labs/detecting-living-off-the-land-attacks-with-new-elastic-integration), which are used to detect living off the land (LotL) activity in your environment.
 This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under Elastic License v 1.0.
 
 ## Configuration
 
 To download the assets, click **Settings** > **Install Living off the Land Attack Detection assets**.
 
-Follow these instructions to ingest data with the ingest pipeline and enrich your indices with inference data. Then use these detection rules and anomaly detection jobs to detect LotL attacks. For more detailed information refer to [this](https://www.elastic.co/blog/problemchild-generate-alerts-to-detect-living-off-the-land-attacks) blog.
+Follow these instructions to ingest data with the ingest pipeline and enrich your indices with inference data. Then use these detection rules and anomaly detection jobs to detect LotL attacks. For more detailed information refer to [this](https://www.elastic.co/security-labs/detecting-living-off-the-land-attacks-with-new-elastic-integration) blog.
 
 ### (Required) Set up the ingest pipeline
 
