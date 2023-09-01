@@ -28,10 +28,10 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "dhcpv6" }}'
       if: "ctx.log?.file?.path != null && ctx.log.file.path.contains('V6')"
-  - append:
+  - set:
       field: host.ip
-      value: '{{{_tmp_.host.ip}}}'
-      if: ctx._tmp_?.host?.ip != null
+      override: false
+      copy_from: observer.ip
   - foreach:
       field: observer.mac
       ignore_missing: true
@@ -46,6 +46,26 @@ processors:
       processor:
         uppercase:
           field: _ingest._value
+  - set:
+      field: host.mac
+      override: false
+      copy_from: observer.mac
+  - set:
+      field: host.name
+      override: false
+      copy_from: agent.name
+  - grok:
+      field: host.name
+      if: 'ctx.host?.name != null && ctx.host.name.contains(".")'
+      patterns:
+        - "%{HOSTNAME}\\.%{GREEDYDATA:host.domain}"
+      pattern_definitions:
+        "HOSTNAME": "[^.]+"
+      ignore_failure: true
+  - set:
+      field: host.hostname
+      override: false
+      copy_from: agent.hostname
   - remove:
       field: event.original
       if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
