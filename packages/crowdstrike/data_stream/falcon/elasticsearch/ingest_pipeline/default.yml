@@ -83,7 +83,7 @@ processors:
       tag: convert-Tags-and-copy-to-tags
       description: Convert tags from nested type and append to ctx.tags.
       lang: painless
-      if : ctx.crowdstrike?.event != null && ctx.crowdstrike.event.Tags != null
+      if : ctx.crowdstrike?.event?.Tags != null
       source: |
             if (ctx.crowdstrike.event.Tags instanceof List) {
                 for (tag in ctx.crowdstrike.event.Tags) {
@@ -94,7 +94,7 @@ processors:
             } else if (ctx.crowdstrike.event.Tags instanceof String) {
                 def values = ctx.crowdstrike.event.Tags.splitOnToken(',');
                 for (value in values) {
-                    ctx.tags.add(value);
+                    ctx.tags.add(value.trim());
                 }
             }
   # UTCTimestamp should exist in each event, however on the off-chance it might not be (Like RemoteSession Start/End), then we have to use eventCreation time.
