@@ -212,60 +212,62 @@ processors:
       target_field: tls.server.issuer
       ignore_missing: true
   - rename:
-      field: zeek.ssl.server.issuer.C
-      target_field: zeek.ssl.server.issuer.country
-      ignore_missing: true
-  - rename:
       field: zeek.ssl.resp_certificate_sha1
       target_field: tls.server.hash.sha1
       ignore_missing: true
   - uppercase:
       field: tls.server.hash.sha1
       ignore_missing: true
+
   - set:
       field: tls.server.x509.issuer.country
-      value: "{{zeek.ssl.server.issuer.country}}"
-      ignore_empty_value: true
+      value: ["{{{zeek.ssl.server.issuer.C}}}"]
+      if: ctx.zeek?.ssl?.server?.issuer?.C instanceof String
+  - rename:
+      field: zeek.ssl.server.issuer.C
+      target_field: zeek.ssl.server.issuer.country
+      ignore_missing: true
+  - set:
+      field: tls.server.x509.issuer.common_name
+      value: ["{{{zeek.ssl.server.issuer.CN}}}"]
+      if: ctx.zeek?.ssl?.server?.issuer?.CN instanceof String
   - rename:
       field: zeek.ssl.server.issuer.CN
       target_field: zeek.ssl.server.issuer.common_name
       ignore_missing: true
   - set:
-      field: tls.server.x509.issuer.common_name
-      value: "{{zeek.ssl.server.issuer.common_name}}"
-      ignore_empty_value: true
+      field: tls.server.x509.issuer.locality
+      value: ["{{{zeek.ssl.server.issuer.L}}}"]
+      if: ctx.zeek?.ssl?.server?.issuer?.L instanceof String
   - rename:
       field: zeek.ssl.server.issuer.L
       target_field: zeek.ssl.server.issuer.locality
       ignore_missing: true
   - set:
-      field: tls.server.x509.issuer.locality
-      value: "{{zeek.ssl.server.issuer.locality}}"
-      ignore_empty_value: true
+      field: tls.server.x509.issuer.organization
+      value: ["{{{zeek.ssl.server.issuer.O}}}"]
+      if: ctx.zeek?.ssl?.server?.issuer?.O instanceof String
   - rename:
       field: zeek.ssl.server.issuer.O
       target_field: zeek.ssl.server.issuer.organization
       ignore_missing: true
   - set:
-      field: tls.server.x509.issuer.organization
-      value: "{{zeek.ssl.server.issuer.organization}}"
-      ignore_empty_value: true
+      field: tls.server.x509.issuer.organizational_unit
+      value: ["{{{zeek.ssl.server.issuer.OU}}}"]
+      if: ctx.zeek?.ssl?.server?.issuer?.OU instanceof String
   - rename:
       field: zeek.ssl.server.issuer.OU
       target_field: zeek.ssl.server.issuer.organizational_unit
       ignore_missing: true
   - set:
-      field: tls.server.x509.issuer.organizational_unit
-      value: "{{zeek.ssl.server.issuer.organizational_unit}}"
-      ignore_empty_value: true
+      field: tls.server.x509.issuer.state_or_province
+      value: ["{{{zeek.ssl.server.issuer.ST}}}"]
+      if: ctx.zeek?.ssl?.server?.issuer?.ST instanceof String
   - rename:
       field: zeek.ssl.server.issuer.ST
       target_field: zeek.ssl.server.issuer.state
       ignore_missing: true
-  - set:
-      field: tls.server.x509.issuer.state_or_province
-      value: "{{zeek.ssl.server.issuer.state}}"
-      ignore_empty_value: true
+
   - gsub:
       field: zeek.ssl.subject
       pattern: \\,
@@ -281,54 +283,56 @@ processors:
       field: zeek.ssl.subject
       target_field: tls.server.subject
       ignore_missing: true
+
+  - set:
+      field: tls.server.x509.subject.country
+      value: ["{{{zeek.ssl.server.subject.C}}}"]
+      if: ctx.zeek?.ssl?.server?.subject?.C instanceof String
   - rename:
       field: zeek.ssl.server.subject.C
       target_field: zeek.ssl.server.subject.country
       ignore_missing: true
   - set:
-      field: tls.server.x509.subject.country
-      value: "{{zeek.ssl.server.subject.country}}"
-      ignore_empty_value: true
+      field: tls.server.x509.subject.common_name
+      value: ["{{{zeek.ssl.server.subject.CN}}}"]
+      if: ctx.zeek?.ssl?.server?.subject?.CN instanceof String
   - rename:
       field: zeek.ssl.server.subject.CN
       target_field: zeek.ssl.server.subject.common_name
       ignore_missing: true
   - set:
-      field: tls.server.x509.subject.common_name
-      value: "{{zeek.ssl.server.subject.common_name}}"
-      ignore_empty_value: true
+      field: tls.server.x509.subject.locality
+      value: ["{{{zeek.ssl.server.subject.L}}}"]
+      if: ctx.zeek?.ssl?.server?.subject?.L instanceof String
   - rename:
       field: zeek.ssl.server.subject.L
       target_field: zeek.ssl.server.subject.locality
       ignore_missing: true
   - set:
-      field: tls.server.x509.subject.locality
-      value: "{{zeek.ssl.server.subject.locality}}"
-      ignore_empty_value: true
+      field: tls.server.x509.subject.organization
+      value: ["{{{zeek.ssl.server.subject.O}}}"]
+      if: ctx.zeek?.ssl?.server?.subject?.O instanceof String
   - rename:
       field: zeek.ssl.server.subject.O
       target_field: zeek.ssl.server.subject.organization
       ignore_missing: true
   - set:
-      field: tls.server.x509.subject.organization
-      value: "{{zeek.ssl.server.subject.organization}}"
-      ignore_empty_value: true
+      field: tls.server.x509.subject.organizational_unit
+      value: ["{{{zeek.ssl.server.subject.OU}}}"]
+      if: ctx.zeek?.ssl?.server?.subject?.OU instanceof String
   - rename:
       field: zeek.ssl.server.subject.OU
       target_field: zeek.ssl.server.subject.organizational_unit
       ignore_missing: true
   - set:
-      field: tls.server.x509.subject.organizational_unit
-      value: "{{zeek.ssl.server.subject.organizational_unit}}"
-      ignore_empty_value: true
+      field: tls.server.x509.subject.state_or_province
+      value: ["{{{zeek.ssl.server.subject.ST}}}"]
+      if: ctx.zeek?.ssl?.server?.subject?.ST instanceof String
   - rename:
       field: zeek.ssl.server.subject.ST
       target_field: zeek.ssl.server.subject.state
       ignore_missing: true
-  - set:
-      field: tls.server.x509.subject.state_or_province
-      value: "{{zeek.ssl.server.subject.state}}"
-      ignore_empty_value: true
+
   - gsub:
       field: zeek.ssl.client_issuer
       pattern: \\,
@@ -344,54 +348,56 @@ processors:
       field: zeek.ssl.client_issuer
       target_field: tls.client.issuer
       ignore_missing: true
+
+  - set:
+      field: tls.client.x509.issuer.country
+      value: ["{{{zeek.ssl.client.issuer.C}}}"]
+      if: ctx.zeek?.ssl?.client?.issuer?.C instanceof String
   - rename:
       field: zeek.ssl.client.issuer.C
       target_field: zeek.ssl.client.issuer.country
       ignore_missing: true
   - set:
-      field: tls.client.x509.issuer.country
-      value: "{{zeek.ssl.client.issuer.country}}"
-      ignore_empty_value: true
+      field: tls.client.x509.issuer.common_name
+      value: ["{{{zeek.ssl.client.issuer.CN}}}"]
+      if: ctx.zeek?.ssl?.client?.issuer?.CN instanceof String
   - rename:
       field: zeek.ssl.client.issuer.CN
       target_field: zeek.ssl.client.issuer.common_name
       ignore_missing: true
   - set:
-      field: tls.client.x509.issuer.common_name
-      value: "{{zeek.ssl.client.issuer.common_name}}"
-      ignore_empty_value: true
+      field: tls.client.x509.issuer.locality
+      value: ["{{{zeek.ssl.client.issuer.L}}}"]
+      if: ctx.zeek?.ssl?.client?.issuer?.L instanceof String
   - rename:
       field: zeek.ssl.client.issuer.L
       target_field: zeek.ssl.client.issuer.locality
       ignore_missing: true
   - set:
-      field: tls.client.x509.issuer.locality
-      value: "{{zeek.ssl.client.issuer.locality}}"
-      ignore_empty_value: true
+      field: tls.client.x509.issuer.organization
+      value: ["{{{zeek.ssl.client.issuer.O}}}"]
+      if: ctx.zeek?.ssl?.client?.issuer?.O instanceof String
   - rename:
       field: zeek.ssl.client.issuer.O
       target_field: zeek.ssl.client.issuer.organization
       ignore_missing: true
   - set:
-      field: tls.client.x509.issuer.organization
-      value: "{{zeek.ssl.client.issuer.organization}}"
-      ignore_empty_value: true
+      field: tls.client.x509.issuer.organizational_unit
+      value: ["{{{zeek.ssl.client.issuer.OU}}}"]
+      if: ctx.zeek?.ssl?.client?.issuer?.OU instanceof String
   - rename:
-      field: zeek.ssl.client.issuer.OU
-      target_field: zeek.ssl.client.issuer.organizational_unit
+      field: zeek.ssl.client.subject.OU
+      target_field: zeek.ssl.client.subject.organizational_unit
       ignore_missing: true
   - set:
-      field: tls.client.x509.issuer.organizational_unit
-      value: "{{zeek.ssl.client.issuer.organizational_unit}}"
-      ignore_empty_value: true
+      field: tls.client.x509.issuer.state_or_province
+      value: ["{{{zeek.ssl.client.issuer.ST}}}"]
+      if: ctx.zeek?.ssl?.client?.issuer?.ST instanceof String
   - rename:
       field: zeek.ssl.client.issuer.ST
       target_field: zeek.ssl.client.issuer.state
       ignore_missing: true
-  - set:
-      field: tls.client.x509.issuer.state_or_province
-      value: "{{zeek.ssl.client.issuer.state}}"
-      ignore_empty_value: true
+
   - gsub:
       field: zeek.ssl.client_subject
       pattern: \\,
@@ -406,54 +412,56 @@ processors:
   - remove:
       field: zeek.ssl.client_subject
       ignore_missing: true
+
+  - set:
+      field: tls.client.x509.subject.country
+      value: [ "{{{zeek.ssl.client.subject.C}}}" ]
+      if: ctx.zeek?.ssl?.client?.subject?.C instanceof String
   - rename:
       field: zeek.ssl.client.subject.C
       target_field: zeek.ssl.client.subject.country
       ignore_missing: true
   - set:
-      field: tls.client.x509.subject.country
-      value: "{{zeek.ssl.client.subject.country}}"
-      ignore_empty_value: true
+      field: tls.client.x509.subject.common_name
+      value: [ "{{{zeek.ssl.client.subject.CN}}}" ]
+      if: ctx.zeek?.ssl?.client?.subject?.CN instanceof String
   - rename:
       field: zeek.ssl.client.subject.CN
       target_field: zeek.ssl.client.subject.common_name
       ignore_missing: true
   - set:
-      field: tls.client.x509.subject.common_name
-      value: "{{zeek.ssl.client.subject.common_name}}"
-      ignore_empty_value: true
+      field: tls.client.x509.subject.locality
+      value: [ "{{{zeek.ssl.client.subject.L}}}" ]
+      if: ctx.zeek?.ssl?.client?.subject?.L instanceof String
   - rename:
       field: zeek.ssl.client.subject.L
       target_field: zeek.ssl.client.subject.locality
       ignore_missing: true
   - set:
-      field: tls.client.x509.subject.locality
-      value: "{{zeek.ssl.client.subject.locality}}"
-      ignore_empty_value: true
+      field: tls.client.x509.subject.organization
+      value: [ "{{{zeek.ssl.client.subject.O}}}" ]
+      if: ctx.zeek?.ssl?.client?.subject?.O instanceof String
   - rename:
       field: zeek.ssl.client.subject.O
       target_field: zeek.ssl.client.subject.organization
       ignore_missing: true
   - set:
-      field: tls.client.x509.subject.organization
-      value: "{{zeek.ssl.client.subject.organization}}"
-      ignore_empty_value: true
+      field: tls.client.x509.subject.organizational_unit
+      value: [ "{{{zeek.ssl.client.subject.OU}}}" ]
+      if: ctx.zeek?.ssl?.client?.subject?.OU instanceof String
   - rename:
       field: zeek.ssl.client.subject.OU
       target_field: zeek.ssl.client.subject.organizational_unit
       ignore_missing: true
   - set:
-      field: tls.client.x509.subject.organizational_unit
-      value: "{{zeek.ssl.client.subject.organizational_unit}}"
-      ignore_empty_value: true
+      field: tls.client.x509.subject.state_or_province
+      value: [ "{{{zeek.ssl.client.subject.ST}}}" ]
+      if: ctx.zeek?.ssl?.client?.subject?.ST instanceof String
   - rename:
       field: zeek.ssl.client.subject.ST
       target_field: zeek.ssl.client.subject.state
       ignore_missing: true
-  - set:
-      field: tls.client.x509.subject.state_or_province
-      value: "{{zeek.ssl.client.subject.state}}"
-      ignore_empty_value: true
+
   - set:
       field: tls.cipher
       value: "{{zeek.ssl.cipher}}"

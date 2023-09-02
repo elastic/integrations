@@ -57,6 +57,10 @@ processors:
       target_field: host.geo
       ignore_missing: true
   - set:
+      field: host.ip
+      value: ['{{{host.ip}}}']
+      if: ctx.host?.ip instanceof String
+  - set:
       field: server
       copy_from: host
       ignore_empty_value: true
@@ -99,6 +103,10 @@ processors:
         - 'CN=%{CN:tls.server.x509.subject.common_name}'
       pattern_definitions:
         CN: '[^,]+'
+  - set:
+      field: tls.server.x509.subject.common_name
+      value: ['{{{tls.server.x509.subject.common_name}}}']
+      if: ctx.tls?.server?.x509?.subject?.common_name instanceof String
   - grok:
       field: tls.server.x509.issuer.distinguished_name
       ignore_missing: true
@@ -106,6 +114,10 @@ processors:
         - 'CN=%{CN:tls.server.x509.issuer.common_name}'
       pattern_definitions:
         CN: '[^,]+'
+  - set:
+      field: tls.server.x509.issuer.common_name
+      value: ['{{{tls.server.x509.issuer.common_name}}}']
+      if: ctx.tls?.server?.x509?.issuer?.common_name instanceof String
   - set:
       field: tls.server.issuer
       copy_from: tls.server.x509.issuer.distinguished_name
