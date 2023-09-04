@@ -1,0 +1,70 @@
+metricsets: ["monitor"]
+default_resource_type: "Microsoft.Web/sites"
+add_cloud_metadata: true
+period: {{period}}
+{{#if client_id}}
+client_id: {{client_id}}
+{{/if}}
+{{#if client_secret}}
+client_secret: {{client_secret}}
+{{/if}}
+{{#if tenant_id}}
+tenant_id: {{tenant_id}}
+{{/if}}
+{{#if subscription_id}}
+subscription_id: {{subscription_id}}
+{{/if}}
+{{#if refresh_list_interval}}
+refresh_list_interval: {{refresh_list_interval}}
+{{/if}}
+{{#if resource_manager_endpoint}}
+resource_manager_endpoint: {{resource_manager_endpoint}}
+{{/if}}
+{{#if active_directory_endpoint}}
+active_directory_endpoint: {{active_directory_endpoint}}
+{{/if}}
+
+resources:
+{{#if resource_groups}}
+{{#each resource_groups}}
+    - resource_group: "{{this}}"
+      resource_type: "Microsoft.Web/sites"
+      metrics:
+        - name: ["FunctionExecutionCount", "FunctionExecutionUnits", "AppConnections", "AverageMemoryWorkingSet", "BytesReceived", "BytesSent", "CurrentAssemblies", "Gen0Collections", "Gen1Collections", "Gen2Collections", "Handles", "HealthCheckStatus", "Http2xx", "Http3xx", "Http4xx", "Http5xx", "HttpResponseTime", "IoOtherBytesPerSecond", "IoOtherOperationsPerSecond", "IoReadBytesPerSecond", "IoReadOperationsPerSecond", "IoWriteBytesPerSecond", "IoWriteOperationsPerSecond", "MemoryWorkingSet", "Requests", "RequestsInApplicationQueue", "Threads", "TotalAppDomains", "TotalAppDomainsUnloaded"]
+          namespace: "Microsoft.Web/sites"
+          timegrain: "PT5M"
+          ignore_unsupported: true
+        - name: ["FileSystemUsage"]
+          namespace: "Microsoft.Web/sites"
+          timegrain: "PT6H"
+          ignore_unsupported: true
+{{/each}}
+{{/if}}
+{{#if resource_ids}}
+{{#each resource_ids}}
+    - resource_id: "{{this}}"
+      metrics:
+        - name: ["FunctionExecutionCount", "FunctionExecutionUnits", "AppConnections", "AverageMemoryWorkingSet", "BytesReceived", "BytesSent", "CurrentAssemblies", "Gen0Collections", "Gen1Collections", "Gen2Collections", "Handles", "HealthCheckStatus", "Http2xx", "Http3xx", "Http4xx", "Http5xx", "HttpResponseTime", "IoOtherBytesPerSecond", "IoOtherOperationsPerSecond", "IoReadBytesPerSecond", "IoReadOperationsPerSecond", "IoWriteBytesPerSecond", "IoWriteOperationsPerSecond", "MemoryWorkingSet", "Requests", "RequestsInApplicationQueue", "Threads", "TotalAppDomains", "TotalAppDomainsUnloaded"]
+          namespace: "Microsoft.Web/sites"
+          timegrain: "PT5M"
+          ignore_unsupported: true
+        - name: ["FileSystemUsage"]
+          namespace: "Microsoft.Web/sites"
+          timegrain: "PT6H"
+          ignore_unsupported: true
+{{/each}}
+{{/if}}
+{{#unless resource_ids }}
+    {{#unless resource_groups }}
+    - resource_query: "resourceType eq 'Microsoft.Web/sites'"
+      metrics:
+        - name: ["FunctionExecutionCount", "FunctionExecutionUnits", "AppConnections", "AverageMemoryWorkingSet", "BytesReceived", "BytesSent", "CurrentAssemblies", "Gen0Collections", "Gen1Collections", "Gen2Collections", "Handles", "HealthCheckStatus", "Http2xx", "Http3xx", "Http4xx", "Http5xx", "HttpResponseTime", "IoOtherBytesPerSecond", "IoOtherOperationsPerSecond", "IoReadBytesPerSecond", "IoReadOperationsPerSecond", "IoWriteBytesPerSecond", "IoWriteOperationsPerSecond", "MemoryWorkingSet", "Requests", "RequestsInApplicationQueue", "Threads", "TotalAppDomains", "TotalAppDomainsUnloaded"]
+          namespace: "Microsoft.Web/sites"
+          timegrain: "PT5M"
+          ignore_unsupported: true
+        - name: ["FileSystemUsage"]
+          namespace: "Microsoft.Web/sites"
+          timegrain: "PT6H"
+          ignore_unsupported: true
+    {{/unless}}
+{{/unless}}
