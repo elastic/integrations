@@ -271,6 +271,22 @@ processors:
           ignore_missing: true
 
   - script:
+      description: Merge array of objects into a single object for startup_info
+      lang: painless
+      source: |
+        if (ctx.observables?.edges instanceof List) {
+          for (def edge : ctx.observables.edges) {
+            if (edge.node?.startup_info instanceof List) {
+              def result = [:];
+              for (def kv : edge.node.startup_info) {
+                result[kv.key] = kv.value;
+              }
+              edge.node.startup_info = result;
+            }
+          }
+        }
+
+  - script:
       description: Restructure hashes to ECS format
       lang: painless
       source: |
