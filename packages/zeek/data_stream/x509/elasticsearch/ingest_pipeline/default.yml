@@ -300,54 +300,56 @@ processors:
   - remove:
       field: zeek.x509.certificate.iss
       ignore_missing: true
+
+  - set:
+      field: file.x509.issuer.country
+      value: ["{{{zeek.x509.certificate.issuer.C}}}"]
+      if: ctx.zeek?.x509?.certificate?.issuer?.C instanceof String
   - rename:
       field: zeek.x509.certificate.issuer.C
       target_field: zeek.x509.certificate.issuer.country
       ignore_missing: true
   - set:
-      field: file.x509.issuer.country
-      value: "{{zeek.x509.certificate.issuer.country}}"
-      ignore_empty_value: true
+      field: file.x509.issuer.common_name
+      value: ["{{{zeek.x509.certificate.issuer.CN}}}"]
+      if: ctx.zeek?.x509?.certificate?.issuer?.CN instanceof String
   - rename:
       field: zeek.x509.certificate.issuer.CN
       target_field: zeek.x509.certificate.issuer.common_name
       ignore_missing: true
   - set:
-      field: file.x509.issuer.common_name
-      value: "{{zeek.x509.certificate.issuer.common_name}}"
-      ignore_empty_value: true
+      field: file.x509.issuer.locality
+      value: ["{{{zeek.x509.certificate.issuer.L}}}"]
+      if: ctx.zeek?.x509?.certificate?.issuer?.L instanceof String
   - rename:
       field: zeek.x509.certificate.issuer.L
       target_field: zeek.x509.certificate.issuer.locality
       ignore_missing: true
   - set:
-      field: file.x509.issuer.locality
-      value: "{{zeek.x509.certificate.issuer.locality}}"
-      ignore_empty_value: true
+      field: file.x509.issuer.organization
+      value: ["{{{zeek.x509.certificate.issuer.O}}}"]
+      if: ctx.zeek?.x509?.certificate?.issuer?.O instanceof String
   - rename:
       field: zeek.x509.certificate.issuer.O
       target_field: zeek.x509.certificate.issuer.organization
       ignore_missing: true
   - set:
-      field: file.x509.issuer.organization
-      value: "{{zeek.x509.certificate.issuer.organization}}"
-      ignore_empty_value: true
+      field: file.x509.issuer.organizational_unit
+      value: ["{{{zeek.x509.certificate.issuer.OU}}}"]
+      if: ctx.zeek?.x509?.certificate?.issuer?.OU instanceof String
   - rename:
       field: zeek.x509.certificate.issuer.OU
       target_field: zeek.x509.certificate.issuer.organizational_unit
       ignore_missing: true
   - set:
-      field: file.x509.issuer.organizational_unit
-      value: "{{zeek.x509.certificate.issuer.organizational_unit}}"
-      ignore_empty_value: true
+      field: file.x509.issuer.state_or_province
+      value: ["{{{zeek.x509.certificate.issuer.ST}}}"]
+      if: ctx.zeek?.x509?.certificate?.issuer?.ST instanceof String
   - rename:
       field: zeek.x509.certificate.issuer.ST
       target_field: zeek.x509.certificate.issuer.state
       ignore_missing: true
-  - set:
-      field: file.x509.issuer.state_or_province
-      value: "{{zeek.x509.certificate.issuer.state}}"
-      ignore_empty_value: true
+
   - gsub:
       field: zeek.x509.certificate.sub
       pattern: \\,
@@ -362,54 +364,56 @@ processors:
   - remove:
       field: zeek.x509.certificate.sub
       ignore_missing: true
+
+  - set:
+      field: file.x509.subject.country
+      value: ["{{{zeek.x509.certificate.subject.C}}}"]
+      if: ctx.zeek?.x509?.certificate?.subject?.C instanceof String
   - rename:
       field: zeek.x509.certificate.subject.C
       target_field: zeek.x509.certificate.subject.country
       ignore_missing: true
   - set:
-      field: file.x509.subject.country
-      value: "{{zeek.x509.certificate.subject.country}}"
-      ignore_empty_value: true
+      field: file.x509.subject.common_name
+      value: ["{{{zeek.x509.certificate.subject.CN}}}"]
+      if: ctx.zeek?.x509?.certificate?.subject?.CN instanceof String
   - rename:
       field: zeek.x509.certificate.subject.CN
       target_field: zeek.x509.certificate.subject.common_name
       ignore_missing: true
   - set:
-      field: file.x509.subject.common_name
-      value: "{{zeek.x509.certificate.subject.common_name}}"
-      ignore_empty_value: true
+      field: file.x509.subject.locality
+      value: ["{{{zeek.x509.certificate.subject.L}}}"]
+      if: ctx.zeek?.x509?.certificate?.subject?.L instanceof String
   - rename:
       field: zeek.x509.certificate.subject.L
       target_field: zeek.x509.certificate.subject.locality
       ignore_missing: true
   - set:
-      field: file.x509.subject.locality
-      value: "{{zeek.x509.certificate.subject.locality}}"
-      ignore_empty_value: true
+      field: file.x509.subject.organization
+      value: ["{{{zeek.x509.certificate.subject.O}}}"]
+      if: ctx.zeek?.x509?.certificate?.subject?.O instanceof String
   - rename:
       field: zeek.x509.certificate.subject.O
       target_field: zeek.x509.certificate.subject.organization
       ignore_missing: true
   - set:
-      field: file.x509.subject.organization
-      value: "{{zeek.x509.certificate.subject.organization}}"
-      ignore_empty_value: true
+      field: file.x509.subject.organizational_unit
+      value: ["{{{zeek.x509.certificate.subject.OU}}}"]
+      if: ctx.zeek?.x509?.certificate?.subject?.OU instanceof String
   - rename:
       field: zeek.x509.certificate.subject.OU
       target_field: zeek.x509.certificate.subject.organizational_unit
       ignore_missing: true
   - set:
-      field: file.x509.subject.organizational_unit
-      value: "{{zeek.x509.certificate.subject.organizational_unit}}"
-      ignore_empty_value: true
+      field: file.x509.subject.state_or_province
+      value: ["{{{zeek.x509.certificate.subject.ST}}}"]
+      if: ctx.zeek?.x509?.certificate?.subject?.ST instanceof String
   - rename:
       field: zeek.x509.certificate.subject.ST
       target_field: zeek.x509.certificate.subject.state
       ignore_missing: true
-  - set:
-      field: file.x509.subject.state_or_province
-      value: "{{zeek.x509.certificate.subject.state}}"
-      ignore_empty_value: true
+
   - remove:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"

@@ -106,11 +106,11 @@ An example event for `threat` looks as following:
 {
     "@timestamp": "2021-10-01T18:36:03.000Z",
     "agent": {
-        "ephemeral_id": "9d50b50e-cf01-4905-b2ed-3557c6d540db",
-        "id": "a7be703c-0d78-40ea-8ad7-a02245cca635",
+        "ephemeral_id": "37eb63bd-5e42-4366-be2e-c82dfceae102",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.3.2"
+        "version": "8.9.1"
     },
     "data_stream": {
         "dataset": "ti_threatq.threat",
@@ -121,19 +121,23 @@ An example event for `threat` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "a7be703c-0d78-40ea-8ad7-a02245cca635",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
         "snapshot": false,
-        "version": "8.3.2"
+        "version": "8.9.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "threat",
-        "created": "2022-08-01T16:06:47.804Z",
+        "category": [
+            "threat"
+        ],
+        "created": "2023-08-29T13:46:54.929Z",
         "dataset": "ti_threatq.threat",
-        "ingested": "2022-08-01T16:06:48Z",
+        "ingested": "2023-08-29T13:46:57Z",
         "kind": "enrichment",
         "original": "{\"adversaries\":[],\"attributes\":[{\"attribute_id\":5,\"created_at\":\"2021-10-01 18:36:06\",\"id\":4893068,\"indicator_id\":106767,\"name\":\"Contact\",\"touched_at\":\"2021-10-24 18:36:10\",\"updated_at\":\"2021-10-24 18:36:10\",\"value\":\"email:Quetzalcoatl_relays[]protonmail.com url:https://quetzalcoatl-relays.org proof:uri-rsa hoster:frantech.ca\"},{\"attribute_id\":9,\"created_at\":\"2021-10-01 18:36:06\",\"id\":4893069,\"indicator_id\":106767,\"name\":\"Router Port\",\"touched_at\":\"2021-10-24 18:36:10\",\"updated_at\":\"2021-10-24 18:36:10\",\"value\":\"9000\"},{\"attribute_id\":6,\"created_at\":\"2021-10-01 18:36:06\",\"id\":4893070,\"indicator_id\":106767,\"name\":\"Flags\",\"touched_at\":\"2021-10-02 18:36:08\",\"updated_at\":\"2021-10-02 18:36:08\",\"value\":\"ERDV\"}],\"class\":\"network\",\"created_at\":\"2021-10-01 18:36:03\",\"expires_calculated_at\":\"2021-10-23 18:40:17\",\"hash\":\"69beef49fdbd1f54eef3cab324c7b6cf\",\"id\":106767,\"published_at\":\"2021-10-01 18:36:03\",\"score\":0,\"sources\":[{\"created_at\":\"2021-10-01 18:36:06\",\"creator_source_id\":12,\"id\":3699669,\"indicator_id\":106767,\"indicator_status_id\":1,\"indicator_type_id\":15,\"name\":\"www.dan.me.uk Tor Node List\",\"published_at\":\"2021-10-01 18:36:06\",\"reference_id\":37,\"source_id\":12,\"source_type\":\"connectors\",\"updated_at\":\"2021-10-24 18:36:10\"}],\"status\":{\"description\":\"Poses a threat and is being exported to detection tools.\",\"id\":1,\"name\":\"Active\"},\"status_id\":1,\"touched_at\":\"2021-10-24 18:36:10\",\"type\":{\"class\":\"network\",\"id\":15,\"name\":\"IP Address\"},\"type_id\":15,\"updated_at\":\"2021-10-01 18:36:03\",\"value\":\"107.189.1.90\"}",
-        "type": "indicator"
+        "type": [
+            "indicator"
+        ]
     },
     "input": {
         "type": "httpjson"
