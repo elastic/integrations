@@ -53,17 +53,39 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   
-  # Change numbers to bool values
-  - set:
-      field: m365_defender.event.is_clicked_through
-      value: true
-      tag: set_m365_defender_event_is_clicked_through
-      if: ctx.json?.properties?.IsClickedThrough != null && ((ctx.json?.properties?.IsClickedThrough instanceof Boolean && ctx.json?.properties?.IsClickedThrough == true) || (ctx.json?.properties?.IsClickedThrough instanceof String && ctx.json?.properties?.IsClickedThrough == '1' || ctx.json?.properties?.IsClickedThrough == 'true') || (ctx.json?.properties?.IsClickedThrough instanceof Integer && ctx.json?.properties?.IsClickedThrough == 1))
-  - set:
-      field: m365_defender.event.is_clicked_through
-      value: false
-      tag: set_m365_defender_event_is_clicked_through
-      if: ctx.json?.properties?.IsClickedThrough != null && ((ctx.json?.properties?.IsClickedThrough instanceof Boolean && ctx.json?.properties?.IsClickedThrough == false) || (ctx.json?.properties?.IsClickedThrough instanceof String && ctx.json?.properties?.IsClickedThrough == '0' || ctx.json?.properties?.IsClickedThrough == 'false') || (ctx.json?.properties?.IsClickedThrough instanceof Integer && ctx.json?.properties?.IsClickedThrough == 0))
+# Numbers to boolean (Undocumented field types like string, numeric etc is possible, have to check all of them)
+  - script:
+      lang: painless
+      source: |
+       def isTruthy(def val) {
+          if (val == null) {
+            // Fast return if field is absent.
+            return null;
+          }
+          if (val instanceof Boolean) {
+            return val;
+          }
+          if (val instanceof Integer) {
+            if (val == 1) {
+              return true;
+            }
+            if (val == 0) {
+              return false;
+            }
+            return null;
+          }
+          if (val instanceof String) {
+            if (val == "1" || val == "true") {
+              return true;
+            }
+            if (val == "0" || val == "false") {
+              return false;
+            }
+            return null;
+          }
+          return null;
+        }
+        ctx.m365_defender.event.is_clicked_through = isTruthy(ctx.json?.properties?.IsClickedThrough);
 
   # Convert Processors
   - convert:

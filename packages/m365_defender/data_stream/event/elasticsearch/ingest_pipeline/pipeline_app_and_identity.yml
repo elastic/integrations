@@ -10,7 +10,7 @@ processors:
       field: event.category
       value: authentication
       tag: append_event_category
-      if: ctx.m365_defender?.event?.category?.toLowerCase().contains('identitylogonevents')
+      if: ctx.m365_defender?.event?.category != null && ctx.m365_defender?.event?.category?.toLowerCase().contains('identitylogonevents')
   - append:
       field: event.type
       value: info
@@ -122,47 +122,42 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
 
   # Numbers to boolean (Undocumented field types like string, numeric etc is possible, have to check all of them)
-  ## While the if conditions are long, the first one should be the correct one, and the rest is to ensure it works with other value types.
-  - set:
-      field: m365_defender.event.is_admin_operation
-      value: true
-      tag: set_m365_defender_event_is_admin_operation
-      if: ctx.json?.properties?.IsAdminOperation != null && ((ctx.json?.properties?.IsAdminOperation instanceof Boolean && ctx.json?.properties?.IsAdminOperation == true) || (ctx.json?.properties?.IsAdminOperation instanceof String && ctx.json?.properties?.IsAdminOperation == '1' || ctx.json?.properties?.IsAdminOperation == 'true') || (ctx.json?.properties?.IsAdminOperation instanceof Integer && ctx.json?.properties?.IsAdminOperation == 1))
-  - set:
-      field: m365_defender.event.is_admin_operation
-      value: false
-      tag: set_m365_defender_event_is_admin_operation
-      if: ctx.json?.properties?.IsAdminOperation != null && ((ctx.json?.properties?.IsAdminOperation instanceof Boolean && ctx.json?.properties?.IsAdminOperation == false) || (ctx.json?.properties?.IsAdminOperation instanceof String && ctx.json?.properties?.IsAdminOperation == '0' || ctx.json?.properties?.IsAdminOperation == 'false') || (ctx.json?.properties?.IsAdminOperation instanceof Integer && ctx.json?.properties?.IsAdminOperation == 0))
-  - set:
-      field: m365_defender.event.is_anonymous_proxy
-      value: true
-      tag: set_m365_defender_event_is_anonymous_proxy
-      if: ctx.json?.properties?.IsAnonymousProxy != null && ((ctx.json?.properties?.IsAnonymousProxy instanceof Boolean && ctx.json?.properties?.IsAnonymousProxy == true) || (ctx.json?.properties?.IsAnonymousProxy instanceof String && ctx.json?.properties?.IsAnonymousProxy == '1' || ctx.json?.properties?.IsAnonymousProxy == 'true') || (ctx.json?.properties?.IsAnonymousProxy instanceof Integer && ctx.json?.properties?.IsAnonymousProxy == 1))
-  - set:
-      field: m365_defender.event.is_anonymous_proxy
-      value: false
-      tag: set_m365_defender_event_is_anonymous_proxy
-      if: ctx.json?.properties?.IsAnonymousProxy != null && ((ctx.json?.properties?.IsAnonymousProxy instanceof Boolean && ctx.json?.properties?.IsAnonymousProxy == false) || (ctx.json?.properties?.IsAnonymousProxy instanceof String && ctx.json?.properties?.IsAnonymousProxy == '0' || ctx.json?.properties?.IsAnonymousProxy == 'false') || (ctx.json?.properties?.IsAnonymousProxy instanceof Integer && ctx.json?.properties?.IsAnonymousProxy == 0))
-  - set:
-      field: m365_defender.event.is_external_user
-      value: true
-      tag: set_m365_defender_event_is_external_user
-      if: ctx.json?.properties?.IsExternalUser != null && ((ctx.json?.properties?.IsExternalUser instanceof Boolean && ctx.json?.properties?.IsExternalUser == true) || (ctx.json?.properties?.IsExternalUser instanceof String && ctx.json?.properties?.IsExternalUser == '1' || ctx.json?.properties?.IsExternalUser == 'true') || (ctx.json?.properties?.IsExternalUser instanceof Integer && ctx.json?.properties?.IsExternalUser == 1))
-  - set:
-      field: m365_defender.event.is_external_user
-      value: false
-      tag: set_m365_defender_event_is_external_user
-      if: ctx.json?.properties?.IsExternalUser != null && ((ctx.json?.properties?.IsExternalUser instanceof Boolean && ctx.json?.properties?.IsExternalUser == false) || (ctx.json?.properties?.IsExternalUser instanceof String && ctx.json?.properties?.IsExternalUser == '0' || ctx.json?.properties?.IsExternalUser == 'false') || (ctx.json?.properties?.IsExternalUser instanceof Integer && ctx.json?.properties?.IsExternalUser == 0))
-  - set:
-      field: m365_defender.event.is_impersonated
-      value: true
-      tag: set_m365_defender_event_is_impersonated
-      if: ctx.json?.properties?.IsImpersonated != null && ((ctx.json?.properties?.IsImpersonated instanceof Boolean && ctx.json?.properties?.IsImpersonated == true) || (ctx.json?.properties?.IsImpersonated instanceof String && ctx.json?.properties?.IsImpersonated == '1' || ctx.json?.properties?.IsImpersonated == 'true') || (ctx.json?.properties?.IsImpersonated instanceof Integer && ctx.json?.properties?.IsImpersonated == 1))
-  - set:
-      field: m365_defender.event.is_impersonated
-      value: false
-      tag: set_m365_defender_event_is_impersonated
-      if: ctx.json?.properties?.IsImpersonated != null && ((ctx.json?.properties?.IsImpersonated instanceof Boolean && ctx.json?.properties?.IsImpersonated == false) || (ctx.json?.properties?.IsImpersonated instanceof String && ctx.json?.properties?.IsImpersonated == '0' || ctx.json?.properties?.IsImpersonated == 'false') || (ctx.json?.properties?.IsImpersonated instanceof Integer && ctx.json?.properties?.IsImpersonated == 0))
+  - script:
+      lang: painless
+      source: |
+       def isTruthy(def val) {
+          if (val == null) {
+            // Fast return if field is absent.
+            return null;
+          }
+          if (val instanceof Boolean) {
+            return val;
+          }
+          if (val instanceof Integer) {
+            if (val == 1) {
+              return true;
+            }
+            if (val == 0) {
+              return false;
+            }
+            return null;
+          }
+          if (val instanceof String) {
+            if (val == "1" || val == "true") {
+              return true;
+            }
+            if (val == "0" || val == "false") {
+              return false;
+            }
+            return null;
+          }
+          return null;
+        }
+        ctx.m365_defender.event.is_admin_operation = isTruthy(ctx.json?.properties?.IsAdminOperation);
+        ctx.m365_defender.event.is_anonymous_proxy = isTruthy(ctx.json?.properties?.IsAnonymousProxy);
+        ctx.m365_defender.event.is_external_user = isTruthy(ctx.json?.properties?.IsExternalUser);
+        ctx.m365_defender.event.is_impersonated = isTruthy(ctx.json?.properties?.IsImpersonated);
+
 
   # Rename Processors
   - rename:
@@ -436,12 +431,12 @@ processors:
       field: event.outcome
       value: 'success'
       tag: set_event_outcome
-      if: (ctx.m365_defender?.event?.failure_reason == null || ctx.m365_defender.event.failure_reason == '') && ctx.m365_defender?.event?.category?.toLowerCase() == 'advancedhunting-identitylogonevents'
+      if: (ctx.m365_defender?.event?.failure_reason == null || ctx.m365_defender.event.failure_reason == '') && ctx.m365_defender?.event?.category != null && ctx.m365_defender?.event?.category?.toLowerCase() == 'advancedhunting-identitylogonevents'
   - set:
       field: event.outcome
       value: 'failure'
       tag: set_event_outcome
-      if: (ctx.m365_defender?.event?.failure_reason != null && ctx.m365_defender.event.failure_reason != '') && ctx.m365_defender?.event?.category?.toLowerCase() == 'advancedhunting-identitylogonevents'
+      if: (ctx.m365_defender?.event?.failure_reason != null && ctx.m365_defender.event.failure_reason != '') && ctx.m365_defender?.event?.category != null && ctx.m365_defender?.event?.category?.toLowerCase() == 'advancedhunting-identitylogonevents'
   - set:
       field: event.id
       copy_from: m365_defender.event.report_id
@@ -470,7 +465,7 @@ processors:
       copy_from: m365_defender.event.account.sid
       ignore_empty_value: true
       tag: set_user_id
-      if: ctx.m365_defender?.event?.category?.toLowerCase().contains('identitylogonevents')
+      if: ctx.m365_defender?.event?.category != null && ctx.m365_defender?.event?.category?.toLowerCase().contains('identitylogonevents')
   - set:
       field: user.name
       copy_from: m365_defender.event.account.name
@@ -481,7 +476,7 @@ processors:
       copy_from: m365_defender.event.account.id
       ignore_empty_value: true
       tag: set_user_id
-      if: ctx.m365_defender?.event?.category?.toLowerCase().contains('cloudappevents')
+      if: ctx.m365_defender?.event?.category != null && ctx.m365_defender?.event?.category?.toLowerCase().contains('cloudappevents')
   - set:
       field: user.name
       copy_from: m365_defender.event.account.display_name
