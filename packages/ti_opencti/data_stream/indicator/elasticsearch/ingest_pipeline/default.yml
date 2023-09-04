@@ -643,19 +643,6 @@ processors:
           field: related.hosts
           value: "{{_ingest._value.domain}}"
           allow_duplicates: false
-  - script:
-      description: Remove null or empty items
-      lang: painless
-      source: |
-        if (ctx.related?.hosts != null) {
-          def result = [];
-          for (item in ctx.related.hosts) {
-              if (item != null && item != '') {
-                  result.add(item);
-              }
-          }
-          ctx.related.hosts = result;
-        }
 
   - set:
       field: related.ip
@@ -694,18 +681,32 @@ processors:
           field: related.user
           value: "{{_ingest._value.account_login}}"
           allow_duplicates: false
+
   - script:
-      description: Remove null or empty items
+      description: Remove null or empty items, remove list if empty
       lang: painless
       source: |
-        if (ctx.related?.user != null) {
-          def result = [];
-          for (item in ctx.related.user) {
-              if (item != null && item != '') {
-                  result.add(item);
-              }
+        def cleanUp(Map obj, String key) {
+          if (obj.containsKey(key) && obj[key] instanceof List) {
+            def result = [];
+            for (item in obj[key]) {
+                if (item != null && item != '') {
+                    result.add(item);
+                }
+            }
+            if (result.isEmpty()) {
+              obj.remove(key);
+            } else {
+              obj[key] = result;
+            }
           }
-          ctx.related.user = result;
+          return obj;
+        }
+        if (ctx.containsKey('related') && ctx.related != null) {
+          cleanUp(ctx.related, 'hash');
+          cleanUp(ctx.related, 'hosts');
+          cleanUp(ctx.related, 'ip');
+          cleanUp(ctx.related, 'user');
         }
 
   ##############################################
