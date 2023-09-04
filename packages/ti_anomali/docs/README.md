@@ -44,11 +44,11 @@ An example event for `threatstream` looks as following:
 {
     "@timestamp": "2020-10-08T12:22:11.000Z",
     "agent": {
-        "ephemeral_id": "f0d737e0-4a4d-4435-bd74-1e9b097127c9",
-        "id": "f41c9be7-bab7-4158-ac54-00e9fb56ac44",
+        "ephemeral_id": "784ec3d1-432a-4e36-9fe0-7eb9bb80c36b",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.1"
+        "version": "8.9.1"
     },
     "anomali": {
         "threatstream": {
@@ -80,19 +80,23 @@ An example event for `threatstream` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "f41c9be7-bab7-4158-ac54-00e9fb56ac44",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
         "snapshot": false,
-        "version": "8.8.1"
+        "version": "8.9.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "threat",
+        "category": [
+            "threat"
+        ],
         "dataset": "ti_anomali.threatstream",
-        "ingested": "2023-08-01T05:26:05Z",
+        "ingested": "2023-08-30T14:59:36Z",
         "kind": "enrichment",
         "original": "{\"added_at\":\"2020-10-08T12:22:11\",\"classification\":\"public\",\"confidence\":20,\"country\":\"FR\",\"date_first\":\"2020-10-08T12:21:50\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 184\",\"domain\":\"d4xgfj.example.net\",\"id\":3135167627,\"import_session_id\":1400,\"itype\":\"mal_domain\",\"lat\":-49.1,\"lon\":94.4,\"org\":\"OVH Hosting\",\"resource_uri\":\"/api/v1/intelligence/P46279656657/\",\"severity\":\"high\",\"source\":\"Default Organization\",\"source_feed_id\":3143,\"srcip\":\"89.160.20.156\",\"state\":\"active\",\"trusted_circle_ids\":\"122\",\"update_id\":3786618776,\"value_type\":\"domain\"}",
         "severity": 7,
-        "type": "indicator"
+        "type": [
+            "indicator"
+        ]
     },
     "input": {
         "type": "http_endpoint"
