@@ -52,10 +52,7 @@ There could be a possibility that for some of the fields, Citrix ADC sets dummy 
 
 #### Type conflicts
 
-If host.ip is shown conflicted under ``logs-*`` data view, then this issue can be solved by reindexing the ``Interface``, ``LBVserver``, ``Service``, ``System``, and ``VPN`` data stream's indices.
-
-Note:
-- This [document](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) provides details about reindexing.
+If host.ip is shown conflicted under ``logs-*`` data view, then this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the ``Interface``, ``LBVserver``, ``Service``, ``System``, and ``VPN`` data stream's indices.
 
 ## Metrics reference
 
