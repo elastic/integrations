@@ -77,6 +77,17 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      field: json.properties.ReportId
+      target_field: m365_defender.event.report_id
+      tag: convert_json_properties_ReportId
+      if: ctx.json?.properties?.ReportId != ''
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
       field: json.properties.AppInstanceId
       target_field: m365_defender.event.app_instance_id
       tag: convert_json_properties_AppInstanceId
@@ -278,11 +289,6 @@ processors:
       field: json.properties.AccountId
       target_field: m365_defender.event.account.id
       tag: rename_json_properties_AccountId
-      ignore_missing: true
-  - rename:
-      field: json.properties.ReportId
-      target_field: m365_defender.event.report_id
-      tag: rename_json_properties_ReportId
       ignore_missing: true
   - rename:
       field: json.properties.TargetAccountDisplayName
