@@ -86,7 +86,9 @@ This defaults to `/var/log/containers/*${kubernetes.container.id}.log`.
 
 #### Routing
 
-The container-logs data stream allows routing logs to a different *dataset* or *namespace* using pod labels. For example, by setting the pod label `elastic.co/dataset: nginx`, the integration will send all the container logs to the `nginx` dataset.
+The container-logs data stream allows routing logs to a different *dataset* or *namespace* using pod labels. 
+
+For example, suppose you are running Nginx on your Kubernetes cluster, and you want to drive the Nginx container logs into a dedicated dataset or namespace. By setting the pod label `elastic.co/namespace: nginx`, the integration will send all the container logs to the `nginx` namespace.
 
 To learn more about routing container-logs, see https://docs.elastic.co/integrations/kubernetes/container-logs.
 

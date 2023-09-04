@@ -72,7 +72,7 @@ kubectl -n kube-system label pods elastic-agent-managed-daemonset-6p22g elastic.
 Here are the labels available for customization:
 
 
-| Label                  | Description                                  |
-| ---------------------- | -------------------------------------------- |
-| `elastic.co/dataset`   | Defines the target dataset for this pod.     |
-| `elastic.co/namespace` | Defines the target namespace for this pod.   |
+| Label                  | Description                                              |
+| ---------------------- | -------------------------------------------------------- |
+| `elastic.co/dataset`   | Defines the target data stream's dataset for this pod.   |
+| `elastic.co/namespace` | Defines the target data stream's namespace for this pod. |
