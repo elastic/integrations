@@ -100,17 +100,17 @@ processors:
       if: ctx.zeek.ocsp.update?.next != null
   - append:
       field: related.hash
-      value: "{{zeek.ocsp.issuerNameHash}}"
-      if: "ctx?.zeek?.ocsp?.issuerNameHash != null"
+      value: "{{{zeek.ocsp.issuerNameHash}}}"
+      if: "ctx.zeek?.ocsp?.issuerNameHash != null"
       allow_duplicates: false
   - append:
       field: related.hash
-      value: "{{zeek.ocsp.issuerKeyHash}}"
-      if: "ctx?.zeek?.ocsp?.issuerKeyHash != null"
+      value: "{{{zeek.ocsp.issuerKeyHash}}}"
+      if: "ctx.zeek?.ocsp?.issuerKeyHash != null"
       allow_duplicates: false
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 on_failure:

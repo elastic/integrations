@@ -40,7 +40,7 @@ processors:
   - set:
       field: file.mime_type
       copy_from: zeek.files.mime_type
-      if: ctx?.zeek?.files?.mime_type != null
+      if: ctx.zeek?.files?.mime_type != null
   - rename:
       field: zeek.files.filename
       target_field: file.name
@@ -52,15 +52,15 @@ processors:
   - set:
       field: file.hash.md5
       copy_from: zeek.files.md5
-      if: ctx?.zeek?.files?.md5 != null
+      if: ctx.zeek?.files?.md5 != null
   - set:
       field: file.hash.sha1
       copy_from: zeek.files.sha1
-      if: ctx?.zeek?.files?.sha1 != null
+      if: ctx.zeek?.files?.sha1 != null
   - set:
       field: file.hash.sha256
       copy_from: zeek.files.sha256
-      if: ctx?.zeek?.files?.sha256 != null
+      if: ctx.zeek?.files?.sha256 != null
   - date:
       field: zeek.files.ts
       formats:
@@ -82,7 +82,7 @@ processors:
       processor:
         append:
           field: related.ip
-          value: "{{_ingest._value}}"
+          value: "{{{_ingest._value}}}"
       ignore_missing: true
   - script:
       lang: painless
@@ -91,13 +91,13 @@ processors:
   - set:
       field: server.ip
       copy_from: zeek.files.tx_host
-      if: "ctx?.zeek?.files?.tx_host != null"
+      if: "ctx.zeek?.files?.tx_host != null"
   - foreach:
       field: zeek.files.rx_hosts
       processor:
         append:
           field: related.ip
-          value: "{{_ingest._value}}"
+          value: "{{{_ingest._value}}}"
       ignore_missing: true
   - script:
       lang: painless
@@ -105,22 +105,22 @@ processors:
       ignore_failure: true
   - set:
       field: client.ip
-      value: "{{zeek.files.rx_host}}"
-      if: "ctx?.zeek?.files?.rx_host != null"
+      value: "{{{zeek.files.rx_host}}}"
+      if: "ctx.zeek?.files?.rx_host != null"
   - append:
       field: related.hash
-      value: "{{file.hash.md5}}"
-      if: "ctx?.file?.hash?.md5 != null"
+      value: "{{{file.hash.md5}}}"
+      if: "ctx.file?.hash?.md5 != null"
       allow_duplicates: false
   - append:
       field: related.hash
-      value: "{{file.hash.sha1}}"
-      if: "ctx?.file?.hash?.sha1 != null"
+      value: "{{{file.hash.sha1}}}"
+      if: "ctx.file?.hash?.sha1 != null"
       allow_duplicates: false
   - append:
       field: related.hash
-      value: "{{file.hash.sha256}}"
-      if: "ctx?.file?.hash?.sha256 != null"
+      value: "{{{file.hash.sha256}}}"
+      if: "ctx.file?.hash?.sha256 != null"
       allow_duplicates: false
   - remove:
       field: 
@@ -128,7 +128,7 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 on_failure:

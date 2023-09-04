@@ -48,11 +48,11 @@ processors:
   - set:
       field: source.ip
       copy_from: source.address
-      if: ctx?.source?.address != null
+      if: ctx.source?.address != null
   - set:
       field: destination.ip
       copy_from: destination.address
-      if: ctx?.destination?.address != null
+      if: ctx.destination?.address != null
   - date:
       field: zeek.traceroute.ts
       formats:
@@ -102,22 +102,22 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
-      value: "{{source.ip}}"
-      if: "ctx?.source?.ip != null"
+      value: "{{{source.ip}}}"
+      if: "ctx.source?.ip != null"
       allow_duplicates: false
   - append:
       field: related.ip
-      value: "{{destination.ip}}"
-      if: "ctx?.destination?.ip != null"
+      value: "{{{destination.ip}}}"
+      if: "ctx.destination?.ip != null"
       allow_duplicates: false
   - remove:
       field: 
         - zeek.traceroute
       ignore_missing: true
-      if: 'ctx?.zeek?.traceroute == null || ctx?.zeek?.traceroute.isEmpty()'
+      if: 'ctx.zeek?.traceroute == null || ctx.zeek?.traceroute.isEmpty()'
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 on_failure:

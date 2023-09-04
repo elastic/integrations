@@ -84,27 +84,27 @@ processors:
   - set:
       field: event.id
       copy_from: zeek.session_id
-      if: ctx?.zeek?.session_id != null
+      if: ctx.zeek?.session_id != null
   - set:
       field: source.ip
       copy_from: source.address
-      if: ctx?.source?.address != null
+      if: ctx.source?.address != null
   - set:
       field: destination.ip
       copy_from: destination.address
-      if: ctx?.destination?.address != null
+      if: ctx.destination?.address != null
   - set:
       field: event.action
       copy_from: zeek.smb_files.action
-      if: ctx?.zeek?.smb_files?.action != null
+      if: ctx.zeek?.smb_files?.action != null
   - set:
       field: file.name
       copy_from: zeek.smb_files.name
-      if: ctx?.zeek?.smb_files?.name != null
+      if: ctx.zeek?.smb_files?.name != null
   - set:
       field: file.size
       copy_from: zeek.smb_files.size
-      if: ctx?.zeek?.smb_files?.size != null
+      if: ctx.zeek?.smb_files?.size != null
   - date:
       field: zeek.smb_files.ts
       formats:
@@ -133,8 +133,8 @@ processors:
       if: ctx.zeek.smb_files.times?.accessed != null
   - set:
       field: file.accessed
-      value: "{{zeek.smb_files.times.accessed}}"
-      if: "ctx?.zeek?.smb_files?.times?.accessed != null"
+      value: "{{{zeek.smb_files.times.accessed}}}"
+      if: "ctx.zeek?.smb_files?.times?.accessed != null"
   - date:
       field: zeek.smb_files.times.changed
       target_field: zeek.smb_files.times.changed
@@ -144,8 +144,8 @@ processors:
       if: ctx.zeek.smb_files.times?.accessed != null
   - set:
       field: file.ctime
-      value: "{{zeek.smb_files.times.changed}}"
-      if: "ctx?.zeek?.smb_files?.times?.changed != null"
+      value: "{{{zeek.smb_files.times.changed}}}"
+      if: "ctx.zeek?.smb_files?.times?.changed != null"
   - date:
       field: zeek.smb_files.times.created
       target_field: zeek.smb_files.times.created
@@ -155,8 +155,8 @@ processors:
       if: ctx.zeek.smb_files.times?.accessed != null
   - set:
       field: file.created
-      value: "{{zeek.smb_files.times.created}}"
-      if: "ctx?.zeek?.smb_files?.times?.created != null"
+      value: "{{{zeek.smb_files.times.created}}}"
+      if: "ctx.zeek?.smb_files?.times?.created != null"
   - date:
       field: zeek.smb_files.times.modified
       target_field: zeek.smb_files.times.modified
@@ -166,8 +166,8 @@ processors:
       if: ctx.zeek.smb_files.times?.accessed != null
   - set:
       field: file.mtime
-      value: "{{zeek.smb_files.times.modified}}"
-      if: "ctx?.zeek?.smb_files?.times?.modified != null"
+      value: "{{{zeek.smb_files.times.modified}}}"
+      if: "ctx.zeek?.smb_files?.times?.modified != null"
   - geoip:
       field: destination.ip
       target_field: destination.geo
@@ -210,35 +210,35 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
-      value: "{{source.ip}}"
-      if: "ctx?.source?.ip != null"
+      value: "{{{source.ip}}}"
+      if: "ctx.source?.ip != null"
       allow_duplicates: false
   - append:
       field: related.ip
-      value: "{{destination.ip}}"
-      if: "ctx?.destination?.ip != null"
+      value: "{{{destination.ip}}}"
+      if: "ctx.destination?.ip != null"
       allow_duplicates: false
   - append:
       field: related.user
-      value: "{{user.name}}"
-      if: "ctx?.user?.name != null"
+      value: "{{{user.name}}}"
+      if: "ctx.user?.name != null"
       allow_duplicates: false
   - set:
       field: file.path
-      value: "{{zeek.smb_files.path}}\\{{zeek.smb_files.name}}"
-      if: "ctx?.zeek?.smb_files?.path != null && ctx?.zeek?.smb_files?.name != null"
+      value: "{{{zeek.smb_files.path}}}\\{{{zeek.smb_files.name}}}"
+      if: "ctx.zeek?.smb_files?.path != null && ctx.zeek?.smb_files?.name != null"
   - append:
       field: event.type
       value: deletion
-      if: "ctx?.zeek?.smb_files?.action == 'SMB::FILE_DELETE'"
+      if: "ctx.zeek?.smb_files?.action == 'SMB::FILE_DELETE'"
   - append:
       field: event.type
       value: change
-      if: "ctx?.zeek?.smb_files?.action == 'SMB::FILE_RENAME' || ctx?.zeek?.smb_files?.action == 'SMB::FILE_SET_ATTRIBUTE'"
+      if: "ctx.zeek?.smb_files?.action == 'SMB::FILE_RENAME' || ctx.zeek?.smb_files?.action == 'SMB::FILE_SET_ATTRIBUTE'"
   - append:
       field: event.type
       value: info
-      if: "ctx?.zeek?.smb_files?.action != null && ctx.zeek.smb_files != 'SMB::FILE_DELETE' && ctx.zeek.smb_files != 'SMB::FILE_RENAME' && ctx.zeek.smb_files != 'SMB::FILE_SET_ATTRIBUTE'"
+      if: "ctx.zeek?.smb_files?.action != null && ctx.zeek.smb_files != 'SMB::FILE_DELETE' && ctx.zeek.smb_files != 'SMB::FILE_RENAME' && ctx.zeek.smb_files != 'SMB::FILE_SET_ATTRIBUTE'"
   - community_id:
       target_field: network.community_id
   - remove:
@@ -247,7 +247,7 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 on_failure:

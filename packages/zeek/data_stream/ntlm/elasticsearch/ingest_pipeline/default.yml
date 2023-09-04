@@ -100,11 +100,11 @@ processors:
   - set:
       field: user.name
       copy_from: zeek.ntlm.username
-      if: ctx?.zeek?.ntlm?.username != null
+      if: ctx.zeek?.ntlm?.username != null
   - set:
       field: user.domain
       copy_from: zeek.ntlm.domain
-      if: ctx?.zeek?.ntlm?.domain != null
+      if: ctx.zeek?.ntlm?.domain != null
   - set:
       field: event.id
       copy_from: zeek.session_id
@@ -112,19 +112,19 @@ processors:
   - set:
       field: source.ip
       copy_from: source.address
-      if: ctx?.source?.address != null
+      if: ctx.source?.address != null
   - set:
       field: destination.ip
       copy_from: destination.address
-      if: ctx?.destination?.address != null
+      if: ctx.destination?.address != null
   - set:
       field: event.outcome
       value: success
-      if: ctx?.zeek?.ntlm?.success == true
+      if: ctx.zeek?.ntlm?.success == true
   - set:
       field: event.outcome
       value: failure
-      if: ctx?.zeek?.ntlm?.success == false
+      if: ctx.zeek?.ntlm?.success == false
   - date:
       field: zeek.ntlm.ts
       formats:
@@ -134,18 +134,18 @@ processors:
       field: zeek.ntlm.ts
   - append:
       field: related.ip
-      value: "{{source.ip}}"
-      if: "ctx?.source?.ip != null"
+      value: "{{{source.ip}}}"
+      if: "ctx.source?.ip != null"
       allow_duplicates: false
   - append:
       field: related.ip
-      value: "{{destination.ip}}"
-      if: "ctx?.destination?.ip != null"
+      value: "{{{destination.ip}}}"
+      if: "ctx.destination?.ip != null"
       allow_duplicates: false
   - append:
       field: related.user
-      value: "{{user.name}}"
-      if: "ctx?.user?.name != null"
+      value: "{{{user.name}}}"
+      if: "ctx.user?.name != null"
       allow_duplicates: false
   - geoip:
       field: destination.ip
@@ -197,7 +197,7 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 on_failure:

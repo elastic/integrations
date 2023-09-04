@@ -111,26 +111,26 @@ processors:
       field: source.port
       target_field: zeek.connection.icmp.type
       ignore_missing: true
-      if: 'ctx?.network?.transport == "icmp"'
+      if: 'ctx.network?.transport == "icmp"'
   - rename:
       field: destination.port
       target_field: zeek.connection.icmp.code
       ignore_missing: true
-      if: 'ctx?.network?.transport == "icmp"'
+      if: 'ctx.network?.transport == "icmp"'
   - set:
       field: source.ip
       copy_from: source.address
-      if: ctx?.source?.address != null
+      if: ctx.source?.address != null
   - set:
       field: destination.ip
       copy_from: destination.address
-      if: ctx?.destination?.address != null
+      if: ctx.destination?.address != null
   - community_id:
-      if: 'ctx?.network?.transport != "icmp"'
+      if: 'ctx.network?.transport != "icmp"'
   - community_id:
       icmp_type: zeek.connection.icmp.type
       icmp_code: zeek.connection.icmp.code
-      if: 'ctx?.network?.transport == "icmp"'
+      if: 'ctx.network?.transport == "icmp"'
   - date:
       field: zeek.connection.ts
       formats:
@@ -151,23 +151,23 @@ processors:
       field: tags
       value: 
         - local_orig
-      if: ctx?.zeek?.connection?.local_orig != null
+      if: ctx.zeek?.connection?.local_orig != null
       allow_duplicates: false
   - append:
       field: tags
       value: 
         - local_resp
-      if: ctx?.zeek?.connection?.local_resp != null
+      if: ctx.zeek?.connection?.local_resp != null
       allow_duplicates: false
   - append:
       field: related.ip
-      value: "{{source.ip}}"
-      if: ctx?.source?.ip != null
+      value: "{{{source.ip}}}"
+      if: ctx.source?.ip != null
       allow_duplicates: false
   - append:
       field: related.ip
-      value: "{{destination.ip}}"
-      if: ctx?.destination?.ip != null
+      value: "{{{destination.ip}}}"
+      if: ctx.destination?.ip != null
       allow_duplicates: false
   - script:
       source: ctx.network.packets = ctx.source.packets + ctx.destination.packets
@@ -177,8 +177,8 @@ processors:
       ignore_failure: true
   - script:
       source: |-
-        if (ctx?.zeek?.connection?.local_orig == null ||
-            ctx?.zeek?.connection?.local_resp == null) {
+        if (ctx.zeek?.connection?.local_orig == null ||
+            ctx.zeek?.connection?.local_resp == null) {
           return;
         }
         if (ctx.zeek.connection.local_orig == true &&
@@ -204,11 +204,11 @@ processors:
   - geoip:
       field: destination.ip
       target_field: destination.geo
-      if: ctx?.destination?.ip != null
+      if: ctx.destination?.ip != null
   - geoip:
       field: source.ip
       target_field: source.geo
-      if: ctx?.source?.ip != null
+      if: ctx.source?.ip != null
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
@@ -311,7 +311,7 @@ processors:
             - connection
             - info
       source: >-
-        if (ctx?.zeek?.connection?.state == null) {
+        if (ctx.zeek?.connection?.state == null) {
           return;
         }
         if (params.containsKey(ctx.zeek.connection.state)) {
@@ -330,7 +330,7 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 on_failure:

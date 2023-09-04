@@ -97,52 +97,52 @@ processors:
   - append:
       field: dns.header_flags
       value: AA
-      if: ctx?.zeek?.dns?.AA == true
+      if: ctx.zeek?.dns?.AA == true
   - append:
       field: dns.header_flags
       value: TC
-      if: ctx?.zeek?.dns?.TC == true
+      if: ctx.zeek?.dns?.TC == true
   - append:
       field: dns.header_flags
       value: RD
-      if: ctx?.zeek?.dns?.RD == true
+      if: ctx.zeek?.dns?.RD == true
   - append:
       field: dns.header_flags
       value: RA
-      if: ctx?.zeek?.dns?.RA == true
+      if: ctx.zeek?.dns?.RA == true
   - set:
       field: dns.question.class
       value: IN
-      if: ctx?.zeek?.dns?.qclass == 1
+      if: ctx.zeek?.dns?.qclass == 1
   - set:
       field: dns.question.class
       value: CH
-      if: ctx?.zeek?.dns?.qclass == 3
+      if: ctx.zeek?.dns?.qclass == 3
   - set:
       field: dns.question.class
       value: HS
-      if: ctx?.zeek?.dns?.qclass == 4
+      if: ctx.zeek?.dns?.qclass == 4
   - set:
       field: dns.question.class
       value: NONE
-      if: ctx?.zeek?.dns?.qclass == 254
+      if: ctx.zeek?.dns?.qclass == 254
   - set:
       field: dns.question.class
       value: ANY
-      if: ctx?.zeek?.dns?.qclass == 255
+      if: ctx.zeek?.dns?.qclass == 255
   - set:
       field: dns.type
       value: answer
-      if: ctx?.zeek?.dns?.rcode_name != null
+      if: ctx.zeek?.dns?.rcode_name != null
   - set:
       field: dns.type
       value: query
-      if: ctx?.dns?.type == null
+      if: ctx.dns?.type == null
   - script:
       lang: painless
       source: >-
         ctx.event.duration = ctx.zeek.dns.rtt * 1000000000L;
-      if: "ctx?.zeek?.dns?.rtt != null"
+      if: "ctx.zeek?.dns?.rtt != null"
   - script:
       lang: painless
       source: >-
@@ -158,11 +158,11 @@ processors:
             "ttl": (int)ttls[i]
           ])
         }
-        if (ctx?.dns == null) {
+        if (ctx.dns == null) {
           ctx.dns = new HashMap();
         }
         ctx.dns.answers = lst;
-      if: "ctx?.zeek?.dns?.answers != null && ctx?.zeek?.dns?.TTLs != null"
+      if: "ctx.zeek?.dns?.answers != null && ctx.zeek?.dns?.TTLs != null"
   - foreach:
       field: dns.answers
       processor:
@@ -172,7 +172,7 @@ processors:
           type: ip
           ignore_failure: true
           ignore_missing: true
-      if: 'ctx?.dns?.answers != null && !ctx?.dns?.answers.isEmpty()'
+      if: 'ctx.dns?.answers != null && !ctx.dns?.answers.isEmpty()'
   - script:
       lang: painless
       source: >-
@@ -185,15 +185,15 @@ processors:
           }
         }
         ctx.dns.resolved_ip = iplist;
-      if: 'ctx?.dns?.answers != null && !ctx?.dns?.answers.isEmpty()'
+      if: 'ctx.dns?.answers != null && !ctx.dns?.answers.isEmpty()'
   - set:
       field: event.outcome
       value: success
-      if: ctx?.dns?.rcode == 0
+      if: ctx.dns?.rcode == 0
   - set:
       field: event.outcome
       value: success
-      if: ctx?.event?.outcome == null
+      if: ctx.event?.outcome == null
   - convert:
       field: zeek.dns.trans_id
       type: string
@@ -273,19 +273,19 @@ processors:
       target_field: network.community_id
   - append:
       field: related.ip
-      value: "{{source.ip}}"
-      if: ctx?.source?.address != null
+      value: "{{{source.ip}}}"
+      if: ctx.source?.address != null
       allow_duplicates: false
   - append:
       field: related.ip
-      value: "{{destination.ip}}"
-      if: ctx?.destination?.ip != null
+      value: "{{{destination.ip}}}"
+      if: ctx.destination?.ip != null
       allow_duplicates: false
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
-      if: ctx?.event?.original == null
+      if: ctx.event?.original == null
   - remove:
       field: 
         - zeek.dns.Z
@@ -295,7 +295,7 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 on_failure:
