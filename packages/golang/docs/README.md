@@ -258,7 +258,7 @@ An example event for `expvar` looks as following:
 | golang.expvar.buck_hash_sys.bytes | Bytes of memory in profiling bucket hash tables. | long | byte | gauge |
 | golang.expvar.cmdline | The cmdline of this Go program start with. | keyword |  |  |
 | golang.expvar.gc.forced | The number of GC cycles that were forced by the application calling the GC function. | long |  | counter |
-| golang.expvar.gc.last_finished.ns | The time the last garbage collection finished. | long | nanos |  |
+| golang.expvar.gc.last_finished.ns | The time the last garbage collection finished. | long | nanos | counter |
 | golang.expvar.gc.metadata.memory.bytes | Bytes of memory in garbage collection metadata. | long | byte | gauge |
 | golang.expvar.mcache.allocated.bytes | Bytes of allocated mcache structures. | long | byte | gauge |
 | golang.expvar.mcache.obtained.bytes | Bytes of memory obtained from the OS for mcache structures. | long | byte | gauge |
