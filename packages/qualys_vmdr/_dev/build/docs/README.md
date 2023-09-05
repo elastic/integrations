@@ -10,7 +10,7 @@ This module has been tested against the latest Qualys VMDR version **v2**.
 
 ## Data streams
 
-The Qualys VMDR integration collects logs for the following two events:
+The Qualys VMDR integration collects data for the following two events:
 
 | Event Type                    |
 |-------------------------------|
@@ -58,7 +58,7 @@ The minimum **kibana.version** required is **8.9.0**.
 2. In "Search for integrations" search bar, type Qualys VMDR
 3. Click on the "Qualys VMDR" integration from the search results.
 4. Click on the Add Qualys VMDR Integration button to add the integration.
-5. While adding the integration, if you want to collect Asset Host Detection logs via REST API, then you have to put the following details:
+5. While adding the integration, if you want to collect Asset Host Detection data via REST API, then you have to put the following details:
    - username
    - password
    - url
@@ -66,7 +66,7 @@ The minimum **kibana.version** required is **8.9.0**.
    - input parameters
    - batch size
 
-   or if you want to collect Knowledge Base logs via REST API, then you have to put the following details:
+   or if you want to collect Knowledge Base data via REST API, then you have to put the following details:
    - username
    - password
    - url
@@ -76,7 +76,7 @@ The minimum **kibana.version** required is **8.9.0**.
 
 **NOTE**: By default, the input parameter is set to "action=list".
 
-## Logs reference
+## Data reference
 
 ### Asset Host Detection
 
