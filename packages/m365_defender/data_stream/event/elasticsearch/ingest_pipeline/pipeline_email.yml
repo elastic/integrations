@@ -1,6 +1,12 @@
 ---
 description: Pipeline for processing Email Event logs.
 processors:
+  # ctx.m365_defender.event.category is required for the event to be processed correctly as documented in the initial pipeline.
+  # Rather than checking it in every processor we check it once here.
+  - fail:
+      message: 'Event does not contain a valid category.'
+      tag: fail_event_category
+      if: ctx.m365_defender.event.category == null || ctx.m365_defender.event.category == ''
   # Event Categorization
   - set:
       field: event.kind
@@ -10,7 +16,7 @@ processors:
       field: event.category
       value: email
       tag: append_event_category
-      if: '!ctx.m365_defender?.event?.category?.toLowerCase().contains("urlclickevents")'
+      if: '!ctx.m365_defender.event.category.toLowerCase().contains("urlclickevents")'
   - append:
       field: event.category
       value: file
@@ -20,7 +26,7 @@ processors:
       field: event.type
       value: info
       tag: append_event_type
-      if: '!ctx.m365_defender?.event?.category?.toLowerCase().contains("urlclickevents")'
+      if: '!ctx.m365_defender.event.category.toLowerCase().contains("urlclickevents")'
   - append:
       field: event.type
       value: info
@@ -581,10 +587,10 @@ processors:
         - m365_defender.event.action.type
       ignore_missing: true
 on_failure:
-  - set:
-      field: event.kind
-      value: pipeline_error
   - append:
       field: error.message
       value: |-
-        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error

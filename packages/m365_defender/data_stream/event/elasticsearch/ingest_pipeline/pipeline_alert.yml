@@ -10,22 +10,22 @@ processors:
       field: event.category
       value: file
       tag: append_event_category_file
-      if: ctx.json?.properties?.EntityType != null && ctx.json?.properties?.EntityType?.toLowerCase() == 'file'
+      if: ctx.json?.properties?.EntityType != null && ctx.json.properties.EntityType.toLowerCase() == 'file'
   - append:
       field: event.category
       value: process
       tag: append_event_category_process
-      if: ctx.json?.properties?.EntityType != null && ctx.json?.properties?.EntityType?.toLowerCase() == 'process'
+      if: ctx.json?.properties?.EntityType != null && ctx.json.properties.EntityType.toLowerCase() == 'process'
   - append:
       field: event.category
       value: host
       tag: append_event_category_host
-      if: ctx.json?.properties?.EntityType != null && ctx.json?.properties?.EntityType?.toLowerCase() == 'device'
+      if: ctx.json?.properties?.EntityType != null && ctx.json.properties.EntityType.toLowerCase() == 'device'
   - append:
       field: event.category
       value: iam
       tag: append_event_category_iam
-      if: ctx.json?.properties?.EntityType != null && ctx.json?.properties?.EntityType?.toLowerCase() == 'user'
+      if: ctx.json?.properties?.EntityType != null && ctx.json.properties.EntityType.toLowerCase() == 'user'
   - append:
       field: event.category
       value: malware
@@ -51,7 +51,7 @@ processors:
   - json:
       field: json.properties.Categories
       tag: json_properties_Categories
-      if: ctx.json?.properties?.Categories != null && ctx.json.properties.Categories instanceof String && ctx.json.properties.Categories != ''
+      if: ctx.json?.properties?.Categories instanceof String && ctx.json.properties.Categories != ''
       on_failure:
         - append:
             field: error.message
@@ -59,7 +59,7 @@ processors:
   - json:
       field: json.properties.AdditionalFields
       tag: json_properties_AdditionalFields
-      if: ctx.json?.properties?.AdditionalFields != null && ctx.json.properties.AdditionalFields instanceof String && ctx.json.properties.AdditionalFields != ''
+      if: ctx.json?.properties?.AdditionalFields instanceof String && ctx.json.properties.AdditionalFields != ''
       on_failure:
         - append:
             field: error.message
@@ -67,7 +67,7 @@ processors:
   - json:
       field: json.properties.AttackTechniques
       tag: json_properties_AttackTechniques
-      if: ctx.json?.properties?.AttackTechniques != null && ctx.json.properties.AttackTechniques instanceof String && ctx.json.properties.AttackTechniques != ''
+      if: ctx.json?.properties?.AttackTechniques instanceof String && ctx.json.properties.AttackTechniques != ''
       on_failure:
         - append:
             field: error.message
@@ -304,22 +304,22 @@ processors:
   - set:
       field: event.severity
       value: 1
-      tag: set_event_severity
+      tag: set_event_severity_info
       if: ctx.m365_defender?.event?.severity == 'informational'
   - set:
       field: event.severity
       value: 2
-      tag: set_event_severity
+      tag: set_event_severity_low
       if: ctx.m365_defender?.event?.severity == 'low'
   - set:
       field: event.severity
       value: 3
-      tag: set_event_severity
+      tag: set_event_severity_medium
       if: ctx.m365_defender?.event?.severity == 'medium'
   - set:
       field: event.severity
       value: 4
-      tag: set_event_severity
+      tag: set_event_severity_high
       if: ctx.m365_defender?.event?.severity == 'high'
 
   # Host mapping
@@ -331,7 +331,7 @@ processors:
   - lowercase:
       field: host.name
       tag: lowercase_host_name
-      if: ctx.host?.name != null
+      ignore_missing: true
   - set:
       field: host.id
       copy_from: m365_defender.event.device.id
@@ -362,22 +362,20 @@ processors:
       if: ctx.process?.command_line != null && ctx.process.command_line != ''
       source: |
         def commandLine = ctx.process.command_line;
-        if (commandLine != null) {
-          commandLine = commandLine.trim();
-          if (commandLine != "") {
-            ctx.process.command_line = commandLine;
-        
-            def args = new ArrayList();
-            for (def v : / /.split(commandLine)) {
-                if (v != "") {
-                    args.add(v);
-                }
-            }
-            if (args.length > 0) {
-                ctx.process.executable = args[0];
-                ctx.process.args = args;
-                ctx.process.args_count = args.length;
-            }
+        commandLine = commandLine.trim();
+        if (commandLine != "") {
+          ctx.process.command_line = commandLine;
+      
+          def args = new ArrayList();
+          for (def v : / /.split(commandLine)) {
+              if (v != "") {
+                  args.add(v);
+              }
+          }
+          if (args.length > 0) {
+              ctx.process.executable = args[0];
+              ctx.process.args = args;
+              ctx.process.args_count = args.length;
           }
         }
 
@@ -390,10 +388,10 @@ processors:
       if: ctx.event?.category != null && ctx.event.category.contains('threat')
   - append:
       field: threat.indicator.registry.data.strings
-      value: m365_defender.event.registry.value_data
+      value: '{{{m365_defender.event.registry.value_data}}}'
       allow_duplicates: false
       tag: append_threat_indicator_registry_data_strings
-      if: ctx.event?.category != null && ctx.event.category.contains('threat')
+      if: ctx.event?.category != null && ctx.event.category.contains('threat') && ctx.m365_defender?.event?.registry?.value_data != null
   - set:
       field: threat.indicator.registry.value
       copy_from: m365_defender.event.registry.value_name
@@ -440,7 +438,7 @@ processors:
       description: Extract threat subtechnique id & name.
       lang: painless
       tag: script_extract_subtechnique_id_name
-      if: ctx.m365_defender?.event?.attack_techniques != null && ctx.m365_defender.event.attack_techniques != '' && ctx.m365_defender.event.attack_techniques instanceof List
+      if: ctx.m365_defender?.event?.attack_techniques instanceof List
       ignore_failure: true
       source: |
         def subtechnique_name = new ArrayList();
@@ -527,10 +525,10 @@ processors:
       if: ctx.event?.category != null && !ctx.event.category.contains('threat')
   - append:
       field: registry.data.strings
-      value: m365_defender.event.registry.value_data
+      value: '{{{m365_defender.event.registry.value_data}}}'
       tag: append_registry_data_strings
       allow_duplicates: false
-      if: ctx.event?.category != null && !ctx.event.category.contains('threat')
+      if: ctx.event?.category != null && !ctx.event.category.contains('threat') && ctx.m365_defender?.event?.registry?.value_data != null
 
   # Destination mapping
   - set:
@@ -684,7 +682,7 @@ on_failure:
   - append:
       field: error.message
       value: |-
-        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
-  - append:
-      field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error

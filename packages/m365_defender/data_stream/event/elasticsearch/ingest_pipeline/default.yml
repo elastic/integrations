@@ -71,22 +71,35 @@ processors:
       ignore_empty_value: true
   
   # Pipeline Processors
+  # ctx.m365_defender.event.category is created by Eventhub when retrieving data from M365 Defender.
+  # It represents the data table that it accessed, and is a required field for the pipeline to work.
+  # Two processors are added to catch if the field is missing, or if it is not a valid value rather than dropping the event.
+  - append:
+      field: error.message
+      value: 'Missing required field: m365_defender.event.category.'
+      tag: append_missing_required_field_m365_defender_event_category
+      if: ctx.m365_defender?.event?.category == null || ctx.m365_defender?.event?.category == ""
+  - append:
+      field: error.message
+      value: 'The event category {{{m365_defender.event.category}}} is not supported.'
+      tag: append_invalid_m365_defender_event_category
+      if: ctx.m365_defender?.event?.category != null && !['AdvancedHunting-AlertEvidence','AdvancedHunting-AlertInfo','AdvancedHunting-DeviceEvents','AdvancedHunting-DeviceFileCertificateInfo','AdvancedHunting-DeviceFileEvents','AdvancedHunting-DeviceImageLoadEvents','AdvancedHunting-DeviceInfo','AdvancedHunting-DeviceLogonEvents','AdvancedHunting-DeviceNetworkEvents','AdvancedHunting-DeviceNetworkInfo','AdvancedHunting-DeviceProcessEvents','AdvancedHunting-DeviceRegistryEvents','AdvancedHunting-EmailAttachmentInfo','AdvancedHunting-EmailEvents','AdvancedHunting-EmailPostDeliveryEvents','AdvancedHunting-EmailUrlInfo','AdvancedHunting-IdentityLogonEvents','AdvancedHunting-IdentityQueryEvents','AdvancedHunting-IdentityDirectoryEvents','AdvancedHunting-CloudAppEvents','AdvancedHunting-UrlClickEvents'].contains(ctx.m365_defender.event.category)
   - pipeline:
       name: '{{ IngestPipeline "pipeline_alert" }}'
       tag: pipeline_alert
-      if: ctx.m365_defender?.event?.category?.toLowerCase().contains('alert')
+      if: ctx.m365_defender?.event?.category != null && ctx.m365_defender.event.category.toLowerCase().contains('alert')
   - pipeline:
       name: '{{ IngestPipeline "pipeline_device" }}'
       tag: pipeline_device
-      if: ctx.m365_defender?.event?.category?.toLowerCase().contains('device')
+      if: ctx.m365_defender?.event?.category != null && ctx.m365_defender.event.category.toLowerCase().contains('device')
   - pipeline:
       name: '{{ IngestPipeline "pipeline_email" }}'
       tag: pipeline_email
-      if: ctx.m365_defender?.event?.category?.toLowerCase().contains('email') || ctx.m365_defender?.event?.category?.toLowerCase().contains('urlclickevents')
+      if: ctx.m365_defender?.event?.category != null && (ctx.m365_defender.event.category.toLowerCase().contains('email') || ctx.m365_defender.event.category.toLowerCase().contains('urlclickevents'))
   - pipeline:
       name: '{{ IngestPipeline "pipeline_app_and_identity" }}'
       tag: pipeline_app_and_identity
-      if: ctx.m365_defender?.event?.category?.toLowerCase().contains('identity') || ctx.m365_defender?.event?.category?.toLowerCase().contains('cloudappevents')
+      if: ctx.m365_defender?.event?.category != null && (ctx.m365_defender.event.category.toLowerCase().contains('identity') || ctx.m365_defender.event.category.toLowerCase().contains('cloudappevents'))
 
   # Cleanup
   - remove:
@@ -120,7 +133,7 @@ on_failure:
   - append:
       field: error.message
       value: |-
-        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.kind
       value: pipeline_error

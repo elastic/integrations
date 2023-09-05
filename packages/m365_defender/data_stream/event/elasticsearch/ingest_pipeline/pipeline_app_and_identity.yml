@@ -1,6 +1,12 @@
 ---
 description: Pipeline for processing Apps & Identities Event logs.
 processors:
+  # ctx.m365_defender.event.category is required for the event to be processed correctly as documented in the initial pipeline.
+  # Rather than checking it in every processor we check it once here.
+  - fail:
+      message: 'Event does not contain a valid category.'
+      tag: fail_event_category
+      if: ctx.m365_defender.event.category == null || ctx.m365_defender.event.category == ''
   # Event categorization
   - set:
       field: event.kind
@@ -10,7 +16,7 @@ processors:
       field: event.category
       value: authentication
       tag: append_event_category
-      if: ctx.m365_defender?.event?.category != null && ctx.m365_defender?.event?.category?.toLowerCase().contains('identitylogonevents')
+      if: ctx.m365_defender.event.category.toLowerCase().contains('identitylogonevents')
   - append:
       field: event.type
       value: info
@@ -20,7 +26,7 @@ processors:
   - json:
       field: json.properties.ActivityObjects
       tag: json_properties_ActivityObjects
-      if: ctx.json?.properties?.ActivityObjects != null && ctx.json.properties.ActivityObjects instanceof String && ctx.json.properties.ActivityObjects != ''
+      if: ctx.json?.properties?.ActivityObjects instanceof String && ctx.json.properties.ActivityObjects != ''
       on_failure:
         - append:
             field: error.message
@@ -28,7 +34,7 @@ processors:
   - json:
       field: json.properties.RawEventData
       tag: json_properties_RawEventData
-      if: ctx.json?.properties?.RawEventData != null && ctx.json.properties.RawEventData instanceof String && ctx.json.properties.RawEventData != ''
+      if: ctx.json?.properties?.RawEventData instanceof String && ctx.json.properties.RawEventData != ''
       on_failure:
         - append:
             field: error.message
@@ -36,7 +42,7 @@ processors:
   - json:
       field: json.properties.AdditionalFields
       tag: json_properties_AdditionalFields
-      if: ctx.json?.properties?.AdditionalFields != null && ctx.json.properties.AdditionalFields instanceof String && ctx.json.properties.AdditionalFields != ''
+      if: ctx.json?.properties?.AdditionalFields instanceof String && ctx.json.properties.AdditionalFields != ''
       on_failure:
         - append:
             field: error.message
@@ -116,10 +122,6 @@ processors:
       if: ctx.json?.properties?.ApplicationId != ''
       type: string
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
 
   # Numbers to boolean (Undocumented field types like string, numeric etc is possible, have to check all of them)
   - script:
@@ -431,12 +433,12 @@ processors:
       field: event.outcome
       value: 'success'
       tag: set_event_outcome
-      if: (ctx.m365_defender?.event?.failure_reason == null || ctx.m365_defender.event.failure_reason == '') && ctx.m365_defender?.event?.category != null && ctx.m365_defender?.event?.category?.toLowerCase() == 'advancedhunting-identitylogonevents'
+      if: (ctx.m365_defender?.event?.failure_reason == null || ctx.m365_defender.event.failure_reason == '') && ctx.m365_defender.event.category.toLowerCase() == 'advancedhunting-identitylogonevents'
   - set:
       field: event.outcome
       value: 'failure'
       tag: set_event_outcome
-      if: (ctx.m365_defender?.event?.failure_reason != null && ctx.m365_defender.event.failure_reason != '') && ctx.m365_defender?.event?.category != null && ctx.m365_defender?.event?.category?.toLowerCase() == 'advancedhunting-identitylogonevents'
+      if: (ctx.m365_defender?.event?.failure_reason != null && ctx.m365_defender.event.failure_reason != '') && ctx.m365_defender.event.category.toLowerCase() == 'advancedhunting-identitylogonevents'
   - set:
       field: event.id
       copy_from: m365_defender.event.report_id
@@ -465,7 +467,7 @@ processors:
       copy_from: m365_defender.event.account.sid
       ignore_empty_value: true
       tag: set_user_id
-      if: ctx.m365_defender?.event?.category != null && ctx.m365_defender?.event?.category?.toLowerCase().contains('identitylogonevents')
+      if: ctx.m365_defender.event.category.toLowerCase().contains('identitylogonevents')
   - set:
       field: user.name
       copy_from: m365_defender.event.account.name
@@ -476,7 +478,7 @@ processors:
       copy_from: m365_defender.event.account.id
       ignore_empty_value: true
       tag: set_user_id
-      if: ctx.m365_defender?.event?.category != null && ctx.m365_defender?.event?.category?.toLowerCase().contains('cloudappevents')
+      if: ctx.m365_defender.event.category.toLowerCase().contains('cloudappevents')
   - set:
       field: user.name
       copy_from: m365_defender.event.account.display_name
@@ -574,10 +576,10 @@ processors:
         - m365_defender.event.report_id
       ignore_missing: true
 on_failure:
-  - set:
-      field: event.kind
-      value: pipeline_error
   - append:
       field: error.message
       value: |-
-        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error
