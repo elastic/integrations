@@ -3,22 +3,22 @@ description: Build ECS fields from an OpenCTI file observable
 processors:
 
   - set:
-      field: threat.indicator._file.accessed
+      field: _tmp_file.accessed
       value: "{{_ingest._value.atime}}"
       ignore_empty_value: true
 
   - set:
-      field: threat.indicator._file.created
+      field: _tmp_file.created
       value: "{{_ingest._value.ctime}}"
       ignore_empty_value: true
 
   - set:
-      field: threat.indicator._file.mtime
+      field: _tmp_file.mtime
       value: "{{_ingest._value.mtime}}"
       ignore_empty_value: true
 
   - append:
-      field: threat.indicator._file.name
+      field: _tmp_file.name
       value: "{{_ingest._value.name}}"
       allow_duplicates: false
   - foreach:
@@ -26,24 +26,24 @@ processors:
       ignore_missing: true
       processor:
         append:
-          field: threat.indicator._file.name
+          field: _tmp_file.name
           value: "{{_ingest._value}}"
           allow_duplicates: false
   - script:
       description: Remove null or empty names, remove name field if no names
       lang: painless
       source: |
-        if (ctx.threat?.indicator?._file?.name != null) {
+        if (ctx._tmp_file?.name != null) {
           def result = [];
-          for (name in ctx.threat.indicator._file.name) {
+          for (name in ctx._tmp_file.name) {
               if (name != null && name != '') {
                   result.add(name);
               }
           }
           if (result.length == 0) {
-            ctx.threat.indicator._file.remove("name");
+            ctx._tmp_file.remove("name");
           } else {
-            ctx.threat.indicator._file.name = result;
+            ctx._tmp_file.name = result;
           }
         }
 
@@ -51,9 +51,9 @@ processors:
       description: Get file extensions from file names
       lang: painless
       source: |
-        if (ctx.threat.indicator._file.name != null) {
+        if (ctx._tmp_file.name != null) {
           def result = [];
-          for (fullname in ctx.threat.indicator._file.name) {
+          for (fullname in ctx._tmp_file.name) {
             // name shouldn't have a directory, but do strip it if it's there
             def parts = /[\/\\]/.split(fullname);
             def name = parts[parts.length - 1];
@@ -66,27 +66,27 @@ processors:
             }
           }
           if (result.length > 0) {
-            ctx.threat.indicator._file.extension = result;
+            ctx._tmp_file.extension = result;
           }
         }
 
   - set:
-      field: threat.indicator._file.mime_type
+      field: _tmp_file.mime_type
       value: "{{_ingest._value.mime_type}}"
       ignore_empty_value: true
 
   - set:
-      field: threat.indicator._file.size
+      field: _tmp_file.size
       value: "{{_ingest._value.size}}"
       ignore_empty_value: true
 
   - set:
-      field: threat.indicator._file.type
+      field: _tmp_file.type
       value: "file"
       ignore_empty_value: true
 
   - set:
-      field: threat.indicator._file.hash
+      field: _tmp_file.hash
       copy_from: _ingest._value.hash
       ignore_empty_value: true
 
@@ -98,7 +98,7 @@ processors:
       description: Append to the destination
       lang: painless
       source: |
-        ctx.threat.indicator.file.add(ctx.threat.indicator._file);
+        ctx.threat.indicator.file.add(ctx._tmp_file);
 
   - remove:
-      field: threat.indicator._file
+      field: _tmp_file

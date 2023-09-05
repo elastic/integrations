@@ -3,15 +3,15 @@ description: Build ECS fields from an OpenCTI windows registry value type observ
 processors:
 
   - set:
-      field: threat.indicator._registry.value
+      field: _tmp_registry.value
       value: "{{_ingest._value.name}}"
 
   - set:
-      field: threat.indicator._registry.data.type
+      field: _tmp_registry.data.type
       value: "{{_ingest._value.data_type}}"
 
   - append:
-      field: threat.indicator._registry.data.strings
+      field: _tmp_registry.data.strings
       value: "{{_ingest._value.data}}"
 
   # append object
@@ -22,7 +22,7 @@ processors:
       description: Append to the destination
       lang: painless
       source: |
-        ctx.threat.indicator.registry.add(ctx.threat.indicator._registry);
+        ctx.threat.indicator.registry.add(ctx._tmp_registry);
 
   - remove:
-      field: threat.indicator._registry
+      field: _tmp_registry
