@@ -39,7 +39,11 @@ program: |
     }'''
   }).do_request().as(resp,
     bytes(resp.Body).decode_json().as(body, {
-      "events": body.data.indicators.edges.map(e, e.node),
+      "events": body.data.indicators.edges.map(e, e.node.with({
+        {{#if preserve_original_event}}
+        "event":{"original":e.node}
+        {{/if}}
+      })),
       "url": state.url,
       "want_more": body.data.indicators.pageInfo.hasNextPage,
       "cursor": { "value": body.data.indicators.pageInfo.endCursor },
