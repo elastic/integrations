@@ -120,15 +120,15 @@ processors:
   - set:
       field: network.name
       copy_from: zeek.dhcp.domain
-      if: ctx?.zeek?.dhcp?.domain != null
+      if: ctx.zeek?.dhcp?.domain != null
   - set:
       field: source.port
       value: 68
-      if: ctx?.source?.port == null
+      if: ctx.source?.port == null
   - set:
       field: destination.port
       value: 67
-      if: ctx?.destination?.port == null
+      if: ctx.destination?.port == null
   - set:
       field: source.address
       copy_from: zeek.dhcp.address.client
@@ -166,19 +166,19 @@ processors:
       if: ctx.zeek.session_id != null
   - append:
       field: related.ip
-      value: "{{source.ip}}"
-      if: "ctx?.source?.ip != null"
+      value: "{{{source.ip}}}"
+      if: "ctx.source?.ip != null"
       allow_duplicates: false
   - append:
       field: related.ip
-      value: "{{destination.ip}}"
-      if: "ctx?.destination?.ip != null"
+      value: "{{{destination.ip}}}"
+      if: "ctx.destination?.ip != null"
       allow_duplicates: false
   - community_id:
       target_field: network.community_id
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 on_failure:
