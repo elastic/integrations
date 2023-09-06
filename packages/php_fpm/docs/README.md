@@ -135,13 +135,13 @@ An example event for `pool` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-11-08T12:28:32.010Z",
+    "@timestamp": "2023-07-28T10:10:15.918Z",
     "agent": {
-        "ephemeral_id": "bc8a33f5-b8f3-4c39-a808-c0145638ed96",
-        "id": "97c2a1e6-10a8-4398-a12b-d8c1a6a01750",
+        "ephemeral_id": "9581f949-002c-4a1f-8939-abae313a3e55",
+        "id": "79efec86-f67c-4ca6-8a2e-a8900f9ae3ac",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.7.1"
     },
     "data_stream": {
         "dataset": "php_fpm.pool",
@@ -152,9 +152,9 @@ An example event for `pool` looks as following:
         "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "97c2a1e6-10a8-4398-a12b-d8c1a6a01750",
+        "id": "79efec86-f67c-4ca6-8a2e-a8900f9ae3ac",
         "snapshot": false,
-        "version": "8.4.1"
+        "version": "8.7.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -163,9 +163,9 @@ An example event for `pool` looks as following:
             "configuration",
             "process"
         ],
-        "created": "2022-11-08T12:28:32.010Z",
+        "created": "2023-07-28T10:10:15.918Z",
         "dataset": "php_fpm.pool",
-        "ingested": "2022-11-08T12:28:35Z",
+        "ingested": "2023-07-28T10:10:19Z",
         "kind": "event",
         "module": "php_fpm",
         "type": [
@@ -203,9 +203,12 @@ An example event for `pool` looks as following:
                 "idle": 0
             },
             "slow_requests": 0,
-            "start_since": 22,
-            "start_time": 1667910490
+            "start_since": 17,
+            "start_time": 1690538998
         }
+    },
+    "service": {
+        "address": "http://elastic-package-service_php_fpm_1"
     },
     "tags": [
         "php_fpm-pool",
@@ -246,6 +249,7 @@ An example event for `pool` looks as following:
 | php_fpm.pool.slow_requests | The total number of requests that have hit the configured request_slowlog_timeout. | long |  | counter |
 | php_fpm.pool.start_since | The time in seconds since the process pool was last started. | long | s | counter |
 | php_fpm.pool.start_time | The date/time that the process pool was last started. | long |  | counter |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |
 
 
@@ -257,13 +261,13 @@ An example event for `process` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-11-15T14:01:31.755Z",
+    "@timestamp": "2023-07-28T10:11:12.080Z",
     "agent": {
-        "ephemeral_id": "c505ab2b-ef2e-45aa-8ee4-998433179139",
-        "id": "eb39489c-ee82-4bd4-b2d3-31f09610ca2e",
+        "ephemeral_id": "0f5589f7-327f-468e-b368-00ada3a96721",
+        "id": "79efec86-f67c-4ca6-8a2e-a8900f9ae3ac",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.7.1"
     },
     "data_stream": {
         "dataset": "php_fpm.process",
@@ -274,9 +278,9 @@ An example event for `process` looks as following:
         "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "eb39489c-ee82-4bd4-b2d3-31f09610ca2e",
+        "id": "79efec86-f67c-4ca6-8a2e-a8900f9ae3ac",
         "snapshot": false,
-        "version": "8.4.1"
+        "version": "8.7.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -285,9 +289,9 @@ An example event for `process` looks as following:
             "configuration",
             "process"
         ],
-        "created": "2022-11-15T14:01:31.755Z",
+        "created": "2023-07-28T10:11:12.080Z",
         "dataset": "php_fpm.process",
-        "ingested": "2022-11-15T14:01:35Z",
+        "ingested": "2023-07-28T10:11:15Z",
         "kind": "event",
         "module": "php_fpm",
         "type": [
@@ -311,8 +315,8 @@ An example event for `process` looks as following:
                 "name": "www"
             },
             "request": {
-                "count": 2,
-                "duration": 186,
+                "count": 1,
+                "duration": 581,
                 "last": {
                     "cpu": {
                         "pct": 0
@@ -321,13 +325,16 @@ An example event for `process` looks as following:
                 }
             },
             "script": "-",
-            "start_since": 6,
-            "start_time": 1668520885,
+            "start_since": 0,
+            "start_time": 1690539072,
             "state": "Running"
         }
     },
     "process": {
         "pid": 33
+    },
+    "service": {
+        "address": "http://elastic-package-service_php_fpm_1"
     },
     "tags": [
         "php_fpm-process",
@@ -372,6 +379,7 @@ An example event for `process` looks as following:
 | php_fpm.process.start_time | The date/time at which the process started. | long |  |  |
 | php_fpm.process.state | The state of the process. | keyword |  |  |
 | process.pid | Process id. | long |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |  |  |
 | url.original.text | Multi-field of `url.original`. | match_only_text |  |  |
