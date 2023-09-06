@@ -215,11 +215,11 @@ An example event for `ioc` looks as following:
 {
     "@timestamp": "2022-05-05T10:39:07.851Z",
     "agent": {
-        "ephemeral_id": "6dc8114b-1fd0-4282-ad4a-35d8c834f388",
-        "id": "11119654-0c23-4f69-bf69-62e3eeb94a21",
+        "ephemeral_id": "d889d670-ceaa-40d0-88d9-15f35930eb5d",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.9.1"
     },
     "data_stream": {
         "dataset": "ti_rapid7_threat_command.ioc",
@@ -230,18 +230,18 @@ An example event for `ioc` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "11119654-0c23-4f69-bf69-62e3eeb94a21",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
         "snapshot": false,
-        "version": "8.4.0"
+        "version": "8.9.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "threat"
         ],
-        "created": "2023-02-01T09:43:14.830Z",
+        "created": "2023-08-28T17:01:23.866Z",
         "dataset": "ti_rapid7_threat_command.ioc",
-        "ingested": "2023-02-01T09:43:15Z",
+        "ingested": "2023-08-28T17:01:24Z",
         "kind": "enrichment",
         "module": "ti_rapid7_threat_command",
         "original": "{\"firstSeen\":\"2022-05-04T20:11:04.000Z\",\"lastSeen\":\"2022-05-04T20:11:04.000Z\",\"lastUpdateDate\":\"2022-05-05T10:39:07.851Z\",\"relatedCampaigns\":[],\"relatedMalware\":[\"remcos\"],\"relatedThreatActors\":[],\"reportedFeeds\":[{\"confidenceLevel\":2,\"id\":\"5b68306df84f7c8696047fdd\",\"name\":\"Test Feed\"}],\"score\":13.26086956521739,\"severity\":\"Low\",\"status\":\"Active\",\"tags\":[\"Test\"],\"type\":\"IpAddresses\",\"value\":\"89.160.20.112\",\"whitelisted\":false}",
@@ -382,7 +382,7 @@ An example event for `ioc` looks as following:
 | rapid7.tc.ioc.geolocation | Geographical location of an IP address. | keyword |
 | rapid7.tc.ioc.last_seen | IOC last seen date in Unix Millisecond Timestamp. | date |
 | rapid7.tc.ioc.last_update_date | IOC last update date in Unix Millisecond Timestamp. | date |
-| rapid7.tc.ioc.provider | List of the indicator providers. | array |
+| rapid7.tc.ioc.provider | List of the indicator providers. | keyword |
 | rapid7.tc.ioc.related.campaigns | List of IOC related campaigns. | keyword |
 | rapid7.tc.ioc.related.malware | List of IOC related malware families. | keyword |
 | rapid7.tc.ioc.related.threat_actors | List of IOC related threat actors. | keyword |
@@ -453,11 +453,11 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2022-11-02T10:03:56.139Z",
     "agent": {
-        "ephemeral_id": "1da637f3-ae1f-45bb-9dca-72a087917374",
-        "id": "11119654-0c23-4f69-bf69-62e3eeb94a21",
+        "ephemeral_id": "968bf7e6-6f89-4a78-a88d-18ea5f28f56c",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.9.1"
     },
     "data_stream": {
         "dataset": "ti_rapid7_threat_command.alert",
@@ -468,16 +468,16 @@ An example event for `alert` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "11119654-0c23-4f69-bf69-62e3eeb94a21",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
         "snapshot": false,
-        "version": "8.4.0"
+        "version": "8.9.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-02-01T09:42:42.976Z",
+        "created": "2023-08-28T17:00:29.751Z",
         "dataset": "ti_rapid7_threat_command.alert",
         "id": "123456789abcdefgh8866123",
-        "ingested": "2023-02-01T09:42:45Z",
+        "ingested": "2023-08-28T17:00:32Z",
         "kind": "alert",
         "module": "ti_rapid7_threat_command",
         "original": "{\"Assets\":[{\"Type\":\"Domains\",\"Value\":\"example.com\"}],\"Assignees\":[],\"Closed\":{\"IsClosed\":true},\"Details\":{\"Description\":\"A suspicious domain 'example.com' was found to have characteristics indicating it may be used to carry out phishing attacks. | Recommendations:  It is recommended to block the domain in your URL filtering and mail systems. This can prevent phishing emails being received by your employees and access to websites attempting to steal sensitive information. Click “Remediate” in order to initiate the takedown process for this domain.\",\"Images\":[\"1al5s6789z6e2b0m9s8a8q60\"],\"Severity\":\"Low\",\"Source\":{\"NetworkType\":\"ClearWeb\",\"Type\":\"WHOIS servers\",\"URL\":\"http://example.com\"},\"SubType\":\"RegisteredSuspiciousDomain\",\"Tags\":[{\"CreatedBy\":\"ProfilingRule\",\"Name\":\"Phishing Domain - Default Detection Rule\",\"_id\":\"1al3p6789zxcvbnmas8a8q60\"}],\"Title\":\"Suspected Phishing Domain - 'example.com'\",\"Type\":\"Phishing\"},\"FoundDate\":\"2022-11-02T10:03:56.139Z\",\"IsFlagged\":false,\"RelatedIocs\":[\"example.com\"],\"RelatedThreatIDs\":[\"6a4e7t9a111bd0003bcc2a57\"],\"TakedownStatus\":\"NotSent\",\"UpdateDate\":\"2022-11-02T10:03:56.139Z\",\"_id\":\"123456789abcdefgh8866123\"}",
@@ -631,11 +631,11 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2020-08-24T21:46:48.619Z",
     "agent": {
-        "ephemeral_id": "746f88dd-40e1-4ee0-a6ee-6c227edf2ee0",
-        "id": "11119654-0c23-4f69-bf69-62e3eeb94a21",
+        "ephemeral_id": "37e34f53-3d71-4930-a39b-d4b1b4fbeac9",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.9.1"
     },
     "data_stream": {
         "dataset": "ti_rapid7_threat_command.vulnerability",
@@ -646,18 +646,18 @@ An example event for `vulnerability` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "11119654-0c23-4f69-bf69-62e3eeb94a21",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
         "snapshot": false,
-        "version": "8.4.0"
+        "version": "8.9.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "threat"
         ],
-        "created": "2023-02-01T09:43:53.270Z",
+        "created": "2023-08-28T17:02:12.075Z",
         "dataset": "ti_rapid7_threat_command.vulnerability",
-        "ingested": "2023-02-01T09:43:56Z",
+        "ingested": "2023-08-28T17:02:15Z",
         "kind": "event",
         "module": "ti_rapid7_threat_command",
         "original": "{\"cpe\":[{\"Range\":{\"VersionEndExcluding\":\"\",\"VersionEndIncluding\":\"4.0.0\",\"VersionStartExcluding\":\"\",\"VersionStartIncluding\":\"1.0.0\"},\"Title\":\"Php\",\"Value\":\"cpe:2.3:a:php:php:*:*:*:*:*:*:*:*\",\"VendorProduct\":\"php php\"}],\"cveId\":\"CVE-2020-7064\",\"cvssScore\":5.4,\"exploitAvailability\":false,\"firstMentionDate\":\"N/A\",\"intsightsScore\":16,\"lastMentionDate\":\"2020-04-01T04:15:00.000Z\",\"mentionsAmount\":0,\"mentionsPerSource\":{\"ClearWebCyberBlogs\":0,\"CodeRepositories\":0,\"DarkWeb\":0,\"Exploit\":0,\"HackingForum\":0,\"InstantMessage\":0,\"PasteSite\":0,\"SocialMedia\":0},\"publishedDate\":\"2020-04-01T04:15:00.000Z\",\"relatedCampaigns\":[\"SolarWinds\"],\"relatedMalware\":[\"doppeldridex\",\"dridex\"],\"relatedThreatActors\":[\"doppelspider\"],\"severity\":\"Low\",\"updateDate\":\"2020-08-24T21:46:48.619Z\",\"vulnerabilityOrigin\":[\"Qualys\"]}",
