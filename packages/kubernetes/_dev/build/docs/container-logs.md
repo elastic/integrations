@@ -53,7 +53,7 @@ spec:
 
 ### Set routing at runtime
 
-Suppose you want to change the container logs routing on a running container. In that case, you can set the same labels using `kubectl,` and the integration will apply it immediately sending all the following documents to the new destination:
+Suppose you want to change the container logs routing on a running container. In that case, you can set the same labels using `kubectl`, and the integration will apply it immediately sending all the following documents to the new destination:
 
 Here is an example where we route the container logs for a pod running the Elastic Agent to the `kubernetes.container_logs.agents` dataset:
 
