@@ -1,124 +1,83 @@
 ---
 description: Pipeline for processing Alert Event logs.
 processors:
+  # Event categorization
   - set:
       field: event.kind
-      value: [alert]
-  - set:
+      value: alert
+      tag: set_event_kind
+  - append:
       field: event.category
-      value: [file]
-      if: ctx.json?.properties?.EntityType?.toLowerCase() == 'file'
-  - set:
+      value: file
+      tag: append_event_category_file
+      if: ctx.json?.properties?.EntityType != null && ctx.json.properties.EntityType.toLowerCase() == 'file'
+  - append:
       field: event.category
-      value: [process]
-      if: ctx.json?.properties?.EntityType?.toLowerCase() == 'process'
-  - set:
+      value: process
+      tag: append_event_category_process
+      if: ctx.json?.properties?.EntityType != null && ctx.json.properties.EntityType.toLowerCase() == 'process'
+  - append:
       field: event.category
-      value: [host]
-      if: ctx.json?.properties?.EntityType?.toLowerCase() == 'device'
-  - set:
+      value: host
+      tag: append_event_category_host
+      if: ctx.json?.properties?.EntityType != null && ctx.json.properties.EntityType.toLowerCase() == 'device'
+  - append:
       field: event.category
-      value: [iam]
-      if: ctx.json?.properties?.EntityType?.toLowerCase() == 'user'
-  - set:
+      value: iam
+      tag: append_event_category_iam
+      if: ctx.json?.properties?.EntityType != null && ctx.json.properties.EntityType.toLowerCase() == 'user'
+  - append:
       field: event.category
-      value: [malware]
+      value: malware
+      tag: append_event_category_malware
       if: ctx.json?.properties?.Category != null && ['malware','ransomware'].contains(ctx.json.properties.Category.toLowerCase())
-  - set:
+  - append:
       field: event.category
-      value: [threat]
+      value: threat
+      tag: append_event_category_threat
       if: ctx.json?.properties?.Category != null && ['persistence','privilegeescalation','suspiciousactivity','threatmanagement'].contains(ctx.json.properties.Category.toLowerCase())
-  - set:
+  - append:
       field: event.type
-      value: [indicator]
+      value: indicator
+      tag: append_event_type_indicator
       if: ctx.event?.category != null && ctx.event.category.contains('threat')
-  - set:
+  - append:
       field: event.type
-      value: [info]
+      value: info
+      tag: append_event_type_info
       if: ctx.event?.type == null
-  - rename:
-      field: json.properties.AlertId
-      target_field: m365_defender.event.alert.id
-      ignore_missing: true
-  - set:
-      field: event.id
-      copy_from: m365_defender.event.alert.id
-      ignore_empty_value: true
-  - rename:
-      field: json.properties.ServiceSource
-      target_field: m365_defender.event.service_source
-      ignore_missing: true
-  - set:
-      field: event.provider
-      copy_from: m365_defender.event.service_source
-      ignore_empty_value: true
-  - rename:
-      field: json.properties.DeviceName
-      target_field: m365_defender.event.device.name
-      ignore_missing: true
-  - set:
-      field: host.name
-      copy_from: m365_defender.event.device.name
-      ignore_empty_value: true
-  - append:
-      field: related.hosts
-      value: '{{{host.name}}}'
-      if: ctx.host?.name != null
-      allow_duplicates: false
-  - lowercase:
-      field: host.name
-      if: ctx.host?.name != null
-  - rename:
-      field: json.properties.DeviceId
-      target_field: m365_defender.event.device.id
-      ignore_missing: true
-  - set:
-      field: host.id
-      copy_from: m365_defender.event.device.id
-      ignore_empty_value: true
-  - append:
-      field: related.hosts
-      value: '{{{host.id}}}'
-      if: ctx.host?.id != null
-      allow_duplicates: false
-  - rename:
-      field: json.properties.EvidenceDirection
-      target_field: m365_defender.event.evidence.direction
-      ignore_missing: true
-  - set:
-      field: network.direction
-      copy_from: m365_defender.event.evidence.direction
-      ignore_empty_value: true
-  - lowercase:
-      field: network.direction
-      ignore_missing: true
-  - rename:
-      field: json.properties.ProcessCommandLine
-      target_field: m365_defender.event.process.command_line
-      ignore_missing: true
-  - set:
-      field: process.command_line
-      copy_from: m365_defender.event.process.command_line
-      ignore_empty_value: true
-  - rename:
-      field: json.properties.RegistryKey
-      target_field: m365_defender.event.registry.key
-      ignore_missing: true
-  - set:
-      field: registry.key
-      copy_from: m365_defender.event.registry.key
-      ignore_empty_value: true
-  - rename:
-      field: json.properties.RegistryValueName
-      target_field: m365_defender.event.registry.value_name
-      ignore_missing: true
-  - set:
-      field: registry.value
-      copy_from: m365_defender.event.registry.value_name
-      ignore_empty_value: true
+
+  # JSON Processors
+  - json:
+      field: json.properties.Categories
+      tag: json_properties_Categories
+      if: ctx.json?.properties?.Categories instanceof String && ctx.json.properties.Categories != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - json:
+      field: json.properties.AdditionalFields
+      tag: json_properties_AdditionalFields
+      if: ctx.json?.properties?.AdditionalFields instanceof String && ctx.json.properties.AdditionalFields != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - json:
+      field: json.properties.AttackTechniques
+      tag: json_properties_AttackTechniques
+      if: ctx.json?.properties?.AttackTechniques instanceof String && ctx.json.properties.AttackTechniques != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+
+  # Convert processors
   - convert:
       field: json.properties.RemoteIP
       target_field: m365_defender.event.remote.ip
+      tag: convert_json_properties_RemoteIP
       if: ctx.json?.properties?.RemoteIP != ''
       type: ip
       ignore_missing: true
@@ -126,60 +85,10 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - set:
-      field: source.ip
-      copy_from: m365_defender.event.remote.ip
-      ignore_empty_value: true
-  - append:
-      field: related.ip
-      value: '{{{source.ip}}}'
-      if: ctx.source?.ip != null
-      allow_duplicates: false
-  - rename:
-      field: json.properties.FolderPath
-      target_field: m365_defender.event.folder_path
-      ignore_missing: true
-  - set:
-      field: threat.enrichments.indicator.file.directory
-      copy_from: m365_defender.event.folder_path
-      ignore_empty_value: true
-  - rename:
-      field: json.properties.SHA1
-      target_field: m365_defender.event.sha1
-      ignore_missing: true
-  - set:
-      field: threat.enrichments.indicator.file.hash.sha1
-      copy_from: m365_defender.event.sha1
-      ignore_empty_value: true
-  - append:
-      field: related.hash
-      value: '{{{threat.enrichments.indicator.file.hash.sha1}}}'
-      if: ctx.threat?.enrichments?.indicator?.file?.hash?.sha1 != null
-      allow_duplicates: false
-  - rename:
-      field: json.properties.SHA256
-      target_field: m365_defender.event.sha256
-      ignore_missing: true
-  - set:
-      field: threat.enrichments.indicator.file.hash.sha256
-      copy_from: m365_defender.event.sha256
-      ignore_empty_value: true
-  - append:
-      field: related.hash
-      value: '{{{threat.enrichments.indicator.file.hash.sha256}}}'
-      if: ctx.threat?.enrichments?.indicator?.file?.hash?.sha256 != null
-      allow_duplicates: false
-  - rename:
-      field: json.properties.FileName
-      target_field: m365_defender.event.file.name
-      ignore_missing: true
-  - set:
-      field: threat.enrichments.indicator.file.name
-      copy_from: m365_defender.event.file.name
-      ignore_empty_value: true
   - convert:
       field: json.properties.FileSize
       target_field: m365_defender.event.file.size
+      tag: convert_json_properties_FileSize
       if: ctx.json?.properties?.FileSize != ''
       type: long
       ignore_missing: true
@@ -187,94 +96,10 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - set:
-      field: threat.enrichments.indicator.file.size
-      copy_from: m365_defender.event.file.size
-      ignore_empty_value: true
-  - rename:
-      field: json.properties.ThreatFamily
-      target_field: m365_defender.event.threat.family
-      ignore_missing: true
-  - set:
-      field: threat.group.name
-      copy_from: m365_defender.event.threat.family
-      ignore_empty_value: true
-  - rename:
-      field: json.properties.AccountSid
-      target_field: m365_defender.event.account.sid
-      ignore_missing: true
-  - rename:
-      field: json.properties.AccountName
-      target_field: m365_defender.event.account.name
-      ignore_missing: true
-  - set:
-      field: user.name
-      copy_from: m365_defender.event.account.name
-      ignore_empty_value: true
-  - append:
-      field: related.user
-      value: '{{{user.name}}}'
-      if: ctx.user?.name != null
-      allow_duplicates: false
-  - rename:
-      field: json.properties.Title
-      target_field: m365_defender.event.title
-      ignore_missing: true
-  - set:
-      field: message
-      copy_from: m365_defender.event.title
-      ignore_empty_value: true
-  - rename:
-      field: json.properties.AccountDomain
-      target_field: m365_defender.event.account.domain
-      ignore_missing: true
-  - set:
-      field: user.domain
-      copy_from: m365_defender.event.account.domain
-      ignore_empty_value: true
-  - append:
-      field: related.hosts
-      value: '{{{user.domain}}}'
-      if: ctx.user?.domain != null
-      allow_duplicates: false
-  - rename:
-      field: json.properties.AccountUpn
-      target_field: m365_defender.event.account.upn
-      ignore_missing: true
-  - json:
-      field: json.properties.AdditionalFields
-      if: ctx.json?.properties?.AdditionalFields != null && ctx.json.properties.AdditionalFields instanceof String && ctx.json.properties.AdditionalFields != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.properties.AdditionalFields
-      target_field: m365_defender.event.additional_fields
-      ignore_missing: true
-  - rename:
-      field: json.properties.Application
-      target_field: m365_defender.event.application
-      ignore_missing: true
-  - rename:
-      field: json.properties.ApplicationId
-      target_field: m365_defender.event.application_id
-      ignore_missing: true
-  - rename:
-      field: json.properties.EmailSubject
-      target_field: m365_defender.event.email.subject
-      ignore_missing: true
-  - rename:
-      field: json.properties.EntityType
-      target_field: m365_defender.event.entity_type
-      ignore_missing: true
-  - rename:
-      field: json.properties.EvidenceRole
-      target_field: m365_defender.event.evidence.role
-      ignore_missing: true
   - convert:
       field: json.properties.LocalIP
       target_field: m365_defender.event.local.ip
+      tag: convert_json_properties_LocalIP
       if: ctx.json?.properties?.LocalIP != ''
       type: ip
       ignore_missing: true
@@ -282,64 +107,340 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - append:
-      field: related.ip
-      value: '{{{m365_defender.event.local.ip}}}'
-      if: ctx.m365_defender?.event?.local?.ip != null
-      allow_duplicates: false
+
+  # Rename processors
+  - rename:
+      field: json.properties.AlertId
+      target_field: m365_defender.event.alert.id
+      tag: rename_json_properties_AlertId
+      ignore_missing: true
+  - rename:
+      field: json.properties.ServiceSource
+      target_field: m365_defender.event.service_source
+      tag: rename_json_properties_ServiceSource
+      ignore_missing: true
+  - rename:
+      field: json.properties.DeviceName
+      target_field: m365_defender.event.device.name
+      tag: rename_json_properties_DeviceName
+      ignore_missing: true
   - rename:
       field: json.properties.NetworkMessageId
       target_field: m365_defender.event.network.message_id
+      tag: rename_json_properties_NetworkMessageId
       ignore_missing: true
   - rename:
       field: json.properties.OAuthApplicationId
       target_field: m365_defender.event.oauth_application_id
-      ignore_missing: true
-  - rename:
-      field: json.properties.RegistryValueData
-      target_field: m365_defender.event.registry.value_data
+      tag: rename_json_properties_OAuthApplicationId
       ignore_missing: true
   - rename:
       field: json.properties.RemoteUrl
       target_field: m365_defender.event.remote.url
+      tag: rename_json_properties_RemoteUrl
       ignore_missing: true
+  - rename:
+      field: json.properties.AttackTechniques
+      target_field: m365_defender.event.attack_techniques
+      tag: rename_json_properties_AttackTechniques
+      ignore_missing: true
+  - rename:
+      field: json.properties.AccountObjectId
+      target_field: m365_defender.event.account.object_id
+      tag: rename_json_properties_AccountObjectId
+      ignore_missing: true
+  - rename:
+      field: json.properties.Category
+      target_field: m365_defender.event.alert.category
+      tag: rename_json_properties_Category
+      ignore_missing: true
+  - rename:
+      field: json.properties.Categories
+      target_field: m365_defender.event.alert.categories
+      tag: rename_json_properties_Categories
+      ignore_missing: true
+  - rename:
+      field: json.properties.DetectionSource
+      target_field: m365_defender.event.detection.source
+      tag: rename_json_properties_DetectionSource
+      ignore_missing: true
+  - rename:
+      field: json.properties.MachineGroup
+      target_field: m365_defender.event.machine_group
+      tag: rename_json_properties_MachineGroup
+      ignore_missing: true
+  - rename:
+      field: json.properties.DeviceId
+      target_field: m365_defender.event.device.id
+      tag: rename_json_properties_DeviceId
+      ignore_missing: true
+  - rename:
+      field: json.properties.EvidenceDirection
+      target_field: m365_defender.event.evidence.direction
+      tag: rename_json_properties_EvidenceDirection
+      ignore_missing: true
+  - rename:
+      field: json.properties.ProcessCommandLine
+      target_field: m365_defender.event.process.command_line
+      tag: rename_json_properties_ProcessCommandLine
+      ignore_missing: true
+  - rename:
+      field: json.properties.RegistryKey
+      target_field: m365_defender.event.registry.key
+      tag: rename_json_properties_RegistryKey
+      ignore_missing: true
+  - rename:
+      field: json.properties.RegistryValueName
+      target_field: m365_defender.event.registry.value_name
+      tag: rename_json_properties_RegistryValueName
+      ignore_missing: true
+  - rename:
+      field: json.properties.RegistryValueData
+      target_field: m365_defender.event.registry.value_data
+      tag: rename_json_properties_RegistryValueData
+      ignore_missing: true
+  - rename:
+      field: json.properties.SHA1
+      target_field: m365_defender.event.sha1
+      tag: rename_json_properties_SHA1
+      ignore_missing: true
+  - rename:
+      field: json.properties.FolderPath
+      target_field: m365_defender.event.folder_path
+      tag: rename_json_properties_FolderPath
+      ignore_missing: true
+  - rename:
+      field: json.properties.SHA256
+      target_field: m365_defender.event.sha256
+      tag: rename_json_properties_SHA256
+      ignore_missing: true
+  - rename:
+      field: json.properties.FileName
+      target_field: m365_defender.event.file.name
+      tag: rename_json_properties_FileName
+      ignore_missing: true
+  - rename:
+      field: json.properties.ThreatFamily
+      target_field: m365_defender.event.threat.family
+      tag: rename_json_properties_ThreatFamily
+      ignore_missing: true
+  - rename:
+      field: json.properties.AccountSid
+      target_field: m365_defender.event.account.sid
+      tag: rename_json_properties_AccountSid
+      ignore_missing: true
+  - rename:
+      field: json.properties.AccountName
+      target_field: m365_defender.event.account.name
+      tag: rename_json_properties_AccountName
+      ignore_missing: true
+  - rename:
+      field: json.properties.Title
+      target_field: m365_defender.event.title
+      tag: rename_json_properties_Title
+      ignore_missing: true
+  - rename:
+      field: json.properties.AccountDomain
+      target_field: m365_defender.event.account.domain
+      tag: rename_json_properties_AccountDomain
+      ignore_missing: true
+  - rename:
+      field: json.properties.AccountUpn
+      target_field: m365_defender.event.account.upn
+      tag: rename_json_properties_AccountUpn
+      ignore_missing: true
+  - rename:
+      field: json.properties.AdditionalFields
+      target_field: m365_defender.event.additional_fields
+      tag: rename_json_properties_AdditionalFields
+      ignore_missing: true
+  - rename:
+      field: json.properties.Application
+      target_field: m365_defender.event.application
+      tag: rename_json_properties_Application
+      ignore_missing: true
+  - rename:
+      field: json.properties.ApplicationId
+      target_field: m365_defender.event.application_id
+      tag: rename_json_properties_ApplicationId
+      ignore_missing: true
+  - rename:
+      field: json.properties.EmailSubject
+      target_field: m365_defender.event.email.subject
+      tag: rename_json_properties_EmailSubject
+      ignore_missing: true
+  - rename:
+      field: json.properties.EntityType
+      target_field: m365_defender.event.entity_type
+      tag: rename_json_properties_EntityType
+      ignore_missing: true
+  - rename:
+      field: json.properties.EvidenceRole
+      target_field: m365_defender.event.evidence.role
+      tag: rename_json_properties_EvidenceRole
+      ignore_missing: true
+
+  # Event mapping
+  - set:
+      field: event.id
+      copy_from: m365_defender.event.alert.id
+      tag: set_event_id
+      ignore_empty_value: true
+  - set:
+      field: event.provider
+      copy_from: m365_defender.event.service_source
+      tag: set_event_provider
+      ignore_empty_value: true
+  - set:
+      field: event.reference
+      copy_from: m365_defender.event.remote.url
+      tag: set_event_reference
+      ignore_empty_value: true
   - lowercase:
       field: json.properties.Severity
       target_field: m365_defender.event.severity
+      tag: lowercase_json_properties_Severity
       ignore_missing: true
   - set:
       field: event.severity
       value: 1
+      tag: set_event_severity_info
       if: ctx.m365_defender?.event?.severity == 'informational'
   - set:
       field: event.severity
       value: 2
+      tag: set_event_severity_low
       if: ctx.m365_defender?.event?.severity == 'low'
   - set:
       field: event.severity
       value: 3
+      tag: set_event_severity_medium
       if: ctx.m365_defender?.event?.severity == 'medium'
   - set:
       field: event.severity
       value: 4
+      tag: set_event_severity_high
       if: ctx.m365_defender?.event?.severity == 'high'
-  - json:
-      field: json.properties.AttackTechniques
-      if: ctx.json?.properties?.AttackTechniques != null && ctx.json.properties.AttackTechniques instanceof String && ctx.json.properties.AttackTechniques != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.properties.AttackTechniques
-      target_field: m365_defender.event.attack_techniques
+
+  # Host mapping
+  - set:
+      field: host.name
+      copy_from: m365_defender.event.device.name
+      tag: set_host_name
+      ignore_empty_value: true
+  - lowercase:
+      field: host.name
+      tag: lowercase_host_name
       ignore_missing: true
+  - set:
+      field: host.id
+      copy_from: m365_defender.event.device.id
+      tag: set_host_id
+      ignore_empty_value: true
+
+  # Network mapping
+  - set:
+      field: network.direction
+      copy_from: m365_defender.event.evidence.direction
+      tag: set_network_direction
+      ignore_empty_value: true
+  - lowercase:
+      field: network.direction
+      tag: lowercase_network_direction
+      ignore_missing: true
+
+  # Process mapping
+  - set:
+      field: process.command_line
+      copy_from: m365_defender.event.process.command_line
+      tag: set_process_command_line
+      ignore_empty_value: true
+  - script:
+      description: Splits up the command line to populate more processor fields.
+      lang: painless
+      tag: script_split_command_line
+      if: ctx.process?.command_line != null && ctx.process.command_line != ''
+      source: |
+        def commandLine = ctx.process.command_line;
+        commandLine = commandLine.trim();
+        if (commandLine != "") {
+          ctx.process.command_line = commandLine;
+      
+          def args = new ArrayList();
+          for (def v : / /.split(commandLine)) {
+              if (v != "") {
+                  args.add(v);
+              }
+          }
+          if (args.length > 0) {
+              ctx.process.executable = args[0];
+              ctx.process.args = args;
+              ctx.process.args_count = args.length;
+          }
+        }
+
+  # Threat mapping (Mapped to file unless threat category)
+  - set:
+      field: threat.indicator.registry.key
+      copy_from: m365_defender.event.registry.key
+      ignore_empty_value: true
+      tag: set_threat_indicator_registry_key
+      if: ctx.event?.category != null && ctx.event.category.contains('threat')
+  - append:
+      field: threat.indicator.registry.data.strings
+      value: '{{{m365_defender.event.registry.value_data}}}'
+      allow_duplicates: false
+      tag: append_threat_indicator_registry_data_strings
+      if: ctx.event?.category != null && ctx.event.category.contains('threat') && ctx.m365_defender?.event?.registry?.value_data != null
+  - set:
+      field: threat.indicator.registry.value
+      copy_from: m365_defender.event.registry.value_name
+      tag: set_threat_indicator_registry_value
+      ignore_empty_value: true
+      if: ctx.event?.category != null && ctx.event.category.contains('threat')
+  - set:
+      field: threat.indicator.file.directory
+      copy_from: m365_defender.event.folder_path
+      ignore_empty_value: true
+      tag: set_threat_indicator_file_directory
+      if: ctx.event?.category != null && ctx.event.category.contains('threat')
+  - set:
+      field: threat.indicator.file.hash.sha1
+      copy_from: m365_defender.event.sha1
+      ignore_empty_value: true
+      tag: set_threat_indicator_file_hash_sha1
+      if: ctx.event?.category != null && ctx.event.category.contains('threat')
+  - set:
+      field: threat.indicator.file.hash.sha256
+      copy_from: m365_defender.event.sha256
+      ignore_empty_value: true
+      tag: set_threat_indicator_file_hash_sha256
+      if: ctx.event?.category != null && ctx.event.category.contains('threat')
+  - set:
+      field: threat.indicator.file.name
+      copy_from: m365_defender.event.file.name
+      ignore_empty_value: true
+      tag: set_threat_indicator_file_name
+      if: ctx.event?.category != null && ctx.event.category.contains('threat')
+  - set:
+      field: threat.indicator.file.size
+      copy_from: m365_defender.event.file.size
+      ignore_empty_value: true
+      tag: set_threat_indicator_file_size
+      if: ctx.event?.category != null && ctx.event.category.contains('threat')
+  - set:
+      field: threat.group.name
+      copy_from: m365_defender.event.threat.family
+      tag: set_threat_group_name
+      ignore_empty_value: true
+      if: ctx.event?.category != null && ctx.event.category.contains('threat')
   - script:
       description: Extract threat subtechnique id & name.
       lang: painless
-      if: ctx.m365_defender?.event?.attack_techniques != null && ctx.m365_defender.event.attack_techniques != '' && ctx.m365_defender.event.attack_techniques instanceof List
+      tag: script_extract_subtechnique_id_name
+      if: ctx.m365_defender?.event?.attack_techniques instanceof List
       ignore_failure: true
-      source:
+      source: |
         def subtechnique_name = new ArrayList();
         def subtechnique_id = new ArrayList();
         if (!(ctx.threat instanceof HashMap)) {
@@ -359,6 +460,7 @@ processors:
         ctx.threat.technique.subtechnique.name = subtechnique_name;
   - sort:
       field: m365_defender.event.attack_techniques
+      tag: sort_m365_defender_event_attack_techniques
       if: ctx.m365_defender?.event?.attack_techniques != null && ctx.m365_defender.event.attack_techniques != ''
       on_failure:
         - append:
@@ -366,6 +468,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - sort:
       field: threat.technique.subtechnique.id
+      tag: sort_threat_technique_subtechnique_id
       if: ctx.threat?.technique?.subtechnique?.id != null && ctx.threat.technique.subtechnique.id != ''
       on_failure:
         - append:
@@ -373,47 +476,184 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - sort:
       field: threat.technique.subtechnique.name
+      tag: sort_threat_technique_subtechnique_name
       if: ctx.threat?.technique?.subtechnique?.name != null && ctx.threat.technique.subtechnique.name != ''
       on_failure:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.properties.AccountObjectId
-      target_field: m365_defender.event.account.object_id
-      ignore_missing: true
+
+
+  # File mapping (Unless category is threat)
+  - set:
+      field: file.directory
+      copy_from: m365_defender.event.folder_path
+      ignore_empty_value: true
+      tag: set_file_directory
+      if: ctx.event?.category != null && !ctx.event.category.contains('threat') 
+  - set:
+      field: file.hash.sha1
+      copy_from: m365_defender.event.sha1
+      ignore_empty_value: true
+      tag: set_file_hash_sha1
+      if: ctx.event?.category != null && !ctx.event.category.contains('threat')
+  - set:
+      field: file.hash.sha256
+      copy_from: m365_defender.event.sha256
+      ignore_empty_value: true
+      tag: set_file_hash_sha256
+      if: ctx.event?.category != null && !ctx.event.category.contains('threat')
+  - set:
+      field: file.name
+      copy_from: m365_defender.event.file.name
+      ignore_empty_value: true
+      tag: set_file_name
+      if: ctx.event?.category != null && !ctx.event.category.contains('threat')
+  - set:
+      field: file.size
+      copy_from: m365_defender.event.file.size
+      ignore_empty_value: true
+      tag: set_file_size
+      if: ctx.event?.category != null && !ctx.event.category.contains('threat')
+
+  # Registry mapping
+  - set:
+      field: registry.key
+      copy_from: m365_defender.event.registry.key
+      ignore_empty_value: true
+      tag: set_registry_key
+      if: ctx.event?.category != null && !ctx.event.category.contains('threat')
+  - append:
+      field: registry.data.strings
+      value: '{{{m365_defender.event.registry.value_data}}}'
+      tag: append_registry_data_strings
+      allow_duplicates: false
+      if: ctx.event?.category != null && !ctx.event.category.contains('threat') && ctx.m365_defender?.event?.registry?.value_data != null
+
+  # Destination mapping
+  - set:
+      field: destination.ip
+      copy_from: m365_defender.event.remote.ip
+      tag: set_destination_ip
+      ignore_empty_value: true
+
+  # Source mapping
+  - set:
+      field: source.ip
+      copy_from: m365_defender.event.local.ip
+      tag: set_source_ip
+      ignore_empty_value: true
+
+  # User mapping
+  - set:
+      field: user.id
+      copy_from: m365_defender.event.account.sid
+      tag: set_user_id
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      copy_from: m365_defender.event.account.name
+      tag: set_user_name
+      ignore_empty_value: true
+  - set:
+      field: user.domain
+      copy_from: m365_defender.event.account.domain
+      tag: set_user_domain
+      ignore_empty_value: true
+  - set:
+      field: user.id
+      copy_from: m365_defender.event.account.object_id
+      ignore_empty_value: true
+      tag: set_user_id
+      if: ctx.user?.id == null
+
+  # Email mapping
+  - set:
+      field: email.subject
+      copy_from: m365_defender.event.email.subject
+      tag: set_email_subject
+      ignore_empty_value: true
+  - set:
+      field: email.message_id
+      copy_from: m365_defender.event.network.message_id
+      tag: set_email_message_id
+      ignore_empty_value: true
+
+  # General mapping
+  - set:
+      field: message
+      copy_from: m365_defender.event.title
+      tag: set_message
+      ignore_empty_value: true
+  
+  # Related mapping
+  ## Host
+  - append:
+      field: related.hosts
+      value: '{{{host.name}}}'
+      tag: append_related_hosts
+      if: ctx.host?.name != null
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      value: '{{{user.domain}}}'
+      tag: append_related_hosts
+      if: ctx.user?.domain != null
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      value: '{{{host.id}}}'
+      tag: append_related_hosts
+      if: ctx.host?.id != null
+      allow_duplicates: false
+  ## User
   - append:
       field: related.user
       value: '{{{m365_defender.event.account.object_id}}}'
+      tag: append_related_user
       if: ctx.m365_defender?.event?.account?.object_id != null
       allow_duplicates: false
-  - rename:
-      field: json.properties.Category
-      target_field: m365_defender.event.alert.category
-      ignore_missing: true
-  - json:
-      field: json.properties.Categories
-      if: ctx.json?.properties?.Categories != null && ctx.json.properties.Categories instanceof String && ctx.json.properties.Categories != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.properties.Categories
-      target_field: m365_defender.event.alert.categories
-      ignore_missing: true
-  - rename:
-      field: json.properties.DetectionSource
-      target_field: m365_defender.event.detection.source
-      ignore_missing: true
-  - rename:
-      field: json.properties.MachineGroup
-      target_field: m365_defender.event.machine_group
-      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      tag: append_related_user
+      if: ctx.user?.name != null
+      allow_duplicates: false
+  ## IP
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      tag: append_related_ip
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      tag: append_related_ip
+      if: ctx.destination?.ip != null
+      allow_duplicates: false
+  ## Hash
+  - append:
+      field: related.hash
+      value: '{{{m365_defender.event.sha256}}}'
+      tag: append_related_hash
+      if: ctx.m365_defender?.event?.sha256 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: '{{{m365_defender.event.sha1}}}'
+      tag: append_related_hash
+      if: ctx.m365_defender?.event?.sha1 != null
+      allow_duplicates: false
+
+  # Duplicate Custom fields are disabled by default and will therefore remove these fields.
+  # Can be enabled in the UI when configuring the integration.
   - remove:
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      tag: remove_duplicate_custom_fields
       field:
         - m365_defender.event.timestamp
+        - m365_defender.event.remote.url
         - m365_defender.event.alert.id
         - m365_defender.event.service_source
         - m365_defender.event.device.name
@@ -422,6 +662,7 @@ processors:
         - m365_defender.event.process.command_line
         - m365_defender.event.registry.key
         - m365_defender.event.registry.value_name
+        - m365_defender.event.registry.value_data
         - m365_defender.event.remote.ip
         - m365_defender.event.folder_path
         - m365_defender.event.sha1
@@ -431,12 +672,17 @@ processors:
         - m365_defender.event.threat.family
         - m365_defender.event.account.name
         - m365_defender.event.account.domain
+        - m365_defender.event.account.sid
+        - m365_defender.event.account.object_id
+        - m365_defender.event.network.message_id
+        - m365_defender.event.email.subject
         - m365_defender.event.title
       ignore_missing: true
 on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.kind
       value: pipeline_error
-  - append:
-      field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
