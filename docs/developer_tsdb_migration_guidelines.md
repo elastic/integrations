@@ -46,7 +46,7 @@ To set a field as dimension simply add `dimension: true` to its mapping:
 > You can find an example in [Oracle Integration TSDB Enablement Example](https://github.com/elastic/integrations/blob/8a57d6ba96d391afc33da20c80ec51280d22f009/packages/oracle/data_stream/performance/elasticsearch/ingest_pipeline/default.yml#LL127C4-L131C29)  
 
 Important considerations:
-- There is a limit on how many dimension fields a datastream can have. By default, this value is [21](https://github.com/elastic/elasticsearch/blob/6417a4f80f32ace48b8ad682ad46b19b57e49d60/server/src/main/java/org/elasticsearch/index/mapper/MapperService.java#L114)). You can adjust this restriction by altering the i`ndex.mapping.dimension_fields.limit`:
+- There is a limit on how many dimension fields a datastream can have. By default, this value is [21](https://github.com/elastic/elasticsearch/blob/6417a4f80f32ace48b8ad682ad46b19b57e49d60/server/src/main/java/org/elasticsearch/index/mapper/MapperService.java#L114)). You can adjust this restriction by altering the `index.mapping.dimension_fields.limit`:
 ```yaml
 elasticsearch:
   index_template:
