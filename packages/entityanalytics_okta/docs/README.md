@@ -137,20 +137,23 @@ An example event for `user` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-07-18T10:33:30.125Z",
+    "@timestamp": "2023-08-11T07:01:21.235Z",
     "agent": {
-        "ephemeral_id": "54709a8d-8750-4768-8b57-34923e498c76",
-        "id": "4cade9d6-16e3-45f1-9dcc-5ba9411ae088",
+        "ephemeral_id": "dbb88a7d-16aa-44e4-8bef-c707be5ac5e2",
+        "id": "28086f58-96fe-486b-9ef2-4ca0bd13a4e5",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.9.0"
     },
     "asset": {
+        "category": "entity",
         "create_date": "2013-06-24T16:39:18.000Z",
+        "id": "00ub0oNGTSWTBKOLGLNR",
         "last_seen": "2013-06-24T17:39:19.000Z",
         "last_status_change_date": "2013-06-24T16:39:19.000Z",
         "last_updated": "2013-07-02T21:36:25.344Z",
         "status": "ACTIVE",
+        "type": "okta_user",
         "vendor": "OKTA"
     },
     "data_stream": {
@@ -162,8 +165,8 @@ An example event for `user` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "4cade9d6-16e3-45f1-9dcc-5ba9411ae088",
-        "snapshot": true,
+        "id": "28086f58-96fe-486b-9ef2-4ca0bd13a4e5",
+        "snapshot": false,
         "version": "8.9.0"
     },
     "entityanalytics_okta": {
@@ -198,7 +201,7 @@ An example event for `user` looks as following:
             "iam"
         ],
         "dataset": "entityanalytics_okta.user",
-        "ingested": "2023-07-18T10:33:33Z",
+        "ingested": "2023-08-11T07:01:22Z",
         "kind": "asset",
         "type": [
             "user",
@@ -209,7 +212,7 @@ An example event for `user` looks as following:
         "type": "entity-analytics"
     },
     "labels": {
-        "identity_source": "entity-analytics-entityanalytics_okta.user-e2c65e6d-d383-4a46-b829-09e8daa71416"
+        "identity_source": "entity-analytics-entityanalytics_okta.user-418d01f7-61b7-4df5-8d71-9e0ce541334e"
     },
     "related": {
         "user": [
@@ -256,13 +259,16 @@ An example event for `user` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| asset.category |  | keyword |
 | asset.costCenter |  | keyword |
 | asset.create_date |  | date |
+| asset.id |  | keyword |
 | asset.last_seen |  | date |
 | asset.last_status_change_date |  | date |
 | asset.last_updated |  | date |
 | asset.name |  | keyword |
 | asset.status |  | keyword |
+| asset.type |  | keyword |
 | asset.vendor |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
@@ -327,6 +333,13 @@ An example event for `user` looks as following:
 | user.account.status.password_expired |  | boolean |
 | user.account.status.recovery |  | boolean |
 | user.account.status.suspended |  | boolean |
+| user.geo.city_name |  | keyword |
+| user.geo.country_iso_code |  | keyword |
+| user.geo.name |  | keyword |
+| user.geo.postal_code |  | keyword |
+| user.geo.region_name |  | keyword |
+| user.geo.timezone |  | keyword |
+| user.organization.name |  | keyword |
 | user.profile.department |  | keyword |
 | user.profile.first_name |  | keyword |
 | user.profile.id |  | keyword |
@@ -334,7 +347,6 @@ An example event for `user` looks as following:
 | user.profile.last_name |  | keyword |
 | user.profile.manager |  | keyword |
 | user.profile.mobile_phone |  | keyword |
-| user.profile.organization |  | keyword |
 | user.profile.other_identities |  | keyword |
 | user.profile.primaryPhone |  | keyword |
 | user.profile.secondEmail |  | keyword |
