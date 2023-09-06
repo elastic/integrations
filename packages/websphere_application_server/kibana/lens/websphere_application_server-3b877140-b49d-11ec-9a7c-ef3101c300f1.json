@@ -17,27 +17,48 @@
                                 "00acb34f-ae34-439a-9cb7-45a09bb69e15": {
                                     "customLabel": true,
                                     "dataType": "number",
+                                    "filter": {
+                                        "language": "kuery",
+                                        "query": "websphere_application_server.jdbc.connection.closed: *"
+                                    },
                                     "isBucketed": false,
                                     "label": "Closed Connections",
-                                    "operationType": "median",
+                                    "operationType": "last_value",
+                                    "params": {
+                                        "sortField": "@timestamp"
+                                    },
                                     "scale": "ratio",
                                     "sourceField": "websphere_application_server.jdbc.connection.closed"
                                 },
                                 "03351030-51ad-4c19-9e9e-9a550b2e23e4": {
                                     "customLabel": true,
                                     "dataType": "number",
+                                    "filter": {
+                                        "language": "kuery",
+                                        "query": "websphere_application_server.jdbc.connection.allocated: *"
+                                    },
                                     "isBucketed": false,
                                     "label": "Allocated Connections",
-                                    "operationType": "median",
+                                    "operationType": "last_value",
+                                    "params": {
+                                        "sortField": "@timestamp"
+                                    },
                                     "scale": "ratio",
                                     "sourceField": "websphere_application_server.jdbc.connection.allocated"
                                 },
                                 "25cdb2ff-2d42-4703-9419-2375ef16c439": {
                                     "customLabel": true,
                                     "dataType": "number",
+                                    "filter": {
+                                        "language": "kuery",
+                                        "query": "websphere_application_server.jdbc.connection.created: *"
+                                    },
                                     "isBucketed": false,
                                     "label": "Created Connections",
-                                    "operationType": "median",
+                                    "operationType": "last_value",
+                                    "params": {
+                                        "sortField": "@timestamp"
+                                    },
                                     "scale": "ratio",
                                     "sourceField": "websphere_application_server.jdbc.connection.created"
                                 },
@@ -61,11 +82,11 @@
                                     "params": {
                                         "missingBucket": false,
                                         "orderBy": {
-                                            "fallback": false,
-                                            "type": "alphabetical"
+                                            "columnId": "03351030-51ad-4c19-9e9e-9a550b2e23e4",
+                                            "type": "column"
                                         },
-                                        "orderDirection": "asc",
-                                        "otherBucket": true,
+                                        "orderDirection": "desc",
+                                        "otherBucket": false,
                                         "parentFormat": {
                                             "id": "terms"
                                         },
@@ -77,9 +98,16 @@
                                 "e7bed513-0fe1-460d-affc-4186777ff41a": {
                                     "customLabel": true,
                                     "dataType": "number",
+                                    "filter": {
+                                        "language": "kuery",
+                                        "query": "websphere_application_server.jdbc.connection.returned: *"
+                                    },
                                     "isBucketed": false,
                                     "label": "Returned Connections",
-                                    "operationType": "median",
+                                    "operationType": "last_value",
+                                    "params": {
+                                        "sortField": "@timestamp"
+                                    },
                                     "scale": "ratio",
                                     "sourceField": "websphere_application_server.jdbc.connection.returned"
                                 }
@@ -92,7 +120,7 @@
             "filters": [],
             "query": {
                 "language": "kuery",
-                "query": "websphere_application_server.jdbc.connection.created \u003e 0"
+                "query": "websphere_application_server.jdbc.connection.created \u003e 0 or websphere_application_server.jdbc.connection.closed \u003e 0 or websphere_application_server.jdbc.connection.allocated \u003e 0 or websphere_application_server.jdbc.connection.returned \u003e 0"
             },
             "visualization": {
                 "axisTitlesVisibilitySettings": {
@@ -145,7 +173,8 @@
                 },
                 "yRightExtent": {
                     "mode": "full"
-                }
+                },
+                "yTitle": "Count"
             }
         },
         "title": "Number of Created, Closed, Allocated and Returned Connections  [Metrics WebSphere Application Server]",
@@ -157,11 +186,6 @@
         "lens": "8.3.0"
     },
     "references": [
-        {
-            "id": "metrics-*",
-            "name": "indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
         {
             "id": "metrics-*",
             "name": "indexpattern-datasource-layer-6a787cb2-6500-4f46-bcc0-56ba379b2ec1",
