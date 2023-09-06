@@ -5,11 +5,11 @@ source:
 # The version suffix on the dest.index should be incremented if a breaking change
 # is made to the index mapping. You must also bump the fleet_transform_version
 # for any change to this transform configuration to take effect. The old destination
-# index is not automatically removed. We are dependent on https://github.com/elastic/package-spec/issues/523 to give
+# index is not automatically deleted. We are dependent on https://github.com/elastic/package-spec/issues/523 to give
 # us that ability in order to prevent having duplicate IoC data and prevent query
 # time field type conflicts.
 dest:
-  index: "logs-ti_otx_latest.destination-1"
+  index: "logs-ti_otx_latest.dest_pulses_subscribed-1"
   aliases:
     - alias: "logs-ti_otx_latest.pulses_subscribed"
       move_on_creation: true
@@ -27,8 +27,8 @@ sync:
     delay: 60s
 retention_policy:
   time:
-    field: event.ingested
-    max_age: 24h
+    field: otx.expiration
+    max_age: 1m
 _meta:
   managed: true
   # Bump this version to delete, reinstall, and restart the transform during package.
