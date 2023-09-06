@@ -2,7 +2,7 @@
 
 Important related resources:
 
-- Meta [issue](https://github.com/elastic/integrations/issues/5233) with all migrated packages: 
+- Meta [issue](https://github.com/elastic/integrations/issues/5233) with all migrated packages
 - TSDB [test](https://github.com/elastic/TSDB-migration-test-kit) migration kit.
 
 In this document you can find:
