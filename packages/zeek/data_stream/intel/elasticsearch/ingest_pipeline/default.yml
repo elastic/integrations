@@ -76,11 +76,11 @@ processors:
   - set:
       field: source.ip
       copy_from: source.address
-      if: ctx?.source?.address != null
+      if: ctx.source?.address != null
   - set:
       field: destination.ip
       copy_from: destination.address
-      if: ctx?.destination?.address != null
+      if: ctx.destination?.address != null
   - dot_expander:
       path: zeek.intel
       field: seen.indicator
@@ -187,13 +187,13 @@ processors:
       ignore_missing: true
   - append:
       field: "related.ip"
-      value: "{{source.ip}}"
-      if: "ctx?.source?.ip != null"
+      value: "{{{source.ip}}}"
+      if: "ctx.source?.ip != null"
       allow_duplicates: false
   - append:
       field: "related.ip"
-      value: "{{destination.ip}}"
-      if: "ctx?.destination?.ip != null"
+      value: "{{{destination.ip}}}"
+      if: "ctx.destination?.ip != null"
       allow_duplicates: false
   - community_id:
       target_field: network.community_id
@@ -201,7 +201,7 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
-      if: ctx?.event?.original == null
+      if: ctx.event?.original == null
 
   # Add threat indicators.
   - convert:
@@ -291,7 +291,7 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 on_failure:
