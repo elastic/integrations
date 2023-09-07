@@ -40,17 +40,15 @@ program: |
       "Authorization": ["Bearer " + state.api_key],
     }
   }).with({
-    // Using string concatenation to avoid encode_json() on nested data,
-    // until release of https://github.com/elastic/beats/pull/35774
-    "Body": '''{
-      "query": ''' + state.query.encode_json() + ''',
+    "Body": {
+      "query": state.query,
       "variables": {
-        "first": ''' + string(state.page_size) + ''',
-        "after": ''' + (has(state.cursor) && has(state.cursor.value) ? state.cursor.value.encode_json() : 'null') + ''',
+        "first": state.page_size,
+        "after": state.cursor.value,
         "orderBy": "modified",
-        "orderMode": "asc"
+        "orderMode": "asc",
       }
-    }'''
+    }.encode_json()
   }).do_request().as(resp,
     bytes(resp.Body).decode_json().as(body, {
       "events": body.data.indicators.edges.map(e, e.node.with({
