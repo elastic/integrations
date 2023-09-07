@@ -54,7 +54,7 @@ spec:
 
 ### Set routing at runtime
 
-Suppose you want to change the container logs routing on a running container. In that case, you can annotatethe pod using `kubectl`, and the integration will apply it immediately sending all the following documents to the new destination:
+Suppose you want to change the container logs routing on a running container. In that case, you can annotate the pod using `kubectl`, and the integration will apply it immediately sending all the following documents to the new destination:
 
 Here is an example where we route the container logs for a pod running the Elastic Agent to the `kubernetes.container_logs.agents` dataset:
 
@@ -68,16 +68,16 @@ Here's a similar example to change the namespace on a pod running Nginx:
 kubectl annotate pods elastic-agent-managed-daemonset-6p22g elastic.co/namespace=nginx
 ```
 
-You can restore the standard routing by removing the labels:
+You can restore the standard routing by removing the annotations:
 
 ```shell
 kubectl annotate pods elastic-agent-managed-daemonset-6p22g elastic.co/dataset-
 kubectl annotate pods elastic-agent-managed-daemonset-6p22g elastic.co/namespace-
 ```
 
-### Labels Reference
+### Annotations Reference
 
-Here are the labels available for customization:
+Here are the annotations available to customize routing:
 
 
 | Label                  | Description                                              |
