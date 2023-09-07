@@ -10,7 +10,7 @@ By default only {{ url "filebeat-input-filestream-parsers" "container parser" }}
 
 ## Rerouting based on pod annotations
 
-You can customize the routing of container logs events and sending them to different datasets and namespaces using pods annotations.
+You can customize the routing of container logs events and sending them to different datasets and namespaces using pods' annotations.
 
 Routing customization can happen at:
 
