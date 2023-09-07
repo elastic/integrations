@@ -10,7 +10,7 @@ By default only [container parser](https://www.elastic.co/guide/en/beats/filebea
 
 ## Rerouting based on pod annotations
 
-You can customize the routing of container logs events and sending them to different datasets and namespaces using pods annotations.
+You can customize the routing of container logs events and sending them to different datasets and namespaces using pods' annotations.
 
 Routing customization can happen at:
 
