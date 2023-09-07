@@ -3,6 +3,7 @@
   description: ""
   fields:
     - name: timegrain
+      dimension: true
       type: keyword
       description: >
         The Azure metric timegrain
@@ -25,6 +26,7 @@
 
         - name: id
           type: keyword
+          dimension: true
           description: >
             The id of the resource
 
@@ -41,6 +43,7 @@
             Azure resource tags.
 
     - name: namespace
+      dimension: true
       type: keyword
       description: >
         The namespace selected
@@ -55,17 +58,26 @@
       description: >
         The application ID
 
-    - name: dimensions.*
-      type: object
-      object_type: keyword
-      object_type_mapping_type: "*"
-      description: >
-        Azure metric dimensions.
-
-    - name: metrics.*.*
-      type: object
-      object_type: float
-      object_type_mapping_type: "*"
-      description: >
-        Metrics returned.
-
+    - name: dimensions
+      type: group
+      fields:
+        - name: device
+          type: keyword
+          dimension: true
+          description: Name of the device of the linux instance, eg. sda2
+        - name: host
+          type: keyword
+          dimension: true
+          description: Name of the linux host
+        - name: name
+          type: keyword
+          dimension: true
+          description: Name of the device of the linux instance
+        - name: interface
+          type: keyword
+          dimension: true
+          description: Name of the network interface on the linux instance
+        - name: cpu
+          type: keyword
+          dimension: true
+          description: Cpu core on the linux instance
