@@ -12,8 +12,6 @@ In this document you can find:
 * [Testing](#testing)
 * [Best practices](#best-practices)
 * [Troubleshooting](#troubleshooting)
-* [Known issues](#known-issues)
-* [Reference to existing package already migrated](#existing-migrated-packages)
 
 
 # <a id="background"></a> Background
@@ -114,7 +112,7 @@ Example of adding a metric type to a field:
 ```
 > **Note**: Some of the aggregation functions are not supported for certain metric_type. In such a scenario, please revisit to see if the selection of metric_type you made is indeed correct for that field. If valid, please create an issue under elastic/elasticsearch explaining the use case.
 
-### Step 4: Update Kibana version
+### Step 3: Update Kibana version
 
 Modify the `kibana.version` to at least `8.8.0` within the `manifest.yml` file of the package:
 ```yaml
@@ -122,7 +120,7 @@ conditions:
  kibana.version: "^8.8.0"
 ```
 
-### Step 5: Enable `time_series` index mode
+### Step 4: Enable `time_series` index mode
 
 Add the changes to the `manifest.yml` file of the datastream as below to enable the timeseries index mode:
 ```yaml
@@ -163,8 +161,3 @@ An enhancement [request](https://github.com/elastic/kibana/issues/150549) for Ki
 
 **Conflicting Field Type** : Fields having conflicting field type will not be considered as dimension. Resolve the field type ambiguity before defining a field as dimension field.
 
-# <a id="existing-migrated-packages"></a> Reference to existing package already migrated
-
-- [Oracle integration](https://github.com/elastic/integrations/tree/main/packages/oracle)
-- [Redis integrations](https://github.com/elastic/integrations/tree/main/packages/redis)
-- [AWS Redshift integration](https://github.com/elastic/integrations/tree/main/packages/aws/data_stream/redshift)
