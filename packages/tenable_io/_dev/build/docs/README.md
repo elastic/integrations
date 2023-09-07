@@ -1,14 +1,14 @@
-# Tenable.io
+# Tenable Vulnerability Management
 
 ## Overview
 
-The [Tenable.io](https://www.tenable.com/products/tenable-io) integration allows users to monitor asset, plugin, and vulnerability activity. It provides the industry's most comprehensive vulnerability coverage with the ability to predict which security issues to remediate first. Tenable.io is the user's complete end-to-end vulnerability management solution.
+The [Tenable Vulnerability Management](https://www.tenable.com/products/tenable-io) integration allows users to monitor asset, plugin, and vulnerability activity. It provides the industry's most comprehensive vulnerability coverage with the ability to predict which security issues to remediate first. Tenable Vulnerability Management is the user's complete end-to-end vulnerability management solution.
 
-Use the Tenable.io integration to collects and parses data from the REST APIs. Then visualize that data in Kibana.
+Use the Tenable Vulnerability Management integration to collects and parses data from the REST APIs. Then visualize that data in Kibana.
 
 ## Data streams
 
-The Tenable.io integration collects logs for three types of events: Asset, Plugin, and Vulnerability.
+The Tenable Vulnerability Management integration collects logs for three types of events: Asset, Plugin, and Vulnerability.
 
 **Asset** is used to get details related to assets that belong to the user's organization. See more details in the API documentation [here](https://developer.tenable.com/reference/exports-assets-request-export).
 
@@ -16,13 +16,11 @@ The Tenable.io integration collects logs for three types of events: Asset, Plugi
 
 **Vulnerability** is used to retrieve all vulnerabilities on each asset, including the vulnerability state. See more details in the API documentation [here](https://developer.tenable.com/reference/exports-vulns-request-export).
 
-**Scanner** is used to retrieve the current state of scanners, including licensing and activity. See more details in the API documentation [here](https://developer.tenable.com/reference/scanners-list).
-
 **Scan** is used to retrieve details about existing scans, including scan statuses, assigned targets, and more. See more details in the API documentation [here](https://developer.tenable.com/reference/scans-list).
 
 ## Compatibility
 
-This module has been tested against `Tenable.io release` [December 6, 2022](https://docs.tenable.com/releasenotes/Content/tenableio/tenableio202212.htm).
+This module has been tested against `Tenable Vulnerability Management release` [December 6, 2022](https://docs.tenable.com/releasenotes/Content/tenableio/tenableio202212.htm).
 
 ## Requirements
 
@@ -35,14 +33,14 @@ Elasticsearch is needed to store and search data, and Kibana is needed for visua
 
 ## Setup
 
-### To collect data from the Tenable.io REST APIs, follow the below steps:
+### To collect data from the Tenable Vulnerability Management REST APIs, follow the below steps:
 
-  1. Create a valid user account with appropriate permissions on Tenable.io.
-  2. Generate the API keys for the account to access all Tenable.io APIs.
+  1. Create a valid user account with appropriate permissions on Tenable Vulnerability Management.
+  2. Generate the API keys for the account to access all Tenable Vulnerability Management APIs.
 
 **Note:**
-  - For the Tenable.io asset and vulnerability API, **ADMINISTRATOR [64]** and **Can View** access control is required in  created user's access key and secret key.
-  - For the Tenable.io plugin, **BASIC [16]** user permissions are required in created user's access key and secret key.
+  - For the Tenable Vulnerability Management asset and vulnerability API, **ADMINISTRATOR [64]** and **Can View** access control is required in  created user's access key and secret key.
+  - For the Tenable Vulnerability Management plugin, **BASIC [16]** user permissions are required in created user's access key and secret key.
   - For more details related to permissions, refer to the link [here](https://developer.tenable.com/docs/permissions).
 
 ## Logs reference
@@ -76,16 +74,6 @@ This is the `vulnerability` dataset.
 {{event "vulnerability"}}
 
 {{fields "vulnerability"}}
-
-### scanner
-
-This is the `scanner` dataset.
-
-#### Example
-
-{{event "scanner"}}
-
-{{fields "scanner"}}
 
 ### scan
 
