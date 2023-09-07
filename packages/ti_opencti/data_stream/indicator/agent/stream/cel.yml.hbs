@@ -1,21 +1,35 @@
 config_version: 2
-interval: {{interval}}
-{{#if proxy_url}}
-resource.proxy_url: {{proxy_url}}
+resource.url: {{url}}
+{{#if oauth2}}
+auth.oauth2: {{oauth2}}
 {{/if}}
 {{#if ssl}}
 resource.ssl: {{ssl}}
 {{/if}}
-{{#if http_client_timeout}}
+interval: {{interval}}
+max_executions: {{max_executions}}
 resource.timeout: {{http_client_timeout}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
 {{/if}}
-resource.url: {{url}}
-{{#if token_url}}
-auth.oauth2:
-  client.id: {{client_id}}
-  client.secret: {{client_secret}}
-  token_url: {{token_url}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/opencti-indicator/http-request-trace-*.ndjson"
 {{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+fields_under_root: true
+fields:
+  _conf:
+    url: {{url}}
 redact:
   fields:
     - api_key
@@ -52,24 +66,6 @@ program: |
       "query": state.query,
     })
   )
-tags:
-{{#if preserve_original_event}}
-  - preserve_original_event
-{{/if}}
-{{#each tags as |tag|}}
-  - {{tag}}
-{{/each}}
-{{#contains "forwarded" tags}}
-publisher_pipeline.disable_host: true
-{{/contains}}
-fields_under_root: true
-fields:
-  _conf:
-    url: {{url}}
-{{#if processors}}
-processors:
-{{processors}}
-{{/if}}
 state:
   api_key: {{api_key}}
   page_size: {{page_size}}

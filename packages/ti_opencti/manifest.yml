@@ -1,15 +1,16 @@
-format_version: 2.9.0
+format_version: 2.10.0
 name: ti_opencti
-title: "OpenCTI"
+title: OpenCTI
 version: 0.0.1
-source:
-  license: "Elastic-2.0"
 description: "Ingest threat intelligence indicators from OpenCTI with Elastic Agent."
 type: integration
+source:
+  license: "Elastic-2.0"
 categories:
   - security
+  - threat_intel
 conditions:
-  kibana.version: "^8.7.1"
+  kibana.version: "^8.9.1"
   elastic.subscription: "basic"
 screenshots:
   - src: /img/screenshot.png
@@ -30,55 +31,38 @@ policy_templates:
         title: OpenCTI
         description: Collect OpenCTI data.
         vars:
-          - name: client_id
+          - name: url
             type: text
-            title: Client ID
-            description: OAuth2 Client ID for OpenCTI.
+            title: URL
+            description: Base URL of the OpenCTI instance. E.g. https://demo.opencti.io
             multi: false
-            required: false
-            show_user: true
-          - name: client_secret
-            type: password
-            title: Client Secret
-            description: OAuth2 Client Secret for OpenCTI.
-            multi: false
-            required: false
+            required: true
             show_user: true
           - name: api_key
             type: password
             title: API Key
-            description: Bearer API key for OpenCTI.
+            description: API key from your profile page in OpenCTI, for bearer authentication.
             multi: false
             required: false
             show_user: true
-          - name: url
-            type: text
-            title: URL
-            description: Base URL of the OpenCTI instance.
-            default: https://demo.opencti.io
-            required: true
-            show_user: true
-          - name: token_url
-            type: text
-            title: OAuth2 Token URL
-            description: OAuth2 Token URL.
-            # default: https://example2.com/oauth2/token
-            required: false
-            show_user: true
-          - name: proxy_url
-            type: text
-            title: Proxy URL
+          - name: oauth2
+            type: yaml
+            title: OAuth2 Configuration
+            description: i.e. client.id, client.secret, token_url and [other OAuth2 options](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_auth_basic_enabled).
             multi: false
             required: false
-            show_user: true
-            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+            show_user: false
+            default: |
+              #client.id: 12345678901234567890abcdef
+              #client.secret: abcdef12345678901234567890
+              #token_url: http://example.com/oauth2/token
           - name: ssl
             type: yaml
             title: SSL Configuration
-            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            description: i.e. certificate, key, certificate_authorities, and [other SSL options](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html).
             multi: false
             required: false
-            show_user: true
+            show_user: false
             default: |
               #certificate_authorities:
               #  - |
