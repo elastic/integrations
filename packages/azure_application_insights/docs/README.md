@@ -179,7 +179,6 @@ An example event for `app_insights` looks as following:
 | azure.dimensions.exception_type | The type of exception that was thrown. | keyword |  |
 | azure.dimensions.request_name | The name of the request that was made. | keyword |  |
 | azure.dimensions.request_url_host | The host part of the URL that was requested. | keyword |  |
-| azure.metrics.\*.\* | Metrics returned. | object | gauge |
 | azure.namespace | The namespace selected | keyword |  |
 | azure.resource.group | The resource group | keyword |  |
 | azure.resource.id | The id of the resource | keyword |  |
