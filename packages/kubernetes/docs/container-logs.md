@@ -8,19 +8,19 @@ This defaults to `/var/log/containers/*${kubernetes.container.id}.log`.
 By default only [container parser](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html#_parsers) is enabled. Additional log parsers can be added as an advanced options configuration.
 
 
-## Rerouting based on pod labels
+## Rerouting based on pod annotations
 
-You can customize the routing of container logs by sending them to different datasets and namespaces using pods labels.
+You can customize the routing of container logs events and sending them to different datasets and namespaces using pods annotations.
 
 Routing customization can happen at:
 
 - pod definition time, e.g., using a deployment.
-- pod runtime, setting the labels using `kubectl`.
+- pod runtime, annotating pods using `kubectl`.
 
 
 ### Set routing at pod definition time
 
-Here is an example of an Nginx deployment where we set both `elastic.co/dataset` and `elastic.co/namespace` labels to route the container logs to specific datasets and namespace, respectively.
+Here is an example of an Nginx deployment where we set both `elastic.co/dataset` and `elastic.co/namespace` annotations to route the container logs to specific datasets and namespace, respectively.
 
 ```yaml
 # nginx-deployment.yaml
@@ -35,12 +35,13 @@ spec:
       app: nginx
   template:
     metadata:
+      annotations:
+        elastic.co/dataset: kubernetes.container_logs.nginx
+        elastic.co/namespace: nginx
       labels:
         app: nginx
-        elastic.co/dataset: kubernetes.container_logs.nginx
-        elastic.co/namespace: staging
         app.kubernetes.io/name: myservice
-        app.kubernetes.io/version: v0.1.0
+        app.kubernetes.io/version: v0.1.2
         app.kubernetes.io/instance: myservice-abcxzy
     spec:
       containers:
@@ -53,18 +54,25 @@ spec:
 
 ### Set routing at runtime
 
-Suppose you want to change the container logs routing on a running container. In that case, you can set the same labels using `kubectl,` and the integration will apply it immediately sending all the following documents to the new destination:
+Suppose you want to change the container logs routing on a running container. In that case, you can annotatethe pod using `kubectl`, and the integration will apply it immediately sending all the following documents to the new destination:
 
 Here is an example where we route the container logs for a pod running the Elastic Agent to the `kubernetes.container_logs.agents` dataset:
 
 ```shell
-kubectl -n kube-system label pods elastic-agent-managed-daemonset-6p22g elastic.co/dataset=kubernetes.container_logs.agents
+kubectl annotate pods elastic-agent-managed-daemonset-6p22g elastic.co/dataset=kubernetes.container_logs.agents
 ```
 
 Here's a similar example to change the namespace on a pod running Nginx:
 
 ```shell
-kubectl -n kube-system label pods elastic-agent-managed-daemonset-6p22g elastic.co/namespace=nginx
+kubectl annotate pods elastic-agent-managed-daemonset-6p22g elastic.co/namespace=nginx
+```
+
+You can restore the standard routing by removing the labels:
+
+```shell
+kubectl annotate pods elastic-agent-managed-daemonset-6p22g elastic.co/dataset-
+kubectl annotate pods elastic-agent-managed-daemonset-6p22g elastic.co/namespace-
 ```
 
 ### Labels Reference

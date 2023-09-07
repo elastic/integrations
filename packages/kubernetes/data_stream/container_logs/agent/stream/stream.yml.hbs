@@ -15,8 +15,27 @@ parsers:
     format: {{ containerParserFormat }}
 {{ additionalParsersConfig }}
 
-{{#if processors}}
 processors:
+  - add_fields:
+      target: kubernetes
+      fields:
+        annotations.elastic_co/dataset: ${kubernetes.annotations.elastic.co/dataset|""}
+        annotations.elastic_co/namespace: ${kubernetes.annotations.elastic.co/namespace|""}
+  - drop_fields:
+      fields:
+        - kubernetes.annotations.elastic_co/dataset
+      when:
+        equals:
+          kubernetes.annotations.elastic_co/dataset: ""
+      ignore_missing: true
+  - drop_fields:
+      fields:
+        - kubernetes.annotations.elastic_co/namespace
+      when:
+        equals:
+          kubernetes.annotations.elastic_co/namespace: ""
+      ignore_missing: true
+{{#if processors}}      
 {{processors}}
 {{/if}}
 
