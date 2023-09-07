@@ -138,8 +138,29 @@ processors:
       field: message
       tag: grok_message
       patterns:
-        - "%{DATA:cisco.ios.facility}-%{POSINT:event.severity}-%{DATA:event.code}:\\s+(\\w+\\d+(\\/\\d+)?\\:\\s+)?([a-zA-Z0-9_]+\\:\\s+)?%{GREEDYDATA:message}"
+        - '%{DATA:cisco.ios.facility}-%{POSINT:event.severity}-%{DATA:event.code}:\s+(\w+\d+(/\d+)?\:\s+)?([a-zA-Z0-9_]+\:\s+)?%{GREEDYDATA:message}'
       ignore_missing: true
+  - grok:
+      field: message
+      tag: grok_child_message
+      patterns:
+        - '%%{DATA:cisco.ios.facility}-%{POSINT:event.severity}-%{DATA:event.code}:\s+(\w+\d+(/\d+)?\:\s+)?([a-zA-Z0-9_]+\:\s+)?%{GREEDYDATA:message}'
+      ignore_missing: true
+      if: ctx.cisco?.ios?.facility == 'IOSXE' && ctx.event?.code == 'PLATFORM'
+  - grok:
+      field: message
+      tag: grok_audit_details
+      patterns:
+        - 'initiator \(%{IP:source.ip}:%{NUMBER:source.port:long}\) sent %{NUMBER:source.bytes:long} bytes -- responder \(%{IP:destination.ip}:%{NUMBER:destination.port:long}\) sent %{NUMBER:destination.bytes:long} bytes, from %{NOTSPACE:cisco.ios.interface.name}'
+      ignore_missing: true
+      if: ctx.cisco?.ios?.facility == 'FW' && ctx.event?.code == 'SESS_AUDIT_TRAIL'
+  - grok:
+      field: message
+      tag: grok_drop_details
+      patterns:
+        - '^Dropping %{WORD} %{WORD} from %{NOTSPACE:cisco.ios.interface.name} %{IP:source.ip}:%{NUMBER:source.port:long} ?=> ?%{IP:destination.ip}:%{NUMBER:destination.port:long}'
+      ignore_missing: true
+      if: ctx.cisco?.ios?.facility == 'FW' && ctx.event?.code == 'DROP_PKT'
   - rename:
       field: ntp_message
       target_field: message
@@ -250,6 +271,22 @@ processors:
       type: long
       tag: convert_destination_port
       ignore_missing: true
+  - script:
+      lang: painless
+      source: |
+        long n = 0;
+        if (ctx.source?.bytes != null) {
+          n += ctx.source.bytes
+        }
+        if (ctx.destination?.bytes != null) {
+          n += ctx.destination.bytes
+        }
+        if (ctx.network == null) {
+          ctx.network = new HashMap();
+        }
+        ctx.network.bytes = n;
+      if: ctx.source?.bytes != null || ctx.destination?.bytes != null
+      ignore_failure: true
   - set:
       field: network.packets
       copy_from: source.packets
