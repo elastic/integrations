@@ -153,11 +153,32 @@ A field that holds millions of unique values may not be an ideal candidate for b
 
 # <a id="troubleshooting"></a> Troubleshooting
 
-**Identification of Write Index**: When mappings are modified for a datastream, index rollover happens and a new index is created under the datastream. Even if there exists a new index, the data continues to go to the old index until the timestamp matches `index.time_series.start_time` of the newly created index.  
+### Conflicting field type
 
-An enhancement [request](https://github.com/elastic/kibana/issues/150549) for Kibana is created to indicate the write index. Until then, refer to the index.time_series.start_time of indices and compare with the current time to identify the write index. 
+Fields having conflicting field type will not be considered as dimension. Resolve the field type ambiguity before defining a field as dimension field.
 
-*Hint: In the Index Management UI, against a specific index, if the  docs count column values regularly increase for an Index, it can be considered as the write index.*
+### Identification of write index
 
-**Conflicting Field Type** : Fields having conflicting field type will not be considered as dimension. Resolve the field type ambiguity before defining a field as dimension field.
+When mappings are modified for a datastream, index rollover happens and a new index is created under the datastream. Even if there exists a new index, the data continues to go to the old index until the timestamp matches `index.time_series.start_time` of the newly created index.  
+
+An enhancement [request](https://github.com/elastic/kibana/issues/150549) for Kibana is created to indicate the write index. Until then, refer to the `index.time_series.start_time` of indices and compare with the current time to identify the write index. 
+
+If you find this error (references [this issue](https://github.com/elastic/integrations/issues/7345)):
+
+```console
+... (status=400): {"type":"illegal_argument_exception","reason":"the document timestamp [2023-08-07T00:00:00.000Z] is outside of ranges of currently writable indices [[2023-08-07T08:55:38.000Z,2023-08-07T12:55:38.000Z]]"}, dropping event!
+```
+
+Consider:
+1. Defining the `look_ahead` for each data stream:
+```yaml
+elasticsearch:
+  index_mode: "time_series"
+  index_template:
+    settings:
+      index.look_ahead_time: "10h"
+```
+> **Note**: Updating the package with this does not cause an automatic rollover on the data stream. You have to do that manually. 
+2. Updating the `timestamp` of the document being rejected.
+3. Finding a fix to receive the document without a delay.
 
