@@ -20,9 +20,9 @@ The anomaly detection jobs under this package rely on two indices. One has file 
 In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for **Lateral Movement Detection**. When you select the card, you will see pre-configured anomaly detection jobs that you can enable depending on what makes the most sense for your environment.
 
 **_Note_**: In the Machine Learning app, these configurations are available only when data exists that matches the query specified in the [lmd-ml file](https://github.com/elastic/integrations/blob/main/packages/lmd/kibana/ml_module/lmd-ml.json#L10).
-### Enable Security rules
 
-This model uses both anomaly detection and security rules to detect lateral movement in the network. In order to see all alerts detected by this model, you need to enable all the "Security Detection Rules" in the table, as described below. The first four rules are triggered when certain conditions for the anomaly detection jobs are satisfied. The last two rules are behavioral and independent of anomaly detection jobs. See the [documentation](https://www.elastic.co/guide/en/security/current/detection-engine-overview.html) for more information on importing and enabling the rules.
+You can also enable detection rules to alert on Lateral Movement activity in your environment, based on anomalies flagged by the above ML jobs. These rules are available as part of the Detection Engine <ADD MORE INFO FOR SPECIFICALLY IDENTIFYING THESE RULES>. See this [documentation](https://www.elastic.co/guide/en/security/current/prebuilt-rules-management.html#load-prebuilt-rules) for more information on importing and enabling the rules.
+
 
 ### Install ProblemChild package to detect malicious processes
 
@@ -108,7 +108,9 @@ Detects potential lateral movement activity by identifying malicious file transf
  | high-mean-rdp-process-args                        | Detects unusually high number of process arguments in an RDP session.                           |
 
 
-## Security Detection Rules
+## Associated Security Detection Rules
+
+The detection rules associated with this package are as follows:
 
 | Rule                                                         | Description                                                                                                                                                                                                                        |
 |--------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -125,6 +127,7 @@ Detects potential lateral movement activity by identifying malicious file transf
  | Spike in number of connections made to a source IP           | An anomaly detection job to detect a high count of destination IPs establishing an RDP connection with a single source IP.                                                                                                         |
  | Spike in number of connections made to a destination IP      | An anomaly detection job to detect a high count of source IPs making an RDP connection with a single destination IP.                                                                                                               |
  | Unusual time or day for an RDP session start                 | An anomaly detection job to detect an RDP session started at an usual time or weekday.                                                                                                                                             |
+
 
 ## Dashboard
 
