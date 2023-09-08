@@ -7,7 +7,7 @@ hosts:
 raw_data.enabled: true
 driver: "oracle"
 sql_queries: 
-  - query: SELECT name, physical_reads, db_block_gets, consistent_gets, 1 - (physical_reads / (db_block_gets + consistent_gets)) "Hit_Ratio" FROM V$BUFFER_POOL_STATISTICS
+  - query: SELECT name, physical_reads, db_block_gets, consistent_gets, 1 - (physical_reads / (db_block_gets + consistent_gets)) "Hit_Ratio" FROM V$BUFFER_POOL_STATISTICS where (db_block_gets + consistent_gets) > 0
     response_format: table
   - query: SELECT sum(a.value) total_cur, avg(a.value) avg_cur, max(a.value) max_cur, S.username, s.machine FROM v$sesstat a, v$statname b, v$session s WHERE a.statistic# = b.statistic# AND s.sid = a.sid GROUP BY s.username, s.machine
     response_format: table
