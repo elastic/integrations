@@ -8,8 +8,7 @@ The `container_logs` data stream for containers' logs collection is enabled by d
 ## Compatibility
 
 The Docker module is currently tested on Linux and Mac with the community
-edition engine, versions 1.11 and 17.09.0-ce. It is not tested on Windows,
-but it should also work there.
+edition engine, versions 1.11 and 17.09.0-ce.
 
 ## Running from within Docker
 
