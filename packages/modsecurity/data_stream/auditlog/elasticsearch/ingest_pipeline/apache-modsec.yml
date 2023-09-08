@@ -88,6 +88,10 @@ processors:
       field: json.request.request_line
       patterns:
         - "%{NOTSPACE:http.request.method} %{URIPATHPARAM:url.original}(?: HTTP/%{NUMBER:http.version})"
+  - rename:
+      field: json.transaction.request.headers.host
+      target_field: json.transaction.request.headers.Host
+      ignore_missing: true
   - set:
       field: _temps.url
       if: ctx.json.transaction.local_port == 443

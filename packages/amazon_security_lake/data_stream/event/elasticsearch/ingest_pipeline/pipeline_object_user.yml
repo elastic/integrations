@@ -1,0 +1,96 @@
+---
+description: Pipeline for processing User object.
+# User object docs: https://schema.ocsf.io/1.0.0-rc.3/objects/user
+processors:
+  - set:
+      field: user.target.domain
+      tag: set_user_target_domain
+      copy_from: ocsf.user.domain
+      ignore_empty_value: true
+  - set:
+      field: user.target.email
+      tag: set_user_target_email
+      copy_from: ocsf.user.email_addr
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_user_email_addr_into_related_user
+      value: '{{{ocsf.user.email_addr}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.user?.email_addr != null
+  - set:
+      field: user.target.full_name
+      tag: set_user_target_full_name
+      copy_from: ocsf.user.full_name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_user_full_name_into_related_user
+      value: '{{{ocsf.user.full_name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.user?.full_name != null
+  - foreach:
+      field: ocsf.user.groups
+      if: ctx.ocsf?.user?.groups instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: user.target.group.id
+          tag: append_user_target_group_id
+          value: '{{{_ingest._value.uid}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ocsf.user.groups
+      if: ctx.ocsf?.user?.groups instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: user.target.group.name
+          tag: append_user_target_group_name
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - set:
+      field: user.target.id
+      tag: set_user_target_id
+      copy_from: ocsf.user.uid
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_user_uid_into_related_user
+      value: '{{{ocsf.user.uid}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.user?.uid != null
+  - set:
+      field: user.target.name
+      tag: set_user_target_name
+      copy_from: ocsf.user.name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_user_name_into_related_user
+      value: '{{{ocsf.user.name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.user?.name != null
+  - convert:
+      field: ocsf.user.account.type_id
+      tag: convert_user_account_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.user.type_id
+      tag: convert_user_type_id_to_string
+      type: string
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_user_uid_alt_into_related_user
+      value: '{{{ocsf.user.uid_alt}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.user?.uid_alt != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
