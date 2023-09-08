@@ -230,7 +230,7 @@ The following subscriptions are included by this API:
 | otx.created |  | date |
 | otx.description |  | keyword |
 | otx.expiration |  | date |
-| otx.id | The ID of the indicator. | keyword |
+| otx.id | The ID of the indicator. | integer |
 | otx.is_active |  | integer |
 | otx.prefetch_pulse_ids |  | boolean |
 | otx.pulse.adversary |  | keyword |
@@ -285,16 +285,16 @@ An example event for `pulses_subscribed` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-12-21T09:24:01.501Z",
+    "@timestamp": "2023-08-09T05:05:15.000Z",
     "agent": {
-        "ephemeral_id": "32ac7970-c892-46ef-baf2-d8a0ce377748",
-        "id": "a7d83bcb-0b6d-41f4-8edf-aa29923f67ec",
+        "ephemeral_id": "1af4da94-c3e3-405c-8b47-48e0ff0404f5",
+        "id": "7fc68898-a465-402f-88ab-f84157c39292",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.3.3"
+        "version": "8.11.0"
     },
     "data_stream": {
-        "dataset": "ti_otx.threat",
+        "dataset": "ti_otx.pulses_subscribed",
         "namespace": "ep",
         "type": "logs"
     },
@@ -302,35 +302,80 @@ An example event for `pulses_subscribed` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "a7d83bcb-0b6d-41f4-8edf-aa29923f67ec",
-        "snapshot": false,
-        "version": "8.3.3"
+        "id": "7fc68898-a465-402f-88ab-f84157c39292",
+        "snapshot": true,
+        "version": "8.11.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "threat",
-        "created": "2022-12-21T09:24:01.501Z",
-        "dataset": "ti_otx.threat",
-        "ingested": "2022-12-21T09:24:02Z",
+        "category": [
+            "threat"
+        ],
+        "dataset": "ti_otx.pulses_subscribed",
+        "ingested": "2023-09-08T06:16:08Z",
         "kind": "enrichment",
-        "original": "{\"count\":40359,\"next\":\"https://otx.alienvault.com/api/v1/indicators/export?types=domain%2CIPv4%2Chostname%2Curl%2CFileHash-SHA256\\u0026modified_since=2020-11-29T01%3A10%3A00+00%3A00\\u0026page=2\",\"previous\":null,\"results\":{\"content\":\"\",\"description\":null,\"id\":1251,\"indicator\":\"info.3000uc.com\",\"title\":null,\"type\":\"hostname\"}}",
-        "type": "indicator"
+        "original": "{\"content\":\"\",\"count\":2,\"created\":\"2023-08-09T05:05:15\",\"description\":\"\",\"expiration\":\"2023-09-05T00:00:00\",\"id\":3450933144,\"indicator\":\"172.67.177.165\",\"is_active\":1,\"prefetch_pulse_ids\":false,\"pulse_raw\":\"{\\\"adversary\\\":\\\"\\\",\\\"attack_ids\\\":[\\\"T1531\\\",\\\"T1059\\\",\\\"T1566\\\"],\\\"author_name\\\":\\\"SampleUser\\\",\\\"created\\\":\\\"2023-08-22T09:43:18.855000\\\",\\\"description\\\":\\\"\\\",\\\"extract_source\\\":[],\\\"id\\\":\\\"64e38336d783f91d6948a7b1\\\",\\\"industries\\\":[],\\\"malware_families\\\":[\\\"WHIRLPOOL\\\"],\\\"modified\\\":\\\"2023-08-22T09:43:18.855000\\\",\\\"more_indicators\\\":false,\\\"name\\\":\\\"Sample Pulse\\\",\\\"public\\\":1,\\\"references\\\":[\\\"https://www.cisa.gov/news-events/analysis-reports/ar23-230a\\\"],\\\"revision\\\":1,\\\"tags\\\":[\\\"cisa\\\",\\\"backdoor\\\",\\\"whirlpool\\\",\\\"malware\\\"],\\\"targeted_countries\\\":[],\\\"tlp\\\":\\\"white\\\"}\",\"role\":\"\",\"t\":0,\"t2\":0.0050694942474365234,\"t3\":2.7960586547851562,\"title\":\"\",\"type\":\"IPv4\"}",
+        "type": [
+            "indicator"
+        ]
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
-    "otx": {},
+    "otx": {
+        "count": 2,
+        "created": "2023-08-09T05:05:15.000Z",
+        "description": "",
+        "expiration": "2023-09-05T00:00:00.000Z",
+        "id": 3450933144,
+        "is_active": 1,
+        "prefetch_pulse_ids": false,
+        "pulse": {
+            "adversary": "",
+            "attack_ids": [
+                "T1531",
+                "T1059",
+                "T1566"
+            ],
+            "author_name": "SampleUser",
+            "created": "2023-08-22T09:43:18.855Z",
+            "description": "",
+            "extract_source": [],
+            "id": "64e38336d783f91d6948a7b1",
+            "industries": [],
+            "malware_families": [
+                "WHIRLPOOL"
+            ],
+            "modified": "2023-08-22T09:43:18.855Z",
+            "more_indicators": false,
+            "name": "Sample Pulse",
+            "public": 1,
+            "references": [
+                "https://www.cisa.gov/news-events/analysis-reports/ar23-230a"
+            ],
+            "revision": 1,
+            "targeted_countries": [],
+            "tlp": "white"
+        },
+        "role": "",
+        "t": 0,
+        "t2": 0.0050694942474365234,
+        "t3": 2.7960586547851562,
+        "title": ""
+    },
     "tags": [
         "preserve_original_event",
         "forwarded",
-        "otx-threat"
+        "otx-pulses_subscribed",
+        "cisa",
+        "backdoor",
+        "whirlpool",
+        "malware"
     ],
     "threat": {
         "indicator": {
-            "type": "domain-name",
-            "url": {
-                "domain": "info.3000uc.com"
-            }
+            "ip": "172.67.177.165",
+            "type": "ipv4-addr"
         }
     }
 }

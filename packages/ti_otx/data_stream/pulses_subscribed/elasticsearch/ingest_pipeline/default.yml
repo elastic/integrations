@@ -10,10 +10,10 @@ processors:
   - set:
       field: event.kind
       value: enrichment
-  - set:
+  - append:
       field: event.category
       value: threat
-  - set:
+  - append:
       field: event.type
       value: indicator
 
@@ -29,11 +29,6 @@ processors:
       field: event.original
       target_field: otx
       tag: json_event_original
-#   - fingerprint:
-#       fields:
-#         - otx.id
-#       target_field: "_id"
-#       tag: fingerprint_id
   - date:
       field: otx.created
       target_field: otx.created
@@ -45,17 +40,20 @@ processors:
       field: "@timestamp"
       copy_from: otx.created
       if: "ctx.otx?.created != null"
+      tag: set_timestamp
   
   # Added as a workaround for a CEL issue which converts `null` into `0`. 
   # This can be deleted once https://github.com/elastic/beats/pull/36410 is merhged and `8.9.2` is tagged as minimum Kibana version
   - remove:
       field: otx.expiration
       if: ctx.otx?.expiration != null && ctx.otx.expiration == 0
+      tag: remove_otx_expiration
   # Added as a workaround for a CEL issue which converts `null` into `0`. 
   # This can be deleted once https://github.com/elastic/beats/pull/36410 is merhged and `8.9.2` is tagged as minimum Kibana version
   - remove:
       field: otx.role
       if: ctx.otx?.role != null && ctx.otx.role == 0
+      tag: remove_otx_role
   - date:
       field: otx.expiration
       target_field: otx.expiration
@@ -64,25 +62,35 @@ processors:
       - ISO8601
       if: "ctx.otx?.expiration != null"
   - convert:
+      field: otx.id
+      type: integer
+      if: "ctx.otx?.id != null"
+      tag: convert_otx_id
+  - convert:
       field: otx.count
       type: integer
       if: "ctx.otx?.count != null"
+      tag: convert_otx_count
   - convert:
       field: otx.t
       type: double
       if: "ctx.otx?.t != null"
+      tag: convert_otx_t
   - convert:
       field: otx.t2
       type: double
       if: "ctx.otx?.t2 != null"
+      tag: convert_otx_t2
   - convert:
       field: otx.t3
       type: double
       if: "ctx.otx?.t3 != null"
+      tag: convert_otx_t3
   - convert:
       field: otx.revision
       type: integer
       if: "ctx.otx?.revision != null"
+      tag: convert_otx_revision
   - json:
       field: otx.pulse_raw
       target_field: otx.pulse
