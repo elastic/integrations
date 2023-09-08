@@ -1,6 +1,6 @@
 # Microsoft SQL Server Integration
 
-The Microsoft SQL Server integration package allows you to search, observe and visualize the SQL Server audit logs and performance and transaction log metrics through Elasticsearch.
+The Microsoft SQL Server integration package allows you to search, observe and visualize the SQL Server audit logs, as well as performance and transaction log metrics, through Elasticsearch.
 
 Auditing an instance of the SQL Server Database Engine or an individual database involves tracking and logging events that occur on the Database Engine.
 
@@ -98,13 +98,13 @@ See: [Instructions and the operations supported by transaction log](https://docs
 
 ### Fetch from all databases
 
-To simplify the process of fetching metrics from all databases on the server, you can enable the `fetch_from_all_databases` toggle when configuring the integration. This field overrides manually entered database names in the `Databases` input and instead fetches the required `transaction_log` metrics from all databases, including system and user-defined databases.
+To simplify the process of fetching metrics from all databases on the server, you can enable the `Fetch from all databases` toggle when configuring the integration. This field overrides manually entered database names in the `Databases` input and instead fetches the required `transaction_log` metrics from all databases, including system and user-defined databases.
 
 Keep in mind that this feature is disabled by default and needs to be manually enabled to be activated.
 
 ### Password URL encoding
 
-When there are special characters in the password, pass the special characters by using URL encoding.
+When the password contains special characters, pass these special characters using URL encoding.
 
 ## Logs
 

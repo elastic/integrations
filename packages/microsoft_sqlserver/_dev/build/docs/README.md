@@ -1,6 +1,6 @@
 # Microsoft SQL Server Integration
 
-The Microsoft SQL Server integration package allows you to search, observe and visualize the SQL Server audit logs and performance and transaction log metrics through Elasticsearch.
+The Microsoft SQL Server integration package allows you to search, observe and visualize the SQL Server audit logs, as well as performance and transaction log metrics, through Elasticsearch.
 
 Auditing an instance of the SQL Server Database Engine or an individual database involves tracking and logging events that occur on the Database Engine.
 
@@ -81,7 +81,7 @@ See: [View the SQL Server error log in SQL Server Management Studio](https://doc
 Collects the `performance` counter metrics. The dynamic counter feature provides flexibility to collect metrics by providing the counter as an input.
 This input can be a regular expression which will filter results based on pattern.
 For example, if %grant% is given as input, it will enable metrics collection for all of the counters with names like 'Memory Grants Pending', 'Active memory grants count' etc.
-MSSQL supports a limited set of regular expressions, See [here] (https://learn.microsoft.com/en-us/previous-versions/sql/sql-server-2008-r2/ms187489(v=sql.105)?redirectedfrom=MSDN) for details.
+MSSQL supports a limited set of regular expressions, See [here](https://learn.microsoft.com/en-us/previous-versions/sql/sql-server-2008-r2/ms187489(v=sql.105)?redirectedfrom=MSDN) for details.
 
 > Note: Dynamic counters will go through some basic ingest pipeline post-processing to make counter names in lowercase and remove special characters and these fields will not have any static field mappings.
 
@@ -104,7 +104,7 @@ Keep in mind that this feature is disabled by default and needs to be manually e
 
 ### Password URL encoding
 
-When there are special characters in the password, pass the special characters by using URL encoding.
+When the password contains special characters, pass these special characters using URL encoding.
 
 ## Logs
 
