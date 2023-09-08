@@ -98,7 +98,7 @@ See: [Instructions and the operations supported by transaction log](https://docs
 
 ### Fetch from all databases
 
-To simplify the process of fetching metrics from all databases on the server, you can enable the `fetch_from_all_databases` toggle when configuring the integration. This field overrides manually entered database names in the `Databases` input and instead fetches the required `transaction_log` metrics from all databases, including system and user-defined databases.
+To simplify the process of fetching metrics from all databases on the server, you can enable the `Fetch from all databases` toggle when configuring the integration. This field overrides manually entered database names in the `Databases` input and instead fetches the required `transaction_log` metrics from all databases, including system and user-defined databases.
 
 Keep in mind that this feature is disabled by default and needs to be manually enabled to be activated.
 
