@@ -235,15 +235,15 @@ Contains events from the DLP data source
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
-| menlo.dlp.alerted | Something | boolean |
-| menlo.dlp.categories | Something | keyword |
-| menlo.dlp.ccl.id | Something | keyword |
-| menlo.dlp.ccl.match_counts | Something | long |
-| menlo.dlp.ccl.score | Something | long |
-| menlo.dlp.groups | Something | keyword |
-| menlo.dlp.status | Something | keyword |
-| menlo.dlp.stream_name | Something | keyword |
-| menlo.dlp.user_input | Something | boolean |
+| menlo.dlp.alerted | Unknown | boolean |
+| menlo.dlp.categories | Unknown | keyword |
+| menlo.dlp.ccl.id | Unknown | keyword |
+| menlo.dlp.ccl.match_counts | Unknown | long |
+| menlo.dlp.ccl.score | Unknown | long |
+| menlo.dlp.groups | Unknown | keyword |
+| menlo.dlp.status | Unknown | keyword |
+| menlo.dlp.stream_name | Unknown | keyword |
+| menlo.dlp.user_input | Unknown | boolean |
 
 
 An example event for `dlp` looks as following:
