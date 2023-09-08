@@ -163,14 +163,14 @@ When mappings are modified for a datastream, index rollover happens and a new in
 
 An enhancement [request](https://github.com/elastic/kibana/issues/150549) for Kibana is created to indicate the write index. Until then, refer to the `index.time_series.start_time` of indices and compare with the current time to identify the write index. 
 
-If you find this error (references [this issue](https://github.com/elastic/integrations/issues/7345)):
+If you find this error (references [this issue](https://github.com/elastic/integrations/issues/7345) and [this PR](https://github.com/elastic/elasticsearch/pull/98518)):
 
 ```console
 ... (status=400): {"type":"illegal_argument_exception","reason":"the document timestamp [2023-08-07T00:00:00.000Z] is outside of ranges of currently writable indices [[2023-08-07T08:55:38.000Z,2023-08-07T12:55:38.000Z]]"}, dropping event!
 ```
 
 Consider:
-1. Defining the `look_ahead` for each data stream:
+1. Defining the `look_ahead` or `look_back_time` for each data stream. Example:
 ```yaml
 elasticsearch:
   index_mode: "time_series"
