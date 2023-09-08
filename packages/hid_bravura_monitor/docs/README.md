@@ -715,7 +715,7 @@ An example event for `winlog` looks as following:
 | winlog.related_activity_id | A globally unique identifier that identifies the activity to which control was transferred to. The related events would then have this identifier as their `activity_id` identifier. | keyword |
 | winlog.symbolic_id | Symbolic event id | keyword |
 | winlog.task | The task defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. The category used by the Event Logging API (on pre Windows Vista operating systems) is written to this field. | keyword |
-| winlog.time_created | Time event was created | keyword |
+| winlog.time_created | Time event was created | date |
 | winlog.trustAttribute |  | keyword |
 | winlog.trustDirection |  | keyword |
 | winlog.trustType |  | keyword |

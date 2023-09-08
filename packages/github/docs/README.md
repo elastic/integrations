@@ -566,7 +566,7 @@ To use this integration, you must be an administrator for the repository or for 
 | github.dependabot.vulnerable_manifest_filename | The vulnerable manifest filename. | keyword |
 | github.dependabot.vulnerable_manifest_path | The vulnerable manifest path. | keyword |
 | github.dependabot.vulnerable_requirements | The vulnerable requirements. | keyword |
-| github.repository.description | The description of the repository. | keyword |
+| github.repository.description | The description of the repository. | text |
 | github.repository.is_in_organization | Indicates if a repository is either owned by an organization, or is a private fork of an organization repository. | boolean |
 | github.repository.is_private | Identifies if the repository is private or internal. | boolean |
 | github.repository.name | Identifies if the repository is private or internal. | keyword |

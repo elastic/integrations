@@ -655,6 +655,33 @@ processors:
         } else if (iana_number == '132') {
             ctx.network.transport = 'sctp';
         }
+  - date:
+      field: checkpoint.subs_exp
+      target_field: checkpoint.subs_exp
+      timezone: "{{{ event.timezone }}}"
+      formats:
+        - 'EEE MMM dd HH:mm:ss yyyy'
+        - 'EEE MMM  d HH:mm:ss yyyy'
+        - 'EEE MMM d HH:mm:ss yyyy'
+        - ISO8601
+        - UNIX
+      if: "ctx.checkpoint?.subs_exp != null"
+      on_failure:
+        # Try to re-parse as UTC to catch when TZ is invalid or unknown.
+        - date:
+            tag: "date_utc_fallback"
+            field: checkpoint.subs_exp
+            target_field: checkpoint.subs_exp
+            formats:
+              - 'EEE MMM dd HH:mm:ss yyyy'
+              - 'EEE MMM  d HH:mm:ss yyyy'
+              - 'EEE MMM d HH:mm:ss yyyy'
+              - ISO8601
+              - UNIX
+            on_failure:
+              - remove:
+                  field: checkpoint.subs_exp
+                  ignore_missing: true
   - convert:
       field: checkpoint.packets
       type: long

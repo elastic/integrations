@@ -518,7 +518,7 @@ An example event for `firewall` looks as following:
 | checkpoint.stormagentname |  | keyword |
 | checkpoint.sub_policy_name | Layer name. | keyword |
 | checkpoint.sub_policy_uid | Layer uid. | keyword |
-| checkpoint.subs_exp |  | keyword |
+| checkpoint.subs_exp |  | date |
 | checkpoint.subscriber | Source IP before CGNAT. | ip |
 | checkpoint.subscription_stat |  | keyword |
 | checkpoint.subscription_stat_desc |  | keyword |
