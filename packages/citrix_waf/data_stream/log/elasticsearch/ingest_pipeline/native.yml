@@ -23,3 +23,10 @@ processors:
       field: citrix.default_class
       value: true
       if: ctx._tmp?.default == 'default ' # The trailing space is intended.
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

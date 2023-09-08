@@ -3,7 +3,7 @@ description: Pipeline for Palo Alto Networks PAN-OS Logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.7.0'
+      value: '8.9.0'
   - set:
       field: observer.vendor
       value: Palo Alto Networks
@@ -104,24 +104,24 @@ processors:
       field: _temp_.srcuser
       ignore_missing: true
       patterns:
-        - '^%{HOSTNAME:source.user.domain}\\%{USERNAMEM:source.user.name}$'
-        - '^%{HOSTNAME:source.user.domain}\\\\%{USERNAMEM:source.user.name}$'
-        - '^%{USERNAMEM:source.user.name}@%{HOSTNAME:source.user.domain}$'
-        - '^%{USERNAMEM:source.user.name}$'
+        - '^%{HOSTNAME:source.user.domain}\\%{USERNAME:source.user.name}$'
+        - '^%{HOSTNAME:source.user.domain}\\\\%{USERNAME:source.user.name}$'
+        - '^%{USERNAME:source.user.name}@%{HOSTNAME:source.user.domain}$'
+        - '^%{USERNAME:source.user.name}$'
       pattern_definitions:
-        USERNAMEM: '%{USERNAME}[$]?'
+        USERNAME: '[ a-zA-Z0-9._-]+[$]?'
       if: ctx._temp_?.srcuser != null
 
   - grok:
       field: _temp_.dstuser
       ignore_missing: true
       patterns:
-        - '^%{HOSTNAME:destination.user.domain}\\%{USERNAMEM:destination.user.name}$'
-        - '^%{HOSTNAME:destination.user.domain}\\\\%{USERNAMEM:destination.user.name}$'
-        - '^%{USERNAMEM:destination.user.name}@%{HOSTNAME:destination.user.domain}$'
-        - '^%{USERNAMEM:destination.user.name}$'
+        - '^%{HOSTNAME:destination.user.domain}\\%{USERNAME:destination.user.name}$'
+        - '^%{HOSTNAME:destination.user.domain}\\\\%{USERNAME:destination.user.name}$'
+        - '^%{USERNAME:destination.user.name}@%{HOSTNAME:destination.user.domain}$'
+        - '^%{USERNAME:destination.user.name}$'
       pattern_definitions:
-        USERNAMEM: '%{USERNAME}[$]?'
+        USERNAME: '[ a-zA-Z0-9._-]+[$]?'
       if: ctx._temp_?.dstuser != null
 
   - set:
@@ -382,6 +382,10 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: host.ip
+      value: ['{{{host.ip}}}']
+      if: ctx.host?.ip instanceof String
   - convert:
       field: network.forwarded_ip
       type: ip
@@ -1662,6 +1666,9 @@ processors:
         dropEmptyFields(ctx);
 
 on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
   - append:
       field: 'error.message'
       value: '{{{ _ingest.on_failure_message }}} {{{ _ingest.on_failure_processor_type }}}'

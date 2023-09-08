@@ -44,10 +44,14 @@ processors:
     replacement: '-'
 - gsub:
     field: _temp.kv.wired_mac
-    target_field: observer.mac
+    target_field: _temp.observer.mac
     pattern: '[-:.]'
     replacement: '-'
     if: ctx?.cisco_meraki?.event_subtype == 'rogue_ssid_detected'
+- append:
+    field: observer.mac
+    value: '{{{_temp.observer.mac}}}'
+    if: ctx?._temp?.observer?.mac != null
 - rename:
     field: _temp.kv.vlan_id
     target_field: network.vlan.id
@@ -61,3 +65,10 @@ processors:
 - rename:
     field: _temp.kv.fc_subtype
     target_field: cisco_meraki.fc_subtype
+on_failure:
+- set:
+    field: event.kind
+    value: pipeline_error
+- append:
+    field: error.message
+    value: '{{{ _ingest.on_failure_message }}}'

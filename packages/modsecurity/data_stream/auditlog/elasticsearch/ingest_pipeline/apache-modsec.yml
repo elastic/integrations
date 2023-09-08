@@ -88,6 +88,10 @@ processors:
       field: json.request.request_line
       patterns:
         - "%{NOTSPACE:http.request.method} %{URIPATHPARAM:url.original}(?: HTTP/%{NUMBER:http.version})"
+  - rename:
+      field: json.transaction.request.headers.host
+      target_field: json.transaction.request.headers.Host
+      ignore_missing: true
   - set:
       field: _temps.url
       if: ctx.json.transaction.local_port == 443
@@ -162,14 +166,22 @@ processors:
         }
         def details = ctx.modsec.audit.details;
         def messages = new ArrayList();
+        def detObj = new ArrayList();
         for (def i = 0; i < details.length; i++) {
           def idx = details[i].indexOf(' ['); // Find first key value mark.
           if (idx < 0) {
             idx = details[i].length;
           }
           messages.add(details[i].substring(0, idx));
+
+          // Make modsec.audit.details an object since it is a flattened and so
+          // must be an object, while apache leaves this as an array of strings.
+          def obj = new HashMap();
+          obj['value'] = details[i];
+          detObj.add(obj);
         }
-        ctx.modsec.audit.messages = messages
+        ctx.modsec.audit.messages = messages;
+        ctx.modsec.audit.details = detObj;
 
   # user agent and geoip enrich
   - user_agent:
@@ -228,3 +240,10 @@ processors:
         - _temps
       ignore_failure: true
       ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
