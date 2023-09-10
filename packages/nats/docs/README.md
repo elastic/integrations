@@ -687,28 +687,28 @@ An example event for `connection` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| nats.connection.idle_time | The period the connection is idle (sec) | long |
-| nats.connection.in.bytes | The amount of incoming bytes | long |
-| nats.connection.in.messages | The amount of incoming messages | long |
-| nats.connection.name | The name of the connection | keyword |
-| nats.connection.out.bytes | The amount of outgoing bytes | long |
-| nats.connection.out.messages | The amount of outgoing messages | long |
-| nats.connection.pending_bytes | The number of pending bytes of this connection | long |
-| nats.connection.subscriptions | The number of subscriptions in this connection | integer |
-| nats.connection.uptime | The period the connection is up (sec) | long |
-| nats.server.id | The server ID | keyword |
-| nats.server.time | Server time of metric creation | date |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| nats.connection.idle_time | The period the connection is idle (sec) | long | gauge |
+| nats.connection.in.bytes | The amount of incoming bytes | long | gauge |
+| nats.connection.in.messages | The amount of incoming messages | long | gauge |
+| nats.connection.name | The name of the connection | keyword |  |
+| nats.connection.out.bytes | The amount of outgoing bytes | long | gauge |
+| nats.connection.out.messages | The amount of outgoing messages | long | gauge |
+| nats.connection.pending_bytes | The number of pending bytes of this connection | long | gauge |
+| nats.connection.subscriptions | The number of subscriptions in this connection | integer | counter |
+| nats.connection.uptime | The period the connection is up (sec) | long | gauge |
+| nats.server.id | The server ID | keyword |  |
+| nats.server.time | Server time of metric creation | date |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### route
