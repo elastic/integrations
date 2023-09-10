@@ -259,35 +259,35 @@ An example event for `stats` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| nats.server.id | The server ID | keyword |
-| nats.server.time | Server time of metric creation | date |
-| nats.stats.cores | The number of logical cores the NATS process runs on | integer |
-| nats.stats.cpu | The current cpu usage of NATs process | scaled_float |
-| nats.stats.http.req_stats.uri.connz | The number of hits on connz monitoring uri | long |
-| nats.stats.http.req_stats.uri.root | The number of hits on root monitoring uri | long |
-| nats.stats.http.req_stats.uri.routez | The number of hits on routez monitoring uri | long |
-| nats.stats.http.req_stats.uri.subsz | The number of hits on subsz monitoring uri | long |
-| nats.stats.http.req_stats.uri.varz | The number of hits on varz monitoring uri | long |
-| nats.stats.in.bytes | The amount of incoming bytes | long |
-| nats.stats.in.messages | The amount of incoming messages | long |
-| nats.stats.mem.bytes | The current memory usage of NATS process | long |
-| nats.stats.out.bytes | The amount of outgoing bytes | long |
-| nats.stats.out.messages | The amount of outgoing messages | long |
-| nats.stats.remotes | The number of registered remotes | integer |
-| nats.stats.slow_consumers | The number of slow consumers currently on NATS | long |
-| nats.stats.total_connections | The number of totally created clients | long |
-| nats.stats.uptime | The period the server is up (sec) | long |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| nats.server.id | The server ID | keyword |  |
+| nats.server.time | Server time of metric creation | date |  |
+| nats.stats.cores | The number of logical cores the NATS process runs on | integer | gauge |
+| nats.stats.cpu | The current cpu usage of NATs process | scaled_float | gauge |
+| nats.stats.http.req_stats.uri.connz | The number of hits on connz monitoring uri | long | gauge |
+| nats.stats.http.req_stats.uri.root | The number of hits on root monitoring uri | long | gauge |
+| nats.stats.http.req_stats.uri.routez | The number of hits on routez monitoring uri | long | gauge |
+| nats.stats.http.req_stats.uri.subsz | The number of hits on subsz monitoring uri | long | gauge |
+| nats.stats.http.req_stats.uri.varz | The number of hits on varz monitoring uri | long | gauge |
+| nats.stats.in.bytes | The amount of incoming bytes | long | gauge |
+| nats.stats.in.messages | The amount of incoming messages | long | gauge |
+| nats.stats.mem.bytes | The current memory usage of NATS process | long | gauge |
+| nats.stats.out.bytes | The amount of outgoing bytes | long | gauge |
+| nats.stats.out.messages | The amount of outgoing messages | long | gauge |
+| nats.stats.remotes | The number of registered remotes | integer | gauge |
+| nats.stats.slow_consumers | The number of slow consumers currently on NATS | long | gauge |
+| nats.stats.total_connections | The number of totally created clients | long | counter |
+| nats.stats.uptime | The period the server is up (sec) | long | counter |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### connections
