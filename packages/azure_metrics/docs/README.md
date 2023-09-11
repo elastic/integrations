@@ -571,7 +571,6 @@ so the `period` for `database_account` should be `300s` or multiples of `300s`.
 | azure.dimensions.closure_reason | Reason of the Cassandra Connection Closures | keyword |  |
 | azure.dimensions.command_name | Mongo requests command name | keyword |  |
 | azure.dimensions.database_name | Database name | keyword |  |
-| azure.dimensions.region | Database region | keyword |  |
 | azure.dimensions.resource_name | Name of the resource | keyword |  |
 | azure.dimensions.status_code | Status code of the made to database requests | keyword |  |
 | azure.namespace | The namespace selected | keyword |  |
