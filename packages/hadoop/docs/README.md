@@ -200,13 +200,6 @@ An example event for `cluster` looks as following:
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
-| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
-| cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
-| container.id | Unique container id. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
@@ -223,8 +216,8 @@ An example event for `cluster` looks as following:
 | hadoop.cluster.applications.completed | The number of applications completed | long | counter |
 | hadoop.cluster.applications.failed | The number of applications failed | long | counter |
 | hadoop.cluster.applications.killed | The number of applications killed | long | counter |
-| hadoop.cluster.applications.pending | The number of applications pending | long | counter |
-| hadoop.cluster.applications.running | The number of applications running | long | counter |
+| hadoop.cluster.applications.pending | The number of applications pending | long | gauge |
+| hadoop.cluster.applications.running | The number of applications running | long | gauge |
 | hadoop.cluster.applications.submitted | The number of applications submitted | long | counter |
 | hadoop.cluster.containers.allocated | The number of containers allocated | long | gauge |
 | hadoop.cluster.containers.pending | The number of containers pending | long | gauge |
@@ -250,7 +243,6 @@ An example event for `cluster` looks as following:
 | hadoop.cluster.virtual_cores.available | The number of available virtual cores | long | gauge |
 | hadoop.cluster.virtual_cores.reserved | The number of reserved virtual cores | long | gauge |
 | hadoop.cluster.virtual_cores.total | The total number of virtual cores | long | gauge |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 | tags | List of keywords used to tag each event. | keyword |  |
