@@ -17,9 +17,16 @@
                                 "146c0baa-3fa2-4ae9-aa73-a4d7669d55c1": {
                                     "customLabel": true,
                                     "dataType": "number",
+                                    "filter": {
+                                        "language": "kuery",
+                                        "query": "websphere_application_server.servlet.requests.processed: *"
+                                    },
                                     "isBucketed": false,
                                     "label": "Requests Processed",
-                                    "operationType": "median",
+                                    "operationType": "last_value",
+                                    "params": {
+                                        "sortField": "@timestamp"
+                                    },
                                     "scale": "ratio",
                                     "sourceField": "websphere_application_server.servlet.requests.processed"
                                 },
@@ -31,11 +38,11 @@
                                     "params": {
                                         "missingBucket": false,
                                         "orderBy": {
-                                            "fallback": false,
-                                            "type": "alphabetical"
+                                            "columnId": "146c0baa-3fa2-4ae9-aa73-a4d7669d55c1",
+                                            "type": "column"
                                         },
-                                        "orderDirection": "asc",
-                                        "otherBucket": true,
+                                        "orderDirection": "desc",
+                                        "otherBucket": false,
                                         "parentFormat": {
                                             "id": "terms"
                                         },
@@ -51,7 +58,7 @@
                                     "label": "Responses Processed",
                                     "operationType": "formula",
                                     "params": {
-                                        "formula": "median(websphere_application_server.servlet.responses.processed)",
+                                        "formula": "last_value(websphere_application_server.servlet.responses.processed)",
                                         "isFormulaBroken": false
                                     },
                                     "references": [
@@ -62,9 +69,16 @@
                                 "302ef164-d49c-4a57-9a96-888917e2c880X0": {
                                     "customLabel": true,
                                     "dataType": "number",
+                                    "filter": {
+                                        "language": "kuery",
+                                        "query": "websphere_application_server.servlet.responses.processed: *"
+                                    },
                                     "isBucketed": false,
                                     "label": "Part of Responses Processed",
-                                    "operationType": "median",
+                                    "operationType": "last_value",
+                                    "params": {
+                                        "sortField": "@timestamp"
+                                    },
                                     "scale": "ratio",
                                     "sourceField": "websphere_application_server.servlet.responses.processed"
                                 },
@@ -89,7 +103,7 @@
             "filters": [],
             "query": {
                 "language": "kuery",
-                "query": "websphere_application_server.servlet.requests.processed \u003e 0 and websphere_application_server.servlet.responses.processed \u003e 0"
+                "query": "websphere_application_server.servlet.requests.processed \u003e 0 or websphere_application_server.servlet.responses.processed \u003e 0"
             },
             "visualization": {
                 "axisTitlesVisibilitySettings": {
@@ -135,12 +149,14 @@
                     "yRight": true
                 },
                 "valueLabels": "hide",
+                "valuesInLegend": false,
                 "yLeftExtent": {
                     "mode": "full"
                 },
                 "yRightExtent": {
                     "mode": "full"
-                }
+                },
+                "yTitle": "Count"
             }
         },
         "title": "Number of Processed Requests and Responses  [Metrics WebSphere Application Server]",
@@ -152,11 +168,6 @@
         "lens": "8.3.0"
     },
     "references": [
-        {
-            "id": "metrics-*",
-            "name": "indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
         {
             "id": "metrics-*",
             "name": "indexpattern-datasource-layer-6bff5182-8367-4e11-8b9a-69bfe903149c",
