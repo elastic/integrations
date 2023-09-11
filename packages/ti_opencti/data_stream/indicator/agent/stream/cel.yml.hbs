@@ -35,12 +35,13 @@ redact:
     - api_key
 program: |
   request("POST", state.url + "/graphql").with({
-    "Header": {
-      "Content-Type": ["application/json"],
-      {{#if api_key}}
-      "Authorization": ["Bearer " + state.api_key],
-      {{/if}}
-    }
+    "Header": ({
+      "Content-Type": ["application/json"]
+    }).with(
+      has(state.api_key) && size(state.api_key) > 0 ?
+        { "Authorization": ["Bearer " + state.api_key] } :
+        {}
+    )
   }).with({
     "Body": {
       "query": state.query,
@@ -53,11 +54,11 @@ program: |
     }.encode_json()
   }).do_request().as(resp,
     bytes(resp.Body).decode_json().as(body, state.with({
-      "events": body.data.indicators.edges.map(e, e.node.with({
-        {{#if preserve_original_event}}
-        "event": { "original": e.node }
-        {{/if}}
-      })),
+      "events": body.data.indicators.edges.map(e, e.node.with(
+        has(state.preserve_original_event) && state.preserve_original_event ?
+          { "event": { "original": e.node } } :
+          {}
+      )),
       "want_more": body.data.indicators.pageInfo.hasNextPage,
       "cursor": { "value": body.data.indicators.pageInfo.endCursor },
     }))
@@ -65,6 +66,7 @@ program: |
 state:
   api_key: {{api_key}}
   page_size: {{page_size}}
+  preserve_original_event: {{preserve_original_event}}
   want_more: false
   # How to work with this API: https://docs.opencti.io/5.10.X/deployment/integrations/#graphql-api
   # Relevant schema source: https://github.com/OpenCTI-Platform/opencti/blob/master/opencti-platform/opencti-graphql/config/schema/opencti.graphql
