@@ -15,7 +15,7 @@ In this type of authentication, we only require an API Key for authenticating th
 ### Oauth2
 **In this type of authentication, we require the following information:**
 1. Your Okta domain URL. [ Example: https://dev-123456.okta.com ]
-2. Your Okta service app Client ID.]
+2. Your Okta service app Client ID.
 3. Your Okta service app JWK Private Key
 4. The Okta scope that is required for OAuth2. [ By default this is set to `okta.logs.read` which should suffice for most use cases ]
 
