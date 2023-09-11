@@ -48,7 +48,7 @@ response.split:
 response.pagination:
   - set:
       target: url.value
-      value: '[[sprintf "%s/rest/api/3/auditing/record?from=%s&to=%s&offset=%d&limit=%s" "{{api_url}}" (.last_response.url.params.Get "from") (.last_response.url.params.Get "to") (add (toInt .last_response.body.offset) (toInt "{{ limit }}")) "{{ limit }}"]]'
+      value: '[[sprintf "%s/rest/api/3/auditing/record?from=%s&to=%s&offset=%d&limit=%s" "{{api_url}}" (urlEncode (.last_response.url.params.Get "from")) (urlEncode (.last_response.url.params.Get "to")) (add (toInt .last_response.body.offset) (toInt "{{ limit }}")) "{{ limit }}"]]'
       fail_on_template_error: true
 cursor:
   last_timestamp:
