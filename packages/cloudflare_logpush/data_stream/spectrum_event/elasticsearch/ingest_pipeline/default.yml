@@ -21,22 +21,32 @@ processors:
   - set:
       field: event.type
       value: [info]
-  - convert:
-      field: json.Timestamp
-      type: string
-      ignore_missing: true
-  - gsub:
-      field: json.Timestamp
-      pattern: (^[0-9]+)([0-9]{6}$)
-      replacement: $1
-      ignore_missing: true
-      description: Convert timestamp's granularity from nanosecond to millisecond
+  - script:
+      lang: painless
+      tag: painless_timestamp_to_milli
+      if: ctx.json?.Timestamp != null
+      source: |
+        try {
+          long t;
+          if (ctx.json.Timestamp instanceof String) {
+            t = Long.parseLong(ctx.json.Timestamp);
+          } else if (ctx.json.Timestamp instanceof Number) {
+            t = (long)(ctx.json.Timestamp);
+          } else {
+            return;
+          }
+          if (t > (long)(1e18)) {
+            ctx.json.Timestamp = t/(long)(1e6)
+          } else if (t < (long)(1e10))  {
+            ctx.json.Timestamp = t*(long)(1e3)
+          }
+        }
+        catch (Exception e) {}
   - date:
       field: json.Timestamp
       if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
       formats:
         - UNIX_MS
-        - UNIX
         - ISO8601
         - yyyy-MM-dd'T'HH:mm:ssZ
       timezone: UTC
@@ -48,6 +58,27 @@ processors:
       field: cloudflare_logpush.spectrum_event.timestamp
       copy_from: '@timestamp'
       ignore_failure: true
+  - script:
+      lang: painless
+      tag: painless_connect_timestamp_to_milli
+      if: ctx.json?.ConnectTimestamp != null
+      source: |
+        try {
+          long t;
+          if (ctx.json.ConnectTimestamp instanceof String) {
+            t = Long.parseLong(ctx.json.ConnectTimestamp);
+          } else if (ctx.json.ConnectTimestamp instanceof Number) {
+            t = (long)(ctx.json.ConnectTimestamp);
+          } else {
+            return;
+          }
+          if (t > (long)(1e18)) {
+            ctx.json.ConnectTimestamp = t/(long)(1e6)
+          } else if (t < (long)(1e10))  {
+            ctx.json.ConnectTimestamp = t*(long)(1e3)
+          }
+        }
+        catch (Exception e) {}
   - date:
       field: json.ConnectTimestamp
       if: ctx.json?.ConnectTimestamp != null && ctx.json.ConnectTimestamp != ''
@@ -68,6 +99,27 @@ processors:
       field: event.start
       copy_from: cloudflare_logpush.spectrum_event.connect.time
       ignore_failure: true
+  - script:
+      lang: painless
+      tag: painless_disconnect_timestamp_to_milli
+      if: ctx.json?.DisconnectTimestamp != null
+      source: |
+        try {
+          long t;
+          if (ctx.json.DisconnectTimestamp instanceof String) {
+            t = Long.parseLong(ctx.json.DisconnectTimestamp);
+          } else if (ctx.json.DisconnectTimestamp instanceof Number) {
+            t = (long)(ctx.json.DisconnectTimestamp);
+          } else {
+            return;
+          }
+          if (t > (long)(1e18)) {
+            ctx.json.DisconnectTimestamp = t/(long)(1e6)
+          } else if (t < (long)(1e10))  {
+            ctx.json.DisconnectTimestamp = t*(long)(1e3)
+          }
+        }
+        catch (Exception e) {}
   - date:
       field: json.DisconnectTimestamp
       if: ctx.json?.DisconnectTimestamp != null && ctx.json.DisconnectTimestamp != ''

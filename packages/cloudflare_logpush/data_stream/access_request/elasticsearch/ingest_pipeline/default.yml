@@ -21,22 +21,32 @@ processors:
       field: event.kind
       value: event
 # ECS fields
-  - convert:
-      field: json.CreatedAt
-      type: string
-      ignore_missing: true
-  - gsub:
-      field: json.CreatedAt
-      pattern: (^[0-9]+)([0-9]{6}$)
-      replacement: $1
-      ignore_missing: true
-      description: Convert timestamp's granularity from nanosecond to millisecond
+  - script:
+      lang: painless
+      tag: painless_created_at_to_milli
+      if: ctx.json?.CreatedAt != null
+      source: |
+        try {
+          long t;
+          if (ctx.json.CreatedAt instanceof String) {
+            t = Long.parseLong(ctx.json.CreatedAt);
+          } else if (ctx.json.CreatedAt instanceof Number) {
+            t = (long)(ctx.json.CreatedAt);
+          } else {
+            return;
+          }
+          if (t > (long)(1e18)) {
+            ctx.json.CreatedAt = t/(long)(1e6)
+          } else if (t < (long)(1e10))  {
+            ctx.json.CreatedAt = t*(long)(1e3)
+          }
+        }
+        catch (Exception e) {}
   - date:
       field: json.CreatedAt
       if: ctx.json?.CreatedAt != null && ctx.json.CreatedAt != ''
       formats:
         - UNIX_MS
-        - UNIX
         - ISO8601
         - yyyy-MM-dd'T'HH:mm:ssZ
       timezone: UTC
