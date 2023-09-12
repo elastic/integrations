@@ -7,7 +7,7 @@
 * This integration supports Windows 10 and Windows 11 Endpoint Operating Systems. 
 * This integration requires a TYCHON Agentless license. 
 * This integration requires [TYCHON Vulnerability Definition](https://support.tychon.io/) files.
-
+* This integration supports Elastic 8.8+.
 
 ## Returned Data Fields
 ### ARP Table Information
@@ -40,42 +40,42 @@ TYCHON scans the Endpoint's Windows Defender and returns protection status and v
 
 ### Endpoint Exposed Services Information
 
-The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/XCCDF issues and returns information.  
+The TYCHON script to scan Endpoint Exposed Services and returns information.  
 
 **Exported fields**
 {{fields "tychon_exposedservice"}}
 
 ### Endpoint Hard Drive Information
 
-The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/XCCDF issues and returns information.  
+The TYCHON script scans an endpoint's Hard Drive Configurations and returns information.  
 
 **Exported fields**
 {{fields "tychon_harddrive"}}
 
 ### Endpoint Hardware Information
 
-The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/XCCDF issues and returns information.  
+The TYCHON script scans an endpoint's Hardware Configurations and returns information.  
 
 **Exported fields**
 {{fields "tychon_hardware"}}
 
 ### Endpoint Host OS Information
 
-The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/XCCDF issues and returns information.  
+The TYCHON script scans an endpoint's OS Configurations and returns information.  
 
 **Exported fields**
 {{fields "tychon_host"}}
 
 ### Endpoint Network Adapters Information
 
-The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/XCCDF issues and returns information.  
+The TYCHON script scans an endpoint's Network Adapter Configurations and returns information.  
 
 **Exported fields**
 {{fields "tychon_networkadapter"}}
 
 ### Endpoint Software Inventory Information
 
-The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/XCCDF issues and returns information.  
+The TYCHON script scans an endpoint's Software Inventory and returns information.  
 
 **Exported fields**
 {{fields "tychon_softwareinventory"}}
@@ -89,7 +89,7 @@ The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/X
 
 ### Endpoint Volume Information
 
-The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/XCCDF issues and returns information.  
+The TYCHON script scans an endpoint's Volume Configurations and returns information.  
 
 **Exported fields**
 {{fields "tychon_volume"}}
