@@ -17,11 +17,24 @@ processors:
       field: event.type
       tag: set_event_type
       value: ['user','info']
+  - set:
+      field: asset.category
+      tag: set_asset_category
+      value: entity
+  - set:
+      field: asset.type
+      tag: set_asset_type
+      value: okta_user
   - rename:
       field: okta.id
       target_field: entityanalytics_okta.user.id
       tag: rename_user_id
       ignore_missing: true
+  - set:
+      field: asset.id
+      copy_from: entityanalytics_okta.user.id
+      tag: set_asset_id
+      ignore_empty_value: true
   - append:
       field: related.user
       value: '{{{entityanalytics_okta.user.id}}}'
@@ -377,26 +390,51 @@ processors:
       target_field: entityanalytics_okta.user.profile.street_address
       tag: rename_user_profile_street_address
       ignore_missing: true
+  - set:
+      field: user.geo.name
+      copy_from: entityanalytics_okta.user.profile.street_address
+      tag: set_user_geo_name
+      ignore_empty_value: true
   - rename:
       field: okta.profile.city
       target_field: entityanalytics_okta.user.profile.city
       tag: rename_user_profile_city
       ignore_missing: true
+  - set:
+      field: user.geo.city_name
+      copy_from: entityanalytics_okta.user.profile.city
+      tag: set_user_geo_city_name
+      ignore_empty_value: true
   - rename:
       field: okta.profile.state
       target_field: entityanalytics_okta.user.profile.state
       tag: rename_user_profile_state
       ignore_missing: true
+  - set:
+      field: user.geo.region_name
+      copy_from: entityanalytics_okta.user.profile.state
+      tag: set_user_geo_region_name
+      ignore_empty_value: true
   - rename:
       field: okta.profile.zipCode
       target_field: entityanalytics_okta.user.profile.zip_code
       tag: rename_user_profile_zip_code
       ignore_missing: true
+  - set:
+      field: user.geo.postal_code
+      copy_from: entityanalytics_okta.user.profile.zip_code
+      tag: set_user_geo_postal_code
+      ignore_empty_value: true
   - rename:
       field: okta.profile.countryCode
       target_field: entityanalytics_okta.user.profile.country_code
       tag: rename_user_profile_country_code
       ignore_missing: true
+  - set:
+      field: user.geo.country_iso_code
+      copy_from: entityanalytics_okta.user.profile.country_code
+      tag: set_user_geo_country_iso_code
+      ignore_empty_value: true
   - rename:
       field: okta.profile.postalAddress
       target_field: entityanalytics_okta.user.profile.postal_address
@@ -417,6 +455,11 @@ processors:
       target_field: entityanalytics_okta.user.profile.timezone
       tag: rename_user_profile_timezone
       ignore_missing: true
+  - set:
+      field: user.geo.timezone
+      copy_from: entityanalytics_okta.user.profile.timezone
+      tag: set_user_geo_timezone
+      ignore_empty_value: true
   - rename:
       field: okta.profile.userType
       target_field: entityanalytics_okta.user.profile.user_type
@@ -459,7 +502,7 @@ processors:
       tag: rename_user_profile_organization
       ignore_missing: true
   - set:
-      field: user.profile.organization
+      field: user.organization.name
       copy_from: entityanalytics_okta.user.profile.organization
       tag: set_user_profile_organization
       ignore_empty_value: true
@@ -559,6 +602,12 @@ processors:
         - entityanalytics_okta.user.profile.mobile_phone
         - entityanalytics_okta.user.profile.primary_phone
         - entityanalytics_okta.user.profile.organization
+        - entityanalytics_okta.user.profile.street_address
+        - entityanalytics_okta.user.profile.city
+        - entityanalytics_okta.user.profile.state
+        - entityanalytics_okta.user.profile.zip_code
+        - entityanalytics_okta.user.profile.timezone
+        - entityanalytics_okta.user.profile.country_code
         - entityanalytics_okta.user.profile.second_email
         - entityanalytics_okta.user.profile.user_type
       tag: remove_duplicate_custom_fields
