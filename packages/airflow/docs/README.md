@@ -42,6 +42,7 @@ statsd_prefix =
 | airflow.job_name | Airflow job name metadata | keyword |  |
 | airflow.operator_name | Airflow operator name metadata | keyword |  |
 | airflow.pool_name | Airflow pool name metadata | keyword |  |
+| airflow.scheduler_heartbeat.count | Airflow scheduler heartbeat | double |  |
 | airflow.status | Airflow status metadata | keyword |  |
 | airflow.task_id | Airflow task id metadata | keyword |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |

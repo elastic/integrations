@@ -55,12 +55,12 @@ processors:
                 - 'PrecedingActivityTimeStamp'
                 - 'StartTimestamp'
                 - 'UTCTimestamp'
-# Process to convert LDAP/WIN32 FILETIME to Unix timestamp. 
+# Process to convert LDAP/WIN32 FILETIME to Unix (milliseconds) timestamp.
 # More details can be found here https://devblogs.microsoft.com/oldnewthing/20030905-02/?p=42653 and here https://www.epochconverter.com/ldap
         source: |
             def convertToUnix(def longValue) {
                 if (longValue > 0x0100000000000000L) {
-                    return (longValue / 10000000) - 11644473600L;
+                    return (longValue / 10000) - 11644473600000L;
                 }
                 return longValue;
             }
