@@ -260,8 +260,8 @@ An example event for `cluster` looks as following:
 | hadoop.cluster.virtual_cores.available | The number of available virtual cores | long |
 | hadoop.cluster.virtual_cores.reserved | The number of reserved virtual cores | long |
 | hadoop.cluster.virtual_cores.total | The total number of virtual cores | long |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.ip | Host ip addresses. | ip |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
