@@ -207,64 +207,64 @@ An example event for `cluster` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
-| container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| hadoop.cluster.application_main.launch_delay_avg_time | Application Main Launch Delay Average Time (Milliseconds) | long |
-| hadoop.cluster.application_main.launch_delay_num_ops | Application Main Launch Delay Operations (Number of Operations) | long |
-| hadoop.cluster.application_main.register_delay_avg_time | Application Main Register Delay Average Time (Milliseconds) | long |
-| hadoop.cluster.application_main.register_delay_num_ops | Application Main Register Delay Operations (Number of Operations) | long |
-| hadoop.cluster.applications.completed | The number of applications completed | long |
-| hadoop.cluster.applications.failed | The number of applications failed | long |
-| hadoop.cluster.applications.killed | The number of applications killed | long |
-| hadoop.cluster.applications.pending | The number of applications pending | long |
-| hadoop.cluster.applications.running | The number of applications running | long |
-| hadoop.cluster.applications.submitted | The number of applications submitted | long |
-| hadoop.cluster.containers.allocated | The number of containers allocated | long |
-| hadoop.cluster.containers.pending | The number of containers pending | long |
-| hadoop.cluster.containers.reserved | The number of containers reserved | long |
-| hadoop.cluster.memory.allocated | The amount of memory allocated in MB | long |
-| hadoop.cluster.memory.available | The amount of memory available in MB | long |
-| hadoop.cluster.memory.reserved | The amount of memory reserved in MB | long |
-| hadoop.cluster.memory.total | The amount of total memory in MB | long |
-| hadoop.cluster.node_managers.num_active | Number of Node Managers Active | long |
-| hadoop.cluster.node_managers.num_decommissioned | Number of Node Managers Decommissioned | long |
-| hadoop.cluster.node_managers.num_lost | Number of Node Managers Lost | long |
-| hadoop.cluster.node_managers.num_rebooted | Number of Node Managers Rebooted | long |
-| hadoop.cluster.node_managers.num_unhealthy | Number of Node Managers Unhealthy | long |
-| hadoop.cluster.nodes.active | The number of active nodes | long |
-| hadoop.cluster.nodes.decommissioned | The number of nodes decommissioned | long |
-| hadoop.cluster.nodes.decommissioning | The number of nodes being decommissioned | long |
-| hadoop.cluster.nodes.lost | The number of lost nodes | long |
-| hadoop.cluster.nodes.rebooted | The number of nodes rebooted | long |
-| hadoop.cluster.nodes.shutdown | The number of nodes shut down | long |
-| hadoop.cluster.nodes.total | The total number of nodes | long |
-| hadoop.cluster.nodes.unhealthy | The number of unhealthy nodes | long |
-| hadoop.cluster.virtual_cores.allocated | The number of allocated virtual cores | long |
-| hadoop.cluster.virtual_cores.available | The number of available virtual cores | long |
-| hadoop.cluster.virtual_cores.reserved | The number of reserved virtual cores | long |
-| hadoop.cluster.virtual_cores.total | The total number of virtual cores | long |
-| host.ip | Host ip addresses. | ip |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
+| hadoop.cluster.application_main.launch_delay_avg_time | Application Main Launch Delay Average Time (Milliseconds) | long | gauge |
+| hadoop.cluster.application_main.launch_delay_num_ops | Application Main Launch Delay Operations (Number of Operations) | long | gauge |
+| hadoop.cluster.application_main.register_delay_avg_time | Application Main Register Delay Average Time (Milliseconds) | long | gauge |
+| hadoop.cluster.application_main.register_delay_num_ops | Application Main Register Delay Operations (Number of Operations) | long | gauge |
+| hadoop.cluster.applications.completed | The number of applications completed | long | counter |
+| hadoop.cluster.applications.failed | The number of applications failed | long | counter |
+| hadoop.cluster.applications.killed | The number of applications killed | long | counter |
+| hadoop.cluster.applications.pending | The number of applications pending | long | gauge |
+| hadoop.cluster.applications.running | The number of applications running | long | gauge |
+| hadoop.cluster.applications.submitted | The number of applications submitted | long | counter |
+| hadoop.cluster.containers.allocated | The number of containers allocated | long | gauge |
+| hadoop.cluster.containers.pending | The number of containers pending | long | gauge |
+| hadoop.cluster.containers.reserved | The number of containers reserved | long | gauge |
+| hadoop.cluster.memory.allocated | The amount of memory allocated in MB | long | gauge |
+| hadoop.cluster.memory.available | The amount of memory available in MB | long | gauge |
+| hadoop.cluster.memory.reserved | The amount of memory reserved in MB | long | gauge |
+| hadoop.cluster.memory.total | The amount of total memory in MB | long | gauge |
+| hadoop.cluster.node_managers.num_active | Number of Node Managers Active | long | gauge |
+| hadoop.cluster.node_managers.num_decommissioned | Number of Node Managers Decommissioned | long | gauge |
+| hadoop.cluster.node_managers.num_lost | Number of Node Managers Lost | long | gauge |
+| hadoop.cluster.node_managers.num_rebooted | Number of Node Managers Rebooted | long | gauge |
+| hadoop.cluster.node_managers.num_unhealthy | Number of Node Managers Unhealthy | long | gauge |
+| hadoop.cluster.nodes.active | The number of active nodes | long | gauge |
+| hadoop.cluster.nodes.decommissioned | The number of nodes decommissioned | long | gauge |
+| hadoop.cluster.nodes.decommissioning | The number of nodes being decommissioned | long | gauge |
+| hadoop.cluster.nodes.lost | The number of lost nodes | long | gauge |
+| hadoop.cluster.nodes.rebooted | The number of nodes rebooted | long | gauge |
+| hadoop.cluster.nodes.shutdown | The number of nodes shut down | long | gauge |
+| hadoop.cluster.nodes.total | The total number of nodes | long | gauge |
+| hadoop.cluster.nodes.unhealthy | The number of unhealthy nodes | long | gauge |
+| hadoop.cluster.virtual_cores.allocated | The number of allocated virtual cores | long | gauge |
+| hadoop.cluster.virtual_cores.available | The number of available virtual cores | long | gauge |
+| hadoop.cluster.virtual_cores.reserved | The number of reserved virtual cores | long | gauge |
+| hadoop.cluster.virtual_cores.total | The total number of virtual cores | long | gauge |
+| host.ip | Host ip addresses. | ip |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
+| tags | List of keywords used to tag each event. | keyword |  |
 
 
 ## datanode
