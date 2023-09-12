@@ -57,6 +57,10 @@
         - "{{data_stream.namespace}}"
         - default
     - target_dataset: aws.apigateway_logs
+      # Supported API Gateway log format by API type
+      # HTTP: requestId ip requestTime httpMethod routeKey status protocol responseLength
+      # REST: requestId ip caller user requestTime httpMethod resourcePath status protocol responseLength
+      # WebSockets: requestId ip caller user requestTime eventType routeKey status connectionId
       if: >-
         (ctx.message != null && ctx.message.contains('requestId') && ctx.message.contains('ip')
         && ctx.message.contains('requestTime') && ctx.message.contains('httpMethod') && ctx.message.contains('routeKey')
