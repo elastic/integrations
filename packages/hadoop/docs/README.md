@@ -10,6 +10,15 @@ This integration is used to collect [Hadoop](https://hadoop.apache.org/) metrics
 
 This integration uses Resource Manager API and JMX API to collect above metrics.
 
+## Compatibility
+
+This integration has been tested against Hadoop version `3.3.6`.
+
+### Troubleshooting
+
+If host.ip is shown conflicted under ``logs-*`` data view, then this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the ``Application`` data stream's indices.
+If host.ip is shown conflicted under ``metrics-*`` data view, then this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the ``Cluster``, ``Datanode``, ``Namenode`` and ``Node Manager`` data stream's indices.
+
 ## application
 
 This data stream collects Application metrics.
@@ -100,6 +109,7 @@ An example event for `application` looks as following:
 | hadoop.application.time.finished | Application finished time | date |
 | hadoop.application.time.started | Application start time | date |
 | hadoop.application.vcore_seconds | The amount of CPU resources the application has allocated | long |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | tags | User defined tags | keyword |
 
@@ -197,9 +207,11 @@ An example event for `cluster` looks as following:
 
 **Exported fields**
 
+
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
@@ -375,6 +387,7 @@ An example event for `datanode` looks as following:
 | hadoop.datanode.estimated_capacity_lost_total | The estimated capacity lost in bytes | long |
 | hadoop.datanode.last_volume_failure_date | The date/time of the last volume failure in milliseconds since epoch | date |
 | hadoop.datanode.volumes.failed | Number of failed volumes | long |
+| host.ip | Host ip addresses. | ip |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
@@ -522,6 +535,7 @@ An example event for `namenode` looks as following:
 | hadoop.namenode.stale_data_nodes | Current number of DataNodes marked stale due to delayed heartbeat | long |
 | hadoop.namenode.total_load | Current number of connections | long |
 | hadoop.namenode.volume_failures_total | Total number of volume failures across all Datanodes | long |
+| host.ip | Host ip addresses. | ip |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
@@ -638,6 +652,7 @@ An example event for `node_manager` looks as following:
 | hadoop.node_manager.containers.killed | Containers Killed | long |
 | hadoop.node_manager.containers.launched | Containers Launched | long |
 | hadoop.node_manager.containers.running | Containers Running | long |
+| host.ip | Host ip addresses. | ip |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
