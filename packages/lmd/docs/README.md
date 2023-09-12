@@ -21,7 +21,7 @@ In **Machine Learning > Anomaly Detection**, when you create a job, you should s
 
 **_Note_**: In the Machine Learning app, these configurations are available only when data exists that matches the query specified in the [lmd-ml file](https://github.com/elastic/integrations/blob/main/packages/lmd/kibana/ml_module/lmd-ml.json#L10).
 
-You can also enable detection rules to alert on Lateral Movement activity in your environment, based on anomalies flagged by the above ML jobs. These rules are available as part of the Detection Engine <ADD MORE INFO FOR SPECIFICALLY IDENTIFYING THESE RULES>. See this [documentation](https://www.elastic.co/guide/en/security/current/prebuilt-rules-management.html#load-prebuilt-rules) for more information on importing and enabling the rules.
+You can also enable detection rules to alert on Lateral Movement activity in your environment, based on anomalies flagged by the above ML jobs. These rules are available as part of the Detection Engine, and can be found using the tag `Use Case: Lateral Movement Detection`. See this [documentation](https://www.elastic.co/guide/en/security/current/prebuilt-rules-management.html#load-prebuilt-rules) for more information on importing and enabling the rules.
 
 
 ### Install ProblemChild package to detect malicious processes
@@ -87,7 +87,9 @@ Clone the anomaly detection jobs available under the Living off the Land Attack 
 }
 ````
 
+
 ## ML Modules
+
 
 ### Lateral Movement Detection 
 
@@ -95,38 +97,17 @@ Detects potential lateral movement activity by identifying malicious file transf
 
 | Job                                               | Description                                                                                     |
 |---------------------------------------------------|-------------------------------------------------------------------------------------------------|
-| high-count-remote-file-transfer                   | Detects unusually high file transfers to a remote host in the network.                          | 
-| high-file-size-remote-file-transfer               | Detects unusually high size of files shared with a remote host in the network.                  |
-| rare-file-extension-remote-transfer               | Detects rare file extensions shared with a remote host in the network.                          |
-| rare-file-path-remote-transfer                    | Detects unusual folders and directories on which a file is transferred (by a host).             |
- | high-mean-rdp-session-duration                    | Detects unusually high mean of RDP session duration.                                            |
-| high-var-rdp-session-duration                     | Detects unusually high variance in RDP session duration.                                        |
- | high-sum-rdp-number-of-processes                  | Detects unusually high number of processes started in a single RDP session.                     |
- | unusual-time-weekday-rdp-session-start            | Detects an RDP session started at an usual time or weekday.                                     |
- | high-rdp-distinct-count-source-ip-for-destination | Detects a high count of source IPs making an RDP connection with a single destination IP.       |
- | high-rdp-distinct-count-destination-ip-for-source | Detects a high count of destination IPs establishing an RDP connection with a single source IP. |
- | high-mean-rdp-process-args                        | Detects unusually high number of process arguments in an RDP session.                           |
-
-
-## Associated Security Detection Rules
-
-The detection rules associated with this package are as follows:
-
-| Rule                                                         | Description                                                                                                                                                                                                                        |
-|--------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Spike in Remote File Transfers                               | An anomaly detection job to detect an abnormal volume of remote files shared on the host indicating a potential lateral movement activity.                                                                                         |
-| Unusual Remote File Size                                     | An anomaly detection job to detect an unusually high sum of file size shared by a remote host indicating a potential lateral movement activity.                                                                                    |
-| Unusual Remote File Directory                                | An anomaly detection job to detect a remote file transfer on an unusual directory indicating a potential lateral movement activity on the host.                                                                                    |
-| Unusual Remote File Extension                                | An anomaly detection job to detect a remote file transfer with a rare extension indicating a potential lateral movement activity on the host.                                                                                      |
-| Malicious Remote File Creation                               | Identifies the file created by a remote host followed by a malware or intrusion detection event triggered by Elastic Endpoint Security.                                                                                            |
-| Remote File Creation on a Sensitive Directory                | Identifies the file created by a remote host on sensitive directories and folders. Remote file creation in these directories should not be common and could indicate a malicious binary or script trying to compromise the system. |                                                                                                                                         |
- | Spike in number of processes in an RDP session               | An anomaly detection job to detect unusually high number of processes started in a single RDP session.                                                                                                                             |
- | High mean of RDP session duration                            | An anomaly detection job to detect unusually high mean of RDP session duration.                                                                                                                                                    |
- | High variance in RDP session duration                        | An anomaly detection job to detect unusually high variance in RDP session duration.                                                                                                                                                |
- | Unusually high number of process arguments in an RDP session | An anomaly detection job to detect unusually high number of process arguments in an RDP session.                                                                                                                                   |
- | Spike in number of connections made to a source IP           | An anomaly detection job to detect a high count of destination IPs establishing an RDP connection with a single source IP.                                                                                                         |
- | Spike in number of connections made to a destination IP      | An anomaly detection job to detect a high count of source IPs making an RDP connection with a single destination IP.                                                                                                               |
- | Unusual time or day for an RDP session start                 | An anomaly detection job to detect an RDP session started at an usual time or weekday.                                                                                                                                             |
+| lmd_high_count_remote_file_transfer                   | Detects unusually high file transfers to a remote host in the network.                          | 
+| lmd_high_file_size_remote_file_transfer               | Detects unusually high size of files shared with a remote host in the network.                  |
+| lmd_rare_file_extension_remote_transfer               | Detects rare file extensions shared with a remote host in the network.                          |
+| lmd_rare_file_path_remote_transfer                    | Detects unusual folders and directories on which a file is transferred (by a host).             |
+ | lmd_high_mean_rdp_session_duration                    | Detects unusually high mean of RDP session duration.                                            |
+| lmd_high_var_rdp_session_duration                     | Detects unusually high variance in RDP session duration.                                        |
+ | lmd_high_sum_rdp_number_of_processes                  | Detects unusually high number of processes started in a single RDP session.                     |
+ | lmd_unusual_time_weekday_rdp_session_start            | Detects an RDP session started at an usual time or weekday.                                     |
+ | lmd_high_rdp_distinct_count_source_ip_for_destination | Detects a high count of source IPs making an RDP connection with a single destination IP.       |
+ | lmd_high_rdp_distinct_count_destination_ip_for_source | Detects a high count of destination IPs establishing an RDP connection with a single source IP. |
+ | lmd_high_mean_rdp_process_args                        | Detects unusually high number of process arguments in an RDP session.                           |
 
 
 ## Dashboard
@@ -142,5 +123,7 @@ For the dashboard to work as expected, the following settings need to be configu
     - Index pattern : `.ml-anomalies-shared`
     - Name: `.ml-anomalies-shared`
     - Custom data view ID: `.ml-anomalies-shared`
+
+
 ## Licensing
 Usage in production requires that you have a license key that permits use of machine learning features.
