@@ -35,6 +35,6 @@ For step-by-step instructions on how to set up an integration, see the
 
 ### WAF Events
 
-The `barracuda_waf.logs` dataset provides events from the configured syslog server. All Barracuda WAF syslog specific fields are available in the `barracuda.waf` field group.
+The `barracuda_waf.logs` dataset provides events from the configured syslog server. All Barracuda WAF syslog specific fields are available in the `barracuda_waf.logs.logs.logs` field group.
 
 {{fields "logs"}}
