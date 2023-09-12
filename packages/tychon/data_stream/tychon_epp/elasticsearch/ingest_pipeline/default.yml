@@ -4,17 +4,10 @@ processors:
   - dot_expander:
       field: "*"
   - set:
-      if: "ctx.containsKey('tychon') && ctx.tychon.containsKey('id')"
-      field: 'host.id'
-      value: '{{tychon.id}}'  
-  - remove:
-      if: "ctx.containsKey('tychon') && ctx.tychon.containsKey('id')"
-      field: 'tychon'
-  - set:
-      field: '_id'
-      value: '{{id}}'
-  - set:
       field: '@timestamp'
+      value: '{{_ingest.timestamp}}'
+  - set:
+      field: event.ingested
       value: '{{_ingest.timestamp}}'
   - set:
       field: ecs.version
@@ -27,10 +20,16 @@ processors:
       value: tychon
   - set:
       field: event.category
-      value: [host]
+      value: epp
+  - split:
+      field: host.uptime
+      separator: "\\.+"
+      target_field: tempuptime
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
+      field: host.uptime
+      value: "{{tempuptime.0}}"
+  - remove:
+      field: tempuptime
   - convert:
       field: host.uptime
       type: long

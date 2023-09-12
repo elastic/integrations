@@ -1,24 +1,13 @@
 ---
-description: Pipeline for parsing TYCHON Windows Patches
+description: Pipeline for parsing TYCHON STIGs
 processors:  
   - dot_expander:
       field: "*"
   - set:
-      if: "ctx.containsKey('tychon') && ctx.tychon.containsKey('id')"
-      field: 'host.id'
-      value: '{{tychon.id}}'  
-  - remove:
-      if: "ctx.containsKey('tychon') && ctx.tychon.containsKey('id')"
-      field: 'tychon'
-  - set:
-      if: "!(ctx.containsKey('id'))"
-      field: id
-      value: '{{host.id}}'  
-  - set:      
-      field: _id
-      value: '{{id}}'     
-  - set:
       field: '@timestamp'
+      value: '{{_ingest.timestamp}}'
+  - set:
+      field: event.ingested
       value: '{{_ingest.timestamp}}'
   - set:
       if: "ctx.containsKey('rule') && ctx.rule.containsKey('test_result')"
@@ -38,15 +27,16 @@ processors:
       value: tychon
   - set:
       field: event.category
-      value: [host]
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - convert:
+      value: stig
+  - split:
       field: host.uptime
-      type: long
-  - script:
-      source: ctx.host.mac = ctx.host.mac.replace(':','-')
+      separator: "\\.+"
+      target_field: tempuptime
+  - set:
+      field: host.uptime
+      value: "{{tempuptime.0}}"
+  - remove:
+      field: tempuptime
   - convert:
       field: host.uptime
       type: long

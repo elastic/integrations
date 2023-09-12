@@ -1,0 +1,26 @@
+source:
+  index:
+    - logs-tychon.tychon_cve-*
+  query:
+    bool:
+      must:
+        - match_phrase:
+            vulnerability.year: 2023
+        - match_phrase:
+            host.os.family: "windows"
+dest:
+  index: tychon_cve-2023_windows
+frequency: 30m
+sync:
+  time:
+    field: 'event.ingested'
+    delay: 60s
+latest:
+  unique_key:
+    - id
+  sort: '@timestamp'
+_meta:
+  fleet_transform_version: 1.0.3
+  run_as_kibana_system: false
+  managed: true
+description: This transformation ensures there is a running configuration of what Windows 2023 vulnerablility results are from TYCHON.
