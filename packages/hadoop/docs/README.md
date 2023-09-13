@@ -657,15 +657,15 @@ An example event for `node_manager` looks as following:
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
-| hadoop.node_manager.allocated_containers | Containers Allocated | long | counter |
+| hadoop.node_manager.allocated_containers | Containers Allocated | long | gauge |
 | hadoop.node_manager.container_launch_duration_avg_time | Container Launch Duration Average Time (Seconds) | long | gauge |
 | hadoop.node_manager.container_launch_duration_num_ops | Container Launch Duration Operations (Operations) | long | counter |
 | hadoop.node_manager.containers.completed | Containers Completed | long | counter |
 | hadoop.node_manager.containers.failed | Containers Failed | long | counter |
-| hadoop.node_manager.containers.initing | Containers Initializing | long | counter |
+| hadoop.node_manager.containers.initing | Containers Initializing | long | gauge |
 | hadoop.node_manager.containers.killed | Containers Killed | long | counter |
 | hadoop.node_manager.containers.launched | Containers Launched | long | counter |
-| hadoop.node_manager.containers.running | Containers Running | long | counter |
+| hadoop.node_manager.containers.running | Containers Running | long | gauge |
 | host.ip | Host ip addresses. | ip |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
