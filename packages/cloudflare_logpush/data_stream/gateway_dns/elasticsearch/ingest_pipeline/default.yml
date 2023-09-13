@@ -21,22 +21,32 @@ processors:
       field: event.type
       value: [info]
 # ECS fields
-  - convert:
-      field: json.Datetime
-      type: string
-      ignore_missing: true
-  - gsub:
-      field: json.Datetime
-      pattern: (^[0-9]+)([0-9]{6}$)
-      replacement: $1
-      ignore_missing: true
-      description: Convert timestamp's granularity from nanosecond to millisecond
+  - script:
+      lang: painless
+      tag: painless_datetime_to_milli
+      if: ctx.json?.Datetime != null
+      source: |
+        try {
+          long t;
+          if (ctx.json.Datetime instanceof String) {
+            t = Long.parseLong(ctx.json.Datetime);
+          } else if (ctx.json.Datetime instanceof Number) {
+            t = (long)(ctx.json.Datetime);
+          } else {
+            return;
+          }
+          if (t > (long)(1e18)) {
+            ctx.json.Datetime = t/(long)(1e6)
+          } else if (t < (long)(1e10))  {
+            ctx.json.Datetime = t*(long)(1e3)
+          }
+        }
+        catch (Exception e) {}
   - date:
       field: json.Datetime
       if: ctx.json?.Datetime != null && ctx.json.Datetime != ''
       formats:
         - UNIX_MS
-        - UNIX
         - ISO8601
         - yyyy-MM-dd'T'HH:mm:ssZ
       timezone: UTC
