@@ -1,0 +1,11 @@
+# Route container logs events to the correct dataset and namespace
+# based on pod annotations.
+- source_dataset: kubernetes.container_logs
+  rules:
+    - target_dataset:
+        - "{{kubernetes.annotations.elastic_co/dataset}}"
+        - "{{data_stream.dataset}}"
+      namespace:
+        - "{{kubernetes.annotations.elastic_co/namespace}}"
+        - "{{data_stream.namespace}}"
+      if: "ctx.kubernetes?.annotations != null"
