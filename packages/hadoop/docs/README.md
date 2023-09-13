@@ -516,52 +516,52 @@ An example event for `namenode` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
-| container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| hadoop.namenode.blocks.corrupt | Current number of blocks with corrupt replicas. | long |
-| hadoop.namenode.blocks.missing_repl_one | Current number of missing blocks with replication factor 1 | long |
-| hadoop.namenode.blocks.pending_deletion | Current number of blocks pending deletion | long |
-| hadoop.namenode.blocks.pending_replication | Current number of blocks pending to be replicated | long |
-| hadoop.namenode.blocks.scheduled_replication | Current number of blocks scheduled for replications | long |
-| hadoop.namenode.blocks.total | Current number of allocated blocks in the system | long |
-| hadoop.namenode.blocks.under_replicated | Current number of blocks under replicated | long |
-| hadoop.namenode.capacity.remaining | Current remaining capacity in bytes | long |
-| hadoop.namenode.capacity.total | Current raw capacity of DataNodes in bytes | long |
-| hadoop.namenode.capacity.used | Current used capacity across all DataNodes in bytes | long |
-| hadoop.namenode.estimated_capacity_lost_total | An estimate of the total capacity lost due to volume failures | long |
-| hadoop.namenode.files_total | Current number of files and directories | long |
-| hadoop.namenode.lock_queue_length | Number of threads waiting to acquire FSNameSystem lock | long |
-| hadoop.namenode.nodes.num_dead_data | Number of datanodes which are currently dead | long |
-| hadoop.namenode.nodes.num_decom_dead_data | Number of datanodes which have been decommissioned and are now dead | long |
-| hadoop.namenode.nodes.num_decom_live_data | Number of datanodes which have been decommissioned and are now live | long |
-| hadoop.namenode.nodes.num_decommissioning_data | Number of datanodes in decommissioning state | long |
-| hadoop.namenode.nodes.num_live_data | Number of datanodes which are currently live | long |
-| hadoop.namenode.num_stale_storages | Number of storages marked as content stale | long |
-| hadoop.namenode.stale_data_nodes | Current number of DataNodes marked stale due to delayed heartbeat | long |
-| hadoop.namenode.total_load | Current number of connections | long |
-| hadoop.namenode.volume_failures_total | Total number of volume failures across all Datanodes | long |
-| host.ip | Host ip addresses. | ip |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
+| hadoop.namenode.blocks.corrupt | Current number of blocks with corrupt replicas. | long | gauge |
+| hadoop.namenode.blocks.missing_repl_one | Current number of missing blocks with replication factor 1 | long | gauge |
+| hadoop.namenode.blocks.pending_deletion | Current number of blocks pending deletion | long | gauge |
+| hadoop.namenode.blocks.pending_replication | Current number of blocks pending to be replicated | long | gauge |
+| hadoop.namenode.blocks.scheduled_replication | Current number of blocks scheduled for replications | long | gauge |
+| hadoop.namenode.blocks.total | Current number of allocated blocks in the system | long | gauge |
+| hadoop.namenode.blocks.under_replicated | Current number of blocks under replicated | long | gauge |
+| hadoop.namenode.capacity.remaining | Current remaining capacity in bytes | long | gauge |
+| hadoop.namenode.capacity.total | Current raw capacity of DataNodes in bytes | long | gauge |
+| hadoop.namenode.capacity.used | Current used capacity across all DataNodes in bytes | long | gauge |
+| hadoop.namenode.estimated_capacity_lost_total | An estimate of the total capacity lost due to volume failures | long | gauge |
+| hadoop.namenode.files_total | Current number of files and directories | long | gauge |
+| hadoop.namenode.lock_queue_length | Number of threads waiting to acquire FSNameSystem lock | long | gauge |
+| hadoop.namenode.nodes.num_dead_data | Number of datanodes which are currently dead | long | gauge |
+| hadoop.namenode.nodes.num_decom_dead_data | Number of datanodes which have been decommissioned and are now dead | long | gauge |
+| hadoop.namenode.nodes.num_decom_live_data | Number of datanodes which have been decommissioned and are now live | long | gauge |
+| hadoop.namenode.nodes.num_decommissioning_data | Number of datanodes in decommissioning state | long | gauge |
+| hadoop.namenode.nodes.num_live_data | Number of datanodes which are currently live | long | gauge |
+| hadoop.namenode.num_stale_storages | Number of storages marked as content stale | long | gauge |
+| hadoop.namenode.stale_data_nodes | Current number of DataNodes marked stale due to delayed heartbeat | long | gauge |
+| hadoop.namenode.total_load | Current number of connections | long | gauge |
+| hadoop.namenode.volume_failures_total | Total number of volume failures across all Datanodes | long | gauge |
+| host.ip | Host ip addresses. | ip |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
+| tags | List of keywords used to tag each event. | keyword |  |
 
 ## node_manager
 
