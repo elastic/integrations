@@ -10,7 +10,7 @@ This module has been tested against the latest Qualys VMDR version **v2**.
 
 ## Data streams
 
-The Qualys VMDR integration collects logs for the following two events:
+The Qualys VMDR integration collects data for the following two events:
 
 | Event Type                    |
 |-------------------------------|
@@ -58,7 +58,7 @@ The minimum **kibana.version** required is **8.9.0**.
 2. In "Search for integrations" search bar, type Qualys VMDR
 3. Click on the "Qualys VMDR" integration from the search results.
 4. Click on the Add Qualys VMDR Integration button to add the integration.
-5. While adding the integration, if you want to collect Asset Host Detection logs via REST API, then you have to put the following details:
+5. While adding the integration, if you want to collect Asset Host Detection data via REST API, then you have to put the following details:
    - username
    - password
    - url
@@ -66,7 +66,7 @@ The minimum **kibana.version** required is **8.9.0**.
    - input parameters
    - batch size
 
-   or if you want to collect Knowledge Base logs via REST API, then you have to put the following details:
+   or if you want to collect Knowledge Base data via REST API, then you have to put the following details:
    - username
    - password
    - url
@@ -76,7 +76,7 @@ The minimum **kibana.version** required is **8.9.0**.
 
 **NOTE**: By default, the input parameter is set to "action=list".
 
-## Logs reference
+## Data reference
 
 ### Asset Host Detection
 
@@ -88,10 +88,10 @@ An example event for `asset_host_detection` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-08-02T13:38:44.115Z",
+    "@timestamp": "2023-08-28T09:53:52.909Z",
     "agent": {
-        "ephemeral_id": "f8ce1789-cd24-4605-99f3-4c8edbc2e353",
-        "id": "34d4af1b-e042-4964-b319-3a10baae135b",
+        "ephemeral_id": "24c009cf-e26d-4f8a-b66f-7412425ed0fe",
+        "id": "6b293533-5b3c-4cb2-a00c-b2b25ba9edec",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.9.0"
@@ -105,7 +105,7 @@ An example event for `asset_host_detection` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "34d4af1b-e042-4964-b319-3a10baae135b",
+        "id": "6b293533-5b3c-4cb2-a00c-b2b25ba9edec",
         "snapshot": false,
         "version": "8.9.0"
     },
@@ -115,7 +115,7 @@ An example event for `asset_host_detection` looks as following:
             "host"
         ],
         "dataset": "qualys_vmdr.asset_host_detection",
-        "ingested": "2023-08-02T13:38:47Z",
+        "ingested": "2023-08-28T09:53:53Z",
         "kind": "alert",
         "type": [
             "info"
@@ -291,8 +291,8 @@ An example event for `knowledge_base` looks as following:
 {
     "@timestamp": "2023-06-29T12:20:46.000Z",
     "agent": {
-        "ephemeral_id": "59582de9-dc2f-4c69-81c2-4caca64218ee",
-        "id": "34d4af1b-e042-4964-b319-3a10baae135b",
+        "ephemeral_id": "24c009cf-e26d-4f8a-b66f-7412425ed0fe",
+        "id": "6b293533-5b3c-4cb2-a00c-b2b25ba9edec",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.9.0"
@@ -306,7 +306,7 @@ An example event for `knowledge_base` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "34d4af1b-e042-4964-b319-3a10baae135b",
+        "id": "6b293533-5b3c-4cb2-a00c-b2b25ba9edec",
         "snapshot": false,
         "version": "8.9.0"
     },
@@ -317,7 +317,7 @@ An example event for `knowledge_base` looks as following:
         ],
         "dataset": "qualys_vmdr.knowledge_base",
         "id": "11830",
-        "ingested": "2023-08-02T13:39:40Z",
+        "ingested": "2023-08-28T09:54:51Z",
         "kind": "alert",
         "type": [
             "info"
@@ -433,6 +433,8 @@ An example event for `knowledge_base` looks as following:
 | qualys_vmdr.knowledge_base.discovery.additional_info |  | keyword |
 | qualys_vmdr.knowledge_base.discovery.auth_type_list.value |  | keyword |
 | qualys_vmdr.knowledge_base.discovery.remote |  | long |
+| qualys_vmdr.knowledge_base.id_range |  | keyword |
+| qualys_vmdr.knowledge_base.ids |  | keyword |
 | qualys_vmdr.knowledge_base.is_disabled |  | boolean |
 | qualys_vmdr.knowledge_base.last.customization.datetime |  | date |
 | qualys_vmdr.knowledge_base.last.customization.user_login |  | keyword |

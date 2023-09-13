@@ -93,7 +93,7 @@ processors:
   - set:
       field: event.id
       copy_from: zeek.session_id
-      if: ctx?.zeek?.session_id != null
+      if: ctx.zeek?.session_id != null
   - rename:
       field: zeek.x509.certificate.not_valid_before
       target_field: zeek.x509.certificate.valid.from
@@ -155,11 +155,11 @@ processors:
       field: zeek.x509.ts
   - set:
       field: event.id
-      value: "{{zeek.session_id}}"
+      value: "{{{zeek.session_id}}}"
       if: ctx.zeek.session_id != null
   - set:
       field: file.x509.signature_algorithm
-      value: "{{zeek.x509.certificate.signature_algorithm}}"
+      value: "{{{zeek.x509.certificate.signature_algorithm}}}"
       ignore_empty_value: true
   - script:
       lang: painless
@@ -182,10 +182,10 @@ processors:
         if (algo != null) {
           ctx.file.x509.signature_algorithm = algo;
         }
-      if: ctx?.file?.x509?.signature_algorithm != null
+      if: ctx.file?.x509?.signature_algorithm != null
   - set:
       field: file.x509.public_key_algorithm
-      value: "{{zeek.x509.certificate.key.algorithm}}"
+      value: "{{{zeek.x509.certificate.key.algorithm}}}"
       ignore_empty_value: true
   - convert:
       field: zeek.x509.certificate.key.length
@@ -205,14 +205,14 @@ processors:
       path: zeek.x509
   - set:
       field: file.x509.serial_number
-      value: "{{zeek.x509.certificate.serial}}"
+      value: "{{{zeek.x509.certificate.serial}}}"
       ignore_empty_value: true
   - dot_expander:
       field: certificate.version
       path: zeek.x509
   - set:
       field: file.x509.version_number
-      value: "{{zeek.x509.certificate.version}}"
+      value: "{{{zeek.x509.certificate.version}}}"
       ignore_empty_value: true
   - dot_expander:
       field: san.dns
@@ -223,7 +223,7 @@ processors:
       processor:
         append:
           field: file.x509.alternative_names
-          value: "{{_ingest._value}}"
+          value: "{{{_ingest._value}}}"
   - dot_expander:
       field: san.uri
       path: zeek.x509
@@ -233,7 +233,7 @@ processors:
       processor:
         append:
           field: file.x509.alternative_names
-          value: "{{_ingest._value}}"
+          value: "{{{_ingest._value}}}"
   - dot_expander:
       field: san.email
       path: zeek.x509
@@ -243,7 +243,7 @@ processors:
       processor:
         append:
           field: file.x509.alternative_names
-          value: "{{_ingest._value}}"
+          value: "{{{_ingest._value}}}"
   - dot_expander:
       field: san.ip
       path: zeek.x509
@@ -253,7 +253,7 @@ processors:
       processor:
         append:
           field: file.x509.alternative_names
-          value: "{{_ingest._value}}"
+          value: "{{{_ingest._value}}}"
   - dot_expander:
       field: san.other_fields
       path: zeek.x509
@@ -263,7 +263,7 @@ processors:
       processor:
         append:
           field: file.x509.alternative_names
-          value: "{{_ingest._value}}"
+          value: "{{{_ingest._value}}}"
   - date:
       field: zeek.x509.certificate.valid.from
       target_field: zeek.x509.certificate.valid.from
@@ -273,7 +273,7 @@ processors:
       if: ctx.zeek.x509.certificate?.valid?.from != null
   - set:
       field: file.x509.not_before
-      value: "{{zeek.x509.certificate.valid.from}}"
+      value: "{{{zeek.x509.certificate.valid.from}}}"
       ignore_empty_value: true
   - date:
       field: zeek.x509.certificate.valid.until
@@ -284,7 +284,7 @@ processors:
       if: ctx.zeek.x509.certificate?.valid?.until != null
   - set:
       field: file.x509.not_after
-      value: "{{zeek.x509.certificate.valid.until}}"
+      value: "{{{zeek.x509.certificate.valid.until}}}"
       ignore_empty_value: true
   - gsub:
       field: zeek.x509.certificate.iss
@@ -416,7 +416,7 @@ processors:
 
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 on_failure:
