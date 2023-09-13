@@ -35,21 +35,11 @@ program: |
   )).with({
     "Header":{
       "Content-Type": ["application/json"],
-      "X-OTX-API-KEY": [state.api_key],
     }
   }).do_request().as(resp, bytes(resp.Body).decode_json().as(body, 
-    has(body.results) && body.results.size() > 0
+    body.size() > 0
     ?
-      (body.results.map(pulse,
-        pulse.indicators.map(ind, 
-          ind.with({
-            "count": body.count, 
-            "prefetch_pulse_ids": body.prefetch_pulse_ids, 
-            "t": body.t, 
-            "t2": body.t2, 
-            "t3": body.t3,
-            "pulse_raw": [pulse].drop("indicators")[0].encode_json()
-          }))).flatten().drop_empty().as(res, 
+      body.drop_empty().as(res, 
             {
               "events": res.map(e, {
                 "message": e.encode_json(),
