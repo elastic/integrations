@@ -9,6 +9,9 @@ processors:
   - set:
       field: event.ingested
       value: "{{_ingest.timestamp}}"
+  - split:
+      field: host.ipv4
+      separator: ","
   - set:
       field: ecs.version
       value: 8.8.0
@@ -30,19 +33,34 @@ processors:
       value: "{{tempuptime.0}}"
   - remove:
       field: tempuptime
-  - gsub:
-      field: host.adapter.link_speed
-      pattern: " Gbps"
-      replacement: ""  
+  - script:
+      source: |            
+            String[] ls;
+            float l;
+            if(ctx.host.adapter.link_speed != null && ctx.host.adapter.link_speed.splitOnToken(' ')){
+                ls = ctx.host.adapter.link_speed.splitOnToken(' ');
+                l = Float.parseFloat(ls[0]);
+                if(ls[1] =='Mbps'){
+                    ctx.host.adapter.link_speed=(long) l*1048576;
+                }else if(ls[1] =='Gbps'){
+                    ctx.host.adapter.link_speed=(long) l*1073741824;
+                }
+            }
+  - remove:
+      field: host.adapter.ip
+      if: ctx.host.adapter.ip == ''      
+  - remove:
+      field: host.adapter.gateway
+      if: ctx.host.adapter.gateway == ''     
   - remove:
       field: host.adapter.dhcp.server
-      if: ctx.host.adapter.dhcp.server == ''     
+      if: ctx.host.adapter.dhcp.server == ''      
   - remove:
       field: host.adapter.dhcp.lease_obtained
-      if: ctx.host.adapter.dhcp.lease_obtained == ''     
+      if: ctx.host.adapter.dhcp.lease_obtained == ''      
   - remove:
       field: host.adapter.dhcp.lease_expires
-      if: ctx.host.adapter.dhcp.lease_expires == ''     
+      if: ctx.host.adapter.dhcp.lease_expires == ''
   - convert:
       field: script.current_duration
       type: float
