@@ -19,7 +19,7 @@ to change the defaults.
 
 This is the `mimecast.archive_search_logs` dataset. These logs contain Mimecast archive
 search logs with the following details: search source, description and detailed
-information about the search performed. More information about these logs  is available [here](
+information about the search performed. More information about these logs is available [here](
 https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-archive-search-logs/).
 
 An example event for `archive_search` looks as following:
