@@ -21,22 +21,12 @@ redact:
     - api_key
 program: |
   request("GET", (
-    has(state.want_more) && !state.want_more
-    ?
-      state.url + "?modified_since=" + (
-      (has(state.modified_since) &&  state.modified_since != "")
-      ?
-        state.modified_since
-      :
-        (now() - duration("{{first_interval}}")).format(time_layout.RFC3339)
-      )
-    :
       state.url
   )).with({
     "Header":{
-      "Content-Type": ["application/json"],
+      "Content-Type": ["application/zip"],
     }
-  }).do_request().as(resp, bytes(resp.Body).decode_json().as(body, 
+  }).do_request().as(resp, bytes(resp.Body).resp.Body.mime("application/zip").File[0].Data.decode_json().as(body, 
     body.size() > 0
     ?
       body.drop_empty().as(res, 
