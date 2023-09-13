@@ -15,6 +15,17 @@ to change the defaults.
 
 ## Logs
 
+### Archive Search Logs
+
+This is the `mimecast.archive_search_logs` dataset. These logs contain Mimecast archive
+search logs with the following details: search source, description and detailed
+information about the search performed. More information about these logs is available [here](
+https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-archive-search-logs/).
+
+{{event "archive_search_logs"}}
+
+{{fields "archive_search_logs"}}
+
 ### Audit Events
 
 This is the `mimecast.audit_events` dataset. These logs contain Mimecast audit
