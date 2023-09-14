@@ -4,10 +4,11 @@ The Lateral movement detection model package contains assets that detect lateral
 
 
 **_Note_**: v2.0.0 of the package introduces breaking changes, namely updating ML job IDs and deprecating detection rules from the package. To continue recieving updates to Lateral Movement Detection, we recommend uninstalling existing ML jobs and rules associated with this package, upgrading to v2.0.0, and installing the new rules as described in the [Enabling detection rules](#enabling-detection-rules) section below.
+
+
 ## Configuration
 
 To download the assets, click **Settings** > **Install Lateral Movement Detection assets**. 
-
 
 ### Add preconfigured anomaly detection jobs
 
@@ -22,11 +23,9 @@ In **Machine Learning > Anomaly Detection**, when you create a job, you should s
 
 **_Note_**: In the Machine Learning app, these configurations are available only when data exists that matches the query specified in the [lmd-ml file](https://github.com/elastic/integrations/blob/main/packages/lmd/kibana/ml_module/lmd-ml.json#L10).
 
-
 ### Enabling detection rules
 
 You can also enable detection rules to alert on Lateral Movement activity in your environment, based on anomalies flagged by the above ML jobs. As of version 2.0.0 of this package, these rules are available as part of the Detection Engine, and can be found using the tag `Use Case: Lateral Movement Detection`. See this [documentation](https://www.elastic.co/guide/en/security/current/prebuilt-rules-management.html#load-prebuilt-rules) for more information on importing and enabling the rules.
-
 
 ### Install ProblemChild package to detect malicious processes
 
@@ -92,10 +91,7 @@ Clone the anomaly detection jobs available under the Living off the Land Attack 
 ````
 
 
-## ML Modules
-
-
-### Lateral Movement Detection 
+## Anomaly Detection Jobs 
 
 Detects potential lateral movement activity by identifying malicious file transfers and RDP sessions in an environment.
 
