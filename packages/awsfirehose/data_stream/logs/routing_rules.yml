@@ -56,3 +56,22 @@
       namespace:
         - "{{data_stream.namespace}}"
         - default
+    - target_dataset: aws.apigateway_logs
+      # Supported API Gateway log format by API type
+      # HTTP: requestId ip requestTime httpMethod routeKey status protocol responseLength
+      # REST: requestId ip caller user requestTime httpMethod resourcePath status protocol responseLength
+      # WebSockets: requestId ip caller user requestTime eventType routeKey status connectionId
+      if: >-
+        (ctx.message != null && ctx.message.contains('requestId') && ctx.message.contains('ip')
+        && ctx.message.contains('requestTime') && ctx.message.contains('httpMethod') && ctx.message.contains('routeKey')
+        && ctx.message.contains('status') && ctx.message.contains('protocol') && ctx.message.contains('responseLength'))
+        || (ctx.message != null && ctx.message.contains('requestId') && ctx.message.contains('ip') && ctx.message.contains('caller')
+        && ctx.message.contains('user') && ctx.message.contains('requestTime') && ctx.message.contains('httpMethod')
+        && ctx.message.contains('resourcePath') && ctx.message.contains('status') && ctx.message.contains('protocol')
+        && ctx.message.contains('responseLength')) 
+        || (ctx.message != null && ctx.message.contains('requestId') && ctx.message.contains('ip') && ctx.message.contains('caller')
+        && ctx.message.contains('user') && ctx.message.contains('requestTime') && ctx.message.contains('eventType')
+        && ctx.message.contains('routeKey') && ctx.message.contains('status') && ctx.message.contains('connectionId'))
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default
