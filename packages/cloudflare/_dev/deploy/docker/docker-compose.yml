@@ -12,15 +12,11 @@ services:
       - http-server
       - --addr=:8080
       - --config=/files/config.yml
-  cloudflare-2:
-    image: docker.elastic.co/observability/stream:v0.5.0
-    ports:
-      - 8080
+  logpull-mock-service:
+    image: golang:1.20-alpine
+    working_dir: /app
     volumes:
-      - ./files:/files:ro
-    environment:
-      PORT: 8080
-    command:
-      - http-server
-      - --addr=:8080
-      - --config=/files/config-2.yml
+      - ./logpull-mock-service:/app
+    ports:
+      - "3000:3000"
+    command: ["go", "run", "main.go"]
