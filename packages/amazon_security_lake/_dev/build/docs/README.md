@@ -58,24 +58,24 @@ The minimum **kibana.version** required is **8.11.0**.
 
 ### To collect data from an AWS S3 bucket or AWS SQS, follow the below steps:
 
-- To enable and start Amazon Security Lake, follow the steps mentioned here: `https://docs.aws.amazon.com/security-lake/latest/userguide/getting-started.html`.
-- Above steps will create AWS S3 bucket and AWS SQS queue.
-- Please follow below steps to create [IAM role](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user.html#roles-creatingrole-user-console):
+1. To enable and start Amazon Security Lake, follow the steps mentioned here: `https://docs.aws.amazon.com/security-lake/latest/userguide/getting-started.html`.
+2. Above steps will create AWS S3 bucket and AWS SQS queue.
+3. Please follow below steps to create [IAM role](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user.html#roles-creatingrole-user-console):
    1. Sign in to the AWS Management Console and open the [IAM console](https://console.aws.amazon.com/iam/).
    2. In the navigation panel, choose Roles and then click on Create role.
    3. Choose **AWS account** role type.
-   ![Role Type](../img/role_type.png)
-   4. To create a role user have two options,
-      1. To create a role for your account, choose **This account**.
-      ![This Account](../img/this_account.png)
-      2. To create a role for another account, choose **Another AWS account** and enter the Account ID to which you want to grant access to your resources.
-      ![Another AWS Account](../img/another_aws_account.png)
+      ![Role Type](../img/role_type.png)
+   4. To create a role user have two options,  
+      - To create a role for your account, choose **This account**.
+         ![This Account](../img/this_account.png)
+      - To create a role for another account, choose **Another AWS account** and enter the Account ID to which you want to grant access to your resources.
+         ![Another AWS Account](../img/another_aws_account.png)
    5. If you are granting permissions to users from an account that you don't control, and the users will assume this role programmatically, select **Require external ID**. The external ID can be any phrase or number that is agreed upon between you and the administrator of the third party account. Then Click Next.
-   ![External ID](../img/external_id.png)
+      ![External ID](../img/external_id.png)
    6. Select **AmazonS3FullAccess** and **AmazonSQSFullAccess** from Permissions policies. Then Click Next.
-   ![AmazonS3FullAccess](../img/s3_full_access.png)
-   ![AmazonSQSFullAccess](../img/sqs_full_access.png)
-   7. For Role name, enter a name for your role. Role name must be unique within your AWS account.
+      ![AmazonS3FullAccess](../img/s3_full_access.png)
+      ![AmazonSQSFullAccess](../img/sqs_full_access.png)
+   7. For Role name, enter a name for your role. Role name must be unique within your AWS account.  
    8. Preview the role and then choose Create role.
 
 ### Enabling the integration in Elastic:
@@ -85,7 +85,7 @@ The minimum **kibana.version** required is **8.11.0**.
 3. Click on the "Amazon Security Lake" integration from the search results.
 4. Click on the Add Amazon Security Lake Integration button to add the integration.
 5. By default collect logs via S3 Bucket toggle will be off and collect logs for AWS SQS.
-5. While adding the integration, if you want to collect logs via AWS SQS, then you have to put the following details:
+6. While adding the integration, if you want to collect logs via AWS SQS, then you have to put the following details:
    - queue url
    - collect logs via S3 Bucket toggled off
    - Shared Credential File Path and Credential Profile Name / Access Key Id and Secret Access Key
@@ -94,7 +94,7 @@ The minimum **kibana.version** required is **8.11.0**.
    - bucket arn
    - collect logs via S3 Bucket toggled on
    - Shared Credential File Path and Credential Profile Name / Access Key Id and Secret Access Key
-6. If user wants to access security lake by Assuming Role then add Role ARN or if user want to access resources of another account using Role ARN then add Role ARN and external ID.
+7. If user wants to access security lake by Assuming Role then add Role ARN or if user want to access resources of another account using Role ARN then add Role ARN and external ID.
 
 **NOTE**: There are other input combination options available, please check [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html).
 
