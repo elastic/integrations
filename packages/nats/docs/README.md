@@ -272,16 +272,16 @@ An example event for `stats` looks as following:
 | nats.server.time | Server time of metric creation | date |  |
 | nats.stats.cores | The number of logical cores the NATS process runs on | integer | gauge |
 | nats.stats.cpu | The current cpu usage of NATs process | scaled_float | gauge |
-| nats.stats.http.req_stats.uri.connz | The number of hits on connz monitoring uri | long | gauge |
-| nats.stats.http.req_stats.uri.root | The number of hits on root monitoring uri | long | gauge |
-| nats.stats.http.req_stats.uri.routez | The number of hits on routez monitoring uri | long | gauge |
-| nats.stats.http.req_stats.uri.subsz | The number of hits on subsz monitoring uri | long | gauge |
-| nats.stats.http.req_stats.uri.varz | The number of hits on varz monitoring uri | long | gauge |
-| nats.stats.in.bytes | The amount of incoming bytes | long | gauge |
-| nats.stats.in.messages | The amount of incoming messages | long | gauge |
+| nats.stats.http.req_stats.uri.connz | The number of hits on connz monitoring uri | long | counter |
+| nats.stats.http.req_stats.uri.root | The number of hits on root monitoring uri | long | counter |
+| nats.stats.http.req_stats.uri.routez | The number of hits on routez monitoring uri | long | counter |
+| nats.stats.http.req_stats.uri.subsz | The number of hits on subsz monitoring uri | long | counter |
+| nats.stats.http.req_stats.uri.varz | The number of hits on varz monitoring uri | long | counter |
+| nats.stats.in.bytes | The amount of incoming bytes | long | counter |
+| nats.stats.in.messages | The amount of incoming messages | long | counter |
 | nats.stats.mem.bytes | The current memory usage of NATS process | long | gauge |
-| nats.stats.out.bytes | The amount of outgoing bytes | long | gauge |
-| nats.stats.out.messages | The amount of outgoing messages | long | gauge |
+| nats.stats.out.bytes | The amount of outgoing bytes | long | counter |
+| nats.stats.out.messages | The amount of outgoing messages | long | counter |
 | nats.stats.remotes | The number of registered remotes | integer | gauge |
 | nats.stats.slow_consumers | The number of slow consumers currently on NATS | long | gauge |
 | nats.stats.total_connections | The number of totally created clients | long | counter |
