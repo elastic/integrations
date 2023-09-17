@@ -812,15 +812,15 @@ An example event for `route` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| nats.route.in.bytes | The amount of incoming bytes | long | gauge |
-| nats.route.in.messages | The amount of incoming messages | long | gauge |
+| nats.route.in.bytes | The amount of incoming bytes | long | counter |
+| nats.route.in.messages | The amount of incoming messages | long | counter |
 | nats.route.ip | The ip of the route | ip |  |
-| nats.route.out.bytes | The amount of outgoing bytes | long | gauge |
-| nats.route.out.messages | The amount of outgoing messages | long | gauge |
+| nats.route.out.bytes | The amount of outgoing bytes | long | counter |
+| nats.route.out.messages | The amount of outgoing messages | long | counter |
 | nats.route.pending_size | The number of pending routes | long | gauge |
 | nats.route.port | The port of the route | integer |  |
 | nats.route.remote_id | The remote id on which the route is connected to | keyword |  |
-| nats.route.subscriptions | The number of subscriptions in this connection | integer | counter |
+| nats.route.subscriptions | The number of subscriptions in this connection | integer | gauge |
 | nats.server.id | The server ID | keyword |  |
 | nats.server.time | Server time of metric creation | date |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
