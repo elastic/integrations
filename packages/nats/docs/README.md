@@ -590,7 +590,7 @@ An example event for `subscriptions` looks as following:
 | nats.subscriptions.inserts | The number of insert operations in subscriptions list | long | counter |
 | nats.subscriptions.matches | The number of times a match is found for a subscription | long | counter |
 | nats.subscriptions.removes | The number of remove operations in subscriptions list | long | counter |
-| nats.subscriptions.total | The number of active subscriptions | integer | counter |
+| nats.subscriptions.total | The number of active subscriptions | integer | gauge |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
