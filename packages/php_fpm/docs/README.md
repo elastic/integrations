@@ -149,8 +149,8 @@ An example event for `pool` looks as following:
 | php_fpm.pool.processes.count | The current total number of processes. | long |  | gauge |
 | php_fpm.pool.processes.idle | The number of processes that are currently idle (waiting for requests). | long |  | gauge |
 | php_fpm.pool.slow_requests | The total number of requests that have hit the configured request_slowlog_timeout. | long |  | counter |
-| php_fpm.pool.start_since | The time in seconds since the process pool was last started. | long | s | counter |
-| php_fpm.pool.start_time | The date/time that the process pool was last started. | long |  | counter |
+| php_fpm.pool.start_since | The time in seconds since the process pool was last started. | long | s |  |
+| php_fpm.pool.start_time | The date/time that the process pool was last started. | long |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |
 
 
@@ -272,8 +272,8 @@ An example event for `process` looks as following:
 | php_fpm.process.request.last.cpu.pct | The %cpu of the last request. This will be 0 if the process is not Idle because the calculation is done when the request processing is complete. | long | percent | gauge |
 | php_fpm.process.request.last.memory | The maximum amount of memory consumed by the last request. This will be 0 if the process is not Idle because the calculation is done when the request processing is complete. | long | byte | gauge |
 | php_fpm.process.script | The full path of the script executed by the last request. This will be '-' if not applicable (eg. status page requests). | keyword |  |  |
-| php_fpm.process.start_since | The number of seconds since the process started. | long | s | counter |
-| php_fpm.process.start_time | The date/time at which the process started. | long |  | counter |
+| php_fpm.process.start_since | The number of seconds since the process started. | long | s |  |
+| php_fpm.process.start_time | The date/time at which the process started. | long |  |  |
 | php_fpm.process.state | The state of the process. | keyword |  |  |
 | process.pid | Process id. | long |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |
