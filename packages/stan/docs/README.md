@@ -204,26 +204,26 @@ An example event for `stats` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-| stan.cluster.id | The cluster ID | keyword |
-| stan.server.id | The server ID | keyword |
-| stan.stats.bytes | Number of bytes consumed across all STAN queues | long |
-| stan.stats.channels | The number of STAN channels | integer |
-| stan.stats.clients | The number of STAN clients | integer |
-| stan.stats.messages | Number of messages across all STAN queues | long |
-| stan.stats.role | If clustered, role of this node in the cluster (Leader, Follower, Candidate) | keyword |
-| stan.stats.state | The cluster / streaming configuration state (STANDALONE, CLUSTERED) | keyword |
-| stan.stats.subscriptions | The number of STAN streaming subscriptions | integer |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
+| stan.cluster.id | The cluster ID | keyword |  |
+| stan.server.id | The server ID | keyword |  |
+| stan.stats.bytes | Number of bytes consumed across all STAN queues | long | counter |
+| stan.stats.channels | The number of STAN channels | integer | gauge |
+| stan.stats.clients | The number of STAN clients | integer | gauge |
+| stan.stats.messages | Number of messages across all STAN queues | long | counter |
+| stan.stats.role | If clustered, role of this node in the cluster (Leader, Follower, Candidate) | keyword |  |
+| stan.stats.state | The cluster / streaming configuration state (STANDALONE, CLUSTERED) | keyword |  |
+| stan.stats.subscriptions | The number of STAN streaming subscriptions | integer | gauge |
 
 
 ### channels
