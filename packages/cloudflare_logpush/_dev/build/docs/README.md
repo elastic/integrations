@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Cloudflare Logpush](https://www.cloudflare.com/) integration allows you to monitor Access Request, Audit, CASB, Device Posture, DNS, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, NEL Report, Network Analytics, Spectrum Event, Network Session and Workers Trace Events logs. Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
+The [Cloudflare Logpush](https://www.cloudflare.com/) integration allows you to monitor Access Request, Audit, CASB, Device Posture, DNS, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Spectrum Event, Network Session and Workers Trace Events logs. Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
 The Cloudflare Logpush integration can be used in three different modes to collect data:
 - HTTP Endpoint mode - Cloudflare pushes logs directly to an HTTP endpoint hosted by your Elastic Agent.
@@ -41,6 +41,8 @@ The Cloudflare Logpush integration collects logs for the following types of even
 
 **HTTP Request**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/http_requests/).
 
+**Magic IDS**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/magic_ids_detections/).
+
 **NEL Report**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/nel_reports/).
 
 **Network Analytics**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/network_analytics_logs/).
@@ -75,6 +77,7 @@ This module has been tested against **Cloudflare version v4**.
   | Gateway HTTP               | gateway_http           |
   | Gateway Network            | gateway_network        |
   | HTTP Request               | http_request           |
+  | Magic IDS                  | magic_ids              |
   | NEL Report                 | nel_report             |
   | Network Analytics          | network_analytics_logs |
   | Zero Trust Network Session | network_session        |
@@ -244,6 +247,17 @@ Default port for HTTP Endpoint: _9563_
 {{event "http_request"}}
 
 {{fields "http_request"}}
+
+### magic_ids
+
+This is the `magic_ids` dataset.
+Default port for HTTP Endpoint: _9575_
+
+#### Example
+
+{{event "magic_ids"}}
+
+{{fields "magic_ids"}}
 
 ### nel_report
 
