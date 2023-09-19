@@ -1,12 +1,12 @@
 name: okta
 title: Okta
-version: "1.28.0"
+version: "2.0.0"
 description: Collect and parse event logs from Okta API with Elastic Agent.
 type: integration
 format_version: 2.9.0
 categories: [security, iam]
 conditions:
-  kibana.version: ^8.7.1
+  kibana.version: ^8.10.0
 icons:
   - src: /img/okta-logo.svg
     title: Okta
@@ -24,19 +24,6 @@ policy_templates:
     inputs:
       - type: httpjson
         vars:
-          - name: api_key
-            type: text
-            title: API Key
-            multi: false
-            required: true
-            show_user: true
-          - name: enable_request_tracer
-            type: bool
-            title: Enable request tracing
-            multi: false
-            required: false
-            show_user: false
-            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
           - name: http_client_timeout
             type: text
             title: HTTP Client Timeout
@@ -60,17 +47,73 @@ policy_templates:
             show_user: true
             default: 24h
             description: Initial Interval for first log pull. Supported units for this parameter are h/m/s.
+          - name: url
+            type: text
+            title: Okta System Log API URL
+            multi: false
+            required: true
+            show_user: true
+            description: This is the URL of your Okta System Log API. For example, https://dev-123456.okta.com/api/v1/logs.
+          - name: api_key
+            type: text
+            title: API Key
+            multi: false
+            required: false
+            show_user: true
+            description: "This is the API Key of your Okta service application. This is only required for the standard api key based authentication. \nDo not use this field if you are using OAuth2 authentication.\n"
+          - name: okta_domain_url
+            type: text
+            title: Okta Domain URL
+            multi: false
+            required: false
+            show_user: true
+            description: "This is the URL of your Okta domain. For example, https://dev-123456.okta.com. \nThis is only required for OAuth2 authentication. Do not use this field if you are using API Key based authentication.\n"
+          - name: client_id
+            type: text
+            title: Client ID
+            multi: false
+            required: false
+            show_user: true
+            description: "This is the Client ID of your Okta service application. This is only required for OAuth2 authentication. \nDo not use this field if you are using API Key based authentication.\n"
+          - name: jwk_json
+            type: password
+            title: JWK JSON
+            multi: false
+            required: false
+            show_user: true
+            description: "This is the private JSON Web Key (JWK) of your Okta service application. \nThis is only required for OAuth2 authentication. Do not use this field if you are using API Key based authentication.\n"
+          - name: jwk_file
+            type: text
+            title: JWK File
+            multi: false
+            required: false
+            show_user: true
+            description: |
+              This is the path to the file containing the private JSON Web Key (JWK) of your Okta service application.
+              This is only required for OAuth2 authentication. Do not use this field if you are using API Key based authentication.
+          - name: okta_scopes
+            type: text
+            title: Okta Scopes
+            multi: true
+            required: false
+            show_user: true
+            default:
+              - okta.logs.read
+            description: |
+              This is the list of 'okta.*' scopes that your Okta service application has access to.
+              This is only required for OAuth2 authentication. Do not use this field if you are using API Key based authentication.
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            multi: false
+            required: false
+            show_user: false
+            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
           - name: ssl
             type: yaml
             title: SSL
             multi: false
             required: false
-            show_user: true
-          - name: url
-            type: text
-            title: Okta System Log API Url
-            multi: false
-            required: true
             show_user: true
           - name: proxy_url
             type: text

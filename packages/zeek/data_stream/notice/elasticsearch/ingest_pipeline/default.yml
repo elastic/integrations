@@ -77,29 +77,29 @@ processors:
       field: zeek.notice.src
       target_field: source.address
       ignore_missing: true
-      if: ctx?.source?.address == null
+      if: ctx.source?.address == null
   - remove:
       field: zeek.notice.src
       ignore_missing: true
-      if: ctx?.zeek?.notice?.src == ctx?.source?.address
+      if: ctx.zeek?.notice?.src == ctx.source?.address
   - rename:
       field: zeek.notice.dst
       target_field: destination.address
       ignore_missing: true
-      if: ctx?.destination?.address == null
+      if: ctx.destination?.address == null
   - remove:
       field: zeek.notice.dst
       ignore_missing: true
-      if: ctx?.zeek?.notice?.dst == ctx?.destination?.address
+      if: ctx.zeek?.notice?.dst == ctx.destination?.address
   - rename:
       field: zeek.notice.p
       target_field: destination.port
       ignore_missing: true
-      if: ctx?.destination?.port == null
+      if: ctx.destination?.port == null
   - remove:
       field: zeek.notice.p
       ignore_missing: true
-      if: ctx?.zeek?.notice?.p == ctx?.destination?.port
+      if: ctx.zeek?.notice?.p == ctx.destination?.port
   - rename:
       field: zeek.notice.conn
       target_field: zeek.notice.connnection_id
@@ -167,27 +167,27 @@ processors:
   - set:
       field: file.size
       copy_from: zeek.notice.file.total_bytes
-      if: ctx?.zeek?.notice?.file?.total_bytes != null
+      if: ctx.zeek?.notice?.file?.total_bytes != null
   - set:
       field: file.mime_type
       copy_from: zeek.notice.file.mime_type
-      if: ctx?.zeek?.notice?.file?.mime_type != null
+      if: ctx.zeek?.notice?.file?.mime_type != null
   - set:
       field: rule.name
       copy_from: zeek.notice.note
-      if: ctx?.zeek?.notice?.note != null
+      if: ctx.zeek?.notice?.note != null
   - set:
       field: rule.description
       copy_from: zeek.notice.msg
-      if: ctx?.zeek?.notice?.msg != null
+      if: ctx.zeek?.notice?.msg != null
   - set:
       field: source.ip
       copy_from: source.address
-      if: ctx?.source?.address != null
+      if: ctx.source?.address != null
   - set:
       field: destination.ip
       copy_from: destination.address
-      if: ctx?.destination?.address != null
+      if: ctx.destination?.address != null
   - date:
       field: zeek.notice.ts
       formats:
@@ -237,22 +237,22 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
-      value: "{{source.ip}}"
-      if: "ctx?.source?.ip != null"
+      value: "{{{source.ip}}}"
+      if: "ctx.source?.ip != null"
       allow_duplicates: false
   - append:
       field: related.ip
-      value: "{{destination.ip}}"
-      if: "ctx?.destination?.ip != null"
+      value: "{{{destination.ip}}}"
+      if: "ctx.destination?.ip != null"
       allow_duplicates: false
   - append:
       field: event.type
       value: allowed
-      if: "ctx?.zeek?.notice?.dropped == false"
+      if: "ctx.zeek?.notice?.dropped == false"
   - append:
       field: event.type
       value: denied
-      if: "ctx?.zeek?.notice?.dropped == true"
+      if: "ctx.zeek?.notice?.dropped == true"
   - community_id:
       target_field: network.community_id
   - remove:
@@ -263,7 +263,7 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 on_failure:
