@@ -7,7 +7,7 @@ The Living off the Land Attack (LotL) Detection package contains a supervised ma
 
 To download the assets, click **Settings** > **Install Living off the Land Attack Detection assets**.
 
-Follow these instructions to ingest data with the ingest pipeline and enrich your indices with inference data. Then use the anomaly detection jobs in this package, and the detection rules in the `detection-rules` repo to detect LotL attacks. For more detailed information refer to [this](https://www.elastic.co/security-labs/detecting-living-off-the-land-attacks-with-new-elastic-integration) blog.
+Follow these instructions to ingest data with the ingest pipeline and enrich your indices with inference data. Then use the anomaly detection jobs in this package and associated rules in the Detection Engine, to detect LotL attacks. For more detailed information refer to [this](https://www.elastic.co/security-labs/detecting-living-off-the-land-attacks-with-new-elastic-integration) blog.
 
 *_Note_**: v2.0.0 of the package introduces breaking changes, namely updating ML job IDs and deprecating detection rules from the package. To continue recieving updates to LotL Detection, we recommend uninstalling existing ML jobs and rules associated with this package, upgrading to v2.0.0, and installing the new rules as described in the [Enable detection rules](#enable-detection-rules) section below.
 
