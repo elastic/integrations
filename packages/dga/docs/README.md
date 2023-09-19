@@ -9,7 +9,7 @@ The Domain Generated Algorithm (DGA) Detection package contains assets to detect
 
 To download the assets, click **Settings** > **Install Domain Generated Algorithm Detection assets**.
 
-Follow these instructions to ingest data with the ingest pipeline and enrich your indices with inference data. Then use these detection rules and anomaly detection jobs for Domain Generated Algorithm detection. For more detailed information refer to the [DGA blog](https://www.elastic.co/blog/supervised-and-unsupervised-machine-learning-for-dga-detection)
+Follow these instructions to ingest data with the ingest pipeline and enrich your indices with inference data. Then use the anomaly detection jobs in this package and associated rules in the Detection Engine, for Domain Generated Algorithm detection. For more detailed information refer to the [DGA blog](https://www.elastic.co/blog/supervised-and-unsupervised-machine-learning-for-dga-detection)
 
 ### (Required) Set up the ingest pipeline
 
