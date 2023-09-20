@@ -298,8 +298,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2021-11-23T18:13:18.348Z",
     "agent": {
-        "ephemeral_id": "db7739e6-da5a-49df-bb12-f418fa233701",
-        "id": "e593fba1-58d5-4446-8117-83d05e663b6c",
+        "ephemeral_id": "6a7dac67-b13a-40d5-a45a-7df6ac73e739",
+        "id": "29d48081-6d4f-4236-b959-925451410f6f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0"
@@ -327,7 +327,7 @@ An example event for `log` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "e593fba1-58d5-4446-8117-83d05e663b6c",
+        "id": "29d48081-6d4f-4236-b959-925451410f6f",
         "snapshot": false,
         "version": "8.0.0"
     },
@@ -339,7 +339,7 @@ An example event for `log` looks as following:
             "threat"
         ],
         "dataset": "cisco_meraki.log",
-        "ingested": "2023-09-13T07:54:52Z",
+        "ingested": "2023-09-20T09:12:35Z",
         "original": "\u003c134\u003e1 1637691198.348361125 MX84 security_event ids_alerted signature=1:29708:4 priority=1 timestamp=1637691198.330873 dhost=D0:AB:D5:7B:43:73 direction=ingress protocol=tcp/ip src=67.43.156.12:80 dst=10.0.3.162:56391 decision=allowed message: BROWSER-IE Microsoft Internet Explorer CSS uninitialized object access attempt detected",
         "type": [
             "info",
@@ -351,7 +351,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.23.0.4:46005"
+            "address": "172.20.0.4:40170"
         }
     },
     "network": {
@@ -623,8 +623,8 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2018-02-11T00:00:00.123Z",
     "agent": {
-        "ephemeral_id": "465ea024-83ae-485c-9e69-4b26925280d8",
-        "id": "e593fba1-58d5-4446-8117-83d05e663b6c",
+        "ephemeral_id": "9a78410b-655d-4ff4-9fd6-5c47d2b1e28b",
+        "id": "29d48081-6d4f-4236-b959-925451410f6f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0"
@@ -662,7 +662,7 @@ An example event for `events` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "e593fba1-58d5-4446-8117-83d05e663b6c",
+        "id": "29d48081-6d4f-4236-b959-925451410f6f",
         "snapshot": false,
         "version": "8.0.0"
     },
@@ -673,7 +673,7 @@ An example event for `events` looks as following:
             "network"
         ],
         "dataset": "cisco_meraki.events",
-        "ingested": "2023-09-13T07:51:55Z",
+        "ingested": "2023-09-20T09:09:47Z",
         "original": "{\"alertData\":{\"connection\":\"LTE\",\"local\":\"192.168.1.2\",\"model\":\"UML290VW\",\"provider\":\"Purview Wireless\",\"remote\":\"1.2.3.5\"},\"alertId\":\"0000000000000000\",\"alertLevel\":\"informational\",\"alertType\":\"Cellular came up\",\"alertTypeId\":\"cellular_up\",\"deviceMac\":\"00:11:22:33:44:55\",\"deviceModel\":\"MX\",\"deviceName\":\"My appliance\",\"deviceSerial\":\"Q234-ABCD-5678\",\"deviceTags\":[\"tag1\",\"tag2\"],\"deviceUrl\":\"https://n1.meraki.com//n//manage/nodes/new_list/000000000000\",\"networkId\":\"N_24329156\",\"networkName\":\"Main Office\",\"networkTags\":[],\"networkUrl\":\"https://n1.meraki.com//n//manage/nodes/list\",\"occurredAt\":\"2018-02-11T00:00:00.123450Z\",\"organizationId\":\"2930418\",\"organizationName\":\"My organization\",\"organizationUrl\":\"https://dashboard.meraki.com/o/VjjsAd/manage/organization/overview\",\"sentAt\":\"2021-10-07T08:42:00.926325Z\",\"sharedSecret\":\"secret\",\"version\":\"0.1\"}",
         "type": [
             "info",
