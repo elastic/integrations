@@ -6,6 +6,7 @@ by this integration:
 
 | AWS service log    | Log destination           |
 |--------------------|---------------------------|
+| API Gateway        | CloudWatch                |
 | CloudTrail         | CloudWatch                |
 | Network Firewall   | Firehose, CloudWatch, S3  |
 | Route53 Public DNS | CloudWatch                |

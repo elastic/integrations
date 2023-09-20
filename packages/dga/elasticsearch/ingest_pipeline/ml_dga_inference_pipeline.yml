@@ -99,3 +99,10 @@ processors:
         ctx['ml_is_dga'] = new HashMap();
         ctx['ml_is_dga']['malicious_prediction'] = malicious_prediction;
         ctx['ml_is_dga']['malicious_probability'] = malicious_probability;
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
