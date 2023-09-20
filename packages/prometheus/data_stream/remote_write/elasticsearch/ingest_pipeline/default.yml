@@ -7,6 +7,15 @@ processors:
       allow_duplicates: false
       description: Create an empty field of the object type to temporarily store list of all metrics names
   - foreach:
+      if: ctx.prometheus?.metrics != null
+      field: "prometheus.metrics"
+      processor:
+        append:
+          field: "prometheus.labels.metrics_names"
+          value: ["{{_ingest._key}}"]
+          description: Add all keys of the 'prometheus' object to the earlier created field, it includes all metric names in 'prometheus.metrics' object
+  - foreach:
+      if: ctx.prometheus?.metrics == null
       field: "prometheus"
       processor:
         append:
@@ -24,6 +33,6 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
-  - set:
+  - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
