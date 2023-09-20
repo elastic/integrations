@@ -735,7 +735,13 @@ processors:
       ignore_missing: true
   - set:
       field: network.direction
-      copy_from: aws.securityhub_findings.network.direction
+      value: inbound
+      if: "ctx.aws?.securityhub_findings?.network?.direction == 'IN'"
+      ignore_failure: true
+  - set:
+      field: network.direction
+      value: outbound
+      if: "ctx.aws?.securityhub_findings?.network?.direction == 'OUT'"
       ignore_failure: true
   - convert:
       field: json.Network.OpenPortRange.Begin
@@ -1536,14 +1542,24 @@ processors:
           ignore_failure: true
       ignore_failure: true
       if: ctx.json?.ThreatIntelIndicators != null && ctx.json?.ThreatIntelIndicators instanceof List
-  - foreach:
-      field: json.ThreatIntelIndicators
-      processor:
-        set:
-          field: threat.indicator.type
-          copy_from: _ingest._value.type
-          ignore_failure: true
-      ignore_failure: true
+  - script:
+      description: Translate log.syslog.facility.code to log.syslog.facility.name
+      lang: painless
+      params:
+        "DOMAIN": domain-name
+        "EMAIL_ADDRESS": email-addr
+        "IPV4_ADDRESS": ipv4-addr
+        "IPV6_ADDRESS": ipv6-addr
+        "MUTEX": mutex
+        "PROCESS": process
+        "URL": url
+      source: |-
+        for (indicator in ctx.json.ThreatIntelIndicators) { 
+          def type = indicator.type;
+          if (params.containsKey(type)) {
+            ctx.threat.indicator.type = params.get(type);
+          }
+        } 
       if: ctx.json?.ThreatIntelIndicators != null && ctx.json?.ThreatIntelIndicators instanceof List
   - rename:
       field: json.ThreatIntelIndicators
