@@ -11,11 +11,23 @@ processors:
 - set:
     field: cisco_meraki.event_subtype
     value: 'Site-to-Site VPN'
-    if: ctx?.msgtype.toLowerCase() == "site-to-site"
+    if: ctx.msgtype.toLowerCase() == "site-to-site"
 - set:
     field: cisco_meraki.event_subtype
     value: client_vpn_connect
-    if: ctx?.msgtype.toLowerCase() == "client_vpn_connect"
+    if: ctx.msgtype.toLowerCase() == "client_vpn_connect"
+- set:
+    field: cisco_meraki.event_subtype
+    value: blocked
+    if: ctx.msgtype.toLowerCase() == "blocked"
+- set:
+    field: cisco_meraki.event_subtype
+    value: auth
+    if: ctx.msgtype.toLowerCase() == "auth"
+- set:
+    field: cisco_meraki.event_subtype
+    value: port
+    if: ctx.msgtype.toLowerCase() == "port"
 ####################################################
 # log event with type=<value> format
 # these are dfs_event, association, disassocation, 
@@ -72,6 +84,60 @@ processors:
       SYSLOGHDR: '%{SYSLOGPRI}%{SYSLOGVER}'
       WORDORHOST: '(?:%{WORD}|%{HOSTNAME})'
     if: ctx.event.original.startsWith('<') && ctx?.cisco_meraki?.event_subtype == "Site-to-Site VPN"
+
+####################################################
+# Handle Blocked ARP
+####################################################
+- grok:
+    field: event.original
+    patterns: 
+      - '%{SYSLOGHDR}%{SPACE}%{NUMBER}%{SPACE}%{WORDORHOST}%{SPACE}events%{SPACE}%{BLOCKEDARP:_temp.blocked_arp} from %{MAC:source.mac} with IP %{IP:source.ip} on %{NOTSPACE} %{GREEDYDATA:observer.ingress.vlan.id}$'
+    pattern_definitions:
+      SYSLOGPRI: '<%{NONNEGINT:log.syslog.priority:long}>'
+      SYSLOGVER: '\b(?:\d{1,2})\b'
+      SYSLOGHDR: '%{SYSLOGPRI}%{SYSLOGVER}'
+      WORDORHOST: '(?:%{WORD}|%{HOSTNAME})'
+      BLOCKEDARP: 'Blocked ARP Packet'
+    if: ctx.event.original.startsWith('<') && ctx?.cisco_meraki?.event_subtype == "blocked"
+- gsub:
+    field: source.mac
+    pattern: '[:.]'
+    replacement: '-'
+    ignore_missing: true
+- uppercase:
+    field: source.mac
+    ignore_missing: true
+- set:
+    field: cisco_meraki.event_subtype
+    value: arp_blocked
+    if: ctx._temp?.blocked_arp != null
+
+####################################################
+# Handle Ports
+####################################################
+- grok:
+    field: event.original
+    patterns: 
+      - '(?i)%{SYSLOGHDR}%{SPACE}%{NUMBER}%{SPACE}%{WORDORHOST}%{SPACE}events%{SPACE}port %{NOTSPACE} %{PORTACTION:_temp.port_action}'
+    pattern_definitions:
+      SYSLOGPRI: '<%{NONNEGINT:log.syslog.priority:long}>'
+      SYSLOGVER: '\b(?:\d{1,2})\b'
+      SYSLOGHDR: '%{SYSLOGPRI}%{SYSLOGVER}'
+      WORDORHOST: '(?:%{WORD}|%{HOSTNAME})'
+      PORTACTION: '(?:changed stp role|status changed)'
+    if: ctx.event.original.startsWith('<') && ctx?.cisco_meraki?.event_subtype == "port"
+- gsub:
+    field: _temp.port_action
+    pattern: ' '
+    replacement: '_'
+    ignore_missing: true
+- lowercase:
+    field: _temp.port_action
+    ignore_missing: true
+- set:
+    field: cisco_meraki.event_subtype
+    value: 'port_{{{_temp.port_action}}}'
+    if: ctx._temp?.port_action != null
 
 ####################################################
 # Handle dfs_event, wpa_auth, wpa_deauth, 
