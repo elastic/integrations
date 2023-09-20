@@ -2,8 +2,14 @@
   rules:
     - target_dataset: aws.firewall_logs
       if: ctx.message != null && ctx.message.contains('firewall_name') && ctx.message.contains('availability_zone') && ctx.message.contains('event_timestamp') && ctx.message.contains('event')
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default
     - target_dataset: aws.cloudtrail
       if: ctx['aws.cloudwatch.log_stream'] != null && ctx['aws.cloudwatch.log_stream'].contains('CloudTrail')
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default
     - target_dataset: aws.route53_public_logs
       if: >-
         if (ctx['aws.cloudwatch.log_stream'] == null) {
@@ -19,6 +25,9 @@
             return true;
         }
         return false;
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default
     - target_dataset: aws.route53_resolver_logs
       if: >-
         ctx.message != null && ctx.message.contains('version') && ctx.message.contains('account_id') && ctx.message.contains('region') && 
@@ -26,6 +35,9 @@
         && ctx.message.contains('query_type') && ctx.message.contains('query_class') && ctx.message.contains('rcode')
         && ctx.message.contains('answers') && ctx.message.contains('srcaddr') && ctx.message.contains('srcport')
         && ctx.message.contains('transport') && ctx.message.contains('srcids')
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default
     - target_dataset: aws.vpcflow
       if: >-
         if (ctx.message!= null) {
@@ -35,6 +47,9 @@
           }
         }
         return false;
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default
     - target_dataset: aws.waf
       # Kinesis Data Firehose stream name begins with `aws-waf-logs-`
       # CloudWatch log group name begins with `aws-waf-logs-`
@@ -48,6 +63,9 @@
         || (ctx.message != null && ctx.message.contains('webaclld') && ctx.message.contains('terminatingRule')
         && ctx.message.contains('httpSource') && ctx.message.contains('ruleGroupList') && ctx.message.contains('rateBasedRuleList')
         && ctx.message.contains('nonTerminatingMatchingRules') && ctx.message.contains('httpRequest') && ctx.message.contains('labels'))
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default
     - target_dataset: aws.apigateway_logs
       # Supported API Gateway log format by API type
       # HTTP: requestId ip requestTime httpMethod routeKey status protocol responseLength
@@ -64,3 +82,6 @@
         || (ctx.message != null && ctx.message.contains('requestId') && ctx.message.contains('ip') && ctx.message.contains('caller')
         && ctx.message.contains('user') && ctx.message.contains('requestTime') && ctx.message.contains('eventType')
         && ctx.message.contains('routeKey') && ctx.message.contains('status') && ctx.message.contains('connectionId'))
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default
