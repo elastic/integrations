@@ -13,7 +13,7 @@ Use the Golang integration to:
 The Golang integration collects metrics using [expvar](https://pkg.go.dev/expvar) package. Metrics are exported on "/debug/vars" endpoint after [importing](https://pkg.go.dev/expvar#:~:text=into%20your%20program%3A-,import%20_%20%22expvar%22,-Index%20%C2%B6) expvar package and adding an HTTP handler.
 
 **Metrics** help you keep a record of the state of the Go (Golang) application.
-Metric data streams collected by the Golang integration include [expvar](https://pkg.go.dev/expvar) and [Heap](https://go.dev/src/runtime/mstats.go).
+Metric data streams collected by the Golang integration include [expvar](https://pkg.go.dev/expvar) and [heap](https://go.dev/src/runtime/mstats.go).
 
 Data streams:
 - `heap`:  Collects heap metrics like heap allocation and garbage collection metrics.
