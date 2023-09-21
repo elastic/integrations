@@ -1,3 +1,4 @@
+
 # Prometheus Integration
 
 This integration can collect metrics from:
@@ -27,6 +28,7 @@ performance. This parameter can only be enabled in combination with `Use Types`.
 
 When `Use Types` and `Rate Counters` are enabled, metrics are stored like this:
 
+---
 ```json
 {
   "_index": ".ds-metrics-prometheus.collector-default-000001",
@@ -100,6 +102,7 @@ When `Use Types` and `Rate Counters` are enabled, metrics are stored like this:
   ]
 }
 ```
+---
 
 #### Scraping all metrics from a Prometheus server
 
@@ -110,10 +113,12 @@ We recommend using the Remote Write dataset for this, and make Prometheus push m
 
 In order to filter out/in metrics one can make use of `Metrics Filters Include`, `Metrics Filters Exclude` settings:
 
+---
 ```yml
 Metrics Filters Include: ["node_filesystem_*"]
 Metrics Filters Exclude: ["node_filesystem_device_*"]
 ```
+---
 
 The configuration above will include only metrics that match `node_filesystem_*` pattern and do not match `node_filesystem_device_*`.
 
@@ -123,9 +128,11 @@ To keep only specific metrics, anchor the start and the end of the regexp of eac
 - the caret ^ matches the beginning of a text or line,
 - the dollar sign $ matches the end of a text.
 
+---
 ```yml
 Metrics Filters Include: ["^node_network_net_dev_group$", "^node_network_up$"]
 ```
+---
 
 {{event "collector"}}
 
@@ -139,12 +146,15 @@ The fields reported are:
 The Prometheus `remote_write` can receive metrics from a Prometheus server that
 has configured [remote_write](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write)
 setting accordingly, for instance:
+---
 ```yml
 remote_write:
   - url: "http://localhost:9201/write"
 ```
+---
 
 In Kuberneter additionally should be created a Service resource:
+---
 ```yml
 ---
 apiVersion: v1
@@ -164,11 +174,14 @@ spec:
   sessionAffinity: None
   type: ClusterIP
 ```
+---
 This Service can be used as a `remote_write.url` in Prometheus configuration:
+---
 ```yml
 remote_write:
   - url: "http://elastic-agent.kube-system:9201/write"
 ```
+---
 
 > TIP: In order to assure the health of the whole queue, the following configuration
  [parameters](https://prometheus.io/docs/practices/remote_write/#parameters) should be considered:
@@ -187,6 +200,7 @@ be able to cover `max_samples_per_send`.
 
 > TIP: To limit amount of samples that are sent by the Prometheus Server can be used [`write_relabel_configs`](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write)
 configuration. It is a relabeling, that applies to samples before sending them to the remote endpoint. Example:
+---
 ```
 remote_write:
   - url: "http://localhost:9201/write"
@@ -195,27 +209,33 @@ remote_write:
         regex: 'prometheus'
         action: keep
 ```
+---
 
 Metrics sent to the http endpoint will be put by default under the `prometheus.` prefix with their labels under `prometheus.labels`.
 A basic configuration would look like:
 
+---
 ```yml
 host: "localhost"
 port: "9201"
 ```
+---
 
 
 Also consider using secure settings for the server, configuring the module with TLS/SSL as shown:
 
+---
 ```yml
 host: "localhost"
 ssl.certificate: "/etc/pki/server/cert.pem"
 ssl.key: "/etc/pki/server/cert.key"
 port: "9201"
 ```
+---
 
 and on Prometheus side:
 
+---
 ```yml
 remote_write:
   - url: "https://localhost:9201/write"
@@ -225,6 +245,7 @@ remote_write:
         # Disable validation of the server certificate.
         #insecure_skip_verify: true
 ```
+---
 
 {{event "remote_write"}}
 
@@ -243,6 +264,7 @@ performance. This parameter can only be enabled in combination with `use_types`.
 
 When `use_types` and `rate_counters` are enabled, metrics are stored like this:
 
+---
 ```json
 {
     "prometheus": {
@@ -267,6 +289,7 @@ When `use_types` and `rate_counters` are enabled, metrics are stored like this:
     },
 }
 ```
+---
 
 #### Types' patterns
 
@@ -285,11 +308,13 @@ Summary's quantiles are handled as Gauges and Summary's sum and count as Counter
 
 Users have the flexibility to add their own patterns using the following configuration:
 
+---
 ```yml
 types_patterns:
     counter_patterns: ["_my_counter_suffix"]
     histogram_patterns: ["_my_histogram_suffix"]
 ```
+---
 
 The configuration above will consider metrics with names that match `_my_counter_suffix` as Counters
 and those that match `_my_histogram_suffix` (and have `le` in their labels) as Histograms.
@@ -300,10 +325,12 @@ To match only specific metrics, anchor the start and the end of the regexp of ea
 - the caret `^` matches the beginning of a text or line,
 - the dollar sign `$` matches the end of a text.
 
+---
 ```yml
 types_patterns:
     histogram_patterns: ["^my_histogram_metric$"]
 ```
+---
 
 Note that when using `types_patterns`, the provided patterns have higher priority than the default patterns.
 For instance if `_histogram_total` is a defined histogram pattern, then a metric like `network_bytes_histogram_total`
@@ -316,6 +343,7 @@ The Prometheus `query` dataset executes specific Prometheus queries against [Pro
 #### Instant queries
 
 The following configuration performs an instant query for `up` metric at a single point in time:
+---
 ```yml
 queries:
 - name: 'up'
@@ -323,10 +351,12 @@ queries:
   params:
     query: "up"
 ```
+---
 
 
 More complex PromQL expressions can also be used like the following one which calculates the per-second rate of HTTP
 requests as measured over the last 5 minutes.
+---
 ```yml
 queries:
 - name: "rate_http_requests_total"
@@ -334,11 +364,13 @@ queries:
   params:
     query: "rate(prometheus_http_requests_total[5m])"
 ```
+---
 
 #### Range queries
 
 
 The following example evaluates the expression `up` over a 30-second range with a query resolution of 15 seconds:
+---
 ```yml
 queries:
 - name: "up_master"
@@ -349,6 +381,7 @@ queries:
     end: "2019-12-21T23:31:00.000Z"
     step: 15s
 ```
+---
 
 {{event "query"}}
 
@@ -359,4 +392,4 @@ The fields reported are:
 ## Dashboard
 
 Prometheus integration is shipped including default overview dashboard.
-Default dashboard works only for `remote_write` datastream and `collector` darastream, if metrics are scraped from the Prometheus server metrics endpoint.
+Default dashboard works only for `remote_write` datastream and `collector` datastream, if metrics are scraped from the Prometheus server metrics endpoint.
