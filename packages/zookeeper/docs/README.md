@@ -345,8 +345,8 @@ An example event for `server` looks as following:
 | zookeeper.server.mode | Mode of the server. In an ensemble, this may either be leader or follower. Otherwise, it is standalone | keyword |  |
 | zookeeper.server.node_count | Total number of nodes | long | gauge |
 | zookeeper.server.outstanding | Number of requests queued at the server. This exceeds zero when the server receives more requests than it is able to process | long | gauge |
-| zookeeper.server.received | Number of requests received by the server | long | gauge |
-| zookeeper.server.sent | Number of requests sent by the server | long | gauge |
+| zookeeper.server.received | Number of requests received by the server | long | counter |
+| zookeeper.server.sent | Number of requests sent by the server | long | counter |
 | zookeeper.server.version_date | Date of the Zookeeper release currently in use | date |  |
 | zookeeper.server.zxid | Unique value of the Zookeeper transaction ID. The zxid consists of an epoch and a counter. It is established by the leader and is used to determine the temporal ordering of changes | keyword |  |
 
