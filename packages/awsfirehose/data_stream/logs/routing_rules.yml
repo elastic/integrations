@@ -51,8 +51,18 @@
         - "{{data_stream.namespace}}"
         - default
     - target_dataset: aws.waf
+      # Kinesis Data Firehose stream name begins with `aws-waf-logs-`
+      # CloudWatch log group name begins with `aws-waf-logs-`
+      # Log fields:
+      # timestamp formatVersion webaclld terminatingRuleId terminatingRuleType action
+      # terminatingRuleMatchDetails httpSourceName httpSourceId ruleGroupList rateBasedRuleList
+      # nonTerminatingMatchingRules httpRequest labels
       if: >-
-        (ctx['aws.kinesis.name'] != null && ctx['aws.kinesis.name'].contains('aws-waf-logs-')) || (ctx['aws.cloudwatch.log_group'] != null && ctx['aws.cloudwatch.log_group'].contains('aws-waf-logs-'))
+        (ctx['aws.kinesis.name'] != null && ctx['aws.kinesis.name'].contains('aws-waf-logs-')) 
+        || (ctx['aws.cloudwatch.log_group'] != null && ctx['aws.cloudwatch.log_group'].contains('aws-waf-logs-'))
+        || (ctx.message != null && ctx.message.contains('webaclld') && ctx.message.contains('terminatingRule')
+        && ctx.message.contains('httpSource') && ctx.message.contains('ruleGroupList') && ctx.message.contains('rateBasedRuleList')
+        && ctx.message.contains('nonTerminatingMatchingRules') && ctx.message.contains('httpRequest') && ctx.message.contains('labels'))
       namespace:
         - "{{data_stream.namespace}}"
         - default
