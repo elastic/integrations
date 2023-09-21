@@ -372,7 +372,7 @@ An example event for `falcon` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "62b999a7-d53a-460e-b8cb-bcccb4e5fbd5",
@@ -1108,7 +1108,7 @@ An example event for `fdr` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "62b999a7-d53a-460e-b8cb-bcccb4e5fbd5",
