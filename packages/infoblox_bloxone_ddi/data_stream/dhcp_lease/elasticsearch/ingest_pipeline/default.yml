@@ -140,8 +140,12 @@ processors:
       field: '@timestamp'
       copy_from: infoblox_bloxone_ddi.dhcp_lease.last_updated
       ignore_failure: true
-  - rename:
+  - json:
+      if: ctx.json?.options != null
       field: json.options
+      target_field: _temp.options
+  - rename:
+      field: _temp.options.Options
       target_field: infoblox_bloxone_ddi.dhcp_lease.options
       ignore_missing: true
   - date:
@@ -203,6 +207,9 @@ processors:
       ignore_missing: true
   - remove:
       field: json
+      ignore_missing: true
+  - remove:
+      field: _temp
       ignore_missing: true
   - remove:
       field:
