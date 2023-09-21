@@ -157,7 +157,7 @@ In `Apex`, `Login Rest`, `Logout Rest`, or `SetupAuditTrail` datastreams, if the
 ```
 Error while processing http request: failed to execute rf.collectResponse: failed to execute http client.Do: failed to execute http client.Do: failed to read http.response.body
 ```
-In this case, consider increasing `Request Timeout` configuration from `Advanced options` section of that data stream.
+In this case, consider increasing `Request timeout` configuration from `Advanced options` section of that data stream.
 
 ### Data ingestion error
 
