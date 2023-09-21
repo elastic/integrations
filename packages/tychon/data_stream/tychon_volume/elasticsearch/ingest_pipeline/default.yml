@@ -1,0 +1,51 @@
+---
+description: Pipeline for TYCHON Volumes
+processors:
+  - dot_expander:
+      field: "*"
+  - set:
+      field: "@timestamp"
+      value: "{{_ingest.timestamp}}"
+  - set:
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - set:
+      field: ecs.version
+      value: 8.8.0
+  - set:
+      field: event.kind
+      value: state
+  - set:
+      field: event.module
+      value: tychon
+  - set:
+      field: event.category
+      value: volumes
+  - set:
+      field: volume.percent_full
+      value: "0"
+      if: ctx.volume.percent_full == 'NaN'
+  - gsub:
+      field: volume.percent_full
+      pattern: "%"
+      replacement: ""   
+  - split:
+      field: host.uptime
+      separator: "\\.+"
+      target_field: tempuptime
+  - set:
+      field: host.uptime
+      value: "{{tempuptime.0}}"
+  - remove:
+      field: tempuptime            
+  - convert:
+      field: script.current_duration
+      type: float
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
+ 

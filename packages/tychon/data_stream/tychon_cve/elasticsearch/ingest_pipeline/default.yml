@@ -1,0 +1,83 @@
+---
+description: CVE Pipeline for parsing TYCHON Vulnerability Scan Results
+processors:
+  - dot_expander:
+      field: "*"
+  - set:
+      field: "@timestamp"
+      value: "{{_ingest.timestamp}}"
+  - set:
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - set:
+      field: vulnerability.due_date
+      value: "1970-01-01T00:00:01Z"
+      if: ctx.vulnerability.due_date == ''
+  - set:
+      field: ecs.version
+      value: 8.8.0
+  - set:
+      field: event.kind
+      value: state
+  - set:
+      field: event.module
+      value: tychon
+  - set:
+      field: host.uptime
+      value: "{{host.uptime}}"
+  - split:
+      field: host.uptime
+      separator: "\\.+"
+      target_field: tempuptime
+  - set:
+      field: host.uptime
+      value: "{{tempuptime.0}}"
+  - remove:
+      field: tempuptime
+  - set:
+      field: event.category
+      value: vulnerability
+  - script:
+      source: |
+              if(ctx.vulnerability?.result == 'fail'){
+                ctx.event.outcome = "failure"
+              }else if(ctx.vulnerability?.result == 'pass'){
+                ctx.event.outcome = "success"
+              }else{
+                ctx.event.outcome = "unknown"
+              }
+  - gsub:
+      field: host.mac
+      pattern: ":"
+      replacement: "-"      
+  - convert:
+      field: script.current_duration
+      type: float
+  - convert:
+      field: vulnerability.score.base
+      type: float
+  - convert:
+      field: vulnerability.year
+      type: long
+  - set: 
+      field: vulnerability.scanner.vendor
+      value: tychon
+  - set:
+      field: vulnerability.category
+      value: oval
+  - set:
+      field: vulnerability.classification
+      value: cvss
+  - set:
+      field: vulnerability.enumeration
+      value: CVE
+  - set:
+      field: vulnerability.version
+      value: "{{vulnerability.version}}"
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
