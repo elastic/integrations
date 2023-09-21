@@ -126,5 +126,6 @@ For the dashboard to work as expected, the following settings need to be configu
 
 
 ## Licensing
+
 Usage in production requires that you have a license key that permits use of machine learning features.
 
