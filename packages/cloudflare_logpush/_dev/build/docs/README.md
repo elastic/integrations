@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Cloudflare Logpush](https://www.cloudflare.com/) integration allows you to monitor Access Request, Audit, CASB, Device Posture, DNS, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Sinkhole HTTP, Spectrum Event, Network Session and Workers Trace Events logs. Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
+The [Cloudflare Logpush](https://www.cloudflare.com/) integration allows you to monitor Access Request, Audit, CASB, Device Posture, DNS, DNS Firewall, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Sinkhole HTTP, Spectrum Event, Network Session and Workers Trace Events logs. Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
 The Cloudflare Logpush integration can be used in three different modes to collect data:
 - HTTP Endpoint mode - Cloudflare pushes logs directly to an HTTP endpoint hosted by your Elastic Agent.
@@ -36,6 +36,8 @@ The Cloudflare Logpush integration collects logs for the following types of even
 ### Non Zero Trust events
 
 **DNS**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/dns_logs/).
+
+**DNS Firewall**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/dns_firewall_logs/).
 
 **Firewall Event**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/firewall_events/).
 
@@ -74,6 +76,7 @@ This module has been tested against **Cloudflare version v4**.
   | CASB findings              | casb                   |
   | Device Posture Results     | device_posture         |
   | DNS                        | dns                    |
+  | DNS Firewall               | dns_firewall           |
   | Firewall Event             | firewall_event         |
   | Gateway DNS                | gateway_dns            |
   | Gateway HTTP               | gateway_http           |
@@ -195,6 +198,17 @@ Default port for HTTP Endpoint: _9561_
 {{event "dns"}}
 
 {{fields "dns"}}
+
+### dns_firewall
+
+This is the `dns_firewall` dataset.
+Default port for HTTP Endpoint: _9577_
+
+#### Example
+
+{{event "dns_firewall"}}
+
+{{fields "dns_firewall"}}
 
 ### firewall_event
 
