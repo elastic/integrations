@@ -2,7 +2,7 @@
 
 The Domain Generated Algorithm (DGA) Detection package contains assets to detect DGA activity in your network data. This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under [Elastic License 2.0](https://www.elastic.co/licensing/elastic-license).
 
-**_Note_**: v2.0.0 of the package introduces breaking changes, namely updating ML job IDs and deprecating detection rules from the package. To continue recieving updates to DGA Detection, we recommend uninstalling existing ML jobs and rules associated with this package, upgrading to v2.0.0, and installing the new rules as described in the [Enable detection rules](#enable-detection-rules) section below.
+**_Note_**: v2.0.0 of the package introduces breaking changes, namely deprecating detection rules from the package. To continue receiving updates to DGA Detection, we recommend uninstalling existing rules associated with this package, upgrading to v2.0.0, and installing the new rules as described in the [Enable detection rules](#enable-detection-rules) section below.
 
 
 ## Configuration
@@ -34,5 +34,6 @@ You can also enable detection rules to alert on DGA activity in your environment
 
 
 ## Licensing
+
 Usage in production requires that you have a license key that permits use of machine learning features.
 
