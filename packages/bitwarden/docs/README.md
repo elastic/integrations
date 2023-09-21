@@ -73,7 +73,7 @@ An example event for `collection` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "ff2a1bfe-20b0-4bab-ad84-8609f33b69f8",
@@ -179,7 +179,7 @@ An example event for `event` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "ff2a1bfe-20b0-4bab-ad84-8609f33b69f8",
@@ -306,7 +306,7 @@ An example event for `group` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "ff2a1bfe-20b0-4bab-ad84-8609f33b69f8",
@@ -417,7 +417,7 @@ An example event for `policy` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "ff2a1bfe-20b0-4bab-ad84-8609f33b69f8",

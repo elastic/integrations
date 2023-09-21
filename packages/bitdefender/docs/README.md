@@ -466,7 +466,7 @@ An example event for `push_notifications` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f0239f6f-245e-4d57-bada-68e5f564b259",
@@ -621,7 +621,7 @@ An example event for `push_configuration` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f0239f6f-245e-4d57-bada-68e5f564b259",
@@ -720,7 +720,7 @@ An example event for `push_statistics` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f0239f6f-245e-4d57-bada-68e5f564b259",

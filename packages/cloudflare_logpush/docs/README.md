@@ -209,7 +209,7 @@ An example event for `access_request` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f4e828d2-efc6-4c31-93f3-c87b01e57a16",
@@ -412,7 +412,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f4e828d2-efc6-4c31-93f3-c87b01e57a16",
@@ -636,7 +636,7 @@ An example event for `casb` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f4e828d2-efc6-4c31-93f3-c87b01e57a16",
@@ -822,7 +822,7 @@ An example event for `device_posture` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f4e828d2-efc6-4c31-93f3-c87b01e57a16",
@@ -1016,7 +1016,7 @@ An example event for `dns` looks as following:
         }
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f4e828d2-efc6-4c31-93f3-c87b01e57a16",
@@ -1208,7 +1208,7 @@ An example event for `firewall_event` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f4e828d2-efc6-4c31-93f3-c87b01e57a16",
@@ -1558,7 +1558,7 @@ An example event for `gateway_dns` looks as following:
         "response_code": "0"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f4e828d2-efc6-4c31-93f3-c87b01e57a16",
@@ -1878,7 +1878,7 @@ An example event for `gateway_http` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f4e828d2-efc6-4c31-93f3-c87b01e57a16",
@@ -2195,7 +2195,7 @@ An example event for `gateway_network` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f4e828d2-efc6-4c31-93f3-c87b01e57a16",
@@ -2586,7 +2586,7 @@ An example event for `http_request` looks as following:
         "ip": "67.43.156.0"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f4e828d2-efc6-4c31-93f3-c87b01e57a16",
@@ -2883,7 +2883,7 @@ An example event for `nel_report` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f4e828d2-efc6-4c31-93f3-c87b01e57a16",
@@ -3167,7 +3167,7 @@ An example event for `network_analytics` looks as following:
         "port": 0
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f4e828d2-efc6-4c31-93f3-c87b01e57a16",
@@ -3493,7 +3493,7 @@ An example event for `network_session` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f4e828d2-efc6-4c31-93f3-c87b01e57a16",
@@ -3799,7 +3799,7 @@ An example event for `spectrum_event` looks as following:
         "port": 3389
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f4e828d2-efc6-4c31-93f3-c87b01e57a16",
@@ -4028,7 +4028,7 @@ An example event for `workers_trace` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f4e828d2-efc6-4c31-93f3-c87b01e57a16",
