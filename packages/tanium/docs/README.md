@@ -87,7 +87,7 @@ An example event for `action_history` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "2cc42030-c8c1-410b-8cef-c2db3ff157ec",
@@ -206,7 +206,7 @@ An example event for `client_status` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "2cc42030-c8c1-410b-8cef-c2db3ff157ec",
@@ -309,7 +309,7 @@ An example event for `discover` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "c43758c9-08d7-42f2-b258-f39e4373d45a",
@@ -429,7 +429,7 @@ An example event for `endpoint_config` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "7ac2bc6a-9f9b-4289-82db-ee2a0a7e6ef8",
@@ -551,7 +551,7 @@ An example event for `reporting` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "2cc42030-c8c1-410b-8cef-c2db3ff157ec",
@@ -663,7 +663,7 @@ An example event for `threat_response` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "7ac2bc6a-9f9b-4289-82db-ee2a0a7e6ef8",
