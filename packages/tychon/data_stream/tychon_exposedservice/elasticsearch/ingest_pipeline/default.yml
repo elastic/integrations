@@ -13,12 +13,21 @@ processors:
       field: source.ip
       value: "0.0.0.0"
       if: ctx.source.ip == ''
+  - set: 
+      field: service.name
+      value: "{{process.name}}"
+      if: "ctx.service?.name == null"
+      ignore_failure: true
   - set:
       field: ecs.version
       value: 8.8.0
   - set:
       field: event.kind
       value: state
+  - split:
+      field: host.ipv4
+      separator: ","
+      ignore_missing: true
   - set:
       field: event.module
       value: tychon
@@ -29,14 +38,23 @@ processors:
       field: host.uptime
       separator: "\\.+"
       target_field: tempuptime
+      ignore_failure: true
   - set:
       field: host.uptime
       value: "{{tempuptime.0}}"
+      ignore_failure: true
+  - set:
+      field: service.state
+      value: Running
+      if: ctx.service.state == ''
   - remove:
       field: tempuptime
+      ignore_failure: true
+      ignore_missing: true
   - convert:
       field: script.current_duration
       type: float
+      ignore_missing: true
 on_failure:
   - set:
       field: event.kind
@@ -44,4 +62,3 @@ on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
- 
