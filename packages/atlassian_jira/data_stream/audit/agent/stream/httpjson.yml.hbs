@@ -54,7 +54,8 @@ response.pagination:
       value: '[[.last_response.url.params.Get "to"]]'
   - set:
       target: url.params.offset
-      value: '[[add (toInt .last_response.body.offset) (toInt "{{ limit }}")]]'
+      value: '[[if lt (add (toInt .last_response.body.offset) (toInt "{{ limit }}")) (toInt .last_response.body.total)]][[add (toInt .last_response.body.offset) (toInt "{{ limit }}")]][[else]][[/*Stop condition for pagination*/]][[end]]'
+      fail_on_template_error: true
   - set:
       target: url.params.limit
       value: '{{limit}}'
