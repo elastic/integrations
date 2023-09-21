@@ -73,7 +73,7 @@ An example event for `dhcp_lease` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "e0bb9c9c-c3ad-47d7-882c-5fff0f458160",
@@ -255,7 +255,7 @@ An example event for `dns_config` looks as following:
         }
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "e0bb9c9c-c3ad-47d7-882c-5fff0f458160",
@@ -1283,7 +1283,7 @@ An example event for `dns_data` looks as following:
         }
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "e0bb9c9c-c3ad-47d7-882c-5fff0f458160",
