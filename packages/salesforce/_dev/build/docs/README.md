@@ -151,6 +151,14 @@ After the integration is successfully configured, clicking on the Assets tab of 
 
 ## Troubleshooting
 
+### Request timeout
+
+In `Apex`, `Login Rest`, `Logout Rest`, or `SetupAuditTrail` datastreams, if the response is getting delayed from the Salesforce server side due to any reason then the following error might occur:
+```
+Error while processing http request: failed to execute rf.collectResponse: failed to execute http client.Do: failed to execute http client.Do: failed to read http.response.body
+```
+In this case, consider increasing `Request timeout` configuration from `Advanced options` section of that data stream.
+
 ### Data ingestion error
 
 In case of data ingestion if the user finds the following type of error logs:
