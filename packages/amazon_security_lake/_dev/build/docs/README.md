@@ -59,7 +59,7 @@ The minimum **kibana.version** required is **8.11.0**.
 ### To collect data from an AWS S3 bucket or AWS SQS, follow the below steps:
 
 1. To enable and start Amazon Security Lake, follow the steps mentioned here: [`https://docs.aws.amazon.com/security-lake/latest/userguide/getting-started.html`](https://docs.aws.amazon.com/security-lake/latest/userguide/getting-started.html).
-2. Above mentioned steps will create and provide required details such as IAM roles, external id and queue url to configure AWS Security Lake Integration.
+2. Above mentioned steps will create and provide required details such as IAM roles/AWS role ID, external id and queue url to configure AWS Security Lake Integration.
 
 ### Enabling the integration in Elastic:
 
@@ -72,6 +72,8 @@ The minimum **kibana.version** required is **8.11.0**.
    - queue url
    - collect logs via S3 Bucket toggled off
    - Shared Credential File Path and Credential Profile Name / Access Key Id and Secret Access Key
+   - role ARN
+   - external id
 
    or if you want to collect logs via AWS S3, then you have to put the following details:
    - bucket arn
