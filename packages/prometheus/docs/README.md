@@ -285,7 +285,6 @@ be able to cover `max_samples_per_send`.
 
 > TIP: To limit amount of samples that are sent by the Prometheus Server can be used [`write_relabel_configs`](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write)
 configuration. It is a relabeling, that applies to samples before sending them to the remote endpoint. Example:
----
 ```
 remote_write:
   - url: "http://localhost:9201/write"
