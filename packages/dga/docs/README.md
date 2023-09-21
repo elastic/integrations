@@ -11,17 +11,17 @@ To download the assets, click **Settings** > **Install Domain Generated Algorith
 
 Follow these instructions to ingest data with the ingest pipeline and enrich your indices with inference data. Then use the anomaly detection jobs in this package and associated rules in the Detection Engine, for Domain Generated Algorithm detection. For more detailed information refer to the [DGA blog](https://www.elastic.co/blog/supervised-and-unsupervised-machine-learning-for-dga-detection)
 
-### (Required) Set up the ingest pipeline
+### Set up the ingest pipeline
 
 Once you’ve installed the package you can ingest your data using the ingest pipeline. This will enrich your incoming data with its predictions from the machine learning model.
 
-### (Optional) Add preconfigured anomaly detection jobs
+### Add preconfigured anomaly detection jobs
 
 Create a data view for the indices that are enriched by the pipeline.
 
 In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for `DGA`. When you select the card, you will see a pre-configured anomaly detection job that you can enable depending on what makes the most sense for your environment. Note this job is only useful for indices that have been enriched by the ingest pipeline.
 
-### (Optional) Enable detection rules
+### Enable detection rules
 
 You can also enable detection rules to alert on DGA activity in your environment, based on anomalies flagged by the above ML jobs. As of version 2.0.0 of this package, these rules are available as part of the Detection Engine, and can be found using the tag `Use Case: Domain Generated Algorithm Detection`. See this [documentation](https://www.elastic.co/guide/en/security/current/prebuilt-rules-management.html#load-prebuilt-rules) for more information on importing and enabling the rules.
 
