@@ -72,7 +72,7 @@ This is a current limitation in Firehose, which we are working with AWS to resol
 
     7. **Parameters**
 
-       1. Elastic recommends setting the `es_datastream_name` parameter to `logs-awsfirehose.logs-default` in order to
+       1. Elastic recommends setting the `es_datastream_name` parameter to `logs-awsfirehose-default` in order to
        leverage the routing rules defined in this integration. If this parameter is not specified, data is sent to the
        `logs-generic-default` data stream by default.
        ![Firehose Destination Settings](../img/destination-settings.png)
