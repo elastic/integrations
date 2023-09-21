@@ -55,7 +55,7 @@ An example event for `waf` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "11940e5d-16a1-424a-aeb2-97fb8029a5d0",
