@@ -424,23 +424,23 @@ An example event for `subscriptions` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-| stan.cluster.id | The cluster ID | keyword |
-| stan.server.id | The server ID | keyword |
-| stan.subscriptions.channel | The name of the STAN channel the subscription is associated with | keyword |
-| stan.subscriptions.id | The name of the STAN channel subscription (client_id) | keyword |
-| stan.subscriptions.last_sent | Last known sequence number of the subscription that was acked | long |
-| stan.subscriptions.offline | Is the subscriber marked as offline? | boolean |
-| stan.subscriptions.pending | Number of pending messages from / to the subscriber | long |
-| stan.subscriptions.queue | The name of the NATS queue that the STAN channel subscription is associated with, if any | keyword |
-| stan.subscriptions.stalled | Is the subscriber known to be stalled? | boolean |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
+| stan.cluster.id | The cluster ID | keyword |  |
+| stan.server.id | The server ID | keyword |  |
+| stan.subscriptions.channel | The name of the STAN channel the subscription is associated with | keyword |  |
+| stan.subscriptions.id | The name of the STAN channel subscription (client_id) | keyword |  |
+| stan.subscriptions.last_sent | Last known sequence number of the subscription that was acked | long | counter |
+| stan.subscriptions.offline | Is the subscriber marked as offline? | boolean |  |
+| stan.subscriptions.pending | Number of pending messages from / to the subscriber | long | gauge |
+| stan.subscriptions.queue | The name of the NATS queue that the STAN channel subscription is associated with, if any | keyword |  |
+| stan.subscriptions.stalled | Is the subscriber known to be stalled? | boolean |  |
