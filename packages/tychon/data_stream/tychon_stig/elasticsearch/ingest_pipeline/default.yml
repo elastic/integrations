@@ -14,11 +14,15 @@ processors:
       field: rule.result
       value: '{{rule.test_result}}'
   - remove:
-      if: "ctx.containsKey('rule') && ctx.rule.containsKey('test_result')"      
+      if: "ctx.containsKey('rule') && ctx.rule.containsKey('test_result')"
       field: rule.test_result
   - set:
       field: ecs.version
       value: '8.8.0'
+  - split:
+      field: host.ipv4
+      separator: ","
+      ignore_missing: true
   - set:
       field: event.kind
       value: state
@@ -32,14 +36,15 @@ processors:
       field: host.uptime
       separator: "\\.+"
       target_field: tempuptime
+      ignore_failure: true
   - set:
       field: host.uptime
       value: "{{tempuptime.0}}"
+      ignore_failure: true
   - remove:
       field: tempuptime
-  - convert:
-      field: host.uptime
-      type: long
+      ignore_failure: true
+      ignore_missing: true
   - gsub:
       field: host.mac
       pattern: ":"
@@ -47,9 +52,11 @@ processors:
   - convert:
       field: script.current_duration
       type: float
+      ignore_missing: true
   - convert:
       field: rule.weight
       type: float
+      ignore_missing: true
 on_failure:
   - set:
       field: event.kind

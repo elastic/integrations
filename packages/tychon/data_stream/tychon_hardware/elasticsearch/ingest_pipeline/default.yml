@@ -15,9 +15,16 @@ processors:
   - set:
       field: event.kind
       value: state
+  - lowercase: 
+      field: device.present
+      ignore_missing: true
   - set:
       field: event.module
       value: tychon
+  - split:
+      field: host.ipv4
+      separator: ","
+      ignore_missing: true
   - set:
       field: event.category
       value: hardware
@@ -25,44 +32,19 @@ processors:
       field: host.uptime
       separator: "\\.+"
       target_field: tempuptime
+      ignore_failure: true
   - set:
       field: host.uptime
       value: "{{tempuptime.0}}"
+      ignore_failure: true
   - remove:
       field: tempuptime
+      ignore_failure: true
+      ignore_missing: true
   - convert:
       field: script.current_duration
       type: float
-  - set:
-      field: device.id
-      value: '{{device_id}}'
-  - remove:
-      field: device_id
-  - set:
-      field: device.status
-      value: '{{status}}'
-  - remove:
-      field: status
-  - set:
-      field: device.present
-      value: '{{present}}'
-  - remove:
-      field: present
-  - set:
-      field: device.name
-      value: '{{name}}'
-  - remove:
-      field: name
-  - set:
-      field: device.manufacturer
-      value: '{{manufacturer}}'
-  - remove:
-      field: manufacturer
-  - set:
-      field: device.friendly_name
-      value: '{{friendly_name}}'
-  - remove:
-      field: friendly_name
+      ignore_missing: true
 on_failure:
   - set:
       field: event.kind
@@ -70,4 +52,3 @@ on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
- 
