@@ -9,21 +9,21 @@ To download the assets, click **Settings** > **Install Living off the Land Attac
 
 Follow these instructions to ingest data with the ingest pipeline and enrich your indices with inference data. Then use the anomaly detection jobs in this package and associated rules in the Detection Engine, to detect LotL attacks. For more detailed information refer to [this](https://www.elastic.co/security-labs/detecting-living-off-the-land-attacks-with-new-elastic-integration) blog.
 
-*_Note_**: v2.0.0 of the package introduces breaking changes, namely updating ML job IDs and deprecating detection rules from the package. To continue recieving updates to LotL Detection, we recommend uninstalling existing ML jobs and rules associated with this package, upgrading to v2.0.0, and installing the new rules as described in the [Enable detection rules](#enable-detection-rules) section below.
+**_Note_**: v2.0.0 of the package introduces breaking changes, namely updating ML job IDs and deprecating detection rules from the package. To continue recieving updates to LotL Detection, we recommend uninstalling existing ML jobs and rules associated with this package, upgrading to v2.0.0, and installing the new rules as described in the [Enable detection rules](#enable-detection-rules) section below.
 
-### (Required) Set up the ingest pipeline
+### Set up the ingest pipeline
 
 Once you’ve installed the package you can ingest your data using the ingest pipeline. This will enrich your incoming data with its predictions from the machine learning model.
 
 This pipeline is designed to work with Winlogbeat and Endpoint data.
 
-### (Optional) Add preconfigured anomaly detection jobs
+### Add preconfigured anomaly detection jobs
 
 Create a data view for the indices that are enriched by the pipeline.
 
 In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for `Living off the Land Attack Detection`. When you select the card, you will see several pre-configured anomaly detection jobs that you can enable depending on what makes the most sense for your environment. Note these jobs are only useful for indices that have been enriched by the ingest pipeline.
 
-### (Optional) Enable detection rules
+### Enable detection rules
 
 You can also enable detection rules to alert on LotL activity in your environment, based on anomalies flagged by the above ML jobs. As of version 2.0.0 of this package, these rules are available as part of the Detection Engine, and can be found using the tag `Use Case: Living off the Land Attack Detection`. See this [documentation](https://www.elastic.co/guide/en/security/current/prebuilt-rules-management.html#load-prebuilt-rules) for more information on importing and enabling the rules.
 
