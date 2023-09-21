@@ -581,7 +581,6 @@ An example event for `cache` looks as following:
         "type": "prometheus"
     },
     "tags": [
-        "forwarded",
         "apache_tomcat-cache"
     ]
 }
@@ -768,8 +767,7 @@ An example event for `connection_pool` looks as following:
         "type": "prometheus"
     },
     "tags": [
-        "apache_tomcat-connection_pool",
-        "forwarded"
+        "apache_tomcat-connection_pool"
     ]
 }
 ```
@@ -946,8 +944,7 @@ An example event for `memory` looks as following:
         "type": "prometheus"
     },
     "tags": [
-        "apache_tomcat-memory",
-        "forwarded"
+        "apache_tomcat-memory"
     ]
 }
 ```
@@ -1085,7 +1082,6 @@ An example event for `request` looks as following:
         "type": "prometheus"
     },
     "tags": [
-        "forwarded",
         "apache_tomcat-request"
     ]
 }
@@ -1231,8 +1227,7 @@ An example event for `session` looks as following:
         "type": "prometheus"
     },
     "tags": [
-        "apache_tomcat-session",
-        "forwarded"
+        "apache_tomcat-session"
     ]
 }
 ```
@@ -1401,8 +1396,7 @@ An example event for `thread_pool` looks as following:
         "type": "prometheus"
     },
     "tags": [
-        "apache_tomcat-thread_pool",
-        "forwarded"
+        "apache_tomcat-thread_pool"
     ]
 }
 ```
