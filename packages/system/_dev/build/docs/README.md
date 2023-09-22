@@ -185,8 +185,7 @@ This data should be available without elevated permissions.
 The System `diskio` data stream provides disk IO metrics collected from the
 operating system. One event is created for each disk mounted on the system.
 
-> Note: For retrieving Linux-specific diskio metrics, use the [Linux](https://docs.elastic.co/integrations/linux) integration.
-
+> Note: For retrieving Linux-specific disk I/O metrics, use the [Linux](https://docs.elastic.co/integrations/linux) integration.
 
 #### Supported operating systems
 
