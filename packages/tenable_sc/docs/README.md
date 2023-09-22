@@ -29,13 +29,13 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-08-08T15:37:04.663Z",
+    "@timestamp": "2023-09-22T18:00:18.358Z",
     "agent": {
-        "ephemeral_id": "1617d168-7191-4320-9b5c-87e37ab77b0f",
-        "id": "0a5c1566-c6fd-4e91-b96d-4083445a000e",
+        "ephemeral_id": "87389b96-4d7e-4a86-a055-4d34d251c4c0",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.0"
+        "version": "8.10.1"
     },
     "data_stream": {
         "dataset": "tenable_sc.asset",
@@ -43,21 +43,21 @@ An example event for `asset` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "0a5c1566-c6fd-4e91-b96d-4083445a000e",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "snapshot": false,
-        "version": "8.9.0"
+        "version": "8.10.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "host"
         ],
-        "created": "2023-08-08T15:37:04.663Z",
+        "created": "2023-09-22T18:00:18.358Z",
         "dataset": "tenable_sc.asset",
-        "ingested": "2023-08-08T15:37:07Z",
+        "ingested": "2023-09-22T18:00:21Z",
         "kind": "state",
         "original": "{\"biosGUID\":\"9e8c4d43-982b-4405-a76c-d56c1d6cf117\",\"dnsName\":\"rnkmigauv2l8zeyf.example\",\"hostUniqueness\":\"repositoryID,ip,dnsName\",\"ip\":\"0.0.228.153\",\"lastAuthRun\":\"\",\"lastUnauthRun\":\"\",\"macAddress\":\"00:00:00:47:05:0d\",\"mcafeeGUID\":\"\",\"netbiosName\":\"UNKNOWN\\\\RNKMIGAUV2L8ZEYF.EXAMPLE\",\"osCPE\":\"cpe:/o:microsoft:windows_10:::x64-home\",\"pluginSet\":\"201901281542\",\"policyName\":\"Basic Agent Scan\",\"repository\":{\"dataFormat\":\"IPv4\",\"description\":\"\",\"id\":\"2\",\"name\":\"Staged-Large\",\"sciID\":\"1\"},\"score\":\"307\",\"severityCritical\":\"6\",\"severityHigh\":\"4\",\"severityInfo\":\"131\",\"severityLow\":\"0\",\"severityMedium\":\"9\",\"total\":\"150\",\"tpmID\":\"\",\"uniqueness\":\"repositoryID,ip,dnsName\",\"uuid\":\"4add65d0-27fc-491c-91ba-3f498a61f49e\"}",
         "type": [
@@ -227,11 +227,11 @@ An example event for `plugin` looks as following:
 {
     "@timestamp": "2021-09-27T01:33:53.000Z",
     "agent": {
-        "ephemeral_id": "90385a6e-35a8-4f5d-bb93-5e1849ef9008",
-        "id": "0a5c1566-c6fd-4e91-b96d-4083445a000e",
+        "ephemeral_id": "7f93fe8a-bef7-46ec-8a36-47d48e2f8e7c",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.0"
+        "version": "8.10.1"
     },
     "data_stream": {
         "dataset": "tenable_sc.plugin",
@@ -239,18 +239,18 @@ An example event for `plugin` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "0a5c1566-c6fd-4e91-b96d-4083445a000e",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "snapshot": false,
-        "version": "8.9.0"
+        "version": "8.10.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-08-08T15:38:01.812Z",
+        "created": "2023-09-22T18:01:18.245Z",
         "dataset": "tenable_sc.plugin",
-        "ingested": "2023-08-08T15:38:04Z",
+        "ingested": "2023-09-22T18:01:21Z",
         "kind": "event",
         "original": "{\"baseScore\":\"7.8\",\"checkType\":\"remote\",\"copyright\":\"This script is Copyright (C) 2003-2020 John Lampe\",\"cpe\":\"\",\"cvssV3BaseScore\":null,\"cvssV3TemporalScore\":null,\"cvssV3Vector\":\"\",\"cvssV3VectorBF\":\"0\",\"cvssVector\":\"AV:N/AC:L/Au:N/C:N/I:N/A:C/E:U/RL:OF/RC:C\",\"cvssVectorBF\":\"2164920932\",\"dependencies\":\"find_service1.nasl,http_version.nasl,www_fingerprinting_hmap.nasl\",\"description\":\"Microsoft IIS, running Frontpage extensions, is vulnerable to a remote denial of service attack usually called the 'malformed web submission' vulnerability.  An attacker, exploiting this vulnerability, will be able to render the service unusable.\\n\\nIf this machine serves a business-critical function, there could be an impact to the business.\",\"dstPort\":null,\"exploitAvailable\":\"false\",\"exploitEase\":\"No known exploits are available\",\"exploitFrameworks\":\"\",\"family\":{\"id\":\"11\",\"name\":\"Web Servers\",\"type\":\"active\"},\"id\":\"10585\",\"md5\":\"38b2147401eb5c3a15af52182682f345\",\"modifiedTime\":\"1632706433\",\"name\":\"Microsoft IIS Frontpage Server Extensions (FPSE) Malformed Form DoS\",\"patchModDate\":\"-1\",\"patchPubDate\":\"-1\",\"pluginModDate\":\"1591963200\",\"pluginPubDate\":\"1058875200\",\"protocol\":\"\",\"requiredPorts\":\"\",\"requiredUDPPorts\":\"\",\"riskFactor\":\"High\",\"seeAlso\":\"https://docs.microsoft.com/en-us/security-updates/SecurityBulletins/2000/ms00-100\",\"solution\":\"Microsoft has released a set of patches for IIS 4.0 and 5.0.\",\"sourceFile\":\"IIS_frontpage_DOS_2.nasl\",\"srcPort\":null,\"stigSeverity\":null,\"synopsis\":\"The remote web server is vulnerable to a denial of service\",\"temporalScore\":\"5.8\",\"type\":\"active\",\"version\":\"1.28\",\"vprContext\":\"[{\\\"id\\\":\\\"age_of_vuln\\\",\\\"name\\\":\\\"Vulnerability Age\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"730 days +\\\"},{\\\"id\\\":\\\"cvssV3_impactScore\\\",\\\"name\\\":\\\"CVSS v3 Impact Score\\\",\\\"type\\\":\\\"number\\\",\\\"value\\\":3.6000000000000001},{\\\"id\\\":\\\"exploit_code_maturity\\\",\\\"name\\\":\\\"Exploit Code Maturity\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Unproven\\\"},{\\\"id\\\":\\\"product_coverage\\\",\\\"name\\\":\\\"Product Coverage\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Low\\\"},{\\\"id\\\":\\\"threat_intensity_last_28\\\",\\\"name\\\":\\\"Threat Intensity\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Very Low\\\"},{\\\"id\\\":\\\"threat_recency\\\",\\\"name\\\":\\\"Threat Recency\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"\\u003e 365 days\\\"},{\\\"id\\\":\\\"threat_sources_last_28\\\",\\\"name\\\":\\\"Threat Sources\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"No recorded events\\\"}]\",\"vprScore\":\"4.4\",\"vulnPubDate\":\"977486400\",\"xrefs\":\"CVE:CVE-2001-0096, BID:2144, MSFT:MS00-100, MSKB:280322\"}",
         "type": [
@@ -492,11 +492,11 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2021-09-25T16:08:45.000Z",
     "agent": {
-        "ephemeral_id": "4ec981c8-77b2-45cc-b184-d912c9662747",
-        "id": "0a5c1566-c6fd-4e91-b96d-4083445a000e",
+        "ephemeral_id": "4e859f73-e37a-4b88-926b-cb67d01e20e1",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.0"
+        "version": "8.10.1"
     },
     "data_stream": {
         "dataset": "tenable_sc.vulnerability",
@@ -504,21 +504,22 @@ An example event for `vulnerability` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "0a5c1566-c6fd-4e91-b96d-4083445a000e",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "snapshot": false,
-        "version": "8.9.0"
+        "version": "8.10.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
-            "threat"
+            "threat",
+            "vulnerability"
         ],
-        "created": "2023-08-08T15:38:56.843Z",
+        "created": "2023-09-22T18:02:19.559Z",
         "dataset": "tenable_sc.vulnerability",
-        "ingested": "2023-08-08T15:38:59Z",
+        "ingested": "2023-09-22T18:02:22Z",
         "kind": "event",
         "original": "{\"acceptRisk\":\"0\",\"baseScore\":\"0.0\",\"bid\":\"\",\"checkType\":\"remote\",\"cpe\":\"\",\"cve\":\"CVE-1999-0524\",\"cvssV3BaseScore\":\"0.0\",\"cvssV3TemporalScore\":\"\",\"cvssV3Vector\":\"AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N\",\"cvssVector\":\"AV:L/AC:L/Au:N/C:N/I:N/A:N\",\"description\":\"The remote host answers to an ICMP timestamp request.  This allows an attacker to know the date that is set on the targeted machine, which may assist an unauthenticated, remote attacker in defeating time-based authentication protocols.\\n\\nTimestamps returned from machines running Windows Vista / 7 / 2008 / 2008 R2 are deliberately incorrect, but usually within 1000 seconds of the actual system time.\",\"dnsName\":\"_gateway.lxd\",\"exploitAvailable\":\"No\",\"exploitEase\":\"\",\"exploitFrameworks\":\"\",\"family\":{\"id\":\"30\",\"name\":\"General\",\"type\":\"active\"},\"firstSeen\":\"1551284872\",\"hasBeenMitigated\":\"0\",\"hostUniqueness\":\"repositoryID,ip,dnsName\",\"ip\":\"10.238.64.1\",\"ips\":\"10.238.64.1\",\"lastSeen\":\"1632586125\",\"macAddress\":\"00:16:3e:a1:12:f7\",\"netbiosName\":\"\",\"operatingSystem\":\"Linux Kernel 2.6\",\"patchPubDate\":\"-1\",\"pluginID\":\"10114\",\"pluginInfo\":\"10114 (0/1) ICMP Timestamp Request Remote Date Disclosure\",\"pluginModDate\":\"1570190400\",\"pluginName\":\"ICMP Timestamp Request Remote Date Disclosure\",\"pluginPubDate\":\"933508800\",\"pluginText\":\"\\u003cplugin_output\\u003eThe remote clock is synchronized with the local clock.\\n\\u003c/plugin_output\\u003e\",\"port\":\"0\",\"protocol\":\"ICMP\",\"recastRisk\":\"0\",\"repository\":{\"dataFormat\":\"IPv4\",\"description\":\"\",\"id\":\"1\",\"name\":\"Live\",\"sciID\":\"1\"},\"riskFactor\":\"None\",\"seeAlso\":\"\",\"severity\":{\"description\":\"Informative\",\"id\":\"0\",\"name\":\"Info\"},\"solution\":\"Filter out the ICMP timestamp requests (13), and the outgoing ICMP timestamp replies (14).\",\"stigSeverity\":\"\",\"synopsis\":\"It is possible to determine the exact time set on the remote host.\",\"temporalScore\":\"\",\"uniqueness\":\"repositoryID,ip,dnsName\",\"uuid\":\"\",\"version\":\"1.48\",\"vprContext\":\"[{\\\"id\\\":\\\"age_of_vuln\\\",\\\"name\\\":\\\"Vulnerability Age\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"730 days +\\\"},{\\\"id\\\":\\\"cvssV3_impactScore\\\",\\\"name\\\":\\\"CVSS v3 Impact Score\\\",\\\"type\\\":\\\"number\\\",\\\"value\\\":0},{\\\"id\\\":\\\"exploit_code_maturity\\\",\\\"name\\\":\\\"Exploit Code Maturity\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Unproven\\\"},{\\\"id\\\":\\\"product_coverage\\\",\\\"name\\\":\\\"Product Coverage\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Very High\\\"},{\\\"id\\\":\\\"threat_intensity_last_28\\\",\\\"name\\\":\\\"Threat Intensity\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Very Low\\\"},{\\\"id\\\":\\\"threat_recency\\\",\\\"name\\\":\\\"Threat Recency\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"No recorded events\\\"},{\\\"id\\\":\\\"threat_sources_last_28\\\",\\\"name\\\":\\\"Threat Sources\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"No recorded events\\\"}]\",\"vprScore\":\"0.8\",\"vulnPubDate\":\"788961600\",\"xref\":\"CWE #200\"}",
         "type": [
