@@ -13,6 +13,7 @@ by this integration:
 | Network Firewall   | Firehose, CloudWatch, S3 |
 | Route53 Public DNS | CloudWatch               |
 | Route53 Resolver   | Firehose, CloudWatch, S3 |
+| S3 access          | S3                       |
 | VPC Flow           | Firehose, CloudWatch, S3 |
 | WAF                | Firehose, CloudWatch. S3 |
 
