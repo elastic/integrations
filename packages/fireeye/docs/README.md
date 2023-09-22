@@ -194,7 +194,7 @@ An example event for `nx` looks as following:
         "port": 10001
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "8b10c3ab-9f4b-4ca0-b5ad-b6200b7fe65d",
