@@ -47,13 +47,13 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-07-24T14:20:13.467Z",
+    "@timestamp": "2023-09-22T00:45:03.084Z",
     "agent": {
-        "ephemeral_id": "6602c8b6-3007-4b99-8871-28728195e542",
-        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
+        "ephemeral_id": "a49326d0-27d0-40d4-852c-727ac53e5f8d",
+        "id": "badbaba5-f530-4934-9eaa-c642f377fae2",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.2"
+        "version": "8.8.1"
     },
     "cloud": {
         "account": {
@@ -73,9 +73,9 @@ An example event for `log` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
+        "id": "badbaba5-f530-4934-9eaa-c642f377fae2",
         "snapshot": false,
-        "version": "8.8.2"
+        "version": "8.8.1"
     },
     "event": {
         "action": "Execution",
@@ -88,15 +88,14 @@ An example event for `log` looks as following:
         "duration": 101466100,
         "end": "2021-01-26T20:31:33.0577322Z",
         "id": "da637472900382838869_1364969609",
-        "ingested": "2023-07-24T14:20:16Z",
+        "ingested": "2023-09-22T00:45:06Z",
         "kind": "alert",
         "provider": "defender_endpoint",
         "severity": 2,
         "start": "2021-01-26T20:31:32.9562661Z",
         "timezone": "UTC",
         "type": [
-            "user",
-            "creation",
+            "info",
             "start"
         ]
     },
