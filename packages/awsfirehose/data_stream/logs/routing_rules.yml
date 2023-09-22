@@ -86,20 +86,10 @@
         - "{{data_stream.namespace}}"
         - default
     - target_dataset: aws.cloudfront_logs
-      # Define a regular expression pattern to check if log starts with
-      # 2019-12-04 21:02:31 LAX1 392 89.160.20.112 ...
-      if: >-
-        ctx.message != null && ctx.message =~ /^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\s[a-zA-Z0-9-]+\s\d+\s(\d+\.\d+\.\d+\.\d+|[a-fA-F0-9:]+)/
-      namespace:
-        - "{{data_stream.namespace}}"
-        - default
-    - target_dataset: aws.elb_logs
-      # Classic Load Balancer: 14 fields
-      # Application Load Balancer: 28 fields
-      # Network Load Balancer: 21 fields
+      # CloudFront log contains 33 fields
       if: >-
         if (ctx.message!= null) {
-          int tokenCount = 0;
+          int tokenCount = 1;
           boolean insideQuotes = false;
           for (int i = 0; i < ctx.message.length(); i++) {
               String c = String.valueOf(ctx.message.charAt(i));
@@ -109,7 +99,31 @@
                   insideQuotes = !insideQuotes;
               }
           }
-          if ((tokenCount==14) || (tokenCount==28) || (tokenCount==21)){
+          if (tokenCount==33) {
+              return true;
+          }
+        }
+        return false;
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default
+    - target_dataset: aws.elb_logs
+      # Classic Load Balancer: 15 fields
+      # Application Load Balancer: 29 fields
+      # Network Load Balancer: 22 fields
+      if: >-
+        if (ctx.message!= null) {
+          int tokenCount = 1;
+          boolean insideQuotes = false;
+          for (int i = 0; i < ctx.message.length(); i++) {
+              String c = String.valueOf(ctx.message.charAt(i));
+              if (c.equals(" ") && !insideQuotes) {
+                  tokenCount++;
+              } else if (c.equals("\"")) {
+                  insideQuotes = !insideQuotes;
+              }
+          }
+          if (tokenCount==15 || tokenCount==29 || tokenCount==22){
               return true;
           }
         }
@@ -118,10 +132,10 @@
         - "{{data_stream.namespace}}"
         - default
     - target_dataset: aws.s3access
-      # S3 access log always has 24 fields total
+      # S3 access log always has 25 fields total
       if: >-
         if (ctx.message!= null) {
-          int tokenCount = 0;
+          int tokenCount = 1;
           boolean insideQuotes = false;
           for (int i = 0; i < ctx.message.length(); i++) {
               String c = String.valueOf(ctx.message.charAt(i));
@@ -131,7 +145,7 @@
                   insideQuotes = !insideQuotes;
               }
           }
-          if (tokenCount==24) {
+          if (tokenCount==25) {
               return true;
           }
         }
