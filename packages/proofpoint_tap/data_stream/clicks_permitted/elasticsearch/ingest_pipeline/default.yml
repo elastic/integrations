@@ -3,7 +3,7 @@ description: Pipeline for parsing Proofpoint TAP permitted clicks logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.9.0'
+      value: '8.10.0'
   - rename:
       field: message
       target_field: event.original
@@ -24,8 +24,12 @@ processors:
       value: email
       ignore_failure: true
   - append:
-      field: event.type
+      field: event.action
       value: allowed
+      ignore_failure: true
+  - append:
+      field: event.type
+      value: info
       ignore_failure: true
   - set:
       field: event.kind
