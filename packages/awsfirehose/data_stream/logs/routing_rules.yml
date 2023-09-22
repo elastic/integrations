@@ -85,3 +85,24 @@
       namespace:
         - "{{data_stream.namespace}}"
         - default
+    - target_dataset: aws.cloudfront_logs
+      # Define a regular expression pattern to check if log starts with
+      # 2019-12-04 21:02:31 LAX1 392 89.160.20.112 ...
+      if: >-
+        ctx.message != null && ctx.message =~ /^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\s[a-zA-Z0-9-]+\s\d+\s(\d+\.\d+\.\d+\.\d+|[a-fA-F0-9:]+)/
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default
+    - target_dataset: aws.elb_logs
+      # If aws.s3.object.key exists, check if aws.s3.object.key value contains `elasticloadbalancing`
+      # Classic Load Balancer: timestamp elb client:port backend:port ...
+      # Application Load Balancer: type timestamp elb client:port target:port ...
+      # Network Load Balancer: type version timestamp elb listener client:port destination:port...
+      # common part: "client:port destination:port"
+      if: >-
+        (ctx['aws.s3.object.key'] != null && ctx['aws.s3.object.key'].contains('elasticloadbalancing')) || 
+        (ctx.message != null && ctx.message =~ /.*\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5})|([0-9a-fA-F:.]+:\d{1,5})\s
+        (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5})|([0-9a-fA-F:.]+:\d{1,5})\s-?\d+(\.\d+)?\s/)
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default
