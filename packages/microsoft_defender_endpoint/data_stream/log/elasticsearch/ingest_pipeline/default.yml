@@ -3,7 +3,7 @@ description: Pipeline for parsing Microsoft Defender for Endpoint logs
 processors:
   - set:
       field: ecs.version
-      value: '8.9.0'
+      value: '8.10.0'
   - rename:
       field: message
       target_field: event.original
@@ -103,12 +103,11 @@ processors:
       if: ctx.json?.evidence?.entityType == 'Process'
   - append:
       field: event.type
-      value: user
+      value: access
       if: ctx.json?.evidence?.entityType == 'User'
   - append:
       field: event.type
       value:
-        - creation
         - start
       if: ctx.json?.status == 'New'
   - append:
