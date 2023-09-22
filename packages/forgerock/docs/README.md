@@ -30,7 +30,7 @@ An example event for `am_access` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -173,7 +173,7 @@ An example event for `am_activity` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -282,7 +282,7 @@ An example event for `am_authentication` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -397,7 +397,7 @@ An example event for `am_config` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -502,7 +502,7 @@ An example event for `am_core` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -591,7 +591,7 @@ An example event for `idm_access` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -726,7 +726,7 @@ An example event for `idm_activity` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -826,7 +826,7 @@ An example event for `idm_authentication` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -935,7 +935,7 @@ An example event for `idm_config` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -1031,7 +1031,7 @@ An example event for `idm_core` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -1097,7 +1097,7 @@ An example event for `idm_sync` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",

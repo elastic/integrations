@@ -33,13 +33,13 @@ An example event for `event` looks as following:
         "type": "auditbeat",
         "version": "8.3.0"
     },
-    "ecs": {
-        "version": "8.9.0"
-    },
     "data_stream": {
         "dataset": "fim.event",
         "namespace": "ep",
         "type": "logs"
+    },
+    "ecs": {
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "8921fb55-4463-4944-8dea-074038035111",

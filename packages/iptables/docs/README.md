@@ -38,7 +38,7 @@ An example event for `log` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "4e644293-3984-48e7-a63c-00be2338b58d",
