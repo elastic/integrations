@@ -15,6 +15,142 @@ to change the defaults.
 
 ## Logs
 
+### Archive Search Logs
+
+This is the `mimecast.archive_search_logs` dataset. These logs contain Mimecast archive
+search logs with the following details: search source, description and detailed
+information about the search performed. More information about these logs is available [here](
+https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-archive-search-logs/).
+
+An example event for `archive_search` looks as following:
+
+```json
+{
+    "@timestamp": "2021-03-18T18:35:49.000Z",
+    "agent": {
+        "ephemeral_id": "ef42d9ea-67ec-4494-bad4-9d47b9ed68d2",
+        "id": "f81bb806-77be-4e89-9f08-d426b37fd611",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.8.2"
+    },
+    "data_stream": {
+        "dataset": "mimecast.archive_search_logs",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.9.0"
+    },
+    "elastic_agent": {
+        "id": "f81bb806-77be-4e89-9f08-d426b37fd611",
+        "snapshot": false,
+        "version": "8.8.2"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "api"
+        ],
+        "created": "2021-03-18T18:35:49.000Z",
+        "dataset": "mimecast.archive_search_logs",
+        "ingested": "2023-09-11T06:48:05Z",
+        "kind": "event",
+        "original": "{\"createTime\":\"2021-03-18T18:35:49+0000\",\"description\":\"Message Tracking Search\",\"emailAddr\":\"admin_dhamilton@hapi1.hamilton321.net\",\"searchReason\":\"\",\"searchText\":\"\",\"source\":\"archive\"}",
+        "type": [
+            "admin"
+        ]
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "mimecast": {
+        "search_details": {
+            "description": "Message Tracking Search",
+            "source": "archive"
+        }
+    },
+    "related": {
+        "user": [
+            "admin_dhamilton",
+            "admin_dhamilton@hapi1.hamilton321.net"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "mimecast-archive-search-logs"
+    ],
+    "user": {
+        "domain": "hapi1.hamilton321.net",
+        "email": "admin_dhamilton@hapi1.hamilton321.net",
+        "name": "admin_dhamilton"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
+| event.dataset | Event dataset | constant_keyword |
+| event.id | Unique ID to describe the event. | keyword |
+| event.module | Event module | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+| mimecast.email.address | The email address of the user who performed the search. | keyword |
+| mimecast.search_details.description | The description of the search if any. | keyword |
+| mimecast.search_details.path | The search path if any. | keyword |
+| mimecast.search_details.reason | The search reason entered when the search was executed if any. | keyword |
+| mimecast.search_details.source | The search source context | keyword |
+| mimecast.search_details.text | The text used in the search. | keyword |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.email | User email address. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
+
+
 ### Audit Events
 
 This is the `mimecast.audit_events` dataset. These logs contain Mimecast audit

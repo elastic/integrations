@@ -213,6 +213,7 @@ The `cisco_meraki.log` dataset provides events from the configured syslog server
 | observer.egress.interface.name | Interface name as reported by the system. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
+| observer.ingress.vlan.id | VLAN ID as reported by the observer. | keyword |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.product | The product name of the observer. | keyword |
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
@@ -323,7 +324,7 @@ An example event for `log` looks as following:
         "port": 56391
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "878982e9-a174-4ed8-abe3-19378c1473de",
@@ -658,7 +659,7 @@ An example event for `events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "878982e9-a174-4ed8-abe3-19378c1473de",
