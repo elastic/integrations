@@ -40,7 +40,7 @@ An example event for `archive_search` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f81bb806-77be-4e89-9f08-d426b37fd611",
@@ -176,7 +176,7 @@ An example event for `audit_events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
@@ -328,7 +328,7 @@ An example event for `dlp` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
@@ -453,7 +453,7 @@ An example event for `siem` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
@@ -655,7 +655,7 @@ An example event for `threat_intel_malware_customer` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
@@ -811,7 +811,7 @@ An example event for `threat_intel_malware_grid` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
@@ -970,7 +970,7 @@ An example event for `ttp_ap` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
@@ -1131,7 +1131,7 @@ An example event for `ttp_ip` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
@@ -1305,7 +1305,7 @@ An example event for `ttp_url` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
