@@ -127,11 +127,13 @@ curl --location --request POST 'https://api.cloudflare.com/client/v4/zones/<ZONE
 --header 'Content-Type: application/json' \
 --data-raw '{
     "name":"<public domain>",
-    "destination_conf": "https://<public domain>:<public port>?header_<secret_header>=<secret_value>",
-    "dataset": "http_requests",
+    "destination_conf": "https://<public domain>:<public port>/<dataset path>?header_<secret_header>=<secret_value>",
+    "dataset": "audit",
     "logpull_options": "fields=RayID,EdgeStartTimestamp&timestamps=rfc3339"
 }'
 ```
+- Default port for the HTTP Endpoint is _9560_.
+- When using the same port for more than one dataset, be sure to specify different dataset paths.
 
 ### Enabling the integration in Elastic
 1. In Kibana, go to Management > Integrations
@@ -147,7 +149,6 @@ curl --location --request POST 'https://api.cloudflare.com/client/v4/zones/<ZONE
 ### access_request
 
 This is the `access_request` dataset.
-Default port for HTTP Endpoint: _9572_
 
 #### Example
 
@@ -363,7 +364,7 @@ An example event for `access_request` looks as following:
 ### audit
 
 This is the `audit` dataset.
-Default port for HTTP Endpoint: _9560_
+
 
 #### Example
 
@@ -551,7 +552,6 @@ An example event for `audit` looks as following:
 ### casb
 
 This is the `casb` dataset.
-Default port for HTTP Endpoint: _9571_
 
 #### Example
 
@@ -768,7 +768,6 @@ An example event for `casb` looks as following:
 ### device_posture
 
 This is the `device_posture` dataset.
-Default port for HTTP Endpoint: _9573_
 
 #### Example
 
@@ -975,7 +974,6 @@ An example event for `device_posture` looks as following:
 ### dns
 
 This is the `dns` dataset.
-Default port for HTTP Endpoint: _9561_
 
 #### Example
 
@@ -1134,7 +1132,6 @@ An example event for `dns` looks as following:
 ### dns_firewall
 
 This is the `dns_firewall` dataset.
-Default port for HTTP Endpoint: _9577_
 
 #### Example
 
@@ -1144,8 +1141,8 @@ An example event for `dns_firewall` looks as following:
 {
     "@timestamp": "2023-09-19T12:30:00.000Z",
     "agent": {
-        "ephemeral_id": "cd6c4865-e3e5-4639-919d-8c87edd94f75",
-        "id": "9470fa95-0c43-47f7-b568-9f93f6efaf41",
+        "ephemeral_id": "e6695261-9e3f-4227-aa72-baa589ec4eaf",
+        "id": "e0bfaeb7-64d9-40b9-8534-3d0e780f33cf",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.10.1"
@@ -1199,7 +1196,7 @@ An example event for `dns_firewall` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "9470fa95-0c43-47f7-b568-9f93f6efaf41",
+        "id": "e0bfaeb7-64d9-40b9-8534-3d0e780f33cf",
         "snapshot": false,
         "version": "8.10.1"
     },
@@ -1209,7 +1206,7 @@ An example event for `dns_firewall` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.dns_firewall",
-        "ingested": "2023-09-21T14:35:01Z",
+        "ingested": "2023-09-22T16:49:28Z",
         "kind": "event",
         "original": "{\"ClientResponseCode\":0,\"ClusterID\":\"CLUSTER-001\",\"ColoCode\":\"SFO\",\"EDNSSubnet\":\"67.43.156.0\",\"EDNSSubnetLength\":24,\"QueryDO\":true,\"QueryName\":\"example.com\",\"QueryRD\":true,\"QuerySize\":60,\"QueryTCP\":false,\"QueryType\":1,\"ResponseCached\":true,\"ResponseCachedStale\":false,\"SourceIP\":\"67.43.156.2\",\"Timestamp\":\"2023-09-19T12:30:00Z\",\"UpstreamIP\":\"81.2.69.144\",\"UpstreamResponseCode\":0,\"UpstreamResponseTimeMs\":30}",
         "type": [
@@ -1346,7 +1343,6 @@ An example event for `dns_firewall` looks as following:
 ### firewall_event
 
 This is the `firewall_event` dataset.
-Default port for HTTP Endpoint: _9562_
 
 #### Example
 
@@ -1622,7 +1618,6 @@ An example event for `firewall_event` looks as following:
 ### gateway_dns
 
 This is the `gateway_dns` dataset.
-Default port for HTTP Endpoint: _9567_
 
 #### Example
 
@@ -1986,7 +1981,6 @@ An example event for `gateway_dns` looks as following:
 ### gateway_http
 
 This is the `gateway_http` dataset.
-Default port for HTTP Endpoint: _9568_
 
 #### Example
 
@@ -2336,7 +2330,6 @@ An example event for `gateway_http` looks as following:
 ### gateway_network
 
 This is the `gateway_network` dataset.
-Default port for HTTP Endpoint: _9569_
 
 #### Example
 
@@ -2614,7 +2607,6 @@ An example event for `gateway_network` looks as following:
 ### http_request
 
 This is the `http_request` dataset.
-Default port for HTTP Endpoint: _9563_
 
 #### Example
 
@@ -3059,7 +3051,6 @@ An example event for `http_request` looks as following:
 ### magic_ids
 
 This is the `magic_ids` dataset.
-Default port for HTTP Endpoint: _9575_
 
 #### Example
 
@@ -3069,11 +3060,11 @@ An example event for `magic_ids` looks as following:
 {
     "@timestamp": "2023-09-11T03:02:57.000Z",
     "agent": {
-        "ephemeral_id": "8abb9e44-6835-4c06-a51d-42f360c92111",
-        "id": "579ce67a-06b9-42a3-a0a2-391ff4ae6f77",
+        "ephemeral_id": "ae1e024e-d035-4342-b6bf-c123af3fce06",
+        "id": "e0bfaeb7-64d9-40b9-8534-3d0e780f33cf",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.1"
+        "version": "8.10.1"
     },
     "cloudflare_logpush": {
         "magic_ids": {
@@ -3130,9 +3121,9 @@ An example event for `magic_ids` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "579ce67a-06b9-42a3-a0a2-391ff4ae6f77",
+        "id": "e0bfaeb7-64d9-40b9-8534-3d0e780f33cf",
         "snapshot": false,
-        "version": "8.8.1"
+        "version": "8.10.1"
     },
     "event": {
         "action": "pass",
@@ -3142,7 +3133,7 @@ An example event for `magic_ids` looks as following:
             "intrusion_detection"
         ],
         "dataset": "cloudflare_logpush.magic_ids",
-        "ingested": "2023-09-19T15:54:03Z",
+        "ingested": "2023-09-22T16:55:04Z",
         "kind": "event",
         "original": "{\"Action\":\"pass\",\"ColoCity\":\"Tokyo\",\"ColoCode\":\"NRT\",\"DestinationIP\":\"89.160.20.129\",\"DestinationPort\":80,\"Protocol\":\"tcp\",\"SignatureID\":2031296,\"SignatureMessage\":\"ET CURRENT_EVENTS [Fireeye] POSSIBLE HackTool.TCP.Rubeus.[User32LogonProcesss]\",\"SignatureRevision\":1,\"SourceIP\":\"67.43.156.2\",\"SourcePort\":44667,\"Timestamp\":\"2023-09-11T03:02:57Z\"}",
         "type": [
@@ -3290,7 +3281,6 @@ An example event for `magic_ids` looks as following:
 ### nel_report
 
 This is the `nel_report` dataset.
-Default port for HTTP Endpoint: _9564_
 
 #### Example
 
@@ -3433,7 +3423,6 @@ An example event for `nel_report` looks as following:
 ### network_analytics
 
 This is the `network_analytics` dataset.
-Default port for HTTP Endpoint: _9565_
 
 #### Example
 
@@ -3824,7 +3813,6 @@ An example event for `network_analytics` looks as following:
 ### network_session
 
 This is the `network_session` dataset.
-Default port for HTTP Endpoint: _9570_
 
 #### Example
 
@@ -4173,7 +4161,6 @@ An example event for `network_session` looks as following:
 ### sinkhole_http
 
 This is the `sinkhole_http` dataset.
-Default port for HTTP Endpoint: _9576_
 
 #### Example
 
@@ -4183,11 +4170,11 @@ An example event for `sinkhole_http` looks as following:
 {
     "@timestamp": "2023-09-19T12:00:00.000Z",
     "agent": {
-        "ephemeral_id": "477aae22-afc4-4c39-b4da-6ee0e573afdd",
-        "id": "aea3dee0-33d9-41c9-ab05-7cc6031db9fd",
+        "ephemeral_id": "401e5b5a-23fc-42e7-9e69-24d66d61a929",
+        "id": "e0bfaeb7-64d9-40b9-8534-3d0e780f33cf",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.1"
+        "version": "8.10.1"
     },
     "cloudflare_logpush": {
         "sinkhole_http": {
@@ -4256,9 +4243,9 @@ An example event for `sinkhole_http` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "aea3dee0-33d9-41c9-ab05-7cc6031db9fd",
+        "id": "e0bfaeb7-64d9-40b9-8534-3d0e780f33cf",
         "snapshot": false,
-        "version": "8.8.1"
+        "version": "8.10.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -4266,7 +4253,7 @@ An example event for `sinkhole_http` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.sinkhole_http",
-        "ingested": "2023-09-19T19:07:58Z",
+        "ingested": "2023-09-22T16:58:44Z",
         "kind": "event",
         "original": "{\"AccountID\":\"AC123456\",\"Body\":\"{\\\"action\\\": \\\"login\\\", \\\"user\\\": \\\"john_doe\\\"}\",\"BodyLength\":39,\"DestAddr\":\"89.160.20.129\",\"Headers\":\"Host: example.com\\nUser-Agent: Mozilla/5.0\\nAccept: */*\\nConnection: keep-alive\",\"Host\":\"example.com\",\"Method\":\"POST\",\"Password\":\"password123\",\"R2Path\":\"\",\"Referrer\":\"https://searchengine.com/\",\"SinkholeID\":\"SH001\",\"SrcAddr\":\"67.43.156.2\",\"Timestamp\":\"2023-09-19T12:00:00Z\",\"URI\":\"/api/v1/login\",\"URL\":\"https://example.com/api/v1/login\",\"UserAgent\":\"Mozilla/5.0\",\"Username\":\"john_doe\"}",
         "type": [
@@ -4480,7 +4467,6 @@ An example event for `sinkhole_http` looks as following:
 ### spectrum_event
 
 This is the `spectrum_event` dataset.
-Default port for HTTP Endpoint: _9566_
 
 #### Example
 
@@ -4724,7 +4710,6 @@ An example event for `spectrum_event` looks as following:
 ### workers_trace
 
 This is the `workers_trace` dataset.
-Default port for HTTP Endpoint: _9574_
 
 #### Example
 

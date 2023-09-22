@@ -127,11 +127,13 @@ curl --location --request POST 'https://api.cloudflare.com/client/v4/zones/<ZONE
 --header 'Content-Type: application/json' \
 --data-raw '{
     "name":"<public domain>",
-    "destination_conf": "https://<public domain>:<public port>?header_<secret_header>=<secret_value>",
-    "dataset": "http_requests",
+    "destination_conf": "https://<public domain>:<public port>/<dataset path>?header_<secret_header>=<secret_value>",
+    "dataset": "audit",
     "logpull_options": "fields=RayID,EdgeStartTimestamp&timestamps=rfc3339"
 }'
 ```
+- Default port for the HTTP Endpoint is _9560_.
+- When using the same port for more than one dataset, be sure to specify different dataset paths.
 
 ### Enabling the integration in Elastic
 1. In Kibana, go to Management > Integrations
@@ -147,7 +149,6 @@ curl --location --request POST 'https://api.cloudflare.com/client/v4/zones/<ZONE
 ### access_request
 
 This is the `access_request` dataset.
-Default port for HTTP Endpoint: _9572_
 
 #### Example
 
@@ -158,7 +159,7 @@ Default port for HTTP Endpoint: _9572_
 ### audit
 
 This is the `audit` dataset.
-Default port for HTTP Endpoint: _9560_
+
 
 #### Example
 
@@ -169,7 +170,6 @@ Default port for HTTP Endpoint: _9560_
 ### casb
 
 This is the `casb` dataset.
-Default port for HTTP Endpoint: _9571_
 
 #### Example
 
@@ -180,7 +180,6 @@ Default port for HTTP Endpoint: _9571_
 ### device_posture
 
 This is the `device_posture` dataset.
-Default port for HTTP Endpoint: _9573_
 
 #### Example
 
@@ -191,7 +190,6 @@ Default port for HTTP Endpoint: _9573_
 ### dns
 
 This is the `dns` dataset.
-Default port for HTTP Endpoint: _9561_
 
 #### Example
 
@@ -202,7 +200,6 @@ Default port for HTTP Endpoint: _9561_
 ### dns_firewall
 
 This is the `dns_firewall` dataset.
-Default port for HTTP Endpoint: _9577_
 
 #### Example
 
@@ -213,7 +210,6 @@ Default port for HTTP Endpoint: _9577_
 ### firewall_event
 
 This is the `firewall_event` dataset.
-Default port for HTTP Endpoint: _9562_
 
 #### Example
 
@@ -224,7 +220,6 @@ Default port for HTTP Endpoint: _9562_
 ### gateway_dns
 
 This is the `gateway_dns` dataset.
-Default port for HTTP Endpoint: _9567_
 
 #### Example
 
@@ -235,7 +230,6 @@ Default port for HTTP Endpoint: _9567_
 ### gateway_http
 
 This is the `gateway_http` dataset.
-Default port for HTTP Endpoint: _9568_
 
 #### Example
 
@@ -246,7 +240,6 @@ Default port for HTTP Endpoint: _9568_
 ### gateway_network
 
 This is the `gateway_network` dataset.
-Default port for HTTP Endpoint: _9569_
 
 #### Example
 
@@ -257,7 +250,6 @@ Default port for HTTP Endpoint: _9569_
 ### http_request
 
 This is the `http_request` dataset.
-Default port for HTTP Endpoint: _9563_
 
 #### Example
 
@@ -268,7 +260,6 @@ Default port for HTTP Endpoint: _9563_
 ### magic_ids
 
 This is the `magic_ids` dataset.
-Default port for HTTP Endpoint: _9575_
 
 #### Example
 
@@ -279,7 +270,6 @@ Default port for HTTP Endpoint: _9575_
 ### nel_report
 
 This is the `nel_report` dataset.
-Default port for HTTP Endpoint: _9564_
 
 #### Example
 
@@ -290,7 +280,6 @@ Default port for HTTP Endpoint: _9564_
 ### network_analytics
 
 This is the `network_analytics` dataset.
-Default port for HTTP Endpoint: _9565_
 
 #### Example
 
@@ -301,7 +290,6 @@ Default port for HTTP Endpoint: _9565_
 ### network_session
 
 This is the `network_session` dataset.
-Default port for HTTP Endpoint: _9570_
 
 #### Example
 
@@ -312,7 +300,6 @@ Default port for HTTP Endpoint: _9570_
 ### sinkhole_http
 
 This is the `sinkhole_http` dataset.
-Default port for HTTP Endpoint: _9576_
 
 #### Example
 
@@ -323,7 +310,6 @@ Default port for HTTP Endpoint: _9576_
 ### spectrum_event
 
 This is the `spectrum_event` dataset.
-Default port for HTTP Endpoint: _9566_
 
 #### Example
 
@@ -334,7 +320,6 @@ Default port for HTTP Endpoint: _9566_
 ### workers_trace
 
 This is the `workers_trace` dataset.
-Default port for HTTP Endpoint: _9574_
 
 #### Example
 
