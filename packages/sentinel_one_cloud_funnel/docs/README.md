@@ -114,7 +114,7 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2023-01-01T00:00:00.180Z",
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "event": {
         "category": [
