@@ -783,6 +783,25 @@ processors:
           ctx.threat.indicator.x509 = mergeListOfMaps(ctx.threat.indicator.x509);
         }
 
+  #######################################################
+  # Tag to show if ECS indicator details were populated #
+  #######################################################
+
+  - append:
+      field: tags
+      value: ecs-indicator-detail
+      if: >
+        ctx.threat.indicator.containsKey('as') ||
+        ctx.threat.indicator.containsKey('email') ||
+        ctx.threat.indicator.containsKey('file') ||
+        ctx.threat.indicator.containsKey('ip') ||
+        ctx.threat.indicator.containsKey('port') ||
+        ctx.threat.indicator.containsKey('registry') ||
+        ctx.threat.indicator.containsKey('url') ||
+        ctx.threat.indicator.containsKey('x509') ||
+        false
+      allow_duplicates: false
+
 ###################
 # Failure handler #
 ###################
