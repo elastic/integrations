@@ -40,29 +40,32 @@ Both, the data_stream and the _latest index have applied expiration through ILM 
 | input.type | Input type. | keyword |
 | labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
 | labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
-| maltiverse.address | registered address | text |
-| maltiverse.as_name | AS registered name | text |
-| maltiverse.asn_cidr | CIDR associated | text |
-| maltiverse.asn_country_code | Country code asociated with ASN | text |
-| maltiverse.asn_date | date when asn registered | text |
-| maltiverse.asn_registry | ASN registry | text |
+| maltiverse.address | registered address | keyword |
+| maltiverse.address.address | Multi-field of `maltiverse.address`. | match_only_text |
+| maltiverse.as_name | AS registered name | keyword |
+| maltiverse.as_name.as_name | Multi-field of `maltiverse.as_name`. | match_only_text |
+| maltiverse.asn_cidr | CIDR associated | keyword |
+| maltiverse.asn_country_code | Country code asociated with ASN | keyword |
+| maltiverse.asn_date | date when asn registered | date |
+| maltiverse.asn_registry | ASN registry | keyword |
 | maltiverse.blacklist.count | number of reports for the indicator | long |
-| maltiverse.blacklist.description | what we saw | text |
+| maltiverse.blacklist.description | what we saw | keyword |
+| maltiverse.blacklist.description.description | Multi-field of `maltiverse.blacklist.description`. | match_only_text |
 | maltiverse.blacklist.external_references |  | flattened |
 | maltiverse.blacklist.first_seen | first sighting | date |
 | maltiverse.blacklist.labels |  | keyword |
 | maltiverse.blacklist.last_seen | last sighting | date |
-| maltiverse.blacklist.source | reporter of the activity | text |
-| maltiverse.cidr | CIDR associated | text |
-| maltiverse.city | City | text |
-| maltiverse.classification | Classification of the threat | text |
-| maltiverse.country_code | Country code of the threat | text |
+| maltiverse.blacklist.source | reporter of the activity | keyword |
+| maltiverse.cidr | CIDR associated | keyword |
+| maltiverse.city | City | keyword |
+| maltiverse.classification | Classification of the threat | keyword |
+| maltiverse.country_code | Country code of the threat | keyword |
 | maltiverse.creation_time | creation date | date |
 | maltiverse.domain_consonants |  | long |
 | maltiverse.domain_length |  | long |
-| maltiverse.email | email address | text |
+| maltiverse.email | email address | keyword |
 | maltiverse.entropy |  | double |
-| maltiverse.feed | Origin of the IoC | text |
+| maltiverse.feed | Origin of the IoC | keyword |
 | maltiverse.hostname |  | keyword |
 | maltiverse.ip_addr | IP address | ip |
 | maltiverse.is_alive |  | boolean |
@@ -81,9 +84,7 @@ Both, the data_stream and the _latest index have applied expiration through ILM 
 | maltiverse.is_tor_node | boolean description tag | boolean |
 | maltiverse.is_vpn_node | boolean description tag | boolean |
 | maltiverse.last_online_time |  | keyword |
-| maltiverse.location | boolean description tag | boolean |
-| maltiverse.location.lat |  | double |
-| maltiverse.location.lon |  | double |
+| maltiverse.location | Longitude and latitude. | geo_point |
 | maltiverse.modification_time | Last modification date | date |
 | maltiverse.number_of_blacklisted_domains_resolving | Blacklisted domains resolving associated | long |
 | maltiverse.number_of_domains_resolving | Domains resolving associated | long |
@@ -91,10 +92,11 @@ Both, the data_stream and the _latest index have applied expiration through ILM 
 | maltiverse.number_of_online_malicious_urls_allocated | URLs allocated | long |
 | maltiverse.number_of_whitelisted_domains_resolving | Whitelisted domains resolving associated | long |
 | maltiverse.postal_code |  | keyword |
-| maltiverse.registrant_name | Registrant name | text |
+| maltiverse.registrant_name | Registrant name | keyword |
+| maltiverse.registrant_name.registrant_name | Multi-field of `maltiverse.registrant_name`. | match_only_text |
 | maltiverse.resolved_ip |  | flattened |
-| maltiverse.tag | Tags of the threat | text |
-| maltiverse.type | Type of the threat | text |
+| maltiverse.tag | Tags of the threat | keyword |
+| maltiverse.type | Type of the threat | keyword |
 | maltiverse.urlchecksum |  | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |

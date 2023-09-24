@@ -3,25 +3,31 @@
   description: Fields for Maltiverse threat intelligence.
   fields:
     - name: feed
-      type: text
+      type: keyword
       description: Origin of the IoC
     - name: address
-      type: text
+      type: keyword
       description: registered address
+      multi_fields:
+      - name: address
+        type: match_only_text
     - name: as_name
-      type: text
+      type: keyword
       description: AS registered name
+      multi_fields:
+      - name: as_name
+        type: match_only_text
     - name: asn_cidr
-      type: text
+      type: keyword
       description: CIDR associated
     - name: asn_country_code
-      type: text
+      type: keyword
       description: Country code asociated with ASN
     - name: asn_date
-      type: text
+      type: date
       description: date when asn registered
     - name: asn_registry
-      type: text
+      type: keyword
       description: ASN registry
     - name: blacklist
       type: group
@@ -34,10 +40,13 @@
           type: date
           description: last sighting
         - name: description
-          type: text
+          type: keyword
           description: what we saw
+          multi_fields:
+          - name: description
+            type: match_only_text
         - name: source
-          type: text
+          type: keyword
           description: reporter of the activity
         - name: count
           type: long
@@ -47,22 +56,22 @@
         - name: labels
           type: keyword
     - name: cidr
-      type: text
+      type: keyword
       description: CIDR associated
     - name: city
-      type: text
+      type: keyword
       description: City
     - name: classification
-      type: text
+      type: keyword
       description: Classification of the threat
     - name: country_code
-      type: text
+      type: keyword
       description: Country code of the threat
     - name: creation_time
       type: date
       description: creation date
     - name: email
-      type: text
+      type: keyword
       description: email address
     - name: ip_addr
       type: ip
@@ -104,8 +113,8 @@
       type: boolean
       description: boolean description tag
     - name: location
-      type: boolean
-      description: boolean description tag
+      type: geo_point
+      description: Longitude and latitude.
     - name: modification_time
       type: date
       description: Last modification date
@@ -125,13 +134,16 @@
       type: long
       description: Whitelisted domains resolving associated
     - name: registrant_name
-      type: text
+      type: keyword
       description: Registrant name
+      multi_fields:
+      - name: registrant_name
+        type: match_only_text
     - name: tag
-      type: text
+      type: keyword
       description: Tags of the threat
     - name: type
-      type: text
+      type: keyword
       description: Type of the threat
     - name: domain_consonants
       type: long
@@ -147,10 +159,6 @@
       type: boolean
     - name: last_online_time
       type: keyword
-    - name: location.lat
-      type: double
-    - name: location.lon
-      type: double
     - name: postal_code
       type: keyword
     - name: resolved_ip
