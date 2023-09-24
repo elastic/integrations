@@ -70,6 +70,11 @@ processors:
     field: cisco_meraki.event_subtype
     value: dhcp_no_offer
     if: ctx?.msgtype.toLowerCase() == "dhcp" && ctx?._temp?.dhcp_op.toLowerCase() == 'no' && ctx?._temp?.dhcp_op2.toLowerCase() == 'offers'
+- grok:
+    field: event.original
+    patterns: 
+      - "events dhcp %{GREEDYDATA:message}$"
+    if: ctx?.msgtype.toLowerCase() == "dhcp"
 ####################################################
 # Handle Site-to-Site VPN message
 ####################################################
@@ -91,7 +96,7 @@ processors:
 - grok:
     field: event.original
     patterns: 
-      - '%{SYSLOGHDR}%{SPACE}%{NUMBER}%{SPACE}%{WORDORHOST}%{SPACE}events%{SPACE}%{BLOCKEDARP:_temp.blocked_arp} from %{MAC:source.mac} with IP %{IP:source.ip} on %{NOTSPACE} %{GREEDYDATA:observer.ingress.vlan.id}$'
+      - '^%{SYSLOGHDR}%{SPACE}%{NUMBER}%{SPACE}%{WORDORHOST}%{SPACE}events%{SPACE}(?<message>%{BLOCKEDARP:_temp.blocked_arp} from %{MAC:source.mac} with IP %{IP:source.ip} on %{NOTSPACE} %{GREEDYDATA:observer.ingress.vlan.id})$'
     pattern_definitions:
       SYSLOGPRI: '<%{NONNEGINT:log.syslog.priority:long}>'
       SYSLOGVER: '\b(?:\d{1,2})\b'
@@ -118,7 +123,7 @@ processors:
 - grok:
     field: event.original
     patterns: 
-      - '(?i)%{SYSLOGHDR}%{SPACE}%{NUMBER}%{SPACE}%{WORDORHOST}%{SPACE}events%{SPACE}port %{NOTSPACE} %{PORTACTION:_temp.port_action}'
+      - '^(?i)%{SYSLOGHDR}%{SPACE}%{NUMBER}%{SPACE}%{WORDORHOST}%{SPACE}events%{SPACE}(?<message>port %{NOTSPACE} %{PORTACTION:_temp.port_action}.*)$'
     pattern_definitions:
       SYSLOGPRI: '<%{NONNEGINT:log.syslog.priority:long}>'
       SYSLOGVER: '\b(?:\d{1,2})\b'
@@ -232,6 +237,11 @@ processors:
 - dissect:
     field: event.original
     pattern: "%{} events client_vpn_connect user id '%{user.name}' local ip %{network.forwarded_ip} connected from %{_temp.client_ip}"
+    if: ctx?.cisco_meraki?.event_subtype == "client_vpn_connect"
+- grok:
+    field: event.original
+    patterns: 
+      - "events client_vpn_connect %{GREEDYDATA:message}$"
     if: ctx?.cisco_meraki?.event_subtype == "client_vpn_connect"
 
 ####################################################
