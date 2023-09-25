@@ -64,7 +64,7 @@ An example event for `utm` looks as following:
         "id": "0"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "533bdb32-d7d6-482e-a4ee-22a7c8ba474c",
@@ -449,7 +449,7 @@ An example event for `xg` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "533bdb32-d7d6-482e-a4ee-22a7c8ba474c",
