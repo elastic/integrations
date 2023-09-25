@@ -16,6 +16,11 @@ processors:
   - set:
       field: event.type
       value: [indicator]
+# Set `labels.is_ioc_transform_source` only if user configured `ioc_expiry` value is true. Only documents from `NOT labels.is_ioc_transform_source: true` are the used inside the Indicator Match Rules. 
+  - set:
+      field: labels.is_ioc_transform_source
+      value: true
+      if: "ctx.labels?.is_ioc_transform_source == null && ctx._conf?.ioc_expiry == true"
 
   ######################
   # General ECS fields #
@@ -76,14 +81,14 @@ processors:
   - set:
       field: threat.indicator.type
       value: unknown
-      if: ctx?.threat?.indicator?.type == null
+      if: ctx.threat?.indicator?.type == null
   - convert:
       field: abusech.url.larted
       type: boolean
       ignore_missing: true
   - script:
       lang: painless
-      if: ctx?.abusech != null
+      if: ctx.abusech != null
       source: |
         void handleMap(Map map) {
           for (def x : map.values()) {
@@ -107,7 +112,7 @@ processors:
         handleMap(ctx);
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
   - remove:

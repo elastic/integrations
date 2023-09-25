@@ -5,9 +5,20 @@ request.method: "GET"
 request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
 {{/if}}
 
+{{#if ioc_expiry}}
+
+{{#if ioc_expiry_url}}
+request.url: {{ioc_expiry_url}}
+{{/if}}
+
+{{else}}
+
 {{#if url}}
 request.url: {{url}}
 {{/if}}
+
+{{/if}}
+
 {{#if proxy_url }}
 request.proxy_url: {{proxy_url}}
 {{/if}}
@@ -22,9 +33,20 @@ request.transforms:
     target: header.Content-Type
     value: application/json
 
+{{#if ioc_expiry}}
+response.decode_as: application/zip
+response.split:
+  target: body
+  type: map
+{{else}}
 response.split:
   target: body.urls
+{{/if}}
 
+fields_under_root: true
+fields:
+  _conf:
+    ioc_expiry: {{ioc_expiry}}
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
