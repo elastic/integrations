@@ -3,7 +3,7 @@ description: Pipeline for parsing Box Events
 processors:
   - set:
       field: ecs.version
-      value: "8.9.0"
+      value: "8.10.0"
   - rename:
       field: message
       target_field: event.original
@@ -48,28 +48,28 @@ processors:
       params:
         ACCESS_GRANTED:
           map:
-            category: ['configuration']
-            type: ['access','allowed']
+            category: ['configuration', 'iam']
+            type: ['access', 'creation']
         ACCESS_REVOKED:
           map:
-            category: ['configuration']
-            type: ['access','denied']
+            category: ['configuration', 'iam']
+            type: ['access','deletion']
         ADD_DEVICE_ASSOCIATION:
           map:
             category: ['host']
-            type: ['access','allowed']
+            type: ['access']
         ADD_LOGIN_ACTIVITY_DEVICE:
           map:
             category: ['host','session']
-            type: ['access','allowed']
+            type: ['access']
         ADMIN_LOGIN:
           map:
             category: ['session']
-            type: ['admin']
+            type: ['start']
         APPLICATION_CREATED:
           map:
             category: ['process']
-            type: ['creation']
+            type: ['start']
         APPLICATION_PUBLIC_KEY_ADDED:
           map:
             category: ['process','authentication','iam']
@@ -80,7 +80,7 @@ processors:
             type: ['deletion']
         CHANGE_ADMIN_ROLE:
           map:
-            category: ['configuration']
+            category: ['iam']
             type: ['admin']
         CHANGE_FOLDER_PERMISSION:
           map:
@@ -93,43 +93,43 @@ processors:
         COLLABORATION_EXPIRATION:
           map:
             category: ['process']
-            type: ['access','deletion']
+            type: ['access','change']
         COLLABORATION_INVITE:
           map:
             category: ['process']
-            type: ['access','creation']
+            type: ['access','info','start']
         COLLABORATION_REMOVE:
           map:
             category: ['process']
-            type: ['access','end']
+            type: ['access','info','end']
         COLLABORATION_ROLE_CHANGE:
           map:
             category: ['process']
-            type: ['access','change']
+            type: ['access','info','change']
         COLLAB_ADD_COLLABORATOR:
           map:
             category: ['process']
-            type: ['access','creation']
+            type: ['access','info','start']
         COLLAB_INVITE_COLLABORATOR:
           map:
             category: ['process']
-            type: ['access']
+            type: ['access','info','start']
         COLLAB_REMOVE_COLLABORATOR:
           map:
             category: ['process']
-            type: ['access','deletion']
+            type: ['access','info','change']
         COLLAB_ROLE_CHANGE:
           map:
             category: ['process']
             type: ['access','change']
         COMMENT_CREATE:
           map:
-            category: ['database']
-            type: ['creation']
+            category: ['file']
+            type: ['info']
         COMMENT_DELETE:
           map:
-            category: ['database']
-            type: ['deletion']
+            category: ['file']
+            type: ['info']
         CONTENT_ACCESS:
           map:
             category: ['file']
@@ -137,7 +137,7 @@ processors:
         CONTENT_WORKFLOW_ABNORMAL_DOWNLOAD_ACTIVITY:
           map:
             category: ['process','threat']
-            type: ['access','connection','indicator']
+            type: ['access','indicator']
         CONTENT_WORKFLOW_AUTOMATION_ADD:
           map:
             category: ['process']
@@ -181,7 +181,7 @@ processors:
         DEVICE_TRUST_CHECK_FAILED:
           map:
             category: ['authentication','threat']
-            type: ['denied','indicator']
+            type: ['info','indicator']
         DOWNLOAD:
           map:
             category: ['file']
@@ -213,7 +213,7 @@ processors:
         FAILED_LOGIN:
           map:
             category: ['iam','threat']
-            type: ['denied','indicator']
+            type: ['info','indicator']
         FILE_MARKED_MALICIOUS:
           map:
             category: ['file','threat']
@@ -325,19 +325,19 @@ processors:
         LEGAL_HOLD_ASSIGNMENT_CREATE:
           map:
             category: ['process','database']
-            type: ['creation']
+            type: ['info']
         LEGAL_HOLD_ASSIGNMENT_DELETE:
           map:
             category: ['process','database']
-            type: ['deletion']
+            type: ['change']
         LEGAL_HOLD_POLICY_CREATE:
           map:
             category: ['process','database']
-            type: ['creation']
+            type: ['info']
         LEGAL_HOLD_POLICY_DELETE:
           map:
             category: ['process','database']
-            type: ['deletion']
+            type: ['change']
         LEGAL_HOLD_POLICY_UPDATE:
           map:
             category: ['process','database']
@@ -356,24 +356,24 @@ processors:
             type: ['deletion']
         LOGIN:
           map:
-            category: ['authentication']
-            type: ['access']
+            category: ['session']
+            type: ['start']
         MASTER_INVITE_ACCEPT:
           map:
-            category: ['process']
-            type: ['allowed']
+            category: ['iam']
+            type: ['user']
         MASTER_INVITE_REJECT:
           map:
             category: ['process']
-            type: ['denied']
+            type: ['info']
         METADATA_INSTANCE_CREATE:
           map:
             category: ['database']
-            type: ['creation']
+            type: ['info']
         METADATA_INSTANCE_DELETE:
           map:
             category: ['database']
-            type: ['deletion']
+            type: ['change']
         METADATA_INSTANCE_UPDATE:
           map:
             category: ['database']
@@ -381,11 +381,11 @@ processors:
         METADATA_TEMPLATE_CREATE:
           map:
             category: ['database']
-            type: ['creation']
+            type: ['info']
         METADATA_TEMPLATE_DELETE:
           map:
             category: ['database']
-            type: ['deletion']
+            type: ['change']
         METADATA_TEMPLATE_UPDATE:
           map:
             category: ['database']
@@ -405,11 +405,11 @@ processors:
         REMOVE_DEVICE_ASSOCIATION:
           map:
             category: ['host']
-            type: ['deletion']
+            type: ['end']
         REMOVE_LOGIN_ACTIVITY_DEVICE:
           map:
             category: ['host','session']
-            type: ['deletion']
+            type: ['end']
         RENAME:
           map:
             category: ['file','database']
@@ -417,7 +417,7 @@ processors:
         RETENTION_POLICY_ASSIGNMENT_ADD:
           map:
             category: ['database','process']
-            type: ['creation']
+            type: ['info']
         SHARE:
           map:
             category: ['file','database']
@@ -425,7 +425,7 @@ processors:
         SHARE_EXPIRATION:
           map:
             category: ['process','database']
-            type: ['deletion']
+            type: ['change']
         SHIELD_ALERT:
           map:
             category: ['threat']
@@ -433,23 +433,23 @@ processors:
         SHIELD_EXTERNAL_COLLAB_ACCESS_BLOCKED:
           map:
             category: ['threat','process']
-            type: ['denied']
+            type: ['access']
         SHIELD_EXTERNAL_COLLAB_ACCESS_BLOCKED_MISSING_JUSTIFICATION:
           map:
             category: ['threat','process']
-            type: ['denied']
+            type: ['access']
         SHIELD_EXTERNAL_COLLAB_INVITE_BLOCKED:
           map:
             category: ['threat','process']
-            type: ['denied']
+            type: ['access']
         SHIELD_EXTERNAL_COLLAB_INVITE_BLOCKED_MISSING_JUSTIFICATION:
           map:
             category: ['threat','process']
-            type: ['denied']
+            type: ['access']
         SHIELD_JUSTIFICATION_APPROVAL:
           map:
             category: ['threat','process']
-            type: ['admin']
+            type: ['access']
         SIGN_DOCUMENT_ASSIGNED:
           map:
             category: ['process','iam']
@@ -473,7 +473,7 @@ processors:
         SIGN_DOCUMENT_DECLINED:
           map:
             category: ['process','iam']
-            type: ['denied']
+            type: ['info']
         SIGN_DOCUMENT_EXPIRED:
           map:
             category: ['process','iam']
@@ -505,31 +505,31 @@ processors:
         TASK_ASSIGNMENT_CREATE:
           map:
             category: ['process','database']
-            type: ['user','creation']
+            type: ['info']
         TASK_ASSIGNMENT_DELETE:
           map:
             category: ['process','database']
-            type: ['user','deletion']
+            type: ['info']
         TASK_ASSIGNMENT_UPDATE:
           map:
             category: ['process','database']
-            type: ['user','change']
+            type: ['change']
         TASK_CREATE:
           map:
             category: ['process','database']
-            type: ['creation']
+            type: ['info']
         TASK_UPDATE:
           map:
             category: ['process','database']
-            type: ['creation']
+            type: ['change']
         TERMS_OF_SERVICE_ACCEPT:
           map:
             category: ['process','database']
-            type: ['user']
+            type: ['info']
         TERMS_OF_SERVICE_REJECT:
           map:
             category: ['process','database']
-            type: ['user']
+            type: ['info']
         UNDELETE:
           map:
             category: ['file']
@@ -545,7 +545,7 @@ processors:
         UPDATE_COLLABORATION_EXPIRATION:
           map:
             category: ['process','database']
-            type: ['user','change']
+            type: ['change']
         UPDATE_SHARE_EXPIRATION:
           map:
             category: ['process','database']

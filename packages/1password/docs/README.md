@@ -91,7 +91,7 @@ An example event for `signin_attempts` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "d7b99bc0-ce95-4664-af6f-80d525d96e77",
@@ -230,7 +230,7 @@ An example event for `item_usages` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "d7b99bc0-ce95-4664-af6f-80d525d96e77",
@@ -376,7 +376,7 @@ An example event for `audit_events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "d7b99bc0-ce95-4664-af6f-80d525d96e77",
@@ -401,19 +401,19 @@ An example event for `audit_events` looks as following:
         "type": "httpjson"
     },
     "onepassword": {
-        "actor_uuid": "GLF6WUEKS5CSNDJ2OG6TCZD3M4",
         "actor_details": {
-            "uuid": "GLF6WUEKS5CSNDJ2OG6TCZD3M4",
+            "email": "test.actor@domain.com",
             "name": "Test Actor",
-            "email": "test.actor@domain.com"
+            "uuid": "GLF6WUEKS5CSNDJ2OG6TCZD3M4"
+        },
+        "actor_uuid": "GLF6WUEKS5CSNDJ2OG6TCZD3M4",
+        "object_details": {
+            "email": "test.object@domain.com",
+            "name": "Test Object",
+            "uuid": "ZRQCUD6A65AKHFETOUFO7NL4OM"
         },
         "object_type": "user",
         "object_uuid": "ZRQCUD6A65AKHFETOUFO7NL4OM",
-        "object_details": {
-            "uuid": "ZRQCUD6A65AKHFETOUFO7NL4OM",
-            "name": "Test Object",
-            "email": "test.object@domain.com"
-        },
         "session": {
             "device_uuid": "rqtd557fn2husnstp5nc66w2xa",
             "login_time": "2022-10-24T21:07:34.703106271Z",
