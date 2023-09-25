@@ -40,6 +40,9 @@ Use the 1Password Events API to retrieve information about sign-in attempts. Eve
 | event.module | Event module | constant_keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
+| host.os.version | Operating system version as a raw string. | keyword |
 | input.type | Input type | keyword |
 | onepassword.client.app_name | The name of the 1Password app that attempted to sign in to the account | keyword |
 | onepassword.client.app_version | The version number of the 1Password app | keyword |
@@ -50,9 +53,6 @@ Use the 1Password Events API to retrieve information about sign-in attempts. Eve
 | onepassword.session_uuid | The UUID of the session that created the event | keyword |
 | onepassword.type | Details about the sign-in attempt | keyword |
 | onepassword.uuid | The UUID of the event | keyword |
-| os.name | Operating system name, without the version. | keyword |
-| os.name.text | Multi-field of `os.name`. | match_only_text |
-| os.version | Operating system version as a raw string. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
@@ -79,11 +79,11 @@ An example event for `signin_attempts` looks as following:
 {
     "@timestamp": "2021-08-11T14:28:03.000Z",
     "agent": {
-        "ephemeral_id": "9bb571f6-a939-462a-8ade-8e81db645f4c",
-        "id": "d7b99bc0-ce95-4664-af6f-80d525d96e77",
+        "ephemeral_id": "1e0fc736-84ed-49e4-883f-0e760641aafc",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.10.1"
     },
     "data_stream": {
         "dataset": "1password.signin_attempts",
@@ -94,9 +94,9 @@ An example event for `signin_attempts` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "d7b99bc0-ce95-4664-af6f-80d525d96e77",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.10.1"
     },
     "event": {
         "action": "success",
@@ -104,14 +104,20 @@ An example event for `signin_attempts` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2023-07-06T16:29:08.915Z",
+        "created": "2023-09-25T15:46:05.478Z",
         "dataset": "1password.signin_attempts",
-        "ingested": "2023-07-06T16:29:09Z",
+        "ingested": "2023-09-25T15:46:08Z",
         "kind": "event",
         "outcome": "success",
         "type": [
             "info"
         ]
+    },
+    "host": {
+        "os": {
+            "name": "Android",
+            "version": "10"
+        }
     },
     "input": {
         "type": "httpjson"
@@ -128,10 +134,6 @@ An example event for `signin_attempts` looks as following:
         "session_uuid": "UED4KFZ5BH37IQWTJ7LG4VPWK7",
         "type": "credentials_ok",
         "uuid": "HGIF4OEWXDTVWKEQDIWTKV26HU"
-    },
-    "os": {
-        "name": "Android",
-        "version": "10"
     },
     "related": {
         "ip": [
@@ -180,6 +182,9 @@ This uses the 1Password Events API to retrieve information about items in shared
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
+| host.os.version | Operating system version as a raw string. | keyword |
 | input.type | Input type | keyword |
 | onepassword.client.app_name | The name of the 1Password app the item was accessed from | keyword |
 | onepassword.client.app_version | The version number of the 1Password app | keyword |
@@ -189,9 +194,6 @@ This uses the 1Password Events API to retrieve information about items in shared
 | onepassword.used_version | The version of the item that was accessed | integer |
 | onepassword.uuid | The UUID of the event | keyword |
 | onepassword.vault_uuid | The UUID of the vault the item is in | keyword |
-| os.name | Operating system name, without the version. | keyword |
-| os.name.text | Multi-field of `os.name`. | match_only_text |
-| os.version | Operating system version as a raw string. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
@@ -218,11 +220,11 @@ An example event for `item_usages` looks as following:
 {
     "@timestamp": "2021-08-30T18:57:42.484Z",
     "agent": {
-        "ephemeral_id": "9bb571f6-a939-462a-8ade-8e81db645f4c",
-        "id": "d7b99bc0-ce95-4664-af6f-80d525d96e77",
+        "ephemeral_id": "b62ebce2-8912-45ae-ab78-ca49158aae5f",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.10.1"
     },
     "data_stream": {
         "dataset": "1password.item_usages",
@@ -233,9 +235,9 @@ An example event for `item_usages` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "d7b99bc0-ce95-4664-af6f-80d525d96e77",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.10.1"
     },
     "event": {
         "action": "reveal",
@@ -243,13 +245,19 @@ An example event for `item_usages` looks as following:
         "category": [
             "file"
         ],
-        "created": "2023-07-06T16:28:36.877Z",
+        "created": "2023-09-25T15:44:58.422Z",
         "dataset": "1password.item_usages",
-        "ingested": "2023-07-06T16:28:37Z",
+        "ingested": "2023-09-25T15:45:01Z",
         "kind": "event",
         "type": [
             "access"
         ]
+    },
+    "host": {
+        "os": {
+            "name": "Android",
+            "version": "10"
+        }
     },
     "input": {
         "type": "httpjson"
@@ -265,10 +273,6 @@ An example event for `item_usages` looks as following:
         "used_version": 1,
         "uuid": "MCQODBBWJD5HISKYNP3HJPV2DV",
         "vault_uuid": "jaqxqf5qylslqiitnduawrndc5"
-    },
-    "os": {
-        "name": "Android",
-        "version": "10"
     },
     "related": {
         "ip": [
@@ -364,11 +368,11 @@ An example event for `audit_events` looks as following:
 {
     "@timestamp": "2022-10-24T21:16:52.827Z",
     "agent": {
-        "ephemeral_id": "9bb571f6-a939-462a-8ade-8e81db645f4c",
-        "id": "d7b99bc0-ce95-4664-af6f-80d525d96e77",
+        "ephemeral_id": "689182ac-608d-4aed-bb28-bef2dc682f45",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.10.1"
     },
     "data_stream": {
         "dataset": "1password.audit_events",
@@ -379,9 +383,9 @@ An example event for `audit_events` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "d7b99bc0-ce95-4664-af6f-80d525d96e77",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.10.1"
     },
     "event": {
         "action": "suspend",
@@ -389,9 +393,9 @@ An example event for `audit_events` looks as following:
         "category": [
             "configuration"
         ],
-        "created": "2023-07-06T16:28:01.807Z",
+        "created": "2023-09-25T15:43:52.446Z",
         "dataset": "1password.audit_events",
-        "ingested": "2023-07-06T16:28:02Z",
+        "ingested": "2023-09-25T15:43:55Z",
         "kind": "event",
         "type": [
             "access"
@@ -401,17 +405,6 @@ An example event for `audit_events` looks as following:
         "type": "httpjson"
     },
     "onepassword": {
-        "actor_details": {
-            "email": "test.actor@domain.com",
-            "name": "Test Actor",
-            "uuid": "GLF6WUEKS5CSNDJ2OG6TCZD3M4"
-        },
-        "actor_uuid": "GLF6WUEKS5CSNDJ2OG6TCZD3M4",
-        "object_details": {
-            "email": "test.object@domain.com",
-            "name": "Test Object",
-            "uuid": "ZRQCUD6A65AKHFETOUFO7NL4OM"
-        },
         "object_type": "user",
         "object_uuid": "ZRQCUD6A65AKHFETOUFO7NL4OM",
         "session": {
