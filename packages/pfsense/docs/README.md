@@ -48,11 +48,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2021-07-04T00:10:14.578Z",
     "agent": {
-        "ephemeral_id": "5594945b-ed0f-4496-aa7a-3a121ed00404",
-        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "ephemeral_id": "da2d428d-04f5-4b59-b655-6e915448dbe5",
+        "id": "0746c3a9-3a6e-4fb6-8c0d-bf706948547a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.1"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "pfsense.log",
@@ -77,12 +77,12 @@ An example event for `log` looks as following:
         "port": 853
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "id": "0746c3a9-3a6e-4fb6-8c0d-bf706948547a",
         "snapshot": false,
-        "version": "8.9.1"
+        "version": "8.9.0"
     },
     "event": {
         "action": "block",
@@ -91,7 +91,7 @@ An example event for `log` looks as following:
             "network"
         ],
         "dataset": "pfsense.log",
-        "ingested": "2023-08-29T18:51:22Z",
+        "ingested": "2023-09-22T15:34:05Z",
         "kind": "event",
         "original": "\u003c134\u003e1 2021-07-03T19:10:14.578288-05:00 pfSense.example.com filterlog 72237 - - 146,,,1535324496,igb1.12,match,block,in,4,0x0,,63,32989,0,DF,6,tcp,60,10.170.12.50,175.16.199.1,49652,853,0,S,1818117648,,64240,,mss;sackOK;TS;nop;wscale",
         "provider": "filterlog",
@@ -107,7 +107,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.21.0.4:35028"
+            "address": "172.27.0.4:45848"
         },
         "syslog": {
             "priority": 134
