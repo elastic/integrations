@@ -25,6 +25,13 @@ processors:
       target_field: event.original
       tag: rename_message
       ignore_missing: true
+      if: 'ctx.event?.original == null'
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
       target_field: otx
@@ -42,18 +49,18 @@ processors:
       if: "ctx.otx?.created != null"
       tag: set_timestamp
   
-  # Added as a workaround for a CEL issue which converts `null` into `0`. 
-  # This can be deleted once https://github.com/elastic/beats/pull/36410 is merhged and `8.9.2` is tagged as minimum Kibana version
-  - remove:
-      field: otx.expiration
-      if: ctx.otx?.expiration != null && ctx.otx.expiration == 0
-      tag: remove_otx_expiration
-  # Added as a workaround for a CEL issue which converts `null` into `0`. 
-  # This can be deleted once https://github.com/elastic/beats/pull/36410 is merhged and `8.9.2` is tagged as minimum Kibana version
-  - remove:
-      field: otx.role
-      if: ctx.otx?.role != null && ctx.otx.role == 0
-      tag: remove_otx_role
+#   # Added as a workaround for a CEL issue which converts `null` into `0`. 
+#   # This can be deleted once https://github.com/elastic/beats/pull/36410 is merged and `8.9.2` is tagged as minimum Kibana version
+#   - remove:
+#       field: otx.expiration
+#       if: ctx.otx?.expiration != null && ctx.otx.expiration == 0
+#       tag: remove_otx_expiration
+#   # Added as a workaround for a CEL issue which converts `null` into `0`. 
+#   # This can be deleted once https://github.com/elastic/beats/pull/36410 is merged and `8.9.2` is tagged as minimum Kibana version
+#   - remove:
+#       field: otx.role
+#       if: ctx.otx?.role != null && ctx.otx.role == 0
+#       tag: remove_otx_role
   - date:
       field: otx.expiration
       target_field: otx.expiration
@@ -264,6 +271,21 @@ processors:
         - otx.content
       ignore_missing: true
       if: ctx.otx?.content == ""
+  - remove:
+      field:
+        - otx.description
+      ignore_missing: true
+      if: ctx.otx?.description == ""
+  - remove:
+      field:
+        - otx.title
+      ignore_missing: true
+      if: ctx.otx?.title == ""
+  - remove:
+      field:
+        - otx.pulse.adversary
+      ignore_missing: true
+      if: ctx.otx?.pulse?.adversary == ""
   - remove:
       field: event.original
       if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
