@@ -12,8 +12,8 @@ Use the Golang integration to:
 
 The Golang integration collects metrics using [expvar](https://pkg.go.dev/expvar) package. Metrics are exported on "/debug/vars" endpoint after [importing](https://pkg.go.dev/expvar#:~:text=into%20your%20program%3A-,import%20_%20%22expvar%22,-Index%20%C2%B6) expvar package and adding an HTTP handler.
 
-**Logs** help you keep a record of state of Golang application.
-Log data streams collected by the Golang integration include [expvar](https://pkg.go.dev/expvar) and [Heap](https://go.dev/src/runtime/mstats.go#:~:text=118%20119%20%2F%2F%20HeapAlloc%20is%20bytes%20of%20allocated%20heap%20objects.).
+**Metrics** help you keep a record of the state of the Go (Golang) application.
+Metric data streams collected by the Golang integration include [expvar](https://pkg.go.dev/expvar) and [heap](https://go.dev/src/runtime/mstats.go).
 
 Data streams:
 - `heap`:  Collects heap metrics like heap allocation and garbage collection metrics.
@@ -129,7 +129,7 @@ DELETE temp_index
 
 More details about reindexing can be found [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-reindex.html).
 
-## Logs reference
+## Metrics reference
 
 ### expvar
 
