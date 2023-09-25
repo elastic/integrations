@@ -213,6 +213,7 @@ The `cisco_meraki.log` dataset provides events from the configured syslog server
 | observer.egress.interface.name | Interface name as reported by the system. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
+| observer.ingress.vlan.id | VLAN ID as reported by the observer. | keyword |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.product | The product name of the observer. | keyword |
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
@@ -297,11 +298,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2021-11-23T18:13:18.348Z",
     "agent": {
-        "ephemeral_id": "eedc7205-9a4a-44e7-8574-3c9450a28434",
-        "id": "878982e9-a174-4ed8-abe3-19378c1473de",
+        "ephemeral_id": "6a7dac67-b13a-40d5-a45a-7df6ac73e739",
+        "id": "29d48081-6d4f-4236-b959-925451410f6f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.0.0"
     },
     "cisco_meraki": {
         "event_subtype": "ids_alerted",
@@ -323,12 +324,12 @@ An example event for `log` looks as following:
         "port": 56391
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "878982e9-a174-4ed8-abe3-19378c1473de",
+        "id": "29d48081-6d4f-4236-b959-925451410f6f",
         "snapshot": false,
-        "version": "8.8.0"
+        "version": "8.0.0"
     },
     "event": {
         "action": "ids-signature-matched",
@@ -338,7 +339,7 @@ An example event for `log` looks as following:
             "threat"
         ],
         "dataset": "cisco_meraki.log",
-        "ingested": "2023-06-01T20:31:15Z",
+        "ingested": "2023-09-20T09:12:35Z",
         "original": "\u003c134\u003e1 1637691198.348361125 MX84 security_event ids_alerted signature=1:29708:4 priority=1 timestamp=1637691198.330873 dhost=D0:AB:D5:7B:43:73 direction=ingress protocol=tcp/ip src=67.43.156.12:80 dst=10.0.3.162:56391 decision=allowed message: BROWSER-IE Microsoft Internet Explorer CSS uninitialized object access attempt detected",
         "type": [
             "info",
@@ -350,7 +351,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.224.4:50508"
+            "address": "172.20.0.4:40170"
         }
     },
     "network": {
@@ -622,11 +623,11 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2018-02-11T00:00:00.123Z",
     "agent": {
-        "ephemeral_id": "077a2d93-4b1d-4908-b2d5-7c3a0218df3a",
-        "id": "878982e9-a174-4ed8-abe3-19378c1473de",
+        "ephemeral_id": "9a78410b-655d-4ff4-9fd6-5c47d2b1e28b",
+        "id": "29d48081-6d4f-4236-b959-925451410f6f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.0.0"
     },
     "cisco_meraki": {
         "event": {
@@ -658,12 +659,12 @@ An example event for `events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "878982e9-a174-4ed8-abe3-19378c1473de",
+        "id": "29d48081-6d4f-4236-b959-925451410f6f",
         "snapshot": false,
-        "version": "8.8.0"
+        "version": "8.0.0"
     },
     "event": {
         "action": "Cellular came up",
@@ -672,7 +673,7 @@ An example event for `events` looks as following:
             "network"
         ],
         "dataset": "cisco_meraki.events",
-        "ingested": "2023-06-01T20:29:21Z",
+        "ingested": "2023-09-20T09:09:47Z",
         "original": "{\"alertData\":{\"connection\":\"LTE\",\"local\":\"192.168.1.2\",\"model\":\"UML290VW\",\"provider\":\"Purview Wireless\",\"remote\":\"1.2.3.5\"},\"alertId\":\"0000000000000000\",\"alertLevel\":\"informational\",\"alertType\":\"Cellular came up\",\"alertTypeId\":\"cellular_up\",\"deviceMac\":\"00:11:22:33:44:55\",\"deviceModel\":\"MX\",\"deviceName\":\"My appliance\",\"deviceSerial\":\"Q234-ABCD-5678\",\"deviceTags\":[\"tag1\",\"tag2\"],\"deviceUrl\":\"https://n1.meraki.com//n//manage/nodes/new_list/000000000000\",\"networkId\":\"N_24329156\",\"networkName\":\"Main Office\",\"networkTags\":[],\"networkUrl\":\"https://n1.meraki.com//n//manage/nodes/list\",\"occurredAt\":\"2018-02-11T00:00:00.123450Z\",\"organizationId\":\"2930418\",\"organizationName\":\"My organization\",\"organizationUrl\":\"https://dashboard.meraki.com/o/VjjsAd/manage/organization/overview\",\"sentAt\":\"2021-10-07T08:42:00.926325Z\",\"sharedSecret\":\"secret\",\"version\":\"0.1\"}",
         "type": [
             "info",
