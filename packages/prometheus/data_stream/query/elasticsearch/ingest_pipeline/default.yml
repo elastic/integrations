@@ -1,5 +1,5 @@
 ---
-description: Pipeline for processing Prometheus metrics.
+description: Pipeline for processing Prometheus query metrics.
 processors:
   - foreach:
       field: "prometheus.query"
@@ -7,8 +7,15 @@ processors:
         set:
           field: "prometheus.labels.query_name"
           value: "{{_ingest._key}}"
+          description: Add query_name as a label to cover cases, when query returns a single value with no labels
   - fingerprint:
       fields: ["prometheus.labels"]
-      target_field: "prometheus.labels_id"
-      ignore_failure: true
+      target_field: "prometheus.labels_fingerprint"
       ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - set:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

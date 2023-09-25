@@ -3,7 +3,7 @@ description: Pipeline for Netskope events.
 processors:
   - set:
       field: ecs.version
-      value: '8.8.0'
+      value: '8.10.0'
   - json: 
       field: message
       add_to_root: true
@@ -1039,6 +1039,10 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.roles
+      value: ['{{{user.roles}}}']
+      if: ctx.user?.roles instanceof String
   - script:
       if: ctx.file?.mime_type != null
       lang: painless

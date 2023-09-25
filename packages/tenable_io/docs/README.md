@@ -1,14 +1,14 @@
-# Tenable.io
+# Tenable Vulnerability Management
 
 ## Overview
 
-The [Tenable.io](https://www.tenable.com/products/tenable-io) integration allows users to monitor asset, plugin, and vulnerability activity. It provides the industry's most comprehensive vulnerability coverage with the ability to predict which security issues to remediate first. Tenable.io is the user's complete end-to-end vulnerability management solution.
+The [Tenable Vulnerability Management](https://www.tenable.com/products/tenable-io) integration allows users to monitor asset, plugin, and vulnerability activity. It provides the industry's most comprehensive vulnerability coverage with the ability to predict which security issues to remediate first. Tenable Vulnerability Management is the user's complete end-to-end vulnerability management solution.
 
-Use the Tenable.io integration to collects and parses data from the REST APIs. Then visualize that data in Kibana.
+Use the Tenable Vulnerability Management integration to collects and parses data from the REST APIs. Then visualize that data in Kibana.
 
 ## Data streams
 
-The Tenable.io integration collects logs for three types of events: Asset, Plugin, and Vulnerability.
+The Tenable Vulnerability Management integration collects logs for three types of events: Asset, Plugin, and Vulnerability.
 
 **Asset** is used to get details related to assets that belong to the user's organization. See more details in the API documentation [here](https://developer.tenable.com/reference/exports-assets-request-export).
 
@@ -16,13 +16,11 @@ The Tenable.io integration collects logs for three types of events: Asset, Plugi
 
 **Vulnerability** is used to retrieve all vulnerabilities on each asset, including the vulnerability state. See more details in the API documentation [here](https://developer.tenable.com/reference/exports-vulns-request-export).
 
-**Scanner** is used to retrieve the current state of scanners, including licensing and activity. See more details in the API documentation [here](https://developer.tenable.com/reference/scanners-list).
-
 **Scan** is used to retrieve details about existing scans, including scan statuses, assigned targets, and more. See more details in the API documentation [here](https://developer.tenable.com/reference/scans-list).
 
 ## Compatibility
 
-This module has been tested against `Tenable.io release` [December 6, 2022](https://docs.tenable.com/releasenotes/Content/tenableio/tenableio202212.htm).
+This module has been tested against `Tenable Vulnerability Management release` [December 6, 2022](https://docs.tenable.com/releasenotes/Content/tenableio/tenableio202212.htm).
 
 ## Requirements
 
@@ -35,14 +33,14 @@ Elasticsearch is needed to store and search data, and Kibana is needed for visua
 
 ## Setup
 
-### To collect data from the Tenable.io REST APIs, follow the below steps:
+### To collect data from the Tenable Vulnerability Management REST APIs, follow the below steps:
 
-  1. Create a valid user account with appropriate permissions on Tenable.io.
-  2. Generate the API keys for the account to access all Tenable.io APIs.
+  1. Create a valid user account with appropriate permissions on Tenable Vulnerability Management.
+  2. Generate the API keys for the account to access all Tenable Vulnerability Management APIs.
 
 **Note:**
-  - For the Tenable.io asset and vulnerability API, **ADMINISTRATOR [64]** and **Can View** access control is required in  created user's access key and secret key.
-  - For the Tenable.io plugin, **BASIC [16]** user permissions are required in created user's access key and secret key.
+  - For the Tenable Vulnerability Management asset and vulnerability API, **ADMINISTRATOR [64]** and **Can View** access control is required in  created user's access key and secret key.
+  - For the Tenable Vulnerability Management plugin, **BASIC [16]** user permissions are required in created user's access key and secret key.
   - For more details related to permissions, refer to the link [here](https://developer.tenable.com/docs/permissions).
 
 ## Logs reference
@@ -59,11 +57,11 @@ An example event for `asset` looks as following:
 {
     "@timestamp": "2018-12-31T22:27:58.599Z",
     "agent": {
-        "ephemeral_id": "aaad454b-3662-41fc-a55d-5c164947a6aa",
-        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
+        "ephemeral_id": "c972edb3-4f26-46c6-b0b6-97b095789342",
+        "id": "9e23d05e-ba36-4bf1-a014-a7b4ab4408af",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.0"
+        "version": "8.7.1"
     },
     "cloud": {
         "availability_zone": "12",
@@ -80,21 +78,21 @@ An example event for `asset` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
-        "snapshot": true,
-        "version": "8.9.0"
+        "id": "9e23d05e-ba36-4bf1-a014-a7b4ab4408af",
+        "snapshot": false,
+        "version": "8.7.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "host"
         ],
-        "created": "2023-05-23T16:59:30.688Z",
+        "created": "2023-09-12T08:47:10.442Z",
         "dataset": "tenable_io.asset",
-        "ingested": "2023-05-23T16:59:31Z",
+        "ingested": "2023-09-12T08:47:11Z",
         "kind": "state",
         "original": "{\"acr_score\":\"3\",\"agent_names\":[],\"agent_uuid\":\"22\",\"aws_availability_zone\":null,\"aws_ec2_instance_ami_id\":\"12\",\"aws_ec2_instance_group_name\":null,\"aws_ec2_instance_id\":\"12\",\"aws_ec2_instance_state_name\":null,\"aws_ec2_instance_type\":null,\"aws_ec2_name\":null,\"aws_ec2_product_code\":null,\"aws_owner_id\":\"44\",\"aws_region\":null,\"aws_subnet_id\":null,\"aws_vpc_id\":null,\"azure_resource_id\":\"12\",\"azure_vm_id\":\"12\",\"bigfix_asset_id\":null,\"bios_uuid\":\"33\",\"created_at\":\"2017-12-31T20:40:44.535Z\",\"deleted_at\":\"2017-12-31T20:40:44.535Z\",\"deleted_by\":\"user\",\"exposure_score\":\"721\",\"first_scan_time\":\"2017-12-31T20:40:23.447Z\",\"first_seen\":\"2017-12-31T20:40:23.447Z\",\"fqdns\":[\"example.com\"],\"gcp_instance_id\":\"12\",\"gcp_project_id\":\"12\",\"gcp_zone\":\"12\",\"has_agent\":false,\"has_plugin_results\":true,\"hostnames\":[],\"id\":\"95c2725c-7298-4a44-8a1d-63131ca3f01f\",\"installed_software\":[\"cpe:/a:test:xyz:12.8\",\"cpe:/a:test:abc:7.7.3\",\"cpe:/a:test:pqr:6.9\",\"cpe:/a:test:xyz\"],\"ipv4s\":[\"89.160.20.112\"],\"ipv6s\":[],\"last_authenticated_scan_date\":\"2017-12-31T20:40:44.535Z\",\"last_licensed_scan_date\":\"2018-12-31T22:27:52.869Z\",\"last_scan_id\":\"00283024-afee-44ea-b467-db5a6ed9fd50ab8f7ecb158c480e\",\"last_scan_time\":\"2018-03-31T22:27:52.869Z\",\"last_schedule_id\":\"72284901-7c68-42b2-a0c4-c1e75568849df60557ee0e264228\",\"last_seen\":\"2018-12-31T22:27:52.869Z\",\"mac_addresses\":[],\"manufacturer_tpm_ids\":[],\"mcafee_epo_agent_guid\":null,\"mcafee_epo_guid\":null,\"netbios_names\":[],\"network_interfaces\":[{\"fqdns\":[\"example.com\"],\"ipv4s\":[\"89.160.20.112\",\"81.2.69.144\"],\"ipv6s\":[\"2a02:cf40::\"],\"mac_addresses\":[\"00-00-5E-00-53-00\",\"00-00-5E-00-53-FF\"],\"name\":\"test.0.1234\"}],\"operating_systems\":[],\"qualys_asset_ids\":[],\"qualys_host_ids\":[],\"servicenow_sysid\":null,\"sources\":[{\"first_seen\":\"2017-12-31T20:40:23.447Z\",\"last_seen\":\"2018-12-31T22:27:52.869Z\",\"name\":\"TEST_SCAN\"}],\"ssh_fingerprints\":[],\"symantec_ep_hardware_keys\":[],\"system_types\":[],\"tags\":[{\"added_at\":\"2018-12-31T14:53:13.817Z\",\"added_by\":\"ac2e7ef6-fac9-47bf-9170-617331322885\",\"key\":\"Geographic Area\",\"uuid\":\"47e7f5f6-1013-4401-a705-479bfadc7826\",\"value\":\"APAC\"}],\"terminated_at\":\"2017-12-31T20:40:44.535Z\",\"terminated_by\":\"user\",\"updated_at\":\"2018-12-31T22:27:58.599Z\"}",
         "type": [
@@ -247,9 +245,9 @@ An example event for `asset` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
@@ -296,8 +294,8 @@ An example event for `asset` looks as following:
 | tenable_io.asset.azure.vm_id | The unique identifier of the Microsoft Azure virtual machine instance. For more information, see "Accessing and Using Azure VM Unique ID" in the Microsoft Azure documentation. | keyword |
 | tenable_io.asset.bigfix_asset_id | The unique identifiers of the asset in HCL BigFix. | keyword |
 | tenable_io.asset.bios_uuid | The BIOS UUID of the asset. | keyword |
-| tenable_io.asset.created_at | The time and date when Tenable.io created the asset record. | date |
-| tenable_io.asset.deleted_at | The time and date when a user deleted the asset record. When a user deletes an asset record, Tenable.io retains the record until the asset ages out of the license count. | date |
+| tenable_io.asset.created_at | The time and date when Tenable Vulnerability Management created the asset record. | date |
+| tenable_io.asset.deleted_at | The time and date when a user deleted the asset record. When a user deletes an asset record, Tenable Vulnerability Management retains the record until the asset ages out of the license count. | date |
 | tenable_io.asset.deleted_by | The user who deleted the asset record. | keyword |
 | tenable_io.asset.exposure_score | The Asset Exposure Score (AES) for the asset. | long |
 | tenable_io.asset.first_scan_time | The time and date of the first scan run against the asset. | date |
@@ -309,12 +307,12 @@ An example event for `asset` looks as following:
 | tenable_io.asset.has_agent | Specifies whether a Nessus agent scan identified the asset. | boolean |
 | tenable_io.asset.has_plugin_results | Specifies whether the asset has plugin results associated with it. | boolean |
 | tenable_io.asset.hostnames | The hostnames that scans have associated with the asset record. | keyword |
-| tenable_io.asset.id | The UUID of the asset in Tenable.io. Use this value as the unique key for the asset. | keyword |
+| tenable_io.asset.id | The UUID of the asset in Tenable Vulnerability Management. Use this value as the unique key for the asset. | keyword |
 | tenable_io.asset.installed_software | A list of Common Platform Enumeration (CPE) values that represent software applications a scan identified as present on an asset. This attribute supports the CPE 2.2 format. | keyword |
 | tenable_io.asset.ipv4s | The IPv4 addresses that scans have associated with the asset record. | ip |
 | tenable_io.asset.ipv6s | The IPv6 addresses that scans have associated with the asset record. | ip |
 | tenable_io.asset.last_authenticated_scan_date | The time and date of the last credentialed scan run on the asset. | date |
-| tenable_io.asset.last_licensed_scan_date | The time and date of the last scan that identified the asset as licensed. Tenable.io categorizes an asset as licensed if a scan of that asset has returned results from a non-discovery plugin within the last 90 days. | date |
+| tenable_io.asset.last_licensed_scan_date | The time and date of the last scan that identified the asset as licensed. Tenable Vulnerability Management categorizes an asset as licensed if a scan of that asset has returned results from a non-discovery plugin within the last 90 days. | date |
 | tenable_io.asset.last_scan_id | The UUID of the scan configuration used during the last scan of the asset. | keyword |
 | tenable_io.asset.last_scan_time | The time and date of the last scan run against the asset. | date |
 | tenable_io.asset.last_schedule_id | The schedule_uuid for the last scan of the asset. | keyword |
@@ -365,11 +363,11 @@ An example event for `plugin` looks as following:
 {
     "@timestamp": "2018-07-19T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "319b150f-2992-417b-9a99-84fb3f8042a0",
-        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
+        "ephemeral_id": "c972edb3-4f26-46c6-b0b6-97b095789342",
+        "id": "9e23d05e-ba36-4bf1-a014-a7b4ab4408af",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.0"
+        "version": "8.7.1"
     },
     "data_stream": {
         "dataset": "tenable_io.plugin",
@@ -377,18 +375,18 @@ An example event for `plugin` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
-        "snapshot": true,
-        "version": "8.9.0"
+        "id": "9e23d05e-ba36-4bf1-a014-a7b4ab4408af",
+        "snapshot": false,
+        "version": "8.7.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-05-23T17:00:08.911Z",
+        "created": "2023-09-12T08:47:48.515Z",
         "dataset": "tenable_io.plugin",
-        "ingested": "2023-05-23T17:00:12Z",
+        "ingested": "2023-09-12T08:47:49Z",
         "kind": "state",
         "original": "{\"attributes\":{\"cpe\":[\"p-cpe:/a:fedoraproject:fedora:kernel-source\",\"cpe:/o:fedoraproject:fedora_core:1\",\"p-cpe:/a:fedoraproject:fedora:kernel-BOOT\",\"p-cpe:/a:fedoraproject:fedora:kernel-debuginfo\",\"p-cpe:/a:fedoraproject:fedora:kernel\",\"p-cpe:/a:fedoraproject:fedora:kernel-doc\",\"p-cpe:/a:fedoraproject:fedora:kernel-smp\"],\"cve\":[\"CVE-2003-0984\"],\"cvss3_base_score\":0,\"cvss3_temporal_score\":0,\"cvss_base_score\":4.6,\"cvss_temporal_score\":0,\"cvss_vector\":{\"AccessComplexity\":\"Low\",\"AccessVector\":\"Local-access\",\"Authentication\":\"None required\",\"Availability-Impact\":\"Partial\",\"Confidentiality-Impact\":\"Partial\",\"Integrity-Impact\":\"Partial\",\"raw\":\"AV:L/AC:L/Au:N/C:P/I:P/A:P\"},\"default_account\":false,\"description\":\"Various RTC drivers had the potential to leak...\",\"exploit_available\":false,\"exploit_framework_canvas\":false,\"exploit_framework_core\":false,\"exploit_framework_d2_elliot\":false,\"exploit_framework_exploithub\":false,\"exploit_framework_metasploit\":false,\"exploited_by_malware\":false,\"exploited_by_nessus\":false,\"has_patch\":true,\"in_the_news\":false,\"malware\":false,\"patch_publication_date\":\"2004-01-07T00:00:00Z\",\"plugin_modification_date\":\"2018-07-19T00:00:00Z\",\"plugin_publication_date\":\"2004-07-23T00:00:00Z\",\"plugin_type\":\"local\",\"plugin_version\":\"1.17\",\"risk_factor\":\"Medium\",\"see_also\":[\"http://example.com/u?07bc9e7f\"],\"solution\":\"Update the affected packages.\",\"synopsis\":\"The remote Fedora Core host is missing a security update.\",\"unsupported_by_vendor\":false,\"vpr\":{\"drivers\":{\"age_of_vuln\":{\"lower_bound\":366,\"upper_bound\":730},\"cvss3_impact_score\":5.9,\"cvss_impact_score_predicted\":false,\"exploit_code_maturity\":\"UNPROVEN\",\"product_coverage\":\"LOW\",\"threat_intensity_last28\":\"VERY_LOW\",\"threat_recency\":{\"lower_bound\":366,\"upper_bound\":730},\"threat_sources_last28\":[\"No recorded events\"]},\"score\":5.5,\"updated\":\"2018-07-19T00:00:00Z\"},\"xref\":[\"FEDORA:2003-047\"],\"xrefs\":[{\"id\":\"2003-047\",\"type\":\"FEDORA\"}]},\"id\":13670,\"name\":\"Fedora Core 1 : kernel-2.4.22-1.2140.nptl (2003-047)\"}",
         "type": [
@@ -549,9 +547,9 @@ An example event for `plugin` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
@@ -635,7 +633,7 @@ An example event for `plugin` looks as following:
 | tenable_io.plugin.attributes.unsupported_by_vendor | Indicates whether the software found by this plugin is unsupported by the software's vendor (for example, Windows 95 or Firefox 3). | boolean |
 | tenable_io.plugin.attributes.vpr.drivers.age_of_vuln.lower_bound | The lower bound of the range. For example, for the 0-7 days range, this attribute is "0". For the highest range (more than 730 days), this value is "731". | long |
 | tenable_io.plugin.attributes.vpr.drivers.age_of_vuln.upper_bound | The upper bound of the range. For example, for the 0-7 days range, this attribute is "7". For the highest range (more than 730 days), this value is "0", which signifies that there is no higher category. | long |
-| tenable_io.plugin.attributes.vpr.drivers.cvss3_impact_score | The NVD-provided CVSSv3 impact score for the vulnerability. If the NVD did not provide a score, Tenable.io displays a Tenable-predicted score. | double |
+| tenable_io.plugin.attributes.vpr.drivers.cvss3_impact_score | The NVD-provided CVSSv3 impact score for the vulnerability. If the NVD did not provide a score, Tenable Vulnerability Management displays a Tenable-predicted score. | double |
 | tenable_io.plugin.attributes.vpr.drivers.cvss_impact_score_predicted | A value specifying whether Tenable predicted the CVSSv3 impact score for the vulnerability because NVD did not provide one (true) or used the NVD-provided CVSSv3 impact score (false) when calculating the VPR. | boolean |
 | tenable_io.plugin.attributes.vpr.drivers.exploit_code_maturity | The relative maturity of a possible exploit for the vulnerability based on the existence, sophistication, and prevalence of exploit intelligence from internal and external sources (for example, Reversinglabs, Exploit-db, Metasploit, etc.). The possible values ("High", "Functional", "PoC", or "Unproven") parallel the CVSS Exploit Code Maturity categories. | keyword |
 | tenable_io.plugin.attributes.vpr.drivers.product_coverage | The relative number of unique products affected by the vulnerability: 'Low', 'Medium', 'High', or 'Very High'. | keyword |
@@ -644,7 +642,7 @@ An example event for `plugin` looks as following:
 | tenable_io.plugin.attributes.vpr.drivers.threat_recency.upper_bound | The upper bound of the range. For example, for the 0-7 days range, this attribute is "7". For the highest range (more than 730 days), this value is "0", which signifies that there is no higher category. | long |
 | tenable_io.plugin.attributes.vpr.drivers.threat_sources_last28 | A list of all sources (for example, social media channels, the dark web, etc.) where threat events related to this vulnerability occurred. Item type: string. | keyword |
 | tenable_io.plugin.attributes.vpr.score | The Vulnerability Priority Rating (VPR) for the vulnerability. If a plugin is designed to detect multiple vulnerabilities, the VPR represents the highest value calculated for a vulnerability associated with the plugin. | double |
-| tenable_io.plugin.attributes.vpr.updated | The ISO timestamp when Tenable.io last imported the VPR for this vulnerability. Tenable.io imports updated VPR values every time you run a scan. | date |
+| tenable_io.plugin.attributes.vpr.updated | The ISO timestamp when Tenable Vulnerability Management last imported the VPR for this vulnerability. Tenable Vulnerability Management imports updated VPR values every time you run a scan. | date |
 | tenable_io.plugin.attributes.vuln_publication_date |  | date |
 | tenable_io.plugin.attributes.xref | References to third-party information about the vulnerability, exploit, or update associated with the plugin presented as an array of strings. Each reference includes a type, for example, "FEDORA", and an ID, for example, "2003-047". | keyword |
 | tenable_io.plugin.attributes.xrefs.id |  | keyword |
@@ -668,13 +666,13 @@ An example event for `vulnerability` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-11-30T14:09:12.061Z",
+    "@timestamp": "2018-12-31T20:59:47.000Z",
     "agent": {
-        "ephemeral_id": "b812a6ca-42f5-495e-aee1-61544bc07417",
-        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
+        "ephemeral_id": "c972edb3-4f26-46c6-b0b6-97b095789342",
+        "id": "9e23d05e-ba36-4bf1-a014-a7b4ab4408af",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.0"
+        "version": "8.7.1"
     },
     "data_stream": {
         "dataset": "tenable_io.vulnerability",
@@ -682,21 +680,21 @@ An example event for `vulnerability` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
-        "snapshot": true,
-        "version": "8.9.0"
+        "id": "9e23d05e-ba36-4bf1-a014-a7b4ab4408af",
+        "snapshot": false,
+        "version": "8.7.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "vulnerability"
         ],
-        "created": "2023-05-23T17:02:05.949Z",
+        "created": "2023-09-12T08:49:09.473Z",
         "dataset": "tenable_io.vulnerability",
-        "ingested": "2023-05-23T17:02:09Z",
+        "ingested": "2023-09-12T08:49:10Z",
         "kind": "state",
         "original": "{\"asset\":{\"fqdn\":\"example.com\",\"hostname\":\"89.160.20.112\",\"ipv4\":\"81.2.69.142\",\"network_id\":\"00000000-0000-0000-0000-000000000000\",\"operating_system\":[\"Test Demo OS X 10.5.8\"],\"tracked\":true,\"uuid\":\"cf165808-6a31-48e1-9cf3-c6c3174df51d\"},\"first_found\":\"2018-12-31T20:59:47Z\",\"indexed\":\"2022-11-30T14:09:12.061Z\",\"last_found\":\"2018-12-31T20:59:47Z\",\"output\":\"The observed version of Test  is : \\n /21.0.1180.90\",\"plugin\":{\"cve\":[\"CVE-2016-1620\",\"CVE-2016-1614\",\"CVE-2016-1613\",\"CVE-2016-1612\",\"CVE-2016-1618\",\"CVE-2016-1617\",\"CVE-2016-1616\",\"CVE-2016-1615\",\"CVE-2016-1619\"],\"cvss_base_score\":9.3,\"cvss_temporal_score\":6.9,\"cvss_temporal_vector\":{\"exploitability\":\"Unproven\",\"raw\":\"E:U/RL:OF/RC:C\",\"remediation_level\":\"Official-fix\",\"report_confidence\":\"Confirmed\"},\"cvss_vector\":{\"access_complexity\":\"Medium\",\"access_vector\":\"Network\",\"authentication\":\"None required\",\"availability_impact\":\"Complete\",\"confidentiality_impact\":\"Complete\",\"integrity_impact\":\"Complete\",\"raw\":\"AV:N/AC:M/Au:N/C:C/I:C/A:C\"},\"description\":\"The version of Test  on the remote host is prior to 48.0.2564.82 and is affected by the following vulnerabilities: \\n\\n - An unspecified vulnerability exists in Test V8 when handling compatible receiver checks hidden behind receptors.  An attacker can exploit this to have an unspecified impact.  No other details are available. (CVE-2016-1612)\\n - A use-after-free error exists in `PDFium` due to improper invalidation of `IPWL_FocusHandler` and `IPWL_Provider` upon destruction.  An attacker can exploit this to dereference already freed memory, resulting in the execution of arbitrary code. (CVE-2016-1613)\\n - An unspecified vulnerability exists in `Blink` that is related to the handling of bitmaps.  An attacker can exploit this to access sensitive information.  No other details are available. (CVE-2016-1614)\\n - An unspecified vulnerability exists in `omnibox` that is related to origin confusion.  An attacker can exploit this to have an unspecified impact.  No other details are available. (CVE-2016-1615)\\n - An unspecified vulnerability exists that allows an attacker to spoof a displayed URL.  No other details are available. (CVE-2016-1616)\\n - An unspecified vulnerability exists that is related to history sniffing with HSTS and CSP. No other details are available. (CVE-2016-1617)\\n - A flaw exists in `Blink` due to the weak generation of random numbers by the ARC4-based random number generator.  An attacker can exploit this to gain access to sensitive information.  No other details are available. (CVE-2016-1618)\\n - An out-of-bounds read error exists in `PDFium` in file `fx_codec_jpx_opj.cpp` in the `sycc4{22,44}_to_rgb()` functions. An attacker can exploit this to cause a denial of service by crashing the application linked using the library. (CVE-2016-1619)\\n - Multiple vulnerabilities exist, the most serious of which allow an attacker to execute arbitrary code via a crafted web page. (CVE-2016-1620)\\n - A flaw in `objects.cc` is triggered when handling cleared `WeakCells`, which may allow a context-dependent attacker to have an unspecified impact. No further details have been provided. (CVE-2016-2051)\",\"family\":\"Web Clients\",\"family_id\":1000020,\"has_patch\":false,\"id\":9062,\"name\":\"Test  \\u0026lt; 48.0.2564.82 Multiple Vulnerabilities\",\"risk_factor\":\"HIGH\",\"see_also\":[\"http://testreleases.blogspot.com/2016/01/beta-channel-update_20.html\"],\"solution\":\"Update the  browser to 48.0.2564.82 or later.\",\"synopsis\":\"The remote host is utilizing a web browser that is affected by multiple vulnerabilities.\",\"vpr\":{\"drivers\":{\"age_of_vuln\":{\"lower_bound\":366,\"upper_bound\":730},\"cvss3_impact_score\":5.9,\"cvss_impact_score_predicted\":false,\"exploit_code_maturity\":\"UNPROVEN\",\"product_coverage\":\"LOW\",\"threat_intensity_last28\":\"VERY_LOW\",\"threat_sources_last28\":[\"No recorded events\"]},\"score\":5.9,\"updated\":\"2019-12-31T10:08:58Z\"}},\"port\":{\"port\":\"0\",\"protocol\":\"TCP\"},\"scan\":{\"completed_at\":\"2018-12-31T20:59:47Z\",\"schedule_uuid\":\"6f7db010-9cb6-4870-b745-70a2aea2f81ce1b6640fe8a2217b\",\"started_at\":\"2018-12-31T20:59:47Z\",\"uuid\":\"0e55ec5d-c7c7-4673-a618-438a84e9d1b78af3a9957a077904\"},\"severity\":\"low\",\"severity_default_id\":3,\"severity_id\":3,\"severity_modification_type\":\"NONE\",\"state\":\"OPEN\"}",
         "type": [
@@ -892,9 +890,9 @@ An example event for `vulnerability` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
@@ -936,10 +934,10 @@ An example event for `vulnerability` looks as following:
 | tenable_io.vulnerability.asset.netbios.workgroup | The NETBIOS workgroup of the asset where a scan found the vulnerability. | keyword |
 | tenable_io.vulnerability.asset.network_id | The ID of the network object associated with scanners that identified the asset. The default network ID is 00000000-0000-0000-0000-000000000000 | keyword |
 | tenable_io.vulnerability.asset.operating_system | The operating system of the asset where a scan found the vulnerability. | keyword |
-| tenable_io.vulnerability.asset.tracked | A value specifying whether Tenable.io tracks the asset in the asset management system. Tenable.io still assigns untracked assets identifiers in scan results, but these identifiers change with each new scan of the asset. This parameter is relevant to PCI-type scans and in certain cases where there is not enough information in a scan to identify the asset. Untracked assets appear in the scan history, but do not appear in workbenches or reports. | boolean |
+| tenable_io.vulnerability.asset.tracked | A value specifying whether Tenable Vulnerability Management tracks the asset in the asset management system. Tenable Vulnerability Management still assigns untracked assets identifiers in scan results, but these identifiers change with each new scan of the asset. This parameter is relevant to PCI-type scans and in certain cases where there is not enough information in a scan to identify the asset. Untracked assets appear in the scan history, but do not appear in workbenches or reports. | boolean |
 | tenable_io.vulnerability.asset.uuid | The UUID of the asset where a scan found the vulnerability. | keyword |
 | tenable_io.vulnerability.first_found | The ISO date when a scan first detected the vulnerability on the asset. | date |
-| tenable_io.vulnerability.indexed | The date and time (in Unix time) when the vulnerability was indexed into Tenable.io. | date |
+| tenable_io.vulnerability.indexed | The date and time (in Unix time) when the vulnerability was indexed into Tenable Vulnerability Management. | date |
 | tenable_io.vulnerability.last_fixed | The ISO date when a scan no longer detects the previously detected vulnerability on the asset. | date |
 | tenable_io.vulnerability.last_found | The ISO date when a scan last detected the vulnerability on the asset. | date |
 | tenable_io.vulnerability.output | The text output of the Nessus scanner. | keyword |
@@ -1021,7 +1019,7 @@ An example event for `vulnerability` looks as following:
 | tenable_io.vulnerability.plugin.version | The version of the plugin used to perform the check. | version |
 | tenable_io.vulnerability.plugin.vpr.drivers.age_of_vuln.lower_bound | The lower bound of the range. For example, for the 0-7 days range, this attribute is "0". For the highest range (more than 730 days), this value is "731". | long |
 | tenable_io.vulnerability.plugin.vpr.drivers.age_of_vuln.upper_bound | The upper bound of the range. For example, for the 0-7 days range, this attribute is "7". For the highest range (more than 730 days), this value is "0", which signifies that there is no higher category. | long |
-| tenable_io.vulnerability.plugin.vpr.drivers.cvss3_impact_score | The NVD-provided CVSSv3 impact score for the vulnerability. If the NVD did not provide a score, Tenable.io displays a Tenable-predicted score. | double |
+| tenable_io.vulnerability.plugin.vpr.drivers.cvss3_impact_score | The NVD-provided CVSSv3 impact score for the vulnerability. If the NVD did not provide a score, Tenable Vulnerability Management displays a Tenable-predicted score. | double |
 | tenable_io.vulnerability.plugin.vpr.drivers.cvss_impact_score_predicted | A value specifying whether Tenable predicted the CVSSv3 impact score for the vulnerability because NVD did not provide one (true) or used the NVD-provided CVSSv3 impact score (false) when calculating the VPR. | boolean |
 | tenable_io.vulnerability.plugin.vpr.drivers.exploit_code_maturity | The relative maturity of a possible exploit for the vulnerability based on the existence, sophistication, and prevalence of exploit intelligence from internal and external sources (for example, Reversinglabs, Exploit-db, Metasploit, etc.). The possible values ('High', 'Functional', 'PoC', or 'Unproven') parallel the CVSS Exploit Code Maturity categories. | keyword |
 | tenable_io.vulnerability.plugin.vpr.drivers.product_coverage | The relative number of unique products affected by the vulnerability: 'Low', 'Medium', 'High', or 'Very High'. | keyword |
@@ -1030,7 +1028,7 @@ An example event for `vulnerability` looks as following:
 | tenable_io.vulnerability.plugin.vpr.drivers.threat_recency.upper_bound | The upper bound of the range. For example, for the 0-7 days range, this attribute is "7". For the highest range (more than 730 days), this value is "0", which signifies that there is no higher category. | long |
 | tenable_io.vulnerability.plugin.vpr.drivers.threat_sources_last28 | A list of all sources (for example, social media channels, the dark web, etc.) where threat events related to this vulnerability occurred. Item type: string. | keyword |
 | tenable_io.vulnerability.plugin.vpr.score | The Vulnerability Priority Rating (VPR) for the vulnerability. If a plugin is designed to detect multiple vulnerabilities, the VPR represents the highest value calculated for a vulnerability associated with the plugin. | double |
-| tenable_io.vulnerability.plugin.vpr.updated | The ISO timestamp when Tenable.io last imported the VPR for this vulnerability. Tenable.io imports updated VPR values every time you run a scan. | date |
+| tenable_io.vulnerability.plugin.vpr.updated | The ISO timestamp when Tenable Vulnerability Management last imported the VPR for this vulnerability. Tenable Vulnerability Management imports updated VPR values every time you run a scan. | date |
 | tenable_io.vulnerability.plugin.vuln_publication_date | The publication date of the plugin. | date |
 | tenable_io.vulnerability.plugin.xref.id |  | keyword |
 | tenable_io.vulnerability.plugin.xref.type |  | keyword |
@@ -1039,7 +1037,7 @@ An example event for `vulnerability` looks as following:
 | tenable_io.vulnerability.port.protocol | The protocol the scanner used to communicate with the asset. | keyword |
 | tenable_io.vulnerability.port.service | The service the scanner used to communicate with the asset. | keyword |
 | tenable_io.vulnerability.port.value | The port the scanner used to communicate with the asset. | long |
-| tenable_io.vulnerability.recast.reason | The text that appears in the Comment field of the recast rule in the Tenable.io user interface. | keyword |
+| tenable_io.vulnerability.recast.reason | The text that appears in the Comment field of the recast rule in the Tenable Vulnerability Management user interface. | keyword |
 | tenable_io.vulnerability.recast.rule_uuid | The UUID of the recast rule that applies to the plugin. | keyword |
 | tenable_io.vulnerability.scan.completed_at | The ISO timestamp when the scan completed. | date |
 | tenable_io.vulnerability.scan.schedule_uuid | The schedule UUID for the scan that found the vulnerability. | keyword |
@@ -1049,7 +1047,7 @@ An example event for `vulnerability` looks as following:
 | tenable_io.vulnerability.severity.id | The code for the severity assigned when a user recast the risk associated with the vulnerability. Possible values include: 0,1,2,3 and 4. | long |
 | tenable_io.vulnerability.severity.modification_type | The type of modification a user made to the vulnerability's severity. Possible values include:none, recasted and accepted. | keyword |
 | tenable_io.vulnerability.severity.value | The severity of the vulnerability as defined using the Common Vulnerability Scoring System (CVSS) base score. Possible values include info, low, medium, high and critical. | keyword |
-| tenable_io.vulnerability.state | The state of the vulnerability as determined by the Tenable.io state service. Possible values include: open, reopen and fixed. | keyword |
+| tenable_io.vulnerability.state | The state of the vulnerability as determined by the Tenable Vulnerability Management state service. Possible values include: open, reopen and fixed. | keyword |
 | vulnerability.category | The type of system or architecture that the vulnerability affects. These may be platform-specific (for example, Debian or SUSE) or general (for example, Database or Firewall). For example (https://qualysguard.qualys.com/qwebhelp/fo_portal/knowledgebase/vulnerability_categories.htm[Qualys vulnerability categories]) This field must be an array. | keyword |
 | vulnerability.classification | The classification of the vulnerability scoring system. For example (https://www.first.org/cvss/) | keyword |
 | vulnerability.description | The description of the vulnerability that provides additional context of the vulnerability. For example (https://cve.mitre.org/about/faqs.html#cve_entry_descriptions_created[Common Vulnerabilities and Exposure CVE description]) | keyword |
@@ -1065,261 +1063,6 @@ An example event for `vulnerability` looks as following:
 | vulnerability.severity | The severity of the vulnerability can help with metrics and internal prioritization regarding remediation. For example (https://nvd.nist.gov/vuln-metrics/cvss) | keyword |
 
 
-### scanner
-
-This is the `scanner` dataset.
-
-#### Example
-
-An example event for `scanner` looks as following:
-
-```json
-{
-    "@timestamp": "2023-05-23T17:01:28.893Z",
-    "agent": {
-        "ephemeral_id": "e3c42c6e-eaa7-45a1-95bc-60bdca8f29d9",
-        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
-        "name": "docker-fleet-agent",
-        "type": "filebeat",
-        "version": "8.9.0"
-    },
-    "data_stream": {
-        "dataset": "tenable_io.scanner",
-        "namespace": "ep",
-        "type": "logs"
-    },
-    "ecs": {
-        "version": "8.8.0"
-    },
-    "elastic_agent": {
-        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
-        "snapshot": true,
-        "version": "8.9.0"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "category": [
-            "host"
-        ],
-        "created": "2023-05-23T17:01:28.893Z",
-        "dataset": "tenable_io.scanner",
-        "ingested": "2023-05-23T17:01:32Z",
-        "kind": "state",
-        "original": "{\"creation_date\":1603821746,\"group\":true,\"id\":123456,\"key\":\"db8bbcddce265942ec66fc56aa17e6f8239b9d355580b58af96a5eab1f309199\",\"last_connect\":null,\"last_modification_date\":1603821746,\"license\":{\"activation_code\":\"7A1F-BT5R-7B5R\",\"agents\":-1,\"agents_used\":4286,\"apps\":{\"cns\":{\"expiration_date\":1663473599,\"mode\":\"eval\"},\"consec\":{\"expiration_date\":1658289599,\"mode\":\"eval\"},\"lumin\":{\"activation_code\":\"T8G9-A1EG-ERT4\",\"assets\":11000,\"expiration_date\":1704326399,\"mode\":\"standard\"},\"pci\":{\"mode\":\"basic\"},\"vm\":{\"agents\":0,\"assets\":11000,\"vm_activation_code\":\"TB7R-QWEG-ASD8\",\"vm_expiration_date\":1704326399},\"was\":{\"expiration_date\":1659585599,\"mode\":\"eval\",\"ui_mode\":\"NEW\"}},\"enterprise_pause\":false,\"evaluation\":false,\"expiration_date\":1704326399,\"ips\":11000,\"record_id\":\"001600000ASDA71CCD\",\"scanners\":-1,\"scanners_used\":10,\"type\":\"vm\",\"users\":-1},\"linked\":1,\"name\":\"APAC Cloud Scanners\",\"network_name\":\"Default\",\"num_scans\":0,\"owner\":\"system\",\"owner_id\":1258789,\"owner_name\":\"system\",\"owner_uuid\":\"ab12we5wr-asdf1-etah5-asd8-d5yhf7ew4394\",\"pool\":true,\"scan_count\":0,\"shared\":1,\"source\":\"service\",\"status\":\"on\",\"supports_remote_logs\":false,\"supports_remote_settings\":false,\"supports_webapp\":true,\"timestamp\":1603821746,\"type\":\"local\",\"user_permissions\":64,\"uuid\":\"akd78gte-d58g-adsd-34fg-4fde5ugh52dw\"}",
-        "type": [
-            "info"
-        ]
-    },
-    "host": {
-        "name": "APAC Cloud Scanners"
-    },
-    "input": {
-        "type": "httpjson"
-    },
-    "related": {
-        "hosts": [
-            "APAC Cloud Scanners"
-        ]
-    },
-    "tags": [
-        "preserve_original_event",
-        "preserve_duplicate_custom_fields",
-        "forwarded",
-        "tenable_io-scanner"
-    ],
-    "tenable_io": {
-        "scanner": {
-            "creation_date": "2020-10-27T18:02:26.000Z",
-            "group": true,
-            "id": 123456,
-            "key": "db8bbcddce265942ec66fc56aa17e6f8239b9d355580b58af96a5eab1f309199",
-            "last_modification_date": "2020-10-27T18:02:26.000Z",
-            "license": {
-                "activation_code": "7A1F-BT5R-7B5R",
-                "agents": -1,
-                "agents_used": 4286,
-                "apps": {
-                    "cns": {
-                        "expiration_date": "2022-09-18T03:59:59.000Z",
-                        "mode": "eval"
-                    },
-                    "consec": {
-                        "expiration_date": "2022-07-20T03:59:59.000Z",
-                        "mode": "eval"
-                    },
-                    "lumin": {
-                        "activation_code": "T8G9-A1EG-ERT4",
-                        "assets": 11000,
-                        "expiration_date": "2024-01-03T23:59:59.000Z",
-                        "mode": "standard"
-                    },
-                    "pci": {
-                        "mode": "basic"
-                    },
-                    "vm": {
-                        "agents": 0,
-                        "assets": 11000,
-                        "vm_activation_code": "TB7R-QWEG-ASD8",
-                        "vm_expiration_date": 1704326399
-                    },
-                    "was": {
-                        "expiration_date": "2022-08-04T03:59:59.000Z",
-                        "mode": "eval",
-                        "ui_mode": "NEW"
-                    }
-                },
-                "enterprise_pause": false,
-                "evaluation": false,
-                "expiration_date": "2024-01-03T23:59:59.000Z",
-                "ips": 11000,
-                "record_id": "001600000ASDA71CCD",
-                "scanners": -1,
-                "scanners_used": 10,
-                "type": "vm",
-                "users": -1
-            },
-            "linked": true,
-            "name": "APAC Cloud Scanners",
-            "network_name": "Default",
-            "num_scans": 0,
-            "owner": "system",
-            "owner_id": 1258789,
-            "owner_name": "system",
-            "owner_uuid": "ab12we5wr-asdf1-etah5-asd8-d5yhf7ew4394",
-            "pool": true,
-            "scan_count": 0,
-            "shared": true,
-            "source": "service",
-            "status": "on",
-            "supports_remote_logs": false,
-            "supports_remote_settings": false,
-            "supports_webapp": true,
-            "timestamp": "2020-10-27T18:02:26.000Z",
-            "type": "local",
-            "user_permissions": 64,
-            "uuid": "akd78gte-d58g-adsd-34fg-4fde5ugh52dw"
-        }
-    }
-}
-```
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
-| event.dataset | Event dataset | constant_keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.module | Event module | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| input.type | Input type | keyword |
-| log.offset | Log offset | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
-| tags | List of keywords used to tag each event. | keyword |
-| tenable_io.scanner.creation_date | The timestamp when the scanner was created. This attribute specifies the original creation date if the scanner was migrated. | date |
-| tenable_io.scanner.distro | The scanner operating system distribution. | keyword |
-| tenable_io.scanner.engine_version | The Tenabler scanner engine version | keyword |
-| tenable_io.scanner.group | Indicates whether the scanner belongs to a scanner group ('true') or not ('false'). | boolean |
-| tenable_io.scanner.hostname | The hostname of the scanner. | keyword |
-| tenable_io.scanner.id | The unique ID of the scanner. | long |
-| tenable_io.scanner.ip_addresses | A list of IP addresses associated with the scanner. | ip |
-| tenable_io.scanner.key | The linking key, that is, the alpha-numeric sequence of characters you use to link a scanner to Tenable.io. | keyword |
-| tenable_io.scanner.last_connect | The timestamp when any of the scanner's tasks have provided its last update. | date |
-| tenable_io.scanner.last_modification_date | The timestamp when the scanner was last modified. | date |
-| tenable_io.scanner.license.activation_code | The activation code for the scanner. | keyword |
-| tenable_io.scanner.license.agents | The number of agents the scanner is licensed to use. | long |
-| tenable_io.scanner.license.agents_used |  | long |
-| tenable_io.scanner.license.apps.cns.expiration_date |  | date |
-| tenable_io.scanner.license.apps.cns.mode |  | keyword |
-| tenable_io.scanner.license.apps.consec.expiration_date |  | date |
-| tenable_io.scanner.license.apps.consec.mode |  | keyword |
-| tenable_io.scanner.license.apps.lumin.activation_code |  | keyword |
-| tenable_io.scanner.license.apps.lumin.assets |  | long |
-| tenable_io.scanner.license.apps.lumin.expiration_date |  | date |
-| tenable_io.scanner.license.apps.lumin.mode |  | keyword |
-| tenable_io.scanner.license.apps.pci.mode |  | keyword |
-| tenable_io.scanner.license.apps.vm.agents |  | long |
-| tenable_io.scanner.license.apps.vm.assets |  | long |
-| tenable_io.scanner.license.apps.vm.vm_activation_code |  | keyword |
-| tenable_io.scanner.license.apps.vm.vm_expiration_date |  | date |
-| tenable_io.scanner.license.apps.was.expiration_date |  | date |
-| tenable_io.scanner.license.apps.was.mode |  | keyword |
-| tenable_io.scanner.license.apps.was.ui_mode |  | keyword |
-| tenable_io.scanner.license.enterprise_pause |  | boolean |
-| tenable_io.scanner.license.evaluation | Indicates whether the license is an evaluation license. | boolean |
-| tenable_io.scanner.license.expiration_date | The date of expiration for this scanner's license. | date |
-| tenable_io.scanner.license.ips | The number of hosts the scanner is licensed to use. | long |
-| tenable_io.scanner.license.record_id | License identifier for the scanner. | keyword |
-| tenable_io.scanner.license.scanners | The number of scanners the scanner is licensed to use. | long |
-| tenable_io.scanner.license.scanners_used |  | long |
-| tenable_io.scanner.license.type | The license type. | keyword |
-| tenable_io.scanner.license.users | The number of users the scanner is licensed to use. | long |
-| tenable_io.scanner.linked | Specifies whether you disabled (False) or enabled (True) the scanner. | boolean |
-| tenable_io.scanner.loaded_plugin_set | The current plugin set on the scanner. | keyword |
-| tenable_io.scanner.name | The user-defined name of the scanner. | keyword |
-| tenable_io.scanner.network_name | The name of the network object associated with the scanner. | keyword |
-| tenable_io.scanner.num_scans | The number of scans (tasks) the scanner is currently executing. | long |
-| tenable_io.scanner.owner | The owner of the scanner. | keyword |
-| tenable_io.scanner.owner_id | The ID of the owner of the scanner. | long |
-| tenable_io.scanner.owner_name | The username of the owner of the scanner. | keyword |
-| tenable_io.scanner.owner_uuid | The UUID of the owner of the scanner. | keyword |
-| tenable_io.scanner.platform | The platform of the scanner. | keyword |
-| tenable_io.scanner.pool | Indicates whether the scanner is part of a scanner group ('true') or not ('false'). | boolean |
-| tenable_io.scanner.remote_uuid | The UUID of the Nessus installation on the scanner. | keyword |
-| tenable_io.scanner.scan_count | The number of scans that the scanner is currently running. | long |
-| tenable_io.scanner.shared | Indicates whether anyone other than the scanner owner has explicit access to the scanner. | boolean |
-| tenable_io.scanner.source | Always set to service. | keyword |
-| tenable_io.scanner.status | The status of the scanner (on or off). | keyword |
-| tenable_io.scanner.supports_remote_logs | Indicates if the scanner supports remote logging. | boolean |
-| tenable_io.scanner.supports_remote_settings | Indicates if the scanner supports remote settings. | boolean |
-| tenable_io.scanner.supports_webapp | Indicates if the scanner supports web application scanning. | boolean |
-| tenable_io.scanner.timestamp | Equivalent to the last_modification_date attribute. | date |
-| tenable_io.scanner.type | The type of scanner (local, managed, managed_pvs, pool, remote, or webapp). | keyword |
-| tenable_io.scanner.ui_build | The backend build of Nessus that is running on the scanner. | keyword |
-| tenable_io.scanner.ui_version | The backend version of Nessus that is running on the scanner. | keyword |
-| tenable_io.scanner.user_permissions | The permissions you (the current user) have been assigned for the scanner. See Permissions. | long |
-| tenable_io.scanner.uuid | The UUID of the scanner. | keyword |
-
-
 ### scan
 
 This is the `scan` dataset.
@@ -1330,13 +1073,13 @@ An example event for `scan` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-05-23T17:00:49.842Z",
+    "@timestamp": "2023-09-12T08:48:29.597Z",
     "agent": {
-        "ephemeral_id": "8cd5058c-f934-44d2-91c5-29298fe980ec",
-        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
+        "ephemeral_id": "c972edb3-4f26-46c6-b0b6-97b095789342",
+        "id": "9e23d05e-ba36-4bf1-a014-a7b4ab4408af",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.0"
+        "version": "8.7.1"
     },
     "data_stream": {
         "dataset": "tenable_io.scan",
@@ -1344,21 +1087,21 @@ An example event for `scan` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
-        "snapshot": true,
-        "version": "8.9.0"
+        "id": "9e23d05e-ba36-4bf1-a014-a7b4ab4408af",
+        "snapshot": false,
+        "version": "8.7.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "configuration"
         ],
-        "created": "2023-05-23T17:00:49.842Z",
+        "created": "2023-09-12T08:48:29.597Z",
         "dataset": "tenable_io.scan",
-        "ingested": "2023-05-23T17:00:50Z",
+        "ingested": "2023-09-12T08:48:30Z",
         "kind": "state",
         "original": "{\"control\":true,\"creation_date\":1683282785,\"enabled\":true,\"has_triggers\":false,\"id\":195,\"last_modification_date\":1683283158,\"legacy\":false,\"name\":\"Client Discovery\",\"owner\":\"jdoe@contoso.com\",\"permissions\":128,\"policy_id\":194,\"progress\":100,\"read\":false,\"rrules\":\"FREQ=WEEKLY;INTERVAL=1;BYDAY=FR\",\"schedule_uuid\":\"11c56dea-as5f-65ce-ad45-9978045df65ecade45b6e3a76871\",\"shared\":true,\"starttime\":\"20220708T033000\",\"status\":\"completed\",\"status_times\":{\"initializing\":2623,\"pending\":52799,\"processing\":1853,\"publishing\":300329,\"running\":15759},\"template_uuid\":\"a1efc3b4-cd45-a65d-fbc4-0079ebef4a56cd32a05ec2812bcf\",\"timezone\":\"America/Los_Angeles\",\"total_targets\":21,\"type\":\"remote\",\"user_permissions\":128,\"uuid\":\"a456ef1c-cbd4-ad41-f654-119b766ff61f\",\"wizard_uuid\":\"32cbd657-fe65-a45e-a45f-0079eb89e56a1c23fd5ec2812bcf\"}",
         "type": [
@@ -1435,9 +1178,9 @@ An example event for `scan` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
@@ -1469,14 +1212,14 @@ An example event for `scan` looks as following:
 | tenable_io.scan.enabled | Indicates whether the scan schedule is active (true) or inactive (false). | boolean |
 | tenable_io.scan.has_triggers |  | boolean |
 | tenable_io.scan.id | The unique ID of the scan. | long |
-| tenable_io.scan.last_modification_date | For newly-created scans, the date on which the scan configuration was created. For scans that have been launched at least once, this attribute does not represent the date on which the scan configuration was last modified. Instead, it represents the date on which the scan was last launched, in Unix time format. Tenable.io updates this attribute each time the scan launches. | date |
-| tenable_io.scan.legacy | A value indicating whether the scan results were created before a change in storage method. If true, Tenable.io stores the results in the old storage method. If false, Tenable.io stores the results in the new storage method. | boolean |
+| tenable_io.scan.last_modification_date | For newly-created scans, the date on which the scan configuration was created. For scans that have been launched at least once, this attribute does not represent the date on which the scan configuration was last modified. Instead, it represents the date on which the scan was last launched, in Unix time format. Tenable Vulnerability Management updates this attribute each time the scan launches. | date |
+| tenable_io.scan.legacy | A value indicating whether the scan results were created before a change in storage method. If true, Tenable Vulnerability Management stores the results in the old storage method. If false, Tenable Vulnerability Management stores the results in the new storage method. | boolean |
 | tenable_io.scan.name | The name of the scan. | keyword |
 | tenable_io.scan.owner | The owner of the scan. | keyword |
 | tenable_io.scan.permissions | The requesting user's permissions for the scan. | long |
 | tenable_io.scan.policy_id | The unique ID of the user-defined template (policy) on which the scan configuration is based. | long |
 | tenable_io.scan.progress | The progress of the scan ranging from 0 to 100. | long |
-| tenable_io.scan.read | A value indicating whether the user account associated with the request message has viewed the scan in the Tenable.io user interface. If 1, the user account has viewed the scan results. | boolean |
+| tenable_io.scan.read | A value indicating whether the user account associated with the request message has viewed the scan in the Tenable Vulnerability Management user interface. If 1, the user account has viewed the scan results. | boolean |
 | tenable_io.scan.rrules | The interval at which the scan repeats. The interval is formatted as a string of three values delimited by semi-colons. These values are the frequency (FREQ=ONETIME or DAILY or WEEKLY or MONTHLY or YEARLY), the interval (INTERVAL=1 or 2 or 3 ... x), and the days of the week (BYDAY=SU,MO,TU,WE,TH,FR,SA). For a scan that runs every three weeks on Monday Wednesday and Friday, the string would be FREQ=WEEKLY;INTERVAL=3;BYDAY=MO,WE,FR. If the scan is not scheduled to recur, this attribute is null. For more information, see rrules Format. | keyword |
 | tenable_io.scan.schedule_uuid | The UUID for a specific instance in the scan schedule. | keyword |
 | tenable_io.scan.shared | If true, the scan is shared with users other than the scan owner. The level of sharing is specified in the acls attribute of the scan details. | boolean |

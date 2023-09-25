@@ -9,18 +9,19 @@ source:
 # us that ability in order to prevent having duplicate IoC data and prevent query
 # time field type conflicts.
 dest:
-  index: "logs-ti_anomali_latest.threatstream-1"
+  index: "logs-ti_anomali_latest.threatstream-2"
 latest:
   unique_key:
     - event.dataset
     - anomali.threatstream.id
-  sort: "event.ingested"
+  sort: "@timestamp"
 description: Latest Anomali IoC data
 frequency: 30s
 sync:
   time:
-    field: event.ingested
-    delay: 60s
+    field: "@timestamp"
+    # Updated to 120s because of refresh delay in Serverless. With default 60s, sometimes transform wouldn't process all documents.
+    delay: 120s
 retention_policy:
   time:
     field: anomali.threatstream.deleted_at
@@ -28,4 +29,4 @@ retention_policy:
 _meta:
   managed: true
   # Bump this version to delete, reinstall, and restart the transform during package.
-  fleet_transform_version: 0.1.0
+  fleet_transform_version: 0.2.0

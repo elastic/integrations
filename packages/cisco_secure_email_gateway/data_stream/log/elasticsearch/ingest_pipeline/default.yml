@@ -3,7 +3,7 @@ description: Pipeline for Cisco Secure Email Gateway logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.8.0'
+      value: '8.10.0'
   - set:
       field: _tmp.filepath
       value: '{{{log.file.path}}}'
@@ -12,7 +12,7 @@ processors:
       field: _tmp.filepath
       if: ctx.log?.file?.path != null
       patterns:
-        - "^%{DATA}/%{WORD:cisco_secure_email_gateway.log.category.name}.@%{GREEDYDATA}.s$"
+        - '^%{DATA}[\\/]%{WORD:cisco_secure_email_gateway.log.category.name}.@%{GREEDYDATA}.s$'
   - rename:
       field: message
       target_field: event.original
@@ -20,8 +20,8 @@ processors:
   - grok:
       field: event.original
       patterns:
-        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:_tmp.timestamp} %{DATA:cisco_secure_email_gateway.log.category.name}: %{WORD:log.level}: %{GREEDYDATA:cisco_secure_email_gateway.log.message}$"
-        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:_tmp.timestamp} %{DATA:cisco_secure_email_gateway.log.category.name}: %{GREEDYDATA:cisco_secure_email_gateway.log.message}$"
+        - "^(?:<%{NUMBER:log.syslog.priority:long}>)?%{SYSLOGTIMESTAMP:_tmp.timestamp} %{DATA:cisco_secure_email_gateway.log.category.name}: %{WORD:log.level}: %{GREEDYDATA:cisco_secure_email_gateway.log.message}$"
+        - "^(?:<%{NUMBER:log.syslog.priority:long}>)?%{SYSLOGTIMESTAMP:_tmp.timestamp} %{DATA:cisco_secure_email_gateway.log.category.name}: %{GREEDYDATA:cisco_secure_email_gateway.log.message}$"
         - "^%{DATA:_tmp.timestamp} %{WORD:log.level}: %{GREEDYDATA:cisco_secure_email_gateway.log.message}$"
         - "^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$"
   - trim:
@@ -109,6 +109,14 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline_consolidated_event" }}'
       if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'consolidated_event'
+  - set:
+      field: email.from.address
+      value: ['{{{email.from.address}}}']
+      if: ctx.email?.from?.address instanceof String
+  - set:
+      field: email.to.address
+      value: ['{{{email.to.address}}}']
+      if: ctx.email?.to?.address instanceof String
   - remove:
       field:
         - _tmp

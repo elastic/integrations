@@ -1,0 +1,271 @@
+---
+description: Pipeline for Sophos UTM Packet Filter logs
+processors:
+  - kv:
+      if: ctx._tmp?.raw_data != null
+      field: _tmp.raw_data
+      field_split: ' (?=[a-z0-9\_\-]+=)'
+      value_split: '='
+      prefix: 'sophos.utm.'
+      trim_value: '" '
+      ignore_missing: true
+      tag: kv_parse_fields
+
+  # Map ECS fields
+  - rename:
+      field: sophos.utm.action
+      target_field: event.action
+      ignore_missing: true
+      tag: rename_event_action
+  - append:
+      if: ctx.event?.action == 'accept'
+      field: event.type
+      value: 
+        - allowed
+      allow_duplicates: false
+      tag: append_type_allowed
+  - append:
+      if: ctx.event?.action == 'drop'
+      field: event.type
+      value: 
+        - denied
+      allow_duplicates: false
+      tag: append_type_denied
+  - rename:
+      field: sophos.utm.dstip
+      target_field: destination.ip
+      ignore_missing: true
+      tag: rename_destination_ip
+  - rename:
+      field: sophos.utm.dstmac
+      target_field: destination.mac
+      ignore_missing: true
+      tag: rename_destination_mac
+  - convert:
+      field: sophos.utm.dstport
+      type: long
+      ignore_missing: true
+      tag: convert_destination_port
+  - rename:
+      field: sophos.utm.dstport
+      target_field: destination.port
+      ignore_missing: true
+      tag: rename_destination_port
+  - rename:
+      field: sophos.utm.id
+      target_field: event.id
+      ignore_missing: true
+      tag: rename_event_id
+  - rename:
+      field: sophos.utm.srcip
+      target_field: source.ip
+      ignore_missing: true
+      tag: rename_source_ip
+  - rename:
+      field: sophos.utm.srcmac
+      target_field: source.mac
+      ignore_missing: true
+      tag: rename_source_mac
+  - convert:
+      field: sophos.utm.srcport
+      type: long
+      ignore_missing: true
+      tag: convert_source_port
+  - rename:
+      field: sophos.utm.srcport
+      target_field: source.port
+      ignore_missing: true
+      tag: rename_source_port
+  - rename:
+      field: sophos.utm.fwrule
+      target_field: rule.id
+      ignore_missing: true
+      tag: rename_rule_id
+  - rename:
+      field: sophos.utm.initf
+      target_field: observer.ingress.interface.name
+      ignore_missing: true
+      tag: rename_ingress_interface
+  - rename:
+      field: sophos.utm.outitf
+      target_field: observer.egress.interface.name
+      ignore_missing: true
+      tag: rename_egress_interface
+  - rename:
+      field: sophos.utm.proto
+      target_field: network.iana_number
+      ignore_missing: true
+      tag: rename_protocol_iana_number
+  - rename:
+      field: sophos.utm.message
+      target_field: message
+      ignore_missing: true
+      tag: rename_message
+
+  # Rename App ID field to match with the HTTP field
+  - rename:
+      field: sophos.utm.app
+      target_field: sophos.utm.app_id
+      ignore_missing: true
+      tag: rename_app_id
+
+  # Convert severity
+  - set:
+      field: event.severity
+      value: 0
+      if: ctx.sophos?.utm?.severity == 'emergency'
+      tag: set_severity_0
+  - set:
+      field: event.severity
+      value: 1
+      if: ctx.sophos?.utm?.severity == 'alert'
+      tag: set_severity_1
+  - set:
+      field: event.severity
+      value: 2
+      if: ctx.sophos?.utm?.severity == 'critical'
+      tag: set_severity_2
+  - set:
+      field: event.severity
+      value: 3
+      if: ctx.sophos?.utm?.severity == 'error'
+      tag: set_severity_3
+  - set:
+      field: event.severity
+      value: 4
+      if: ctx.sophos?.utm?.severity == 'warning'
+      tag: set_severity_4
+  - set:
+      field: event.severity
+      value: 5
+      if: ctx.sophos?.utm?.severity == 'notice'
+      tag: set_severity_5
+  - set:
+      field: event.severity
+      value: 6
+      if: ctx.sophos?.utm?.severity == 'info'
+      tag: set_severity_6
+  - set:
+      field: event.severity
+      value: 7
+      if: ctx.sophos?.utm?.severity == 'debug'
+      tag: set_severity_7
+
+  # Process TCP Flags
+  - split:
+      field: sophos.utm.tcpflags
+      separator: '\s+'
+      ignore_missing: true
+      tag: split_tcp_flags
+  - lowercase:
+      field: sophos.utm.tcpflags
+      ignore_missing: true
+      tag: lowercase_tcp_flags
+
+  # Transform MAC address
+  - gsub:
+      field: source.mac
+      ignore_missing: true
+      pattern: '[:]'
+      replacement: '-'
+      tag: gsub_source_mac
+  - uppercase:
+      field: source.mac
+      ignore_missing: true
+      tag: uppercase_source_mac
+  - gsub:
+      field: destination.mac
+      ignore_missing: true
+      pattern: '[:]'
+      replacement: '-'
+      tag: gsub_destination_mac
+  - uppercase:
+      field: destination.mac
+      ignore_missing: true
+      tag: uppercase_destination_mac
+
+  # IP Geolocation Lookup
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+      tag: geo_source_ip
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+      tag: geo_destination_ip
+
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+          - asn
+          - organization_name
+      ignore_missing: true
+      tag: geo_source_as
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+          - asn
+          - organization_name
+      ignore_missing: true
+      tag: geo_destination_as
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+      tag: rename_source_as_number
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+      tag: rename_source_as_org
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+      tag: rename_destination_as_number
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+      tag: rename_destination_as_org
+
+  # Convert time fields to long type
+  - convert:
+      field: sophos.utm.length
+      type: long
+      ignore_missing: true
+      tag: convert_length_long
+  - convert:
+      field: sophos.utm.ttl
+      type: long
+      ignore_missing: true
+      tag: convert_ttl_long
+
+  # Fill related fields
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null && ctx.source.ip != ''
+      tag: append_related_source_ip
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      allow_duplicates: false
+      if: ctx.destination?.ip != null && ctx.destination.ip != ''
+      tag: append_related_destination_ip
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error

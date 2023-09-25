@@ -1,7 +1,7 @@
 format_version: 2.3.0
 name: cloud_security_posture
 title: "Security Posture Management"
-version: "1.5.0-preview23"
+version: "1.6.0-preview13"
 source:
   license: "Elastic-2.0"
 description: "Identify & remediate configuration risks in your Cloud infrastructure"
@@ -11,7 +11,7 @@ categories:
   - kubernetes
   - security
 conditions:
-  kibana.version: "^8.10.0"
+  kibana.version: "^8.11.0"
   elastic.subscription: basic
 screenshots:
   - src: /img/dashboard.png
@@ -112,13 +112,33 @@ policy_templates:
             required: true
             show_user: false
             description: Template URL to Cloud Formation Quick Create Stack
-            default: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-cspm-8.10.0-2023-07-19-10-39-28.yml&stackName=Elastic-Cloud-Security-Posture-Management&param_EnrollmentToken=FLEET_ENROLLMENT_TOKEN&param_FleetUrl=FLEET_URL&param_ElasticAgentVersion=KIBANA_VERSION&param_ElasticArtifactServer=https://artifacts.elastic.co/downloads/beats/elastic-agent
+            # ACCOUNT_TYPE value should be either "single-account" or "organization-account"
+            default: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-cspm-ACCOUNT_TYPE-8.11.0-2023-09-10-08-35-18.yml&stackName=Elastic-Cloud-Security-Posture-Management&param_EnrollmentToken=FLEET_ENROLLMENT_TOKEN&param_FleetUrl=FLEET_URL&param_ElasticAgentVersion=KIBANA_VERSION&param_ElasticArtifactServer=https://artifacts.elastic.co/downloads/beats/elastic-agent
       - type: cloudbeat/cis_gcp
         title: GCP
         description: CIS Benchmark for Google Cloud Platform Foundations
+        vars:
+          - name: cloud_shell_url
+            type: text
+            title: CloudShell URL
+            multi: false
+            required: true
+            show_user: false
+            description: A URL to CloudShell for creating a new deployment
+            default: https://shell.cloud.google.com/cloudshell/?ephemeral=true&cloudshell_git_repo=https%3A%2F%2Fgithub.com%2Felastic%2Fcloudbeat&cloudshell_git_branch=8.10&cloudshell_workspace=deploy%2Fdeployment-manager&show=terminal
       - type: cloudbeat/cis_azure
         title: Azure
         description: CIS Benchmark for Microsoft Azure Foundations
+        vars:
+          - name: arm_template_url
+            type: text
+            title: ARM Template URL
+            multi: false
+            required: true
+            show_user: false
+            description: A URL to the ARM Template for creating a new deployment
+            # TODO: Update main to 8.11 when ready
+            default: https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fcloudbeat%2Fmain%2Fdeploy%2Fazure%2FazureARMTemplate.json
   - name: vuln_mgmt
     title: Cloud Native Vulnerability Management (CNVM)
     description: Scan for cloud workload vulnerabilities
@@ -154,6 +174,6 @@ policy_templates:
             required: true
             show_user: false
             description: Template URL to Cloud Formation Quick Create Stack
-            default: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-cnvm-8.10.0-2023-07-19-10-39-28.yml&stackName=Elastic-Vulnerability-Management&param_EnrollmentToken=FLEET_ENROLLMENT_TOKEN&param_FleetUrl=FLEET_URL&param_ElasticAgentVersion=KIBANA_VERSION&param_ElasticArtifactServer=https://artifacts.elastic.co/downloads/beats/elastic-agent
+            default: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-cnvm-8.11.0-2023-09-10-08-35-18.yml&stackName=Elastic-Vulnerability-Management&param_EnrollmentToken=FLEET_ENROLLMENT_TOKEN&param_FleetUrl=FLEET_URL&param_ElasticAgentVersion=KIBANA_VERSION&param_ElasticArtifactServer=https://artifacts.elastic.co/downloads/beats/elastic-agent
 owner:
   github: elastic/cloud-security-posture

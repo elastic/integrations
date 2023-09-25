@@ -1,7 +1,7 @@
 format_version: 1.0.0
 name: aws
 title: AWS
-version: 1.49.0
+version: 2.3.0
 license: basic
 description: Collect logs and metrics from Amazon Web Services (AWS) with Elastic Agent.
 type: integration
@@ -9,7 +9,7 @@ categories:
   - aws
 release: ga
 conditions:
-  kibana.version: "^8.8.1"
+  kibana.version: "^8.9.0"
 screenshots:
   - src: /img/metricbeat-aws-overview.png
     title: metricbeat aws overview
@@ -136,10 +136,6 @@ policy_templates:
       - observability
       - monitoring
     inputs:
-      - type: aws-s3
-        title: Collect logs from S3 (Deprecated)
-        description: Collecting logs using aws-s3 input
-        input_group: logs
       - type: aws-cloudwatch
         title: Collect logs from CloudWatch
         description: Collecting logs using aws-cloudwatch input
@@ -760,6 +756,11 @@ policy_templates:
         title: Collect API Gateway logs from CloudWatch
         description: Collecting API Gateway logs using aws-cloudwatch input
         input_group: logs
+    screenshots:
+      - src: /img/filebeat-aws-apigateway-overview.png
+        title: filebeat aws api gateway overview
+        size: 1280x1431
+        type: image/png
     icons:
       - src: /img/logo_apigateway.svg
         title: AWS API Gateway logo
@@ -770,6 +771,7 @@ policy_templates:
     description: Collect logs and metrics for Amazon EMR service with Elastic Agent
     data_streams:
       - emr_metrics
+      - emr_logs
     categories:
       - observability
     inputs:
@@ -777,6 +779,19 @@ policy_templates:
         title: Collect EMR metrics
         description: Collect EMR metrics using AWS CloudWatch
         input_group: metrics
+      - type: aws-s3
+        title: Collect EMR logs from S3
+        description: Collecting logs from EMR using aws-s3 input
+        input_group: logs
+      - type: aws-cloudwatch
+        title: Collect EMR logs from CloudWatch
+        description: Collecting logs from EMR using aws-cloudwatch input
+        input_group: logs
+    screenshots:
+      - src: /img/filebeat-aws-emr-overview.png
+        title: filebeat aws emr overview
+        size: 1714x893
+        type: image/png
     icons:
       - src: /img/logo_emr.svg
         title: AWS EMR logo

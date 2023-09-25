@@ -3,7 +3,7 @@ description: Ingest pipeline for normalizing CrowdStrike Falcon logs
 processors:
   - set:
       field: ecs.version
-      value: '8.8.0'
+      value: '8.10.0'
   - rename:
       field: message
       target_field: event.original
@@ -35,7 +35,68 @@ processors:
       type: string
       tag: convert_pattern_id
       ignore_missing: true
+  # Script to convert windows NT timestamp to unix timestamp
+  - script:
+        tag: convert-nt-timestamp-to-unix
+        description: Convert Windows NT timestamps to UNIX timestamps for multiple fields.
+        lang: painless
+        if : ctx.crowdstrike?.event != null
+        params:
+            values:
+                - 'StartTime'
+                - 'EndTime'
+                - 'ContextTimeStamp'
+                - 'EndTimestamp'
+                - 'IncidentEndTime'
+                - 'IncidentStartTime'
+                - 'ItemPostedTimestamp'
+                - 'MatchedTimestamp'
+                - 'MostRecentActivityTimeStamp'
+                - 'PrecedingActivityTimeStamp'
+                - 'StartTimestamp'
+                - 'UTCTimestamp'
+# Process to convert LDAP/WIN32 FILETIME to Unix (milliseconds) timestamp.
+# More details can be found here https://devblogs.microsoft.com/oldnewthing/20030905-02/?p=42653 and here https://www.epochconverter.com/ldap
+        source: |
+            def convertToUnix(def longValue) {
+                if (longValue > 0x0100000000000000L) {
+                    return (longValue / 10000) - 11644473600000L;
+                }
+                return longValue;
+            }
 
+            for (def field : params.values) {
+                def fieldValue = ctx.crowdstrike.event[field];
+                if (fieldValue != null) {
+                    if (fieldValue instanceof long) {
+                         ctx.crowdstrike.event[field] = convertToUnix(fieldValue);
+                    } else if (fieldValue instanceof String) {
+                        if (!fieldValue.contains('.')) {
+                           def timestamp = Long.parseLong(fieldValue);
+                            ctx.crowdstrike.event[field] = convertToUnix(timestamp);
+                        }
+                    }
+                } 
+            }
+  # Handle event Tags, which can be a string or a list of maps.
+  - script:
+      tag: convert-Tags-and-copy-to-tags
+      description: Convert tags from nested type and append to ctx.tags.
+      lang: painless
+      if : ctx.crowdstrike?.event?.Tags != null
+      source: |
+            if (ctx.crowdstrike.event.Tags instanceof List) {
+                for (tag in ctx.crowdstrike.event.Tags) {
+                    if (tag instanceof Map) {
+                      ctx.tags.add(tag["Key"] + ":" + tag["ValueString"]);
+                    }
+                }
+            } else if (ctx.crowdstrike.event.Tags instanceof String) {
+                def values = ctx.crowdstrike.event.Tags.splitOnToken(',');
+                for (value in values) {
+                    ctx.tags.add(value.trim());
+                }
+            }
   # UTCTimestamp should exist in each event, however on the off-chance it might not be (Like RemoteSession Start/End), then we have to use eventCreation time.
   - date:
       field: crowdstrike.event.UTCTimestamp
@@ -324,6 +385,7 @@ processors:
         - crowdstrike.event.StartTime
         - crowdstrike.event.Disposition
         - crowdstrike.event.MatchedTimestamp
+        - crowdstrike.event.Tags
       ignore_missing: true
 
 on_failure:

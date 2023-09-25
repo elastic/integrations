@@ -243,9 +243,17 @@ processors:
       copy_from: panw.panos.subject_common_name.value
       ignore_failure: true
   - set:
+      field: x509.subject.common_name
+      value: ['{{{x509.subject.common_name}}}']
+      if: ctx.x509?.subject?.common_name instanceof String
+  - set:
       field: x509.issuer.common_name
       copy_from: panw.panos.issuer_common_name.value
       ignore_failure: true
+  - set:
+      field: x509.issuer.common_name
+      value: [ '{{{x509.issuer.common_name}}}' ]
+      if: ctx.x509?.issuer?.common_name instanceof String
   - set:
       field: rule.uuid
       copy_from: panw.panos.rule_uuid

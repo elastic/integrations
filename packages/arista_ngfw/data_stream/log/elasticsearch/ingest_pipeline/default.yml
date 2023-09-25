@@ -10,7 +10,7 @@ processors:
       ignore_missing: true
   - set:
       field: ecs.version
-      value: '8.8.0'
+      value: '8.10.0'
   - grok:
       field: event.original
       patterns:
@@ -377,6 +377,10 @@ processors:
       field: arista.sessionId
       target_field: event.id
       ignore_missing: true
+  - convert:
+      field: event.id
+      type: string
+      ignore_missing: true
   - script:
       lang: painless
       source: |
@@ -607,6 +611,38 @@ processors:
       target_field: network.transport
       ignore_missing: true
   - script:
+      description: Calculate network.bytes
+      if: (ctx.source?.bytes != null || ctx.destination?.bytes != null) && ctx.network?.bytes == null
+      ignore_failure: true
+      lang: painless
+      source: |
+        if (ctx.network == null) {
+          ctx.network = new HashMap();
+        }
+        if (ctx.source.bytes != null && ctx.destination.bytes != null) {
+          ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes
+        } else if (ctx.source.bytes == null && ctx.destination.bytes != null) {
+          ctx.network.bytes = ctx.destination.bytes
+        } else if (ctx.source.bytes != null && ctx.destination.bytes == null) {
+          ctx.network.bytes = ctx.source.bytes
+        }
+  - script:
+      description: Calculate network.packets
+      if: (ctx.source?.packets != null || ctx.destination?.packets != null) && ctx.network?.packets == null
+      ignore_failure: true
+      lang: painless
+      source: |
+        if (ctx.network == null) {
+          ctx.network = new HashMap();
+        }
+        if (ctx.source.packets != null && ctx.destination.packets != null) {
+          ctx.network.packets = ctx.source.packets + ctx.destination.packets
+        } else if (ctx.source.packets == null && ctx.destination.packets != null) {
+          ctx.network.packets = ctx.destination.packets
+        } else if (ctx.source.packets != null && ctx.destination.packets == null) {
+          ctx.network.packets = ctx.source.packets
+        }
+  - script:
       description: Calculate network.direction if zones are not configured
       lang: painless
       if: "ctx?.source?.ip != null &&
@@ -801,10 +837,23 @@ processors:
       target_field: user.name
       ignore_missing: true
 
+  ######################
+  ## ECS Host Mapping ##
+  ######################
+  - rename:
+      field: arista.hostname
+      target_field: host.name
+      ignore_missing: true
+
   #########################
   ## ECS Related Mapping ##
   #########################
   # Hosts
+  - append:
+      if: ctx.host?.name != null
+      field: related.hosts
+      value: '{{{host.name}}}'
+      allow_duplicates: false
   - append:
       if: ctx.destination?.domain != null
       field: related.hosts
@@ -873,7 +922,6 @@ processors:
         - arista.clientLatitude
         - arista.clientLongitude
         - arista.filterPrefix
-        - arista.hostname
         - arista.localAddr
         - arista.remoteAddr
         - arista.httpRequestEvent.sessionEvent

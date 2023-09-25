@@ -1,0 +1,38 @@
+{
+    "id": "ff3a8287-e4ac-5a3c-b0d7-4f349e0ab077",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "If you lose your encryption key, you will not be able to recover the data.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/compute/docs/disks/customer-supplied-encryption#encrypt_a_new_persistent_disk_with_your_own_keys\n2. https://cloud.google.com/compute/docs/reference/rest/v1/disks/get\n3. https://cloud.google.com/compute/docs/disks/customer-supplied-encryption#key_file",
+            "id": "ff3a8287-e4ac-5a3c-b0d7-4f349e0ab077",
+            "name": "Ensure VM Disks for Critical VMs Are Encrypted With Customer-Supplied Encryption Keys (CSEK)",
+            "profile_applicability": "* Level 2",
+            "description": "Customer-Supplied Encryption Keys (CSEK) are a feature in Google Cloud Storage and Google Compute Engine.\nIf you supply your own encryption keys, Google uses your key to protect the Google-generated keys used to encrypt and decrypt your data.\nBy default, Google Compute Engine encrypts all data at rest.\nCompute Engine handles and manages this encryption for you without any additional actions on your part.\nHowever, if you wanted to control and manage this encryption yourself, you can provide your own encryption keys.",
+            "rationale": "By default, Google Compute Engine encrypts all data at rest.\nCompute Engine handles and manages this encryption for you without any additional actions on your part.\nHowever, if you wanted to control and manage this encryption yourself, you can provide your own encryption keys.\n\nIf you provide your own encryption keys, Compute Engine uses your key to protect the Google-generated keys used to encrypt and decrypt your data.\nOnly users who can provide the correct key can use resources protected by a customer-supplied encryption key.\n\nGoogle does not store your keys on its servers and cannot access your protected data unless you provide the key.\nThis also means that if you forget or lose your key, there is no way for Google to recover the key or to recover any data encrypted with the lost key.\n\nAt least business critical VMs should have VM disks encrypted with CSEK.",
+            "audit": "**From Google Cloud Console**\n\n1. Go to Compute Engine `Disks` by visiting: [https://console.cloud.google.com/compute/disks](https://console.cloud.google.com/compute/disks).\n2. Click on the disk for your critical VMs to see its configuration details.\n3. Ensure that `Encryption type` is set to `Customer supplied`.\n\n**From Google Cloud CLI**\n\nEnsure `diskEncryptionKey` property in the below command's response is not null, and contains key `sha256` with corresponding value\n\n```\ngcloud compute disks describe <DISK_NAME> --zone <ZONE> --format=\"json(diskEncryptionKey,name)\"\n```",
+            "remediation": "Currently there is no way to update the encryption of an existing disk.\nTherefore you should create a new disk with `Encryption` set to `Customer supplied`.\n\n**From Google Cloud Console**\n\n1. Go to Compute Engine `Disks` by visiting: [https://console.cloud.google.com/compute/disks](https://console.cloud.google.com/compute/disks).\n2. Click `CREATE DISK`.\n3. Set `Encryption type` to `Customer supplied`,\n4. Provide the `Key` in the box.\n5. Select `Wrapped key`.\n6. Click `Create`.\n\n**From Google Cloud CLI**\n\nIn the gcloud compute tool, encrypt a disk using the --csek-key-file flag during instance creation.\nIf you are using an RSA-wrapped key, use the gcloud beta component:\n\n```\ngcloud compute instances create <INSTANCE_NAME> --csek-key-file <example-file.json>\n```\n\nTo encrypt a standalone persistent disk:\n```\ngcloud compute disks create <DISK_NAME> --csek-key-file <example-file.json>\n```",
+            "section": "Virtual Machines",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 4.7",
+                "Virtual Machines"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "4.7",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_4_7"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
