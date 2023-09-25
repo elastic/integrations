@@ -22,9 +22,14 @@ processors:
       field: host.ipv4
       separator: ","
       ignore_missing: true
-  - set:
-      field: event.category
-      value: arp
+  - gsub:
+      field: host.mac
+      pattern: ":"
+      replacement: "-"
+  - convert:
+      field: host.uptime
+      type: string
+      ignore_missing: true
   - split:
       field: host.uptime
       separator: "\\.+"
@@ -39,6 +44,16 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - convert:
+      field: host.uptime
+      type: long
+      ignore_missing: true
+  - set:
+      field: event.category
+      value: [network]
+  - set:
+      field: event.type
+      value: [info]
+  - convert:
       field: script.current_duration
       type: float
       ignore_missing: true
@@ -48,4 +63,4 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: "{{ _ingest.on_failure_message }}"

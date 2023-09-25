@@ -19,23 +19,24 @@ processors:
       field: event.module
       value: tychon
   - split:
+      field: host.ip
+      separator: ","
+      ignore_missing: true
+  - split:
       field: host.ipv4
       separator: ","
       ignore_missing: true
-  - set:
-      field: event.category
-      value: volumes
-  - set:
-      field: volume.percent_full
-      value: "0"
-      if: ctx.volume.percent_full == 'NaN'
   - gsub:
-      field: volume.percent_full
-      pattern: "%"
-      replacement: ""   
+      field: host.mac
+      pattern: ":"
+      replacement: "-"
+  - split:
+      field: host.mac
+      separator: ","
+      ignore_missing: true
   - convert:
-      field: script.current_duration
-      type: float
+      field: host.uptime
+      type: string
       ignore_missing: true
   - split:
       field: host.uptime
@@ -49,6 +50,36 @@ processors:
   - remove:
       field: tempuptime
       ignore_failure: true
+      ignore_missing: true
+  - convert:
+      field: volume.block_size
+      type: long
+      ignore_missing: true
+  - convert:
+      field: volume.freespace
+      type: long
+      ignore_missing: true
+  - convert:
+      field: volume.percent_full
+      type: float
+      ignore_missing: true
+  - convert:
+      field: volume.size
+      type: long
+      ignore_missing: true
+  - convert:
+      field: host.uptime
+      type: long
+      ignore_missing: true
+  - set:
+      field: event.category
+      value: [configuration]
+  - set:
+      field: event.type
+      value: [info]
+  - convert:
+      field: script.current_duration
+      type: float
       ignore_missing: true
 on_failure:
   - set:

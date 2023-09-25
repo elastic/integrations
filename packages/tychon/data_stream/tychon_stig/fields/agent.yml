@@ -1,82 +1,45 @@
-- name: cloud
-  title: Cloud
-  group: 2
-  description: Fields related to the cloud or infrastructure the events are coming from.
-  footnote: 'Examples: If Metricbeat is running on an EC2 host and fetches data from its host, the cloud info contains the data about this machine. If Metricbeat runs on a remote machine outside the cloud and fetches data from a service running in the cloud, the field contains cloud data from the machine the service is running on.'
-  type: group
-  fields:
-    - name: account.id
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'The cloud account or organization id used to identify different entities in a multi-tenant environment.
-
-        Examples: AWS account id, Google Cloud ORG Id, or other unique identifier.'
-      example: 666777888999
-    - name: availability_zone
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Availability zone in which this host is running.
-      example: us-east-1c
-    - name: instance.id
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Instance ID of the host machine.
-      example: i-1234567890abcdef0
-    - name: instance.name
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Instance name of the host machine.
-    - name: machine.type
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Machine type of the host machine.
-      example: t2.medium
-    - name: provider
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean.
-      example: aws
-    - name: region
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Region in which this host is running.
-      example: us-east-1
-    - name: project.id
-      type: keyword
-      description: Name of the project in Google Cloud.
-    - name: image.id
-      type: keyword
-      description: Image ID for the cloud instance.
-- name: container
-  title: Container
-  group: 2
-  description: 'Container fields are used for meta information about the specific container that is the source of information.
-
-    These fields help correlate data based containers from any runtime.'
+- name: id
+  description: TYCHON unique document identifier.
+  type: keyword
+- name: tychon
   type: group
   fields:
     - name: id
-      level: core
+      description: TYCHON unique host identifier.
       type: keyword
-      ignore_above: 1024
-      description: Unique container id.
-    - name: image.name
-      level: extended
+- name: elastic_agent
+  type: group
+  fields:
+    - name: id
+      description: Elastic Agent Id.
       type: keyword
-      ignore_above: 1024
-      description: Name of the image the container was built on.
+    - name: snapshot
+      description: Elastic Agent snapshot.
+      type: boolean
+    - name: version
+      description: Elastic Agent Version.
+      type: keyword
+- name: script
+  type: group
+  fields:
+    - name: current_duration
+      description: Scanner Script Duration.
+      type: long
+    - name: current_time
+      description: Current datetime.
+      type: date
     - name: name
-      level: extended
+      description: Scanner Script Name.
       type: keyword
-      ignore_above: 1024
-      description: Container name.
+    - name: start
+      description: Scanner Start datetime.
+      type: date
+    - name: type
+      description: Scanner Script Type.
+      type: keyword
+    - name: version
+      description: Scanner Script Version.
+      type: keyword
 - name: host
   title: Host
   group: 2
@@ -85,51 +48,15 @@
     ECS host.* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes.'
   type: group
   fields:
-    - name: id
-      description: Unique host id. As hostname is not always unique, use values that are meaningful in your environment.
-      type: keyword
     - name: biossn
       description: Host BIOS Serial Number.
       type: keyword
-    - name: domain
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'Name of the domain of which the host is a member.
-
-        For example, on Windows this could be the host''s Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host''s LDAP provider.'
-      example: CONTOSO
-      default_field: false
-    - name: hostname
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: 'Hostname of the host.
-
-        It normally contains what the `hostname` command returns on the host machine.'
-    - name: ip
-      level: core
-      type: ip
-      description: Host ip addresses.
     - name: ipv4
-      level: core
-      type: keyword
-      description: Host ip v4 addresses.
+      description: Host IPv4 addresses.
+      type: ip
     - name: ipv6
-      level: core
+      description: Host IPv6 addresses.
       type: keyword
-      description: Host ip v6 addresses.
-    - name: mac
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: Host mac addresses.
-    - name: type
-      description: Type of host. For Cloud providers this can be the machine type like t2.medium. If vm, this could be the container, for example, or other information meaningful in your environment.
-      type: keyword
-    - name: uptime
-      description: Seconds the host has been up.
-      type: long
     - name: workgroup
       description: Host Workgroup Network Name.
       type: keyword
@@ -150,18 +77,9 @@
           type: keyword
         - name: description
           description: Host OS Description.
-          type: keyword
-        - name: family
-          description: OS family (such as redhat, debian, freebsd, windows).
-          type: keyword
-        - name: name
-          description: Operating system name, without the version.
-          type: keyword
+          type: text
         - name: organization
           description: Host OS Organization.
-          type: keyword
-        - name: version
-          description: Operating system version as a raw string.
           type: keyword
     - name: hardware
       type: group
@@ -174,7 +92,7 @@
               type: keyword
             - name: version
               description: Host BIOS Version.
-              type: keyword
+              type: version
         - name: cpu
           type: group
           fields:

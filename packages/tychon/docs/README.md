@@ -1,6 +1,6 @@
 # TYCHON Agentless
 
-[TYCHON Agentless](https://tychon.io/products/tychon-agentless/) is an integration that lets you collect TYCHON's gold source vulnerability and STIG data from endpoints without heavy resource use or software installation. You can then investigate the TYCHON data using Elastic's analytics, visualizations, and dashboards. [Contact us to learn more.](https://tychon.io/start-a-free-trial/) 
+[TYCHON Agentless](https://tychon.io/products/tychon-agentless/) is an integration that lets you collect TYCHON's gold source Master Endpoint Record  data from endpoints, including vulnerability and STIG results, without heavy resource use or software installation. You can then investigate the TYCHON data using Elastic's analytics, visualizations, and dashboards. [Contact us to learn more.](https://tychon.io/start-a-free-trial/) 
 
 ## Compatibility
 
@@ -29,7 +29,7 @@ TYCHON scans Endpoint ARP Tables and returns the results.
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
-| destination.hostname |  | keyword |
+| destination.hostname | The Translated Hostname of the IP in the ARP Table | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.mac | MAC address of the destination. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | destination.name |  | keyword |
@@ -49,7 +49,7 @@ TYCHON scans Endpoint ARP Tables and returns the results.
 | host.biossn | Host BIOS Serial Number. | keyword |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hardware.bios.name | Host BIOS Name. | keyword |
-| host.hardware.bios.version | Host BIOS Version. | keyword |
+| host.hardware.bios.version | Host BIOS Version. | version |
 | host.hardware.cpu.caption | Host CPU Caption. | keyword |
 | host.hardware.manufacturer | Host BIOS Manufacturer. | keyword |
 | host.hardware.owner | Host BIOS Owner. | keyword |
@@ -81,15 +81,15 @@ TYCHON scans Endpoint ARP Tables and returns the results.
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Source file current offset. | long |
 | network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
-| network.interface |  | keyword |
-| network.state |  | keyword |
+| network.interface | The interface the ARP Table has associated the destination. | keyword |
+| network.state | Current state | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | script.current_duration | Scanner Script Duration. | long |
-| script.current_time | Current datetime. | long |
+| script.current_time | Current datetime. | date |
 | script.name | Scanner Script Name. | keyword |
 | script.start | Scanner Start datetime. | date |
 | script.type | Scanner Script Type. | keyword |
-| script.version | Scanner Script Version. | version |
+| script.version | Scanner Script Version. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | tychon.id | TYCHON unique host identifier. | keyword |
 
@@ -137,7 +137,7 @@ TYCHON scans for Endpoint CPU's and returns the results.
 | host.cpu.virtualization_firmware_enabled |  | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hardware.bios.name | Host BIOS Name. | keyword |
-| host.hardware.bios.version | Host BIOS Version. | keyword |
+| host.hardware.bios.version | Host BIOS Version. | version |
 | host.hardware.cpu.caption | Host CPU Caption. | keyword |
 | host.hardware.manufacturer | Host BIOS Manufacturer. | keyword |
 | host.hardware.owner | Host BIOS Owner. | keyword |
@@ -169,11 +169,11 @@ TYCHON scans for Endpoint CPU's and returns the results.
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Source file current offset. | long |
 | script.current_duration | Scanner Script Duration. | long |
-| script.current_time | Current datetime. | long |
+| script.current_time | Current datetime. | date |
 | script.name | Scanner Script Name. | keyword |
 | script.start | Scanner Start datetime. | date |
 | script.type | Scanner Script Type. | keyword |
-| script.version | Scanner Script Version. | version |
+| script.version | Scanner Script Version. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | tychon.id | TYCHON unique host identifier. | keyword |
 
@@ -230,13 +230,14 @@ TYCHON scans for Endpoint vulenrabilites and returns the results.
 | host.os.organization | Host OS Organization. | keyword |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
+| host.uptime | Seconds the host has been up. | long |
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Source file type. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Source file current offset. | long |
 | script.current_duration | Scanner Script Duration. | long |
-| script.current_time | Current datetime. | long |
+| script.current_time | Current datetime. | date |
 | script.name | Scanner Script Name. | keyword |
 | script.start | Scanner Start datetime. | date |
 | script.type | Scanner Script Type. | keyword |
@@ -280,22 +281,17 @@ TYCHON scans the Endpoint's Windows Defender and returns protection status and v
 | agent.name | Custom name of the agent. This is a name that can be given to an agent. This can be helpful if for example two Filebeat instances are running on the same host but a human readable separation is needed on which Filebeat instance data is coming from. | keyword |
 | agent.type | Type of the agent. The agent type always stays the same and should be given by the agent used. In case of Filebeat the agent would always be Filebeat also if two Filebeat instances are run on the same machine. | keyword |
 | agent.version | Version of the agent. | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| elastic.service.agent.endpoint.behavior_protection | Elastic Service Endpoint Behavior Protection. | keyword |
+| elastic.service.agent.endpoint.malware | Elastic Service Endpoint Malware. | keyword |
+| elastic.service.agent.endpoint.memory_protection | Elastic Service Endpoint Memory Protection. | keyword |
+| elastic.service.agent.endpoint.status | Elastic Service Endpoint Status. | keyword |
+| elastic.service.agent.endpoint.version | Elastic Service Endpoint Version. | version |
+| elastic.service.agent.status | Elastic Service Agent Status. | keyword |
+| elastic.service.agent.version | Elastic Service Agent Version. | version |
 | elastic_agent.id | Elastic Agent Id. | keyword |
 | elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
 | elastic_agent.version | Elastic Agent Version. | keyword |
@@ -310,37 +306,28 @@ TYCHON scans the Endpoint's Windows Defender and returns protection status and v
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.biossn | Host BIOS Serial Number. | keyword |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.epp.product | Epp products installed | keyword |
 | host.hardware.bios.name | Host BIOS Name. | keyword |
-| host.hardware.bios.version | Host BIOS Version. | keyword |
+| host.hardware.bios.version | Host BIOS Version. | version |
 | host.hardware.cpu.caption | Host CPU Caption. | keyword |
 | host.hardware.manufacturer | Host BIOS Manufacturer. | keyword |
 | host.hardware.owner | Host BIOS Owner. | keyword |
 | host.hardware.serial_number | Host BIOS Serial Number. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.ipv4 | Host ip v4 addresses. | keyword |
-| host.ipv6 | Host ip v6 addresses. | keyword |
-| host.mac | Host mac addresses. | keyword |
+| host.ipv4 | Host IPv4 addresses. | ip |
+| host.ipv6 | Host IPv6 addresses. | keyword |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.oem.manufacturer | Host OEM Manufacturer. | keyword |
 | host.oem.model | Host OEM Model. | keyword |
 | host.os.build | Host OS Build. | keyword |
-| host.os.description | Host OS Description. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.description | Host OS Description. | text |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
 | host.os.organization | Host OS Organization. | keyword |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
 | host.trellix.product | trellix products installed | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like t2.medium. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | host.uptime | Seconds the host has been up. | long |
 | host.workgroup | Host Workgroup Network Name. | keyword |
-| id | TYCHON Unique Idnentifier of the Common Vulnerabilities and Exposures Result for the Endpoint. | keyword |
+| id | TYCHON unique document identifier. | keyword |
 | input.type | Source file type. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Source file current offset. | long |
@@ -349,13 +336,27 @@ TYCHON scans the Endpoint's Windows Defender and returns protection status and v
 | package.name | Package name | keyword |
 | package.reference | Home page or reference URL of the software in this package, if available. | keyword |
 | package.type | Type of package. This should contain the package file type, rather than the package manager name. Examples: rpm, dpkg, brew, npm, gem, nupkg, jar. | keyword |
-| script.current_duration | Current Scanner Script Duration. | long |
-| script.current_time | Current Script datetime. | date |
+| script.current_duration | Scanner Script Duration. | long |
+| script.current_time | Current datetime. | date |
 | script.name | Scanner Script Name. | keyword |
 | script.start | Scanner Start datetime. | date |
 | script.type | Scanner Script Type. | keyword |
 | script.version | Scanner Script Version. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| trellix.service.accm.status | Trellix Service Accum Status. | keyword |
+| trellix.service.accm.version | Trellix Service Accum Version. | version |
+| trellix.service.dlp.status | Trellix Service DLP Status. | keyword |
+| trellix.service.dlp.version | Trellix Service DLP Version. | version |
+| trellix.service.ens.signature_version | Trellix Service ENS Signature Version. | keyword |
+| trellix.service.ens.status | Trellix Service ENS Signature status. | keyword |
+| trellix.service.ens.version | Trellix Service ENS Signature Version. | version |
+| trellix.service.ma.status | Trellix Service MA Status. | keyword |
+| trellix.service.ma.version | Trellix Service MA Version. | version |
+| trellix.service.pa.status | Trellix Service PA Status. | keyword |
+| trellix.service.pa.version | Trellix Service PA Version. | version |
+| trellix.service.rsd.status | Trellix Service RSD Status. | keyword |
+| trellix.service.rsd.version | Trellix Service RSD Version. | version |
+| tychon.id | TYCHON unique host identifier. | keyword |
 | windows_defender.service.antimalware.engine_version | Windows Defender Antimalware Engine Version. | keyword |
 | windows_defender.service.antimalware.product_version | Windows Defender Antimalware Product Version. | keyword |
 | windows_defender.service.antimalware.signature_version | Windows Defender Antimalware Signature Version. | keyword |
@@ -408,7 +409,7 @@ The TYCHON script to scan Endpoint Exposed Services and returns information.
 | host.biossn | Host BIOS Serial Number. | keyword |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hardware.bios.name | Host BIOS Name. | keyword |
-| host.hardware.bios.version | Host BIOS Version. | keyword |
+| host.hardware.bios.version | Host BIOS Version. | version |
 | host.hardware.cpu.caption | Host CPU Caption. | keyword |
 | host.hardware.manufacturer | Host BIOS Manufacturer. | keyword |
 | host.hardware.owner | Host BIOS Owner. | keyword |
@@ -423,7 +424,7 @@ The TYCHON script to scan Endpoint Exposed Services and returns information.
 | host.oem.manufacturer | Host OEM Manufacturer. | keyword |
 | host.oem.model | Host OEM Model. | keyword |
 | host.os.build | Host OS Build. | keyword |
-| host.os.description | Host OS Description. | keyword |
+| host.os.description | Host OS Description. | text |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
@@ -451,14 +452,14 @@ The TYCHON script to scan Endpoint Exposed Services and returns information.
 | process.start | The time the process started. | date |
 | process.user.name | Short name or login of the user. | keyword |
 | process.user.name.text | Multi-field of `process.user.name`. | match_only_text |
-| script.current_duration | Scanner Script Duration. | float |
+| script.current_duration | Scanner Script Duration. | long |
 | script.current_time | Current datetime. | date |
 | script.name | Scanner Script Name. | keyword |
 | script.start | Scanner Start datetime. | date |
 | script.type | Scanner Script Type. | keyword |
 | script.version | Scanner Script Version. | keyword |
-| service.description |  | keyword |
-| service.display_name |  | keyword |
+| service.description | The description text on the serivce. | keyword |
+| service.display_name | The human readable name of the service | keyword |
 | service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
 | service.state | Current state of the service. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
@@ -485,31 +486,30 @@ The TYCHON script scans an endpoint's Hard Drive Configurations and returns info
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
-| disk.adapter.serial_number |  | keyword |
-| disk.boot_from |  | boolean |
-| disk.bus_type |  | keyword |
-| disk.clustered |  | boolean |
-| disk.firmware.version |  | keyword |
-| disk.firmware_version |  | keyword |
-| disk.guid |  | keyword |
-| disk.health_status |  | keyword |
-| disk.highly_available |  | boolean |
-| disk.is_boot |  | boolean |
-| disk.location.adapter |  | integer |
-| disk.location.bus |  | integer |
-| disk.location.device |  | integer |
-| disk.location.function |  | integer |
-| disk.manufacturer |  | keyword |
-| disk.model |  | keyword |
-| disk.name |  | keyword |
-| disk.number |  | integer |
-| disk.number_of_partitions |  | integer |
-| disk.offline |  | boolean |
-| disk.operational_status |  | keyword |
-| disk.partition_style |  | keyword |
-| disk.serial_number |  | keyword |
-| disk.size |  | long |
-| disk.system |  | boolean |
+| disk.adapter.serial_number | Disk Adatper Serial Number | keyword |
+| disk.boot_from | OS booted from this disk | boolean |
+| disk.bus_type | THe Disk Bus Type | keyword |
+| disk.clustered | Is the Disk Clustered | boolean |
+| disk.firmware.version | Disk Firmware version | keyword |
+| disk.guid | Disk UUID | keyword |
+| disk.health_status | Health status of the disk | keyword |
+| disk.highly_available | Disk is marked as highly available | boolean |
+| disk.is_boot | Disk is a boot disk | boolean |
+| disk.location.adapter | Zero index adapter location | integer |
+| disk.location.bus | Disk Bus Location | integer |
+| disk.location.device | Disk Device Location | integer |
+| disk.location.function | Disk Function Location | integer |
+| disk.manufacturer | The manufacturer of the Disk | keyword |
+| disk.model | The model of the disk | keyword |
+| disk.name | The firendly name of the disk | keyword |
+| disk.number | The number assigned to the disk | integer |
+| disk.number_of_partitions | Total number of partitions on the drive | integer |
+| disk.offline | Is the disk offline | boolean |
+| disk.operational_status | Operational Status of the disk | keyword |
+| disk.partition_style | Partition style | keyword |
+| disk.serial_number | The unique serial number of the drive | keyword |
+| disk.size | Total Size of the disk | long |
+| disk.system | Is this a system drive | boolean |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | elastic_agent.id | Elastic Agent Id. | keyword |
 | elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
@@ -526,7 +526,7 @@ The TYCHON script scans an endpoint's Hard Drive Configurations and returns info
 | host.biossn | Host BIOS Serial Number. | keyword |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hardware.bios.name | Host BIOS Name. | keyword |
-| host.hardware.bios.version | Host BIOS Version. | keyword |
+| host.hardware.bios.version | Host BIOS Version. | version |
 | host.hardware.cpu.caption | Host CPU Caption. | keyword |
 | host.hardware.manufacturer | Host BIOS Manufacturer. | keyword |
 | host.hardware.owner | Host BIOS Owner. | keyword |
@@ -541,7 +541,7 @@ The TYCHON script scans an endpoint's Hard Drive Configurations and returns info
 | host.oem.manufacturer | Host OEM Manufacturer. | keyword |
 | host.oem.model | Host OEM Model. | keyword |
 | host.os.build | Host OS Build. | keyword |
-| host.os.description | Host OS Description. | keyword |
+| host.os.description | Host OS Description. | text |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
@@ -557,7 +557,7 @@ The TYCHON script scans an endpoint's Hard Drive Configurations and returns info
 | input.type | Source file type. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Source file current offset. | long |
-| script.current_duration | Scanner Script Duration. | float |
+| script.current_duration | Scanner Script Duration. | long |
 | script.current_time | Current datetime. | date |
 | script.name | Scanner Script Name. | keyword |
 | script.start | Scanner Start datetime. | date |
@@ -609,7 +609,7 @@ The TYCHON script scans an endpoint's Hardware Configurations and returns inform
 | host.biossn | Host BIOS Serial Number. | keyword |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hardware.bios.name | Host BIOS Name. | keyword |
-| host.hardware.bios.version | Host BIOS Version. | keyword |
+| host.hardware.bios.version | Host BIOS Version. | version |
 | host.hardware.cpu.caption | Host CPU Caption. | keyword |
 | host.hardware.manufacturer | Host BIOS Manufacturer. | keyword |
 | host.hardware.owner | Host BIOS Owner. | keyword |
@@ -624,7 +624,7 @@ The TYCHON script scans an endpoint's Hardware Configurations and returns inform
 | host.oem.manufacturer | Host OEM Manufacturer. | keyword |
 | host.oem.model | Host OEM Model. | keyword |
 | host.os.build | Host OS Build. | keyword |
-| host.os.description | Host OS Description. | keyword |
+| host.os.description | Host OS Description. | text |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
@@ -640,7 +640,7 @@ The TYCHON script scans an endpoint's Hardware Configurations and returns inform
 | input.type | Source file type. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Source file current offset. | long |
-| script.current_duration | Scanner Script Duration. | float |
+| script.current_duration | Scanner Script Duration. | long |
 | script.current_time | Current datetime. | date |
 | script.name | Scanner Script Name. | keyword |
 | script.start | Scanner Start datetime. | date |
@@ -687,11 +687,11 @@ The TYCHON script scans an endpoint's OS Configurations and returns information.
 | event.ufi.enabled |  | boolean |
 | host.architecture | Operating system architecture. | keyword |
 | host.biossn | Host BIOS Serial Number. | keyword |
-| host.cpu.caption |  | keyword |
-| host.cpu.count |  | integer |
+| host.cpu.caption | Description of the CPU | keyword |
+| host.cpu.count | Total Number of CPUs on the system | integer |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hardware.bios.name | Host BIOS Name. | keyword |
-| host.hardware.bios.version | Host BIOS Version. | keyword |
+| host.hardware.bios.version | Host BIOS Version. | version |
 | host.hardware.cpu.caption | Host CPU Caption. | keyword |
 | host.hardware.manufacturer | Host BIOS Manufacturer. | keyword |
 | host.hardware.owner | Host BIOS Owner. | keyword |
@@ -702,28 +702,28 @@ The TYCHON script scans an endpoint's OS Configurations and returns information.
 | host.ipv4 | Host IPv4 addresses. | ip |
 | host.ipv6 | Host IPv6 addresses. | keyword |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.memory.size |  | long |
-| host.motherboard.chipset |  | keyword |
-| host.motherboard.serial_number |  | keyword |
+| host.memory.size | Total RAM Size | long |
+| host.motherboard.chipset | Chipset of the Motherboard | keyword |
+| host.motherboard.serial_number | Serial Number of the Motherboard | keyword |
 | host.oem.manufacturer | Host OEM Manufacturer. | keyword |
 | host.oem.model | Host OEM Model. | keyword |
 | host.os.build | Host OS Build. | keyword |
-| host.os.description | Host OS Description. | keyword |
-| host.os.edition |  | keyword |
+| host.os.description | Host OS Description. | text |
+| host.os.edition | The Edition of the Opearting System | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.organization | Host OS Organization. | keyword |
-| host.os.vendor |  | keyword |
+| host.os.vendor | The vendor of the Operating System | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
-| host.security.antivirus.exists |  | boolean |
-| host.security.antivirus.name |  | keyword |
-| host.security.antivirus.state |  | keyword |
-| host.security.antivirus.status |  | keyword |
-| host.tpm.compliant |  | boolean |
-| host.tpm.digest.id |  | keyword |
-| host.tpm.present |  | boolean |
-| host.tpm.version |  | keyword |
+| host.security.antivirus.exists | Does the OS state that an AV program is installed | boolean |
+| host.security.antivirus.name | Product name the Operating System states is the AV program installed | keyword |
+| host.security.antivirus.state | The Operating System state of the AV product | keyword |
+| host.security.antivirus.status | The Operating System current status of the AV product it says is installed. | keyword |
+| host.tpm.compliant | Is the endpoint compliant with TPM security settings | boolean |
+| host.tpm.digest.id | What digest is being used by TPM | keyword |
+| host.tpm.present | Is TPM module present on the operating system | boolean |
+| host.tpm.version | What version of TPM is being used | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | host.uptime | Seconds the host has been up. | long |
 | host.virtualization_status |  | keyword |
@@ -731,17 +731,17 @@ The TYCHON script scans an endpoint's OS Configurations and returns information.
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Source file type. | keyword |
 | log.offset | Source file current offset. | long |
-| script.current_duration | Scanner Script Duration. | float |
+| script.current_duration | Scanner Script Duration. | long |
 | script.current_time | Current datetime. | date |
 | script.name | Scanner Script Name. | keyword |
 | script.start | Scanner Start datetime. | date |
 | script.type | Scanner Script Type. | keyword |
 | script.version | Scanner Script Version. | keyword |
-| tychon.definition.oval |  | date |
-| tychon.definition.stig |  | date |
+| tychon.definition.oval | What version of the TYCHON oval defitnions are currently on this endpoint | date |
+| tychon.definition.stig | What version of the Benchmark checks are on this endpoint | date |
 | tychon.id | TYCHON unique host identifier. | keyword |
-| tychon.version.agent |  | version |
-| tychon.version.content |  | version |
+| tychon.version.agent | The TYCHON Agent Version installed on the endpoint | version |
+| tychon.version.content | The TYCHON Agentless Version installed on the endpoint | version |
 
 
 ### Endpoint Network Adapters Information
@@ -764,39 +764,46 @@ The TYCHON script scans an endpoint's Network Adapter Configurations and returns
 | error.message | Error message. | match_only_text |
 | event.agent_id_status | Agents are normally responsible for populating the `agent.id` field value. If the system receiving events is capable of validating the value based on authentication information for the client then this field can be used to reflect the outcome of that validation. For example if the agent's connection is authenticated with mTLS and the client cert contains the ID of the agent to which the cert was issued then the `agent.id` value in events can be checked against the certificate. If the values match then `event.agent_id_status: verified` is added to the event, otherwise one of the other allowed values should be used. If no validation is performed then the field should be omitted. The allowed values are: `verified` - The `agent.id` field value matches expected value obtained from auth metadata. `mismatch` - The `agent.id` field value does not match the expected value obtained from auth metadata. `missing` - There was no `agent.id` field in the event to validate. `auth_metadata_missing` - There was no auth metadata or it was missing information about the agent ID. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| host.adapter.alias |  | keyword |
-| host.adapter.description |  | text |
-| host.adapter.dhcp.enabled |  | boolean |
-| host.adapter.dhcp.lease_expires |  | date |
-| host.adapter.dhcp.lease_obtained |  | date |
-| host.adapter.dhcp.server |  | ip |
-| host.adapter.domain |  | keyword |
-| host.adapter.driver.date |  | date |
-| host.adapter.driver.description |  | text |
-| host.adapter.driver.file_name |  | keyword |
-| host.adapter.driver.name |  | keyword |
-| host.adapter.driver.provider |  | keyword |
-| host.adapter.driver.version |  | keyword |
-| host.adapter.gateway |  | ip |
-| host.adapter.id |  | keyword |
-| host.adapter.ip |  | ip |
-| host.adapter.ip_filter.enabled |  | boolean |
-| host.adapter.link_speed |  | long |
-| host.adapter.mac |  | keyword |
-| host.adapter.media.connection_state |  | keyword |
-| host.adapter.media.type |  | keyword |
-| host.adapter.mtu |  | integer |
-| host.adapter.ndis.version |  | keyword |
-| host.adapter.subnet_bit |  | integer |
-| host.adapter.virtual |  | boolean |
-| host.adapter.vlan.id |  | keyword |
-| host.adapter.wifi.enabled |  | boolean |
-| host.adapter.wifi.signal_percent |  | integer |
-| host.adapter.wins_server |  | keyword |
+| host.adapter.alias | The Alias given to this adapter | keyword |
+| host.adapter.description | The network adatper description | text |
+| host.adapter.dhcp.enabled | Is DHCP Enabled on this adatper | boolean |
+| host.adapter.dhcp.lease_expires | When does this DHCP lease expire | date |
+| host.adapter.dhcp.lease_obtained | When was the DHCP lease obtained | date |
+| host.adapter.dhcp.server | What IP Address was the DHCP IP obtained from. | ip |
+| host.adapter.domain | What domain was assigned to this adatper | keyword |
+| host.adapter.driver.date | Date the driver was installed | date |
+| host.adapter.driver.description | Description of the driver | text |
+| host.adapter.driver.file_name | Driver File name | keyword |
+| host.adapter.driver.name | Name of the driver | keyword |
+| host.adapter.driver.provider | Company that provided the driver | keyword |
+| host.adapter.driver.version | Version of the driver | keyword |
+| host.adapter.gateway | Gateway IP Address | ip |
+| host.adapter.id | ID Of the adapter | keyword |
+| host.adapter.ip | IP Addresses assigned to the adatper | ip |
+| host.adapter.ip_filter.enabled | Is IP Filtering Enabled | boolean |
+| host.adapter.link_speed | Link speed of the adatper | long |
+| host.adapter.mac | Hardware MAC Address | keyword |
+| host.adapter.media.connection_state | Current Connection State | keyword |
+| host.adapter.media.type | Current Connection Media Type | keyword |
+| host.adapter.mtu | MTU Size | integer |
+| host.adapter.ndis.version | NDIS Version | keyword |
+| host.adapter.subnet_bit | Subnet BIT | integer |
+| host.adapter.virtual | Is adapter virutal | boolean |
+| host.adapter.vlan.id | The VLAN ID | keyword |
+| host.adapter.wifi.authentication | The Authentication method used to connected to the WIFI Router | keyword |
+| host.adapter.wifi.band | The band used to connected to the WIFI Router | keyword |
+| host.adapter.wifi.bssid | The Connected WIFI Router Hardware Address | keyword |
+| host.adapter.wifi.channel | The channel used to connected to the WIFI Router | keyword |
+| host.adapter.wifi.cipher | The CIPHER used to connected to the WIFI Router | keyword |
+| host.adapter.wifi.enabled | Is WIFI Enabled | boolean |
+| host.adapter.wifi.radio_type | The radio type of the connected WIFI Router | keyword |
+| host.adapter.wifi.signal_percent | Signal strenth to connected WIFI Router | integer |
+| host.adapter.wifi.ssid | The Connected WIFI Router SSID | keyword |
+| host.adapter.wins_server | The WINS Server attached to this adatper | keyword |
 | host.biossn | Host BIOS Serial Number. | keyword |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hardware.bios.name | Host BIOS Name. | keyword |
-| host.hardware.bios.version | Host BIOS Version. | keyword |
+| host.hardware.bios.version | Host BIOS Version. | version |
 | host.hardware.cpu.caption | Host CPU Caption. | keyword |
 | host.hardware.manufacturer | Host BIOS Manufacturer. | keyword |
 | host.hardware.owner | Host BIOS Owner. | keyword |
@@ -810,7 +817,7 @@ The TYCHON script scans an endpoint's Network Adapter Configurations and returns
 | host.oem.manufacturer | Host OEM Manufacturer. | keyword |
 | host.oem.model | Host OEM Model. | keyword |
 | host.os.build | Host OS Build. | keyword |
-| host.os.description | Host OS Description. | keyword |
+| host.os.description | Host OS Description. | text |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
@@ -822,7 +829,7 @@ The TYCHON script scans an endpoint's Network Adapter Configurations and returns
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Source file type. | keyword |
 | log.offset | Source file current offset. | long |
-| script.current_duration | Scanner Script Duration. | float |
+| script.current_duration | Scanner Script Duration. | long |
 | script.current_time | Current datetime. | date |
 | script.name | Scanner Script Name. | keyword |
 | script.start | Scanner Start datetime. | date |
@@ -865,7 +872,7 @@ The TYCHON script scans an endpoint's Software Inventory and returns information
 | host.biossn | Host BIOS Serial Number. | keyword |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hardware.bios.name | Host BIOS Name. | keyword |
-| host.hardware.bios.version | Host BIOS Version. | keyword |
+| host.hardware.bios.version | Host BIOS Version. | version |
 | host.hardware.cpu.caption | Host CPU Caption. | keyword |
 | host.hardware.manufacturer | Host BIOS Manufacturer. | keyword |
 | host.hardware.owner | Host BIOS Owner. | keyword |
@@ -880,7 +887,7 @@ The TYCHON script scans an endpoint's Software Inventory and returns information
 | host.oem.manufacturer | Host OEM Manufacturer. | keyword |
 | host.oem.model | Host OEM Model. | keyword |
 | host.os.build | Host OS Build. | keyword |
-| host.os.description | Host OS Description. | keyword |
+| host.os.description | Host OS Description. | text |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
@@ -912,7 +919,7 @@ The TYCHON script scans an endpoint's Software Inventory and returns information
 | package.version_major |  | integer |
 | package.version_minor |  | integer |
 | package.version_release |  | integer |
-| script.current_duration | Scanner Script Duration. | float |
+| script.current_duration | Scanner Script Duration. | long |
 | script.current_time | Current datetime. | date |
 | script.name | Scanner Script Name. | keyword |
 | script.start | Scanner Start datetime. | date |
@@ -945,18 +952,6 @@ The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/X
 | benchmark.name | Benchmark Name. | keyword |
 | benchmark.title | Benchmark Title. | keyword |
 | benchmark.version | Benchmark Version. | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -975,35 +970,26 @@ The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/X
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.biossn | Host BIOS Serial Number. | keyword |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hardware.bios.name | Host BIOS Name. | keyword |
-| host.hardware.bios.version | Host BIOS Version. | keyword |
+| host.hardware.bios.version | Host BIOS Version. | version |
 | host.hardware.cpu.caption | Host CPU Caption. | keyword |
 | host.hardware.manufacturer | Host BIOS Manufacturer. | keyword |
 | host.hardware.owner | Host BIOS Owner. | keyword |
 | host.hardware.serial_number | Host BIOS Serial Number. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.ipv4 | Host ip v4 addresses. | keyword |
-| host.ipv6 | Host ip v6 addresses. | keyword |
-| host.mac | Host mac addresses. | keyword |
+| host.ipv4 | Host IPv4 addresses. | ip |
+| host.ipv6 | Host IPv6 addresses. | keyword |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.oem.manufacturer | Host OEM Manufacturer. | keyword |
 | host.oem.model | Host OEM Model. | keyword |
 | host.os.build | Host OS Build. | keyword |
-| host.os.description | Host OS Description. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.description | Host OS Description. | text |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
 | host.os.organization | Host OS Organization. | keyword |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like t2.medium. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | host.uptime | Seconds the host has been up. | long |
 | host.workgroup | Host Workgroup Network Name. | keyword |
-| id | Tychon Unique Stig Id. | keyword |
+| id | TYCHON unique document identifier. | keyword |
 | input.type | Source file type. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Source file current offset. | long |
@@ -1037,6 +1023,7 @@ The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/X
 | script.type | Scanner Script Type. | keyword |
 | script.version | Scanner Script Version. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| tychon.id | TYCHON unique host identifier. | keyword |
 
 
 ### Endpoint Volume Information
@@ -1073,7 +1060,7 @@ The TYCHON script scans an endpoint's Volume Configurations and returns informat
 | host.biossn | Host BIOS Serial Number. | keyword |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hardware.bios.name | Host BIOS Name. | keyword |
-| host.hardware.bios.version | Host BIOS Version. | keyword |
+| host.hardware.bios.version | Host BIOS Version. | version |
 | host.hardware.cpu.caption | Host CPU Caption. | keyword |
 | host.hardware.manufacturer | Host BIOS Manufacturer. | keyword |
 | host.hardware.owner | Host BIOS Owner. | keyword |
@@ -1088,7 +1075,7 @@ The TYCHON script scans an endpoint's Volume Configurations and returns informat
 | host.oem.manufacturer | Host OEM Manufacturer. | keyword |
 | host.oem.model | Host OEM Model. | keyword |
 | host.os.build | Host OS Build. | keyword |
-| host.os.description | Host OS Description. | keyword |
+| host.os.description | Host OS Description. | text |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
@@ -1104,7 +1091,7 @@ The TYCHON script scans an endpoint's Volume Configurations and returns informat
 | input.type | Source file type. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Source file current offset. | long |
-| script.current_duration | Scanner Script Duration. | float |
+| script.current_duration | Scanner Script Duration. | long |
 | script.current_time | Current datetime. | date |
 | script.name | Scanner Script Name. | keyword |
 | script.start | Scanner Start datetime. | date |
@@ -1116,8 +1103,6 @@ The TYCHON script scans an endpoint's Volume Configurations and returns informat
 | volume.block_size |  | long |
 | volume.dirty_bit_set |  | boolean |
 | volume.dos_device_path |  | text |
-| volume.drive.letter |  | keyword |
-| volume.drive.type |  | keyword |
 | volume.file_system |  | keyword |
 | volume.freespace |  | long |
 | volume.id |  | keyword |
@@ -1129,4 +1114,6 @@ The TYCHON script scans an endpoint's Volume Configurations and returns informat
 | volume.serial_number |  | keyword |
 | volume.size |  | long |
 | volume.system_volume |  | boolean |
+| volume.volume.letter |  | keyword |
+| volume.volume.type |  | keyword |
 

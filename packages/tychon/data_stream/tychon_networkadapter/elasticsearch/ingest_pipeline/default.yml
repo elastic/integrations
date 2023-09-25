@@ -15,16 +15,49 @@ processors:
   - set:
       field: event.kind
       value: state
+  - set:
+      field: link_speed
+      value: "{{host.adapter.link_speed}}"
+  - set:
+      field: host.adapter.link_speed
+      value: 1
+  - script:
+      source: |
+            if(ctx['link_speed'].contains(' ')){
+                String[] link_Speed=ctx['link_speed'].splitOnToken(' ');
+                ctx.remove('link_speed');
+                ctx['host.adapter.link_speed']=Long.parseLong(link_Speed[0]);
+                if(link_Speed[1]=='Kbps'){
+                    ctx['host.adapter.link_speed']*=1024
+                }
+                if(link_Speed[1]=='Mbps'){
+                    ctx['host.adapter.link_speed']*=1048576
+                }
+                if(link_Speed[1]=='Gbps'){
+                    ctx['host.adapter.link_speed']*=1073741824
+                }
+            }
+      ignore_failure: true   
+  - split:
+      field: host.ip
+      separator: ","
+      ignore_missing: true
   - split:
       field: host.ipv4
       separator: ","
       ignore_missing: true
-  - set:
-      field: event.module
-      value: tychon
-  - set:
-      field: event.category
-      value: network adapter
+  - gsub:
+      field: host.mac
+      pattern: ":"
+      replacement: "-"
+  - split:
+      field: host.mac
+      separator: ","
+      ignore_missing: true
+  - convert:
+      field: host.uptime
+      type: string
+      ignore_missing: true
   - split:
       field: host.uptime
       separator: "\\.+"
@@ -38,6 +71,19 @@ processors:
       field: tempuptime
       ignore_failure: true
       ignore_missing: true
+  - convert:
+      field: host.uptime
+      type: long
+      ignore_missing: true
+  - set:
+      field: event.module
+      value: tychon
+  - set:
+      field: event.category
+      value: [configuration]
+  - set:
+      field: event.type
+      value: [info]
   - remove:
       field: host.adapter.ip
       if: ctx.host.adapter.ip == ''
@@ -56,10 +102,6 @@ processors:
   - remove:
       field: host.adapter.driver.date
       if: ctx.host.adapter.driver.date == ''
-  - gsub:
-      field: host.adapter.link_speed
-      pattern: "[^0-9]"
-      replacement: ""
   - convert:
       field: script.current_duration
       type: float

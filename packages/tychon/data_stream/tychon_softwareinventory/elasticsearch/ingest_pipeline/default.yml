@@ -21,13 +21,51 @@ processors:
       value: "1970-01-01T00:00:01Z"
       if: ctx.package.installed == ''
   - split:
+      field: host.ip
+      separator: ","
+      ignore_missing: true
+  - split:
       field: host.ipv4
       separator: ","
+      ignore_missing: true
+  - gsub:
+      field: host.mac
+      pattern: ":"
+      replacement: "-"
+  - split:
+      field: host.mac
+      separator: ","
+      ignore_missing: true
+  - convert:
+      field: host.uptime
+      type: string
+      ignore_missing: true
+  - split:
+      field: host.uptime
+      separator: "\\.+"
+      target_field: tempuptime
+      ignore_failure: true
+  - set:
+      field: host.uptime
+      value: "{{tempuptime.0}}"
+      ignore_failure: true
+  - remove:
+      field: tempuptime
+      ignore_failure: true
+      ignore_missing: true
+  - convert:
+      field: host.uptime
+      type: long
       ignore_missing: true
   - gsub:
       field: package.size
       pattern: "[^0-9]"
       replacement: ""
+  - set:
+      field: package.size
+      value: 0
+      ignore_failure: true
+      if: ctx.package.size == ''
   - gsub:
       field: package.version_build
       pattern: "[^0-9]"
@@ -64,23 +102,13 @@ processors:
       value: tychon
   - set:
       field: event.category
-      value: software inventory
+      value: [package]
+  - set:
+      field: event.type
+      value: [info]
   - convert:
       field: script.current_duration
       type: float
-      ignore_missing: true
-  - split:
-      field: host.uptime
-      separator: "\\.+"
-      target_field: tempuptime
-      ignore_failure: true
-  - set:
-      field: host.uptime
-      value: "{{tempuptime.0}}"
-      ignore_failure: true
-  - remove:
-      field: tempuptime
-      ignore_failure: true
       ignore_missing: true
 on_failure:
   - set:
