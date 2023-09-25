@@ -1,5 +1,5 @@
 ---
-description: Pipeline for processing Knowledge Base logs.
+description: Pipeline for processing Knowledge Base data.
 processors:
   - set:
       field: ecs.version
@@ -21,6 +21,7 @@ processors:
       field: message
       tag: json_message
       target_field: json
+      if: ctx.message != null
       on_failure:
         - append:
             field: error.message
@@ -30,6 +31,16 @@ processors:
         - json.QID
         - json.LAST_SERVICE_MODIFICATION_DATETIME
       target_field: _id
+      ignore_missing: true
+  - rename:
+      field: ID_RANGE
+      tag: rename_ID_RANGE
+      target_field: qualys_vmdr.knowledge_base.id_range
+      ignore_missing: true
+  - rename:
+      field: ID
+      tag: rename_ID
+      target_field: qualys_vmdr.knowledge_base.ids
       ignore_missing: true
   - rename:
       field: json.CONSEQUENCE
@@ -622,6 +633,8 @@ processors:
         - json
         - message
         - qualys_vmdr.knowledge_base.changelog_list.info.CHANGE_DATE
+        - ID_RANGE
+        - ID
       ignore_missing: true
   - remove:
       field:

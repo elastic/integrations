@@ -11,7 +11,7 @@ The GitHub audit log records all events related to the GitHub organization. See 
 To use this integration, the following prerequisites must be met:
  - You must be an organization owner.
  - You must be using Github Enterprise Cloud.
- - You must use an Personal Access Token with the `admin:org` and `read:audit_log` scope.
+ - You must use a Personal Access Token with `read:audit_log` scope.
 
 *This integration is not compatible with GitHub Enterprise server.*
 
@@ -90,7 +90,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "be3f80ae-4090-4151-99c4-6a6454fd8148",
@@ -260,7 +260,7 @@ An example event for `code_scanning` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "be3f80ae-4090-4151-99c4-6a6454fd8148",
@@ -437,7 +437,7 @@ An example event for `secret_scanning` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "be3f80ae-4090-4151-99c4-6a6454fd8148",
@@ -566,7 +566,7 @@ To use this integration, you must be an administrator for the repository or for 
 | github.dependabot.vulnerable_manifest_filename | The vulnerable manifest filename. | keyword |
 | github.dependabot.vulnerable_manifest_path | The vulnerable manifest path. | keyword |
 | github.dependabot.vulnerable_requirements | The vulnerable requirements. | keyword |
-| github.repository.description | The description of the repository. | keyword |
+| github.repository.description | The description of the repository. | text |
 | github.repository.is_in_organization | Indicates if a repository is either owned by an organization, or is a private fork of an organization repository. | boolean |
 | github.repository.is_private | Identifies if the repository is private or internal. | boolean |
 | github.repository.name | Identifies if the repository is private or internal. | keyword |
@@ -624,7 +624,7 @@ An example event for `dependabot` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "be3f80ae-4090-4151-99c4-6a6454fd8148",
@@ -874,7 +874,7 @@ An example event for `issues` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "be3f80ae-4090-4151-99c4-6a6454fd8148",
