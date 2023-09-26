@@ -129,7 +129,7 @@ An example event for `event` looks as following:
         "id": "D435435b0-BB33-4625-891E-XXXXXXX"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "event": {
         "action": "added",
