@@ -46,9 +46,7 @@ processors:
       value: info
   - append:
       if: >
-        ctx?.hashicorp_vault?.audit?.request?.operation == 'read' || 
-        ctx?.hashicorp_vault?.audit?.request?.operation == 'list' ||
-        ctx?.hashicorp_vault?.audit?.request?.operation == 'create'
+        ['read', 'list', 'create'].contains(ctx.hashicorp_vault?.audit?.request?.operation)
       field: event.type
       value: [info, start]
   - append:
