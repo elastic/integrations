@@ -696,7 +696,7 @@ An example event for `connection` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| nats.connection.idle_time | The period the connection is idle (sec) | long | gauge |
+| nats.connection.idle_time | The period the connection is idle (sec) | long | counter |
 | nats.connection.in.bytes | The amount of incoming bytes | long | counter |
 | nats.connection.in.messages | The amount of incoming messages | long | counter |
 | nats.connection.name | The name of the connection | keyword |  |
