@@ -102,7 +102,7 @@ An example event for `asset_host_detection` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "6b293533-5b3c-4cb2-a00c-b2b25ba9edec",
@@ -303,7 +303,7 @@ An example event for `knowledge_base` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "6b293533-5b3c-4cb2-a00c-b2b25ba9edec",
