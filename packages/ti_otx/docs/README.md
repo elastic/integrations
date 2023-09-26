@@ -101,13 +101,13 @@ An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-08-28T16:47:36.240Z",
+    "@timestamp": "2023-09-26T06:02:18.318Z",
     "agent": {
-        "ephemeral_id": "86276bd7-10fe-4c14-91e1-7708cc0134b8",
-        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "ephemeral_id": "7e240822-d6d7-44de-a74b-02c744232f29",
+        "id": "ce0bce5a-6e51-4f74-abca-79147f80e169",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.1"
+        "version": "8.11.0"
     },
     "data_stream": {
         "dataset": "ti_otx.threat",
@@ -118,18 +118,18 @@ An example event for `threat` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
-        "snapshot": false,
-        "version": "8.9.1"
+        "id": "ce0bce5a-6e51-4f74-abca-79147f80e169",
+        "snapshot": true,
+        "version": "8.11.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "threat"
         ],
-        "created": "2023-08-28T16:47:36.240Z",
+        "created": "2023-09-26T06:02:18.318Z",
         "dataset": "ti_otx.threat",
-        "ingested": "2023-08-28T16:47:39Z",
+        "ingested": "2023-09-26T06:02:21Z",
         "kind": "enrichment",
         "original": "{\"count\":40359,\"next\":\"https://otx.alienvault.com/api/v1/indicators/export?types=domain%2CIPv4%2Chostname%2Curl%2CFileHash-SHA256\\u0026modified_since=2020-11-29T01%3A10%3A00+00%3A00\\u0026page=2\",\"previous\":null,\"results\":{\"content\":\"\",\"description\":null,\"id\":1251,\"indicator\":\"info.3000uc.com\",\"title\":null,\"type\":\"hostname\"}}",
         "type": [
@@ -167,7 +167,7 @@ The following subscriptions are included by this API:
 
 #### Indicators of Comprosie (IoC) Expiration
 `Pulses Subscribed` datastream also supports IoC expiration by using [latest transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transform-overview.html#latest-transform-overview). Below are the steps on how it is handled:
-1. First, all the indicators are retrieved into source indices named `logs-ti_otx.pulses_subscribed-*` using CEL input and processed via ingest pipelines. These indicators have a property named `expiration` which is either a `null` value or a timestamp such as `"2023-09-07T00:00:00"`. When the value is `null` or if the timestamp value is less than current timestamp `now()`, the indicator is not expired, and hence is still active.
+1. All the indicators are retrieved into source indices named `logs-ti_otx.pulses_subscribed-*` using CEL input and processed via ingest pipelines. These indicators have a property named `expiration` which is either a `null` value or a timestamp such as `"2023-09-07T00:00:00"`. When the value is `null` or if the timestamp value is less than current timestamp `now()`, the indicator is not expired, and hence is still active.
 2. A latest transform is continuosly run on source indices. The purpose of this transform is to:
     - Move only the `active` indicators from source indices into destination indices named `logs-ti_otx_latest.pulses_subscribed-<NUMBER>` where `NUMBER` indicates index version. 
     - Delete expired indicators based on the `expiration` timestamp value.
@@ -181,14 +181,13 @@ The following subscriptions are included by this API:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
@@ -207,19 +206,16 @@ The following subscriptions are included by this API:
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -230,11 +226,13 @@ The following subscriptions are included by this API:
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| otx.content |  | keyword |
 | otx.count |  | integer |
 | otx.created |  | date |
 | otx.description |  | keyword |
 | otx.expiration |  | date |
 | otx.id | The ID of the indicator. | long |
+| otx.indicator |  | keyword |
 | otx.is_active |  | integer |
 | otx.prefetch_pulse_ids |  | boolean |
 | otx.pulse.adversary |  | keyword |
@@ -291,8 +289,8 @@ An example event for `pulses_subscribed` looks as following:
 {
     "@timestamp": "2023-08-09T05:05:15.000Z",
     "agent": {
-        "ephemeral_id": "cc5a54b4-17d0-4edf-af3f-18d5d24c9c8c",
-        "id": "190c4a99-fa1c-42cf-bdb9-d06c723d0e8a",
+        "ephemeral_id": "d57104b1-1d8b-4422-9f2d-9b03ed5db0a4",
+        "id": "ce0bce5a-6e51-4f74-abca-79147f80e169",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.11.0"
@@ -306,7 +304,7 @@ An example event for `pulses_subscribed` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "190c4a99-fa1c-42cf-bdb9-d06c723d0e8a",
+        "id": "ce0bce5a-6e51-4f74-abca-79147f80e169",
         "snapshot": true,
         "version": "8.11.0"
     },
@@ -316,7 +314,7 @@ An example event for `pulses_subscribed` looks as following:
             "threat"
         ],
         "dataset": "ti_otx.pulses_subscribed",
-        "ingested": "2023-09-08T06:57:28Z",
+        "ingested": "2023-09-26T06:01:25Z",
         "kind": "enrichment",
         "original": "{\"content\":\"\",\"count\":2,\"created\":\"2023-08-09T05:05:15\",\"description\":\"\",\"expiration\":\"2023-09-05T00:00:00\",\"id\":3450933144,\"indicator\":\"172.67.177.165\",\"is_active\":1,\"prefetch_pulse_ids\":false,\"pulse_raw\":\"{\\\"adversary\\\":\\\"\\\",\\\"attack_ids\\\":[\\\"T1531\\\",\\\"T1059\\\",\\\"T1566\\\"],\\\"author_name\\\":\\\"SampleUser\\\",\\\"created\\\":\\\"2023-08-22T09:43:18.855000\\\",\\\"description\\\":\\\"\\\",\\\"extract_source\\\":[],\\\"id\\\":\\\"64e38336d783f91d6948a7b1\\\",\\\"industries\\\":[],\\\"malware_families\\\":[\\\"WHIRLPOOL\\\"],\\\"modified\\\":\\\"2023-08-22T09:43:18.855000\\\",\\\"more_indicators\\\":false,\\\"name\\\":\\\"Sample Pulse\\\",\\\"public\\\":1,\\\"references\\\":[\\\"https://www.cisa.gov/news-events/analysis-reports/ar23-230a\\\"],\\\"revision\\\":1,\\\"tags\\\":[\\\"cisa\\\",\\\"backdoor\\\",\\\"whirlpool\\\",\\\"malware\\\"],\\\"targeted_countries\\\":[],\\\"tlp\\\":\\\"white\\\"}\",\"role\":\"\",\"t\":0,\"t2\":0.0050694942474365234,\"t3\":2.7960586547851562,\"title\":\"\",\"type\":\"IPv4\"}",
         "type": [
@@ -329,13 +327,11 @@ An example event for `pulses_subscribed` looks as following:
     "otx": {
         "count": 2,
         "created": "2023-08-09T05:05:15.000Z",
-        "description": "",
         "expiration": "2023-09-05T00:00:00.000Z",
         "id": 3450933144,
         "is_active": 1,
         "prefetch_pulse_ids": false,
         "pulse": {
-            "adversary": "",
             "attack_ids": [
                 "T1531",
                 "T1059",
@@ -364,8 +360,7 @@ An example event for `pulses_subscribed` looks as following:
         "role": "",
         "t": 0,
         "t2": 0.0050694942474365234,
-        "t3": 2.7960586547851562,
-        "title": ""
+        "t3": 2.7960586547851562
     },
     "tags": [
         "preserve_original_event",
@@ -379,6 +374,7 @@ An example event for `pulses_subscribed` looks as following:
     "threat": {
         "indicator": {
             "ip": "172.67.177.165",
+            "provider": "OTX",
             "type": "ipv4-addr"
         }
     }
