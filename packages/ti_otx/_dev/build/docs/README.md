@@ -27,7 +27,7 @@ The following subscriptions are included by this API:
 
 #### Indicators of Comprosie (IoC) Expiration
 `Pulses Subscribed` datastream also supports IoC expiration by using [latest transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transform-overview.html#latest-transform-overview). Below are the steps on how it is handled:
-1. First, all the indicators are retrieved into source indices named `logs-ti_otx.pulses_subscribed-*` using CEL input and processed via ingest pipelines. These indicators have a property named `expiration` which is either a `null` value or a timestamp such as `"2023-09-07T00:00:00"`. When the value is `null` or if the timestamp value is less than current timestamp `now()`, the indicator is not expired, and hence is still active.
+1. All the indicators are retrieved into source indices named `logs-ti_otx.pulses_subscribed-*` using CEL input and processed via ingest pipelines. These indicators have a property named `expiration` which is either a `null` value or a timestamp such as `"2023-09-07T00:00:00"`. When the value is `null` or if the timestamp value is less than current timestamp `now()`, the indicator is not expired, and hence is still active.
 2. A latest transform is continuosly run on source indices. The purpose of this transform is to:
     - Move only the `active` indicators from source indices into destination indices named `logs-ti_otx_latest.pulses_subscribed-<NUMBER>` where `NUMBER` indicates index version. 
     - Delete expired indicators based on the `expiration` timestamp value.
