@@ -37,12 +37,20 @@ To use this integration, the following prerequisites must be met:
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| github.actor_ip | The IP address of the entity performing the action. | ip |
 | github.category | GitHub action category | keyword |
+| github.hashed_token |  | keyword |
+| github.integration |  | keyword |
 | github.org | GitHub organization name | keyword |
 | github.permission | GitHub user permissions for the event. | keyword |
+| github.programmatic_access_type |  | keyword |
 | github.repo | GitHub repository name | keyword |
+| github.repositories_added_names |  | keyword |
+| github.repositories_removed_names |  | keyword |
 | github.repository_public | Whether the GitHub repository is publicly visible. | boolean |
+| github.repository_selection |  | keyword |
 | github.team | GitHub team name | keyword |
+| github.user_agent |  | keyword |
 | group.name | Name of the group. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
