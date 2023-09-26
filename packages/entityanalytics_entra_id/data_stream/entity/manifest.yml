@@ -1,0 +1,80 @@
+title: "Identities"
+type: logs
+streams:
+  - input: entity-analytics
+    title: Collect identities
+    description: Collecting identities from Microsoft Entra ID.
+    template_path: entity-analytics.yml.hbs
+    vars:
+      - name: tenant_id
+        type: text
+        title: Tenant ID
+        required: true
+      - name: client_id
+        type: text
+        title: Client (Application) ID
+        required: true
+      - name: secret
+        type: password
+        title: Secret (API Key)
+        required: true
+      - name: sync_interval
+        type: text
+        title: Sync Interval
+        description: |-
+          How often full synchronizations should occur. Must be greater than
+          Update Interval. Expected value is a duration string (15m, 1h, 1m30,
+          etc), defaults to 24h.
+        required: false
+        show_user: false
+      - name: update_interval
+        type: text
+        title: Update Interval
+        description: |-
+          How often incremental updates should occur. Must be less than Sync
+          Interval. Expected value is a duration string (15m, 1h, 1m30, etc),
+          defaults to 15m.
+        required: false
+        show_user: false
+      - name: login_endpoint
+        type: text
+        title: Login Endpoint URL
+        default: "https://login.microsoftonline.com"
+        description: URL for OAuth2 logins.
+        required: false
+        show_user: false
+      - name: login_scopes
+        type: text
+        title: Login Scopes
+        multi: true
+        default:
+          - "https://graph.microsoft.com/.default"
+        description: Scopes for OAuth2 token.
+        required: false
+        show_user: false
+      - name: api_endpoint
+        type: text
+        title: API Endpoint URL
+        default: "https://graph.microsoft.com/v1.0"
+        description: URL for the API endpoint.
+        required: false
+        show_user: false
+      - name: custom_options
+        type: yaml
+        title: Custom Options
+        multi: false
+        required: false
+        show_user: false
+        description: |-
+          Specify custom configuration options for the Entity Analytics input. See
+          [Entity Analytics](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-entityanalytics.html)
+          for details.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - entityanalytics_entra_id-entity

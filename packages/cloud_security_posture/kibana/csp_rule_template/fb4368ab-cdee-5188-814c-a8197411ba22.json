@@ -1,0 +1,38 @@
+{
+    "id": "fb4368ab-cdee-5188-814c-a8197411ba22",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "No storage buckets would be publicly accessible. You would have to explicitly administer bucket access.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/storage/docs/access-control/iam-reference\n2. https://cloud.google.com/storage/docs/access-control/making-data-public\n3. https://cloud.google.com/storage/docs/gsutil/commands/iam",
+            "id": "fb4368ab-cdee-5188-814c-a8197411ba22",
+            "name": "Ensure That Cloud Storage Bucket Is Not Anonymously or Publicly Accessible",
+            "profile_applicability": "* Level 1",
+            "description": "It is recommended that IAM policy on Cloud Storage bucket does not allows anonymous or public access.",
+            "rationale": "Allowing anonymous or public access grants permissions to anyone to access bucket content.\nSuch access might not be desired if you are storing any sensitive data.\nHence, ensure that anonymous or public access to a bucket is not allowed.",
+            "audit": "**From Google Cloud Console**\n\n1. Go to `Storage browser` by visiting [https://console.cloud.google.com/storage/browser](https://console.cloud.google.com/storage/browser).\n2. Click on each bucket name to go to its `Bucket details` page.\n3. Click on the `Permissions` tab.\n4. Ensure that `allUsers` and `allAuthenticatedUsers` are not in the `Members` list.\n\n**From Google Cloud CLI**\n\n5. List all buckets in a project\n\n```\ngsutil ls\n```\n\n6. Check the IAM Policy for each bucket:\n\n```\ngsutil iam get gs://BUCKET_NAME\n```\n\nNo role should contain `allUsers` and/or `allAuthenticatedUsers` as a member.\n\n**Using Rest API**\n\n7. List all buckets in a project\n\n```\nGet https://www.googleapis.com/storage/v1/b?project=<ProjectName>\n```\n\n8. Check the IAM Policy for each bucket\n\n```\nGET https://www.googleapis.com/storage/v1/b/<bucketName>/iam\n```\n\nNo role should contain `allUsers` and/or `allAuthenticatedUsers` as a member.",
+            "remediation": "**From Google Cloud Console**\n\n1. Go to `Storage browser` by visiting [https://console.cloud.google.com/storage/browser](https://console.cloud.google.com/storage/browser).\n2. Click on the bucket name to go to its `Bucket details` page.\n3. Click on the `Permissions` tab. \n4. Click `Delete` button in front of `allUsers` and `allAuthenticatedUsers` to remove that particular role assignment.\n\n**From Google Cloud CLI**\n\nRemove `allUsers` and `allAuthenticatedUsers` access.\n```\ngsutil iam ch -d allUsers gs://BUCKET_NAME\ngsutil iam ch -d allAuthenticatedUsers gs://BUCKET_NAME\n```\n\n**Prevention:**\n\nYou can prevent Storage buckets from becoming publicly accessible by setting up the `Domain restricted sharing` organization policy at:[ https://console.cloud.google.com/iam-admin/orgpolicies/iam-allowedPolicyMemberDomains ](https://console.cloud.google.com/iam-admin/orgpolicies/iam-allowedPolicyMemberDomains).",
+            "section": "Storage",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 5.1",
+                "Storage"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "5.1",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_5_1"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

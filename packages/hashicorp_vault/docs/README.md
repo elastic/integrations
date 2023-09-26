@@ -83,13 +83,13 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-07-20T13:39:22.108Z",
+    "@timestamp": "2023-09-26T13:07:49.743Z",
     "agent": {
-        "ephemeral_id": "a7c83396-040f-439b-a855-c30ecdf1e604",
-        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
+        "ephemeral_id": "5bbd86cc-8032-432d-be82-fae8f624ed98",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.2"
+        "version": "8.10.1"
     },
     "data_stream": {
         "dataset": "hashicorp_vault.audit",
@@ -97,12 +97,12 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "snapshot": false,
-        "version": "8.8.2"
+        "version": "8.10.1"
     },
     "event": {
         "action": "update",
@@ -111,13 +111,13 @@ An example event for `audit` looks as following:
             "authentication"
         ],
         "dataset": "hashicorp_vault.audit",
-        "id": "07b55e76-c58c-7911-f1a2-a19692c37e43",
-        "ingested": "2023-07-20T13:39:50Z",
+        "id": "0b1b9013-da54-633d-da69-8575e6794ed3",
+        "ingested": "2023-09-26T13:08:15Z",
         "kind": "event",
-        "original": "{\"time\":\"2023-07-20T13:39:22.1089946Z\",\"type\":\"request\",\"auth\":{\"token_type\":\"default\"},\"request\":{\"id\":\"07b55e76-c58c-7911-f1a2-a19692c37e43\",\"operation\":\"update\",\"namespace\":{\"id\":\"root\"},\"path\":\"sys/audit/test\"}}",
+        "original": "{\"time\":\"2023-09-26T13:07:49.743284857Z\",\"type\":\"request\",\"auth\":{\"token_type\":\"default\"},\"request\":{\"id\":\"0b1b9013-da54-633d-da69-8575e6794ed3\",\"operation\":\"update\",\"namespace\":{\"id\":\"root\"},\"path\":\"sys/audit/test\"}}",
         "outcome": "success",
         "type": [
-            "change"
+            "info"
         ]
     },
     "hashicorp_vault": {
@@ -126,7 +126,7 @@ An example event for `audit` looks as following:
                 "token_type": "default"
             },
             "request": {
-                "id": "07b55e76-c58c-7911-f1a2-a19692c37e43",
+                "id": "0b1b9013-da54-633d-da69-8575e6794ed3",
                 "namespace": {
                     "id": "root"
                 },
@@ -138,20 +138,20 @@ An example event for `audit` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "f61391496aaa43bb94736676494450c5",
+        "id": "28da52b32df94b50aff67dfb8f1be3d6",
         "ip": [
-            "172.22.0.10"
+            "192.168.80.5"
         ],
         "mac": [
-            "02-42-AC-16-00-0A"
+            "02-42-C0-A8-50-05"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.47-linuxkit",
+            "kernel": "5.10.104-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -187,7 +187,7 @@ An example event for `audit` looks as following:
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
@@ -317,13 +317,13 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-07-20T13:40:29.312Z",
+    "@timestamp": "2023-09-26T13:09:08.587Z",
     "agent": {
-        "ephemeral_id": "a7c83396-040f-439b-a855-c30ecdf1e604",
-        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
+        "ephemeral_id": "5bbd86cc-8032-432d-be82-fae8f624ed98",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.2"
+        "version": "8.10.1"
     },
     "data_stream": {
         "dataset": "hashicorp_vault.log",
@@ -331,19 +331,19 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "snapshot": false,
-        "version": "8.8.2"
+        "version": "8.10.1"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "hashicorp_vault.log",
-        "ingested": "2023-07-20T13:40:57Z",
+        "ingested": "2023-09-26T13:09:35Z",
         "kind": "event",
-        "original": "{\"@level\":\"info\",\"@message\":\"proxy environment\",\"@timestamp\":\"2023-07-20T13:40:29.312131Z\",\"http_proxy\":\"\",\"https_proxy\":\"\",\"no_proxy\":\"\"}"
+        "original": "{\"@level\":\"info\",\"@message\":\"proxy environment\",\"@timestamp\":\"2023-09-26T13:09:08.587324Z\",\"http_proxy\":\"\",\"https_proxy\":\"\",\"no_proxy\":\"\"}"
     },
     "hashicorp_vault": {
         "log": {
@@ -354,20 +354,20 @@ An example event for `log` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "f61391496aaa43bb94736676494450c5",
+        "id": "28da52b32df94b50aff67dfb8f1be3d6",
         "ip": [
-            "172.22.0.10"
+            "192.168.80.5"
         ],
         "mac": [
-            "02-42-AC-16-00-0A"
+            "02-42-C0-A8-50-05"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.47-linuxkit",
+            "kernel": "5.10.104-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -402,7 +402,7 @@ An example event for `log` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset | constant_keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
@@ -446,8 +446,8 @@ telemetry {
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset | constant_keyword |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | hashicorp_vault.metrics.\*.\* | Hashicorp Vault telemetry data from the Prometheus endpoint. |  |
 | labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |

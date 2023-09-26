@@ -1,0 +1,38 @@
+{
+    "id": "c2d65e60-221b-5748-a545-579a69ad4a93",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Enabling OS Login on project disables metadata-based SSH key configurations on all instances from a project. Disabling OS Login restores SSH keys that you have configured in project or instance meta-data.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/compute/docs/instances/managing-instance-access\n2. https://cloud.google.com/compute/docs/instances/managing-instance-access#enable_oslogin\n3. https://cloud.google.com/sdk/gcloud/reference/compute/instances/remove-metadata\n4. https://cloud.google.com/compute/docs/oslogin/setup-two-factor-authentication",
+            "id": "c2d65e60-221b-5748-a545-579a69ad4a93",
+            "name": "Ensure Oslogin Is Enabled for a Project",
+            "profile_applicability": "* Level 1",
+            "description": "Enabling OS login binds SSH certificates to IAM users and facilitates effective SSH certificate management.",
+            "rationale": "Enabling osLogin ensures that SSH keys used to connect to instances are mapped with IAM users.\nRevoking access to IAM user will revoke all the SSH keys associated with that particular user.\nIt facilitates centralized and automated SSH key pair management which is useful in handling cases like response to compromised SSH key pairs and/or revocation of external/third-party/Vendor users.",
+            "audit": "**From Google Cloud Console**\n\n1. Go to the VM compute metadata page by visiting [https://console.cloud.google.com/compute/metadata](https://console.cloud.google.com/compute/metadata).\n\n2. Ensure that key `enable-oslogin` is present with value set to `TRUE`. \n\n3. Because instances can override project settings, ensure that no instance has custom metadata with key `enable-oslogin` and value `FALSE`.\n\n**From Google Cloud CLI**\n\n4. List the instances in your project and get details on each instance:\n```\ngcloud compute instances list --format=json\n```\n5. Verify that the section `commonInstanceMetadata` has a key `enable-oslogin` set to value `TRUE`.\n**Exception:**\nVMs created by GKE should be excluded.\nThese VMs have names that start with `gke-` and are labeled `goog-gke-node`",
+            "remediation": "**From Google Cloud Console**\n\n1. Go to the VM compute metadata page by visiting: [https://console.cloud.google.com/compute/metadata](https://console.cloud.google.com/compute/metadata).\n\n2. Click `Edit`.\n\n3. Add a metadata entry where the key is `enable-oslogin` and the value is `TRUE`.\n\n4. Click `Save` to apply the changes.\n\n5. For every instance that overrides the project setting, go to the `VM Instances` page at [https://console.cloud.google.com/compute/instances](https://console.cloud.google.com/compute/instances).\n\n6. Click the name of the instance on which you want to remove the metadata value.\n7. At the top of the instance details page, click `Edit` to edit the instance settings.\n8. Under `Custom metadata`, remove any entry with key `enable-oslogin` and the value is `FALSE`\n9. At the bottom of the instance details page, click `Save` to apply your changes to the instance.\n\n**From Google Cloud CLI**\n\n10. Configure oslogin on the project:\n```\ngcloud compute project-info add-metadata --metadata enable-oslogin=TRUE\n```\n11. Remove instance metadata that overrides the project setting.\n```\ngcloud compute instances remove-metadata <INSTANCE_NAME> --keys=enable-oslogin\n```\n\nOptionally, you can enable two factor authentication for OS login.\nFor more information, see: [https://cloud.google.com/compute/docs/oslogin/setup-two-factor-authentication](https://cloud.google.com/compute/docs/oslogin/setup-two-factor-authentication).",
+            "section": "Virtual Machines",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 4.4",
+                "Virtual Machines"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "4.4",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_4_4"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

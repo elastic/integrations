@@ -41,12 +41,6 @@ processors:
       field: event.type
       value: start
   - convert:
-      field: winlog.event_data.SequenceNumber
-      target_field: event.sequence
-      type: long
-      ignore_failure: true
-      ignore_missing: true
-  - convert:
       field: winlog.record_id
       type: string
       ignore_failure: true
@@ -76,85 +70,14 @@ processors:
       ignore_failure: true
       ignore_empty_value: true
       if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
-  - append:
-      field: related.user
-      value: "{{user.name}}"
-      ignore_failure: true
-      allow_duplicates: false
-      if: ctx.user?.name != null
-  - split:
-      field: winlog.event_data.ConnectedUser
-      target_field: "_temp.connected_user_parts"
-      separator: '\\'
-      if: ctx.winlog?.event_data?.ConnectedUser != null
-  - set:
-      field: source.user.domain
-      value: "{{_temp.connected_user_parts.0}}"
-      ignore_failure: true
-      ignore_empty_value: true
-      if: ctx._temp?.connected_user_parts != null && ctx._temp.connected_user_parts.size() == 2
-  - set:
-      field: source.user.name
-      value: "{{_temp.connected_user_parts.1}}"
-      ignore_failure: true
-      ignore_empty_value: true
-      if: ctx._temp?.connected_user_parts != null && ctx._temp.connected_user_parts.size() == 2
-  - append:
-      field: related.user
-      value: "{{source.user.name}}"
-      ignore_failure: true
-      allow_duplicates: false
-      if: ctx.source?.user?.name != null
   - rename:
-      field: user.domain
-      target_field: destination.user.domain
+      field: winlog.user.name
+      target_field: user.name
       ignore_failure: true
       ignore_missing: true
-      if: ctx.source?.user != null
-  - rename:
-      field: user.name
-      target_field: destination.user.name
-      ignore_failure: true
-      ignore_missing: true
-      if: ctx.source?.user != null
-  - set:
-      field: user.domain
-      copy_from: source.user.domain
-      ignore_failure: true
-      ignore_empty_value: true
-      if: ctx.source?.user != null
-  - set:
-      field: user.name
-      copy_from: source.user.name
-      ignore_failure: true
-      ignore_empty_value: true
-      if: ctx.source?.user != null
+      if: ctx.user?.name == null
 
     ## User data fields.
-  - convert:
-      field: winlog.user_data.FileHashLength
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: winlog.user_data.FileHashLength
-            ignore_failure: true
-  - convert:
-      field: winlog.user_data.FileHashLength
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: winlog.user_data.FileHashLength
-            ignore_failure: true
-  - convert:
-      field: winlog.user_data.FileHashLength
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: winlog.user_data.FileHashLength
-            ignore_failure: true
   - convert:
       field: winlog.user_data.FileHashLength
       type: long
@@ -220,6 +143,29 @@ processors:
             field: winlog.user_data.TargetProcessId
             ignore_failure: true
 
+    ## Fully Qualified Binary Name (FQBN) / File Fields
+  - grok:
+      field: winlog.user_data.Fqbn
+      ignore_missing: true
+      patterns:
+      - "^O=(?<file.x509.subject.organization>.*),%{SPACE}L=(?<file.x509.subject.locality>.*),%{SPACE}S=(?<file.x509.subject.state_or_province>.*),%{SPACE}C=(?<file.x509.subject.country>[^\\\\]*)\\\\(?<file.pe.product>[^\\\\]*)\\\\(?<file.pe.original_file_name>[^\\\\]*)\\\\(?<file.pe.file_version>.*)$"
+      - "^O=(?<file.x509.subject.organization>.*),%{SPACE}L=(?<file.x509.subject.locality>.*),%{SPACE}C=(?<file.x509.subject.country>[^\\\\]*)\\\\(?<file.pe.product>[^\\\\]*)\\\\(?<file.pe.original_file_name>[^\\\\]*)\\\\(?<file.pe.file_version>.*)$"
+      - "^O=(?<file.x509.subject.organization>.*),%{SPACE}S=(?<file.x509.subject.state_or_province>.*),%{SPACE}C=(?<file.x509.subject.country>[^\\\\]*)\\\\(?<file.pe.product>[^\\\\]*)\\\\(?<file.pe.original_file_name>[^\\\\]*)\\\\(?<file.pe.file_version>.*)$"
+      if: ctx.winlog?.user_data?.Fqbn != "-"
+
+  - grok:
+      field: winlog.user_data.FullFilePath
+      ignore_missing: true
+      patterns:
+      - '(?<file.name>([^\\]*$))'
+      if: ctx.winlog?.user_data?.FullFilePath != "-"
+
+  - set:
+      field: file.hash.sha256
+      copy_from: winlog.user_data.FileHash
+      ignore_empty_value: true
+      if: ctx.winlog?.user_data?.FileHash != "-"
+      
 on_failure:
   - set:
       field: event.kind
