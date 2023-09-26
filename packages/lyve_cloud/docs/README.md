@@ -189,9 +189,6 @@ An example event for `audit` looks as following:
             }
         }
     },
-    "os": {
-        "name": "Linux"
-    },
     "related": {
         "ip": [
             "1.128.0.0",
