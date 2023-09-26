@@ -40,23 +40,28 @@ processors:
       if: ctx?.hashicorp_vault?.audit?.request?.operation == 'delete'
       field: event.type
       value: [info, end]
+      allow_duplicates: false
   - append:
       if: ctx?.hashicorp_vault?.audit?.request?.operation == 'update'
       field: event.type
       value: info
+      allow_duplicates: false
   - append:
       if: >
         ['read', 'list', 'create'].contains(ctx.hashicorp_vault?.audit?.request?.operation)
       field: event.type
       value: [info, start]
+      allow_duplicates: false
   - append:
       if: ctx?.hashicorp_vault?.audit?.error != null
       field: event.type
       value: info
+      allow_duplicates: false
   - append:
       if: ctx?.hashicorp_vault?.audit?.error != null && ctx.hashicorp_vault.audit.error.contains("denied")
       field: event.type
       value: info
+      allow_duplicates: false
   - set:
       field: event.action
       copy_from: hashicorp_vault.audit.request.operation
