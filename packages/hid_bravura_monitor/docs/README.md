@@ -167,7 +167,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "02ab444e-ca97-437b-85dc-d580f055047c",
@@ -438,73 +438,43 @@ An example event for `winlog` looks as following:
 ```json
 {
     "@timestamp": "2021-10-29T14:05:50.739Z",
+    "agent": {
+        "ephemeral_id": "d061bfcf-e51b-4586-9ace-3d5b15f86e37",
+        "hostname": "node1",
+        "id": "aa12ad42-61bc-466c-8887-1a15d4646fc7",
+        "name": "node1",
+        "type": "filebeat",
+        "version": "8.0.0"
+    },
     "cloud": {
-        "provider": "aws",
+        "account": {
+            "id": "753231555564"
+        },
+        "availability_zone": "us-east-1a",
+        "image": {
+            "id": "ami-0e6ddc753bf04d004"
+        },
         "instance": {
             "id": "i-043997b05c5fa45ee"
         },
         "machine": {
             "type": "t3a.xlarge"
         },
-        "region": "us-east-1",
-        "availability_zone": "us-east-1a",
-        "account": {
-            "id": "753231555564"
-        },
-        "image": {
-            "id": "ami-0e6ddc753bf04d004"
-        }
+        "provider": "aws",
+        "region": "us-east-1"
     },
-    "log": {
-        "level": "information"
-    },
-    "message": "User successfully logged in.|Profile=JOHND|Language=|Skin=",
-    "winlog": {
-        "record_id": 1548167,
-        "api": "wineventlog",
-        "opcode": "Info",
-        "provider_guid": "{5a744344-18a9-480d-8a3a-0560ac58b841}",
-        "channel": "Hitachi-Hitachi ID Systems-Hitachi ID Suite/Operational",
-        "activity_id": "{4ffdfadd-63f2-41b2-9a4f-13534a729c54}",
-        "user": {
-            "identifier": "S-1-5-21-1512184445-966971527-3399726218-1035",
-            "name": "psadmin",
-            "domain": "DOMAIN1",
-            "type": "User"
-        },
-        "event_data": {
-            "Module": "psf.exe",
-            "Profile": "JOHND",
-            "Instance": "pmim"
-        },
-        "event_id": 92,
-        "computer_name": "bravurasecurity1.corp",
-        "provider_name": "Hitachi-Hitachi ID Systems-Hitachi ID Suite",
-        "task": "",
-        "process": {
-            "pid": 6368,
-            "thread": {
-                "id": 9064
-            }
-        }
+    "ecs": {
+        "version": "8.10.0"
     },
     "event": {
-        "kind": "event",
         "code": 92,
-        "provider": "Hitachi-Hitachi ID Systems-Hitachi ID Suite",
-        "created": "2021-10-29T14:05:52.111Z"
+        "created": "2021-10-29T14:05:52.111Z",
+        "kind": "event",
+        "provider": "Hitachi-Hitachi ID Systems-Hitachi ID Suite"
     },
     "host": {
-        "name": "bravurasecurity1.corp",
         "architecture": "x86_64",
-        "os": {
-            "family": "windows",
-            "name": "Windows Server 2019 Datacenter",
-            "kernel": "10.0.17763.1999 (WinBuild.160101.0800)",
-            "build": "17763.1999",
-            "platform": "windows",
-            "version": "10.0"
-        },
+        "hostname": "node1",
         "id": "a9d2b7f5-6d62-46b3-8fbe-35a7e83d1dc8",
         "ip": [
             "0.0.0.0"
@@ -512,18 +482,48 @@ An example event for `winlog` looks as following:
         "mac": [
             "0a:a5:af:ad:d3:ab"
         ],
-        "hostname": "node1"
+        "name": "bravurasecurity1.corp",
+        "os": {
+            "build": "17763.1999",
+            "family": "windows",
+            "kernel": "10.0.17763.1999 (WinBuild.160101.0800)",
+            "name": "Windows Server 2019 Datacenter",
+            "platform": "windows",
+            "version": "10.0"
+        }
     },
-    "agent": {
-        "version": "8.0.0",
-        "hostname": "node1",
-        "ephemeral_id": "d061bfcf-e51b-4586-9ace-3d5b15f86e37",
-        "id": "aa12ad42-61bc-466c-8887-1a15d4646fc7",
-        "name": "node1",
-        "type": "filebeat"
+    "log": {
+        "level": "information"
     },
-    "ecs": {
-        "version": "8.9.0"
+    "message": "User successfully logged in.|Profile=JOHND|Language=|Skin=",
+    "winlog": {
+        "activity_id": "{4ffdfadd-63f2-41b2-9a4f-13534a729c54}",
+        "api": "wineventlog",
+        "channel": "Hitachi-Hitachi ID Systems-Hitachi ID Suite/Operational",
+        "computer_name": "bravurasecurity1.corp",
+        "event_data": {
+            "Instance": "pmim",
+            "Module": "psf.exe",
+            "Profile": "JOHND"
+        },
+        "event_id": 92,
+        "opcode": "Info",
+        "process": {
+            "pid": 6368,
+            "thread": {
+                "id": 9064
+            }
+        },
+        "provider_guid": "{5a744344-18a9-480d-8a3a-0560ac58b841}",
+        "provider_name": "Hitachi-Hitachi ID Systems-Hitachi ID Suite",
+        "record_id": 1548167,
+        "task": "",
+        "user": {
+            "domain": "DOMAIN1",
+            "identifier": "S-1-5-21-1512184445-966971527-3399726218-1035",
+            "name": "psadmin",
+            "type": "User"
+        }
     }
 }
 ```
