@@ -449,7 +449,10 @@ telemetry {
 | event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
-| hashicorp_vault.metrics.\*.\* | Hashicorp Vault telemetry data from the Prometheus endpoint. |  |
+| hashicorp_vault.metrics.\*.counter | Hashicorp Vault telemetry data from the Prometheus endpoint. | double |
+| hashicorp_vault.metrics.\*.histogram | Hashicorp Vault telemetry data from the Prometheus endpoint. | histogram |
+| hashicorp_vault.metrics.\*.rate | Hashicorp Vault telemetry data from the Prometheus endpoint. | double |
+| hashicorp_vault.metrics.\*.value | Hashicorp Vault telemetry data from the Prometheus endpoint. | double |
 | labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
 | labels.auth_method | Authorization engine type. | keyword |
 | labels.cluster | The cluster name from which the metric originated; set in the configuration file, or automatically generated when a cluster is created. | keyword |
