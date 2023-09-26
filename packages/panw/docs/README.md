@@ -34,11 +34,11 @@ An example event for `panos` looks as following:
 {
     "@timestamp": "2012-04-10T04:39:56.000Z",
     "agent": {
-        "ephemeral_id": "14270b7f-dcde-4dce-a132-6579ebe118a0",
-        "id": "0a5c1566-c6fd-4e91-b96d-4083445a000e",
+        "ephemeral_id": "3a362c46-abee-4440-bd82-f0e41a651188",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.0"
+        "version": "8.10.1"
     },
     "data_stream": {
         "dataset": "panw.panos",
@@ -67,9 +67,9 @@ An example event for `panos` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "0a5c1566-c6fd-4e91-b96d-4083445a000e",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "snapshot": false,
-        "version": "8.9.0"
+        "version": "8.10.1"
     },
     "event": {
         "action": "url_filtering",
@@ -81,7 +81,7 @@ An example event for `panos` looks as following:
         ],
         "created": "2012-10-30T09:46:12.000Z",
         "dataset": "panw.panos",
-        "ingested": "2023-08-07T14:52:26Z",
+        "ingested": "2023-09-26T16:43:58Z",
         "kind": "alert",
         "original": "\u003c14\u003eNov 30 16:09:08 PA-220 1,2012/10/30 09:46:12,01606001116,THREAT,url,1,2012/04/10 04:39:56,192.168.0.2,175.16.199.1,0.0.0.0,0.0.0.0,rule1,crusher,,web-browsing,vsys1,trust,untrust,ethernet1/2,ethernet1/1,forwardAll,2012/04/10 04:39:58,25149,1,59309,80,0,0,0x208000,tcp,alert,\"lorexx.cn/loader.exe\",(9999),not-resolved,informational,client-to-server,0,0x0,192.168.0.0-192.168.255.255,United States,0,text/html",
         "outcome": "success",
@@ -101,7 +101,7 @@ An example event for `panos` looks as following:
     "log": {
         "level": "informational",
         "source": {
-            "address": "192.168.176.4:41606"
+            "address": "192.168.80.7:47488"
         },
         "syslog": {
             "facility": {
@@ -685,8 +685,10 @@ An example event for `panos` looks as following:
 | tls.client.not_after | Date/Time indicating when client certificate is no longer considered valid. | date |
 | tls.client.not_before | Date/Time indicating when client certificate is first considered valid. | date |
 | tls.client.server_name | Also called an SNI, this tells the server which hostname to which the client is attempting to connect to. When this value is available, it should get copied to `destination.domain`. | keyword |
+| tls.client.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
 | tls.client.x509.public_key_size | The size of the public key space in bits. | long |
 | tls.client.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters. | keyword |
+| tls.client.x509.subject.common_name | List of common names (CN) of subject. | keyword |
 | tls.client.x509.version_number | Version of x509 format. | keyword |
 | tls.curve | String indicating the curve used for the given cipher, when applicable. | keyword |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |
@@ -711,6 +713,4 @@ An example event for `panos` looks as following:
 | user_agent.os.name.text | Multi-field of `user_agent.os.name`. | match_only_text |
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
-| x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
-| x509.subject.common_name | List of common names (CN) of subject. | keyword |
 
