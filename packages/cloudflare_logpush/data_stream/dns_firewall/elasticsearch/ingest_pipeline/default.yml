@@ -1,0 +1,292 @@
+---
+description: Pipeline for parsing Cloudflare DNS Firewall logs.
+processors:
+  - set:
+      field: ecs.version
+      value: 8.9.0
+      tag: set_ecs_version
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      tag: rename_event_original
+  - json:
+      field: event.original
+      target_field: json
+      tag: json_event_original
+  - set:
+      field: event.kind
+      value: event
+      tag: set_event_kind
+  - set:
+      field: event.category
+      value: [network]
+      tag: set_event_category
+  - set:
+      field: event.type
+      value: [info]
+      tag: set_event_type
+
+# Timestamp
+  - script:
+      lang: painless
+      tag: painless_timestamp_to_milli
+      if: ctx.json?.Timestamp != null
+      source: |
+        try {
+          long t;
+          if (ctx.json.Timestamp instanceof String) {
+            t = Long.parseLong(ctx.json.Timestamp);
+          } else if (ctx.json.Timestamp instanceof Number) {
+            t = (long)(ctx.json.Timestamp);
+          } else {
+            return;
+          }
+          if (t > (long)(1e18)) {
+            ctx.json.Timestamp = t/(long)(1e6)
+          } else if (t < (long)(1e10))  {
+            ctx.json.Timestamp = t*(long)(1e3)
+          }
+        }
+        catch (Exception e) {}
+  - date:
+      field: json.Timestamp
+      if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
+      formats:
+        - UNIX_MS
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssZ
+      timezone: UTC
+      tag: date_event_timestamp
+      on_failure:
+      - append:
+          field: error.message
+          value: "{{{_ingest.on_failure_message}}}"
+  - set:
+      field: cloudflare_logpush.dns_firewall.timestamp
+      copy_from: "@timestamp"
+      tag: set_timestamp
+
+# Handle source IP
+  - rename:
+      field: json.SourceIP
+      target_field: cloudflare_logpush.dns_firewall.source.ip
+      ignore_missing: true
+      tag: rename_source_ip
+  - set:
+      field: source.ip
+      copy_from: cloudflare_logpush.dns_firewall.source.ip
+      tag: set_source_ip
+# Geo enrichment (source IP)
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      tag: geo_source_ip
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      tag: geo_source_as
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+      tag: rename_source_as_number
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+      tag: rename_source_as_org
+
+# DNS ECS fields
+  - rename:
+      field: json.QueryName
+      target_field: cloudflare_logpush.dns_firewall.question.name
+      ignore_missing: true
+      tag: rename_question_name
+  - set:
+      field: dns.question.name
+      copy_from: cloudflare_logpush.dns_firewall.question.name
+      tag: set_question_name
+
+  - convert:
+      field: json.ClientResponseCode
+      target_field: cloudflare_logpush.dns_firewall.response.code
+      if: ctx.json?.ClientResponseCode != ''
+      type: string
+      ignore_missing: true
+      tag: convert_dns_response_code
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.UpstreamResponseCode
+      target_field: cloudflare_logpush.dns_firewall.upstream.response_code
+      if: ctx.json?.UpstreamResponseCode != ''
+      type: string
+      ignore_missing: true
+      tag: convert_dns_upstream_response_code
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: dns.response_code
+      copy_from: cloudflare_logpush.dns_firewall.response.code
+      if: ctx.cloudflare_logpush?.dns_firewall?.response?.code != null
+      tag: set_dns_response_code
+  - set:
+      field: dns.response_code
+      copy_from: cloudflare_logpush.dns_firewall.upstream.response_code
+      if: ctx.cloudflare_logpush?.dns_firewall?.response_code == null && ctx.cloudflare_logpush?.dns_firewall?.upstream?.response_code != null
+      tag: set_dns_upstream_response_code
+
+# Custom fields
+  - rename:
+      field: json.ClusterID
+      target_field: cloudflare_logpush.dns_firewall.cluster_id
+      ignore_missing: true
+      tag: rename_cluster_id
+  - rename:
+      field: json.ColoCode
+      target_field: cloudflare_logpush.dns_firewall.colo.code
+      ignore_missing: true
+      tag: rename_colo_code
+  - rename:
+      field: json.EDNSSubnet
+      target_field: cloudflare_logpush.dns_firewall.edns.subnet
+      ignore_missing: true
+      tag: rename_edns_subnet
+  - rename:
+      field: json.EDNSSubnetLength
+      target_field: cloudflare_logpush.dns_firewall.edns.subnet_length
+      ignore_missing: true
+      tag: rename_edns_subnet_length
+  - rename:
+      field: json.QueryDO
+      target_field: cloudflare_logpush.dns_firewall.question.dnssec_ok
+      ignore_missing: true
+      tag: rename_question_do
+  - rename:
+      field: json.QueryRD
+      target_field: cloudflare_logpush.dns_firewall.question.recursion_desired
+      ignore_missing: true
+      tag: rename_question_recursion_desired
+  - rename:
+      field: json.QuerySize
+      target_field: cloudflare_logpush.dns_firewall.question.size
+      ignore_missing: true
+      tag: rename_question_size
+  - rename:
+      field: json.QueryTCP
+      target_field: cloudflare_logpush.dns_firewall.question.tcp
+      ignore_missing: true
+      tag: rename_question_tcp
+  - set:
+      field: network.transport
+      value: tcp
+      if: ctx.cloudflare_logpush?.dns_firewall?.question?.tcp == true
+      tag: set_network_transport_tcp
+  - set:
+      field: network.transport
+      value: udp
+      if: ctx.cloudflare_logpush?.dns_firewall?.question?.tcp == false
+      tag: set_network_transport_udp
+  - rename:
+      field: json.QueryType
+      target_field: cloudflare_logpush.dns_firewall.question.type
+      ignore_missing: true
+      tag: rename_question_type
+  - rename:
+      field: json.ResponseCached
+      target_field: cloudflare_logpush.dns_firewall.response.cached
+      ignore_missing: true
+      tag: rename_dns_response_cached
+  - rename:
+      field: json.ResponseCachedStale
+      target_field: cloudflare_logpush.dns_firewall.response.cached_stale
+      ignore_missing: true
+      tag: rename_dns_response_cached_stale
+  - rename:
+      field: json.UpstreamIP
+      target_field: cloudflare_logpush.dns_firewall.upstream.ip
+      ignore_missing: true
+      tag: rename_dns_upstream_ip
+  - rename:
+      field: json.UpstreamResponseTimeMs
+      target_field: cloudflare_logpush.dns_firewall.upstream.response_time_ms
+      ignore_missing: true
+      tag: rename_dns_upstream_response_time_ms
+
+# Create related fields
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null && ctx.source.ip != ''
+      allow_duplicates: false
+      tag: append_related_source_ip
+  - append:
+      field: related.ip
+      value: '{{{cloudflare_logpush.dns_firewall.edns.subnet}}}'
+      if: ctx.cloudflare_logpush?.dns_firewall?.edns?.subnet != null && ctx.cloudflare_logpush.dns_firewall.edns.subnet != ''
+      allow_duplicates: false
+      tag: append_related_edns_subnet
+  - append:
+      field: related.ip
+      value: '{{{cloudflare_logpush.dns_firewall.upstream.ip}}}'
+      if: ctx.cloudflare_logpush?.dns_firewall?.upstream?.ip != null && ctx.cloudflare_logpush.dns_firewall.upstream.ip != ''
+      allow_duplicates: false
+      tag: append_related_upstream_ip
+
+# Clean resulting event
+  - remove:
+      field: json
+      ignore_missing: true
+      tag: remove_json
+  - remove:
+      field:
+        - cloudflare_logpush.dns_firewall.timestamp
+        - cloudflare_logpush.dns_firewall.source.ip
+        - cloudflare_logpush.dns_firewall.question.name
+        - cloudflare_logpush.dns_firewall.response.code
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_failure: true
+      ignore_missing: true
+      tag: remove_duplicated_custom_fields
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+      tag: remove_event_original
+  - script:
+      description: Drops null/empty values recursively.
+      tag: script_drop_empty_fields
+      lang: painless
+      source: |-
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error

@@ -1,0 +1,64 @@
+- name: cloudflare_logpush.sinkhole_http
+  type: group
+  description: Integration for parsing Cloudflare Logpush Sinkhole HTTP logs.
+  fields:
+    - name: account_id
+      type: keyword
+      description: The Account ID.
+    - name: destination.ip
+      type: ip
+      description: The destination IP address of the request.
+    - name: host.name
+      type: keyword
+      description: The host the request was sent to.
+    - name: request
+      type: group
+      fields:
+        - name: body
+          type: group
+          fields:
+            - name: content
+              type: keyword
+              description: The request body.
+            - name: bytes
+              type: long
+              description: The length of request body.
+        - name: headers
+          type: keyword
+          description: The request headers.
+        - name: method
+          type: keyword
+          description: The request method.
+        - name: password
+          type: keyword
+          description: The request password.
+        - name: referrer
+          type: keyword
+          description: The referrer of the request.
+        - name: uri
+          type: keyword
+          description: The request Uniform Resource Identifier.
+        - name: url
+          type: keyword
+          description: The request Uniform Resource Locator.
+    - name: r2path
+      type: keyword
+      description: The path to the object within the R2 bucket linked to this sinkhole that stores overflow body and header data. Blank if neither headers nor body was larger than 256 bytes.
+    - name: sinkhole_id
+      type: keyword
+      description: The ID of the Sinkhole that logged the HTTP Request.
+    - name: source.ip
+      type: ip
+      description: The source IP address of the request.
+    - name: timestamp
+      type: date
+      description: The date and time the sinkhole HTTP request was logged.
+    - name: user_agent
+      type: keyword
+      description: The request user agent.
+    - name: user.name
+      type: keyword
+      description: The request username.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.
