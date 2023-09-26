@@ -101,8 +101,6 @@ when creating new dashboard or in other Analytics search fields inside the filte
 | lyve_cloud.audit.auditEntry.responseHeader.object_lock_retain_until_date | Object retention duration | date |
 | lyve_cloud.audit.auditEntry.responseHeader.x-amz-version-id | The version of the object. When versioning is enabled. | keyword |
 | lyve_cloud.audit.auditEntry.version | Represents the current version of Audit Log structure. | keyword |
-| os.name | Operating system name, without the version. | keyword |
-| os.name.text | Multi-field of `os.name`. | match_only_text |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
@@ -190,9 +188,6 @@ An example event for `audit` looks as following:
                 "version": "1"
             }
         }
-    },
-    "os": {
-        "name": "Linux"
     },
     "related": {
         "ip": [
