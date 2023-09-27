@@ -92,7 +92,7 @@ An example event for `ecs` looks as following:
         ],
         "name": "4b4f1fd6f3ff",
         "mac": [
-            "02:42:ac:13:00:04"
+            "02-42-AC-13-00-04"
         ],
         "architecture": "aarch64"
     },

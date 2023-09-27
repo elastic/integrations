@@ -92,7 +92,7 @@ An example event for `ebs` looks as following:
         ],
         "name": "docker-fleet-agent",
         "mac": [
-            "02:42:ac:12:00:07"
+            "02-42-AC-12-00-07"
         ],
         "architecture": "x86_64"
     },

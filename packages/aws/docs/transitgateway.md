@@ -92,7 +92,7 @@ An example event for `transitgateway` looks as following:
         ],
         "name": "a20ad158868c",
         "mac": [
-            "02:42:ac:14:00:07"
+            "02-42-AC-14-00-07"
         ],
         "architecture": "aarch64"
     },

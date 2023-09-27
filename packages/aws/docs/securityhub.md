@@ -396,7 +396,7 @@ An example event for `securityhub_findings` looks as following:
         "type": "httpjson"
     },
     "network": {
-        "direction": "IN",
+        "direction": "ingress",
         "protocol": "tcp"
     },
     "organization": {
@@ -435,7 +435,7 @@ An example event for `securityhub_findings` looks as following:
     "threat": {
         "indicator": {
             "last_seen": "2018-09-27T23:37:31.000Z",
-            "type": "IPV4_ADDRESS"
+            "type": "ipv4-addr"
         }
     },
     "url": {

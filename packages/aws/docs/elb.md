@@ -338,7 +338,7 @@ An example event for `elb` looks as following:
         ],
         "name": "docker-fleet-agent",
         "mac": [
-            "02:42:c0:a8:60:07"
+            "02-42-C0-A8-60-07"
         ],
         "architecture": "x86_64"
     },
