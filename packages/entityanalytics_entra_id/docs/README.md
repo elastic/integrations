@@ -53,7 +53,7 @@ An example event for `entity` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "a5d370e8-ae36-45f7-adbd-f22b984b979d",
