@@ -155,13 +155,13 @@ An example event for `access` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-09-07T11:41:24.000Z",
+    "@timestamp": "2023-09-27T19:06:51.000Z",
     "agent": {
-        "ephemeral_id": "02848771-8886-4b78-93a0-01247c828e99",
-        "id": "3500c887-7f0f-40a5-a065-eb2c17c1a042",
+        "ephemeral_id": "660e6653-ce16-42eb-8e2e-9952cf9745d2",
+        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.10.0"
+        "version": "8.10.1"
     },
     "apache_tomcat": {
         "access": {
@@ -183,9 +183,9 @@ An example event for `access` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "3500c887-7f0f-40a5-a065-eb2c17c1a042",
-        "snapshot": true,
-        "version": "8.10.0"
+        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
+        "snapshot": false,
+        "version": "8.10.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -193,10 +193,10 @@ An example event for `access` looks as following:
             "web"
         ],
         "dataset": "apache_tomcat.access",
-        "ingested": "2023-09-07T11:42:01Z",
+        "ingested": "2023-09-27T19:07:26Z",
         "kind": "event",
         "module": "apache_tomcat",
-        "original": "127.0.0.1 - - [07/Sep/2023:11:41:24 +0000] \"GET / HTTP/1.1\" 200 11235",
+        "original": "127.0.0.1 - - [27/Sep/2023:19:06:51 +0000] \"GET / HTTP/1.1\" 200 11235",
         "outcome": "success",
         "type": [
             "access"
@@ -217,8 +217,8 @@ An example event for `access` looks as following:
     "log": {
         "file": {
             "device_id": 141,
-            "inode": 17037548,
-            "path": "/tmp/service_logs/localhost_access_log.2023-09-07.txt"
+            "inode": 18615366,
+            "path": "/tmp/service_logs/localhost_access_log.2023-09-27.txt"
         },
         "offset": 0
     },
@@ -270,8 +270,12 @@ An example event for `access` looks as following:
 | http.response.status_code | HTTP response status code. | long |  |
 | http.version | HTTP version. | keyword |  |
 | input.type | Type of Filebeat input. | keyword |  |
-| log.file.device_id | Log file device ID key. | long |  |
-| log.file.inode | Log file inode key. | long |  |
+| log.file.device_id | Log file device ID key | keyword |  |
+| log.file.fingerprint | Fingerprint for the file | keyword |  |
+| log.file.idxhiKey | File index high | keyword |  |
+| log.file.idxloKey | File index low | keyword |  |
+| log.file.inode | Log file inode key | keyword |  |
+| log.file.volKey | Volume serial number | keyword |  |
 | log.offset | Log offset. | long |  |
 | related.ip | All of the IPs seen on your event. | ip |  |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |  |
@@ -300,13 +304,13 @@ An example event for `catalina` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-09-07T11:43:40.288Z",
+    "@timestamp": "2023-09-27T19:09:05.176Z",
     "agent": {
-        "ephemeral_id": "ebeae6d3-cbb9-4f21-a42a-1dac8a969ed4",
-        "id": "3500c887-7f0f-40a5-a065-eb2c17c1a042",
+        "ephemeral_id": "077f3cfd-ea7d-49bc-a421-d85ae64524a4",
+        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.10.0"
+        "version": "8.10.1"
     },
     "apache_tomcat": {
         "catalina": {
@@ -322,9 +326,9 @@ An example event for `catalina` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "3500c887-7f0f-40a5-a065-eb2c17c1a042",
-        "snapshot": true,
-        "version": "8.10.0"
+        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
+        "snapshot": false,
+        "version": "8.10.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -332,10 +336,10 @@ An example event for `catalina` looks as following:
             "web"
         ],
         "dataset": "apache_tomcat.catalina",
-        "ingested": "2023-09-07T11:44:46Z",
+        "ingested": "2023-09-27T19:10:10Z",
         "kind": "event",
         "module": "apache_tomcat",
-        "original": "07-Sep-2023 11:43:40.288 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version name:   Apache Tomcat/10.1.5",
+        "original": "27-Sep-2023 19:09:05.176 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version name:   Apache Tomcat/10.1.5",
         "timezone": "UTC",
         "type": [
             "info"
@@ -347,8 +351,8 @@ An example event for `catalina` looks as following:
     "log": {
         "file": {
             "device_id": 141,
-            "inode": 17038307,
-            "path": "/tmp/service_logs/catalina.2023-09-07.log"
+            "inode": 18617251,
+            "path": "/tmp/service_logs/catalina.2023-09-27.log"
         },
         "level": "info",
         "offset": 0
@@ -382,8 +386,12 @@ An example event for `catalina` looks as following:
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| log.file.device_id | Log file device ID key. | long |
-| log.file.inode | Log file inode key. | long |
+| log.file.device_id | Log file device ID key | keyword |
+| log.file.fingerprint | Fingerprint for the file | keyword |
+| log.file.idxhiKey | File index high | keyword |
+| log.file.idxloKey | File index low | keyword |
+| log.file.inode | Log file inode key | keyword |
+| log.file.volKey | Volume serial number | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Log offset. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
@@ -400,11 +408,11 @@ An example event for `localhost` looks as following:
 {
     "@timestamp": "2023-02-23T15:40:03.711Z",
     "agent": {
-        "ephemeral_id": "cf706ac1-be7a-44fd-9dba-606c9fce486e",
-        "id": "3500c887-7f0f-40a5-a065-eb2c17c1a042",
+        "ephemeral_id": "98a908e5-d419-4da8-8985-4d1417e50646",
+        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.10.0"
+        "version": "8.10.1"
     },
     "apache_tomcat": {
         "localhost": {
@@ -420,9 +428,9 @@ An example event for `localhost` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "3500c887-7f0f-40a5-a065-eb2c17c1a042",
-        "snapshot": true,
-        "version": "8.10.0"
+        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
+        "snapshot": false,
+        "version": "8.10.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -430,7 +438,7 @@ An example event for `localhost` looks as following:
             "web"
         ],
         "dataset": "apache_tomcat.localhost",
-        "ingested": "2023-09-07T11:49:21Z",
+        "ingested": "2023-09-27T19:12:55Z",
         "kind": "event",
         "module": "apache_tomcat",
         "original": "23-Feb-2023 15:40:03.711 INFO [localhost-startStop-1] org.apache.catalina.core.ApplicationContext.log ContextListener: contextInitialized()",
@@ -445,7 +453,7 @@ An example event for `localhost` looks as following:
     "log": {
         "file": {
             "device_id": 141,
-            "inode": 17039226,
+            "inode": 18619079,
             "path": "/tmp/service_logs/localhost.log"
         },
         "level": "info",
@@ -480,8 +488,12 @@ An example event for `localhost` looks as following:
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| log.file.device_id | Log file device ID key. | long |
-| log.file.inode | Log file inode key. | long |
+| log.file.device_id | Log file device ID key | keyword |
+| log.file.fingerprint | Fingerprint for the file | keyword |
+| log.file.idxhiKey | File index high | keyword |
+| log.file.idxloKey | File index low | keyword |
+| log.file.inode | Log file inode key | keyword |
+| log.file.volKey | Volume serial number | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Log offset. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
@@ -498,13 +510,13 @@ An example event for `cache` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-09-07T11:43:21.122Z",
+    "@timestamp": "2023-09-27T19:08:44.142Z",
     "agent": {
-        "ephemeral_id": "e0243846-9727-4e8a-8af5-08b3bd80905f",
-        "id": "3500c887-7f0f-40a5-a065-eb2c17c1a042",
+        "ephemeral_id": "14ae089b-1739-4809-bff2-0890caa003d0",
+        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.10.0"
+        "version": "8.10.1"
     },
     "apache_tomcat": {
         "cache": {
@@ -544,9 +556,9 @@ An example event for `cache` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "3500c887-7f0f-40a5-a065-eb2c17c1a042",
-        "snapshot": true,
-        "version": "8.10.0"
+        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
+        "snapshot": false,
+        "version": "8.10.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -554,8 +566,8 @@ An example event for `cache` looks as following:
             "web"
         ],
         "dataset": "apache_tomcat.cache",
-        "duration": 148558291,
-        "ingested": "2023-09-07T11:43:24Z",
+        "duration": 163789208,
+        "ingested": "2023-09-27T19:08:47Z",
         "kind": "metric",
         "module": "apache_tomcat",
         "type": [
@@ -566,12 +578,12 @@ An example event for `cache` looks as following:
         "architecture": "aarch64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "3965e202d086476c83e347309ecf385a",
+        "id": "ddbe644fa129402e9d5cf6452db1422d",
         "ip": [
-            "172.21.0.7"
+            "172.31.0.7"
         ],
         "mac": [
-            "02-42-AC-15-00-07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -637,13 +649,13 @@ An example event for `connection_pool` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-09-07T11:47:58.150Z",
+    "@timestamp": "2023-09-27T19:11:29.922Z",
     "agent": {
-        "ephemeral_id": "6e0a14bb-16e8-4102-b2b8-18f302be6459",
-        "id": "3500c887-7f0f-40a5-a065-eb2c17c1a042",
+        "ephemeral_id": "8dcc13af-7670-441d-b51b-826f604c433b",
+        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.10.0"
+        "version": "8.10.1"
     },
     "apache_tomcat": {
         "connection_pool": {
@@ -730,9 +742,9 @@ An example event for `connection_pool` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "3500c887-7f0f-40a5-a065-eb2c17c1a042",
-        "snapshot": true,
-        "version": "8.10.0"
+        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
+        "snapshot": false,
+        "version": "8.10.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -740,8 +752,8 @@ An example event for `connection_pool` looks as following:
             "web"
         ],
         "dataset": "apache_tomcat.connection_pool",
-        "duration": 169908626,
-        "ingested": "2023-09-07T11:48:01Z",
+        "duration": 198881542,
+        "ingested": "2023-09-27T19:11:32Z",
         "kind": "metric",
         "module": "apache_tomcat",
         "type": [
@@ -752,12 +764,12 @@ An example event for `connection_pool` looks as following:
         "architecture": "aarch64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "3965e202d086476c83e347309ecf385a",
+        "id": "ddbe644fa129402e9d5cf6452db1422d",
         "ip": [
-            "172.21.0.7"
+            "172.31.0.7"
         ],
         "mac": [
-            "02-42-AC-15-00-07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -853,13 +865,13 @@ An example event for `memory` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-09-07T11:51:45.918Z",
+    "@timestamp": "2023-09-27T19:14:11.339Z",
     "agent": {
-        "ephemeral_id": "d43637a4-f567-44c4-ac2c-76c06da028db",
-        "id": "3500c887-7f0f-40a5-a065-eb2c17c1a042",
+        "ephemeral_id": "e71c07db-c98b-4ee5-929a-959290720d1b",
+        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.10.0"
+        "version": "8.10.1"
     },
     "apache_tomcat": {
         "memory": {
@@ -884,9 +896,9 @@ An example event for `memory` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "3500c887-7f0f-40a5-a065-eb2c17c1a042",
-        "snapshot": true,
-        "version": "8.10.0"
+        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
+        "snapshot": false,
+        "version": "8.10.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -894,8 +906,8 @@ An example event for `memory` looks as following:
             "web"
         ],
         "dataset": "apache_tomcat.memory",
-        "duration": 187384875,
-        "ingested": "2023-09-07T11:51:48Z",
+        "duration": 173318458,
+        "ingested": "2023-09-27T19:14:14Z",
         "kind": "metric",
         "module": "apache_tomcat",
         "type": [
@@ -906,12 +918,12 @@ An example event for `memory` looks as following:
         "architecture": "aarch64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "3965e202d086476c83e347309ecf385a",
+        "id": "ddbe644fa129402e9d5cf6452db1422d",
         "ip": [
-            "172.21.0.7"
+            "172.31.0.7"
         ],
         "mac": [
-            "02-42-AC-15-00-07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -932,9 +944,7 @@ An example event for `memory` looks as following:
         "address": "http://elastic-package-service-apache_tomcat-1:9090/metrics",
         "type": "prometheus"
     },
-    "tags": [
-        "apache_tomcat-memory"
-    ]
+    "tags": "apache_tomcat-memory"
 }
 ```
 
@@ -986,13 +996,13 @@ An example event for `request` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-09-07T11:53:07.272Z",
+    "@timestamp": "2023-09-27T19:15:32.734Z",
     "agent": {
-        "ephemeral_id": "41875a1e-0367-44d4-bf65-f76b18e0f1f5",
-        "id": "3500c887-7f0f-40a5-a065-eb2c17c1a042",
+        "ephemeral_id": "e33720a7-0747-406d-965f-2982572a47e5",
+        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.10.0"
+        "version": "8.10.1"
     },
     "apache_tomcat": {
         "request": {
@@ -1008,8 +1018,8 @@ An example event for `request` looks as following:
                 "bytes": 22430
             },
             "time": {
-                "max": 865,
-                "total": 869
+                "max": 889,
+                "total": 895
             }
         }
     },
@@ -1022,9 +1032,9 @@ An example event for `request` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "3500c887-7f0f-40a5-a065-eb2c17c1a042",
-        "snapshot": true,
-        "version": "8.10.0"
+        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
+        "snapshot": false,
+        "version": "8.10.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1032,8 +1042,8 @@ An example event for `request` looks as following:
             "web"
         ],
         "dataset": "apache_tomcat.request",
-        "duration": 433749417,
-        "ingested": "2023-09-07T11:53:10Z",
+        "duration": 168350042,
+        "ingested": "2023-09-27T19:15:35Z",
         "kind": "metric",
         "module": "apache_tomcat",
         "type": [
@@ -1044,12 +1054,12 @@ An example event for `request` looks as following:
         "architecture": "aarch64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "3965e202d086476c83e347309ecf385a",
+        "id": "ddbe644fa129402e9d5cf6452db1422d",
         "ip": [
-            "172.21.0.7"
+            "172.31.0.7"
         ],
         "mac": [
-            "02-42-AC-15-00-07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -1115,13 +1125,13 @@ An example event for `session` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-09-07T12:30:44.054Z",
+    "@timestamp": "2023-09-27T19:16:54.670Z",
     "agent": {
-        "ephemeral_id": "96ab74a6-79ff-4e9a-a7b1-cdf3c31d00e1",
-        "id": "3500c887-7f0f-40a5-a065-eb2c17c1a042",
+        "ephemeral_id": "e227fa37-0bd2-4d8f-9397-d2ebf1247710",
+        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.10.0"
+        "version": "8.10.1"
     },
     "apache_tomcat": {
         "session": {
@@ -1167,9 +1177,9 @@ An example event for `session` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "3500c887-7f0f-40a5-a065-eb2c17c1a042",
-        "snapshot": true,
-        "version": "8.10.0"
+        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
+        "snapshot": false,
+        "version": "8.10.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1177,8 +1187,8 @@ An example event for `session` looks as following:
             "web"
         ],
         "dataset": "apache_tomcat.session",
-        "duration": 174957334,
-        "ingested": "2023-09-07T12:30:47Z",
+        "duration": 146910709,
+        "ingested": "2023-09-27T19:16:57Z",
         "kind": "metric",
         "module": "apache_tomcat",
         "type": [
@@ -1189,12 +1199,12 @@ An example event for `session` looks as following:
         "architecture": "aarch64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "3965e202d086476c83e347309ecf385a",
+        "id": "ddbe644fa129402e9d5cf6452db1422d",
         "ip": [
-            "172.21.0.7"
+            "172.31.0.7"
         ],
         "mac": [
-            "02-42-AC-15-00-07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -1215,9 +1225,7 @@ An example event for `session` looks as following:
         "address": "http://elastic-package-service-apache_tomcat-1:9090/metrics",
         "type": "prometheus"
     },
-    "tags": [
-        "apache_tomcat-session"
-    ]
+    "tags": "apache_tomcat-session"
 }
 ```
 
@@ -1268,13 +1276,13 @@ An example event for `thread_pool` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-09-07T12:32:05.478Z",
+    "@timestamp": "2023-09-27T19:18:14.080Z",
     "agent": {
-        "ephemeral_id": "c1d3858a-98cb-4c8e-9dbd-cdb07fb220b2",
-        "id": "3500c887-7f0f-40a5-a065-eb2c17c1a042",
+        "ephemeral_id": "9e30f9c3-c9e5-4366-b899-29ee8f99bd67",
+        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.10.0"
+        "version": "8.10.1"
     },
     "apache_tomcat": {
         "thread_pool": {
@@ -1291,17 +1299,17 @@ An example event for `thread_pool` looks as following:
                 },
                 "current": {
                     "allocated": {
-                        "bytes": 3155056
+                        "bytes": 3155872
                     },
                     "cpu": {
                         "time": {
                             "enabled": true,
-                            "ms": 29435626
+                            "ms": 34786168
                         }
                     },
                     "user": {
                         "time": {
-                            "ms": 20000000
+                            "ms": 30000000
                         }
                     }
                 },
@@ -1336,9 +1344,9 @@ An example event for `thread_pool` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "3500c887-7f0f-40a5-a065-eb2c17c1a042",
-        "snapshot": true,
-        "version": "8.10.0"
+        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
+        "snapshot": false,
+        "version": "8.10.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1346,8 +1354,8 @@ An example event for `thread_pool` looks as following:
             "web"
         ],
         "dataset": "apache_tomcat.thread_pool",
-        "duration": 161547583,
-        "ingested": "2023-09-07T12:32:08Z",
+        "duration": 167367708,
+        "ingested": "2023-09-27T19:18:17Z",
         "kind": "metric",
         "module": "apache_tomcat",
         "type": [
@@ -1358,12 +1366,12 @@ An example event for `thread_pool` looks as following:
         "architecture": "aarch64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "3965e202d086476c83e347309ecf385a",
+        "id": "ddbe644fa129402e9d5cf6452db1422d",
         "ip": [
-            "172.21.0.7"
+            "172.31.0.7"
         ],
         "mac": [
-            "02-42-AC-15-00-07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -1384,9 +1392,7 @@ An example event for `thread_pool` looks as following:
         "address": "http://elastic-package-service-apache_tomcat-1:9090/metrics",
         "type": "prometheus"
     },
-    "tags": [
-        "apache_tomcat-thread_pool"
-    ]
+    "tags": "apache_tomcat-thread_pool"
 }
 ```
 
