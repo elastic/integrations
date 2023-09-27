@@ -1,0 +1,38 @@
+{
+    "id": "84862c2c-4aba-5458-9c5f-12855091617b",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Enabling of logging may result in your project being charged for the additional logs usage. These charges could be significant depending on the size of the organization.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/logging/docs/logs-based-metrics/\n2. https://cloud.google.com/monitoring/custom-metrics/\n3. https://cloud.google.com/monitoring/alerts/\n4. https://cloud.google.com/logging/docs/reference/tools/gcloud-logging\n5. https://cloud.google.com/storage/docs/overview\n6. https://cloud.google.com/sql/docs/\n7. https://cloud.google.com/sql/docs/mysql/\n8. https://cloud.google.com/sql/docs/postgres/",
+            "id": "84862c2c-4aba-5458-9c5f-12855091617b",
+            "name": "Ensure That the Log Metric Filter and Alerts Exist for SQL Instance Configuration Changes",
+            "profile_applicability": "* Level 2",
+            "description": "It is recommended that a metric filter and alarm be established for SQL instance configuration changes.",
+            "rationale": "Monitoring changes to SQL instance configuration changes may reduce the time needed to detect and correct misconfigurations done on the SQL server.\n\n\nBelow are a few of the configurable options which may the impact security posture of an SQL instance:\n\n- Enable auto backups and high availability: Misconfiguration may adversely impact business continuity, disaster recovery, and high availability \n\n- Authorize networks: Misconfiguration may increase exposure to untrusted networks",
+            "audit": "**From Google Cloud Console**\n\n**Ensure the prescribed log metric is present:**\n\n1. For each project that contains Cloud SQL instances, go to `Logging/Logs-based Metrics` by visiting [https://console.cloud.google.com/logs/metrics](https://console.cloud.google.com/logs/metrics).\n\n2. In the `User-defined Metrics` section, ensure that at least one metric `<Log_Metric_Name>` is present with the filter text:\n\n```\nprotoPayload.methodName=\"cloudsql.instances.update\"\n```\n\n**Ensure that the prescribed alerting policy is present:**\n\n3. Go to `Alerting` by visiting [https://console.cloud.google.com/monitoring/alerting](https://console.cloud.google.com/monitoring/alerting).\n\n4. Under the `Policies` section, ensure that at least one alert policy exists for the log metric above. Clicking on the policy should show that it is configured with a condition. For example, `Violates when: Any logging.googleapis.com/user/<Log Metric Name> stream` `is above a threshold of zero(0) for greater than zero(0) seconds` means that the alert will trigger for any new owner change. Verify that the chosen alerting thresholds make sense for the user's organization.\n\n5. Ensure that the appropriate notifications channels have been set up.\n\n**From Google Cloud CLI**\n\n**Ensure that the prescribed log metric is present:**\n\n6. List the log metrics:\n```\ngcloud logging metrics list --format json\n```\n7. Ensure that the output contains at least one metric with the filter set to \n```\nprotoPayload.methodName=\"cloudsql.instances.update\"\n```\n\n8. Note the value of the property `metricDescriptor.type` for the identified metric, in the format `logging.googleapis.com/user/<Log Metric Name>`.\n\n**Ensure that the prescribed alerting policy is present:**\n\n9. List the alerting policies:\n```\ngcloud alpha monitoring policies list --format json\n```\n10. Ensure that the output contains at least one alert policy where:\n- `conditions.conditionThreshold.filter` is set to `metric.type=\\\"logging.googleapis.com/user/<Log Metric Name>\\\"`\n- AND `enabled` is set to `true`",
+            "remediation": "**From Google Cloud Console**\n\n**Create the prescribed Log Metric:**\n\n1. Go to `Logging/Logs-based Metrics` by visiting [https://console.cloud.google.com/logs/metrics](https://console.cloud.google.com/logs/metrics) and click \"CREATE METRIC\".\n\n2. Click the down arrow symbol on the `Filter Bar` at the rightmost corner and select `Convert to Advanced Filter`.\n\n3. Clear any text and add: \n\n```\nprotoPayload.methodName=\"cloudsql.instances.update\"\n```\n\n4. Click `Submit Filter`. Display logs appear based on the filter text entered by the user.\n\n5. In the `Metric Editor` menu on right, fill out the name field. Set `Units` to `1` (default) and `Type` to `Counter`. This ensures that the log metric counts the number of log entries matching the user's advanced logs query.\n\n6. Click `Create Metric`. \n\n**Create the prescribed alert policy:** \n\n7. Identify the newly created metric under the section `User-defined Metrics` at [https://console.cloud.google.com/logs/metrics](https://console.cloud.google.com/logs/metrics).\n\n8. Click the 3-dot icon in the rightmost column for the new metric and select `Create alert from Metric`. A new page appears.\n\n9. Fill out the alert policy configuration and click `Save`. Choose the alerting threshold and configuration that makes sense for the user's organization. For example, a threshold of zero(0) for the most recent value will ensure that a notification is triggered for every owner change in the user's project:\n```\nSet `Aggregator` to `Count`\n\nSet `Configuration`:\n\n- Condition: above\n\n- Threshold: 0\n\n- For: most recent value\n```\n\n10. Configure the desired notification channels in the section `Notifications`.\n\n11. Name the policy and click `Save`.\n\n**From Google Cloud CLI**\n\nCreate the prescribed log metric:\n- Use the command: gcloud logging metrics create \n\nCreate the prescribed alert policy: \n- Use the command: gcloud alpha monitoring policies create\n- Reference for command usage: [https://cloud.google.com/sdk/gcloud/reference/alpha/monitoring/policies/create](https://cloud.google.com/sdk/gcloud/reference/alpha/monitoring/policies/create)",
+            "section": "Logging and Monitoring",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 2.11",
+                "Logging and Monitoring"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "2.11",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_2_11"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
