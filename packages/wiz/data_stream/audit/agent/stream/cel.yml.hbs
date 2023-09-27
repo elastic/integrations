@@ -1,7 +1,7 @@
 config_version: 2
 interval: {{interval}}
 {{#if enable_request_tracer}}
-resource.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
 {{/if}}
 {{#if proxy_url}}
 resource.proxy_url: {{proxy_url}}
@@ -24,41 +24,67 @@ state:
   initial_interval: {{initial_interval}}
   want_more: false
   batch_size: {{batch_size}}
-  query: "query AuditLogTable($first: Int $after: String $filterBy: AuditLogEntryFilters){     auditLogEntries(first: $first after: $after filterBy: $filterBy) {       nodes {         id         action         requestId         status         timestamp         actionParameters         userAgent         sourceIP         serviceAccount {           id           name         }         user {           id           name         }       }       pageInfo {         hasNextPage         endCursor       }     }   }"
+  query: >-
+    query AuditLogTable($first: Int $after: String $filterBy: AuditLogEntryFilters){
+       auditLogEntries(first: $first after: $after filterBy: $filterBy) {
+         nodes {
+           id
+           action
+           requestId
+           status
+           timestamp
+           actionParameters
+           userAgent
+           sourceIP
+           serviceAccount {
+             id
+             name
+           }
+           user {
+             id
+             name
+           }
+         }
+         pageInfo {
+           hasNextPage
+           endCursor
+         }
+       }
+     }
 program: |
   post_request(
     state.url + "/graphql",
     "application/json",
-    '''{
-      "query": ''' + state.query.encode_json() + ''',
+    {
+      "query": state.query,
       "variables": {
-          "first": ''' +  string(state.batch_size) + ''',
-          "after": ''' + (has(state.end_cursor) && has(state.end_cursor.value) && state.end_cursor.value != null ? state.end_cursor.value.encode_json() : 'null') + ''',
+          "first": state.batch_size,
+          "after": (has(state.end_cursor) && has(state.end_cursor.value) && state.end_cursor.value != null ? state.end_cursor.value : null),
           "filterBy": {
             "timestamp": {
-                "after": ''' +
+                "after":
                 (
                     has(state.want_more) && !state.want_more
                     ?
                      (
                          has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null
                          ?
-                         state.cursor.last_timestamp.encode_json()
+                         state.cursor.last_timestamp
                          :
-                         (now() - duration(state.initial_interval)).format(time_layout.RFC3339).encode_json()
+                         (now() - duration(state.initial_interval)).format(time_layout.RFC3339)
                      )
                     :
                      (
                        has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null
                        ?
-                       state.cursor.first_timestamp.encode_json()
+                       state.cursor.first_timestamp
                        :
-                       'null'
+                       null
                      )
-                ) + ''' }
+                ) }
                 }
             }
-      } '''
+      }.encode_json()
     ).do_request().as(resp, bytes(resp.Body).decode_json().as(body, {
    "events": body.data.auditLogEntries.nodes.map(e, {
    "message": e.encode_json(),

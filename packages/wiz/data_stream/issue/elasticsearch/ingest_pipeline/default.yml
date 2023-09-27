@@ -10,6 +10,13 @@ processors:
       tag: rename_message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
       tag: json_decoding
@@ -341,17 +348,11 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - date:
-      field: json.statusChangedAt
-      target_field: wiz.issue.status.changed_at
+  - set:
+      field: wiz.issue.status.changed_at
       tag: date_set_status_changed_at
-      formats:
-        - ISO8601
-      if: ctx.json?.statusChangedAt != null && ctx.json.statusChangedAt != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      copy_from: '@timestamp'
+      ignore_empty_value: true
   - rename:
       field: json.status
       tag: rename_status
