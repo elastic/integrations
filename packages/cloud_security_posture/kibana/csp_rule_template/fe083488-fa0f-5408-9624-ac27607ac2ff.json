@@ -1,0 +1,38 @@
+{
+    "id": "fe083488-fa0f-5408-9624-ac27607ac2ff",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Standard pricing for Stackdriver Logging, BigQuery, or Cloud Pub/Sub applies. VPC Flow Logs generation will be charged starting in GA as described in reference: https://cloud.google.com/vpc/",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/vpc/docs/using-flow-logs#enabling_vpc_flow_logging\n2. https://cloud.google.com/vpc/",
+            "id": "fe083488-fa0f-5408-9624-ac27607ac2ff",
+            "name": "Ensure that VPC Flow Logs is Enabled for Every Subnet in a VPC Network",
+            "profile_applicability": "* Level 2",
+            "description": "Flow Logs is a feature that enables users to capture information about the IP traffic going to and from network interfaces in the organization's VPC Subnets.\nOnce a flow log is created, the user can view and retrieve its data in Stackdriver Logging.\nIt is recommended that Flow Logs be enabled for every business-critical VPC subnet.",
+            "rationale": "VPC networks and subnetworks not reserved for internal HTTP(S) load balancing provide logically isolated and secure network partitions where GCP resources can be launched.\nWhen Flow Logs are enabled for a subnet, VMs within that subnet start reporting on all Transmission Control Protocol (TCP) and User Datagram Protocol (UDP) flows.\nEach VM samples the TCP and UDP flows it sees, inbound and outbound, whether the flow is to or from another VM, a host in the on-premises datacenter, a Google service, or a host on the Internet.\nIf two GCP VMs are communicating, and both are in subnets that have VPC Flow Logs enabled, both VMs report the flows.\n\nFlow Logs supports the following use cases:\n\n- Network monitoring\n- Understanding network usage and optimizing network traffic expenses\n- Network forensics\n- Real-time security analysis\n\nFlow Logs provide visibility into network traffic for each VM inside the subnet and can be used to detect anomalous traffic or provide insight during security workflows.\n\nThe Flow Logs must be configured such that all network traffic is logged, the interval of logging is granular to provide detailed information on the connections, no logs are filtered, and metadata to facilitate investigations are included.\n\n**Note**: Subnets reserved for use by internal HTTP(S) load balancers do not support VPC flow logs.",
+            "audit": "**From Google Cloud Console**\n\n1. Go to the VPC network GCP Console visiting `https://console.cloud.google.com/networking/networks/list` \n\n2. From the list of network subnets, make sure for each subnet:\n- `Flow Logs` is set to `On`\n- `Aggregation Interval` is set to `5 sec`\n- `Include metadata` checkbox is checked\n- `Sample rate` is set to `100%`\n\n**Note**: It is not possible to determine if a Log filter has been defined from the console.\n\n**From Google Cloud CLI**\n\n```\ngcloud compute networks subnets list --format json | \\\n jq -r '([\"Subnet\",\"Purpose\",\"Flow_Logs\",\"Aggregation_Interval\",\"Flow_Sampling\",\"Metadata\",\"Logs_Filtered\"] | (., map(length*\"-\"))), \n (.[] | \n [\n .name, \n .purpose,\n (if has(\"enableFlowLogs\") and .enableFlowLogs == true then \"Enabled\" else \"Disabled\" end),\n (if has(\"logConfig\") then .logConfig.aggregationInterval else \"N/A\" end),\n (if has(\"logConfig\") then .logConfig.flowSampling else \"N/A\" end),\n (if has(\"logConfig\") then .logConfig.metadata else \"N/A\" end),\n (if has(\"logConfig\") then (.logConfig | has(\"filterExpr\")) else \"N/A\" end)\n ]\n ) | \n @tsv' | \\\n column -t\n\n```\n\nThe output of the above command will list:\n- each subnet\n- the subnet's purpose\n- a `Enabled` or `Disabled` value if `Flow Logs` are enabled\n- the value for `Aggregation Interval` or `N/A` if disabled, the value for `Flow Sampling` or `N/A` if disabled\n- the value for `Metadata` or `N/A` if disabled\n- 'true' or 'false' if a Logging Filter is configured or 'N/A' if disabled.\n\nIf the subnet's purpose is `PRIVATE` then `Flow Logs` should be `Enabled`.\n\nIf `Flow Logs` is enabled then:\n- `Aggregation_Interval` should be `INTERVAL_5_SEC`\n- `Flow_Sampling` should be 1\n- `Metadata` should be `INCLUDE_ALL_METADATA`\n- `Logs_Filtered` should be `false`.",
+            "remediation": "**From Google Cloud Console**\n\n1. Go to the VPC network GCP Console visiting `https://console.cloud.google.com/networking/networks/list` \n\n2. Click the name of a subnet, The `Subnet details` page displays.\n\n3. Click the `EDIT` button.\n\n4. Set `Flow Logs` to `On`.\n\n5. Expand the `Configure Logs` section.\n\n6. Set `Aggregation Interval` to `5 SEC`.\n\n7. Check the box beside `Include metadata`.\n\n8. Set `Sample rate` to `100`.\n\n9. Click Save.\n\n**Note**: It is not possible to configure a Log filter from the console.\n\n**From Google Cloud CLI**\n\nTo enable VPC Flow Logs for a network subnet, run the following command:\n```\ngcloud compute networks subnets update [SUBNET_NAME] --region [REGION] --enable-flow-logs --logging-aggregation-interval=interval-5-sec --logging-flow-sampling=1 --logging-metadata=include-all\n```",
+            "section": "Networking",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 3.8",
+                "Networking"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "3.8",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_3_8"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
