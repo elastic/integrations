@@ -155,11 +155,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2011-10-19T12:43:47.375Z",
     "agent": {
-        "ephemeral_id": "102cbca1-7eba-451e-977d-353ff4781b73",
-        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
+        "ephemeral_id": "efe7a458-adf8-47ea-bfc1-ad839cc9aa39",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.2"
+        "version": "8.10.1"
     },
     "data_stream": {
         "dataset": "infoblox_nios.log",
@@ -170,16 +170,16 @@ An example event for `log` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "snapshot": false,
-        "version": "8.8.2"
+        "version": "8.10.1"
     },
     "event": {
         "action": "first_login",
         "agent_id_status": "verified",
         "created": "2023-03-22T14:26:54.000+05:00",
         "dataset": "infoblox_nios.log",
-        "ingested": "2023-07-20T15:45:46Z",
+        "ingested": "2023-09-26T13:59:18Z",
         "original": "\u003c29\u003eMar 22 14:26:54 10.0.0.1 httpd: 2011-10-19 12:43:47.375Z [user]: First_Login - - to=AdminConnector ip=10.0.0.2 auth=LOCAL group=admin-group apparently_via=GUI\\040first\\040login",
         "timezone": "+0500"
     },
@@ -206,7 +206,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.22.0.4:50640"
+            "address": "192.168.80.7:39304"
         },
         "syslog": {
             "priority": 29
@@ -337,13 +337,13 @@ An example event for `log` looks as following:
 | infoblox_nios.log.service_name |  | keyword |
 | infoblox_nios.log.type |  | keyword |
 | input.type | Input type | keyword |
-| interface.name | Interface name as reported by the system. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Log source address | keyword |
 | log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | process.pid | Process id. | long |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
