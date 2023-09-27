@@ -1151,7 +1151,7 @@ The Docker `container_logs` data stream collects container logs.
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Path to the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
-| message | Container log message | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 | stream | Container log stream | keyword |
