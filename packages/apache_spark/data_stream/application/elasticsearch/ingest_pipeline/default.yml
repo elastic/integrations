@@ -8,6 +8,10 @@ processors:
       field: jolokia.metrics
       target_field: apache_spark
       ignore_missing: true
+  - rename:
+      field: apache_spark.mbean
+      target_field: apache_spark.application.mbean
+      ignore_missing: true
   - set:
       field: event.type
       value: info
@@ -29,8 +33,7 @@ processors:
         }
         ctx.apache_spark.application.name = app_name;
   - remove:
-      field: 
-        - apache_spark.mbean
+      field:
         - jolokia
       ignore_failure: true
 on_failure:
