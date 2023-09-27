@@ -52,15 +52,14 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **kibana.version** required is **8.9.0**.
+The minimum **kibana.version** required is **8.11.0**.
 
 ## Setup
 
 ### To collect data from an AWS S3 bucket or AWS SQS, follow the below steps:
 
-- To enable and start Amazon Security Lake, follow the steps mentioned here: `https://docs.aws.amazon.com/security-lake/latest/userguide/getting-started.html`.
-- Above steps will create AWS S3 bucket and AWS SQS queue.
-- For adding an AWS service as a source, follow the steps mentioned here: `https://docs.aws.amazon.com/security-lake/latest/userguide/internal-sources.html#add-internal-sources`.
+1. To enable and start Amazon Security Lake, follow the steps mentioned here: [`https://docs.aws.amazon.com/security-lake/latest/userguide/getting-started.html`](https://docs.aws.amazon.com/security-lake/latest/userguide/getting-started.html).
+2. Above mentioned steps will create and provide required details such as IAM roles/AWS role ID, external id and queue url to configure AWS Security Lake Integration.
 
 ### Enabling the integration in Elastic:
 
@@ -68,17 +67,19 @@ The minimum **kibana.version** required is **8.9.0**.
 2. In "Search for integrations" search bar, type Amazon Security Lake.
 3. Click on the "Amazon Security Lake" integration from the search results.
 4. Click on the Add Amazon Security Lake Integration button to add the integration.
-5. While adding the integration, if you want to collect logs via AWS S3, then you have to put the following details:
-   - access key id
-   - secret access key
-   - bucket arn
-   - collect logs via S3 Bucket toggled on
-
-   or if you want to collect logs via AWS SQS, then you have to put the following details:
-   - access key id
-   - secret access key
+5. By default collect logs via S3 Bucket toggle will be off and collect logs for AWS SQS.
+6. While adding the integration, if you want to collect logs via AWS SQS, then you have to put the following details:
    - queue url
    - collect logs via S3 Bucket toggled off
+   - Shared Credential File Path and Credential Profile Name / Access Key Id and Secret Access Key
+   - role ARN
+   - external id
+
+   or if you want to collect logs via AWS S3, then you have to put the following details:
+   - bucket arn
+   - collect logs via S3 Bucket toggled on
+   - Shared Credential File Path and Credential Profile Name / Access Key Id and Secret Access Key
+7. If user wants to access security lake by Assuming Role then add Role ARN or if user want to access resources of another account using Role ARN then add Role ARN and external ID.
 
 **NOTE**: There are other input combination options available, please check [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html).
 
