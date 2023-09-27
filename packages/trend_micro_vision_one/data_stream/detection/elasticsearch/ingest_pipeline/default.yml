@@ -28,6 +28,8 @@ processors:
         - json.eventTime
         - json.rt_utc
         - json.uuid
+        - json.request
+        - json.requests
       target_field: _id
       ignore_missing: true
   - date:
@@ -585,6 +587,18 @@ processors:
       field: json.request
       target_field: trend_micro_vision_one.detection.request
       ignore_missing: true
+  - rename:
+      field: json.requests
+      target_field: trend_micro_vision_one.detection.request
+      ignore_missing: true
+      on_failure:
+        - rename:
+            field: json.requests
+            target_field: trend_micro_vision_one.detection.requests
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'request string and requests array both present in same document'
   - uri_parts:
       field: trend_micro_vision_one.detection.request
       on_failure:
