@@ -1339,6 +1339,8 @@ This data should be available without elevated permissions.
 The System `diskio` data stream provides disk IO metrics collected from the
 operating system. One event is created for each disk mounted on the system.
 
+> Note: For retrieving Linux-specific disk I/O metrics, use the [Linux](https://docs.elastic.co/integrations/linux) integration.
+
 #### Supported operating systems
 
 - Linux
@@ -1397,19 +1399,6 @@ This data should be available without elevated permissions.
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
 | system.diskio.io.time | The total number of of milliseconds spent doing I/Os. | long |  | counter |
-| system.diskio.iostat.await | The average time spent for requests issued to the device to be served. | float |  | gauge |
-| system.diskio.iostat.busy | Percentage of CPU time during which I/O requests were issued to the device (bandwidth utilization for the device). Device saturation occurs when this value is close to 100%. | float |  | gauge |
-| system.diskio.iostat.queue.avg_size | The average queue length of the requests that were issued to the device. | float | byte | gauge |
-| system.diskio.iostat.read.await | The average time spent for read requests issued to the device to be served. | float |  | gauge |
-| system.diskio.iostat.read.per_sec.bytes | The number of Bytes read from the device per second. | float |  | gauge |
-| system.diskio.iostat.read.request.merges_per_sec | The number of read requests merged per second that were queued to the device. | float |  | gauge |
-| system.diskio.iostat.read.request.per_sec | The number of read requests that were issued to the device per second | float |  | gauge |
-| system.diskio.iostat.request.avg_size | The average size (in bytes) of the requests that were issued to the device. | float | byte | gauge |
-| system.diskio.iostat.service_time | The average service time (in milliseconds) for I/O requests that were issued to the device. | float | ms | gauge |
-| system.diskio.iostat.write.await | The average time spent for write requests issued to the device to be served. | float |  | gauge |
-| system.diskio.iostat.write.per_sec.bytes | The number of Bytes write from the device per second. | float |  | gauge |
-| system.diskio.iostat.write.request.merges_per_sec | The number of write requests merged per second that were queued to the device. | float |  | gauge |
-| system.diskio.iostat.write.request.per_sec | The number of write requests that were issued to the device per second | float |  | gauge |
 | system.diskio.name | The disk name. | keyword |  |  |
 | system.diskio.read.bytes | The total number of bytes read successfully. On Linux this is the number of sectors read multiplied by an assumed sector size of 512. | long | byte | counter |
 | system.diskio.read.count | The total number of reads completed successfully. | long |  | counter |
@@ -1628,6 +1617,7 @@ This data should be available without elevated permissions.
 ### Memory
 
 The System `memory` data stream provides memory statistics.
+> Note: For retrieving Linux-specific memory metrics, use the [Linux](https://docs.elastic.co/integrations/linux) integration.
 
 #### Supported operating systems
 
@@ -1689,27 +1679,7 @@ This data should be available without elevated permissions.
 | system.memory.actual.used.bytes | Actual used memory in bytes. It represents the difference between the total and the available memory. The available memory depends on the OS. For more details, please check `system.actual.free`. | long | byte | gauge |
 | system.memory.actual.used.pct | The percentage of actual used memory. | scaled_float | percent | gauge |
 | system.memory.free | The total amount of free memory in bytes. This value does not include memory consumed by system caches and buffers (see system.memory.actual.free). | long | byte | gauge |
-| system.memory.hugepages.default_size | Default size for huge pages. | long |  | gauge |
-| system.memory.hugepages.free | Number of available huge pages in the pool. | long |  | gauge |
-| system.memory.hugepages.reserved | Number of reserved but not allocated huge pages in the pool. | long |  | gauge |
-| system.memory.hugepages.surplus | Number of overcommited huge pages. | long |  | gauge |
-| system.memory.hugepages.swap.out.fallback | Count of huge pages that must be split before swapout | long |  | gauge |
-| system.memory.hugepages.swap.out.pages | pages swapped out | long |  | gauge |
-| system.memory.hugepages.total | Number of huge pages in the pool. | long |  | gauge |
-| system.memory.hugepages.used.bytes | Memory used in allocated huge pages. | long | byte | gauge |
-| system.memory.hugepages.used.pct | Percentage of huge pages used. | long | percent | gauge |
-| system.memory.page_stats.direct_efficiency.pct | direct reclaim efficiency percentage. A lower percentage indicates the system is struggling to reclaim memory. | scaled_float | percent | gauge |
-| system.memory.page_stats.kswapd_efficiency.pct | kswapd reclaim efficiency percentage. A lower percentage indicates the system is struggling to reclaim memory. | scaled_float | percent | gauge |
-| system.memory.page_stats.pgfree.pages | pages freed by the system | long |  | counter |
-| system.memory.page_stats.pgscan_direct.pages | pages scanned directly | long |  | counter |
-| system.memory.page_stats.pgscan_kswapd.pages | pages scanned by kswapd | long |  | counter |
-| system.memory.page_stats.pgsteal_direct.pages | number of pages reclaimed directly | long |  | counter |
-| system.memory.page_stats.pgsteal_kswapd.pages | number of pages reclaimed by kswapd | long |  | counter |
 | system.memory.swap.free | Available swap memory. | long | byte | gauge |
-| system.memory.swap.in.pages | count of pages swapped in | long |  | gauge |
-| system.memory.swap.out.pages | count of pages swapped out | long |  | counter |
-| system.memory.swap.readahead.cached | swap readahead cache hits | long |  | counter |
-| system.memory.swap.readahead.pages | swap readahead pages | long |  | counter |
 | system.memory.swap.total | Total swap memory. | long | byte | gauge |
 | system.memory.swap.used.bytes | Used swap memory. | long | byte | gauge |
 | system.memory.swap.used.pct | The percentage of used swap memory. | scaled_float | percent | gauge |
