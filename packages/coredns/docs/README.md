@@ -87,9 +87,13 @@ An example configuration with logging enabled is:
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
-| log.file.device_id | Log file device ID key. | long |
-| log.file.inode | Log file inode key. | long |
+| log.file.device_id | Log file device ID key | keyword |
+| log.file.fingerprint | Fingerprint for the file | keyword |
+| log.file.idxhiKey | File index high | keyword |
+| log.file.idxloKey | File index low | keyword |
+| log.file.inode | Log file inode key | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.volKey | Volume serial number | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
 | log.offset | Log offset | long |
@@ -121,9 +125,9 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-09-27T11:50:54.954Z",
+    "@timestamp": "2023-09-27T18:59:58.096Z",
     "agent": {
-        "ephemeral_id": "2676e19b-4607-4b8f-ad5b-ecab156ed56f",
+        "ephemeral_id": "bbb180b6-3756-4f5b-81d5-6e333e740796",
         "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -148,7 +152,7 @@ An example event for `log` looks as following:
             "RD",
             "RA"
         ],
-        "id": "21830",
+        "id": "58521",
         "question": {
             "class": "IN",
             "name": "google.com",
@@ -171,12 +175,12 @@ An example event for `log` looks as following:
         "category": [
             "network"
         ],
-        "created": "2023-09-27T11:50:54.954Z",
+        "created": "2023-09-27T18:59:58.096Z",
         "dataset": "coredns.log",
-        "duration": 30834209,
-        "ingested": "2023-09-27T11:50:55Z",
+        "duration": 32133957.999999996,
+        "ingested": "2023-09-27T18:59:59Z",
         "kind": "event",
-        "original": "[INFO] 192.168.16.3:36067 - 21830 \"A IN google.com. udp 51 false 1232\" NOERROR qr,rd,ra 65 0.030834209s",
+        "original": "[INFO] 192.168.112.3:45632 - 58521 \"A IN google.com. udp 51 false 1232\" NOERROR qr,rd,ra 65 0.032133958s",
         "outcome": "success",
         "type": [
             "protocol"
@@ -210,7 +214,7 @@ An example event for `log` looks as following:
     "log": {
         "file": {
             "device_id": 141,
-            "inode": 18584908,
+            "inode": 18614042,
             "path": "/tmp/service_logs/coredns.log"
         },
         "level": "info",
@@ -227,14 +231,14 @@ An example event for `log` looks as following:
             "google.com"
         ],
         "ip": [
-            "192.168.16.3"
+            "192.168.112.3"
         ]
     },
     "source": {
-        "address": "192.168.16.3",
+        "address": "192.168.112.3",
         "bytes": 51,
-        "ip": "192.168.16.3",
-        "port": 36067
+        "ip": "192.168.112.3",
+        "port": 45632
     },
     "tags": [
         "preserve_original_event",
