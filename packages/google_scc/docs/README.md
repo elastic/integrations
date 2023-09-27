@@ -129,7 +129,7 @@ An example event for `asset` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",
@@ -520,7 +520,7 @@ An example event for `finding` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",
@@ -806,7 +806,7 @@ An example event for `source` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",
@@ -895,7 +895,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",

@@ -6,6 +6,10 @@ processors:
   - set:
       field: ecs.version
       value: '8.0.0'
+  - script:
+      description: Remove all empty values from event_data.
+      lang: painless
+      source: ctx.winlog?.event_data?.entrySet().removeIf(entry -> [null, "", "-", "{00000000-0000-0000-0000-000000000000}"].contains(entry.getValue()))
   - rename:
       field: winlog.level
       target_field: log.level
@@ -44,7 +48,7 @@ processors:
       value: '{{winlog.event_id}}'
 
   - script:
-      description: Set event category and type for all event types.
+      description: Set event action, category and type for all event types.
       lang: painless
       params:
         "1":
@@ -52,11 +56,13 @@ processors:
             - process
           type:
             - start
+          action: 'Process creation'
         "2":
           category:
             - file
           type:
             - change
+          action: 'A process changed a file creation time'
         "3":
           category:
             - network
@@ -64,74 +70,118 @@ processors:
             - start
             - connection
             - protocol
+          action: 'Network connection'
         "4":
           category:
             - process
           type:
             - change
+          action: 'Sysmon service state changed'
         "5":
           category:
             - process
           type:
             - end
+          action: 'Process terminated'
         "6":
           category:
             - driver
           type:
             - start
+          action: 'Driver loaded'
         "7":
           category:
             - process
           type:
             - change
+          action: 'Image loaded'
+        "8":
+          category:
+            - process
+          type:
+            - change
+          action: 'CreateRemoteThread'
+        "9":
+          category:
+            - process
+          type:
+            - access
+          action: 'RawAccessRead'
         "10":
           category:
             - process
           type:
             - access
+          action: 'ProcessAccess'
         "11":
           category:
             - file
           type:
             - creation
+          action: 'FileCreate'
         "12":
           category:
             - configuration
             - registry
           type:
             - change
+          action: 'RegistryEvent (Object create and delete)'
         "13":
           category:
             - configuration
             - registry
           type:
             - change
+          action: 'RegistryEvent (Value Set)'
         "14":
           category:
             - configuration
             - registry
           type:
             - change
+          action: 'RegistryEvent (Key and Value Rename)'
         "15":
           category:
             - file
           type:
             - access
+          action: 'FileCreateStreamHash'
         "16":
           category:
             - configuration
           type:
             - change
+          action: 'ServiceConfigurationChange'
         "17":
           category:
             - file
           type:
             - creation
+          action: 'PipeEvent (Pipe Created)'
         "18":
           category:
             - file
           type:
             - access
+          action: 'PipeEvent (Pipe Connected)'
+        "19":
+          category:
+            - process
+          type:
+            - creation
+          action: 'WmiEvent (WmiEventFilter activity detected)'
+        "20":
+          category:
+            - process
+          type:
+            - creation
+          action: 'WmiEvent (WmiEventConsumer activity detected)'
+        "21":
+          category:
+            - process
+          type:
+            - access
+          action: 'WmiEvent (WmiEventConsumerToFilter activity detected)'
         "22":
           category:
             - network
@@ -139,27 +189,58 @@ processors:
             - connection
             - protocol
             - info
+          action: 'DNSEvent (DNS query)'
         "23":
           category:
             - file
           type:
             - deletion
+          action: 'FileDelete (File Delete archived)'
         "24":
           type:
             - change
+          action: 'ClipboardChange (New content in the clipboard)'
         "25":
           category:
             - process
           type:
             - change
+          action: 'ProcessTampering (Process image change)'
         "26":
           category:
             - file
           type:
             - deletion
-      tag: Set ECS categorization fields
+          action: 'FileDeleteDetected (File Delete logged)'
+        "27":
+          category:
+            - file
+          type:
+            - creation
+            - denied
+          action: 'FileBlockExecutable'
+        "28":
+          category:
+            - file
+          type:
+            - deletion
+            - denied
+          action: 'FileBlockShredding'
+        "29":
+          category:
+            - file
+          type:
+            - creation
+          action: 'FileExecutableDetected'
+        "255":
+          category:
+            - process
+          type:
+            - error
+          action: 'Error'
+      tag: Add ECS categorization fields
       source: |-
-        if (ctx?.event?.code == null || params.get(ctx.event.code) == null) {
+        if (ctx.event?.code == null || params.get(ctx.event.code) == null) {
           return;
         }
         def hm = new HashMap(params[ctx.event.code]);
@@ -507,7 +588,7 @@ processors:
       target_field: file.hash
       if: |-
         ctx?._temp?.hashes != null &&
-        ["6", "7", "15"].contains(ctx.event.code)
+        ["6", "7", "15", "29"].contains(ctx.event.code)
   - rename:
       field: file.hash.imphash
       target_field: file.pe.imphash
@@ -772,15 +853,20 @@ processors:
 
           if (answer.startsWith("type:")) {
             def parts = /\s+/.split(answer);
-            if (parts.length != 3) {
+            if (parts.length < 2) {
               throw new Exception("unexpected QueryResult format");
             }
-
-            answers.add([
-              "type": params[parts[1]],
-              "data": parts[2]
-            ]);
-            relatedHosts.add(parts[2]);
+            if (parts.length == 3) {
+              answers.add([
+                "type": params[parts[1]],
+                "data": parts[2]
+              ]);
+              relatedHosts.add(parts[2]);
+            } else {
+              answers.add([
+                "type": params[parts[1]]
+              ]);
+            }
           } else {
             answer = answer.replace("::ffff:", "");
             ips.add(answer);
@@ -857,6 +943,7 @@ processors:
           field: related.ip
           value: "{{_ingest._value}}"
           allow_duplicates: false
+          ignore_failure: true
   - community_id:
       ignore_failure: true
       ignore_missing: false
@@ -885,6 +972,29 @@ processors:
       ignore_failure: true
       ignore_empty_value: true
       if: ctx?._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
+  # Get user details from the translate_sid processor enrichment
+  # if they are available and we don't already have them.
+  - rename:
+      field: winlog.event_data._MemberUserName
+      target_field: user.name
+      ignore_failure: true
+      ignore_missing: true
+  - rename:
+      field: winlog.event_data._MemberDomain
+      target_field: user.domain
+      ignore_failure: true
+      ignore_missing: true
+  - append:
+      value: '{{{winlog.event_data._MemberAccountType}}}'
+      field: user.roles
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.winlog?.event_data?._MemberAccountType != null
+  - remove:
+      field: winlog.event_data._MemberAccountType
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.user?.roles != null && ctx.winlog?.event_data?._MemberAccountType != null && ctx.user.roles.contains(ctx.winlog.event_data._MemberAccountType)   
 
 ## Sysmon fields
 
@@ -1162,8 +1272,9 @@ processors:
         HKU: "HKU"
       source: |-
         ctx.registry = new HashMap();
-        Pattern qwordRegex = /(?i)QWORD \(((0x\d{8})-(0x\d{8}))\)/;
-        Pattern dwordRegex = /(?i)DWORD \((0x\d{8})\)/;
+        Pattern qwordRegex = /(?i)QWORD \(((0x[0-9A-F]{8})-(0x[0-9A-F]{8}))\)/;
+        Pattern dwordRegex = /(?i)DWORD \((0x[0-9A-F]{8})\)/;
+        Pattern binDataRegex = /Binary Data/;
 
         def path = ctx.winlog.event_data.TargetObject;
         ctx.registry.path = path;
@@ -1192,25 +1303,51 @@ processors:
             if (!Double.isNaN(parsedHighByte) && !Double.isNaN(parsedLowByte)) {
               dataType = "SZ_QWORD";
               dataValue = Long.toString(((parsedHighByte << 8) + parsedLowByte));
+              ctx.registry.data = [
+                "strings": [dataValue],
+                "type": dataType
+              ];
             }
-          } else {
-            matcher = dwordRegex.matcher(data);
-            if (matcher.matches()) {
-              def parsedValue = Long.parseLong(matcher.group(1).substring(prefixLen), 16);
-              if (!Double.isNaN(parsedValue)) {
-                dataType = "SZ_DWORD";
-                dataValue = matcher.group(1);
-              }
-            }
+            return;
           }
 
-          if (dataType != "") {
-            ctx.registry.data = [
-              "strings": [dataValue],
-              "type": dataType
-            ];
+          matcher = dwordRegex.matcher(data);
+          if (matcher.matches()) {
+            def parsedValue = Long.parseLong(matcher.group(1).substring(prefixLen), 16);
+            if (!Double.isNaN(parsedValue)) {
+              dataType = "SZ_DWORD";
+              dataValue = Long.toString(parsedValue);
+              ctx.registry.data = [
+                "strings": [dataValue],
+                "type": dataType
+              ];
+            }
+            return;
           }
+
+          matcher = binDataRegex.matcher(data);
+          if (matcher.matches()) {
+            // Data type could be REG_BINARY or REG_MULTI_SZ
+            ctx.registry.data = [
+              "strings": [data],
+              "type": "REG_BINARY"
+            ];
+            return;
+          }
+
+          // REG_SZ or REG_EXPAND_SZ
+          ctx.registry.data = [
+            "strings": [data],
+            "type": "REG_SZ"
+          ];
         }
+
+
+## Conformity
+  - rename:
+      field: winlog.event_data.TargetProcessGuid
+      target_field: winlog.event_data.TargetProcessGUID
+      if: ctx.winlog?.event_data?.TargetProcessGuid != null
 
 ## Cleanup
 

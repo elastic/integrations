@@ -800,6 +800,8 @@ An example event for `state_deployment` looks as following:
 | kubernetes.deployment.replicas.desired | Deployment number of desired replicas (spec) | integer | gauge |
 | kubernetes.deployment.replicas.unavailable | Deployment unavailable replicas | integer | gauge |
 | kubernetes.deployment.replicas.updated | Deployment updated replicas | integer | gauge |
+| kubernetes.deployment.status.available | Deployment Available Condition status (true, false or unknown) | keyword |  |
+| kubernetes.deployment.status.progressing | Deployment Progresing Condition status (true, false or unknown) | keyword |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |
 | kubernetes.namespace_labels.\* | Kubernetes namespace labels map | object |  |
