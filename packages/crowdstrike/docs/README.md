@@ -346,23 +346,45 @@ An example event for `falcon` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-02-12T21:39:37.147Z",
+    "@timestamp": "2020-02-12T21:29:10.000Z",
     "agent": {
-        "ephemeral_id": "9fc4b95e-642d-4ce4-b7cc-1fe355c81ef1",
-        "id": "62b999a7-d53a-460e-b8cb-bcccb4e5fbd5",
+        "ephemeral_id": "6b7924ba-f695-422a-a296-d1092ff909e4",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.2"
+        "version": "8.10.1"
     },
     "crowdstrike": {
         "event": {
-            "OperationName": "twoFactorAuthenticate",
+            "AuditKeyValues": [
+                {
+                    "Key": "APIClientID",
+                    "ValueString": "1234567890abcdefghijklmnopqr"
+                },
+                {
+                    "Key": "partition",
+                    "ValueString": "0"
+                },
+                {
+                    "Key": "offset",
+                    "ValueString": "-1"
+                },
+                {
+                    "Key": "appId",
+                    "ValueString": "siem-connector-v2.0.0"
+                },
+                {
+                    "Key": "eventType",
+                    "ValueString": "[UserActivityAuditEvent HashSpreadingEvent RemoteResponseSessionStartEvent RemoteResponseSessionEndEvent DetectionSummaryEvent AuthActivityAuditEvent]"
+                }
+            ],
+            "OperationName": "streamStarted",
             "Success": true
         },
         "metadata": {
             "customerIDString": "8f69fe9e-b995-4204-95ad-44f9bcf75b6b",
             "eventType": "AuthActivityAuditEvent",
-            "offset": 1,
+            "offset": 0,
             "version": "1.0"
         }
     },
@@ -375,22 +397,23 @@ An example event for `falcon` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "62b999a7-d53a-460e-b8cb-bcccb4e5fbd5",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "snapshot": false,
-        "version": "8.6.2"
+        "version": "8.10.1"
     },
     "event": {
         "action": [
-            "twoFactorAuthenticate"
+            "streamStarted"
         ],
         "agent_id_status": "verified",
         "category": [
-            "authentication"
+            "iam"
         ],
+        "created": "2020-02-12T21:29:10.710Z",
         "dataset": "crowdstrike.falcon",
-        "ingested": "2023-06-27T07:42:52Z",
+        "ingested": "2023-09-26T13:19:10Z",
         "kind": "event",
-        "original": "{\n    \"metadata\": {\n        \"customerIDString\": \"8f69fe9e-b995-4204-95ad-44f9bcf75b6b\",\n        \"offset\": 1,\n        \"eventType\": \"AuthActivityAuditEvent\",\n        \"eventCreationTime\": 1581543577147,\n        \"version\": \"1.0\"\n    },\n    \"event\": {\n        \"UserId\": \"alice@company.com\",\n        \"UserIp\": \"192.168.6.8\",\n        \"OperationName\": \"twoFactorAuthenticate\",\n        \"ServiceName\": \"CrowdStrike Authentication\",\n        \"Success\": true,\n        \"UTCTimestamp\": 1581543577147\n    }\n}",
+        "original": "{\n    \"metadata\": {\n        \"customerIDString\": \"8f69fe9e-b995-4204-95ad-44f9bcf75b6b\",\n        \"offset\": 0,\n        \"eventType\": \"AuthActivityAuditEvent\",\n        \"eventCreationTime\": 1581542950710,\n        \"version\": \"1.0\"\n    },\n    \"event\": {\n        \"UserId\": \"api-client-id:1234567890abcdefghijklmnopqrstuvwxyz\",\n        \"UserIp\": \"10.10.0.8\",\n        \"OperationName\": \"streamStarted\",\n        \"ServiceName\": \"Crowdstrike Streaming API\",\n        \"Success\": true,\n        \"UTCTimestamp\": 1581542950,\n        \"AuditKeyValues\": [\n            {\n                \"Key\": \"APIClientID\",\n                \"ValueString\": \"1234567890abcdefghijklmnopqr\"\n            },\n            {\n                \"Key\": \"partition\",\n                \"ValueString\": \"0\"\n            },\n            {\n                \"Key\": \"offset\",\n                \"ValueString\": \"-1\"\n            },\n            {\n                \"Key\": \"appId\",\n                \"ValueString\": \"siem-connector-v2.0.0\"\n            },\n            {\n                \"Key\": \"eventType\",\n                \"ValueString\": \"[UserActivityAuditEvent HashSpreadingEvent RemoteResponseSessionStartEvent RemoteResponseSessionEndEvent DetectionSummaryEvent AuthActivityAuditEvent]\"\n            }\n        ]\n    }\n}",
         "outcome": "success"
     },
     "input": {
@@ -403,23 +426,23 @@ An example event for `falcon` looks as following:
         "flags": [
             "multiline"
         ],
-        "offset": 2152
+        "offset": 910
     },
-    "message": "CrowdStrike Authentication",
+    "message": "Crowdstrike Streaming API",
     "observer": {
         "product": "Falcon",
         "vendor": "Crowdstrike"
     },
     "related": {
         "ip": [
-            "192.168.6.8"
+            "10.10.0.8"
         ],
         "user": [
-            "alice@company.com"
+            "api-client-id:1234567890abcdefghijklmnopqrstuvwxyz"
         ]
     },
     "source": {
-        "ip": "192.168.6.8"
+        "ip": "10.10.0.8"
     },
     "tags": [
         "preserve_original_event",
@@ -427,8 +450,7 @@ An example event for `falcon` looks as following:
         "crowdstrike-falcon"
     ],
     "user": {
-        "email": "alice@company.com",
-        "name": "alice@company.com"
+        "name": "api-client-id:1234567890abcdefghijklmnopqrstuvwxyz"
     }
 }
 ```
@@ -984,6 +1006,8 @@ and/or `session_token`.
 | host.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
 | input.type |  | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset |  | long |
@@ -1004,8 +1028,6 @@ and/or `session_token`.
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | observer.version | Observer version. | keyword |
-| os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
-| os.version | Operating system version as a raw string. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
@@ -1078,11 +1100,11 @@ An example event for `fdr` looks as following:
 {
     "@timestamp": "2020-11-08T09:58:32.519Z",
     "agent": {
-        "ephemeral_id": "9fc4b95e-642d-4ce4-b7cc-1fe355c81ef1",
-        "id": "62b999a7-d53a-460e-b8cb-bcccb4e5fbd5",
+        "ephemeral_id": "6b7924ba-f695-422a-a296-d1092ff909e4",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.2"
+        "version": "8.10.1"
     },
     "crowdstrike": {
         "ConfigStateHash": "1763245019",
@@ -1111,9 +1133,9 @@ An example event for `fdr` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "62b999a7-d53a-460e-b8cb-bcccb4e5fbd5",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "snapshot": false,
-        "version": "8.6.2"
+        "version": "8.10.1"
     },
     "event": {
         "action": "RansomwareOpenFile",
@@ -1124,7 +1146,7 @@ An example event for `fdr` looks as following:
         "created": "2020-11-08T17:07:22.091Z",
         "dataset": "crowdstrike.fdr",
         "id": "ffffffff-1111-11eb-9756-06fe7f8f682f",
-        "ingested": "2023-06-27T07:43:18Z",
+        "ingested": "2023-09-26T13:20:10Z",
         "kind": "alert",
         "original": "{\"ConfigBuild\":\"1007.3.0011603.1\",\"ConfigStateHash\":\"1763245019\",\"ContextProcessId\":\"1016182570608\",\"ContextThreadId\":\"37343520154472\",\"ContextTimeStamp\":\"1604829512.519\",\"DesiredAccess\":\"1179785\",\"EffectiveTransmissionClass\":\"3\",\"Entitlements\":\"15\",\"FileAttributes\":\"0\",\"FileIdentifier\":\"7a9c1c1610045d45a54bd6643ac12ea767a5020000000c00\",\"FileObject\":\"18446670458156489088\",\"Information\":\"1\",\"IrpFlags\":\"2180\",\"MajorFunction\":\"0\",\"MinorFunction\":\"0\",\"OperationFlags\":\"0\",\"Options\":\"16777312\",\"ShareAccess\":\"5\",\"Status\":\"0\",\"TargetFileName\":\"\\\\Device\\\\HarddiskVolume3\\\\Users\\\\user11\\\\Downloads\\\\file.pptx\",\"aid\":\"ffffffffac4148947ed68497e89f3308\",\"aip\":\"67.43.156.14\",\"cid\":\"ffffffff30a3407dae27d0503611022d\",\"event_platform\":\"Win\",\"event_simpleName\":\"RansomwareOpenFile\",\"id\":\"ffffffff-1111-11eb-9756-06fe7f8f682f\",\"name\":\"RansomwareOpenFileV4\",\"timestamp\":\"1604855242091\"}",
         "outcome": "success",
@@ -1140,6 +1162,11 @@ An example event for `fdr` looks as following:
         "name": "file.pptx",
         "path": "\\Device\\HarddiskVolume3\\Users\\user11\\Downloads\\file.pptx",
         "type": "file"
+    },
+    "host": {
+        "os": {
+            "type": "windows"
+        }
     },
     "input": {
         "type": "log"
@@ -1170,9 +1197,6 @@ An example event for `fdr` looks as following:
         "type": "agent",
         "vendor": "crowdstrike",
         "version": "1007.3.0011603.1"
-    },
-    "os": {
-        "type": "windows"
     },
     "process": {
         "entity_id": "1016182570608",
