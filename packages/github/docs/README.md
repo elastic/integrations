@@ -39,18 +39,18 @@ To use this integration, the following prerequisites must be met:
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | github.actor_ip | The IP address of the entity performing the action. | ip |
 | github.category | GitHub action category | keyword |
-| github.hashed_token |  | keyword |
-| github.integration |  | keyword |
+| github.hashed_token | SHA-256 hash of the token used for authentication. | keyword |
+| github.integration | The GitHub App that triggered the event. | keyword |
 | github.org | GitHub organization name | keyword |
 | github.permission | GitHub user permissions for the event. | keyword |
-| github.programmatic_access_type |  | keyword |
+| github.programmatic_access_type | Type of authentication used. | keyword |
 | github.repo | GitHub repository name | keyword |
-| github.repositories_added_names |  | keyword |
-| github.repositories_removed_names |  | keyword |
+| github.repositories_added_names | The name of the repository added to a GitHub App installation. | keyword |
+| github.repositories_removed_names | The name of the repository removed from a GitHub App installation. | keyword |
 | github.repository_public | Whether the GitHub repository is publicly visible. | boolean |
-| github.repository_selection |  | keyword |
+| github.repository_selection | Whether all repositories have been selected or there's a selection involved. | keyword |
 | github.team | GitHub team name | keyword |
-| github.user_agent |  | keyword |
+| github.user_agent | The user agent of the entity performing the action. | keyword |
 | group.name | Name of the group. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
