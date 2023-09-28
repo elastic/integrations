@@ -468,5 +468,5 @@ The `related.*` fields will also be populated with any relevant data.
 | threat.indicator.file.hash.sha3_256 | SHA3-256 hash. | keyword |
 | threat.indicator.file.hash.sha3_512 | SHA3-512 hash. | keyword |
 | threat.indicator.name | The display name indicator in an UI friendly format | keyword |
-| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.1 or OpenCTI | keyword |
 
