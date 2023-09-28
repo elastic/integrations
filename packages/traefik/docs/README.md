@@ -293,6 +293,6 @@ An example event for `health` looks as following:
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 | traefik.health.response.avg_time.us | Average response time in microseconds | long | gauge |
 | traefik.health.response.count | Number of responses | long | counter |
-| traefik.health.response.status_codes.\* | Number of responses per status code | object |  |
+| traefik.health.response.status_codes.\* | Number of responses per status code | object | counter |
 | traefik.health.uptime.sec | Uptime of Traefik instance in seconds | long | gauge |
 
