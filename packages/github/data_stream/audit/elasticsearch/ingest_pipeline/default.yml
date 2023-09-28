@@ -132,6 +132,10 @@ processors:
       - append:
           field: error.message
           value: '{{{ _ingest.on_failure_message }}}'
+- append:
+    field: related.ip
+    value: '{{github.actor_ip}}'
+    if: ctx.github?.actor_ip != null
 - rename:
     field: json.hashed_token
     target_field: github.hashed_token
@@ -143,6 +147,9 @@ processors:
 - rename:
     field: json.user_agent
     target_field: github.user_agent
+    ignore_missing: true
+- user_agent:
+    field: github.user_agent
     ignore_missing: true
 - rename:
     field: json.integration
