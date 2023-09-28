@@ -3,7 +3,7 @@ description: Pipeline for processing Amazon GuardDuty Findings logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.2.0'
+      value: '8.10.0'
   - set:
       field: event.kind
       value: [event]
@@ -127,6 +127,10 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: container.security_context.privileged
+      copy_from: aws.guardduty.resource.container_details.security_context.privileged
+      ignore_empty_value: true
   - foreach:
       field: json.resource.containerDetails.volumeMounts
       if: ctx.json?.resource?.containerDetails?.volumeMounts instanceof List
