@@ -25,99 +25,14 @@ In order to ingest data from Spring Boot:
     <artifactId>jolokia-core</artifactId>
 </dependency>
 ```
+- To expose `HTTP Trace` metrics following class can be used [InMemoryHttpTraceRepository](https://docs.spring.io/spring-boot/docs/2.0.6.RELEASE/api/org/springframework/boot/actuate/trace/http/InMemoryHttpTraceRepository.html).
+- To expose `Audit Events` metrics following class can be used [InMemoryAuditEventRepository](https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/actuate/audit/InMemoryAuditEventRepository.html).
 
 ### Troubleshooting
 
-If **[Spring Boot] Audit Events panel** does not display older documents after upgrading to ``0.9.0`` or later versions, then this issue can be solved by reindexing the ``audit_events`` data stream's indices.
-
-To reindex the data, the following steps must be performed.
-
-1. Stop the data stream by going to `Integrations -> Spring Boot -> Integration policies` open the configuration of Spring Boot and disable the `Spring Boot Audit Events metrics` toggle to reindex ``audit_events`` data stream and save the integration.
-
-2. Copy data into the temporary index and delete the existing data stream and index template by performing the following steps in the Dev tools.
-
-```
-POST _reindex
-{
-  "source": {
-    "index": "<index_name>"
-  },
-  "dest": {
-    "index": "temp_index"
-  }
-}
-```
-Example:
-```
-POST _reindex
-{
-  "source": {
-    "index": "logs-spring_boot.audit_events-default"
-  },
-  "dest": {
-    "index": "temp_index"
-  }
-}
-```
-
-```
-DELETE /_data_stream/<data_stream>
-```
-Example:
-```
-DELETE /_data_stream/logs-spring_boot.audit_events-default
-```
-
-```
-DELETE _index_template/<index_template>
-```
-Example:
-```
-DELETE _index_template/logs-spring_boot.audit_events
-```
-3. Go to `Integrations ->  Spring Boot  -> Settings` and click on `Reinstall Spring Boot`.
-
-4. Copy data from temporary index to new index by performing the following steps in the Dev tools.
-
-```
-POST _reindex
-{
-  "source": {
-    "index": "temp_index"
-  },
-  "dest": {
-    "index": "<index_name>",
-    "op_type": "create"
-
-  }
-}
-```
-Example:
-```
-POST _reindex
-{
-  "source": {
-    "index": "temp_index"
-  },
-  "dest": {
-    "index": "logs-spring_boot.audit_events-default",
-    "op_type": "create"
-
-  }
-}
-```
-
-5. Verify data is reindexed completely.
-
-6. Start the data stream by going to the `Integrations -> Spring Boot -> Integration policies` and open configuration of integration and enable the `Spring Boot Audit Events metrics` toggle.
-
-7. Delete temporary index by performing the following step in the Dev tools.
-
-```
-DELETE temp_index
-```
-
-More details about reindexing can be found [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-reindex.html).
+- If **[Spring Boot] Audit Events panel** does not display older documents after upgrading to ``0.9.0`` or later versions, then this issue can be solved by reindexing the ``Audit Events`` data stream's indices.
+- If host.ip is shown conflicted under ``logs-*`` data view, then this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the ``Audit Events`` data stream's indices. 
+- If host.ip is shown conflicted under ``metrics-*`` data view, then this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the ``Garbage Collector``, ``Memory`` and ``Threading`` data stream's indices.
 
 ## Logs
 
@@ -212,6 +127,7 @@ An example event for `audit_events` looks as following:
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| host.ip | Host ip addresses. | ip |
 | spring_boot.audit_events.data.remote_address | Remote Address of the Spring Boot application user. | keyword |
 | spring_boot.audit_events.data.session_id | Session ID of the Spring Boot application user. | keyword |
 | spring_boot.audit_events.document_id | Unique document id generated by Elasticsearch. | keyword |
@@ -426,6 +342,7 @@ An example event for `memory` looks as following:
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| host.ip | Host ip addresses. | ip |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 | spring_boot.memory.buffer_pool.direct.count | Count of direct buffer pool memory. | long |
@@ -551,6 +468,7 @@ An example event for `threading` looks as following:
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| host.ip | Host ip addresses. | ip |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 | spring_boot.threading.threads.count | Current number of live threads including both daemon and non-daemon threads. | long |
@@ -743,6 +661,7 @@ An example event for `gc` looks as following:
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| host.ip | Host ip addresses. | ip |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 | spring_boot.gc.last_info.id | ID of the GC. | long |
