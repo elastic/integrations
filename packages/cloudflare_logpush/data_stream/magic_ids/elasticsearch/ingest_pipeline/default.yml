@@ -1,0 +1,282 @@
+---
+description: Pipeline for parsing Cloudflare Magic IDS logs.
+processors:
+  - set:
+      field: ecs.version
+      value: 8.9.0
+      tag: set_ecs_version
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      tag: rename_event_original
+  - json:
+      field: event.original
+      target_field: json
+      tag: json_event_original
+  - set:
+      field: event.kind
+      value: event
+      tag: set_event_kind
+  - set:
+      field: event.category
+      value: 
+         - network
+         - intrusion_detection
+      tag: set_event_category
+  - set:
+      field: event.type
+      value: [info]
+      tag: set_event_type
+
+# Timestamp
+  - script:
+      lang: painless
+      tag: painless_timestamp_to_milli
+      if: ctx.json?.Timestamp != null
+      source: |
+        try {
+          long t;
+          if (ctx.json.Timestamp instanceof String) {
+            t = Long.parseLong(ctx.json.Timestamp);
+          } else if (ctx.json.Timestamp instanceof Number) {
+            t = (long)(ctx.json.Timestamp);
+          } else {
+            return;
+          }
+          if (t > (long)(1e18)) {
+            ctx.json.Timestamp = t/(long)(1e6)
+          } else if (t < (long)(1e10))  {
+            ctx.json.Timestamp = t*(long)(1e3)
+          }
+        }
+        catch (Exception e) {}
+  - date:
+      field: json.Timestamp
+      if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
+      formats:
+        - UNIX_MS
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssZ
+      timezone: UTC
+      tag: date_event_timestamp
+      on_failure:
+      - append:
+          field: error.message
+          value: "{{{_ingest.on_failure_message}}}"
+  - set:
+      field: cloudflare_logpush.magic_ids.timestamp
+      copy_from: "@timestamp"
+      tag: set_timestamp
+
+# Handle destination IP and port
+  - rename:
+      field: json.DestinationIP
+      target_field: cloudflare_logpush.magic_ids.destination.ip
+      ignore_missing: true
+      tag: rename_destination_ip
+  - set:
+      field: destination.ip
+      copy_from: cloudflare_logpush.magic_ids.destination.ip
+      tag: set_destination_ip
+# Geo enrichment (destination IP)
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      tag: geo_destination_ip
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      tag: geo_destination_as
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+      tag: rename_destination_as_number
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+      tag: rename_destination_as_org
+  - rename:
+      field: json.DestinationPort
+      target_field: cloudflare_logpush.magic_ids.destination.port
+      ignore_missing: true
+      tag: rename_destination_port
+  - set:
+      field: destination.port
+      copy_from: cloudflare_logpush.magic_ids.destination.port
+      tag: set_destination_port
+
+# Handle source IP and port
+  - rename:
+      field: json.SourceIP
+      target_field: cloudflare_logpush.magic_ids.source.ip
+      ignore_missing: true
+      tag: rename_source_ip
+  - set:
+      field: source.ip
+      copy_from: cloudflare_logpush.magic_ids.source.ip
+      tag: set_source_ip
+# Geo enrichment (source IP)
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      tag: geo_source_ip
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      tag: geo_source_as
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+      tag: rename_source_as_number
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+      tag: rename_source_as_org
+  - rename:
+      field: json.SourcePort
+      target_field: cloudflare_logpush.magic_ids.source.port
+      ignore_missing: true
+      tag: rename_source_port
+  - set:
+      field: source.port
+      copy_from: cloudflare_logpush.magic_ids.source.port
+      tag: set_source_port
+
+  - rename:
+      field: json.Protocol
+      target_field: cloudflare_logpush.magic_ids.transport
+      ignore_missing: true
+      tag: rename_transport_protocol
+  - set:
+      field: network.transport
+      copy_from: cloudflare_logpush.magic_ids.transport
+      tag: set_transport_protocol
+
+  - rename:
+      field: json.Action
+      target_field: cloudflare_logpush.magic_ids.action
+      ignore_missing: true
+      tag: rename_action
+  - set:
+      field: event.action
+      copy_from: cloudflare_logpush.magic_ids.action
+      tag: set_event_action
+  - append:
+       field: event.type
+       value: allowed
+       allow_duplicates: false
+       if: ctx.event?.action == 'pass'
+       tag: append_event_type_allowed
+  - append:
+       field: event.type
+       value: denied
+       allow_duplicates: false
+       if: ctx.event?.action == 'block'
+       tag: append_event_type_block
+
+# Custom fields
+  - rename:
+      field: json.ColoCode
+      target_field: cloudflare_logpush.magic_ids.colo.code
+      ignore_missing: true
+      tag: rename_colo_code
+  - rename:
+      field: json.ColoCity
+      target_field: cloudflare_logpush.magic_ids.colo.city
+      ignore_missing: true
+      tag: rename_colo_city
+  - rename:
+      field: json.SignatureID
+      target_field: cloudflare_logpush.magic_ids.signature.id
+      ignore_missing: true
+      tag: rename_signature_id
+  - rename:
+      field: json.SignatureMessage
+      target_field: cloudflare_logpush.magic_ids.signature.message
+      ignore_missing: true
+      tag: rename_signature_message
+  - rename:
+      field: json.SignatureRevision
+      target_field: cloudflare_logpush.magic_ids.signature.revision
+      ignore_missing: true
+      tag: rename_signature_revision
+
+# Create related fields
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      if: ctx.destination?.ip != null && ctx.destination.ip != ''
+      allow_duplicates: false
+      tag: append_related_destination_ip
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null && ctx.source.ip != ''
+      allow_duplicates: false
+      tag: append_related_source_ip
+
+# Clean resulting event
+  - remove:
+      field: json
+      ignore_missing: true
+      tag: remove_json
+  - remove:
+      field:
+        - cloudflare_logpush.magic_ids.action
+        - cloudflare_logpush.magic_ids.timestamp
+        - cloudflare_logpush.magic_ids.destination.ip
+        - cloudflare_logpush.magic_ids.destination.port
+        - cloudflare_logpush.magic_ids.source.ip
+        - cloudflare_logpush.magic_ids.source.port
+        - cloudflare_logpush.magic_ids.transport
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_failure: true
+      ignore_missing: true
+      tag: remove_duplicated_custom_fields
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+      tag: remove_event_original
+  - script:
+      description: Drops null/empty values recursively.
+      tag: script_drop_empty_fields
+      lang: painless
+      source: |-
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
