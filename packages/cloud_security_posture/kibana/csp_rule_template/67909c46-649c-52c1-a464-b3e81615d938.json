@@ -1,0 +1,38 @@
+{
+    "id": "67909c46-649c-52c1-a464-b3e81615d938",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Using Customer Managed Keys involves additional overhead in maintenance by administrators.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/docs/security/encryption/default-encryption",
+            "id": "67909c46-649c-52c1-a464-b3e81615d938",
+            "name": "Ensure that Dataproc Cluster is encrypted using Customer-Managed Encryption Key",
+            "profile_applicability": "* Level 2",
+            "description": "When you use Dataproc, cluster and job data is stored on Persistent Disks (PDs) associated with the Compute Engine VMs in your cluster and in a Cloud Storage staging bucket.\nThis PD and bucket data is encrypted using a Google-generated data encryption key (DEK) and key encryption key (KEK).\nThe CMEK feature allows you to create, use, and revoke the key encryption key (KEK).\nGoogle still controls the data encryption key (DEK).",
+            "rationale": "\"Cloud services offer the ability to protect data related to those services using encryption keys managed by the customer within Cloud KMS.\nThese encryption keys are called customer-managed encryption keys (CMEK).\nWhen you protect data in Google Cloud services with CMEK, the CMEK key is within your control.",
+            "audit": "**From Google Cloud Console**\n\n1. Login to the GCP Console and navigate to the Dataproc Cluster page by visiting https://console.cloud.google.com/dataproc/clusters.\n2. Select the project from the project dropdown list.\n3. On the `Dataproc Clusters` page, select the cluster and click on the Name attribute value that you want to examine.\n4. On the `details` page, select the `Configurations` tab.\n5. On the `Configurations` tab, check the `Encryption type` configuration attribute value. If the value is set to `Google-managed key`, then Dataproc Cluster is not encrypted with Customer managed encryption keys.\n\nRepeat step no.\n3 - 5 for other Dataproc Clusters available in the selected project.\n\n6. Change the project from the project dropdown list and repeat the audit procedure for other projects.\n\n**From Google Cloud CLI**\n\n7. Run clusters list command to list all the Dataproc Clusters available in the region:\n```\ngcloud dataproc clusters list --region='us-central1'\n```\n8. Run clusters describe command to get the key details of the selected cluster:\n```\ngcloud dataproc clusters describe <cluster_name> --region=us-central1 --flatten=config.encryptionConfig.gcePdKmsKeyName\n```\n9. If the above command output return \"null\", then the selected cluster is not encrypted with Customer managed encryption keys.\n10. Repeat step no. 2 and 3 for other Dataproc Clusters available in the selected region. Change the region by updating --region and repeat step no. 2 for other clusters available in the project. Change the project by running the below command and repeat the audit procedure for other Dataproc clusters available in other projects:\n```\ngcloud config set project <project_ID>\"\n```",
+            "remediation": "**From Google Cloud Console**\n\n1. Login to the GCP Console and navigate to the Dataproc Cluster page by visiting https://console.cloud.google.com/dataproc/clusters.\n2. Select the project from the projects dropdown list.\n3. On the `Dataproc Cluster` page, click on the `Create Cluster` to create a new cluster with Customer managed encryption keys.\n4. On `Create a cluster` page, perform below steps:\n - Inside `Set up cluster` section perform below steps:\n -In the `Name` textbox, provide a name for your cluster.\n - From `Location` select the location in which you want to deploy a cluster.\n - Configure other configurations as per your requirements.\n - Inside `Configure Nodes` and `Customize cluster` section configure the settings as per your requirements.\n - Inside `Manage security` section, perform below steps:\n - From `Encryption`, select `Customer-managed key`.\n - Select a customer-managed key from dropdown list.\n - Ensure that the selected KMS Key have Cloud KMS CryptoKey Encrypter/Decrypter role assign to Dataproc Cluster service account (\"serviceAccount:service-<project_number>@compute-system.iam.gserviceaccount.com\").\n - Click on `Create` to create a cluster.\n - Once the cluster is created migrate all your workloads from the older cluster to the new cluster and delete the old cluster by performing the below steps:\n - On the `Clusters` page, select the old cluster and click on `Delete cluster`.\n - On the `Confirm deletion` window, click on `Confirm` to delete the cluster.\n - Repeat step above for other Dataproc clusters available in the selected project.\n - Change the project from the project dropdown list and repeat the remediation procedure for other Dataproc clusters available in other projects.\n\n**From Google Cloud CLI**\n\nBefore creating cluster ensure that the selected KMS Key have Cloud KMS CryptoKey Encrypter/Decrypter role assign to Dataproc Cluster service account (\"serviceAccount:service-<project_number>@compute-system.iam.gserviceaccount.com\").\nRun clusters create command to create new cluster with customer-managed key:\n```\ngcloud dataproc clusters create <cluster_name> --region=us-central1 --gce-pd-kms-key=<key_resource_name>\n```\nThe above command will create a new cluster in the selected region.\n\nOnce the cluster is created migrate all your workloads from the older cluster to the new cluster and Run clusters delete command to delete cluster:\n```\ngcloud dataproc clusters delete <cluster_name> --region=us-central1\n```\nRepeat step no.\n1 to create a new Dataproc cluster.\nChange the project by running the below command and repeat the remediation procedure for other projects:\n```\ngcloud config set project <project_ID>\"\n```",
+            "section": "Identity and Access Management",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 1.17",
+                "Identity and Access Management"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "1.17",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_1_17"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
