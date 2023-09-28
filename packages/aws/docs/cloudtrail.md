@@ -186,6 +186,10 @@ If blank, CloudTrail Digest logs will be skipped.
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
+| tls.cipher | String indicating the cipher used during the current connection. | keyword |
+| tls.client.server_name | Also called an SNI, this tells the server which hostname to which the client is attempting to connect to. When this value is available, it should get copied to `destination.domain`. | keyword |
+| tls.version | Numeric part of the version parsed from the original string. | keyword |
+| tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
 | user.changes.name | Short name or login of the user. | keyword |
 | user.changes.name.text | Multi-field of `user.changes.name`. | match_only_text |
 | user.id | Unique identifier of the user. | keyword |

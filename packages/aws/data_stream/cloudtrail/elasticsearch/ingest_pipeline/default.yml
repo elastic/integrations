@@ -743,6 +743,21 @@ processors:
       field: aws.cloudtrail.insight_details
       target_field: aws.cloudtrail.flattened.insight_details
       ignore_missing: true
+  - dissect:
+      field: json.tlsDetails.tlsVersion
+      pattern: "%{tls.version_protocol}v%{tls.version}"
+      ignore_missing: true
+  - lowercase:
+      field: tls.version_protocol
+      ignore_missing: true
+  - rename:
+      field: json.tlsDetails.cipherSuite
+      target_field: tls.cipher
+      ignore_missing: true
+  - rename:
+      field: json.tlsDetails.clientProvidedHostHeader
+      target_field: tls.client.server_name
+      ignore_missing: true
   - remove:
       field: json
       ignore_missing: true
