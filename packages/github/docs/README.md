@@ -38,18 +38,18 @@ To use this integration, the following prerequisites must be met:
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | github.actor_ip | The IP address of the entity performing the action. | ip |
-| github.category | GitHub action category | keyword |
+| github.category | GitHub action category. | keyword |
 | github.hashed_token | SHA-256 hash of the token used for authentication. | keyword |
 | github.integration | The GitHub App that triggered the event. | keyword |
-| github.org | GitHub organization name | keyword |
+| github.org | GitHub organization name. | keyword |
 | github.permission | GitHub user permissions for the event. | keyword |
 | github.programmatic_access_type | Type of authentication used. | keyword |
-| github.repo | GitHub repository name | keyword |
+| github.repo | GitHub repository name. | keyword |
 | github.repositories_added_names | The name of the repository added to a GitHub App installation. | keyword |
 | github.repositories_removed_names | The name of the repository removed from a GitHub App installation. | keyword |
 | github.repository_public | Whether the GitHub repository is publicly visible. | boolean |
 | github.repository_selection | Whether all repositories have been selected or there's a selection involved. | keyword |
-| github.team | GitHub team name | keyword |
+| github.team | GitHub team name. | keyword |
 | github.user_agent | The user agent of the entity performing the action. | keyword |
 | group.name | Name of the group. | keyword |
 | host.architecture | Operating system architecture. | keyword |
