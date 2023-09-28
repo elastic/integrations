@@ -167,7 +167,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "02ab444e-ca97-437b-85dc-d580f055047c",
@@ -438,73 +438,43 @@ An example event for `winlog` looks as following:
 ```json
 {
     "@timestamp": "2021-10-29T14:05:50.739Z",
+    "agent": {
+        "ephemeral_id": "d061bfcf-e51b-4586-9ace-3d5b15f86e37",
+        "hostname": "node1",
+        "id": "aa12ad42-61bc-466c-8887-1a15d4646fc7",
+        "name": "node1",
+        "type": "filebeat",
+        "version": "8.0.0"
+    },
     "cloud": {
-        "provider": "aws",
+        "account": {
+            "id": "753231555564"
+        },
+        "availability_zone": "us-east-1a",
+        "image": {
+            "id": "ami-0e6ddc753bf04d004"
+        },
         "instance": {
             "id": "i-043997b05c5fa45ee"
         },
         "machine": {
             "type": "t3a.xlarge"
         },
-        "region": "us-east-1",
-        "availability_zone": "us-east-1a",
-        "account": {
-            "id": "753231555564"
-        },
-        "image": {
-            "id": "ami-0e6ddc753bf04d004"
-        }
+        "provider": "aws",
+        "region": "us-east-1"
     },
-    "log": {
-        "level": "information"
-    },
-    "message": "User successfully logged in.|Profile=JOHND|Language=|Skin=",
-    "winlog": {
-        "record_id": 1548167,
-        "api": "wineventlog",
-        "opcode": "Info",
-        "provider_guid": "{5a744344-18a9-480d-8a3a-0560ac58b841}",
-        "channel": "Hitachi-Hitachi ID Systems-Hitachi ID Suite/Operational",
-        "activity_id": "{4ffdfadd-63f2-41b2-9a4f-13534a729c54}",
-        "user": {
-            "identifier": "S-1-5-21-1512184445-966971527-3399726218-1035",
-            "name": "psadmin",
-            "domain": "DOMAIN1",
-            "type": "User"
-        },
-        "event_data": {
-            "Module": "psf.exe",
-            "Profile": "JOHND",
-            "Instance": "pmim"
-        },
-        "event_id": 92,
-        "computer_name": "bravurasecurity1.corp",
-        "provider_name": "Hitachi-Hitachi ID Systems-Hitachi ID Suite",
-        "task": "",
-        "process": {
-            "pid": 6368,
-            "thread": {
-                "id": 9064
-            }
-        }
+    "ecs": {
+        "version": "8.10.0"
     },
     "event": {
-        "kind": "event",
         "code": 92,
-        "provider": "Hitachi-Hitachi ID Systems-Hitachi ID Suite",
-        "created": "2021-10-29T14:05:52.111Z"
+        "created": "2021-10-29T14:05:52.111Z",
+        "kind": "event",
+        "provider": "Hitachi-Hitachi ID Systems-Hitachi ID Suite"
     },
     "host": {
-        "name": "bravurasecurity1.corp",
         "architecture": "x86_64",
-        "os": {
-            "family": "windows",
-            "name": "Windows Server 2019 Datacenter",
-            "kernel": "10.0.17763.1999 (WinBuild.160101.0800)",
-            "build": "17763.1999",
-            "platform": "windows",
-            "version": "10.0"
-        },
+        "hostname": "node1",
         "id": "a9d2b7f5-6d62-46b3-8fbe-35a7e83d1dc8",
         "ip": [
             "0.0.0.0"
@@ -512,18 +482,48 @@ An example event for `winlog` looks as following:
         "mac": [
             "0a:a5:af:ad:d3:ab"
         ],
-        "hostname": "node1"
+        "name": "bravurasecurity1.corp",
+        "os": {
+            "build": "17763.1999",
+            "family": "windows",
+            "kernel": "10.0.17763.1999 (WinBuild.160101.0800)",
+            "name": "Windows Server 2019 Datacenter",
+            "platform": "windows",
+            "version": "10.0"
+        }
     },
-    "agent": {
-        "version": "8.0.0",
-        "hostname": "node1",
-        "ephemeral_id": "d061bfcf-e51b-4586-9ace-3d5b15f86e37",
-        "id": "aa12ad42-61bc-466c-8887-1a15d4646fc7",
-        "name": "node1",
-        "type": "filebeat"
+    "log": {
+        "level": "information"
     },
-    "ecs": {
-        "version": "8.9.0"
+    "message": "User successfully logged in.|Profile=JOHND|Language=|Skin=",
+    "winlog": {
+        "activity_id": "{4ffdfadd-63f2-41b2-9a4f-13534a729c54}",
+        "api": "wineventlog",
+        "channel": "Hitachi-Hitachi ID Systems-Hitachi ID Suite/Operational",
+        "computer_name": "bravurasecurity1.corp",
+        "event_data": {
+            "Instance": "pmim",
+            "Module": "psf.exe",
+            "Profile": "JOHND"
+        },
+        "event_id": 92,
+        "opcode": "Info",
+        "process": {
+            "pid": 6368,
+            "thread": {
+                "id": 9064
+            }
+        },
+        "provider_guid": "{5a744344-18a9-480d-8a3a-0560ac58b841}",
+        "provider_name": "Hitachi-Hitachi ID Systems-Hitachi ID Suite",
+        "record_id": 1548167,
+        "task": "",
+        "user": {
+            "domain": "DOMAIN1",
+            "identifier": "S-1-5-21-1512184445-966971527-3399726218-1035",
+            "name": "psadmin",
+            "type": "User"
+        }
     }
 }
 ```
@@ -586,7 +586,7 @@ An example event for `winlog` looks as following:
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
-| message | initial raw message | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
@@ -715,7 +715,7 @@ An example event for `winlog` looks as following:
 | winlog.related_activity_id | A globally unique identifier that identifies the activity to which control was transferred to. The related events would then have this identifier as their `activity_id` identifier. | keyword |
 | winlog.symbolic_id | Symbolic event id | keyword |
 | winlog.task | The task defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. The category used by the Event Logging API (on pre Windows Vista operating systems) is written to this field. | keyword |
-| winlog.time_created | Time event was created | keyword |
+| winlog.time_created | Time event was created | date |
 | winlog.trustAttribute |  | keyword |
 | winlog.trustDirection |  | keyword |
 | winlog.trustType |  | keyword |
