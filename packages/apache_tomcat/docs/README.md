@@ -270,12 +270,12 @@ An example event for `access` looks as following:
 | http.response.status_code | HTTP response status code. | long |  |
 | http.version | HTTP version. | keyword |  |
 | input.type | Type of Filebeat input. | keyword |  |
-| log.file.device_id | Log file device ID key | keyword |  |
-| log.file.fingerprint | Fingerprint for the file | keyword |  |
-| log.file.idxhiKey | File index high | keyword |  |
-| log.file.idxloKey | File index low | keyword |  |
-| log.file.inode | Log file inode key | keyword |  |
-| log.file.volKey | Volume serial number | keyword |  |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |  |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |  |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |  |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |  |
+| log.file.inode | Inode number of the log file. | keyword |  |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |  |
 | log.offset | Log offset. | long |  |
 | related.ip | All of the IPs seen on your event. | ip |  |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |  |
@@ -386,12 +386,12 @@ An example event for `catalina` looks as following:
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| log.file.device_id | Log file device ID key | keyword |
-| log.file.fingerprint | Fingerprint for the file | keyword |
-| log.file.idxhiKey | File index high | keyword |
-| log.file.idxloKey | File index low | keyword |
-| log.file.inode | Log file inode key | keyword |
-| log.file.volKey | Volume serial number | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Log offset. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
@@ -488,12 +488,12 @@ An example event for `localhost` looks as following:
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| log.file.device_id | Log file device ID key | keyword |
-| log.file.fingerprint | Fingerprint for the file | keyword |
-| log.file.idxhiKey | File index high | keyword |
-| log.file.idxloKey | File index low | keyword |
-| log.file.inode | Log file inode key | keyword |
-| log.file.volKey | Volume serial number | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Log offset. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
