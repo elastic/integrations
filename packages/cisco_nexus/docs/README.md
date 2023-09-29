@@ -46,7 +46,7 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2023-04-26T09:08:48.000Z",
     "agent": {
-        "ephemeral_id": "c26767a5-820b-4d00-baa4-91a2ccb68a2f",
+        "ephemeral_id": "eb61ca35-ffda-44d8-8daf-6412d75b3f1f",
         "id": "1ca7ec34-90b0-4efa-97fa-ed066e3af485",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -85,7 +85,7 @@ An example event for `log` looks as following:
         ],
         "code": "NF_PARITY_ERROR",
         "dataset": "cisco_nexus.log",
-        "ingested": "2023-09-28T21:03:12Z",
+        "ingested": "2023-09-29T09:33:45Z",
         "kind": "event",
         "original": "<187>switchname: 2023 Apr 26 09:08:48 UTC: %EARL-SW2_DFC1-3-NF_PARITY_ERROR: EARL 0  NF ASIC: Uncorrectable Parity error in Netflow Table.",
         "severity": 3,
@@ -99,7 +99,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "error",
         "source": {
-            "address": "192.168.192.4:45126"
+            "address": "192.168.192.4:38964"
         },
         "syslog": {
             "facility": {
