@@ -13,7 +13,7 @@ processors:
             message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - set:
       field: ecs.version
-      value: '8.9.0'
+      value: '8.10.0'
   #
   # Parse the syslog header
   #
@@ -2340,30 +2340,27 @@ processors:
             - network
           type:
             - info
-            - change
         error:
           kind: event
           outcome: failure
           category:
             - network
           type:
-            - error
+            - info
         deleted:
           kind: event
           category:
             - network
           type:
             - info
-            - deletion
-            - user
+            - end
         creation:
           kind: event
           category:
             - network
           type:
             - info
-            - creation
-            - user
+            - access
         client-vpn-connected:
           kind: event
           category:
@@ -2378,7 +2375,6 @@ processors:
             - network
           type:
             - connection
-            - error
             - denied
         client-vpn-disconnected:
           kind: event
