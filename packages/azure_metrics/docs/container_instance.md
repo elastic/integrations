@@ -80,9 +80,9 @@ Authentication: we are handling authentication on our side (creating/renewing th
 | azure.container_instance.network_bytes_transmitted_per_second.avg | The network bytes transmitted per second. | float | byte | gauge |
 | azure.dimensions.container_name | The container name | keyword |  |  |
 | azure.metrics.cpu_usage.avg | CPU usage on all cores in millicores. | float |  | gauge |
-| azure.metrics.memory_usage.avg | Total memory usage in byte. | float | byte | gauge |
-| azure.metrics.network_bytes_received_per_second.avg | The network bytes received per second. | float | byte | gauge |
-| azure.metrics.network_bytes_transmitted_per_second.avg | The network bytes transmitted per second. | float | byte | gauge |
+| azure.metrics.memory_usage.avg |  | alias |  |  |
+| azure.metrics.network_bytes_received_per_second.avg |  | alias |  |  |
+| azure.metrics.network_bytes_transmitted_per_second.avg |  | alias |  |  |
 | azure.namespace | The namespace selected | keyword |  |  |
 | azure.resource.group | The resource group | keyword |  |  |
 | azure.resource.id | The id of the resource | keyword |  |  |

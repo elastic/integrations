@@ -109,6 +109,15 @@ The Windows `applocker_packaged_app_deployment` data stream provides events from
 
 {{fields "applocker_packaged_app_deployment"}}
 
+### AppLocker/Packaged app-Execution
+
+The Windows `applocker_packaged_app_execution` data stream provides events from the Windows
+`Microsoft-Windows-AppLocker/Packaged app-Execution` event log.
+
+{{event "applocker_packaged_app_execution"}}
+
+{{fields "applocker_packaged_app_execution"}}
+
 ### Forwarded
 
 The Windows `forwarded` data stream provides events from the Windows
