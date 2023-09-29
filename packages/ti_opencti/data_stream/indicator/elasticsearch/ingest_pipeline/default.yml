@@ -540,6 +540,32 @@ processors:
       ignore_missing: true
 
   - foreach:
+      field: opencti.observable.domain_name
+      ignore_missing: true
+      processor:
+        append:
+          field: _tmp_found_domain_names_and_hostnames
+          value: "{{_ingest._value.value}}"
+          allow_duplicates: false
+  - foreach:
+      field: opencti.observable.hostname
+      ignore_missing: true
+      processor:
+        append:
+          field: _tmp_found_domain_names_and_hostnames
+          value: "{{_ingest._value.value}}"
+          allow_duplicates: false
+  - foreach:
+      field: _tmp_found_domain_names_and_hostnames
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "ecs_from_domain_name_or_hostname" }}'
+  - remove:
+      field: _tmp_found_domain_names_and_hostnames
+      ignore_missing: true
+
+  - foreach:
       field: opencti.observable.file
       ignore_missing: true
       processor:

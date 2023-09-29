@@ -41,13 +41,13 @@ An example event for `indicator` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-09-29T15:06:09.923Z",
+    "@timestamp": "2023-09-29T19:16:15.226Z",
     "agent": {
-        "ephemeral_id": "440df077-45c3-4127-90c8-940baa578f98",
-        "id": "d5871b44-3c1e-43d3-addc-1780892e396e",
+        "ephemeral_id": "53f803d5-6063-4fda-b5b2-fd41bfd2ca27",
+        "id": "41e802df-9279-45d8-8c76-dbd82b415e01",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.1"
+        "version": "8.9.2"
     },
     "data_stream": {
         "dataset": "ti_opencti.indicator",
@@ -58,9 +58,9 @@ An example event for `indicator` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "d5871b44-3c1e-43d3-addc-1780892e396e",
+        "id": "41e802df-9279-45d8-8c76-dbd82b415e01",
         "snapshot": false,
-        "version": "8.9.1"
+        "version": "8.9.2"
     },
     "event": {
         "agent_id_status": "verified",
@@ -70,7 +70,7 @@ An example event for `indicator` looks as following:
         "created": "2018-02-05T08:04:53.000Z",
         "dataset": "ti_opencti.indicator",
         "id": "d019b01c-b637-4eb2-af53-6d527be3193d",
-        "ingested": "2023-09-29T15:06:12Z",
+        "ingested": "2023-09-29T19:16:18Z",
         "kind": "enrichment",
         "type": [
             "indicator"
@@ -113,7 +113,8 @@ An example event for `indicator` looks as following:
         "forwarded",
         "opencti-indicator",
         "information-credibility-6",
-        "osint"
+        "osint",
+        "ecs-indicator-detail"
     ],
     "threat": {
         "feed": {
@@ -131,7 +132,12 @@ An example event for `indicator` looks as following:
             "name": "ec2-23-21-172-164.compute-1.amazonaws.com",
             "provider": "CthulhuSPRL.be",
             "reference": "http://elastic-package-service-opencti_stub-1:8080/dashboard/observations/indicators/d019b01c-b637-4eb2-af53-6d527be3193d",
-            "type": "hostname"
+            "type": "hostname",
+            "url": {
+                "domain": "ec2-23-21-172-164.compute-1.amazonaws.com",
+                "registered_domain": "ec2-23-21-172-164.compute-1.amazonaws.com",
+                "top_level_domain": "compute-1.amazonaws.com"
+            }
         }
     }
 }
