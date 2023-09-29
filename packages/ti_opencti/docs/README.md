@@ -31,6 +31,8 @@ The simplest authentication method to use is an API key (bearer token). You can 
 
 The `indicator` data stream includes indicators of the following types (`threat.indicator.type`): `artifact`, `autonomous-system`, `bank-account`, `cryptocurrency-wallet`, `cryptographic-key`, `directory`, `domain-name`, `email-addr`, `email-message`, `email-mime-part-type`, `hostname`, `ipv4-addr`, `ipv6-addr`, `mac-addr`, `media-content`, `mutex`, `network-traffic`, `payment-card`, `phone-number`, `process`, `software`, `file`, `text`, `url`, `user-account`, `user-agent`, `windows-registry-key`, `windows-registry-value-type`, `x509-certificate`, `unknown`.
 
+OpenCTI's data model closely follows the [STIX standard](https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html). It supports complex indicators defined using STIX patterns or other languages, and each indicator can be related to one or more observables. In the [ECS threat fields](https://www.elastic.co/guide/en/ecs/current/ecs-threat.html) the focus is on atomic indicators. This integration fetches as much data as possible about indicators and their related observables, and populates relevant ECS fields wherever possible. It uses related observables rather than the indicator pattern as the data source for type-specific indicator fields.
+
 #### Example
 
 Here is an example `indicator` event:
