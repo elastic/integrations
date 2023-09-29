@@ -21,7 +21,7 @@ It was developed using OpenCTI version 5.10.1.
 
 For additinal information about threat intelligence integrations, including the steps required to add an integration, please refer to the {{ url "security-ti-integrations" "Enable threat intelligence integrations" }} page of the Elastic Security documentation.
 
-When adding the OpenCTI integration, you will need to provide a base URL for the target OpenCTI instance. It should be just the base URL (e.g. `https://demo.opencti.io`) and not include an additional path for the API (e.g. ~~`https://demo.opencti.io/graphql`~~) or user interface (e.g. ~~`https://demo.opencti.io/dashboard`~~).
+When adding the OpenCTI integration, you will need to provide a base URL for the target OpenCTI instance. It should be just the base URL (e.g. `https://demo.opencti.io`) and not include an additional path for the API or UI.
 
 The simplest authentication method to use is an API key (bearer token). You can find a value for the API key on your profile page in the OpenCTI user interface. Advanced integration settings can be used to configure various OAuth2-based authentication arrangements, and to enter SSL settings for mTLS authentication and for other purposes. For information on setting up the OpenCTI side of an authentication strategy, please refer to [OpenCTI's authentication documentation](https://docs.opencti.io/latest/deployment/authentication/).
 
@@ -44,6 +44,17 @@ Fields for indicators of any type are mapped to ECS fields when possible (primar
 Fields for related observables of the various types are always stored under `opencti.observable.<type>.*` and when possible their values will be copied into corresponding ECS fields.
 
 The `related.*` fields will also be populated with any relevant data.
+
+Timestamps are mapped as follows:
+
+| Source      | Destination                   | Description |
+|-------------|-------------------------------|-------------|
+| -           | @timestamp                    | Time the event was received by the pipeline |
+| -           | event.ingested                | Time the event arrived in the central data store |
+| created     | event.created                 | Time of the indicator's creation |
+| modified    | threat.indicator.modified_at  | Time of the indicator's last modification |
+| valid_from  | opencti.indicator.valid_from  | Time from which this indicator is considered a valid indicator of the behaviors it is related to or represents |
+| valid_until | opencti.indicator.valid_until | Time at which this indicator should no longer be considered a valid indicator of the behaviors it is related to or represents |
 
 The table below lists all `opencti.*` fields.
 

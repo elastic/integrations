@@ -21,7 +21,7 @@ It was developed using OpenCTI version 5.10.1.
 
 For additinal information about threat intelligence integrations, including the steps required to add an integration, please refer to the [Enable threat intelligence integrations](https://www.elastic.co/guide/en/security/current/es-threat-intel-integrations.html) page of the Elastic Security documentation.
 
-When adding the OpenCTI integration, you will need to provide a base URL for the target OpenCTI instance. It should be just the base URL (e.g. `https://demo.opencti.io`) and not include an additional path for the API (e.g. ~~`https://demo.opencti.io/graphql`~~) or user interface (e.g. ~~`https://demo.opencti.io/dashboard`~~).
+When adding the OpenCTI integration, you will need to provide a base URL for the target OpenCTI instance. It should be just the base URL (e.g. `https://demo.opencti.io`) and not include an additional path for the API or UI.
 
 The simplest authentication method to use is an API key (bearer token). You can find a value for the API key on your profile page in the OpenCTI user interface. Advanced integration settings can be used to configure various OAuth2-based authentication arrangements, and to enter SSL settings for mTLS authentication and for other purposes. For information on setting up the OpenCTI side of an authentication strategy, please refer to [OpenCTI's authentication documentation](https://docs.opencti.io/latest/deployment/authentication/).
 
@@ -39,13 +39,13 @@ An example event for `indicator` looks as following:
 
 ```json
 {
-    "@timestamp": "2018-02-05T08:04:53.000Z",
+    "@timestamp": "2023-09-29T15:06:09.923Z",
     "agent": {
-        "ephemeral_id": "a43fe0f3-0a6b-4f15-8c1d-4036715729db",
-        "id": "4630a499-892f-49b7-80a8-e493f85c3410",
+        "ephemeral_id": "440df077-45c3-4127-90c8-940baa578f98",
+        "id": "d5871b44-3c1e-43d3-addc-1780892e396e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.2"
+        "version": "8.9.1"
     },
     "data_stream": {
         "dataset": "ti_opencti.indicator",
@@ -56,18 +56,19 @@ An example event for `indicator` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "4630a499-892f-49b7-80a8-e493f85c3410",
+        "id": "d5871b44-3c1e-43d3-addc-1780892e396e",
         "snapshot": false,
-        "version": "8.9.2"
+        "version": "8.9.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "threat"
         ],
+        "created": "2018-02-05T08:04:53.000Z",
         "dataset": "ti_opencti.indicator",
         "id": "d019b01c-b637-4eb2-af53-6d527be3193d",
-        "ingested": "2023-09-11T14:11:51Z",
+        "ingested": "2023-09-29T15:06:12Z",
         "kind": "enrichment",
         "type": [
             "indicator"
@@ -114,7 +115,7 @@ An example event for `indicator` looks as following:
     ],
     "threat": {
         "feed": {
-            "dashboard_id": "object ID of a dashboard for this feed",
+            "dashboard_id": "ti_opencti-83b2bef0-591c-11ee-ba5f-49a63bb985cd",
             "description": "Indicator data from OpenCTI",
             "name": "OpenCTI",
             "reference": "https://docs.opencti.io/latest/usage/overview/"
@@ -142,6 +143,17 @@ Fields for related observables of the various types are always stored under `ope
 
 The `related.*` fields will also be populated with any relevant data.
 
+Timestamps are mapped as follows:
+
+| Source      | Destination                   | Description |
+|-------------|-------------------------------|-------------|
+| -           | @timestamp                    | Time the event was received by the pipeline |
+| -           | event.ingested                | Time the event arrived in the central data store |
+| created     | event.created                 | Time of the indicator's creation |
+| modified    | threat.indicator.modified_at  | Time of the indicator's last modification |
+| valid_from  | opencti.indicator.valid_from  | Time from which this indicator is considered a valid indicator of the behaviors it is related to or represents |
+| valid_until | opencti.indicator.valid_until | Time at which this indicator should no longer be considered a valid indicator of the behaviors it is related to or represents |
+
 The table below lists all `opencti.*` fields.
 
 The documentation for ECS fields can be found at:
@@ -153,7 +165,7 @@ The documentation for ECS fields can be found at:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Indicator creation timestamp. | date |
+| @timestamp | Time the event was received by the pipeline. | date |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -174,8 +186,8 @@ The documentation for ECS fields can be found at:
 | opencti.indicator.revoked | Whether the indicator is revoked. | boolean |
 | opencti.indicator.score | An integer score for the indicator. | long |
 | opencti.indicator.standard_id | A predictable STIX ID, generated based on one or mulitple attributes of the indicator. | keyword |
-| opencti.indicator.valid_from | The time from which this Indicator is considered a valid indicator of the behaviors it is related or represents. | date |
-| opencti.indicator.valid_until | The time at which this Indicator should no longer be considered a valid indicator of the behaviors it is related to or represents. | date |
+| opencti.indicator.valid_from | The time from which this indicator is considered a valid indicator of the behaviors it is related to or represents. | date |
+| opencti.indicator.valid_until | The time at which this indicator should no longer be considered a valid indicator of the behaviors it is related to or represents. | date |
 | opencti.observable.artifact.additional_names | Additional names of the artifact. | keyword |
 | opencti.observable.artifact.decryption_key | The decryption key for the encrypted binary data. | keyword |
 | opencti.observable.artifact.encryption_algorithm | The type of encryption algorithm the binary data is encoded in, if the artifact is encrypted. | keyword |
