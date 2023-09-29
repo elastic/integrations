@@ -56,11 +56,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2013-02-25T07:01:34.000Z",
     "agent": {
-        "ephemeral_id": "d71bab02-1a42-4119-ae2a-78113cf3e0c2",
-        "id": "5fcd6016-3c0e-45e7-b624-cc2a254f1769",
+        "ephemeral_id": "72562740-51f7-47c3-9398-83330775b2e3",
+        "id": "1ca7ec34-90b0-4efa-97fa-ed066e3af485",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.3.0"
+        "version": "8.10.1"
     },
     "data_stream": {
         "dataset": "fortinet_fortimail.log",
@@ -74,9 +74,9 @@ An example event for `log` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "5fcd6016-3c0e-45e7-b624-cc2a254f1769",
+        "id": "1ca7ec34-90b0-4efa-97fa-ed066e3af485",
         "snapshot": false,
-        "version": "8.3.0"
+        "version": "8.10.1"
     },
     "email": {
         "direction": "unknown",
@@ -97,9 +97,9 @@ An example event for `log` looks as following:
         "agent_id_status": "verified",
         "code": "0200025843",
         "dataset": "fortinet_fortimail.log",
-        "ingested": "2023-03-16T06:09:49Z",
+        "ingested": "2023-09-29T11:24:14Z",
         "kind": "event",
-        "original": "\u003c187\u003edate=2013-02-25,time=07:01:34,device_id=FE100C3909600504,log_id=0200025843,type=statistics,pri=information,session_id=\"r1PF1YTh025836-r1PF1YTh025836\",client_name=\"user\",dst_ip=\"81.2.69.194\",endpoint=\"\",from=\"aaa@bbb.com\",to=\"user1@example.com\",polid=\"0:1:0\",domain=\"example.com\",subject=\"Test12345\",mailer=\"proxy\",resolved=\"FAIL\",direction=\"unknown\",virus=\"\",disposition=\"Delay\",classifier=\"Session Limits\",message_length=\"199986\"",
+        "original": "<187>date=2013-02-25,time=07:01:34,device_id=FE100C3909600504,log_id=0200025843,type=statistics,pri=information,session_id=\"r1PF1YTh025836-r1PF1YTh025836\",client_name=\"user\",dst_ip=\"81.2.69.194\",endpoint=\"\",from=\"aaa@bbb.com\",to=\"user1@example.com\",polid=\"0:1:0\",domain=\"example.com\",subject=\"Test12345\",mailer=\"proxy\",resolved=\"FAIL\",direction=\"unknown\",virus=\"\",disposition=\"Delay\",classifier=\"Session Limits\",message_length=\"199986\"",
         "outcome": "failure"
     },
     "fortinet_fortimail": {
@@ -130,12 +130,12 @@ An example event for `log` looks as following:
         }
     },
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
     "log": {
         "level": "information",
         "source": {
-            "address": "172.23.0.5:36516"
+            "address": "192.168.192.4:56080"
         },
         "syslog": {
             "facility": {
@@ -243,6 +243,12 @@ An example event for `log` looks as following:
 | fortinet_fortimail.log.virus |  | keyword |
 | fortinet_fortimail.log.xfer_time |  | double |
 | input.type | Type of Filebeat input. | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | tags | User defined tags. | keyword |
