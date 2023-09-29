@@ -30,8 +30,6 @@ The `log` dataset collects netflow logs.
 | agent.name | Custom name of the agent. This is a name that can be given to an agent. This can be helpful if for example two Filebeat instances are running on the same host but a human readable separation is needed on which Filebeat instance data is coming from. | keyword |
 | agent.type | Type of the agent. The agent type always stays the same and should be given by the agent used. In case of Filebeat the agent would always be Filebeat also if two Filebeat instances are run on the same machine. | keyword |
 | agent.version | Version of the agent. | keyword |
-| as.organization.name | Organization name. | keyword |
-| as.organization.name.text | Multi-field of `as.organization.name`. | match_only_text |
 | client.address | Some event client addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | client.as.organization.name | Organization name. | keyword |
 | client.as.organization.name.text | Multi-field of `client.as.organization.name`. | match_only_text |
@@ -189,21 +187,9 @@ The `log` dataset collects netflow logs.
 | file.uid | The user ID (UID) or security identifier (SID) of the file owner. | keyword |
 | flow.id | Hash of source and destination IPs. | keyword |
 | flow.locality | Identifies whether the flow involved public IP addresses or only private address. | keyword |
-| geo.city_name | City name. | keyword |
-| geo.continent_name | Name of the continent. | keyword |
-| geo.country_iso_code | Country ISO code. | keyword |
-| geo.country_name | Country name. | keyword |
-| geo.location | Longitude and latitude. | geo_point |
-| geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
-| geo.region_iso_code | Region ISO code. | keyword |
-| geo.region_name | Region name. | keyword |
 | group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
-| hash.md5 | MD5 hash. | keyword |
-| hash.sha1 | SHA1 hash. | keyword |
-| hash.sha256 | SHA256 hash. | keyword |
-| hash.sha512 | SHA512 hash. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -1619,14 +1605,6 @@ The `log` dataset collects netflow logs.
 | organization.id | Unique identifier for the organization. | keyword |
 | organization.name | Organization name. | keyword |
 | organization.name.text | Multi-field of `organization.name`. | match_only_text |
-| os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| os.full | Operating system name, including the version or code name. | keyword |
-| os.full.text | Multi-field of `os.full`. | match_only_text |
-| os.kernel | Operating system kernel version as a raw string. | keyword |
-| os.name | Operating system name, without the version. | keyword |
-| os.name.text | Multi-field of `os.name`. | match_only_text |
-| os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| os.version | Operating system version as a raw string. | keyword |
 | package.architecture | Package architecture. | keyword |
 | package.checksum | Checksum of the installed package for verification. | keyword |
 | package.description | Description of the package. | keyword |
