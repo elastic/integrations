@@ -168,10 +168,6 @@ The `cisco_meraki.log` dataset provides events from the configured syslog server
 | file.path.text | Multi-field of `file.path`. | match_only_text |
 | file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
 | file.type | File type (file, dir, or symlink). | keyword |
-| geo.city_name | City name. | keyword |
-| geo.country_name | Country name. | keyword |
-| geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
-| geo.region_name | Region name. | keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -298,11 +294,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2021-11-23T18:13:18.348Z",
     "agent": {
-        "ephemeral_id": "eedc7205-9a4a-44e7-8574-3c9450a28434",
-        "id": "878982e9-a174-4ed8-abe3-19378c1473de",
+        "ephemeral_id": "6a7dac67-b13a-40d5-a45a-7df6ac73e739",
+        "id": "29d48081-6d4f-4236-b959-925451410f6f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.0.0"
     },
     "cisco_meraki": {
         "event_subtype": "ids_alerted",
@@ -324,12 +320,12 @@ An example event for `log` looks as following:
         "port": 56391
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "878982e9-a174-4ed8-abe3-19378c1473de",
+        "id": "29d48081-6d4f-4236-b959-925451410f6f",
         "snapshot": false,
-        "version": "8.8.0"
+        "version": "8.0.0"
     },
     "event": {
         "action": "ids-signature-matched",
@@ -339,7 +335,7 @@ An example event for `log` looks as following:
             "threat"
         ],
         "dataset": "cisco_meraki.log",
-        "ingested": "2023-06-01T20:31:15Z",
+        "ingested": "2023-09-20T09:12:35Z",
         "original": "\u003c134\u003e1 1637691198.348361125 MX84 security_event ids_alerted signature=1:29708:4 priority=1 timestamp=1637691198.330873 dhost=D0:AB:D5:7B:43:73 direction=ingress protocol=tcp/ip src=67.43.156.12:80 dst=10.0.3.162:56391 decision=allowed message: BROWSER-IE Microsoft Internet Explorer CSS uninitialized object access attempt detected",
         "type": [
             "info",
@@ -351,7 +347,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.224.4:50508"
+            "address": "172.20.0.4:40170"
         }
     },
     "network": {
@@ -421,14 +417,6 @@ An example event for `log` looks as following:
 | cisco_meraki.event.sharedSecret | User defined secret to be validated by the webhook receiver (optional) | keyword |
 | cisco_meraki.event.version | Current version of webhook format | keyword |
 | client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
-| client.geo.city_name | City name. | keyword |
-| client.geo.continent_name | Name of the continent. | keyword |
-| client.geo.country_iso_code | Country ISO code. | keyword |
-| client.geo.country_name | Country name. | keyword |
-| client.geo.location.lat | Longitude and latitude. | geo_point |
-| client.geo.location.lon | Longitude and latitude. | geo_point |
-| client.geo.region_iso_code | Region ISO code. | keyword |
-| client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.mac | MAC address of the client. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | client.registered_domain | The highest registered client domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
@@ -456,13 +444,6 @@ An example event for `log` looks as following:
 | destination.as.organization.name.text | Multi-field of `destination.as.organization.name`. | match_only_text |
 | destination.bytes | Bytes sent from the destination to the source. | long |
 | destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
-| destination.geo.city_name | City name. | keyword |
-| destination.geo.continent_name | Name of the continent. | keyword |
-| destination.geo.country_iso_code | Country ISO code. | keyword |
-| destination.geo.country_name | Country name. | keyword |
-| destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.region_iso_code | Region ISO code. | keyword |
-| destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.mac | MAC address of the destination. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | destination.nat.ip | Translated ip of destination based NAT sessions (e.g. internet to private DMZ) Typically used with load balancers, firewalls, or routers. | ip |
@@ -497,10 +478,6 @@ An example event for `log` looks as following:
 | file.path.text | Multi-field of `file.path`. | match_only_text |
 | file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
 | file.type | File type (file, dir, or symlink). | keyword |
-| geo.city_name | City name. | keyword |
-| geo.country_name | Country name. | keyword |
-| geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
-| geo.region_name | Region name. | keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -578,13 +555,6 @@ An example event for `log` looks as following:
 | source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
-| source.geo.city_name | City name. | keyword |
-| source.geo.continent_name | Name of the continent. | keyword |
-| source.geo.country_iso_code | Country ISO code. | keyword |
-| source.geo.country_name | Country name. | keyword |
-| source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.region_iso_code | Region ISO code. | keyword |
-| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.mac | MAC address of the source. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | source.nat.ip | Translated ip of source based NAT sessions (e.g. internal client to internet) Typically connections traversing load balancers, firewalls, or routers. | ip |
@@ -623,11 +593,11 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2018-02-11T00:00:00.123Z",
     "agent": {
-        "ephemeral_id": "077a2d93-4b1d-4908-b2d5-7c3a0218df3a",
-        "id": "878982e9-a174-4ed8-abe3-19378c1473de",
+        "ephemeral_id": "9a78410b-655d-4ff4-9fd6-5c47d2b1e28b",
+        "id": "29d48081-6d4f-4236-b959-925451410f6f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.0.0"
     },
     "cisco_meraki": {
         "event": {
@@ -659,12 +629,12 @@ An example event for `events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "878982e9-a174-4ed8-abe3-19378c1473de",
+        "id": "29d48081-6d4f-4236-b959-925451410f6f",
         "snapshot": false,
-        "version": "8.8.0"
+        "version": "8.0.0"
     },
     "event": {
         "action": "Cellular came up",
@@ -673,7 +643,7 @@ An example event for `events` looks as following:
             "network"
         ],
         "dataset": "cisco_meraki.events",
-        "ingested": "2023-06-01T20:29:21Z",
+        "ingested": "2023-09-20T09:09:47Z",
         "original": "{\"alertData\":{\"connection\":\"LTE\",\"local\":\"192.168.1.2\",\"model\":\"UML290VW\",\"provider\":\"Purview Wireless\",\"remote\":\"1.2.3.5\"},\"alertId\":\"0000000000000000\",\"alertLevel\":\"informational\",\"alertType\":\"Cellular came up\",\"alertTypeId\":\"cellular_up\",\"deviceMac\":\"00:11:22:33:44:55\",\"deviceModel\":\"MX\",\"deviceName\":\"My appliance\",\"deviceSerial\":\"Q234-ABCD-5678\",\"deviceTags\":[\"tag1\",\"tag2\"],\"deviceUrl\":\"https://n1.meraki.com//n//manage/nodes/new_list/000000000000\",\"networkId\":\"N_24329156\",\"networkName\":\"Main Office\",\"networkTags\":[],\"networkUrl\":\"https://n1.meraki.com//n//manage/nodes/list\",\"occurredAt\":\"2018-02-11T00:00:00.123450Z\",\"organizationId\":\"2930418\",\"organizationName\":\"My organization\",\"organizationUrl\":\"https://dashboard.meraki.com/o/VjjsAd/manage/organization/overview\",\"sentAt\":\"2021-10-07T08:42:00.926325Z\",\"sharedSecret\":\"secret\",\"version\":\"0.1\"}",
         "type": [
             "info",
