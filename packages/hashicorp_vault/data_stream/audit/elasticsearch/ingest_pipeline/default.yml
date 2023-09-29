@@ -3,7 +3,7 @@ description: Pipeline for processing Hashicorp Vault audit logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.9.0'
+      value: '8.10.0'
   - rename:
       field: message
       target_field: event.original
@@ -37,29 +37,31 @@ processors:
       value: authentication
   # Request operation can be: create, delete, list, read, update.
   - append:
-      if: ctx?.hashicorp_vault?.audit?.request?.operation == 'create'
-      field: event.type
-      value: creation
-  - append:
       if: ctx?.hashicorp_vault?.audit?.request?.operation == 'delete'
       field: event.type
-      value: deletion
+      value: [info, end]
+      allow_duplicates: false
   - append:
       if: ctx?.hashicorp_vault?.audit?.request?.operation == 'update'
       field: event.type
-      value: change
+      value: info
+      allow_duplicates: false
   - append:
-      if: ctx?.hashicorp_vault?.audit?.request?.operation == 'read' || ctx?.hashicorp_vault?.audit?.request?.operation == 'list'
+      if: >
+        ['read', 'list', 'create'].contains(ctx.hashicorp_vault?.audit?.request?.operation)
       field: event.type
-      value: access
+      value: [info, start]
+      allow_duplicates: false
   - append:
       if: ctx?.hashicorp_vault?.audit?.error != null
       field: event.type
-      value: error
+      value: info
+      allow_duplicates: false
   - append:
       if: ctx?.hashicorp_vault?.audit?.error != null && ctx.hashicorp_vault.audit.error.contains("denied")
       field: event.type
-      value: denied
+      value: info
+      allow_duplicates: false
   - set:
       field: event.action
       copy_from: hashicorp_vault.audit.request.operation
