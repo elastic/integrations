@@ -77,10 +77,10 @@ An example event for `application` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-09-22T05:17:09.253Z",
+    "@timestamp": "2023-09-28T09:24:33.812Z",
     "agent": {
-        "ephemeral_id": "a78c0227-32ad-4af8-9ab8-e0c425c75823",
-        "id": "e592c82e-58a2-4a1d-a2a1-ccf66cfacfbb",
+        "ephemeral_id": "20d060ec-da41-4f14-a187-d020b9fbec7d",
+        "id": "a6bdbb4a-4bac-4243-83cb-dba157f24987",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.8.0"
@@ -88,7 +88,8 @@ An example event for `application` looks as following:
     "apache_spark": {
         "application": {
             "cores": 8,
-            "mbean": "metrics:name=application.PythonWordCount.1695359812714.cores,type=gauges"
+            "mbean": "metrics:name=application.PythonWordCount.1695893057562.cores,type=gauges",
+            "name": "PythonWordCount.1695893057562"
         }
     },
     "data_stream": {
@@ -100,15 +101,15 @@ An example event for `application` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "e592c82e-58a2-4a1d-a2a1-ccf66cfacfbb",
+        "id": "a6bdbb4a-4bac-4243-83cb-dba157f24987",
         "snapshot": false,
         "version": "8.8.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "apache_spark.application",
-        "duration": 20196108,
-        "ingested": "2023-09-22T05:17:13Z",
+        "duration": 23828342,
+        "ingested": "2023-09-28T09:24:37Z",
         "kind": "metric",
         "module": "apache_spark",
         "type": "info"
@@ -118,8 +119,8 @@ An example event for `application` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "id": "e8978f2086c14e13b7a0af9ed0011d19",
-        "ip": "172.31.0.9",
-        "mac": "02-42-AC-1F-00-09",
+        "ip": "172.20.0.7",
+        "mac": "02-42-AC-14-00-07",
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
