@@ -17,11 +17,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2018-10-10T12:34:56.000Z",
     "agent": {
-        "ephemeral_id": "9ee676bb-6135-4b55-b398-3316bd6865ad",
-        "id": "a4d1a8b2-b45c-4d97-a37a-bd371f13111b",
+        "ephemeral_id": "b0701cf1-b4c4-4d92-abce-b6f1235792d2",
+        "id": "f86f831a-cae2-454f-a985-4f579b0ee515",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.1"
+        "version": "8.7.1"
     },
     "cisco": {
         "asa": {
@@ -41,12 +41,12 @@ An example event for `log` looks as following:
         "port": 8256
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "a4d1a8b2-b45c-4d97-a37a-bd371f13111b",
+        "id": "f86f831a-cae2-454f-a985-4f579b0ee515",
         "snapshot": false,
-        "version": "8.8.1"
+        "version": "8.7.1"
     },
     "event": {
         "action": "firewall-rule",
@@ -56,7 +56,7 @@ An example event for `log` looks as following:
         ],
         "code": "305011",
         "dataset": "cisco_asa.log",
-        "ingested": "2023-09-21T02:17:20Z",
+        "ingested": "2023-09-29T00:37:09Z",
         "kind": "event",
         "original": "Oct 10 2018 12:34:56 localhost CiscoASA[999]: %ASA-6-305011: Built dynamic TCP translation from inside:172.31.98.44/1772 to outside:192.168.98.44/8256",
         "severity": 6,
@@ -74,7 +74,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "informational",
         "source": {
-            "address": "172.19.0.4:60534"
+            "address": "172.28.0.4:34702"
         }
     },
     "network": {
@@ -159,6 +159,7 @@ An example event for `log` looks as following:
 | cisco.asa.message_id | The Cisco ASA message identifier. | keyword |
 | cisco.asa.privilege.new | When a users privilege is changed this is the new value | keyword |
 | cisco.asa.privilege.old | When a users privilege is changed this is the old value | keyword |
+| cisco.asa.rejection_reason | Reason for an AAA authentication rejection. | keyword |
 | cisco.asa.rule_name | Name of the Access Control List rule that matched this event. | keyword |
 | cisco.asa.security | Cisco FTD security event fields. | flattened |
 | cisco.asa.session_type | Session type (for example, IPsec or UDP). | keyword |
