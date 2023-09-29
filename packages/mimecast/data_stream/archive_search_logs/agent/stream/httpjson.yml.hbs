@@ -1,0 +1,60 @@
+config_version: "2"
+interval: {{interval}}
+request.url: {{api_url}}/api/archive/get-archive-search-logs
+request.method: "POST"
+{{#if enable_request_tracer}}
+request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+{{/if}}
+request.transforms:
+- set:
+    target: body.meta.pagination.pageSize
+    value: 100
+- set:
+    target: header.x-mc-app-id
+    value: {{app_id}}
+- set:
+    target: header.x-mc-date
+    value: '[[formatDate (now) "RFC1123"]]'
+- set:
+    target: header.x-mc-req-id
+    value: '[[uuid]]'
+- set:
+    target: header.Authorization
+    value: 'MC {{access_key}}:[[hmacBase64 "sha1" (base64Decode "{{secret_key}}") (sprintf "%s:%s:/api/archive/get-archive-search-logs:{{app_key}}" (.header.Get "x-mc-date") (.header.Get "x-mc-req-id"))]]'
+    fail_on_template_error: true
+response.decode_as: application/json
+response.split:
+  target: body.data
+  split:
+    target: body.logs
+    keep_parent: false
+    ignore_empty_value: true
+  ignore_empty_value: true
+response.pagination:
+# pageToken already holds all required information from the previous filters
+- delete:
+    target: body.data
+- set:
+    target: body.meta.pagination.pageToken
+    value: >-
+         [[- if index .last_response.body.meta.pagination "next" -]]
+           [[- .last_response.body.meta.pagination.next -]]
+         [[- end -]]
+    fail_on_template_error: true
+cursor:
+  next_date:
+    value: '[[.first_event.createTime]]'
+tags:
+{{#if preserve_original_event}}
+- preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+- {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

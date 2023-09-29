@@ -53,25 +53,47 @@ Current supported event types are:
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| crowdstrike.event.AccountCreationTimeStamp | The timestamp of when the source account was created in Active Directory. | date |
+| crowdstrike.event.ActivityId | ID of the activity that triggered the detection. | keyword |
+| crowdstrike.event.AddedPrivilege | The difference between their current and previous list of privileges. | keyword |
+| crowdstrike.event.AdditionalAccountObjectGuid | Additional involved user object GUID. | keyword |
+| crowdstrike.event.AdditionalAccountObjectSid | Additional involved user object SID. | keyword |
+| crowdstrike.event.AdditionalAccountUpn | Additional involved user UPN. | keyword |
+| crowdstrike.event.AdditionalActivityId | ID of an additional activity related to the detection. | keyword |
+| crowdstrike.event.AdditionalEndpointAccountObjectGuid | Additional involved endpoint object GUID. | keyword |
+| crowdstrike.event.AdditionalEndpointAccountObjectSid | Additional involved endpoint object SID. | keyword |
+| crowdstrike.event.AdditionalEndpointSensorId | Additional involved endpoint agent ID. | keyword |
+| crowdstrike.event.AdditionalLocationCountryCode | Additional involved country code. | keyword |
+| crowdstrike.event.AdditionalSsoApplicationIdentifier | Additional application identifier. | keyword |
+| crowdstrike.event.AnomalousTicketContentClassification | Ticket signature analysis. | keyword |
 | crowdstrike.event.AssociatedFile | The file associated with the triggering indicator. | keyword |
 | crowdstrike.event.Attributes | JSON objects containing additional information about the event. | flattened |
 | crowdstrike.event.AuditKeyValues | Fields that were changed in this event. | nested |
+| crowdstrike.event.Category | IDP incident category. | keyword |
+| crowdstrike.event.CertificateTemplateIdentifier | The ID of the certificate template. | keyword |
+| crowdstrike.event.CertificateTemplateName | Name of the certificate template. | keyword |
+| crowdstrike.event.Certificates | Provides one or more JSON objects which includes related SSL/TLS Certificates. | nested |
 | crowdstrike.event.Commands | Commands run in a remote session. | keyword |
 | crowdstrike.event.ComputerName | Name of the computer where the detection occurred. | keyword |
 | crowdstrike.event.CustomerId | Customer identifier. | keyword |
+| crowdstrike.event.DataDomains | Data domains of the event that was the primary indicator or created it. | keyword |
 | crowdstrike.event.DetectId | Unique ID associated with the detection. | keyword |
 | crowdstrike.event.DetectName | Name of the detection. | keyword |
 | crowdstrike.event.DeviceId | Device on which the event occurred. | keyword |
 | crowdstrike.event.DnsRequests | Detected DNS requests done by a process. | nested |
 | crowdstrike.event.DocumentsAccessed | Detected documents accessed by a process. | nested |
+| crowdstrike.event.EmailAddresses | Summary list of all associated entity email addresses. | keyword |
+| crowdstrike.event.EnvironmentVariables | Provides one or more JSON objects which includes related environment variables. | nested |
 | crowdstrike.event.EventType | CrowdStrike provided event type. | keyword |
 | crowdstrike.event.ExecutablesWritten | Detected executables written to disk by a process. | nested |
+| crowdstrike.event.Finding | The details of the finding. | keyword |
 | crowdstrike.event.FineScore | The highest incident score reached as of the time the event was sent. | float |
 | crowdstrike.event.Flags.Audit | CrowdStrike audit flag. | boolean |
 | crowdstrike.event.Flags.Log | CrowdStrike log flag. | boolean |
 | crowdstrike.event.Flags.Monitor | CrowdStrike monitor flag. | boolean |
 | crowdstrike.event.GrandparentCommandLine | Grandparent process command line arguments. | keyword |
 | crowdstrike.event.GrandparentImageFileName | Path to the grandparent process. | keyword |
+| crowdstrike.event.Highlights | Sections of content that matched the monitoring rule. | text |
 | crowdstrike.event.HostGroups | Array of related Host Group IDs. | keyword |
 | crowdstrike.event.ICMPCode | RFC2780 ICMP Code field. | keyword |
 | crowdstrike.event.ICMPType | RFC2780 ICMP Type field. | keyword |
@@ -79,20 +101,37 @@ Current supported event types are:
 | crowdstrike.event.IOARuleName | Name given to the custom IOA rule that triggered. | keyword |
 | crowdstrike.event.IOCType | CrowdStrike type for indicator of compromise. | keyword |
 | crowdstrike.event.IOCValue | CrowdStrike value for indicator of compromise. | keyword |
+| crowdstrike.event.IdpPolicyRuleAction | Identity Protection policy rule action. | keyword |
+| crowdstrike.event.IdpPolicyRuleName | Identity Protection policy rule name. | keyword |
+| crowdstrike.event.IdpPolicyRuleTrigger | Identity Protection policy rule trigger. | keyword |
 | crowdstrike.event.IncidentType | Incident Type | keyword |
 | crowdstrike.event.Ipv | Protocol for network request. | keyword |
+| crowdstrike.event.ItemPostedTimestamp | Time the raw intelligence was posted. | date |
+| crowdstrike.event.ItemType | Type of raw intelligence. | keyword |
+| crowdstrike.event.KeyStoreErrors | Describes a KeyStore error. | keyword |
 | crowdstrike.event.LMHostIDs | Array of host IDs seen to have experienced lateral movement because of the incident. | nested |
 | crowdstrike.event.LateralMovement | Lateral movement field for incident. | long |
+| crowdstrike.event.LdapSearchQueryAttack | Detected LDAP tool attack. | keyword |
+| crowdstrike.event.LoadedObjects | Provides one or more JSON objects describing the loaded objects related to the detection. | nested |
 | crowdstrike.event.LocalIP | IP address of the host associated with the detection. | keyword |
 | crowdstrike.event.MACAddress | MAC address of the host associated with the detection. | keyword |
 | crowdstrike.event.MD5String | MD5 sum of the executable associated with the detection. | keyword |
 | crowdstrike.event.MachineDomain | Domain for the machine associated with the detection. | keyword |
 | crowdstrike.event.MatchCount | Number of firewall rule matches. | long |
 | crowdstrike.event.MatchCountSinceLastReport | Number of firewall rule matches since the last report. | long |
+| crowdstrike.event.MobileAppsDetails | Provides one or more JSON objects describing the related mobile applications. | nested |
+| crowdstrike.event.MobileDnsRequests | Provides one or more JSON objects describing the related DNS requests from the mobile device. | nested |
+| crowdstrike.event.MobileNetworkConnections | Provides one or more JSON objects describing the related network connections from the mobile device. | nested |
+| crowdstrike.event.MostRecentActivityTimeStamp | The timestamp of the latest activity performed by the account. | date |
+| crowdstrike.event.MountedVolumes | Provides one or more JSON objects describing mounted volumes on the mobile device. | nested |
 | crowdstrike.event.NetworkAccesses | Detected Network traffic done by a process. | nested |
 | crowdstrike.event.NetworkProfile | CrowdStrike network profile. | keyword |
+| crowdstrike.event.NotificationId | ID of the generated notification. | keyword |
+| crowdstrike.event.NumberOfCompromisedEntities | Number of compromised entities, users and endpoints. | long |
+| crowdstrike.event.NumbersOfAlerts | Number of alerts in the identity-based incident. | long |
 | crowdstrike.event.OARuleInstanceID | Numerical ID of the custom IOA rule under a given CID. | keyword |
 | crowdstrike.event.Objective | Method of detection. | keyword |
+| crowdstrike.event.ObjectiveCRuntimesAltered | Provides one or more JSON objects describing the obj-c methods related to the malware. | nested |
 | crowdstrike.event.OperationName | Event subtype. | keyword |
 | crowdstrike.event.ParentImageFileName | The parent image file name involved. | keyword |
 | crowdstrike.event.PatternDispositionFlags.BlockingUnsupportedOrDisabled |  | boolean |
@@ -120,22 +159,68 @@ Current supported event types are:
 | crowdstrike.event.PatternDispositionValue | Unique ID associated with action taken. | integer |
 | crowdstrike.event.PatternId | The numerical ID of the pattern associated with the action taken on the detection. | keyword |
 | crowdstrike.event.PolicyID | CrowdStrike policy id. | keyword |
+| crowdstrike.event.PolicyId | The ID of the associated Policy. | long |
 | crowdstrike.event.PolicyName | CrowdStrike policy name. | keyword |
+| crowdstrike.event.PrecedingActivityTimeStamp | The timestamp of the activity before the most recent activity was performed. | date |
+| crowdstrike.event.PreviousPrivileges | A list of the source account's privileges before privilege changes were made. | keyword |
 | crowdstrike.event.Protocol | CrowdStrike provided protocol. | keyword |
+| crowdstrike.event.ProtocolAnomalyClassification | Authentication signature analysis. | keyword |
+| crowdstrike.event.ResourceAttributes | A JSON blob with all resource attributes. | flattened |
+| crowdstrike.event.ResourceId | The cloud resource identifier. | keyword |
+| crowdstrike.event.ResourceIdType | The type of the detected resource identifier. | keyword |
+| crowdstrike.event.ResourceName | Resource name if any. | keyword |
+| crowdstrike.event.ResourceUrl | The URL to the cloud resource. | keyword |
+| crowdstrike.event.RootAccessIndicators | Provides one or more JSON objects which includes logs and stack traces from the suspicious source. | nested |
+| crowdstrike.event.RpcOpClassification | RPC operation type. | keyword |
 | crowdstrike.event.RuleAction | Firewall rule action. | keyword |
+| crowdstrike.event.RulePriority | Priority of the monitoring rule that found the match. | keyword |
+| crowdstrike.event.SELinuxEnforcementPolicy | State of SELinux enforcement policy on an Android device. | keyword |
 | crowdstrike.event.SHA1String | SHA1 sum of the executable associated with the detection. | keyword |
 | crowdstrike.event.SHA256String | SHA256 sum of the executable associated with the detection. | keyword |
+| crowdstrike.event.SafetyNetAdvice | Provides information to help explain why the Google SafetyNet Attestation API set eitherCTSProfileMatch or BasicIntegrity fields to false. | keyword |
+| crowdstrike.event.SafetyNetBasicIntegrity | The result of a more lenient verdict for device integrity. | keyword |
+| crowdstrike.event.SafetyNetCTSProfileMatch | The result of a stricter verdict for device integrity. | keyword |
+| crowdstrike.event.SafetyNetErrorMessage | An encoded error message. | keyword |
+| crowdstrike.event.SafetyNetErrors | Describes a SafetyNet error | keyword |
+| crowdstrike.event.SafetyNetEvaluationType | Provides information about the type of measurements used to compute fields likeCTSProfileMatch and BasicIntegrity. | keyword |
 | crowdstrike.event.ScanResults | Array of scan results. | nested |
+| crowdstrike.event.ScheduledSearchExecutionId | ID of the specific search execution. | keyword |
+| crowdstrike.event.ScheduledSearchId | Unique identifier of the associated scheduled search. | keyword |
+| crowdstrike.event.ScheduledSearchUserId | User ID of the user that created the the associated scheduled search. | keyword |
+| crowdstrike.event.ScheduledSearchUserUUID | UUID of the user that created the the associated scheduled search. | keyword |
 | crowdstrike.event.SensorId | Unique ID associated with the Falcon sensor. | keyword |
 | crowdstrike.event.ServiceName | Description of which related service was involved in the event. | keyword |
 | crowdstrike.event.SessionId | Session ID of the remote response session. | keyword |
-| crowdstrike.event.SeverityName | Severity score text. | keyword |
-| crowdstrike.event.State | Whether the incident summary is open and ongoing or closed. | keyword |
+| crowdstrike.event.SeverityName | The severity level of the detection, as a string (High/Medium/Informational). | keyword |
+| crowdstrike.event.SourceAccountUpn | Source user UPN. | keyword |
+| crowdstrike.event.SourceEndpointAccountObjectGuid | Source endpoint object GUID | keyword |
+| crowdstrike.event.SourceEndpointAccountObjectSid | Source endpoint object SID. | keyword |
+| crowdstrike.event.SourceEndpointIpReputation | Source endpoint IP reputation. | keyword |
+| crowdstrike.event.SourceEndpointSensorId | Source endpoint agent ID. | keyword |
+| crowdstrike.event.SourceProducts | Names of the products from which the source data originated. | keyword |
+| crowdstrike.event.SourceVendors | Names of the vendors from which the source data originated. | keyword |
+| crowdstrike.event.SsoApplicationIdentifier | Destination application identifier. | keyword |
+| crowdstrike.event.State | Identity-based detection or incident status. | keyword |
 | crowdstrike.event.Status | CrowdStrike status. | keyword |
 | crowdstrike.event.Success | Indicator of whether or not this event was successful. | boolean |
+| crowdstrike.event.SuspiciousMachineAccountAlterationType | Machine alteration type. | keyword |
+| crowdstrike.event.SystemProperties | Provides one or more JSON objects which includes related system properties. | nested |
+| crowdstrike.event.Tags | Tags on the cloud resources if any. | nested |
+| crowdstrike.event.TargetAccountDomain | Target user domain. | keyword |
+| crowdstrike.event.TargetAccountName | Target user name. | keyword |
+| crowdstrike.event.TargetAccountObjectSid | Target user object SID. | keyword |
+| crowdstrike.event.TargetAccountUpn | Target user UPN. | keyword |
+| crowdstrike.event.TargetEndpointAccountObjectGuid | Target endpoint object GUID. | keyword |
+| crowdstrike.event.TargetEndpointAccountObjectSid | Target endpoint object SID. | keyword |
+| crowdstrike.event.TargetEndpointHostName | Target endpoint hostname. | keyword |
+| crowdstrike.event.TargetEndpointSensorId | Target endpoint agent ID. | keyword |
+| crowdstrike.event.TargetServiceAccessIdentifier | Target SPN. | keyword |
 | crowdstrike.event.Timestamp | Firewall rule triggered timestamp. | date |
+| crowdstrike.event.Trampolines | Provides one or more JSON objects describing the relevant functions and processes performing inline API hooks. | nested |
 | crowdstrike.event.TreeID | CrowdStrike tree id. | keyword |
 | crowdstrike.event.UserId | Email address or user ID associated with the event. | keyword |
+| crowdstrike.event.VerifiedBootState | Provides the device’s current boot state. | keyword |
+| crowdstrike.event.XdrType | Type of detection: xdr or xdr-scheduled-search. | keyword |
 | crowdstrike.metadata.customerIDString | Customer identifier | keyword |
 | crowdstrike.metadata.eventType | DetectionSummaryEvent, FirewallMatchEvent, IncidentSummaryEvent, RemoteResponseSessionStartEvent, RemoteResponseSessionEndEvent, AuthActivityAuditEvent, or UserActivityAuditEvent | keyword |
 | crowdstrike.metadata.offset | Offset number that tracks the location of the event in stream. This is used to identify unique detection events. | integer |
@@ -155,21 +240,22 @@ Current supported event types are:
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
+| device.id | The unique identifier of a device. The identifier must not change across application sessions but stay fixed for an instance of a (mobile) device.  On iOS, this value must be equal to the vendor identifier (https://developer.apple.com/documentation/uikit/uidevice/1620059-identifierforvendor). On Android, this value must be equal to the Firebase Installation ID or a globally unique UUID which is persisted across sessions in your application. For GDPR and data protection law reasons this identifier should not carry information that would allow to identify a user. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
-| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
+| event.end | `event.end` contains the date when the event ended or when the activity was last observed. | date |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
-| event.start | event.start contains the date when the event started or when the activity was first observed. | date |
+| event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | event.url | URL linking to an external system to continue investigation of this event. This URL links to another system where in-depth investigation of the specific occurrence of this event can take place. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
 | file.hash.md5 | MD5 hash. | keyword |
@@ -223,11 +309,13 @@ Current supported event types are:
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
+| rule.author | Name, organization, or pseudonym of the author or authors who created the rule used to generate this event. | keyword |
 | rule.category | A categorization value keyword used by the entity using the rule for detection of this event. | keyword |
 | rule.description | The description of the rule generating the event. | keyword |
 | rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | rule.ruleset | Name of the ruleset, policy, group, or parent category in which the rule used to generate this event is a member. | keyword |
+| rule.uuid | A rule ID that is unique within the scope of a set or group of agents, observers, or other entities using the rule for detection of this event. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
@@ -242,11 +330,14 @@ Current supported event types are:
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
 | threat.framework | Name of the threat framework used to further categorize and classify the tactic and technique of the reported threat. Framework classification can be provided by detecting systems, evaluated at ingest time, or retrospectively tagged to events. | keyword |
+| threat.tactic.id | The id of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/ ) | keyword |
 | threat.tactic.name | Name of the type of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/) | keyword |
+| threat.technique.id | The id of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
 | threat.technique.name | The name of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
 | threat.technique.name.text | Multi-field of `threat.technique.name`. | match_only_text |
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.email | User email address. | keyword |
+| user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 
@@ -255,23 +346,45 @@ An example event for `falcon` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-02-12T21:39:37.147Z",
+    "@timestamp": "2020-02-12T21:29:10.000Z",
     "agent": {
-        "ephemeral_id": "9fc4b95e-642d-4ce4-b7cc-1fe355c81ef1",
-        "id": "62b999a7-d53a-460e-b8cb-bcccb4e5fbd5",
+        "ephemeral_id": "6b7924ba-f695-422a-a296-d1092ff909e4",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.2"
+        "version": "8.10.1"
     },
     "crowdstrike": {
         "event": {
-            "OperationName": "twoFactorAuthenticate",
+            "AuditKeyValues": [
+                {
+                    "Key": "APIClientID",
+                    "ValueString": "1234567890abcdefghijklmnopqr"
+                },
+                {
+                    "Key": "partition",
+                    "ValueString": "0"
+                },
+                {
+                    "Key": "offset",
+                    "ValueString": "-1"
+                },
+                {
+                    "Key": "appId",
+                    "ValueString": "siem-connector-v2.0.0"
+                },
+                {
+                    "Key": "eventType",
+                    "ValueString": "[UserActivityAuditEvent HashSpreadingEvent RemoteResponseSessionStartEvent RemoteResponseSessionEndEvent DetectionSummaryEvent AuthActivityAuditEvent]"
+                }
+            ],
+            "OperationName": "streamStarted",
             "Success": true
         },
         "metadata": {
             "customerIDString": "8f69fe9e-b995-4204-95ad-44f9bcf75b6b",
             "eventType": "AuthActivityAuditEvent",
-            "offset": 1,
+            "offset": 0,
             "version": "1.0"
         }
     },
@@ -281,25 +394,26 @@ An example event for `falcon` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "62b999a7-d53a-460e-b8cb-bcccb4e5fbd5",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "snapshot": false,
-        "version": "8.6.2"
+        "version": "8.10.1"
     },
     "event": {
         "action": [
-            "twoFactorAuthenticate"
+            "streamStarted"
         ],
         "agent_id_status": "verified",
         "category": [
-            "authentication"
+            "iam"
         ],
+        "created": "2020-02-12T21:29:10.710Z",
         "dataset": "crowdstrike.falcon",
-        "ingested": "2023-06-27T07:42:52Z",
+        "ingested": "2023-09-26T13:19:10Z",
         "kind": "event",
-        "original": "{\n    \"metadata\": {\n        \"customerIDString\": \"8f69fe9e-b995-4204-95ad-44f9bcf75b6b\",\n        \"offset\": 1,\n        \"eventType\": \"AuthActivityAuditEvent\",\n        \"eventCreationTime\": 1581543577147,\n        \"version\": \"1.0\"\n    },\n    \"event\": {\n        \"UserId\": \"alice@company.com\",\n        \"UserIp\": \"192.168.6.8\",\n        \"OperationName\": \"twoFactorAuthenticate\",\n        \"ServiceName\": \"CrowdStrike Authentication\",\n        \"Success\": true,\n        \"UTCTimestamp\": 1581543577147\n    }\n}",
+        "original": "{\n    \"metadata\": {\n        \"customerIDString\": \"8f69fe9e-b995-4204-95ad-44f9bcf75b6b\",\n        \"offset\": 0,\n        \"eventType\": \"AuthActivityAuditEvent\",\n        \"eventCreationTime\": 1581542950710,\n        \"version\": \"1.0\"\n    },\n    \"event\": {\n        \"UserId\": \"api-client-id:1234567890abcdefghijklmnopqrstuvwxyz\",\n        \"UserIp\": \"10.10.0.8\",\n        \"OperationName\": \"streamStarted\",\n        \"ServiceName\": \"Crowdstrike Streaming API\",\n        \"Success\": true,\n        \"UTCTimestamp\": 1581542950,\n        \"AuditKeyValues\": [\n            {\n                \"Key\": \"APIClientID\",\n                \"ValueString\": \"1234567890abcdefghijklmnopqr\"\n            },\n            {\n                \"Key\": \"partition\",\n                \"ValueString\": \"0\"\n            },\n            {\n                \"Key\": \"offset\",\n                \"ValueString\": \"-1\"\n            },\n            {\n                \"Key\": \"appId\",\n                \"ValueString\": \"siem-connector-v2.0.0\"\n            },\n            {\n                \"Key\": \"eventType\",\n                \"ValueString\": \"[UserActivityAuditEvent HashSpreadingEvent RemoteResponseSessionStartEvent RemoteResponseSessionEndEvent DetectionSummaryEvent AuthActivityAuditEvent]\"\n            }\n        ]\n    }\n}",
         "outcome": "success"
     },
     "input": {
@@ -312,23 +426,23 @@ An example event for `falcon` looks as following:
         "flags": [
             "multiline"
         ],
-        "offset": 2152
+        "offset": 910
     },
-    "message": "CrowdStrike Authentication",
+    "message": "Crowdstrike Streaming API",
     "observer": {
         "product": "Falcon",
         "vendor": "Crowdstrike"
     },
     "related": {
         "ip": [
-            "192.168.6.8"
+            "10.10.0.8"
         ],
         "user": [
-            "alice@company.com"
+            "api-client-id:1234567890abcdefghijklmnopqrstuvwxyz"
         ]
     },
     "source": {
-        "ip": "192.168.6.8"
+        "ip": "10.10.0.8"
     },
     "tags": [
         "preserve_original_event",
@@ -336,8 +450,7 @@ An example event for `falcon` looks as following:
         "crowdstrike-falcon"
     ],
     "user": {
-        "email": "alice@company.com",
-        "name": "alice@company.com"
+        "name": "api-client-id:1234567890abcdefghijklmnopqrstuvwxyz"
     }
 }
 ```
@@ -868,10 +981,10 @@ and/or `session_token`.
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
@@ -893,6 +1006,8 @@ and/or `session_token`.
 | host.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
 | input.type |  | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset |  | long |
@@ -913,8 +1028,6 @@ and/or `session_token`.
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | observer.version | Observer version. | keyword |
-| os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
-| os.version | Operating system version as a raw string. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
@@ -987,11 +1100,11 @@ An example event for `fdr` looks as following:
 {
     "@timestamp": "2020-11-08T09:58:32.519Z",
     "agent": {
-        "ephemeral_id": "9fc4b95e-642d-4ce4-b7cc-1fe355c81ef1",
-        "id": "62b999a7-d53a-460e-b8cb-bcccb4e5fbd5",
+        "ephemeral_id": "6b7924ba-f695-422a-a296-d1092ff909e4",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.2"
+        "version": "8.10.1"
     },
     "crowdstrike": {
         "ConfigStateHash": "1763245019",
@@ -1017,12 +1130,12 @@ An example event for `fdr` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "62b999a7-d53a-460e-b8cb-bcccb4e5fbd5",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "snapshot": false,
-        "version": "8.6.2"
+        "version": "8.10.1"
     },
     "event": {
         "action": "RansomwareOpenFile",
@@ -1033,7 +1146,7 @@ An example event for `fdr` looks as following:
         "created": "2020-11-08T17:07:22.091Z",
         "dataset": "crowdstrike.fdr",
         "id": "ffffffff-1111-11eb-9756-06fe7f8f682f",
-        "ingested": "2023-06-27T07:43:18Z",
+        "ingested": "2023-09-26T13:20:10Z",
         "kind": "alert",
         "original": "{\"ConfigBuild\":\"1007.3.0011603.1\",\"ConfigStateHash\":\"1763245019\",\"ContextProcessId\":\"1016182570608\",\"ContextThreadId\":\"37343520154472\",\"ContextTimeStamp\":\"1604829512.519\",\"DesiredAccess\":\"1179785\",\"EffectiveTransmissionClass\":\"3\",\"Entitlements\":\"15\",\"FileAttributes\":\"0\",\"FileIdentifier\":\"7a9c1c1610045d45a54bd6643ac12ea767a5020000000c00\",\"FileObject\":\"18446670458156489088\",\"Information\":\"1\",\"IrpFlags\":\"2180\",\"MajorFunction\":\"0\",\"MinorFunction\":\"0\",\"OperationFlags\":\"0\",\"Options\":\"16777312\",\"ShareAccess\":\"5\",\"Status\":\"0\",\"TargetFileName\":\"\\\\Device\\\\HarddiskVolume3\\\\Users\\\\user11\\\\Downloads\\\\file.pptx\",\"aid\":\"ffffffffac4148947ed68497e89f3308\",\"aip\":\"67.43.156.14\",\"cid\":\"ffffffff30a3407dae27d0503611022d\",\"event_platform\":\"Win\",\"event_simpleName\":\"RansomwareOpenFile\",\"id\":\"ffffffff-1111-11eb-9756-06fe7f8f682f\",\"name\":\"RansomwareOpenFileV4\",\"timestamp\":\"1604855242091\"}",
         "outcome": "success",
@@ -1049,6 +1162,11 @@ An example event for `fdr` looks as following:
         "name": "file.pptx",
         "path": "\\Device\\HarddiskVolume3\\Users\\user11\\Downloads\\file.pptx",
         "type": "file"
+    },
+    "host": {
+        "os": {
+            "type": "windows"
+        }
     },
     "input": {
         "type": "log"
@@ -1079,9 +1197,6 @@ An example event for `fdr` looks as following:
         "type": "agent",
         "vendor": "crowdstrike",
         "version": "1007.3.0011603.1"
-    },
-    "os": {
-        "type": "windows"
     },
     "process": {
         "entity_id": "1016182570608",

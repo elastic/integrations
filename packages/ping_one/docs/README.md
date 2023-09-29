@@ -60,19 +60,18 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-10T17:04:25.518Z",
+    "@timestamp": "2022-08-08T15:31:08.237Z",
     "agent": {
-        "ephemeral_id": "3ec0008f-3b03-448a-8617-f9798d15e68d",
-        "hostname": "docker-fleet-agent",
-        "id": "8e2910ec-3bb9-439a-90a1-acedb9847388",
+        "ephemeral_id": "e4d8fc8f-71fa-4e20-bd11-1c06f2e1d137",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.10.1"
     },
     "client": {
         "user": {
-            "id": "830109c7-f8aa-491e-b2f2-8f7532ae85e9",
-            "name": "RichardPatchetWorker"
+            "id": "123abc123-12ab-1234-1abc-abc123abc12",
+            "name": "PingOne Admin Console"
         }
     },
     "data_stream": {
@@ -81,79 +80,90 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "8e2910ec-3bb9-439a-90a1-acedb9847388",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.10.1"
     },
     "event": {
-        "action": "group.created",
+        "action": "user.access_allowed",
         "agent_id_status": "verified",
         "category": [
             "iam",
             "configuration"
         ],
-        "created": "2022-10-03T07:21:04.317Z",
         "dataset": "ping_one.audit",
-        "id": "2076da4e-81ae-4cf4-803a-4ccc16419bc9",
-        "ingested": "2022-10-03T07:21:05Z",
+        "id": "123abc123-12ab-1234-1abc-abc123abc12",
+        "ingested": "2023-09-22T17:21:19Z",
         "kind": "event",
-        "original": "{\"_links\":{\"self\":{\"href\":\"https://api.pingone.com/v1/environments/bf4cb8b8-33e9-4576-8d70-c0ab679fe0fa/activities/2076da4e-81ae-4cf4-803a-4ccc16419bc9\"}},\"action\":{\"description\":\"Group Created\",\"type\":\"GROUP.CREATED\"},\"actors\":{\"client\":{\"environment\":{\"id\":\"bf4cb8b8-33e9-4576-8d70-c0ab679fe0fa\"},\"href\":\"https://api.pingone.com/v1/environments/bf4cb8b8-33e9-4576-8d70-c0ab679fe0fa/applications/830109c7-f8aa-491e-b2f2-8f7532ae85e9\",\"id\":\"830109c7-f8aa-491e-b2f2-8f7532ae85e9\",\"name\":\"RichardPatchetWorker\",\"type\":\"CLIENT\"}},\"correlationId\":\"28b1f3ca-2ab6-4cc0-b33f-50153c7c9c14\",\"createdAt\":\"2022-06-10T17:04:25.534Z\",\"id\":\"2076da4e-81ae-4cf4-803a-4ccc16419bc9\",\"recordedAt\":\"2022-06-10T17:04:25.518Z\",\"resources\":[{\"environment\":{\"id\":\"bf4cb8b8-33e9-4576-8d70-c0ab679fe0fa\"},\"href\":\"https://api.pingone.com/v1/environments/bf4cb8b8-33e9-4576-8d70-c0ab679fe0fa/groups/ac05e3ff-60e2-4e03-bbac-f9455e6a6d51\",\"id\":\"ac05e3ff-60e2-4e03-bbac-f9455e6a6d51\",\"name\":\"Managers\",\"type\":\"GROUP\"}],\"result\":{\"description\":\"Created Group Managers\",\"status\":\"SUCCESS\"}}",
+        "original": "{\"_embedded\":{},\"action\":{\"type\":\"USER.ACCESS_ALLOWED\"},\"actors\":{\"client\":{\"environment\":{\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\"},\"href\":\"https://api.pingone.asia/v1/environments/123abc123-12ab-1234-1abc-abc123abc12/applications/123abc123-12ab-1234-1abc-abc123abc12\",\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\",\"name\":\"PingOne Admin Console\",\"type\":\"CLIENT\"},\"user\":{\"environment\":{\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\"},\"href\":\"https://api.pingone.asia/v1/environments/123abc123-12ab-1234-1abc-abc123abc12/users/123abc123-12ab-1234-1abc-abc123abc12\",\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\",\"name\":\"example@gmail.com\",\"population\":{\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\"},\"type\":\"USER\"}},\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\",\"recordedAt\":\"2022-08-08T15:31:08.237Z\",\"resources\":[{\"environment\":{\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\"},\"href\":\"https://api.pingone.asia/v1/environments/123abc123-12ab-1234-1abc-abc123abc12/users/123abc123-12ab-1234-1abc-abc123abc12\",\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\",\"name\":\"example@gmail.com\",\"population\":{\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\"},\"type\":\"USER\"}],\"result\":{\"description\":\"Passed role access control\",\"status\":\"SUCCESS\"}}",
         "outcome": "success",
         "type": [
-            "creation",
-            "group"
+            "user",
+            "info",
+            "access"
         ]
     },
     "input": {
-        "type": "httpjson"
+        "type": "http_endpoint"
     },
     "ping_one": {
         "audit": {
             "action": {
-                "description": "Group Created",
-                "type": "GROUP.CREATED"
+                "type": "USER.ACCESS_ALLOWED"
             },
             "actors": {
                 "client": {
                     "environment": {
-                        "id": "bf4cb8b8-33e9-4576-8d70-c0ab679fe0fa"
+                        "id": "123abc123-12ab-1234-1abc-abc123abc12"
                     },
-                    "href": "https://api.pingone.com/v1/environments/bf4cb8b8-33e9-4576-8d70-c0ab679fe0fa/applications/830109c7-f8aa-491e-b2f2-8f7532ae85e9",
-                    "id": "830109c7-f8aa-491e-b2f2-8f7532ae85e9",
-                    "name": "RichardPatchetWorker",
+                    "href": "https://api.pingone.asia/v1/environments/123abc123-12ab-1234-1abc-abc123abc12/applications/123abc123-12ab-1234-1abc-abc123abc12",
+                    "id": "123abc123-12ab-1234-1abc-abc123abc12",
+                    "name": "PingOne Admin Console",
                     "type": "CLIENT"
+                },
+                "user": {
+                    "environment": {
+                        "id": "123abc123-12ab-1234-1abc-abc123abc12"
+                    },
+                    "href": "https://api.pingone.asia/v1/environments/123abc123-12ab-1234-1abc-abc123abc12/users/123abc123-12ab-1234-1abc-abc123abc12",
+                    "id": "123abc123-12ab-1234-1abc-abc123abc12",
+                    "name": "example@gmail.com",
+                    "population": {
+                        "id": "123abc123-12ab-1234-1abc-abc123abc12"
+                    },
+                    "type": "USER"
                 }
             },
-            "correlation": {
-                "id": "28b1f3ca-2ab6-4cc0-b33f-50153c7c9c14"
-            },
-            "created_at": "2022-06-10T17:04:25.534Z",
-            "id": "2076da4e-81ae-4cf4-803a-4ccc16419bc9",
-            "recorded_at": "2022-06-10T17:04:25.518Z",
+            "id": "123abc123-12ab-1234-1abc-abc123abc12",
+            "recorded_at": "2022-08-08T15:31:08.237Z",
             "resources": [
                 {
                     "environment": {
-                        "id": "bf4cb8b8-33e9-4576-8d70-c0ab679fe0fa"
+                        "id": "123abc123-12ab-1234-1abc-abc123abc12"
                     },
-                    "href": "https://api.pingone.com/v1/environments/bf4cb8b8-33e9-4576-8d70-c0ab679fe0fa/groups/ac05e3ff-60e2-4e03-bbac-f9455e6a6d51",
-                    "id": "ac05e3ff-60e2-4e03-bbac-f9455e6a6d51",
-                    "name": "Managers",
-                    "type": "GROUP"
+                    "href": "https://api.pingone.asia/v1/environments/123abc123-12ab-1234-1abc-abc123abc12/users/123abc123-12ab-1234-1abc-abc123abc12",
+                    "id": "123abc123-12ab-1234-1abc-abc123abc12",
+                    "name": "example@gmail.com",
+                    "population": {
+                        "id": "123abc123-12ab-1234-1abc-abc123abc12"
+                    },
+                    "type": "USER"
                 }
             ],
             "result": {
-                "description": "Created Group Managers",
+                "description": "Passed role access control",
                 "status": "SUCCESS"
             }
         }
     },
     "related": {
         "user": [
-            "830109c7-f8aa-491e-b2f2-8f7532ae85e9",
-            "RichardPatchetWorker"
+            "123abc123-12ab-1234-1abc-abc123abc12",
+            "PingOne Admin Console",
+            "example@gmail.com"
         ]
     },
     "tags": [
@@ -163,10 +173,14 @@ An example event for `audit` looks as following:
         "ping_one-audit"
     ],
     "url": {
-        "domain": "api.pingone.com",
-        "original": "https://api.pingone.com/v1/environments/bf4cb8b8-33e9-4576-8d70-c0ab679fe0fa/groups/ac05e3ff-60e2-4e03-bbac-f9455e6a6d51",
-        "path": "/v1/environments/bf4cb8b8-33e9-4576-8d70-c0ab679fe0fa/groups/ac05e3ff-60e2-4e03-bbac-f9455e6a6d51",
+        "domain": "api.pingone.asia",
+        "original": "https://api.pingone.asia/v1/environments/123abc123-12ab-1234-1abc-abc123abc12/users/123abc123-12ab-1234-1abc-abc123abc12",
+        "path": "/v1/environments/123abc123-12ab-1234-1abc-abc123abc12/users/123abc123-12ab-1234-1abc-abc123abc12",
         "scheme": "https"
+    },
+    "user": {
+        "id": "123abc123-12ab-1234-1abc-abc123abc12",
+        "name": "example@gmail.com"
     }
 }
 ```
@@ -198,10 +212,10 @@ An example event for `audit` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |

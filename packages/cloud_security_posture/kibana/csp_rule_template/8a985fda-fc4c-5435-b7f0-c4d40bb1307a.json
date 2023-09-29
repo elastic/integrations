@@ -1,0 +1,38 @@
+{
+    "id": "8a985fda-fc4c-5435-b7f0-c4d40bb1307a",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "When an organization deletes the default network, it may need to migrate or service onto a new network.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/compute/docs/networking#firewall_rules\n2. https://cloud.google.com/compute/docs/reference/latest/networks/insert\n3. https://cloud.google.com/compute/docs/reference/latest/networks/delete\n4. https://cloud.google.com/vpc/docs/firewall-rules-logging\n5. https://cloud.google.com/vpc/docs/vpc#default-network\n6. https://cloud.google.com/sdk/gcloud/reference/compute/networks/delete",
+            "id": "8a985fda-fc4c-5435-b7f0-c4d40bb1307a",
+            "name": "Ensure That the Default Network Does Not Exist in a Project",
+            "profile_applicability": "* Level 2",
+            "description": "To prevent use of `default` network, a project should not have a `default` network.",
+            "rationale": "The `default` network has a preconfigured network configuration and automatically generates the following insecure firewall rules: \n\n- default-allow-internal: Allows ingress connections for all protocols and ports among instances in the network.\n- default-allow-ssh: Allows ingress connections on TCP port 22(SSH) from any source to any instance in the network.\n- default-allow-rdp: Allows ingress connections on TCP port 3389(RDP) from any source to any instance in the network.\n- default-allow-icmp: Allows ingress ICMP traffic from any source to any instance in the network.\n\nThese automatically created firewall rules do not get audit logged and cannot be configured to enable firewall rule logging.\n\n\nFurthermore, the default network is an auto mode network, which means that its subnets use the same predefined range of IP addresses, and as a result, it's not possible to use Cloud VPN or VPC Network Peering with the default network.\n\n\nBased on organization security and networking requirements, the organization should create a new network and delete the `default` network.",
+            "audit": "**From Google Cloud Console**\n\n1. Go to the `VPC networks` page by visiting: [https://console.cloud.google.com/networking/networks/list](https://console.cloud.google.com/networking/networks/list).\n\n2. Ensure that a network with the name `default` is not present.\n\n**From Google Cloud CLI**\n\n3. Set the project name in the Google Cloud Shell:\n```\n\ngcloud config set project PROJECT_ID \n```\n4. List the networks configured in that project:\n```\ngcloud compute networks list \n```\nIt should not list `default` as one of the available networks in that project.",
+            "remediation": "**From Google Cloud Console**\n\n1. Go to the `VPC networks` page by visiting: [https://console.cloud.google.com/networking/networks/list](https://console.cloud.google.com/networking/networks/list).\n\n2. Click the network named `default`.\n\n3. On the network detail page, click `EDIT`.\n\n4. Click `DELETE VPC NETWORK`.\n\n5. If needed, create a new network to replace the default network.\n\n**From Google Cloud CLI**\n\nFor each Google Cloud Platform project,\n\n6. Delete the default network:\n```\ngcloud compute networks delete default\n```\n\n7. If needed, create a new network to replace it:\n```\ngcloud compute networks create NETWORK_NAME\n```\n\n**Prevention:**\n\nThe user can prevent the default network and its insecure default firewall rules from being created by setting up an Organization Policy to `Skip default network creation` at [https://console.cloud.google.com/iam-admin/orgpolicies/compute-skipDefaultNetworkCreation](https://console.cloud.google.com/iam-admin/orgpolicies/compute-skipDefaultNetworkCreation).",
+            "section": "Networking",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 3.1",
+                "Networking"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "3.1",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_3_1"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

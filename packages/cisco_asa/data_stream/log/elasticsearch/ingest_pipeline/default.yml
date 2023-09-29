@@ -13,7 +13,7 @@ processors:
             message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - set:
       field: ecs.version
-      value: '8.8.0'
+      value: '8.10.0'
   #
   # Parse the syslog header
   #
@@ -453,9 +453,9 @@ processors:
       description: "113005"
       field: "message"
       patterns: 
-      - "AAA user authentication Rejected: reason = %{REASON}: server = %{IP:destination.address} : user = ?%{CISCO_USER:source.user.name}: user IP = %{IP:source.address}"
+      - "AAA user authentication Rejected(%{SPACE})?: reason = %{REASON:_temp_.cisco.rejection_reason}(%{SPACE})?: server = %{IP:destination.address}(%{SPACE})?: user = ?%{CISCO_USER:source.user.name}(%{SPACE})?: user IP = %{IP:source.address}"
       pattern_definitions:
-        REASON: (AAA failure|Account has been disabled)
+        REASON: (AAA failure|Account has been disabled|Invalid password|Password is expiring|Password has expired|Password malformed|Unspecified)
         CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - grok:
       if: "ctx._temp_.cisco.message_id == '113012'"
@@ -606,9 +606,9 @@ processors:
       field: "message"
       description: "313005"
       patterns:
-        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST} dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.ip}/%{NUMBER:source.port} dst %{IPORHOST:destination.ip}/%{NUMBER:destination.port}."
-        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST}\\(%{NOTCOLON:source.user.domain}\\\\%{NOTSPACE:source.user.group.name}\\\\%{NOTSPACE:source.user.name}\\) dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.ip}/%{NUMBER:source.port} dst %{IPORHOST:destination.ip}/%{NUMBER:destination.port}."
-        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST}\\(%{NOTCOLON:source.user.domain}\\\\%{NOTSPACE:source.user.name}\\) dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.ip}/%{NUMBER:source.port} dst %{IPORHOST:destination.ip}/%{NUMBER:destination.port}."
+        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST} dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.ip}(/%{NUMBER:source.port})? dst %{IPORHOST:destination.ip}(/%{NUMBER:destination.port})?[.]?"
+        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST}\\(%{NOTCOLON:source.user.domain}\\\\%{NOTSPACE:source.user.group.name}\\\\%{NOTSPACE:source.user.name}\\) dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.ip}(/%{NUMBER:source.port})? dst %{IPORHOST:destination.ip}(/%{NUMBER:destination.port})?[.]?"
+        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST}\\(%{NOTCOLON:source.user.domain}\\\\%{NOTSPACE:source.user.name}\\) dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.ip}(/%{NUMBER:source.port})? dst %{IPORHOST:destination.ip}(/%{NUMBER:destination.port})?[.]?"
       pattern_definitions:
         NOTCOLON: "[^:]*"
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
@@ -904,15 +904,15 @@ processors:
       field: "message"
       description: "722033"
       patterns:
-        - 'Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> First UDP SVC connection established for SVC session\.'
-        - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} First UDP SVC connection established for SVC session\.'
+        - 'Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> First %{NOTSPACE:network.transport} SVC connection established for SVC session\.'
+        - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} First %{NOTSPACE:network.transport} SVC connection established for SVC session\.'
   - grok:
       if: "ctx._temp_.cisco.message_id == '722034'"
       field: "message"
       description: "722034"
       patterns:
-        - 'Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> New TCP SVC connection, no existing connection\.'
-        - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} New TCP SVC connection, no existing connection\.'
+        - 'Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> New %{NOTSPACE:network.transport} SVC connection, no existing connection\.'
+        - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} New %{NOTSPACE:network.transport} SVC connection, no existing connection\.'
   - grok:
       if: "ctx._temp_.cisco.message_id == '722037'"
       field: "message"
@@ -2340,30 +2340,27 @@ processors:
             - network
           type:
             - info
-            - change
         error:
           kind: event
           outcome: failure
           category:
             - network
           type:
-            - error
+            - info
         deleted:
           kind: event
           category:
             - network
           type:
             - info
-            - deletion
-            - user
+            - end
         creation:
           kind: event
           category:
             - network
           type:
             - info
-            - creation
-            - user
+            - access
         client-vpn-connected:
           kind: event
           category:
@@ -2378,7 +2375,6 @@ processors:
             - network
           type:
             - connection
-            - error
             - denied
         client-vpn-disconnected:
           kind: event

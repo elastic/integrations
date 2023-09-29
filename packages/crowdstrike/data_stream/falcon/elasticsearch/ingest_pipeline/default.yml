@@ -3,7 +3,7 @@ description: Ingest pipeline for normalizing CrowdStrike Falcon logs
 processors:
   - set:
       field: ecs.version
-      value: '8.8.0'
+      value: '8.10.0'
   - rename:
       field: message
       target_field: event.original
@@ -35,7 +35,68 @@ processors:
       type: string
       tag: convert_pattern_id
       ignore_missing: true
+  # Script to convert windows NT timestamp to unix timestamp
+  - script:
+        tag: convert-nt-timestamp-to-unix
+        description: Convert Windows NT timestamps to UNIX timestamps for multiple fields.
+        lang: painless
+        if : ctx.crowdstrike?.event != null
+        params:
+            values:
+                - 'StartTime'
+                - 'EndTime'
+                - 'ContextTimeStamp'
+                - 'EndTimestamp'
+                - 'IncidentEndTime'
+                - 'IncidentStartTime'
+                - 'ItemPostedTimestamp'
+                - 'MatchedTimestamp'
+                - 'MostRecentActivityTimeStamp'
+                - 'PrecedingActivityTimeStamp'
+                - 'StartTimestamp'
+                - 'UTCTimestamp'
+# Process to convert LDAP/WIN32 FILETIME to Unix (milliseconds) timestamp.
+# More details can be found here https://devblogs.microsoft.com/oldnewthing/20030905-02/?p=42653 and here https://www.epochconverter.com/ldap
+        source: |
+            def convertToUnix(def longValue) {
+                if (longValue > 0x0100000000000000L) {
+                    return (longValue / 10000) - 11644473600000L;
+                }
+                return longValue;
+            }
 
+            for (def field : params.values) {
+                def fieldValue = ctx.crowdstrike.event[field];
+                if (fieldValue != null) {
+                    if (fieldValue instanceof long) {
+                         ctx.crowdstrike.event[field] = convertToUnix(fieldValue);
+                    } else if (fieldValue instanceof String) {
+                        if (!fieldValue.contains('.')) {
+                           def timestamp = Long.parseLong(fieldValue);
+                            ctx.crowdstrike.event[field] = convertToUnix(timestamp);
+                        }
+                    }
+                } 
+            }
+  # Handle event Tags, which can be a string or a list of maps.
+  - script:
+      tag: convert-Tags-and-copy-to-tags
+      description: Convert tags from nested type and append to ctx.tags.
+      lang: painless
+      if : ctx.crowdstrike?.event?.Tags != null
+      source: |
+            if (ctx.crowdstrike.event.Tags instanceof List) {
+                for (tag in ctx.crowdstrike.event.Tags) {
+                    if (tag instanceof Map) {
+                      ctx.tags.add(tag["Key"] + ":" + tag["ValueString"]);
+                    }
+                }
+            } else if (ctx.crowdstrike.event.Tags instanceof String) {
+                def values = ctx.crowdstrike.event.Tags.splitOnToken(',');
+                for (value in values) {
+                    ctx.tags.add(value.trim());
+                }
+            }
   # UTCTimestamp should exist in each event, however on the off-chance it might not be (Like RemoteSession Start/End), then we have to use eventCreation time.
   - date:
       field: crowdstrike.event.UTCTimestamp
@@ -45,13 +106,28 @@ processors:
       tag: date_utc_timestamp
       if: 'ctx.crowdstrike?.event?.UTCTimestamp != null && String.valueOf(ctx.crowdstrike.event.UTCTimestamp).length() >= 12'
   - date:
-      field: crowdstrike.event.eventCreationTime
+      field: crowdstrike.event.UTCTimestamp
+      timezone: UTC
+      formats:
+        - UNIX
+      tag: date_utc_timestamp
+      if: 'ctx.crowdstrike?.event?.UTCTimestamp != null && String.valueOf(ctx.crowdstrike.event.UTCTimestamp).length() <= 11'
+  - date:
+      field: crowdstrike.metadata.eventCreationTime
       target_field: event.created
       timezone: UTC
       formats:
         - UNIX
       tag: date_event_creation_time
-      if: 'ctx.crowdstrike?.event?.eventCreationTime != null && String.valueOf(ctx.crowdstrike.event.eventCreationTime).length() <= 11'
+      if: 'ctx.crowdstrike?.metadata?.eventCreationTime != null && String.valueOf(ctx.crowdstrike.metadata.eventCreationTime).length() <= 11'
+  - date:
+      field: crowdstrike.metadata.eventCreationTime
+      target_field: event.created
+      timezone: UTC
+      formats:
+        - UNIX_MS
+      tag: date_event_creation_time
+      if: 'ctx.crowdstrike?.metadata?.eventCreationTime != null && String.valueOf(ctx.crowdstrike.metadata.eventCreationTime).length() >= 12'
   - set:
       field: '@timestamp'
       copy_from: event.created
@@ -129,9 +205,33 @@ processors:
       tag: pipeline_detection_summary
       if: ctx.crowdstrike?.metadata?.eventType == "DetectionSummaryEvent"
   - pipeline:
+      name: '{{ IngestPipeline "mobile_detection_summary" }}'
+      tag: pipeline_mobile_detection_summary
+      if: ctx.crowdstrike?.metadata?.eventType == "MobileDetectionSummaryEvent"
+  - pipeline:
       name: '{{ IngestPipeline "incident_summary" }}'
       tag: pipeline_incident_summary
       if: ctx.crowdstrike?.metadata?.eventType == "IncidentSummaryEvent"
+  - pipeline:
+      name: '{{ IngestPipeline "xdr_detection_summary" }}'
+      tag: pipeline_xdr_summary
+      if: ctx.crowdstrike?.metadata?.eventType == "XdrDetectionSummaryEvent"
+  - pipeline:
+      name: '{{ IngestPipeline "ipd_detection_summary" }}'
+      tag: pipeline_ipd_summary
+      if: ctx.crowdstrike?.metadata?.eventType == "IdpDetectionSummaryEvent"
+  - pipeline:
+      name: '{{ IngestPipeline "recon_notification_summary" }}'
+      tag: pipeline_recon_nofitication_summary
+      if: ctx.crowdstrike?.metadata?.eventType == "ReconNotificationSummaryEvent"
+  - pipeline:
+      name: '{{ IngestPipeline "identity_protection_incident" }}'
+      tag: pipeline_identity_protection_incident
+      if: ctx.crowdstrike?.metadata?.eventType == "IdentityProtectionEvent"
+  - pipeline:
+      name: '{{ IngestPipeline "cspm_events" }}'
+      tag: pipeline_cspm_events
+      if: "['CSPMIOAStreamingEvent','CSPMSearchStreamingEvent'].contains(ctx.crowdstrike?.metadata?.eventType)"
   - pipeline:
       name: '{{ IngestPipeline "user_activity_audit" }}'
       tag: pipeline_user_activity_audit
@@ -237,25 +337,55 @@ processors:
       if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
+  # This removes any fields that are mapped to ECS, but have not been renamed.
+  # This is to prevent the fields from being duplicated in the event.
   - remove:
       field: 
         - _tmp_
         - crowdstrike.event.Technique
+        - crowdstrike.event.TechniqueId
         - crowdstrike.event.Tactic
+        - crowdstrike.event.TacticId
+        - crowdstrike.event.Techniques
+        - crowdstrike.event.TechniqueIds
+        - crowdstrike.event.Tactics
+        - crowdstrike.event.TacticIds
+        - crowdstrike.event.IPv6Addresses
+        - crowdstrike.event.IPv4Addresses
         - crowdstrike.event.ParentCommandLine
         - crowdstrike.event.CommandLine
         - crowdstrike.event.ProcessStartTime
         - crowdstrike.event.IncidentStartTime
+        - crowdstrike.event.HostNames
+        - crowdstrike.event.DomainNames
+        - crowdstrike.event.Users
+        - crowdstrike.event.SHA256Hashes
+        - crowdstrike.event.MD5Hashes
+        - crowdstrike.event.Author
         - crowdstrike.event.ProcessEndTime
         - crowdstrike.event.IncidentEndTime
         - crowdstrike.metadata.eventCreationTime
         - crowdstrike.event.UTCTimestamp
+        - crowdstrike.event.ContextTimeStamp
         - crowdstrike.event.PID
         - crowdstrike.event.RemotePort
         - crowdstrike.event.LocalPort
         - crowdstrike.event.ConnectionDirection
         - crowdstrike.event.StartTimestamp
+        - crowdstrike.event.StartTimeEpoch
+        - crowdstrike.event.AdditionalAccountDomain
+        - crowdstrike.event.AdditionalAccountName
+        - crowdstrike.event.AdditionalEndpointHostName
+        - crowdstrike.event.AdditionalEndpointIpAddress
+        - crowdstrike.event.AttemptOutcome
+        - crowdstrike.event.EndTimeEpoch
         - crowdstrike.event.EndTimestamp
+        - crowdstrike.event.EndTime
+        - crowdstrike.event.EventCreatedTimestamp
+        - crowdstrike.event.StartTime
+        - crowdstrike.event.Disposition
+        - crowdstrike.event.MatchedTimestamp
+        - crowdstrike.event.Tags
       ignore_missing: true
 
 on_failure:

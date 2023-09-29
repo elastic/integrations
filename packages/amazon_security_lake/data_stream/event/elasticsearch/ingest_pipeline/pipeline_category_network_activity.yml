@@ -1,0 +1,238 @@
+---
+description: Pipeline for processing Network Activity category.
+# Network Activity Class docs: https://schema.ocsf.io/1.0.0-rc.3/categories/network
+processors:
+  - convert:
+      field: ocsf.disposition_id
+      tag: convert_disposition_id_to_string
+      type: string
+      ignore_missing: true
+  - foreach:
+      field: ocsf.answers
+      if: ctx.ocsf?.answers instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.flag_ids
+          ignore_failure: true
+          processor:
+            convert:
+              field: _ingest._value
+              tag: convert_answers_flag_ids_to_string
+              type: string
+              ignore_missing: true
+  - foreach:
+      field: ocsf.answers
+      if: ctx.ocsf?.answers instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.packet_uid
+          tag: convert_answers_packet_uid_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: ocsf.answers
+      if: ctx.ocsf?.answers instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.ttl
+          tag: convert_answers_ttl_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.ttl
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ocsf.answers
+      if: ctx.ocsf?.answers instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: dns.answers.data
+          tag: append_answers_data_into_dns_answer_data
+          value: '{{{_ingest._value.rdata}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ocsf.answers
+      if: ctx.ocsf?.answers instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: dns.id
+          tag: append_answers_packet_uid_into_dns_id
+          value: '{{{_ingest._value.packet_uid}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ocsf.answers
+      if: ctx.ocsf?.answers instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: dns.answers.class
+          tag: append_answers_class_into_dns_answer_class
+          value: '{{{_ingest._value.class}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ocsf.answers
+      if: ctx.ocsf?.answers instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: dns.answers.type
+          tag: append_answers_type_into_dns_answer_type
+          value: '{{{_ingest._value.type}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ocsf.answers
+      if: ctx.ocsf?.answers instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: dns.answers.ttl
+          tag: append_answers_ttl_into_dns_answer_ttl
+          value: '{{{_ingest._value.ttl}}}'
+          allow_duplicates: false
+  - convert:
+      field: ocsf.query.opcode_id
+      tag: convert_query_opcode_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.query.packet_uid
+      tag: convert_query_packet_uid_to_string
+      type: string
+      ignore_missing: true
+  - set:
+      field: dns.question.name
+      tag: set_dns_question_name
+      copy_from: ocsf.query.hostname
+      ignore_empty_value: true
+  - append:
+      field: dns.id
+      tag: append_query_packet_uid_into_dns_id
+      value: '{{{ocsf.query.packet_uid}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.query?.packet_uid != null
+  - append:
+      field: dns.question.class
+      tag: append_query_class_into_dns_question_class
+      value: '{{{ocsf.query.class}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.query?.class != null
+  - append:
+      field: dns.question.type
+      tag: append_query_type_into_dns_question_type
+      value: '{{{ocsf.query.type}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.query?.type != null
+  - date:
+      field: ocsf.query_time_dt
+      tag: date_query_time_dt
+      target_field: ocsf.query_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.query_time_dt != null && ctx.ocsf.query_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.query_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.query_time
+      tag: date_query_time
+      target_field: ocsf.query_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.query_time != null && ctx.ocsf.query_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.query_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: dns.response_code
+      tag: set_dns_response_code
+      copy_from: ocsf.rcode
+      ignore_empty_value: true
+  - convert:
+      field: ocsf.rcode_id
+      tag: convert_rcode_id_to_string
+      type: string
+      ignore_missing: true
+  - date:
+      field: ocsf.response_time_dt
+      tag: date_response_time_dt
+      target_field: ocsf.response_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.response_time_dt != null && ctx.ocsf.response_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.response_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.response_time
+      tag: date_response_time
+      target_field: ocsf.response_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.response_time != null && ctx.ocsf.response_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.response_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      tag: script_dns_header_flags
+      if: ctx.ocsf?.answers instanceof List
+      params:
+        'Authoritative Answer': 'AA'
+        'Authentic Data': 'AD'
+        'Recursion Desired': 'RD'
+        'Recursion Available': 'RA'
+        'Checking Disabled': 'CD'
+      source: >-
+        if (ctx.dns == null) {
+          ctx.dns = new HashMap();
+        }
+        def list = new HashSet();
+        for (def answer : ctx.ocsf.answers) {
+          if (answer.flags != null)
+          {
+            for (int i = 0; i < answer.flags.length; i++) {
+              def flag = answer.flags[i];
+              if(params.containsKey(flag))
+              {
+                list.add(params.get(flag));
+              }
+            }
+          }
+        }
+        ctx.dns.put('header_flags', list);
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

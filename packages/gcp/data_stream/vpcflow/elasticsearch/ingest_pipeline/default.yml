@@ -9,6 +9,7 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: 'ctx.event?.original == null'
   - json:
       field: event.original
       target_field: json
@@ -26,10 +27,10 @@ processors:
   - set:
       field: event.kind
       value: event
-  - set:
+  - append:
       field: event.category
       value: network
-  - set:
+  - append:
       field: event.type
       value: connection
   - set: 

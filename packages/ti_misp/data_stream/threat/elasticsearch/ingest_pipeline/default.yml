@@ -6,16 +6,16 @@ processors:
   ####################
   - set:
       field: ecs.version
-      value: '8.8.0'
+      value: '8.10.0'
   - set:
       field: event.kind
       value: enrichment
   - set:
       field: event.category
-      value: threat
+      value: [threat]
   - set:
       field: event.type
-      value: indicator
+      value: [indicator]
 
   ######################
   # General ECS fields #
@@ -24,6 +24,13 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: 'ctx.event?.original == null'
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
       target_field: json
@@ -81,7 +88,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       if: ctx.misp?.event?.publish_timestamp != null
       field: misp.event.publish_timestamp
@@ -148,7 +155,7 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: misp.context.attribute.timestamp
       target_field: misp.context.attribute.timestamp
@@ -162,7 +169,7 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: misp.object.timestamp
       target_field: misp.object.timestamp
@@ -176,7 +183,7 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   #####################
   # Threat ECS Fields #

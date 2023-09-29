@@ -6,7 +6,7 @@
 
 Use the Apache Tomcat integration to:
 
-- Collect metrics related to the cache, request and session and collect logs related to access, catalina, and localhost.
+- Collect metrics related to the cache, connection pool, memory, request, session and thread pool and collect logs related to access, catalina, and localhost.
 - Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
 - Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
@@ -16,14 +16,17 @@ The Apache Tomcat integration collects logs and metrics data.
 
 Logs help you keep a record of events that happen on your machine. The `Log` data streams collected by Apache Tomcat integration are `access`, `catalina`, and `localhost`, so that users can keep track of the IP addresses of the clients, bytes returned to the client or sent by clients, etc., so that users could monitor and troubleshoot the performance of Java applications.
 
-Metrics give you insight into the statistics of the Apache Tomcat. The `Metric` data streams collected by the Apache Tomcat integration are `cache`, `request` and `session`, so that the user can monitor and troubleshoot the performance of the Apache Tomcat instance.
+Metrics give you insight into the statistics of the Apache Tomcat. The `Metric` data streams collected by the Apache Tomcat integration are `cache`, `connection pool`, `memory`, `request`, `session` and `thread pool`, so that the user can monitor and troubleshoot the performance of the Apache Tomcat instance.
 
 Data streams:
 - `access`: Collects information related to overall performance of Java applications.
 - `cache`: Collects information related to the overall cache of the Apache Tomcat instance.
 - `catalina`: Collects information related to the startup and shutdown of the Apache Tomcat application server, the deployment of new applications, or the failure of one or more subsystems.
+- `connection pool`: Collects information related to connection pool such as number of active and idle connections.
 - `localhost`: Collects information related to Web application activity which is related to HTTP transactions between the application server and the client.
+- `memory`: Collects information related to heap memory, non-heap memory and garbage collection of the Tomcat instance.
 - `request`: Collects information related to requests of the Apache Tomcat instance.
+- `thread pool`: Collects information related to the overall states of the threads, CPU time and processing termination time of the threads in the Tomcat instance.
 - `session`: Collects information related to overall created, active and expired sessions of the Tomcat instance.
 
 Note:
@@ -100,6 +103,18 @@ Combined Log Format + X-Forwarded-For header :- '%h %l %u %t "%r" %s %b %A %X %T
 
 ```
 systemctl restart tomcat
+```
+
+## Supported log formats for Catalina and Localhost logs:
+
+- With error stack trace:
+```
+dd-MMM-yyyy HH:mm:ss.SSS [Severity] [Subsystem] [Message Text] [Error Stack Trace]
+```
+
+- Without error stack trace:
+```
+dd-MMM-yyyy HH:mm:ss.SSS [Severity] [Subsystem] [Message Text]
 ```
 
 Note:
@@ -566,7 +581,6 @@ An example event for `cache` looks as following:
         "type": "prometheus"
     },
     "tags": [
-        "forwarded",
         "apache_tomcat-cache"
     ]
 }
@@ -588,6 +602,378 @@ An example event for `cache` looks as following:
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
 | cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |  |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
+
+
+### Connection Pool
+
+This is the `connection pool` data stream. This data stream collects metrics related to connection pool such as number of active and idle connections.
+
+An example event for `connection_pool` looks as following:
+
+```json
+{
+    "@timestamp": "2023-07-06T06:16:33.972Z",
+    "agent": {
+        "ephemeral_id": "f5813425-689c-4d7c-97d5-b549c3948d9d",
+        "id": "c78eadae-edd0-4b88-ab24-f2fb84a98229",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.8.0"
+    },
+    "apache_tomcat": {
+        "connection_pool": {
+            "access_to_underlying_connection_allowed": false,
+            "application_name": "/",
+            "cache": {
+                "state": 1
+            },
+            "connection": {
+                "abandoned_usage_tracking": false,
+                "active": {
+                    "count": 0
+                },
+                "autocommit_on_return": true,
+                "clear_statement_pool_on_return": false,
+                "closed": false,
+                "database": {
+                    "time": {
+                        "max": {
+                            "ms": -1
+                        }
+                    }
+                },
+                "default_transaction_isolation": -1,
+                "enable_autocommit_on_return": true,
+                "fast_fail_validation": false,
+                "idle": {
+                    "count": 0,
+                    "exists": false,
+                    "max": {
+                        "count": 20,
+                        "size": -1,
+                        "time": {
+                            "ms": 3
+                        }
+                    },
+                    "min": {
+                        "size": 5,
+                        "time": {
+                            "ms": -1
+                        }
+                    }
+                },
+                "initial_size": {
+                    "count": 0
+                },
+                "lifetime": {
+                    "max": {
+                        "ms": -1
+                    }
+                },
+                "log_expired": true,
+                "min_evictable_idle": {
+                    "time": 1800000
+                },
+                "remove_abandoned_on_borrow": false,
+                "remove_abandoned_on_maintenance": false,
+                "remove_abandoned_timeout": 300,
+                "rollback_on_return": true,
+                "test_on_return": false,
+                "test_while_idle": false,
+                "time_betwen_eviction_run": {
+                    "time": {
+                        "ms": -1
+                    }
+                },
+                "validate": -1
+            },
+            "lifo": true,
+            "max": {
+                "total": 8
+            },
+            "prepared_statements": false,
+            "test_on_borrow": true,
+            "test_on_create": false
+        }
+    },
+    "data_stream": {
+        "dataset": "apache_tomcat.connection_pool",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.7.0"
+    },
+    "elastic_agent": {
+        "id": "c78eadae-edd0-4b88-ab24-f2fb84a98229",
+        "snapshot": false,
+        "version": "8.8.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
+        "dataset": "apache_tomcat.connection_pool",
+        "duration": 252065272,
+        "ingested": "2023-07-06T06:16:37Z",
+        "kind": "metric",
+        "module": "apache_tomcat",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "e8978f2086c14e13b7a0af9ed0011d19",
+        "ip": [
+            "172.27.0.7"
+        ],
+        "mac": [
+            "02-42-AC-1B-00-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.90.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "collector",
+        "period": 10000
+    },
+    "service": {
+        "address": "http://elastic-package-service_apache_tomcat_1:9090/metrics",
+        "type": "prometheus"
+    },
+    "tags": [
+        "apache_tomcat-connection_pool"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
+| apache_tomcat.connection_pool.access_to_underlying_connection_allowed | Returns the state of connections that will be established when the connection pool is started. | boolean |  |  |
+| apache_tomcat.connection_pool.application_name | Name of the Apache Tomcat application. | keyword |  |  |
+| apache_tomcat.connection_pool.cache.state | Cache state of connection pool. | double |  | gauge |
+| apache_tomcat.connection_pool.connection.abandoned_usage_tracking | Indicates if full stack traces are required when logAbandoned is true. | boolean |  |  |
+| apache_tomcat.connection_pool.connection.active.count | Number of active connection in pool. | double |  | gauge |
+| apache_tomcat.connection_pool.connection.autocommit_on_return | Connections being returned to the pool. | boolean |  |  |
+| apache_tomcat.connection_pool.connection.clear_statement_pool_on_return | Keeps track of statements associated with a connection. | boolean |  |  |
+| apache_tomcat.connection_pool.connection.closed | Random Connection Closed Exceptions. | boolean |  |  |
+| apache_tomcat.connection_pool.connection.database.time.max.ms | Maximum time to wait for a database connection to become available in ms. | double | ms | gauge |
+| apache_tomcat.connection_pool.connection.default_transaction_isolation | TransactionIsolation state of connections created by this pool | double |  | gauge |
+| apache_tomcat.connection_pool.connection.enable_autocommit_on_return | Connections being returned to the pool will be checked and configured with Connection. | boolean |  |  |
+| apache_tomcat.connection_pool.connection.fast_fail_validation | Timeout before a connection validation queries fail. | boolean |  |  |
+| apache_tomcat.connection_pool.connection.idle.count | Idle number of connection pool. | double |  | gauge |
+| apache_tomcat.connection_pool.connection.idle.exists | logAbandoned to figure out the connection is idle. | boolean |  |  |
+| apache_tomcat.connection_pool.connection.idle.max.count | Maximum idle connections. | double |  | gauge |
+| apache_tomcat.connection_pool.connection.idle.max.size | Returns the maximum number of connections that can remain idle in the pool. | double |  | gauge |
+| apache_tomcat.connection_pool.connection.idle.max.time.ms | It represents the maximum number of objects that the pool will examine during each run of the idle object evictor thread. | double | ms | gauge |
+| apache_tomcat.connection_pool.connection.idle.min.size | The minimum number of established connections that should be kept in the pool at all times. | double |  | gauge |
+| apache_tomcat.connection_pool.connection.idle.min.time.ms | An attribute of the Tomcat DataSource object that sets the minimum time an object may sit idle in the pool before it is eligable for eviction by the idle object evictor. | double | ms | gauge |
+| apache_tomcat.connection_pool.connection.initial_size.count | The initial number of connections that are created when the pool is started. | double |  | gauge |
+| apache_tomcat.connection_pool.connection.lifetime.max.ms | The maximum lifetime in milliseconds of a connection. | double | ms | gauge |
+| apache_tomcat.connection_pool.connection.log_expired | Log expired connection in pool. | boolean |  |  |
+| apache_tomcat.connection_pool.connection.min_evictable_idle.time | The minimum amount of time an object may sit idle in the pool before it is eligible for eviction. | double |  | gauge |
+| apache_tomcat.connection_pool.connection.remove_abandoned_on_borrow | Remove abandoned connections from the pool when a connection is borrowed. | boolean |  |  |
+| apache_tomcat.connection_pool.connection.remove_abandoned_on_maintenance | The commons dbcp parameters which are unique from the Tomcat JDBC connection pool parameters are not being accepted. | boolean |  |  |
+| apache_tomcat.connection_pool.connection.remove_abandoned_timeout | Timeout in seconds before an abandoned (in use) connection can be removed. | double |  | gauge |
+| apache_tomcat.connection_pool.connection.rollback_on_return | The pool can terminate the transaction by calling rollback on the connection. | boolean |  |  |
+| apache_tomcat.connection_pool.connection.test_on_return | The indication of whether objects will be validated before being returned to the pool. | boolean |  |  |
+| apache_tomcat.connection_pool.connection.test_while_idle | Introspected attribute testWhileIdle. | boolean |  |  |
+| apache_tomcat.connection_pool.connection.time_betwen_eviction_run.time.ms | The number of milliseconds to sleep between runs of the idle connection validation/cleaner thread. | double | ms | gauge |
+| apache_tomcat.connection_pool.connection.validate | Validate connections from this pool. | double |  | gauge |
+| apache_tomcat.connection_pool.lifo | Last In First Out connections. | boolean |  |  |
+| apache_tomcat.connection_pool.max.total | Maximum total of connection pool. | double |  | gauge |
+| apache_tomcat.connection_pool.prepared_statements | Validate connections from this pool. | boolean |  |  |
+| apache_tomcat.connection_pool.test_on_borrow | The indication of whether objects will be validated before being borrowed from the pool. | boolean |  |  |
+| apache_tomcat.connection_pool.test_on_create | Property determines whether or not the pool will validate objects immediately after they are created by the pool. | boolean |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+
+
+### Memory
+
+This is the `memory` data stream. This data stream collects metrics related to the heap memory, non-heap memory, garbage collection time and count.
+
+An example event for `memory` looks as following:
+
+```json
+{
+    "@timestamp": "2023-07-11T13:20:12.035Z",
+    "agent": {
+        "ephemeral_id": "d25b802e-38e7-44c1-82d3-ef14a3522214",
+        "id": "fe5945f5-4d47-4726-8da8-5f694a655519",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.8.0"
+    },
+    "apache_tomcat": {
+        "memory": {
+            "doc_type": "memory",
+            "heap": {
+                "committed": {
+                    "bytes": 77594624
+                },
+                "init": {
+                    "bytes": 195035136
+                },
+                "max": {
+                    "bytes": 3103784960
+                },
+                "used": {
+                    "bytes": 35204712
+                }
+            },
+            "non_heap": {
+                "committed": {
+                    "bytes": 44695552
+                },
+                "init": {
+                    "bytes": 7667712
+                },
+                "max": {
+                    "bytes": -1
+                },
+                "used": {
+                    "bytes": 42286456
+                }
+            },
+            "object_pending_finalization": {
+                "count": 0
+            },
+            "verbose": false
+        }
+    },
+    "data_stream": {
+        "dataset": "apache_tomcat.memory",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.7.0"
+    },
+    "elastic_agent": {
+        "id": "fe5945f5-4d47-4726-8da8-5f694a655519",
+        "snapshot": false,
+        "version": "8.8.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
+        "dataset": "apache_tomcat.memory",
+        "duration": 281008420,
+        "ingested": "2023-07-11T13:20:15Z",
+        "kind": "metric",
+        "module": "apache_tomcat",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "e8978f2086c14e13b7a0af9ed0011d19",
+        "ip": [
+            "192.168.64.7"
+        ],
+        "mac": [
+            "02-42-C0-A8-40-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.90.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "collector",
+        "period": 10000
+    },
+    "service": {
+        "address": "http://elastic-package-service_apache_tomcat_1:9090/metrics",
+        "type": "prometheus"
+    },
+    "tags": [
+        "apache_tomcat-memory"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
+| apache_tomcat.memory.doc_type | Document type of the event. This should be either "memory" or "gc". | keyword |  |  |
+| apache_tomcat.memory.gc.collection.count | The cumulative number of invoked garbage collections since the start of the server. | long |  | counter |
+| apache_tomcat.memory.gc.collection.time.ms | The time (in milliseconds) taken by garbage collection during the collection interval. | long | ms | gauge |
+| apache_tomcat.memory.gc.valid | The garbage collection process in G1 is considered valid even if the old GC JMX counter remains at 0 while old space is gradually reclaimed by the young collections. | long |  | gauge |
+| apache_tomcat.memory.heap.committed.bytes | Committed heap memory usage. | double | byte | gauge |
+| apache_tomcat.memory.heap.init.bytes | Initial heap memory usage. | double | byte | gauge |
+| apache_tomcat.memory.heap.max.bytes | Max heap memory usage. When the value for the maximum memory size (in bytes) is set to -1 for heap memory configurations, it indicates that the user has not specified a predefined size for the memory allocation. | double | byte | gauge |
+| apache_tomcat.memory.heap.used.bytes | Used heap memory usage. | double | byte | gauge |
+| apache_tomcat.memory.non_heap.committed.bytes | Committed non-heap memory usage. | double | byte | gauge |
+| apache_tomcat.memory.non_heap.init.bytes | Initial non-heap memory usage. | double | byte | gauge |
+| apache_tomcat.memory.non_heap.max.bytes | Max non-heap memory usage. When the value for the maximum memory size (in bytes) is set to -1 for non-heap memory configurations, it indicates that the user has not specified a predefined size for the memory allocation. | double | byte | gauge |
+| apache_tomcat.memory.non_heap.used.bytes | Used non-heap memory usage. | double | byte | gauge |
+| apache_tomcat.memory.object_pending_finalization.count | Count of object pending finalization. | double |  | gauge |
+| apache_tomcat.memory.verbose | When set to true, will cause the memory manager to print messages to the console whenever it performs certain memory-related operations.(1.0-true, 0.0-false). | boolean |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
 | container.id | Unique container id. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
@@ -696,7 +1082,6 @@ An example event for `request` looks as following:
         "type": "prometheus"
     },
     "tags": [
-        "forwarded",
         "apache_tomcat-request"
     ]
 }
@@ -842,8 +1227,7 @@ An example event for `session` looks as following:
         "type": "prometheus"
     },
     "tags": [
-        "apache_tomcat-session",
-        "forwarded"
+        "apache_tomcat-session"
     ]
 }
 ```
@@ -884,5 +1268,208 @@ An example event for `session` looks as following:
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
+
+
+### Thread Pool
+
+This is the `thread pool` data stream. This data stream collects metrics related to the total, active, current, daemon, busy and peak threads, CPU time and processing termination time of the threads.
+
+An example event for `thread_pool` looks as following:
+
+```json
+{
+    "@timestamp": "2023-07-06T06:13:12.777Z",
+    "agent": {
+        "ephemeral_id": "5209fee4-2cae-4498-bf4b-c295a793454b",
+        "id": "c78eadae-edd0-4b88-ab24-f2fb84a98229",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.8.0"
+    },
+    "apache_tomcat": {
+        "thread_pool": {
+            "contention": {
+                "monitoring_enabled": false
+            },
+            "thread": {
+                "active": {
+                    "count": 26
+                },
+                "allocated_memory": {
+                    "enabled": true,
+                    "supported": true
+                },
+                "current": {
+                    "allocated": {
+                        "bytes": 2835120
+                    },
+                    "cpu": {
+                        "time": {
+                            "enabled": true,
+                            "ms": 31925017
+                        }
+                    },
+                    "user": {
+                        "time": {
+                            "ms": 30000000
+                        }
+                    }
+                },
+                "daemon": {
+                    "count": 23
+                },
+                "peak": {
+                    "count": 26
+                },
+                "supported": {
+                    "contention_monitoring": true,
+                    "cpu": {
+                        "current": {
+                            "time": true
+                        }
+                    },
+                    "usage": {
+                        "object_monitor": true,
+                        "synchronizer": true
+                    }
+                },
+                "total": 27
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "apache_tomcat.thread_pool",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.7.0"
+    },
+    "elastic_agent": {
+        "id": "c78eadae-edd0-4b88-ab24-f2fb84a98229",
+        "snapshot": false,
+        "version": "8.8.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
+        "dataset": "apache_tomcat.thread_pool",
+        "duration": 256268755,
+        "ingested": "2023-07-06T06:13:16Z",
+        "kind": "metric",
+        "module": "apache_tomcat",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "e8978f2086c14e13b7a0af9ed0011d19",
+        "ip": [
+            "172.27.0.7"
+        ],
+        "mac": [
+            "02-42-AC-1B-00-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.90.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "collector",
+        "period": 10000
+    },
+    "service": {
+        "address": "http://elastic-package-service_apache_tomcat_1:9090/metrics",
+        "type": "prometheus"
+    },
+    "tags": [
+        "apache_tomcat-thread_pool"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
+| apache_tomcat.thread_pool.connection.count | Count of all connections. | double |  | counter |
+| apache_tomcat.thread_pool.connection.linger | The number of seconds during which the sockets used by this connector will linger when they are closed. | double | s | gauge |
+| apache_tomcat.thread_pool.connection.max | The total number of concurrent connections that the server will accept and process. | double |  | gauge |
+| apache_tomcat.thread_pool.connection.timeout | Thread connection timeout. | double |  | counter |
+| apache_tomcat.thread_pool.contention.monitoring_enabled | This is used to determine if a Java virtual machine enables thread contention monitoring. | boolean |  |  |
+| apache_tomcat.thread_pool.executor_termination.timeout.ms | The time that the private internal executor will wait for request processing threads to terminate before continuing with the process of stopping the connector. If not set, the default is 5000 (5 seconds). | double | ms | gauge |
+| apache_tomcat.thread_pool.initiated_connector.state | State of bound when the connector is initiated. | boolean |  |  |
+| apache_tomcat.thread_pool.keep_alive.count | Total keep alive on the ThreadPool. | double |  | gauge |
+| apache_tomcat.thread_pool.keep_alive.max_requests | Maximum number of request keep alive in ThreadPool. | double |  | gauge |
+| apache_tomcat.thread_pool.keep_alive.timeout | Keep alive timeout on the ThreadPool. | double |  | gauge |
+| apache_tomcat.thread_pool.nio_connector | Name of NIO Connector. | keyword |  |  |
+| apache_tomcat.thread_pool.ssl_enabled | SSL enable status. | boolean |  |  |
+| apache_tomcat.thread_pool.tcp_no_delay | Status of tcp no delay option used to improves performance under most circumstances. | boolean |  |  |
+| apache_tomcat.thread_pool.thread.accept.count | Count of all threads accepted. | double |  | counter |
+| apache_tomcat.thread_pool.thread.active.count | Current active threads at JVM level (from java.lang:type=Threading). | double |  | gauge |
+| apache_tomcat.thread_pool.thread.allocated_memory.enabled | Allocated memory enabled in thread. | boolean |  |  |
+| apache_tomcat.thread_pool.thread.allocated_memory.supported | Allocated memory supported in thread. | boolean |  |  |
+| apache_tomcat.thread_pool.thread.current.allocated.bytes | Allocated bytes in current thread. | double | byte | counter |
+| apache_tomcat.thread_pool.thread.current.busy | Current busy threads from the ThreadPool. | double |  | gauge |
+| apache_tomcat.thread_pool.thread.current.count | Current number of threads, taken from the ThreadPool. | double |  | gauge |
+| apache_tomcat.thread_pool.thread.current.cpu.time.enabled | CPU time for the current thread. | boolean |  |  |
+| apache_tomcat.thread_pool.thread.current.cpu.time.ms | CPU time in milliseconds. | double | ms | gauge |
+| apache_tomcat.thread_pool.thread.current.user.time.ms | User time in milliseconds. | double | ms | gauge |
+| apache_tomcat.thread_pool.thread.daemon.count | Daemon count for the current thread. | double |  | gauge |
+| apache_tomcat.thread_pool.thread.daemon.status | The status which states whether the thread is daemon or not. | boolean |  |  |
+| apache_tomcat.thread_pool.thread.paused | Pause state of Thread. | boolean |  |  |
+| apache_tomcat.thread_pool.thread.peak.count | Peak number of threads at JVM level (from java.lang:type=Threading). | double |  | gauge |
+| apache_tomcat.thread_pool.thread.port.default | Default port of thread in Apache Tomcat. | long |  | gauge |
+| apache_tomcat.thread_pool.thread.port.offset | The offset to apply to port of thread. | long |  | gauge |
+| apache_tomcat.thread_pool.thread.port.value | Port of thread. | long |  | gauge |
+| apache_tomcat.thread_pool.thread.port.with_offset | Port of thread with offset. | long |  | gauge |
+| apache_tomcat.thread_pool.thread.priority.acceptor | The priority of the acceptor thread. | double |  | gauge |
+| apache_tomcat.thread_pool.thread.priority.count | Priority of thread. | double |  | gauge |
+| apache_tomcat.thread_pool.thread.priority.poller | The priority of the poller threads. | double |  | gauge |
+| apache_tomcat.thread_pool.thread.requests.max | Max threads from the ThreadPool, to be created by the connector and made available for requests. | double |  | counter |
+| apache_tomcat.thread_pool.thread.running.min | The minimum number of threads always kept running. | double |  | gauge |
+| apache_tomcat.thread_pool.thread.running.value | The status which states whether the thread is running or not. | boolean |  |  |
+| apache_tomcat.thread_pool.thread.selector.timeout | Selector thread's timeout. | double |  | gauge |
+| apache_tomcat.thread_pool.thread.sni_parse_limit | SNI parsing limit of thread. | double |  | gauge |
+| apache_tomcat.thread_pool.thread.supported.contention_monitoring | This is used to determine if a Java virtual machine supports thread contention monitoring. | boolean |  |  |
+| apache_tomcat.thread_pool.thread.supported.cpu.current.time | CPU time that the current thread has executed in user mode is supported or not. | boolean |  |  |
+| apache_tomcat.thread_pool.thread.supported.usage.object_monitor | Support of object monitor usage of thread. | boolean |  |  |
+| apache_tomcat.thread_pool.thread.supported.usage.synchronizer | Support of synchronizer usage. | boolean |  |  |
+| apache_tomcat.thread_pool.thread.total | Total threads at the JVM level (from java.lang:type=Threading). | double |  | gauge |
+| apache_tomcat.thread_pool.use_inherited_channel | Returns the channel inherited from the entity that created this Java virtual machine. | boolean |  |  |
+| apache_tomcat.thread_pool.use_send_file | Use of sendfile will disable any compression that Tomcat may otherwise have performed on the response. | boolean |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |
 

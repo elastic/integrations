@@ -1,0 +1,115 @@
+---
+processors:
+  - set:
+      field: event.kind
+      value: event
+      tag: set_event_kind
+  - append:
+      field: event.category
+      value: iam
+      tag: append_iam_category
+  - append:
+      field: event.type
+      value: info
+      tag: append_info_type
+  - rename:
+      field: crowdstrike.event.IncidentType
+      target_field: event.action
+      ignore_missing: true
+      tag: rename_incident_type
+  - rename:
+      field: crowdstrike.event.IncidentDescription
+      target_field: message
+      ignore_missing: true
+      tag: rename_incident_description
+  - rename:
+      field: crowdstrike.event.Severity
+      target_field: event.severity
+      ignore_missing: true
+      tag: rename_severity
+  - rename:
+      field: crowdstrike.event.IdentityProtectionIncidentId
+      target_field: event.id
+      ignore_missing: true
+      tag: rename_identity_protection_incident_id
+  - rename:
+      field: crowdstrike.event.FalconHostLink
+      target_field: event.reference    
+      ignore_missing: true
+      tag: rename_falcon_host_link
+  - rename:
+      field: crowdstrike.event.UserName
+      target_field: user.name
+      ignore_missing: true
+      tag: rename_user_name
+  - rename:
+      field: crowdstrike.event.EndpointName
+      target_field: host.hostname
+      ignore_missing: true
+      tag: rename_user_name
+  - rename:
+      field: crowdstrike.event.EndpointIp
+      target_field: host.ip
+      ignore_missing: true
+      tag: rename_user_name
+  - convert:
+      field: crowdstrike.event.StartTime
+      type: string
+      tag: convert_start_time_epoch
+      ignore_missing: true
+      if: ctx.crowdstrike?.event?.StartTime != null
+  - gsub:
+      field: crowdstrike.event.StartTime
+      pattern: "\\d{6}$"
+      replacement: ""
+      tag: gsub_start_time_epoch
+      if: "ctx.crowdstrike?.event?.StartTime != null && ctx.crowdstrike.event.StartTime.length() > 18"
+  - date:
+      field: crowdstrike.event.StartTime
+      target_field: event.start
+      timezone: UTC
+      formats:
+        - UNIX_MS
+      tag: date_event_start_time_epoch
+      if: "ctx.crowdstrike?.event?.StartTime != null && ctx.crowdstrike.event.StartTime.length() >= 12"
+  - date:
+      field: crowdstrike.event.StartTime
+      target_field: event.start
+      timezone: UTC
+      formats:
+        - UNIX
+      tag: date_event_start_time_epoch
+      if: 'ctx.crowdstrike?.event?.StartTime != null && ctx.crowdstrike.event.StartTime.length() <= 11'
+  - convert:
+      field: crowdstrike.event.EndTime
+      type: string
+      tag: convert_start_time_epoch
+      ignore_missing: true
+      if: ctx.crowdstrike?.event?.EndTime != null
+  - gsub:
+      field: crowdstrike.event.EndTime
+      pattern: "\\d{6}$"
+      replacement: ""
+      tag: gsub_start_time_epoch
+      if: "ctx.crowdstrike?.event?.EndTime != null && ctx.crowdstrike.event.EndTime.length() > 18"
+  - date:
+      field: crowdstrike.event.EndTime
+      target_field: event.start
+      timezone: UTC
+      formats:
+        - UNIX_MS
+      tag: date_event_start_time_epoch
+      if: "ctx.crowdstrike?.event?.EndTime != null && ctx.crowdstrike.event.EndTime.length() >= 12"
+  - date:
+      field: crowdstrike.event.EndTime
+      target_field: event.start
+      timezone: UTC
+      formats:
+        - UNIX
+      tag: date_event_start_time_epoch
+      if: 'ctx.crowdstrike?.event?.EndTime != null && ctx.crowdstrike.event.EndTime.length() <= 11'
+  - set:
+      field: '@timestamp'
+      copy_from: event.start
+      tag: copy_timestamp_from_event_start
+      if: ctx.event?.start != null

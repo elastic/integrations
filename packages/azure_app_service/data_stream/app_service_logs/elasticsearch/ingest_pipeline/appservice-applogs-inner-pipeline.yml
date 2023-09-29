@@ -1,0 +1,29 @@
+---
+description: Pipeline for processing Azure App Service App logs.
+processors:
+  - rename:
+      field: azure.app_service.resourceId
+      target_field: azure.resource.id
+      ignore_missing: true
+  - rename:
+      field: azure.app_service.resultDescription
+      target_field: azure.app_service.result_description
+  - rename:
+      field: azure.app_service.EventStampType
+      target_field: azure.app_service.event_stamp_type
+  - rename:
+      field: azure.app_service.EventPrimaryStampName
+      target_field: azure.app_service.event_primary_stamp_name
+  - rename:
+      field: azure.app_service.EventStampName
+      target_field: azure.app_service.event_stamp_name
+  - rename:
+      field: azure.app_service.Host
+      target_field: azure.app_service.host
+  - rename:
+      field: azure.app_service.EventIpAddress
+      target_field: azure.app_service.event_ip_address
+on_failure:
+  - append:
+      field: "error.message"
+      value: "{{ _ingest.on_failure_message }} {{ _ingest.on_failure_processor_type }}"
