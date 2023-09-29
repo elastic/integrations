@@ -45,4 +45,11 @@ Fields for related observables of the various types are always stored under `ope
 
 The `related.*` fields will also be populated with any relevant data.
 
+The table below lists all `opencti.*` fields.
+
+The documentation for ECS fields can be found at:
+- [ECS Event Fields](https://www.elastic.co/guide/en/ecs/current/ecs-event.html)
+- [ECS Threat Fields](https://www.elastic.co/guide/en/ecs/current/ecs-threat.html)
+- [ECS Related Fields](https://www.elastic.co/guide/en/ecs/current/ecs-related.html)
+
 {{fields "indicator"}}
