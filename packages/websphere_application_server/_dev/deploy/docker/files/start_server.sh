@@ -4,5 +4,5 @@ SERVER_NAME=${SERVER_NAME:-"server1"}
 /work/set_password.sh
 echo "Starting server ..................."
 /opt/IBM/WebSphere/AppServer/profiles/$PROFILE_NAME/bin/startServer.sh $SERVER_NAME
-wsadmin.sh -lang jython -user wsadmin -password Welcome1 -f /home/scripts/init.jython
+yes | wsadmin.sh -lang jython -user wsadmin -password Welcome1 -f /home/scripts/init.jython
 tail -f dev/null
