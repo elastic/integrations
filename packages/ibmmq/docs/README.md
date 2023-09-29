@@ -47,13 +47,17 @@ An example event for `qmgr` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "web",
+        "category": [
+            "web"
+        ],
         "dataset": "ibmmq.qmgr",
         "duration": 4639837,
         "ingested": "2022-07-04T07:29:36Z",
         "kind": "metric",
         "module": "ibmmq",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "host": {
         "architecture": "x86_64",
@@ -445,7 +449,9 @@ An example event for `errorlog` looks as following:
         "ingested": "2022-06-29T08:24:02Z",
         "kind": "event",
         "module": "ibmmq",
-        "type": "error"
+        "type": [
+            "error"
+        ]
     },
     "host": {
         "hostname": "20c2d61f227a",
