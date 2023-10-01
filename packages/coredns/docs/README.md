@@ -87,7 +87,13 @@ An example configuration with logging enabled is:
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
 | log.offset | Log offset | long |
@@ -119,17 +125,17 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-10-07T02:50:02.588Z",
+    "@timestamp": "2023-09-27T18:59:58.096Z",
     "agent": {
-        "ephemeral_id": "7c321bdc-21a4-41a9-b385-6901d4839399",
-        "id": "1d543703-6e96-4447-8849-f48060c958a8",
+        "ephemeral_id": "bbb180b6-3756-4f5b-81d5-6e333e740796",
+        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.2"
+        "version": "8.10.1"
     },
     "coredns": {
         "log": {
-            "buffer_size": 4096,
+            "buffer_size": 1232,
             "dnssec_ok": false
         }
     },
@@ -146,7 +152,7 @@ An example event for `log` looks as following:
             "RD",
             "RA"
         ],
-        "id": "1200",
+        "id": "58521",
         "question": {
             "class": "IN",
             "name": "google.com",
@@ -160,46 +166,46 @@ An example event for `log` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "1d543703-6e96-4447-8849-f48060c958a8",
+        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
         "snapshot": false,
-        "version": "8.4.2"
+        "version": "8.10.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "created": "2022-10-07T02:50:02.588Z",
+        "created": "2023-09-27T18:59:58.096Z",
         "dataset": "coredns.log",
-        "duration": 16305799,
-        "ingested": "2022-10-07T02:50:04Z",
+        "duration": 32133957.999999996,
+        "ingested": "2023-09-27T18:59:59Z",
         "kind": "event",
-        "original": "[INFO] 192.168.16.3:43573 - 1200 \"A IN google.com. udp 51 false 4096\" NOERROR qr,rd,ra 65 0.016305799s",
+        "original": "[INFO] 192.168.112.3:45632 - 58521 \"A IN google.com. udp 51 false 1232\" NOERROR qr,rd,ra 65 0.032133958s",
         "outcome": "success",
         "type": [
             "protocol"
         ]
     },
     "host": {
-        "architecture": "x86_64",
+        "architecture": "aarch64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "17324e6953704d468a4643ede9e5c958",
+        "id": "ddbe644fa129402e9d5cf6452db1422d",
         "ip": [
-            "192.168.0.7"
+            "172.31.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:00:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.15.0-48-generic",
+            "kernel": "5.15.49-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.5 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "input": {
@@ -207,12 +213,15 @@ An example event for `log` looks as following:
     },
     "log": {
         "file": {
+            "device_id": 141,
+            "inode": 18614042,
             "path": "/tmp/service_logs/coredns.log"
         },
         "level": "info",
         "offset": 67
     },
     "network": {
+        "bytes": 116,
         "iana_number": "17",
         "protocol": "dns",
         "transport": "udp"
@@ -222,14 +231,14 @@ An example event for `log` looks as following:
             "google.com"
         ],
         "ip": [
-            "192.168.16.3"
+            "192.168.112.3"
         ]
     },
     "source": {
-        "address": "192.168.16.3",
+        "address": "192.168.112.3",
         "bytes": 51,
-        "ip": "192.168.16.3",
-        "port": 43573
+        "ip": "192.168.112.3",
+        "port": 45632
     },
     "tags": [
         "preserve_original_event",
