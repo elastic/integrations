@@ -306,7 +306,7 @@ An example event for `route53_resolver` looks as following:
     "data_stream": {
         "namespace": "default",
         "type": "logs",
-        "dataset": "aws.route53_public_logs"
+        "dataset": "aws.route53_resolver_logs"
     },
     "dns": {
         "question": {
