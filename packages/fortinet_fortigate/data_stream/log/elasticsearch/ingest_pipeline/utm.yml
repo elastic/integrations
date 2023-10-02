@@ -340,10 +340,11 @@ processors:
       field: fortinet.firewall.sender
       target_field: tls.server.issuer
       ignore_missing: true
-  - rename:
-      field: fortinet.firewall.dtype
-      target_field: vulnerability.category
-      ignore_missing: true
+  - append:
+      field: vulnerability.category
+      value: "{{fortinet.firewall.dtype}}"
+      allow_duplicates: false
+      if: "ctx.fortinet?.firewall?.dtype != null"
   - rename:
       field: fortinet.firewall.ref
       target_field: event.reference
@@ -379,6 +380,7 @@ processors:
         - fortinet.firewall.filesize
         - fortinet.firewall.dir
         - fortinet.firewall.direction
+        - fortinet.firewall.dtype
       ignore_missing: true
 on_failure:
   - set:
