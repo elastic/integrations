@@ -13,7 +13,7 @@ request.proxy_url: {{proxy_url}}
 request.ssl: {{ssl}}
 {{/if}}
 
-request.url: https://securityhub.{{aws_region}}.amazonaws.com/findings
+request.url: https://securityhub.{{aws_region}}.{{tld}}/findings
 request.transforms:
   - set:
       target: header.X-Amz-Date
@@ -33,7 +33,7 @@ request.transforms:
       value_type: json
   - set:
       target: header.Authorization
-      value: '[[$now := (now)]][[(sprintf "AWS4-HMAC-SHA256 Credential={{access_key_id}}/%s/{{aws_region}}/securityhub/aws4_request, SignedHeaders=host;x-amz-date, Signature=%s" (formatDate ($now) "20060102") (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" "AWS4{{secret_access_key}}" (formatDate ($now) "20060102"))) "{{aws_region}}")) "securityhub")) "aws4_request")) "AWS4-HMAC-SHA256\n" (formatDate ($now) "20060102T150405Z") "\n" (sprintf "%s/%s\n" (formatDate ($now) "20060102") "{{aws_region}}/securityhub/aws4_request") (hash "sha256" "POST\n" "/findings\n" "\n" "host:securityhub.{{aws_region}}.amazonaws.com\n" (sprintf "x-amz-date:%s\n\n" (formatDate ($now) "20060102T150405Z")) "host;x-amz-date\n" (hash "sha256" (sprintf `%s` .body)))))]]'
+      value: '[[$now := (now)]][[(sprintf "AWS4-HMAC-SHA256 Credential={{access_key_id}}/%s/{{aws_region}}/securityhub/aws4_request, SignedHeaders=host;x-amz-date, Signature=%s" (formatDate ($now) "20060102") (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" "AWS4{{secret_access_key}}" (formatDate ($now) "20060102"))) "{{aws_region}}")) "securityhub")) "aws4_request")) "AWS4-HMAC-SHA256\n" (formatDate ($now) "20060102T150405Z") "\n" (sprintf "%s/%s\n" (formatDate ($now) "20060102") "{{aws_region}}/securityhub/aws4_request") (hash "sha256" "POST\n" "/findings\n" "\n" "host:securityhub.{{aws_region}}.{{tld}}\n" (sprintf "x-amz-date:%s\n\n" (formatDate ($now) "20060102T150405Z")) "host;x-amz-date\n" (hash "sha256" (sprintf `%s` .body)))))]]'
 {{!-- https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-auth-using-authorization-header.html --}}
 response.pagination:
   - set:
@@ -44,7 +44,7 @@ response.pagination:
       target: header.Authorization
   - set:
       target: header.Authorization
-      value: '[[$now := (now)]][[(sprintf "AWS4-HMAC-SHA256 Credential={{access_key_id}}/%s/{{aws_region}}/securityhub/aws4_request, SignedHeaders=host;x-amz-date, Signature=%s" (formatDate ($now) "20060102") (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" "AWS4{{secret_access_key}}" (formatDate ($now) "20060102"))) "{{aws_region}}")) "securityhub")) "aws4_request")) "AWS4-HMAC-SHA256\n" (formatDate ($now) "20060102T150405Z") "\n" (sprintf "%s/%s\n" (formatDate ($now) "20060102") "{{aws_region}}/securityhub/aws4_request") (hash "sha256" "POST\n" "/findings\n" "\n" "host:securityhub.{{aws_region}}.amazonaws.com\n" (sprintf "x-amz-date:%s\n\n" (formatDate ($now) "20060102T150405Z")) "host;x-amz-date\n" (hash "sha256" (sprintf `%s` .body)))))]]'
+      value: '[[$now := (now)]][[(sprintf "AWS4-HMAC-SHA256 Credential={{access_key_id}}/%s/{{aws_region}}/securityhub/aws4_request, SignedHeaders=host;x-amz-date, Signature=%s" (formatDate ($now) "20060102") (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" "AWS4{{secret_access_key}}" (formatDate ($now) "20060102"))) "{{aws_region}}")) "securityhub")) "aws4_request")) "AWS4-HMAC-SHA256\n" (formatDate ($now) "20060102T150405Z") "\n" (sprintf "%s/%s\n" (formatDate ($now) "20060102") "{{aws_region}}/securityhub/aws4_request") (hash "sha256" "POST\n" "/findings\n" "\n" "host:securityhub.{{aws_region}}.{{tld}}\n" (sprintf "x-amz-date:%s\n\n" (formatDate ($now) "20060102T150405Z")) "host;x-amz-date\n" (hash "sha256" (sprintf `%s` .body)))))]]'
 cursor:
   last_execution_datetime:
     value: '[[if (ne (len .last_response.body.Findings) 100)]][[.last_event.UpdatedAt]][[end]]'
