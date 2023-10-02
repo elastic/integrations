@@ -1,0 +1,38 @@
+{
+    "id": "e06f9ef1-eedb-5f95-b8d4-36d27d602afd",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "None.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/vpc/docs/using-legacy#creating_a_legacy_network\n2. https://cloud.google.com/vpc/docs/using-legacy#deleting_a_legacy_network",
+            "id": "e06f9ef1-eedb-5f95-b8d4-36d27d602afd",
+            "name": "Ensure Legacy Networks Do Not Exist for Older Projects",
+            "profile_applicability": "* Level 1",
+            "description": "In order to prevent use of legacy networks, a project should not have a legacy network configured.\nAs of now, Legacy Networks are gradually being phased out, and you can no longer create projects with them.\nThis recommendation is to check older projects to ensure that they are not using Legacy Networks.",
+            "rationale": "Legacy networks have a single network IPv4 prefix range and a single gateway IP address for the whole network.\nThe network is global in scope and spans all cloud regions.\nSubnetworks cannot be created in a legacy network and are unable to switch from legacy to auto or custom subnet networks.\nLegacy networks can have an impact for high network traffic projects and are subject to a single point of contention or failure.",
+            "audit": "**From Google Cloud CLI**\n\nFor each Google Cloud Platform project,\n\n1. Set the project name in the Google Cloud Shell:\n```\n\ngcloud config set project <Project-ID> \n```\n2. List the networks configured in that project:\n```\n\ngcloud compute networks list \n```\nNone of the listed networks should be in the `legacy` mode.",
+            "remediation": "**From Google Cloud CLI**\n\nFor each Google Cloud Platform project,\n\n1. Follow the documentation and create a non-legacy network suitable for the organization's requirements.\n\n2. Follow the documentation and delete the networks in the `legacy` mode.",
+            "section": "Networking",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 3.2",
+                "Networking"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "3.2",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_3_2"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
