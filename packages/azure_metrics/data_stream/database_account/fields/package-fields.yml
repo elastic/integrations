@@ -4,6 +4,7 @@
   fields:
     - name: timegrain
       type: keyword
+      dimension: true
       description: >
         The Azure metric timegrain
 
@@ -24,6 +25,7 @@
             The name of the resource
 
         - name: id
+          dimension: true
           type: keyword
           description: >
             The id of the resource
@@ -42,6 +44,7 @@
 
     - name: namespace
       type: keyword
+      dimension: true
       description: >
         The namespace selected
 
@@ -55,17 +58,24 @@
       description: >
         The application ID
 
-    - name: dimensions.*
-      type: object
-      object_type: keyword
-      object_type_mapping_type: "*"
-      description: >
-        Azure metric dimensions.
-
-    - name: metrics.*.*
-      type: object
-      object_type: float
-      object_type_mapping_type: "*"
-      description: >
-        Metrics returned.
-
+    - name: dimensions
+      type: group
+      fields:
+        - name: database_name
+          type: keyword
+          dimension: true
+          description: Database name
+        - name: command_name
+          type: keyword
+          dimension: true
+          description: Mongo requests command name
+        - name: resource_name
+          type: keyword
+          dimension: true
+          description: Name of the resource
+        - name: closure_reason
+          type: keyword
+          description: Reason of the Cassandra Connection Closures
+        - name: status_code
+          type: keyword
+          description: Status code of the made to database requests

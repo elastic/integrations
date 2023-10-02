@@ -307,3 +307,47 @@ rules:
                   "splunk_server": "69819b6ce1bd"
               }
           }
+  - path: /services/search/jobs/export
+    user: test
+    password: test
+    methods:
+      - post
+    query_params:
+      index_earliest: "{index_earliest:[0-9]+}"
+      index_latest: "{index_latest:[0-9]+}"
+      output_mode: json
+      search: 'search sourcetype="XmlWinEventLog:Microsoft-Windows-AppLocker/Packaged app-Execution" | streamstats max(_indextime) AS max_indextime'
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+              "preview": false,
+              "offset": 194,
+              "lastrow": true,
+              "result": {
+                  "_bkt": "main~0~1212176D-89E1-485D-89E6-3ADC276CCA38",
+                  "_cd": "0:315",
+                  "_indextime": "1622471463",
+                  "_raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-AppLocker' Guid='{cbda4dbf-8d5d-4f69-9578-be14aa540d22}'/><EventID>8020</EventID><Version>0</Version><Level>4</Level><Task>0</Task><Opcode>0</Opcode><Keywords>0x2000000000000000</Keywords><TimeCreated SystemTime='2023-08-13T13:53:33.7067781Z'/><EventRecordID>2986</EventRecordID><Correlation/><Execution ProcessID='1672' ThreadID='8384'/><Channel>Microsoft-Windows-AppLocker/Packaged app-Execution</Channel><Computer>el33t-b00k-1</Computer><Security UserID='S-1-5-21-2707992022-4034939591-3454028951-1001'/></System><UserData><RuleAndFileData xmlns='http://schemas.microsoft.com/schemas/event/Microsoft.Windows/1.0.0.0'><PolicyNameLength>4</PolicyNameLength><PolicyName>APPX</PolicyName><RuleId>{a9e18c21-ff8f-43cf-b9fc-db40eed693ba}</RuleId><RuleNameLength>39</RuleNameLength><RuleName>(Default Rule) All signed packaged apps</RuleName><RuleSddlLength>81</RuleSddlLength><RuleSddl>D:(XA;;FX;;;S-1-1-0;((Exists APPID://FQBN) &amp;&amp; ((APPID://FQBN) &gt;= ({\\\"*\\\\*\\\\*\\\",0}))))</RuleSddl><TargetUser>S-1-5-21-2707992022-4034939591-3454028951-1001</TargetUser><TargetProcessId>41864</TargetProcessId><PackageLength>15</PackageLength><Package>MICROSOFT.TODOS</Package><FqbnLength>116</FqbnLength><Fqbn>CN=MICROSOFT CORPORATION, O=MICROSOFT CORPORATION, L=REDMOND, S=WASHINGTON, C=US\\\\MICROSOFT.TODOS\\\\APPX\\\\2.100.61791.00</Fqbn></RuleAndFileData></UserData></Event>",
+                  "_serial": "194",
+                  "_si": [
+                      "69819b6ce1bd",
+                      "main"
+                  ],
+                  "_sourcetype": "XmlWinEventLog:Security",
+                  "_time": "2021-05-25 13:11:45.000 UTC",
+                  "host": "VAGRANT",
+                  "index": "main",
+                  "linecount": "1",
+                  "max_indextime": "1622471606",
+                  "source": "WinEventLog:Security",
+                  "sourcetype": "XmlWinEventLog:Security",
+                  "splunk_server": "69819b6ce1bd"
+              }
+          }

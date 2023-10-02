@@ -239,9 +239,9 @@ Preserves a raw copy of the original event, added to the field `event.original`.
 | box.source.parent.sequence_id | A numeric identifier that represents the most recent user event that has been applied to this item (parent) | keyword |
 | box.source.parent.type | Value is always `folder` | keyword |
 | box.source.path_collection.entries | The parent folders for this item | object |
-| box.source.path_collection.entries.id | The unique identifier that represent a folder. This field is an array | array |
-| box.source.path_collection.entries.name | The name of the folder. This field is an array | array |
-| box.source.path_collection.entries.type | Value is always `folder`. This field is an array | array |
+| box.source.path_collection.entries.id | The unique identifier that represent a folder. This field is an array | keyword |
+| box.source.path_collection.entries.name | The name of the folder. This field is an array | keyword |
+| box.source.path_collection.entries.type | Value is always `folder`. This field is an array | keyword |
 | box.source.path_collection.total_count | The number of folders in this list | long |
 | box.source.phone | Phone number | boolean |
 | box.source.purged_at | The time at which this file is expected to be purged from the trash | boolean |
