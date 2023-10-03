@@ -50,11 +50,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2023-02-19T22:20:11.000Z",
     "agent": {
-        "ephemeral_id": "571642d6-afbf-444b-a9ac-b4a282112ade",
-        "id": "1ca7ec34-90b0-4efa-97fa-ed066e3af485",
+        "ephemeral_id": "8937d089-d80c-4225-9177-d6286824defd",
+        "id": "1c091add-3dae-4323-a5e8-648158c83b7b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.10.2"
     },
     "data_stream": {
         "dataset": "fortinet_fortimanager.log",
@@ -68,15 +68,15 @@ An example event for `log` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "1ca7ec34-90b0-4efa-97fa-ed066e3af485",
+        "id": "1c091add-3dae-4323-a5e8-648158c83b7b",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.10.2"
     },
     "event": {
         "action": "roll",
         "agent_id_status": "verified",
         "dataset": "fortinet_fortimanager.log",
-        "ingested": "2023-09-29T11:36:28Z",
+        "ingested": "2023-10-03T09:57:15Z",
         "kind": "event",
         "original": "<134>date=2023-02-20 time=03:20:11 tz=\"+0500\" devname=Crest-Elastic-FMG-VM64 device_id=FMGVMSTM23000100 log_id=0031040026 type=event subtype=logfile pri=information desc=\"Rolling disk log file\" user=\"system\" userfrom=\"system\" msg=\"Rolled log file glog.1676746501.log of device SYSLOG-0A32041A [SYSLOG-0A32041A] vdom root.\" operation=\"Roll logfile\" performed_on=\"\" changes=\"Rolled log file.\" action=\"roll\"",
         "timezone": "+0500",
@@ -118,7 +118,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.192.4:54028"
+            "address": "192.168.224.5:58676"
         }
     },
     "message": "Rolled log file glog.1676746501.log of device SYSLOG-0A32041A [SYSLOG-0A32041A] vdom root.",
