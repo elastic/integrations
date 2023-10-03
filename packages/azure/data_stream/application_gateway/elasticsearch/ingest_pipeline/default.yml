@@ -76,6 +76,13 @@ processors:
       field: json.properties.requestUri
       target_field: url.path
       ignore_missing: true
+      if: 'ctx.url?.path == null'
+      description: 'Renames the original `json.properties.requestUri` field to `url.path` to match the ECS field name. The `url.path` field is not touched if the document already has one.'
+  - remove:
+      field: json.properties.httpMethod
+      ignore_missing: true
+      if: 'ctx.url?.path != null'
+      description: 'The `json.properties.httpMethod` field is no longer required if the document has a `url.path` field.'
   - set:
       field: url.path
       copy_from: url.original

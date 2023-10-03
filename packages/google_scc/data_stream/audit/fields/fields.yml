@@ -1,0 +1,419 @@
+- name: google_scc
+  type: group
+  fields:
+    - name: audit
+      type: group
+      fields:
+        - name: http_request
+          type: group
+          fields:
+            - name: cache
+              type: group
+              fields:
+                - name: fill_bytes
+                  type: long
+                  description: The number of HTTP response bytes inserted into cache. Set only when a cache fill was attempted.
+                - name: hit
+                  type: boolean
+                  description: Whether or not an entity was served from cache (with or without validation).
+                - name: look_up
+                  type: boolean
+                  description: Whether or not a cache lookup was attempted.
+                - name: validated_with_origin_server
+                  type: boolean
+                  description: Whether or not the response was validated with the origin server before being served from cache. This field is only meaningful if cacheHit is True.
+            - name: latency
+              type: keyword
+              description: The request processing latency on the server, from the time the request was received until the response was sent.
+            - name: protocol
+              type: keyword
+              description: Protocol used for the request.
+            - name: referer
+              type: keyword
+              description: The referer URL of the request.
+            - name: remote
+              type: group
+              fields:
+                - name: ip
+                  type: ip
+                  description: The IP address (IPv4 or IPv6) of the client that issued the HTTP request.
+                - name: port
+                  type: long
+                  description: The Port of the client that issued the HTTP request.
+            - name: request_method
+              type: keyword
+              description: The request method.
+            - name: request_size
+              type: long
+              description: The size of the HTTP request message in bytes, including the request headers and the request body.
+            - name: request_url
+              type: keyword
+              description: The scheme (http, https), the host name, the path and the query portion of the URL that was requested.
+            - name: response_size
+              type: long
+              description: The size of the HTTP response message sent back to the client, in bytes, including the response headers and the response body.
+            - name: server
+              type: group
+              fields:
+                - name: ip
+                  type: ip
+                  description: The IP address (IPv4 or IPv6) of the origin server that the request was sent to. This field can include port information.
+                - name: port
+                  type: long
+                  description: The Port of the origin server that the request was sent to.
+            - name: status
+              type: long
+              description: The response code indicating the status of response.
+            - name: user_agent
+              type: keyword
+              description: The user agent sent by the client.
+        - name: insert_id
+          type: keyword
+          description: A unique identifier for the log entry.
+        - name: labels
+          type: object
+          object_type: keyword
+          description: A map of key, value pairs that provides additional information about the log entry. The labels can be user-defined or system-defined.
+        - name: log_name
+          type: keyword
+          description: The resource name of the log to which this log entry belongs.
+        - name: operation
+          type: group
+          fields:
+            - name: first
+              type: boolean
+              description: Set this to True if this is the first log entry in the operation.
+            - name: id
+              type: keyword
+              description: An arbitrary operation identifier.
+            - name: last
+              type: boolean
+              description: Set this to True if this is the last log entry in the operation.
+            - name: producer
+              type: keyword
+              description: An arbitrary producer identifier.
+        - name: proto_payload
+          type: group
+          fields:
+            - name: authentication_info
+              type: group
+              fields:
+                - name: authority_selector
+                  type: keyword
+                  description: The authority selector specified by the requestor, if any. It is not guaranteed that the principal was allowed to use this authority.
+                - name: principal_email
+                  type: keyword
+                  description: The email address of the authenticated user (or service account on behalf of third party principal) making the request.
+                - name: principal_subject
+                  type: keyword
+                  description: String representation of identity of requesting party. Populated for both first and third party identities.
+                - name: service_account_delegation_info
+                  type: group
+                  fields:
+                    - name: first_party_principal
+                      type: group
+                      fields:
+                        - name: email
+                          type: keyword
+                          description: The email address of a Google account.
+                        - name: service_metadata
+                          type: object
+                          description: Metadata about the service that uses the service account.
+                    - name: principal_subject
+                      type: keyword
+                      description: A string representing the principalSubject associated with the identity.
+                    - name: third_party_principal
+                      type: group
+                      fields:
+                        - name: claims
+                          type: object
+                          description: Metadata about third party identity.
+                - name: service_account_key_name
+                  type: keyword
+                  description: The name of the service account key used to create or exchange credentials for authenticating the service account making the request. This is a scheme-less URI full resource name.
+                - name: third_party_principal
+                  type: flattened
+                  description: The third party identification (if any) of the authenticated user making the request.
+            - name: authorization_info
+              type: group
+              fields:
+                - name: granted
+                  type: boolean
+                  description: Whether or not authorization for resource and permission was granted.
+                - name: permission
+                  type: keyword
+                  description: The required IAM permission.
+                - name: resource
+                  type: keyword
+                  description: The resource being accessed, as a REST-style or cloud resource string.
+                - name: resource_attributes
+                  type: group
+                  fields:
+                    - name: annotations
+                      type: flattened
+                      description: Annotations is an unstructured key-value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata.
+                    - name: create_time
+                      type: date
+                      description: The timestamp when the resource was created.
+                    - name: delete_time
+                      type: date
+                      description: The timestamp when the resource was last deleted.
+                    - name: display_name
+                      type: keyword
+                      description: The display name set by clients.
+                    - name: etag
+                      type: keyword
+                      description: An opaque value that uniquely identifies a version or generation of a resource.
+                    - name: labels
+                      type: object
+                      object_type: keyword
+                      description: The labels or tags on the resource, such as AWS resource tags and Kubernetes resource labels.
+                    - name: location
+                      type: keyword
+                      description: The location of the resource.
+                    - name: name
+                      type: keyword
+                      description: The stable identifier (name) of a resource on the service. A resource can be logically identified as "//{resource.service}/{resource.name}".
+                    - name: service
+                      type: keyword
+                      description: The name of the service that this resource belongs to, such as pubsub.googleapis.com. The service may be different from the DNS hostname that actually serves the request.
+                    - name: type
+                      type: keyword
+                      description: The type of the resource. The syntax is platform-specific because different platforms define their resources differently.
+                    - name: uid
+                      type: keyword
+                      description: The unique identifier of the resource.
+                    - name: update_time
+                      type: date
+                      description: The timestamp when the resource was last updated.
+            - name: metadata
+              type: object
+              description: Other service-specific data about the request, response, and other information associated with the current audited event.
+            - name: method_name
+              type: keyword
+              description: The name of the service method or operation. For API calls, this should be the name of the API method.
+            - name: num_response_items
+              type: long
+              description: The number of items returned from a List or Query API method, if applicable.
+            - name: policy_violation_info
+              type: group
+              fields:
+                - name: org_policy_violation_info
+                  type: group
+                  fields:
+                    - name: payload
+                      type: flattened
+                      description: Resource payload that is currently in scope and is subjected to orgpolicy conditions.
+                    - name: resource
+                      type: group
+                      fields:
+                        - name: tags
+                          type: object
+                          description: Tags referenced on the resource at the time of evaluation.
+                        - name: type
+                          type: keyword
+                          description: Resource type that the orgpolicy is checked against.
+                    - name: violation_info
+                      type: group
+                      fields:
+                        - name: checked_value
+                          type: keyword
+                          description: Value that is being checked for the policy.
+                        - name: constraint
+                          type: keyword
+                          description: Constraint name.
+                        - name: error_message
+                          type: keyword
+                          description: Error message that policy is indicating.
+                        - name: policy_type
+                          type: keyword
+                          description: Indicates the type of the policy.
+            - name: request
+              type: flattened
+              description: The operation request.
+            - name: request_metadata
+              type: group
+              fields:
+                - name: caller
+                  type: group
+                  fields:
+                    - name: ip
+                      type: ip
+                      description: The IP address of the caller.
+                    - name: ip_value
+                      type: keyword
+                    - name: network
+                      type: keyword
+                      description: The network of the caller.
+                    - name: supplied_user_agent
+                      type: keyword
+                      description: The user agent of the caller.
+                - name: destination_attributes
+                  type: group
+                  fields:
+                    - name: ip
+                      type: ip
+                      description: The IP address of the peer.
+                    - name: labels
+                      type: object
+                      object_type: keyword
+                      description: The labels associated with the peer.
+                    - name: port
+                      type: long
+                      description: The network port of the peer.
+                    - name: principal
+                      type: keyword
+                      description: The identity of this peer.
+                    - name: region_code
+                      type: keyword
+                      description: The CLDR country/region code associated with the above IP address.
+                - name: request_attributes
+                  type: group
+                  fields:
+                    - name: auth
+                      type: group
+                      fields:
+                        - name: access_levels
+                          type: keyword
+                          description: A list of access level resource names that allow resources to be accessed by authenticated requester.
+                        - name: audiences
+                          type: keyword
+                          description: The intended audience(s) for this authentication information.
+                        - name: claims
+                          type: flattened
+                          description: Structured claims presented with the credential.
+                        - name: presenter
+                          type: keyword
+                          description: The authorized presenter of the credential.
+                        - name: principal
+                          type: keyword
+                          description: The authenticated principal.
+                    - name: headers
+                      type: flattened
+                      description: The HTTP request headers.
+                    - name: host
+                      type: keyword
+                      description: The HTTP request Host header value.
+                    - name: id
+                      type: keyword
+                      description: The unique ID for a request, which can be propagated to downstream systems.
+                    - name: method
+                      type: keyword
+                      description: The HTTP request method, such as GET, POST.
+                    - name: path
+                      type: keyword
+                      description: The HTTP URL path, excluding the query parameters.
+                    - name: protocol
+                      type: keyword
+                      description: The network protocol used with the request, such as "http/1.1", "spdy/3", "h2", "h2c", "webrtc", "tcp", "udp", "quic".
+                    - name: query
+                      type: keyword
+                      description: The HTTP URL query in the format of name1=value1&name2=value2, as it appears in the first line of the HTTP request.
+                    - name: reason
+                      type: keyword
+                      description: A special parameter for request reason. It is used by security systems to associate auditing information with a request.
+                    - name: schema
+                      type: keyword
+                      description: The HTTP URL scheme, such as http and https.
+                    - name: size
+                      type: long
+                      description: The HTTP request size in bytes.
+                    - name: time
+                      type: date
+                      description: The timestamp when the destination service receives the last byte of the request.
+            - name: resource_location
+              type: group
+              fields:
+                - name: current_locations
+                  type: keyword
+                  description: The locations of a resource after the execution of the operation.
+                - name: original_locations
+                  type: keyword
+                  description: The locations of a resource prior to the execution of the operation.
+            - name: resource_name
+              type: keyword
+              description: The resource or collection that is the target of the operation. The name is a scheme-less URI, not including the API service name.
+            - name: resource_original_state
+              type: flattened
+              description: The resource's original state before mutation.
+            - name: response
+              type: flattened
+              description: The operation response.
+            - name: service_data
+              type: object
+              description: Other service-specific data about the request, response, and other activities.
+            - name: service_name
+              type: keyword
+              description: The name of the API service performing the operation.
+            - name: status
+              type: group
+              fields:
+                - name: code
+                  type: long
+                  description: The status code, which should be an enum value of google.rpc.Code.
+                - name: details
+                  type: nested
+                  description: A list of messages that carry the error details.
+                - name: message
+                  type: keyword
+                  description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the google.rpc.Status.details field, or localized by the client.
+            - name: type
+              type: keyword
+        - name: receive_timestamp
+          type: date
+          description: The time the log entry was received by Logging.
+        - name: resource
+          type: group
+          fields:
+            - name: labels
+              type: object
+              object_type: keyword
+              description: Values for all of the labels listed in the associated monitored resource descriptor.
+            - name: type
+              type: keyword
+              description: The monitored resource type.
+        - name: severity
+          type: group
+          fields:
+            - name: code
+              type: long
+              description: The severity of the log entry.
+            - name: value
+              type: keyword
+              description: The severity of the log entry.
+        - name: source_location
+          type: group
+          fields:
+            - name: file
+              type: keyword
+              description: Source file name. Depending on the runtime environment, this might be a simple name or a fully-qualified name.
+            - name: function
+              type: keyword
+              description: Human-readable name of the function or method being invoked, with optional context such as the class or package name.
+            - name: line
+              type: long
+              description: Line within the source file. 1-based; 0 indicates no line number available.
+        - name: span_id
+          type: keyword
+          description: The ID of the Cloud Trace span associated with the current operation in which the log is being written.
+        - name: split
+          type: group
+          fields:
+            - name: index
+              type: long
+              description: The index of this LogEntry in the sequence of split log entries. Log entries are given |index| values 0, 1, ..., n-1 for a sequence of n log entries.
+            - name: total_splits
+              type: long
+              description: The total number of log entries that the original LogEntry was split into.
+            - name: uid
+              type: keyword
+              description: A globally unique identifier for all log entries in a sequence of split log entries. All log entries with the same |LogSplit.uid| are assumed to be part of the same sequence of split log entries.
+        - name: timestamp
+          type: date
+          description: The time the event described by the log entry occurred.
+        - name: trace
+          type: keyword
+          description: The REST resource name of the trace being written to Cloud Trace in association with this log entry.
+        - name: trace_sampled
+          type: boolean
+          description: The sampling decision of the trace associated with the log entry.

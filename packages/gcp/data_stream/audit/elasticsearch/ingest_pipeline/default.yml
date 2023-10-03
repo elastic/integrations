@@ -305,15 +305,15 @@ processors:
   - set:
       field: event.outcome
       value: success
-      if: ctx?.gcp?.audit?.status?.code == null && ctx?.gcp?.audit?.authorization_info != null && ctx?.gcp?.audit?.authorization_info instanceof List && ctx?.gcp?.audit?.authorization_info.size() == 1 && ctx?.gcp?.audit?.authorization_info[0].granted
+      if: ctx?.gcp?.audit?.status?.code == null && ctx?.gcp?.audit?.authorization_info != null && ctx?.gcp?.audit?.authorization_info instanceof List && ctx?.gcp?.audit?.authorization_info.size() == 1 && ctx?.gcp?.audit?.authorization_info[0]?.granted == true
   - set:
       field: event.outcome
       value: failure
-      if: ctx?.gcp?.audit?.status?.code == null && ctx?.gcp?.audit?.authorization_info != null && ctx?.gcp?.audit?.authorization_info instanceof List && ctx?.gcp?.audit?.authorization_info.size() == 1 && !ctx?.gcp?.audit?.authorization_info[0].granted
+      if: ctx?.gcp?.audit?.status?.code == null && ctx?.gcp?.audit?.authorization_info != null && ctx?.gcp?.audit?.authorization_info instanceof List && ctx?.gcp?.audit?.authorization_info.size() == 1 && ctx?.gcp?.audit?.authorization_info[0]?.granted == false
   - set:
       field: event.outcome
       value: unknown
-      if: ctx?.event?.outcome == null
+      override: false
 
 ##
 # if gcp.audit.authorization_info.[0].granted is true then

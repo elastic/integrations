@@ -3,7 +3,7 @@ description: Pipeline for parsing Microsoft Defender for Endpoint logs
 processors:
   - set:
       field: ecs.version
-      value: '8.8.0'
+      value: '8.9.0'
   - rename:
       field: message
       target_field: event.original
@@ -162,10 +162,10 @@ processors:
       field: threat.framework
       value: MITRE ATT&CK
       if: ctx.json?.category != null
-  - rename:
-      field: json.category
-      target_field: threat.technique.name
-      ignore_missing: true
+  - append:
+      field: threat.technique.name
+      value: '{{{json.category}}}'
+      if: ctx.json?.category != null
   - rename:
       field: json.description
       target_field: rule.description
@@ -304,6 +304,7 @@ processors:
         - json.alertCreationTime
         - json.severity
         - json.relatedUser
+        - json.category
       ignore_missing: true
   - rename:
       field: json

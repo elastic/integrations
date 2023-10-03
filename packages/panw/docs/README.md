@@ -34,11 +34,11 @@ An example event for `panos` looks as following:
 {
     "@timestamp": "2012-04-10T04:39:56.000Z",
     "agent": {
-        "ephemeral_id": "db66df65-23a5-4f27-9018-6f9258e37285",
-        "id": "dc5749af-742c-4ef4-9092-7bdc1f1dfcac",
+        "ephemeral_id": "14270b7f-dcde-4dce-a132-6579ebe118a0",
+        "id": "0a5c1566-c6fd-4e91-b96d-4083445a000e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "panw.panos",
@@ -64,12 +64,12 @@ An example event for `panos` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "dc5749af-742c-4ef4-9092-7bdc1f1dfcac",
+        "id": "0a5c1566-c6fd-4e91-b96d-4083445a000e",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.9.0"
     },
     "event": {
         "action": "url_filtering",
@@ -81,7 +81,7 @@ An example event for `panos` looks as following:
         ],
         "created": "2012-10-30T09:46:12.000Z",
         "dataset": "panw.panos",
-        "ingested": "2023-05-12T09:06:49Z",
+        "ingested": "2023-08-07T14:52:26Z",
         "kind": "alert",
         "original": "\u003c14\u003eNov 30 16:09:08 PA-220 1,2012/10/30 09:46:12,01606001116,THREAT,url,1,2012/04/10 04:39:56,192.168.0.2,175.16.199.1,0.0.0.0,0.0.0.0,rule1,crusher,,web-browsing,vsys1,trust,untrust,ethernet1/2,ethernet1/1,forwardAll,2012/04/10 04:39:58,25149,1,59309,80,0,0,0x208000,tcp,alert,\"lorexx.cn/loader.exe\",(9999),not-resolved,informational,client-to-server,0,0x0,192.168.0.0-192.168.255.255,United States,0,text/html",
         "outcome": "success",
@@ -101,7 +101,7 @@ An example event for `panos` looks as following:
     "log": {
         "level": "informational",
         "source": {
-            "address": "172.21.0.4:42732"
+            "address": "192.168.176.4:41606"
         },
         "syslog": {
             "facility": {
@@ -262,17 +262,17 @@ An example event for `panos` looks as following:
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
-| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
+| event.end | `event.end` contains the date when the event ended or when the activity was last observed. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
-| event.start | event.start contains the date when the event started or when the activity was first observed. | date |
+| event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |

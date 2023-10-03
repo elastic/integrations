@@ -1,0 +1,38 @@
+{
+    "id": "933268ec-44e8-5fba-9ed7-535804521cc7",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Removed roles should be assigned to another user based on business needs.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/kms/docs/separation-of-duties",
+            "id": "933268ec-44e8-5fba-9ed7-535804521cc7",
+            "name": "Ensure That Separation of Duties Is Enforced While Assigning KMS Related Roles to Users",
+            "profile_applicability": "* Level 2",
+            "description": "It is recommended that the principle of 'Separation of Duties' is enforced while assigning KMS related roles to users.",
+            "rationale": "The built-in/predefined IAM role `Cloud KMS Admin` allows the user/identity to create, delete, and manage service account(s).\nThe built-in/predefined IAM role `Cloud KMS CryptoKey Encrypter/Decrypter` allows the user/identity (with adequate privileges on concerned resources) to encrypt and decrypt data at rest using an encryption key(s).\n\nThe built-in/predefined IAM role `Cloud KMS CryptoKey Encrypter` allows the user/identity (with adequate privileges on concerned resources) to encrypt data at rest using an encryption key(s).\nThe built-in/predefined IAM role `Cloud KMS CryptoKey Decrypter` allows the user/identity (with adequate privileges on concerned resources) to decrypt data at rest using an encryption key(s).\n\nSeparation of duties is the concept of ensuring that one individual does not have all necessary permissions to be able to complete a malicious action.\nIn Cloud KMS, this could be an action such as using a key to access and decrypt data a user should not normally have access to.\nSeparation of duties is a business control typically used in larger organizations, meant to help avoid security or privacy incidents and errors.\nIt is considered best practice.\n\nNo user(s) should have `Cloud KMS Admin` and any of the `Cloud KMS CryptoKey Encrypter/Decrypter`, `Cloud KMS CryptoKey Encrypter`, `Cloud KMS CryptoKey Decrypter` roles assigned at the same time.",
+            "audit": "**From Google Cloud Console**\n\n1. Go to `IAM & Admin/IAM` by visiting: [https://console.cloud.google.com/iam-admin/iam](https://console.cloud.google.com/iam-admin/iam)\n\n2. Ensure no member has the roles `Cloud KMS Admin` and any of the `Cloud KMS CryptoKey Encrypter/Decrypter`, `Cloud KMS CryptoKey Encrypter`, `Cloud KMS CryptoKey Decrypter` assigned.\n\n**From Google Cloud CLI**\n\n3. List all users and role assignments:\n\n```\ngcloud projects get-iam-policy PROJECT_ID\n```\n\n4. Ensure that there are no common users found in the member section for roles `cloudkms.admin` and any one of `Cloud KMS CryptoKey Encrypter/Decrypter`, `Cloud KMS CryptoKey Encrypter`, `Cloud KMS CryptoKey Decrypter`",
+            "remediation": "**From Google Cloud Console**\n\n1. Go to `IAM & Admin/IAM` using `https://console.cloud.google.com/iam-admin/iam`\n\n2. For any member having `Cloud KMS Admin` and any of the `Cloud KMS CryptoKey Encrypter/Decrypter`, `Cloud KMS CryptoKey Encrypter`, `Cloud KMS CryptoKey Decrypter` roles granted/assigned, click the `Delete Bin` icon to remove the role from the member.\n\nNote: Removing a role should be done based on the business requirement.",
+            "section": "Identity and Access Management",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 1.11",
+                "Identity and Access Management"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "1.11",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_1_11"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

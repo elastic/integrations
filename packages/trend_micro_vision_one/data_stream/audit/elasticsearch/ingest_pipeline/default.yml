@@ -3,7 +3,7 @@ description: Pipeline for processing Trend Micro Vision One Audit logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.8.0'
+      value: '8.9.0'
   - rename:
       field: message
       target_field: event.original
@@ -97,10 +97,10 @@ processors:
       field: json.loggedRole
       target_field: trend_micro_vision_one.audit.logged_role
       ignore_missing: true
-  - set:
+  - append:
       field: source.user.roles
-      copy_from: trend_micro_vision_one.audit.logged_role
-      ignore_failure: true
+      value: '{{{trend_micro_vision_one.audit.logged_role}}}'
+      if: ctx.trend_micro_vision_one?.audit?.logged_role != null
   - rename:
       field: json.accessType
       target_field: trend_micro_vision_one.audit.access_type

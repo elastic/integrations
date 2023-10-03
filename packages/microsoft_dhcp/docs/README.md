@@ -22,11 +22,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2001-01-01T01:01:01.000-05:00",
     "agent": {
-        "ephemeral_id": "fda1baa6-c95d-450d-a7dd-3165831e1d50",
-        "id": "adbd9a6d-bd11-4b00-b9fa-3424ad2e6224",
+        "ephemeral_id": "a53c1bd7-936f-4ca8-8740-84d1504d537e",
+        "id": "4e45636b-5ca2-4145-9926-801ca8065d87",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.0"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "microsoft_dhcp.log",
@@ -34,12 +34,12 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "adbd9a6d-bd11-4b00-b9fa-3424ad2e6224",
+        "id": "4e45636b-5ca2-4145-9926-801ca8065d87",
         "snapshot": false,
-        "version": "8.7.0"
+        "version": "8.9.0"
     },
     "event": {
         "action": "dhcp-dns-update",
@@ -49,10 +49,11 @@ An example event for `log` looks as following:
         ],
         "code": "35",
         "dataset": "microsoft_dhcp.log",
-        "ingested": "2023-05-02T11:37:37Z",
+        "ingested": "2023-08-01T16:33:06Z",
         "kind": "event",
         "original": "35,01/01/01,01:01:01,DNS update request failed,192.168.2.1,host.test.com,000000000000,",
         "outcome": "failure",
+        "reason": "DNS update request failed.",
         "timezone": "America/New_York",
         "type": [
             "connection",
@@ -62,7 +63,9 @@ An example event for `log` looks as following:
     "host": {
         "domain": "test.com",
         "id": "000000000000",
-        "ip": "192.168.2.1",
+        "ip": [
+            "192.168.2.1"
+        ],
         "mac": [
             "00-00-00-00-00-00"
         ],
@@ -81,10 +84,10 @@ An example event for `log` looks as following:
     "observer": {
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.20.0.7"
+            "192.168.16.7"
         ],
         "mac": [
-            "02-42-AC-14-00-07"
+            "02-42-C0-A8-10-07"
         ]
     },
     "tags": [
@@ -109,10 +112,11 @@ An example event for `log` looks as following:
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -131,7 +135,8 @@ An example event for `log` looks as following:
 | microsoft.dhcp.error_code | DHCP server error code. | keyword |
 | microsoft.dhcp.probation_time | The probation time before lease ends on specific IP. | keyword |
 | microsoft.dhcp.relay_agent_info | Information about DHCP relay agent used for the DHCP request. | keyword |
-| microsoft.dhcp.result | The DHCP result type, for example "NoQuarantine", "Drop Packet" etc. | keyword |
+| microsoft.dhcp.result | The DHCP result type in numerical value, for example "NoQuarantine" is 0, "Quaratine" is 1, "Drop Packet" is 2 etc. | keyword |
+| microsoft.dhcp.result_description | The DHCP result type from numerical value, for example, 0 is "NoQuarantine", 1 is "Quarantine", 2 is "Drop Packet" etc. | keyword |
 | microsoft.dhcp.subnet_prefix | The number of bits for the subnet prefix. | keyword |
 | microsoft.dhcp.transaction_id | The DHCP transaction ID. | keyword |
 | microsoft.dhcp.user.hex | Hex representation of the user. | keyword |

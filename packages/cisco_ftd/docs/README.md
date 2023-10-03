@@ -22,11 +22,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2019-08-16T09:39:03.000Z",
     "agent": {
-        "ephemeral_id": "1aa46b02-06eb-46e3-a2ab-b19097155335",
-        "id": "edaff8cc-3bee-4424-9e62-8372293e3aac",
+        "ephemeral_id": "26eb6818-fd18-4fc7-aa90-b1b53cefb42c",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.9.1"
     },
     "cisco": {
         "ftd": {
@@ -81,12 +81,12 @@ An example event for `log` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "edaff8cc-3bee-4424-9e62-8372293e3aac",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.9.1"
     },
     "event": {
         "action": "malware-detected",
@@ -97,7 +97,7 @@ An example event for `log` looks as following:
         ],
         "code": "430005",
         "dataset": "cisco_ftd.log",
-        "ingested": "2023-06-01T10:53:44Z",
+        "ingested": "2023-08-29T16:38:11Z",
         "kind": "event",
         "original": "2019-08-16T09:39:03Z firepower  %FTD-1-430005: SrcIP: 10.0.1.20, DstIP: 81.2.69.144, SrcPort: 46004, DstPort: 80, Protocol: tcp, FileDirection: Download, FileAction: Malware Cloud Lookup, FileSHA256: 2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad, SHA_Disposition: Unavailable, SperoDisposition: Spero detection not performed on file, ThreatName: Win.Ransomware.Eicar::95.sbx.tg, FileName: eicar_com.zip, FileType: ZIP, FileSize: 184, ApplicationProtocol: HTTP, Client: cURL, User: No Authentication Required, FirstPacketSecond: 2019-08-16T09:39:02Z, FilePolicy: malware-and-file-policy, FileStorageStatus: Not Stored (Disposition Was Pending), FileSandboxStatus: File Size Is Too Small, URI: http://www.eicar.org/download/eicar_com.zip",
         "severity": 1,
@@ -123,7 +123,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "alert",
         "source": {
-            "address": "192.168.176.4:45358"
+            "address": "172.21.0.4:45378"
         }
     },
     "network": {
@@ -248,12 +248,16 @@ An example event for `log` looks as following:
 | destination.bytes | Bytes sent from the destination to the source. | long |
 | destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_code | Two-letter code representing continent's name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
+| destination.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
+| destination.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.nat.ip | Translated ip of destination based NAT sessions (e.g. internet to private DMZ) Typically used with load balancers, firewalls, or routers. | ip |
 | destination.nat.port | Port the source session is translated to by NAT Device. Typically used with load balancers, firewalls, or routers. | long |
@@ -274,19 +278,19 @@ An example event for `log` looks as following:
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
-| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
+| event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
+| event.end | `event.end` contains the date when the event ended or when the activity was last observed. | date |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
 | event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
-| event.start | event.start contains the date when the event started or when the activity was first observed. | date |
+| event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.hash.sha256 | SHA256 hash. | keyword |
@@ -309,7 +313,7 @@ An example event for `log` looks as following:
 | host.os.full.text | Multi-field of `host.os.full`. | match_only_text |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
@@ -339,6 +343,17 @@ An example event for `log` looks as following:
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | observer.egress.interface.name | Interface name as reported by the system. | keyword |
 | observer.egress.zone | Network zone of outbound traffic as reported by the observer to categorize the destination area of egress traffic, e.g. Internal, External, DMZ, HR, Legal, etc. | keyword |
+| observer.geo.city_name | City name. | keyword |
+| observer.geo.continent_code | Two-letter code representing continent's name. | keyword |
+| observer.geo.continent_name | Name of the continent. | keyword |
+| observer.geo.country_iso_code | Country ISO code. | keyword |
+| observer.geo.country_name | Country name. | keyword |
+| observer.geo.location | Longitude and latitude. | geo_point |
+| observer.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
+| observer.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |
+| observer.geo.region_iso_code | Region ISO code. | keyword |
+| observer.geo.region_name | Region name. | keyword |
+| observer.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | observer.ingress.zone | Network zone of incoming traffic as reported by the observer to categorize the source area of ingress traffic. e.g. internal, External, DMZ, HR, Legal, etc. | keyword |
@@ -373,12 +388,16 @@ An example event for `log` looks as following:
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
+| source.geo.continent_code | Two-letter code representing continent's name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
+| source.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
+| source.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.nat.ip | Translated ip of source based NAT sessions (e.g. internal client to internet) Typically connections traversing load balancers, firewalls, or routers. | ip |
 | source.nat.port | Translated port of source based NAT sessions. (e.g. internal client to internet) Typically used with load balancers, firewalls, or routers. | long |

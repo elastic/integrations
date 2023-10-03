@@ -20,15 +20,22 @@ processors:
       value: tychon
   - set:
       field: event.category
-      value: epp
+      value: [configuration]
+  - set:
+      field: event.type
+      value: [info]
   - split:
       field: host.ipv4
       separator: ","
       ignore_missing: true
-  - set:
+  - gsub:
+      field: host.mac
+      pattern: ":"
+      replacement: "-"
+  - convert:
       field: host.uptime
-      value: "0"
-      if: ctx.host.uptime == ''
+      type: string
+      ignore_missing: true
   - split:
       field: host.uptime
       separator: "\\.+"
@@ -45,11 +52,6 @@ processors:
   - convert:
       field: host.uptime
       type: long
-      ignore_missing: true
-  - gsub:
-      field: host.mac
-      pattern: ":"
-      replacement: "-"
       ignore_missing: true
   - convert:
       field: script.current_duration

@@ -46,6 +46,7 @@ streams:
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
         multi: false
         required: false
         show_user: true
@@ -56,7 +57,7 @@ streams:
         multi: false
         required: true
         show_user: true
-        description: Interval at which the logs will be pulled. The value must be between 2m and 1h.
+        description: Interval at which the logs will be pulled. The value must be between 2m and 1h. Supported units for this parameter are h/m/s.
         default: 1h
       - name: initial_interval
         type: text
@@ -65,7 +66,14 @@ streams:
         required: true
         show_user: true
         default: 24h
-        description: Initial interval to poll for events.  Default is 24 hours.
+        description: Initial interval to poll for events. Default is 24 hours. Supported units for this parameter are h/m/s.
+      - name: event_limit
+        type: integer
+        multi: false
+        required: false
+        show_user: false
+        title: Event Limit
+        description: Defines the approximate maximum number of security events each fetch returns, in both offset and time-based modes. The default limit is 10000 and the maximum limit available is 600000. Listing an unlimited number of logs isn't possible. Expect requests to return a slightly higher number of security events than you set in the limit parameter, because data is stored in different buckets.
       - name: proxy_url
         type: text
         title: Proxy URL
@@ -170,7 +178,7 @@ streams:
         required: false
         show_user: true
         default: 120s
-        description: Defines the maximum time that the sdk will wait for a bucket api response before timing out.
+        description: Defines the maximum time that the sdk will wait for a bucket api response before timing out. Valid time units are ns, us, ms, s, m, h.
       - name: buckets
         type: yaml
         title: Buckets

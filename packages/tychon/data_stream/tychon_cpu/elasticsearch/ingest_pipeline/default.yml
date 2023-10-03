@@ -16,23 +16,14 @@ processors:
       field: host.ipv4
       separator: ","
       ignore_missing: true
-  - set:
-      field: event.kind
-      value: state
-  - set:
-      field: event.module
-      value: tychon
-  - set:
-      field: event.category
-      value: cpu
   - gsub:
-      field: host.cpu.speed
-      pattern: "[^0-9]"
-      replacement: ""
-  - gsub:
-      field: host.cpu.clockspeed
-      pattern: "[^0-9]"
-      replacement: ""
+      field: host.mac
+      pattern: ":"
+      replacement: "-"
+  - convert:
+      field: host.uptime
+      type: string
+      ignore_missing: true
   - split:
       field: host.uptime
       separator: "\\.+"
@@ -46,6 +37,43 @@ processors:
       field: tempuptime
       ignore_failure: true
       ignore_missing: true
+  - convert:
+      field: host.uptime
+      type: long
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: state
+  - set:
+      field: event.module
+      value: tychon
+  - set:
+      field: event.category
+      value: [configuration]
+  - set:
+      field: event.type
+      value: [info]
+  - gsub:
+      field: host.cpu.speed
+      pattern: "[^0-9]"
+      replacement: ""
+  - convert:
+      field: host.cpu.speed
+      type: long
+      ignore_missing: true
+  - gsub:
+      field: host.cpu.clockspeed
+      pattern: "[^0-9]"
+      replacement: ""
+  - convert:
+      field: host.cpu.clockspeed
+      type: long
+      ignore_missing: true
+  - split:
+      field: host.uptime
+      separator: "\\.+"
+      target_field: tempuptime
+      ignore_failure: true
   - convert:
       field: script.current_duration
       type: float

@@ -13,6 +13,15 @@ processors:
       field: vulnerability.due_date
       value: "1970-01-01T00:00:01Z"
       if: ctx.vulnerability.due_date == ''
+  - date:
+      field: vulnerability.due_date
+      target_field: vulnerability.due_date
+      output_format: yyyy-MM-dd'T'HH:mm:ss.SSSXXX
+      formats:
+        - strict_date_optional_time
+        - epoch_millis
+        - date
+        - "MM/dd/yyyy"
   - set:
       field: ecs.version
       value: 8.8.0
@@ -25,6 +34,14 @@ processors:
   - split:
       field: host.ipv4
       separator: ","
+      ignore_missing: true
+  - gsub:
+      field: host.mac
+      pattern: ":"
+      replacement: "-"
+  - convert:
+      field: host.uptime
+      type: string
       ignore_missing: true
   - split:
       field: host.uptime
@@ -39,9 +56,16 @@ processors:
       field: tempuptime
       ignore_failure: true
       ignore_missing: true
+  - convert:
+      field: host.uptime
+      type: long
+      ignore_missing: true
   - set:
       field: event.category
-      value: vulnerability
+      value: [vulnerability]
+  - set:
+      field: event.type
+      value: [info]
   - script:
       source: |
               if(ctx.vulnerability?.result == 'fail'){
@@ -51,10 +75,6 @@ processors:
               }else{
                 ctx.event.outcome = "unknown"
               }
-  - gsub:
-      field: host.mac
-      pattern: ":"
-      replacement: "-"
   - convert:
       field: script.current_duration
       type: float
@@ -70,22 +90,13 @@ processors:
       value: tychon
   - set:
       field: vulnerability.category
-      value: oval
+      value: [oval]
   - set:
       field: vulnerability.classification
       value: cvss
   - set:
       field: vulnerability.enumeration
       value: CVE
-  - date:
-      field: vulnerability.due_date
-      target_field: vulnerability.due_date
-      output_format: yyyy-MM-dd'T'HH:mm:ss.SSSXXX
-      formats:
-        - strict_date_optional_time
-        - epoch_millis
-        - date
-        - "MM/dd/yyyy"
 on_failure:
   - set:
       field: event.kind

@@ -1,0 +1,38 @@
+{
+    "id": "421191d6-a13c-5c78-8c5b-102e1229655f",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "The removed role should be assigned to a different user based on business needs.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/iam/docs/service-accounts\n2. https://cloud.google.com/iam/docs/understanding-roles\n3. https://cloud.google.com/iam/docs/granting-roles-to-service-accounts",
+            "id": "421191d6-a13c-5c78-8c5b-102e1229655f",
+            "name": "Ensure That Separation of Duties Is Enforced While Assigning Service Account Related Roles to Users",
+            "profile_applicability": "* Level 2",
+            "description": "It is recommended that the principle of 'Separation of Duties' is enforced while assigning service-account related roles to users.",
+            "rationale": "The built-in/predefined IAM role `Service Account admin` allows the user/identity to create, delete, and manage service account(s).\nThe built-in/predefined IAM role `Service Account User` allows the user/identity (with adequate privileges on Compute and App Engine) to assign service account(s) to Apps/Compute Instances.\n\nSeparation of duties is the concept of ensuring that one individual does not have all necessary permissions to be able to complete a malicious action.\nIn Cloud IAM - service accounts, this could be an action such as using a service account to access resources that user should not normally have access to.\n\nSeparation of duties is a business control typically used in larger organizations, meant to help avoid security or privacy incidents and errors.\nIt is considered best practice.\n\nNo user should have `Service Account Admin` and `Service Account User` roles assigned at the same time.",
+            "audit": "**From Google Cloud Console**\n\n1. Go to `IAM & Admin/IAM` using `https://console.cloud.google.com/iam-admin/iam`.\n\n2. Ensure no member has the roles `Service Account Admin` and `Service account User` assigned together.\n\n**From Google Cloud CLI**\n\n3. List all users and role assignments:\n\n```\ngcloud projects get-iam-policy [Project_ID] --format json | \\\n jq -r '[\n ([\"Service_Account_Admin_and_User\"] | (., map(length*\"-\"))), \n (\n [\n .bindings[] | \n select(.role == \"roles/iam.serviceAccountAdmin\" or .role == \"roles/iam.serviceAccountUser\").members[]\n ] | \n group_by(.) | \n map({User: ., Count: length}) | \n .[] | \n select(.Count == 2).User | \n unique\n )\n ] | \n .[] | \n @tsv'\n```\n\n4. All common users listed under `Service_Account_Admin_and_User` are assigned both the `roles/iam.serviceAccountAdmin` and `roles/iam.serviceAccountUser` roles.",
+            "remediation": "**From Google Cloud Console**\n\n1. Go to `IAM & Admin/IAM` using `https://console.cloud.google.com/iam-admin/iam`.\n\n2. For any member having both `Service Account Admin` and `Service account User` roles granted/assigned, click the `Delete Bin` icon to remove either role from the member.\nRemoval of a role should be done based on the business requirements.",
+            "section": "Identity and Access Management",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 1.8",
+                "Identity and Access Management"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "1.8",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_1_8"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

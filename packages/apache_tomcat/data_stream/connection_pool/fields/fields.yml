@@ -1,0 +1,192 @@
+- name: apache_tomcat
+  type: group
+  fields:
+    - name: connection_pool
+      type: group
+      fields:
+        - name: application_name
+          type: keyword
+          # Reason to add as a dimension field: There can be many different applications in Apache Tomcat instance.
+          dimension: true
+          description: Name of the Apache Tomcat application.
+        - name: access_to_underlying_connection_allowed
+          type: boolean
+          description: Returns the state of connections that will be established when the connection pool is started.
+        - name: cache
+          type: group
+          fields:
+            - name: state
+              type: double
+              description: Cache state of connection pool.
+              metric_type: gauge
+        - name: connection
+          type: group
+          fields:
+            - name: abandoned_usage_tracking
+              type: boolean
+              description: Indicates if full stack traces are required when logAbandoned is true.
+            - name: active
+              type: group
+              fields:
+                - name: count
+                  type: double
+                  description: Number of active connection in pool.
+                  metric_type: gauge
+            - name: autocommit_on_return
+              type: boolean
+              description: Connections being returned to the pool.
+            - name: clear_statement_pool_on_return
+              type: boolean
+              description: Keeps track of statements associated with a connection.
+            - name: closed
+              type: boolean
+              description: Random Connection Closed Exceptions.
+            - name: database
+              type: group
+              fields:
+                - name: time
+                  type: group
+                  fields:
+                    - name: max
+                      type: group
+                      fields:
+                        - name: ms
+                          type: double
+                          description: Maximum time to wait for a database connection to become available in ms.
+                          unit: ms
+                          metric_type: gauge
+            - name: default_transaction_isolation
+              type: double
+              description: TransactionIsolation state of connections created by this pool
+              metric_type: gauge
+            - name: enable_autocommit_on_return
+              type: boolean
+              description: Connections being returned to the pool will be checked and configured with Connection.
+            - name: fast_fail_validation
+              type: boolean
+              description: Timeout before a connection validation queries fail.
+            - name: idle
+              type: group
+              fields:
+                - name: count
+                  type: double
+                  description: Idle number of connection pool.
+                  metric_type: gauge
+                - name: exists
+                  type: boolean
+                  description: logAbandoned to figure out the connection is idle.
+                - name: max
+                  type: group
+                  fields:
+                    - name: count
+                      type: double
+                      description: Maximum idle connections.
+                      metric_type: gauge
+                    - name: size
+                      type: double
+                      description: Returns the maximum number of connections that can remain idle in the pool.
+                      metric_type: gauge
+                    - name: time
+                      type: group
+                      fields:
+                        - name: ms
+                          type: double
+                          description: It represents the maximum number of objects that the pool will examine during each run of the idle object evictor thread.
+                          unit: ms
+                          metric_type: gauge
+                - name: min
+                  type: group
+                  fields:
+                    - name: size
+                      type: double
+                      description: The minimum number of established connections that should be kept in the pool at all times.
+                      metric_type: gauge
+                    - name: time
+                      type: group
+                      fields:
+                        - name: ms
+                          type: double
+                          description: An attribute of the Tomcat DataSource object that sets the minimum time an object may sit idle in the pool before it is eligable for eviction by the idle object evictor.
+                          unit: ms
+                          metric_type: gauge
+            - name: initial_size
+              type: group
+              fields:
+                - name: count
+                  type: double
+                  description: The initial number of connections that are created when the pool is started.
+                  metric_type: gauge
+            - name: lifetime
+              type: group
+              fields:
+                - name: max
+                  type: group
+                  fields:
+                    - name: ms
+                      type: double
+                      description: The maximum lifetime in milliseconds of a connection.
+                      unit: ms
+                      metric_type: gauge
+            - name: log_expired
+              type: boolean
+              description: Log expired connection in pool.
+            - name: min_evictable_idle
+              type: group
+              fields:
+                - name: time
+                  type: double
+                  description: The minimum amount of time an object may sit idle in the pool before it is eligible for eviction.
+                  metric_type: gauge
+            - name: remove_abandoned_on_borrow
+              type: boolean
+              description: Remove abandoned connections from the pool when a connection is borrowed.
+            - name: remove_abandoned_on_maintenance
+              type: boolean
+              description: The commons dbcp parameters which are unique from the Tomcat JDBC connection pool parameters are not being accepted.
+            - name: remove_abandoned_timeout
+              type: double
+              description: Timeout in seconds before an abandoned (in use) connection can be removed.
+              metric_type: gauge
+            - name: rollback_on_return
+              type: boolean
+              description: The pool can terminate the transaction by calling rollback on the connection.
+            - name: test_on_return
+              type: boolean
+              description: The indication of whether objects will be validated before being returned to the pool.
+            - name: test_while_idle
+              type: boolean
+              description: Introspected attribute testWhileIdle.
+            - name: time_betwen_eviction_run
+              type: group
+              fields:
+                - name: time
+                  type: group
+                  fields:
+                    - name: ms
+                      type: double
+                      description: The number of milliseconds to sleep between runs of the idle connection validation/cleaner thread.
+                      unit: ms
+                      metric_type: gauge
+            - name: validate
+              type: double
+              description: Validate connections from this pool.
+              metric_type: gauge
+        - name: lifo
+          type: boolean
+          description: Last In First Out connections.
+        - name: max
+          type: group
+          fields:
+            - name: total
+              type: double
+              description: Maximum total of connection pool.
+              metric_type: gauge
+        - name: prepared_statements
+          type: boolean
+          description: Validate connections from this pool.
+        - name: test_on_borrow
+          type: boolean
+          description: The indication of whether objects will be validated before being borrowed from the pool.
+        - name: test_on_create
+          type: boolean
+          description: Property determines whether or not the pool will validate objects immediately after they are created by the pool.

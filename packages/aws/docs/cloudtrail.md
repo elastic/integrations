@@ -115,6 +115,10 @@ If blank, CloudTrail Digest logs will be skipped.
 | aws.cloudtrail.user_identity.session_context.session_issuer.type | The source of the temporary security credentials, such as Root, IAMUser, or Role. | keyword |
 | aws.cloudtrail.user_identity.type | The type of the identity | keyword |
 | aws.cloudtrail.vpc_endpoint_id | Identifies the VPC endpoint in which requests were made from a VPC to another AWS service, such as Amazon S3. | keyword |
+| aws.s3.bucket.arn | ARN of the S3 bucket that this log retrieved from. | keyword |
+| aws.s3.bucket.name | Name of a S3 bucket. | keyword |
+| aws.s3.metadata | AWS S3 object metadata values. | flattened |
+| aws.s3.object.key | Name of the S3 object that this log retrieved from. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |

@@ -19,12 +19,52 @@ processors:
       field: event.module
       value: tychon
   - split:
+      field: host.ip
+      separator: ","
+      ignore_missing: true
+  - split:
       field: host.ipv4
       separator: ","
       ignore_missing: true
+  - gsub:
+      field: host.mac
+      pattern: ":"
+      replacement: "-"
+  - split:
+      field: host.mac
+      separator: ","
+      ignore_missing: true
+  - convert:
+      field: host.memory.size
+      type: long
+      ignore_failure: true
+  - convert:
+      field: host.uptime
+      type: string
+      ignore_missing: true
+  - split:
+      field: host.uptime
+      separator: "\\.+"
+      target_field: tempuptime
+      ignore_failure: true
+  - set:
+      field: host.uptime
+      value: "{{tempuptime.0}}"
+      ignore_failure: true
+  - remove:
+      field: tempuptime
+      ignore_failure: true
+      ignore_missing: true
+  - convert:
+      field: host.uptime
+      type: long
+      ignore_missing: true
   - set:
       field: event.category
-      value: host os
+      value: [host]
+  - set:
+      field: event.type
+      value: [info]
   - remove:
       field: tychon.definition.oval
       if: ctx.tychon.definition.oval == ''
@@ -50,19 +90,6 @@ processors:
       value: "{{tempav.0}}"
   - remove:
       field: tempav
-  - split:
-      field: host.uptime
-      separator: "\\.+"
-      target_field: tempuptime
-      ignore_failure: true
-  - set:
-      field: host.uptime
-      value: "{{tempuptime.0}}"
-      ignore_failure: true
-  - remove:
-      field: tempuptime
-      ignore_failure: true
-      ignore_missing: true
 on_failure:
   - set:
       field: event.kind

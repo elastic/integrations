@@ -26,7 +26,7 @@ processors:
   - set:
       field: event.kind
       value: event
-  - set:
+  - append:
       field: event.category
       value: network
   - set:
@@ -48,16 +48,16 @@ processors:
       copy_from: json.insertId
       ignore_empty_value: true
       ignore_failure: true
-  - rename:
+  - lowercase:
       field: json.jsonPayload.disposition
-      target_field: event.type
       if: ctx?.json?.jsonPayload?.disposition != null
-  - set:
+  - append:
+      field: event.type
+      value: '{{json.jsonPayload.disposition}}'
+      if: ctx?.json?.jsonPayload?.disposition != null
+  - append:
       field: event.type
       value: connection
-      if: ctx?.event?.type != null
-  - lowercase:
-      field: event.type
   - set:
       field: network.direction
       value: inbound

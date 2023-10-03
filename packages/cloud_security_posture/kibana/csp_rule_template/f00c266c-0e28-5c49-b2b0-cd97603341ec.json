@@ -1,0 +1,38 @@
+{
+    "id": "f00c266c-0e28-5c49-b2b0-cd97603341ec",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Using Customer-managed encryption keys (CMEK) will incur additional labor-hour investment to create, protect, and manage the keys.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/bigquery/docs/customer-managed-encryption",
+            "id": "f00c266c-0e28-5c49-b2b0-cd97603341ec",
+            "name": "Ensure That All BigQuery Tables Are Encrypted With Customer-Managed Encryption Key (CMEK)",
+            "profile_applicability": "* Level 2",
+            "description": "BigQuery by default encrypts the data as rest by employing `Envelope Encryption` using Google managed cryptographic keys.\nThe data is encrypted using the `data encryption keys` and data encryption keys themselves are further encrypted using `key encryption keys`.\nThis is seamless and do not require any additional input from the user.\nHowever, if you want to have greater control, Customer-managed encryption keys (CMEK) can be used as encryption key management solution for BigQuery Data Sets.\nIf CMEK is used, the CMEK is used to encrypt the data encryption keys instead of using google-managed encryption keys.",
+            "rationale": "BigQuery by default encrypts the data as rest by employing `Envelope Encryption` using Google managed cryptographic keys.\nThis is seamless and does not require any additional input from the user.\n\nFor greater control over the encryption, customer-managed encryption keys (CMEK) can be used as encryption key management solution for BigQuery tables.\nThe CMEK is used to encrypt the data encryption keys instead of using google-managed encryption keys.\nBigQuery stores the table and CMEK association and the encryption/decryption is done automatically.\n\nApplying the Default Customer-managed keys on BigQuery data sets ensures that all the new tables created in the future will be encrypted using CMEK but existing tables need to be updated to use CMEK individually.\n\n```\nNote: Google does not store your keys on its servers and cannot access your protected data unless you provide the key.\nThis also means that if you forget or lose your key, there is no way for Google to recover the key or to recover any data encrypted with the lost key.\n```",
+            "audit": "**From Google Cloud Console**\n\n1. Go to `Analytics`\n2. Go to `BigQuery`\n3. Under `SQL Workspace`, select the project\n4. Select Data Set, select the table\n5. Go to `Details` tab\n6. Under `Table info`, verify `Customer-managed key` is present.\n7. Repeat for each table in all data sets for all projects.\n\n**From Google Cloud CLI**\n\nList all dataset names\n```\nbq ls\n```\nUse the following command to view the table details.\nVerify the `kmsKeyName` is present.\n```\nbq show <table_object>\n```",
+            "remediation": "**From Google Cloud CLI**\nUse the following command to copy the data.\nThe source and the destination needs to be same in case copying to the original table.\n```\nbq cp --destination_kms_key <customer_managed_key> source_dataset.source_table destination_dataset.destination_table\n```",
+            "section": "BigQuery",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 7.2",
+                "BigQuery"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "7.2",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_7_2"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

@@ -8,6 +8,13 @@ program: {{escape_string program}}
 state:
   {{state}}
 {{/if}}
+redact.delete: {{delete_redacted_fields}}
+{{#if redact_fields}}
+redact.fields:
+{{#each redact_fields as |field|}}
+  - {{field}}
+{{/each}}
+{{/if}}
 
 {{#if regexp}}
 regexp:
@@ -110,7 +117,7 @@ resource.rate_limit.burst: {{resource_rate_limit_burst}}
 {{/if}}
 
 {{#if enable_request_tracer}}
-resource.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
 {{/if}}
 
 {{#if tags}}
