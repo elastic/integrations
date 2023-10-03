@@ -73,8 +73,16 @@ Authentication: we are handling authentication on our side (creating/renewing th
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |
 | azure.application_id | The application ID | keyword |
-| azure.dimensions.\* | Azure metric dimensions. | object |
+| azure.dimensions.api_name | The name of operation. | keyword |
+| azure.dimensions.authentication | Authentication type used in transactions like OAuth. | keyword |
+| azure.dimensions.blob_type | Specifies the type of a blob. | keyword |
+| azure.dimensions.file_share | Specifies file share. | keyword |
+| azure.dimensions.geo_type | Transaction from Primary or Secondary cluster. The available values include Primary and Secondary. | keyword |
+| azure.dimensions.response_type | Transaction response type like Success, ClientOtherError, etc. | keyword |
+| azure.dimensions.tier | Specifies access tier. | keyword |
+| azure.dimensions.transaction_type | Type of transaction. The available values include User and System. | keyword |
 | azure.metrics.\*.\* | Metrics returned. | object |
 | azure.namespace | The namespace selected | keyword |
 | azure.resource.group | The resource group | keyword |
