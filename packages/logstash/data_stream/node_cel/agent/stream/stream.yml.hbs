@@ -36,7 +36,11 @@ program: |
   .as(body, {"b":body}
     .with({"logstash":{"node":{"stats":{
              "events":body['events'],
-             "jvm":body['jvm'],
+             "jvm":{
+                "uptime_in_millis":body['jvm']['uptime_in_millis'],
+                "mem":body['jvm']['mem'].drop("pools"),
+                "threads":body['jvm']['threads']
+              },
              "queue":body['queue'],
              "reloads":body['reloads'],
              "process":body['process'],

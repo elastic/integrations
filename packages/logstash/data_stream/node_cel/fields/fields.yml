@@ -48,6 +48,12 @@
                       type: long
                     - name: heap_used_percent
                       type: long
+                    - name: heap_committed_in_bytes
+                      type: long
+                    - name: non_heap_committed_in_bytes
+                      type: long
+                    - name: non_heap_used_in_bytes
+                      type: long
                 - name: gc
                   type: group
                   fields:
@@ -85,6 +91,8 @@
                     Filtered events counter.
                 - name: duration_in_millis
                   type: long
+                - name: queue_push_duration_in_millis
+                  type: long
             - name: logstash
               type: group
               fields:
@@ -111,6 +119,8 @@
                   fields:
                     - name: batch_size
                       type: long
+                    - name: batch_delay
+                      type: long
                     - name: workers
                       type: long
             - name: os
@@ -121,6 +131,8 @@
                   fields:
                     - name: percent
                       type: double
+                    - name: total_in_millis
+                      type: long
                     - name: load_average
                       type: group
                       fields:
@@ -159,11 +171,29 @@
             - name: process
               type: group
               fields:
-                - name: cpu.percent
-                  type: double
+                - name: cpu
+                  type: group
+                  fields:
+                    - name: percent
+                      type: double
+                    - name: total_in_millis
+                      type: long
+                    - name: load_average
+                      type: group
+                      fields:
+                        - name: 15m
+                          type: half_float
+                        - name: 1m
+                          type: half_float
+                        - name: 5m
+                          type: half_float
+                - name: mem.total_virtual_in_bytes
+                  type: long
                 - name: max_file_descriptors
                   type: long
                 - name: open_file_descriptors
+                  type: long
+                - name: peak_open_file_descriptors
                   type: long
             - name: queue.events_count
               type: long
