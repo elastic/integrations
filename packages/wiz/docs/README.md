@@ -81,10 +81,10 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-08-24T08:54:21.442Z",
+    "@timestamp": "2023-07-21T07:07:21.105Z",
     "agent": {
-        "ephemeral_id": "fcc493f6-946e-4ea9-a663-4fef07548a3c",
-        "id": "b2725604-33b3-47fe-bf0e-5c4a84e9b14b",
+        "ephemeral_id": "5c3096ee-b490-4b19-a848-bfed150c1bca",
+        "id": "927b2eff-4394-4486-ab77-d6bfa7c529cf",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.10.1"
@@ -98,21 +98,21 @@ An example event for `audit` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "b2725604-33b3-47fe-bf0e-5c4a84e9b14b",
+        "id": "927b2eff-4394-4486-ab77-d6bfa7c529cf",
         "snapshot": false,
         "version": "8.10.1"
     },
     "event": {
-        "action": "user-login",
+        "action": "login",
         "agent_id_status": "verified",
         "category": [
             "authentication"
         ],
         "dataset": "wiz.audit",
-        "id": "8f7fa6bd-ce32-4f11-91b4-a0377438561e",
-        "ingested": "2023-09-27T07:00:02Z",
+        "id": "hhd8ab9c-f1bf-4a80-a1e1-13bc8769caf4",
+        "ingested": "2023-10-03T10:35:48Z",
         "kind": "event",
-        "original": "{\"action\":\" user Login\",\"actionParameters\":{\"clientID\":\"kr7ngoiolk3d9i8ravmuutlb6\",\"groups\":null,\"name\":\"op-us\",\"products\":[\"*\"],\"role\":\"\",\"scopes\":[\"read:issues\",\"read:reports\",\"read:vulnerabilities\",\"read:cloud_configuration\",\"update:reports\",\"create:reports\"],\"userEmail\":\"\",\"userID\":\"mlipebtwsndhxdmnzdwrxzmiojxkszrh6qzfufevkpmdguxfv4cxg\",\"userpoolID\":\"us-east-2_GQ3gwvxsQ\"},\"id\":\"8f7fa6bd-ce32-4f11-91b4-a0377438561e\",\"requestId\":\"8f7fa6bd-ce32-4f11-91b4-a0377438561e\",\"serviceAccount\":{\"id\":\"mlipebtwsndhxdmnzdwrxzmiojxkszrh6qzfufevkpmdguxfv4cxg\",\"name\":\"op-us\"},\"sourceIP\":null,\"status\":\"SUCCESS\",\"timestamp\":\"2023-08-24T08:54:21.44203Z\",\"user\":null,\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36\"}",
+        "original": "{\"action\":\"Login\",\"actionParameters\":{\"clientID\":\"afsdafasmdgj5c\",\"groups\":null,\"name\":\"example\",\"products\":[\"*\"],\"role\":\"\",\"scopes\":[\"read:issues\",\"read:reports\",\"read:vulnerabilities\",\"update:reports\",\"create:reports\",\"admin:audit\"],\"userEmail\":\"\",\"userID\":\"afsafasdghbhdfg5t35fdgs\",\"userpoolID\":\"us-east-2_GQ3gwvxsQ\"},\"id\":\"hhd8ab9c-f1bf-4a80-a1e1-13bc8769caf4\",\"requestId\":\"hhd8ab9c-f1bf-4a80-a1e1-13bc8769caf4\",\"serviceAccount\":{\"id\":\"mlipebtwsndhxdmnzdwrxzmiolvzt6topjvv4nugzctcsyarazrhg\",\"name\":\"elastic\"},\"sourceIP\":null,\"status\":\"SUCCESS\",\"timestamp\":\"2023-07-21T07:07:21.105685Z\",\"user\":null,\"userAgent\":null}",
         "outcome": "success",
         "type": [
             "info"
@@ -120,7 +120,7 @@ An example event for `audit` looks as following:
     },
     "http": {
         "request": {
-            "id": "8f7fa6bd-ce32-4f11-91b4-a0377438561e"
+            "id": "hhd8ab9c-f1bf-4a80-a1e1-13bc8769caf4"
         }
     },
     "input": {
@@ -128,7 +128,7 @@ An example event for `audit` looks as following:
     },
     "related": {
         "user": [
-            "mlipebtwsndhxdmnzdwrxzmiojxkszrh6qzfufevkpmdguxfv4cxg",
+            "afsafasdghbhdfg5t35fdgs",
             "us-east-2_GQ3gwvxsQ"
         ]
     },
@@ -138,25 +138,12 @@ An example event for `audit` looks as following:
         "forwarded",
         "wiz-audit"
     ],
-    "user_agent": {
-        "device": {
-            "name": "Other"
-        },
-        "name": "Chrome",
-        "original": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
-        "os": {
-            "full": "Windows 10",
-            "name": "Windows",
-            "version": "10"
-        },
-        "version": "115.0.0.0"
-    },
     "wiz": {
         "audit": {
-            "action": " user Login",
+            "action": "Login",
             "action_parameters": {
-                "client_id": "kr7ngoiolk3d9i8ravmuutlb6",
-                "name": "op-us",
+                "client_id": "afsdafasmdgj5c",
+                "name": "example",
                 "products": [
                     "*"
                 ],
@@ -164,24 +151,23 @@ An example event for `audit` looks as following:
                     "read:issues",
                     "read:reports",
                     "read:vulnerabilities",
-                    "read:cloud_configuration",
                     "update:reports",
-                    "create:reports"
+                    "create:reports",
+                    "admin:audit"
                 ],
                 "user": {
-                    "id": "mlipebtwsndhxdmnzdwrxzmiojxkszrh6qzfufevkpmdguxfv4cxg"
+                    "id": "afsafasdghbhdfg5t35fdgs"
                 },
                 "userpool_id": "us-east-2_GQ3gwvxsQ"
             },
-            "id": "8f7fa6bd-ce32-4f11-91b4-a0377438561e",
-            "request_id": "8f7fa6bd-ce32-4f11-91b4-a0377438561e",
+            "id": "hhd8ab9c-f1bf-4a80-a1e1-13bc8769caf4",
+            "request_id": "hhd8ab9c-f1bf-4a80-a1e1-13bc8769caf4",
             "service_account": {
-                "id": "mlipebtwsndhxdmnzdwrxzmiojxkszrh6qzfufevkpmdguxfv4cxg",
-                "name": "op-us"
+                "id": "mlipebtwsndhxdmnzdwrxzmiolvzt6topjvv4nugzctcsyarazrhg",
+                "name": "elastic"
             },
             "status": "SUCCESS",
-            "timestamp": "2023-08-24T08:54:21.442Z",
-            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+            "timestamp": "2023-07-21T07:07:21.105Z"
         }
     }
 }
@@ -234,8 +220,8 @@ An example event for `issue` looks as following:
 {
     "@timestamp": "2023-07-31T06:26:08.708Z",
     "agent": {
-        "ephemeral_id": "17ecd6f6-b613-4d84-b1b3-249804eca0fc",
-        "id": "b2725604-33b3-47fe-bf0e-5c4a84e9b14b",
+        "ephemeral_id": "e74ac4d2-8565-45ee-8c61-c66b6f3151bf",
+        "id": "927b2eff-4394-4486-ab77-d6bfa7c529cf",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.10.1"
@@ -253,7 +239,7 @@ An example event for `issue` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "b2725604-33b3-47fe-bf0e-5c4a84e9b14b",
+        "id": "927b2eff-4394-4486-ab77-d6bfa7c529cf",
         "snapshot": false,
         "version": "8.10.1"
     },
@@ -265,7 +251,7 @@ An example event for `issue` looks as following:
         "created": "2023-08-23T07:56:09.903Z",
         "dataset": "wiz.issue",
         "id": "fff9cffd-64a7-412c-9535-cf837f4b0b40",
-        "ingested": "2023-09-27T07:01:52Z",
+        "ingested": "2023-10-03T10:22:42Z",
         "kind": "event",
         "original": "{\"createdAt\":\"2023-08-23T07:56:09.903743Z\",\"dueAt\":\"2023-08-30T21:00:00Z\",\"entitySnapshot\":{\"cloudPlatform\":\"Kubernetes\",\"cloudProviderURL\":\"https://portal.az.com/#@sectest.on.com/resource//subscriptions/\",\"externalId\":\"k8s/clusterrole/aaa8e7ca2bf9bc85a75d5bbdd8ffd08d69f8852782a6341c3c3519sad45/system:aggregate-to-edit/12\",\"id\":\"e507d472-b7da-5f05-9b25-72a271336b14\",\"name\":\"system:aggregate-to-edit\",\"nativeType\":\"ClusterRole\",\"providerId\":\"k8s/clusterrole/aaa8e7ca2bf9bc85a75d5bbdd8ffd08d69f8852782a6341c3c3519bac0f24ae9/system:aggregate-to-edit/12\",\"region\":\"us-01\",\"resourceGroupExternalId\":\"/subscriptions/cfd132be-3bc7-4f86-8efd-ed53ae498fec/resourcegroups/test-selfmanaged-eastus\",\"status\":\"Active\",\"subscriptionExternalId\":\"998231069301\",\"subscriptionName\":\"demo-integrations\",\"subscriptionTags\":{},\"tags\":{\"kubernetes.io/bootstrapping\":\"rbac-defaults\",\"rbac.authorization.k8s.io/aggregate-to-edit\":\"true\"},\"type\":\"ACCESS_ROLE\"},\"id\":\"fff9cffd-64a7-412c-9535-cf837f4b0b40\",\"notes\":[{\"createdAt\":\"2023-08-23T07:56:09.903743Z\",\"serviceAccount\":{\"name\":\"rev-ke\"},\"text\":\"updated\",\"updatedAt\":\"2023-08-09T23:10:22.588721Z\"},{\"createdAt\":\"2023-08-09T23:08:49.918941Z\",\"serviceAccount\":{\"name\":\"rev-ke2\"},\"text\":\"updated\",\"updatedAt\":\"2023-08-09T23:10:22.591487Z\"}],\"projects\":[{\"businessUnit\":\"\",\"id\":\"83b76efe-a7b6-5762-8a53-8e8f59e68bd8\",\"name\":\"Project 2\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project-2\"},{\"businessUnit\":\"Dev\",\"id\":\"af52828c-4eb1-5c4e-847c-ebc3a5ead531\",\"name\":\"project 4\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project-4\"},{\"businessUnit\":\"Dev\",\"id\":\"d6ac50bb-aec0-52fc-80ab-bacd7b02f178\",\"name\":\"Project1\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project1\"}],\"resolvedAt\":\"2023-08-09T23:10:22.588721Z\",\"serviceTickets\":[{\"externalId\":\"638361121bbfdd10f6c1cbf3604bcb7e\",\"name\":\"SIR0010002\",\"url\":\"https://ven05658.testing.com/nav_to.do?uri=%2Fsn_si_incident.do%3Fsys_id%3D6385248sdsae421\"}],\"severity\":\"INFORMATIONAL\",\"sourceRule\":{\"__typename\":\"Control\",\"controlDescription\":\"These EKS principals assume roles that provide bind, escalate and impersonate permissions. \\n\\nThe `bind` permission allows users to create bindings to roles with rights they do not already have. The `escalate` permission allows users effectively escalate their privileges. The `impersonate` permission allows users to impersonate and gain the rights of other users in the cluster. Running containers with these permissions has the potential to effectively allow privilege escalation to the cluster-admin level.\",\"id\":\"wc-id-1335\",\"name\":\"EKS principals assume roles that provide bind, escalate and impersonate permissions\",\"resolutionRecommendation\":\"To follow the principle of least privilege and minimize the risk of unauthorized access and data breaches, it is recommended not to grant `bind`, `escalate` or `impersonate` permissions.\",\"securitySubCategories\":[{\"category\":{\"framework\":{\"name\":\"CIS EKS 1.2.0\"},\"name\":\"4.1 RBAC and Service Accounts\"},\"title\":\"4.1.8 Limit use of the Bind, Impersonate and Escalate permissions in the Kubernetes cluster - Level 1 (Manual)\"},{\"category\":{\"framework\":{\"name\":\"Wiz for Risk Assessment\"},\"name\":\"Identity Management\"},\"title\":\"Privileged principal\"},{\"category\":{\"framework\":{\"name\":\"Wiz\"},\"name\":\"9 Container Security\"},\"title\":\"Container Security\"},{\"category\":{\"framework\":{\"name\":\"Wiz for Risk Assessment\"},\"name\":\"Container \\u0026 Kubernetes Security\"},\"title\":\"Cluster misconfiguration\"}]},\"status\":\"IN_PROGRESS\",\"statusChangedAt\":\"2023-07-31T06:26:08.708199Z\",\"updatedAt\":\"2023-08-14T06:06:18.331647Z\"}",
         "type": [
@@ -499,8 +485,8 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2023-08-16T18:40:57.000Z",
     "agent": {
-        "ephemeral_id": "bb134cd2-8520-4706-b3c1-3c454a123c82",
-        "id": "b2725604-33b3-47fe-bf0e-5c4a84e9b14b",
+        "ephemeral_id": "bd7b9b1e-3c24-48fb-ad27-fc8578793608",
+        "id": "927b2eff-4394-4486-ab77-d6bfa7c529cf",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.10.1"
@@ -521,7 +507,7 @@ An example event for `vulnerability` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "b2725604-33b3-47fe-bf0e-5c4a84e9b14b",
+        "id": "927b2eff-4394-4486-ab77-d6bfa7c529cf",
         "snapshot": false,
         "version": "8.10.1"
     },
@@ -531,7 +517,7 @@ An example event for `vulnerability` looks as following:
             "vulnerability"
         ],
         "dataset": "wiz.vulnerability",
-        "ingested": "2023-09-27T07:03:43Z",
+        "ingested": "2023-10-03T10:23:54Z",
         "kind": "alert",
         "original": "{\"CVEDescription\":\"In LibTIFF, there is a memory malloc failure in tif_pixarlog.c. A crafted TIFF document can lead to an abort, resulting in a remote denial of service attack.\",\"CVSSSeverity\":\"MEDIUM\",\"dataSourceName\":\"data Source\",\"description\":\"Thepackage`libtiff`version`4.0.3-35.amzn2`wasdetectedin`YUMpackagemanager`onamachinerunning`Amazon2(Karoo)`isvulnerableto`CVE-2020-35522`,whichexistsinversions`\\u003c4.0.3-35.amzn2.0.1`.\\n\\nThevulnerabilitywasfoundinthe[OfficialAmazonLinuxSecurityAdvisories](https://alas.aws.amazon.com/AL2/ALAS-2022-1780.html)withvendorseverity:`Medium`([NVD](https://nvd.nist.gov/vuln/detail/CVE-2020-35522)severity:`Medium`).\\n\\nThevulnerabilitycanberemediatedbyupdatingthepackagetoversion`4.0.3-35.amzn2.0.1`orhigher,using`yumupdatelibtiff`.\",\"detailedName\":\"libtiff\",\"detectionMethod\":\"PACKAGE\",\"epssPercentile\":46.2,\"epssProbability\":0.1,\"epssSeverity\":\"LOW\",\"exploitabilityScore\":1.8,\"firstDetectedAt\":\"2022-05-01T11:36:10.063767Z\",\"fixedVersion\":\"4.0.3-35.amzn2.0.1\",\"hasCisaKevExploit\":false,\"hasExploit\":false,\"id\":\"5e95ff50-5490-514e-87f7-11e56f3230ff\",\"ignoreRules\":{\"enabled\":true,\"expiredAt\":\"2023-08-16T18:40:57Z\",\"id\":\"aj3jqtvnaf\",\"name\":\"abc\"},\"impactScore\":3.6,\"lastDetectedAt\":\"2023-08-16T18:40:57Z\",\"layerMetadata\":{\"details\":\"xxxx\",\"id\":\"5e95ff50-5490-514e-87f7-11e56f3230ff\",\"isBaseLayer\":true},\"link\":\"https://alas.aws.amazon.com/AL2/ALAS-2022-1780.html\",\"locationPath\":\"package/library/file\",\"name\":\"CVE-2020-3333\",\"portalUrl\":\"https://app.wiz.io/explorer/vulnerability-findings#~(entity~(~'xxx-xxx*2cSECURITY_TOOL_FINDING))\",\"projects\":[{\"businessUnit\":\"\",\"id\":\"83b76efe-a7b6-5762-8a53-8e8f59e68bd8\",\"name\":\"Project2\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project-2\"},{\"businessUnit\":\"Dev\",\"id\":\"af52828c-4eb1-5c4e-847c-ebc3a5ead531\",\"name\":\"project4\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project-4\"},{\"businessUnit\":\"Dev\",\"id\":\"d6ac50bb-aec0-52fc-80ab-bacd7b02f178\",\"name\":\"Project1\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project1\"}],\"remediation\":\"yumupdatelibtiff\",\"resolutionReason\":\"resolutionReason\",\"resolvedAt\":\"2023-08-16T18:40:57Z\",\"score\":5.5,\"status\":\"OPEN\",\"validatedInRuntime\":true,\"vendorSeverity\":\"MEDIUM\",\"version\":\"4.0.3-35.amzn2\",\"vulnerableAsset\":{\"cloudPlatform\":\"AWS\",\"cloudProviderURL\":\"https://us-east-1.console.aws.amazon.com/ec2/v2/home?region=us-east-1#InstanceDetails:instanceId=i-0a0f7e1451da5f4a3\",\"hasLimitedInternetExposure\":true,\"hasWideInternetExposure\":true,\"id\":\"c828de0d-4c42-5b1c-946b-2edee094d0b3\",\"ipAddresses\":[\"89.160.20.112\",\"89.160.20.128\"],\"isAccessibleFromOtherSubscriptions\":false,\"isAccessibleFromOtherVnets\":false,\"isAccessibleFromVPN\":false,\"name\":\"test-4\",\"operatingSystem\":\"Linux\",\"providerUniqueId\":\"arn:aws:ec2:us-east-1:998231069301:instance/i-0a0f7e1451da5f4a3\",\"region\":\"us-east-1\",\"status\":\"Active\",\"subscriptionExternalId\":\"998231069301\",\"subscriptionId\":\"94e76baa-85fd-5928-b829-1669a2ca9660\",\"subscriptionName\":\"wiz-integrations\",\"tags\":{\"Name\":\"test-4\"},\"type\":\"VIRTUAL_MACHINE\"}}",
         "type": [
