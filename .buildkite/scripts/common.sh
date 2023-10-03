@@ -3,6 +3,7 @@
 set -euo pipefail
 
 WORKSPACE="$(pwd)"
+BIN_FOLDER="${WORKSPACE}/bin"
 REPO="integrations"
 TMP_FOLDER_TEMPLATE_BASE="tmp.${REPO}"
 platform_type="$(uname)"
@@ -58,18 +59,24 @@ check_platform_architeture() {
   esac
 }
 
+create_bin_folder() {
+  mkdir -p ${BIN_FOLDER}
+}
+
 add_bin_path() {
-  mkdir -p ${WORKSPACE}/bin
+  create_bin_folder
   echo "Adding PATH to the environment variables..."
-  export PATH="${PATH}:${WORKSPACE}/bin"
+  export PATH="${PATH}:${BIN_FOLDER}"
 }
 
 with_go() {
+  create_bin_folder
   echo "Setting up the Go environment..."
   check_platform_architeture
   local platform_type_lowercase="${platform_type,,}"
-  retry 5 curl -sL -o ${WORKSPACE}/bin/gvm "https://github.com/andrewkroh/gvm/releases/download/${SETUP_GVM_VERSION}/gvm-${platform_type_lowercase}-${arch_type}"
-  chmod +x ${WORKSPACE}/bin/gvm
+  echo " GVM ${SETUP_GVM_VERSION} (platform ${platform_type_lowercase} arch ${arch_type}"
+  retry 5 curl -sL -o ${BIN_FOLDER}/gvm "https://github.com/andrewkroh/gvm/releases/download/${SETUP_GVM_VERSION}/gvm-${platform_type_lowercase}-${arch_type}"
+  chmod +x ${BIN_FOLDER}/gvm
   eval "$(gvm $(cat .go-version))"
   go version
   which go
@@ -77,6 +84,7 @@ with_go() {
 }
 
 with_mage() {
+    create_bin_folder
     with_go
 
     local install_packages=(
@@ -93,22 +101,21 @@ with_mage() {
 }
 
 with_docker_compose() {
-    mkdir -p ${WORKSPACE}/bin
-    retry 5 curl -SL -o ${WORKSPACE}/bin/docker-compose "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64"
-    chmod +x ${WORKSPACE}/bin/docker-compose
+    create_bin_folder
+    retry 5 curl -SL -o ${BIN_FOLDER}/docker-compose "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64"
+    chmod +x ${BIN_FOLDER}/docker-compose
     docker-compose version
 }
 
 with_kubernetes() {
-    mkdir -p ${WORKSPACE}/bin
-    retry 5 curl -sSLo ${WORKSPACE}/bin/kind "https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-linux-amd64"
-    chmod +x ${WORKSPACE}/bin/kind
+    create_bin_folder
+    retry 5 curl -sSLo ${BIN_FOLDER}/kind "https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-linux-amd64"
+    chmod +x ${BIN_FOLDER}/kind
     kind version
     which kind
 
-    mkdir -p ${WORKSPACE}/bin
-    retry 5 curl -sSLo ${WORKSPACE}/bin/kubectl "https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl"
-    chmod +x ${WORKSPACE}/bin/kubectl
+    retry 5 curl -sSLo ${BIN_FOLDER}/kubectl "https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl"
+    chmod +x ${BIN_FOLDER}/kubectl
     kubectl version --client
     which kubectl
 }
