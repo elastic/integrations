@@ -58,25 +58,18 @@ check_platform_architeture() {
   esac
 }
 
-create_workspace() {
-  if [[ ! -d "${WORKSPACE}" ]]; then
-    mkdir -p ${WORKSPACE}
-  fi
-}
-
 add_bin_path() {
+  mkdir -p ${WORKSPACE}/bin
   echo "Adding PATH to the environment variables..."
-  create_workspace
-  export PATH="${PATH}:${WORKSPACE}"
+  export PATH="${PATH}:${WORKSPACE}/bin"
 }
 
 with_go() {
   echo "Setting up the Go environment..."
-  create_workspace
   check_platform_architeture
   local platform_type_lowercase="${platform_type,,}"
-  retry 5 curl -sL -o ${WORKSPACE}/gvm "https://github.com/andrewkroh/gvm/releases/download/${SETUP_GVM_VERSION}/gvm-${platform_type_lowercase}-${arch_type}"
-  chmod +x ${WORKSPACE}/gvm
+  retry 5 curl -sL -o ${WORKSPACE}/bin/gvm "https://github.com/andrewkroh/gvm/releases/download/${SETUP_GVM_VERSION}/gvm-${platform_type_lowercase}-${arch_type}"
+  chmod +x ${WORKSPACE}/bin/gvm
   eval "$(gvm $(cat .go-version))"
   go version
   which go
@@ -97,11 +90,6 @@ with_mage() {
         go install "${pkg}@latest"
     done
     mage --version
-}
-
-
-with_go_junit_report() {
-    go install github.com/jstemmer/go-junit-report/v2@latest
 }
 
 with_docker_compose() {
