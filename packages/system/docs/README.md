@@ -1897,7 +1897,7 @@ If running as less privileged user, it may not be able to read process data belo
 | system.process.cgroup.cpu.stats.user.pct | cgroups v2 cpu user time | float |  | gauge |
 | system.process.cgroup.cpuacct.id | ID of the cgroup. | keyword |  |  |
 | system.process.cgroup.cpuacct.path | Path to the cgroup relative to the cgroup subsystem's mountpoint. | keyword |  |  |
-| system.process.cgroup.cpuacct.percpu | CPU time (in nanoseconds) consumed on each CPU by all tasks in this cgroup. | object |  |  |
+| system.process.cgroup.cpuacct.percpu | CPU time (in nanoseconds) consumed on each CPU by all tasks in this cgroup. | object |  | gauge |
 | system.process.cgroup.cpuacct.stats.system.norm.pct | Time the cgroup spent in kernel space, as a percentage of total CPU time, normalized by CPU count. | scaled_float |  | gauge |
 | system.process.cgroup.cpuacct.stats.system.ns | CPU time consumed by tasks in user (kernel) mode. | long |  | counter |
 | system.process.cgroup.cpuacct.stats.system.pct | Time the cgroup spent in kernel space, as a percentage of total CPU time | scaled_float |  | gauge |
@@ -1918,10 +1918,8 @@ If running as less privileged user, it may not be able to read process data belo
 | system.process.cgroup.io.pressure.some.300.pct | Pressure over 300 seconds | float |  | gauge |
 | system.process.cgroup.io.pressure.some.60.pct | Pressure over 60 seconds | float |  | gauge |
 | system.process.cgroup.io.pressure.some.total | total Some pressure time | long |  | counter |
-| system.process.cgroup.io.stats.\* | per-device IO usage stats | object |  |  |
-| system.process.cgroup.io.stats.\*.\* |  | object |  |  |
-| system.process.cgroup.io.stats.\*.\*.bytes | per-device IO usage stats | object |  |  |
-| system.process.cgroup.io.stats.\*.\*.ios | per-device IO usage stats | object |  |  |
+| system.process.cgroup.io.stats.\*.\*.bytes | per-device bytes usage stats | object |  | gauge |
+| system.process.cgroup.io.stats.\*.\*.ios | per-device IO usage stats | object |  | gauge |
 | system.process.cgroup.memory.id | ID of the cgroup. | keyword |  |  |
 | system.process.cgroup.memory.kmem.failures | The number of times that the memory limit (kmem.limit.bytes) was reached. | long |  | counter |
 | system.process.cgroup.memory.kmem.limit.bytes | The maximum amount of kernel memory that tasks in the cgroup are allowed to use. | long |  | gauge |
@@ -1958,8 +1956,7 @@ If running as less privileged user, it may not be able to read process data belo
 | system.process.cgroup.memory.memsw.usage.bytes | The sum of current memory usage plus swap space used by processes in the cgroup (in bytes). | long |  | gauge |
 | system.process.cgroup.memory.memsw.usage.max.bytes | The maximum amount of memory and swap space used by processes in the cgroup (in bytes). | long |  | gauge |
 | system.process.cgroup.memory.path | Path to the cgroup relative to the cgroup subsystem's mountpoint. | keyword |  |  |
-| system.process.cgroup.memory.stats.\* | detailed memory IO stats | object |  |  |
-| system.process.cgroup.memory.stats.\*.bytes | detailed memory IO stats | object |  |  |
+| system.process.cgroup.memory.stats.\*.bytes | detailed memory IO stats | object |  | gauge |
 | system.process.cgroup.memory.stats.active_anon.bytes | Anonymous and swap cache on active least-recently-used (LRU) list, including tmpfs (shmem), in bytes. | long |  | gauge |
 | system.process.cgroup.memory.stats.active_file.bytes | File-backed memory on active LRU list, in bytes. | long |  | gauge |
 | system.process.cgroup.memory.stats.cache.bytes | Page cache, including tmpfs (shmem), in bytes. | long |  | gauge |

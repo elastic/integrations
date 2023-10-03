@@ -127,3 +127,4 @@ Authentication: we are handling authentication on our side (creating/renewing th
 | service.address | Service address | keyword |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
+

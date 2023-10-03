@@ -342,6 +342,7 @@ so the `period` for `storage_account` should be `300s` or multiples of `300s`.
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
+
 `container_instance`
 This data stream will collect metrics from specified container groups, these metrics will have a timegrain every 5 minutes,
 so the `period` for `container_instance` should be `300s` or multiples of `300s`.
