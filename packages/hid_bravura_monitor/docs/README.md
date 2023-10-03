@@ -155,11 +155,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2021-01-16T00:35:25.258Z",
     "agent": {
-        "ephemeral_id": "fa387b80-fca3-4488-ac1b-460792f3a8ea",
-        "id": "02ab444e-ca97-437b-85dc-d580f055047c",
+        "ephemeral_id": "35e38c15-1a71-4f27-be32-fa338af49c11",
+        "id": "891454b6-66ae-48e0-a2df-0f093ea30e4c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.1.0"
+        "version": "8.10.2"
     },
     "data_stream": {
         "dataset": "hid_bravura_monitor.log",
@@ -170,14 +170,14 @@ An example event for `log` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "02ab444e-ca97-437b-85dc-d580f055047c",
+        "id": "891454b6-66ae-48e0-a2df-0f093ea30e4c",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.10.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "hid_bravura_monitor.log",
-        "ingested": "2022-11-22T08:13:24Z",
+        "ingested": "2023-10-03T10:00:58Z",
         "original": "\u00182021-01-16 00:35:25.258.7085 - [] pamlws.exe [44408,52004] Error: LWS [HID-TEST] foundcomputer record not found",
         "timezone": "UTC"
     },
@@ -189,23 +189,24 @@ An example event for `log` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": false,
+        "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "efe661d97f0c4d9883075c393da6b0d8",
         "ip": [
-            "172.29.0.7"
+            "172.23.0.7"
         ],
         "mac": [
-            "02:42:ac:1d:00:07"
+            "02-42-AC-17-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.104-linuxkit",
+            "kernel": "5.15.90.1-microsoft-standard-WSL2",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "input": {
@@ -213,11 +214,13 @@ An example event for `log` looks as following:
     },
     "log": {
         "file": {
+            "device_id": 2080,
+            "inode": 90160,
             "path": "/tmp/service_logs/hid_bravura_monitor.log"
         },
         "level": "Error",
         "logger": "pamlws.exe",
-        "offset": 218
+        "offset": 104
     },
     "message": "LWS [HID-TEST] foundcomputer record not found",
     "process": {
@@ -349,7 +352,13 @@ An example event for `log` looks as following:
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type. | keyword |
 | labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |

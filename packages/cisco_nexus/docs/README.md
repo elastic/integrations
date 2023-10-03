@@ -46,19 +46,23 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2023-04-26T09:08:48.000Z",
     "agent": {
-        "ephemeral_id": "777b3d32-4639-4d5d-bc3e-fa5e4053d335",
-        "id": "ae8acf2b-2fd5-4ab9-921c-e92bc69cd32c",
+        "ephemeral_id": "81553388-678e-4d17-8f75-7c7870f7f06c",
+        "id": "45b4f828-da65-463c-980e-09ba9a67922b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.0"
+        "version": "8.10.2"
     },
     "cisco_nexus": {
         "log": {
-            "description": "last message repeated 3 time",
+            "description": "EARL 0  NF ASIC: Uncorrectable Parity error in Netflow Table.",
+            "facility": "EARL",
             "priority_number": 187,
+            "severity": 3,
+            "standby": "SW2_DFC1",
             "switch_name": "switchname",
             "time": "2023-04-26T09:08:48.000Z",
-            "timezone": "UTC"
+            "timezone": "UTC",
+            "type": "NF_PARITY_ERROR"
         }
     },
     "data_stream": {
@@ -70,29 +74,44 @@ An example event for `log` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "ae8acf2b-2fd5-4ab9-921c-e92bc69cd32c",
+        "id": "45b4f828-da65-463c-980e-09ba9a67922b",
         "snapshot": false,
-        "version": "8.7.0"
+        "version": "8.10.2"
     },
     "event": {
         "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "code": "NF_PARITY_ERROR",
         "dataset": "cisco_nexus.log",
-        "ingested": "2023-06-15T06:21:25Z",
+        "ingested": "2023-10-03T09:37:59Z",
         "kind": "event",
-        "original": "\u003c187\u003eswitchname: 2023 Apr 26 09:08:48 UTC: last message repeated 3 time"
+        "original": "<187>switchname: 2023 Apr 26 09:08:48 UTC: %EARL-SW2_DFC1-3-NF_PARITY_ERROR: EARL 0  NF ASIC: Uncorrectable Parity error in Netflow Table.",
+        "severity": 3,
+        "type": [
+            "info"
+        ]
     },
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
     "log": {
+        "level": "error",
         "source": {
-            "address": "192.168.251.1:37485"
+            "address": "192.168.0.5:48836"
         },
         "syslog": {
-            "priority": 187
+            "facility": {
+                "code": 23
+            },
+            "priority": 187,
+            "severity": {
+                "code": 3
+            }
         }
     },
-    "message": "last message repeated 3 time",
+    "message": "EARL 0  NF ASIC: Uncorrectable Parity error in Netflow Table.",
     "observer": {
         "name": "switchname",
         "product": "Nexus",
@@ -153,6 +172,12 @@ An example event for `log` looks as following:
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | tags | User defined tags. | keyword |

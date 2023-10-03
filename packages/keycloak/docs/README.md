@@ -87,7 +87,13 @@ to your configuration XML file (ie standalone.xml) under the path below
 | keycloak.login.redirect_uri | Keycloak redirect URL | keyword |
 | keycloak.login.type | Event Type | keyword |
 | keycloak.realm.id | Keycloak Realm ID | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Path to the log file. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
@@ -132,13 +138,13 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-10-22T21:01:42.667+05:00",
+    "@timestamp": "2021-10-22T21:01:42.667-05:00",
     "agent": {
-        "ephemeral_id": "5861dcd8-02a1-48fe-943d-45eb7fd83e5e",
-        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
+        "ephemeral_id": "bb6d890f-5c05-4247-b410-8f3b914e5293",
+        "id": "d053789b-7b04-4a8c-b06c-ca79014bb61a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.2"
+        "version": "8.10.2"
     },
     "data_stream": {
         "dataset": "keycloak.log",
@@ -146,36 +152,36 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
+        "id": "d053789b-7b04-4a8c-b06c-ca79014bb61a",
         "snapshot": false,
-        "version": "8.8.2"
+        "version": "8.10.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "keycloak.log",
-        "ingested": "2023-07-24T13:27:46Z",
+        "ingested": "2023-10-03T10:29:46Z",
         "original": "2021-10-22 21:01:42,667 INFO  [org.jboss.resteasy.resteasy_jaxrs.i18n] (ServerService Thread Pool -- 64) RESTEASY002220: Adding singleton resource org.keycloak.services.resources.admin.AdminRoot from Application class org.keycloak.services.resources.KeycloakApplication",
-        "timezone": "+05:00"
+        "timezone": "-05:00"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "f61391496aaa43bb94736676494450c5",
+        "id": "efe661d97f0c4d9883075c393da6b0d8",
         "ip": [
-            "172.22.0.10"
+            "172.30.0.7"
         ],
         "mac": [
-            "02-42-AC-16-00-0A"
+            "02-42-AC-1E-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.47-linuxkit",
+            "kernel": "5.15.90.1-microsoft-standard-WSL2",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -187,6 +193,8 @@ An example event for `log` looks as following:
     },
     "log": {
         "file": {
+            "device_id": 2080,
+            "inode": 90612,
             "path": "/tmp/service_logs/test-log.log"
         },
         "level": "INFO",
