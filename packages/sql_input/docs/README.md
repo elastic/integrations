@@ -42,8 +42,12 @@ The following two types of host configurations are supported:
 The supported configuration takes this form
 - `sqlserver://<user>:<password>@<host>`
 
+The supported configuration with Windows Domain takes the form below:
+- `sqlserver://<domain>%5C<user>:<password>@<host>`
+
 Example of supported configurations is as below:
 - `sqlserver://root:test@localhost`
+- `sqlserver://local%5Croot:test@localhost`
 
 #### PostgreSQL: 
 The supported configuration takes this form
