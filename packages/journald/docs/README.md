@@ -11,14 +11,14 @@ An example event looks as follows:
 {
     "@timestamp": "2020-07-22T13:17:10.012Z",
     "agent": {
-        "ephemeral_id": "27e2a00a-dab2-4790-8d45-29ad272d0392",
-        "id": "bef8099b-68f6-4621-8089-2229b35a669d",
+        "ephemeral_id": "f7858fe6-ce04-46d6-83c3-f45a4e019395",
+        "id": "26693255-8a33-48c9-87cc-3d5f846c4bcd",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.3.2"
+        "version": "8.11.0"
     },
     "data_stream": {
-        "dataset": "journald.log",
+        "dataset": "journald.logs",
         "namespace": "ep",
         "type": "logs"
     },
@@ -26,16 +26,16 @@ An example event looks as follows:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "bef8099b-68f6-4621-8089-2229b35a669d",
-        "snapshot": false,
-        "version": "8.3.2"
+        "id": "26693255-8a33-48c9-87cc-3d5f846c4bcd",
+        "snapshot": true,
+        "version": "8.11.0"
     },
     "event": {
         "agent_id_status": "verified",
         "code": "ec387f577b844b8fa948f33cad9a75e6",
-        "created": "2022-08-18T18:14:11.588Z",
-        "dataset": "journald.log",
-        "ingested": "2022-08-18T18:14:15Z",
+        "created": "2023-10-02T18:19:38.048Z",
+        "dataset": "journald.logs",
+        "ingested": "2023-10-02T18:19:41Z",
         "kind": "event"
     },
     "host": {
@@ -77,10 +77,10 @@ An example event looks as follows:
     },
     "log": {
         "syslog": {
+            "appname": "systemd-journald",
             "facility": {
                 "code": 3
             },
-            "identifier": "systemd-journald",
             "priority": 6
         }
     },
@@ -91,7 +91,25 @@ An example event looks as follows:
         ],
         "args_count": 1,
         "command_line": "/lib/systemd/systemd-journald",
-        "pid": 19317
+        "pid": 19317,
+        "thread": {
+            "capabilities": {
+                "effective": [
+                    "CAP_CHOWN",
+                    "CAP_DAC_OVERRIDE",
+                    "CAP_DAC_READ_SEARCH",
+                    "CAP_FOWNER",
+                    "CAP_SETGID",
+                    "CAP_SETUID",
+                    "CAP_SYS_PTRACE",
+                    "CAP_SYS_ADMIN",
+                    "CAP_AUDIT_CONTROL",
+                    "CAP_MAC_OVERRIDE",
+                    "CAP_SYSLOG",
+                    "CAP_AUDIT_READ"
+                ]
+            }
+        }
     },
     "systemd": {
         "cgroup": "/system.slice/systemd-journald.service",
@@ -170,6 +188,7 @@ An example event looks as follows:
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
 | process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
 | process.pid | Process id. | long |
+| process.thread.capabilities.effective | This is the set of capabilities used by the kernel to perform permission checks for the thread. | keyword |
 | systemd.cgroup | The control group path in the systemd hierarchy. | keyword |
 | systemd.invocation_id | The invocation ID for the runtime cycle of the unit the message was generated in, as available to processes of the unit in $INVOCATION_ID. | keyword |
 | systemd.owner_uid | The owner UID of the systemd user unit or systemd session (if any) of the process the journal entry originates from. | long |
