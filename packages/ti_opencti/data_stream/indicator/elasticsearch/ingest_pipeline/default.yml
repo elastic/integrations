@@ -48,7 +48,7 @@ processors:
 
   - set:
       field: threat.indicator.reference
-      value: "{{_conf.url}}/dashboard/observations/indicators/{{event.id}}"
+      value: "{{{_conf.url}}}/dashboard/observations/indicators/{{{event.id}}}"
   - remove:
       field: _conf
       ignore_missing: true
@@ -169,7 +169,7 @@ processors:
       processor:
         append:
           field: opencti.indicator.kill_chain_phase
-          value: "[{{_ingest._value.node.kill_chain_name}}] {{_ingest._value.node.phase_name}}"
+          value: "[{{{_ingest._value.node.kill_chain_name}}}] {{{_ingest._value.node.phase_name}}}"
   - remove:
       field: killChainPhases
 
@@ -397,7 +397,7 @@ processors:
       processor:
         append:
           field: threat.indicator.email.address
-          value: "{{_ingest._value.value}}"
+          value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
 
   - foreach:
@@ -406,7 +406,7 @@ processors:
       processor:
         append:
           field: threat.indicator.ip
-          value: "{{_ingest._value.value}}"
+          value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
 
   - foreach:
@@ -415,7 +415,7 @@ processors:
       processor:
         append:
           field: threat.indicator.ip
-          value: "{{_ingest._value.value}}"
+          value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
 
   # For ECS, remove any subnet mask from IP values arriving in CIDR notation
@@ -434,7 +434,7 @@ processors:
       processor:
         append:
           field: threat.indicator.port
-          value: "{{_ingest._value.src_port}}"
+          value: "{{{_ingest._value.src_port}}}"
           allow_duplicates: false
   - foreach:
       field: opencti.observable.network_traffic
@@ -442,7 +442,7 @@ processors:
       processor:
         append:
           field: threat.indicator.port
-          value: "{{_ingest._value.dst_port}}"
+          value: "{{{_ingest._value.dst_port}}}"
           allow_duplicates: false
 
   - foreach:
@@ -479,7 +479,7 @@ processors:
       processor:
         append:
           field: _tmp_found_urls
-          value: "{{_ingest._value.value}}"
+          value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
   - foreach:
       field: opencti.observable.artifact
@@ -487,7 +487,7 @@ processors:
       processor:
         append:
           field: _tmp_found_urls
-          value: "{{_ingest._value.url}}"
+          value: "{{{_ingest._value.url}}}"
           allow_duplicates: false
   - foreach:
       field: opencti.observable.file
@@ -495,7 +495,7 @@ processors:
       processor:
         append:
           field: _tmp_found_urls
-          value: "{{_ingest._value.content?.url}}"
+          value: "{{{_ingest._value.content?.url}}}"
           allow_duplicates: false
   - foreach:
       field: opencti.observable.media_content
@@ -503,7 +503,7 @@ processors:
       processor:
         append:
           field: _tmp_found_urls
-          value: "{{_ingest._value.url}}"
+          value: "{{{_ingest._value.url}}}"
           allow_duplicates: false
   - foreach:
       field: opencti.observable.process
@@ -515,7 +515,7 @@ processors:
           processor:
             append:
               field: _tmp_found_urls
-              value: "{{_ingest._value.content?.url}}"
+              value: "{{{_ingest._value.content?.url}}}"
               allow_duplicates: false
   - script:
       description: Remove null or empty items
@@ -546,7 +546,7 @@ processors:
       processor:
         append:
           field: _tmp_found_domain_names_and_hostnames
-          value: "{{_ingest._value.value}}"
+          value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
   - foreach:
       field: opencti.observable.hostname
@@ -554,7 +554,7 @@ processors:
       processor:
         append:
           field: _tmp_found_domain_names_and_hostnames
-          value: "{{_ingest._value.value}}"
+          value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
   - foreach:
       field: _tmp_found_domain_names_and_hostnames
@@ -612,7 +612,7 @@ processors:
           processor:
             append:
               field: related.hash
-              value: "{{_ingest._value}}"
+              value: "{{{_ingest._value}}}"
               allow_duplicates: false
   - foreach:
       field: opencti.observable.file
@@ -624,7 +624,7 @@ processors:
           processor:
             append:
               field: related.hash
-              value: "{{_ingest._value}}"
+              value: "{{{_ingest._value}}}"
               allow_duplicates: false
   - foreach:
       field: opencti.observable.artifact
@@ -636,7 +636,7 @@ processors:
           processor:
             append:
               field: related.hash
-              value: "{{_ingest._value}}"
+              value: "{{{_ingest._value}}}"
               allow_duplicates: false
   - foreach:
       field: opencti.observable.process
@@ -652,7 +652,7 @@ processors:
               processor:
                 append:
                   field: related.hash
-                  value: "{{_ingest._value}}"
+                  value: "{{{_ingest._value}}}"
                   allow_duplicates: false
 
   - foreach:
@@ -661,7 +661,7 @@ processors:
       processor:
         append:
           field: related.hosts
-          value: "{{_ingest._value.value}}"
+          value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
   - foreach:
       field: threat.indicator.url
@@ -669,7 +669,7 @@ processors:
       processor:
         append:
           field: related.hosts
-          value: "{{_ingest._value.domain}}"
+          value: "{{{_ingest._value.domain}}}"
           allow_duplicates: false
 
   - set:
@@ -683,7 +683,7 @@ processors:
       processor:
         append:
           field: related.user
-          value: "{{_ingest._value.value}}"
+          value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
   - foreach:
       field: threat.indicator.url
@@ -691,7 +691,7 @@ processors:
       processor:
         append:
           field: related.user
-          value: "{{_ingest._value.username}}"
+          value: "{{{_ingest._value.username}}}"
           allow_duplicates: false
   - foreach:
       field: opencti.observable.user_account
@@ -699,7 +699,7 @@ processors:
       processor:
         append:
           field: related.user
-          value: "{{_ingest._value.user_id}}"
+          value: "{{{_ingest._value.user_id}}}"
           allow_duplicates: false
   - foreach:
       field: opencti.observable.user_account
@@ -707,7 +707,7 @@ processors:
       processor:
         append:
           field: related.user
-          value: "{{_ingest._value.account_login}}"
+          value: "{{{_ingest._value.account_login}}}"
           allow_duplicates: false
 
   - script:
@@ -832,4 +832,4 @@ processors:
 on_failure:
 - set:
     field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+    value: '{{{ _ingest.on_failure_message }}}'
