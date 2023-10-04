@@ -1,0 +1,386 @@
+dest:
+  index:  ml_beaconing-1.0.0
+  pipeline: 1.0.0-ml_beaconing_ingest_pipeline
+  aliases:
+    - alias: ml_beaconing.latest
+      move_on_creation: true
+    - alias: ml_beaconing.all
+      move_on_creation: false
+description: This transform runs hourly and flags beaconing activity seen in your environment, in the 6 hrs prior to runtime.
+frequency: 1h
+pivot:
+  aggregations:
+    "@timestamp" :
+      max:
+        field:  "@timestamp"
+    beacon_stats:
+      scripted_metric:
+        combine_script: return state
+        init_script: |-
+          // The parameter number_buckets_in_range equals the search range (6h) divided by the parameter time_bucket_length.
+          state.counts = new int[params["number_buckets_in_range"]];
+          state.sourceBytes = new int[params["number_buckets_in_range"]];
+          state.destinationBytes = new int[params["number_buckets_in_range"]];
+          state.destinationIps = new HashMap();
+        map_script: |-
+          // Build beaconing counts and bytes vectors, and map of destination IPs
+          int bucket = (int)((System.currentTimeMillis() / 1000 - doc[params["time_field"]].value.toEpochSecond()) / params["time_bucket_length"]);
+          if (bucket >= 0 && bucket < state.counts.length) {
+              state.counts[bucket]++;
+              if (doc.containsKey(params["source_bytes"]) && !doc[params["source_bytes"]].isEmpty()) {
+                  state.sourceBytes[bucket] += doc[params["source_bytes"]].value;
+              }
+              if (doc.containsKey(params["destination_bytes"]) && !doc[params["destination_bytes"]].isEmpty()) {
+                  state.destinationBytes[bucket] += doc[params["destination_bytes"]].value;
+              }
+              // Getting only the top 2 * number_of_destination_ips dest ips
+              if (doc.containsKey(params["destination_ip"]) && !doc[params["destination_ip"]].isEmpty()) {
+                  def destIp = doc[params["destination_ip"]].value.toString();
+                  if (state.destinationIps.containsKey(destIp)) {
+                      state.destinationIps[destIp] += 1
+                  }
+                  else if (!state.destinationIps.containsKey(destIp) && state.destinationIps.size() < (2 * params["number_destination_ips"])) {
+                      state.destinationIps[destIp] = 1
+                  }
+                  else {
+                      String minKey = Collections.min(state.destinationIps.entrySet(), Map.Entry.comparingByValue()).getKey();
+                      state.destinationIps.put(destIp, state.destinationIps.remove(minKey) + 1);
+                  }
+              }
+          }
+        params:
+          destination_bytes: destination.bytes
+          destination_ip: destination.ip
+          max_beaconing_bytes_cov: 0.05
+          max_beaconing_count_rv: 0.1
+          max_jitter: 0
+          min_beaconing_count_autocovariance: 0.7
+          min_not_empty: 0.5
+          min_number_periods: 6
+          number_buckets_in_range: 360
+          number_destination_ips: 10
+          source_bytes: source.bytes
+          time_bucket_length: 60
+          time_field:  "@timestamp"
+          truncate_at: [0.1, 0.8]
+        reduce_script: |-
+          int firstComplete(def counts) {
+              int i = 0;
+              for (; i < counts.length && counts[i] == 0; i++) {}
+              return i;
+          }
+          int lastComplete(def counts) {
+              int i = counts.length;
+              for (; i > 0 && counts[i - 1] == 0; i--) {}
+              return i;
+          }
+          def countIfNot(int a, int b, int stride, Function skip) {
+              int result = 0;
+              for (int i = a; i < b; i += stride) {
+                  result += skip.apply(i) ? 0 : 1;
+              }
+              return result;
+          }
+          def percentiles(def percents, def values, Function skip) {
+              def orderedValues = new ArrayList();
+              for (int i = 0; i < values.length; i++) {
+                  if (!skip.apply(i)) {
+                      orderedValues.add(values[i]);
+                  }
+              }
+              Collections.sort(orderedValues);
+              def n = orderedValues.size();
+              def result = new double[percents.length];
+              for (int i = 0; i < result.length; ++i) {
+                  result[i] = orderedValues[(int)Math.min((int)(percents[i] * (double)(n) + 0.5), (int)(n - 1))];
+              }
+              return result;
+          }
+          double mean(int a, int b, int stride, def values, Function skip) {
+              double m = 0;
+              double n = 0;
+              for (int i = a; i < b; i = i + stride) {
+                  if (!skip.apply(i)) {
+                      m += values[i];
+                      n += 1;
+                  }
+              }
+              return n > 0 ? m / n : 0.0;
+          }
+          double variance(double mean, int a, int b, int stride, def values, Function skip) {
+              double v = 0;
+              double n = 0;
+              for (int i = a; i < b; i = i + stride) {
+                  if (!skip.apply(i)) {
+                      double x = values[i];
+                      v += (x - mean) * (x - mean);
+                      n += 1;
+                  }
+              }
+              return n > 0 ? v / n : 0.0;
+          }
+          int max(int a, int b, def values) {
+              int imax = a;
+              double max = values[a];
+              for (int i = a + 1; i < b; i++) {
+                  if (values[i] > max) {
+                      imax = i; max = values[i];
+                  }
+              }
+              return imax;
+          }
+
+          // Aggregate the range window bucket counts
+          def counts = new double[params["number_buckets_in_range"]];
+          def sourceBytes = new double[params["number_buckets_in_range"]];
+          def destinationBytes = new double[params["number_buckets_in_range"]];
+          def destinationIps = new HashMap();
+
+          // In a scripted metric aggregation the states variable is a list of the
+          // objects returned by the combine script from each shard.
+          for (state in states) {
+              for (int i = 0; i < counts.length; i++) {
+                  counts[i] += (double)(state.counts[i]);
+                  sourceBytes[i] += (double)(state.sourceBytes[i]);
+                  destinationBytes[i] += (double)(state.destinationBytes[i]);
+              }
+              for (entry in state.destinationIps.entrySet()) {
+                  destinationIps.putIfAbsent(entry.getKey(), 0);
+                  destinationIps[entry.getKey()] += entry.getValue();
+              }
+          }
+
+          for (int i = 0; i < counts.length; i++) {
+              if (counts[i] > 0) {
+                  sourceBytes[i] /= (double)(counts[i]);
+                  destinationBytes[i] /= (double)(counts[i]);
+              }
+          }
+
+          def topDestinationIps = new ArrayList();
+          if (destinationIps.size() > params["number_destination_ips"]) {
+              def topDestinationIpList = destinationIps.entrySet().stream().sorted(Map.Entry.comparingByValue().reversed()).collect(Collectors.toList()).stream().map(e -> e.getKey()).collect(Collectors.toList());
+              topDestinationIps = topDestinationIpList.subList(0, params["number_destination_ips"]);
+          }
+          else {
+              topDestinationIps = destinationIps.keySet().stream().collect(Collectors.toList());
+          }
+
+          int a = firstComplete(counts);
+          int b = lastComplete(counts);
+          int notEmpty = countIfNot(a, b, 1, (int i) -> counts[i] == 0);
+
+          // We want to see at least min_number_periods repeats therefore we need
+          // twice this observed interval given the minimum period is two and at
+          // at least minimum repeats docs + 1.
+          if (b - a < 2 * params["min_number_periods"] || notEmpty < params["min_number_periods"] + 1) {
+              return ["is_beaconing": false, "interval": b - a, "non_empty_buckets": notEmpty];
+          }
+
+          int notEmptySource = countIfNot(a, b, 1, (int i) -> sourceBytes[i] == 0);
+          int notEmptyDestination = countIfNot(a, b, 1, (int i) -> destinationBytes[i] == 0);
+
+          // If there coefficient of variation of the source bytes is too high this is
+          // not characterised as a beacon.
+          def lowSourceBytesCOV = false;
+          def percentilesSourceBytes = [0.0, 0.0];
+          def meanSourceBytes = 0.0;
+          def varSourceBytes = 0.0;
+          if (notEmptySource > params["min_number_periods"]) {
+              percentilesSourceBytes = percentiles(params["truncate_at"], sourceBytes, (int i) -> sourceBytes[i] == 0);
+              meanSourceBytes = mean(a, b, 1, sourceBytes, (int i) -> sourceBytes[i] < percentilesSourceBytes[0] || sourceBytes[i] > percentilesSourceBytes[1]);
+              varSourceBytes = variance(meanSourceBytes, a, b, 1, sourceBytes, (int i) -> sourceBytes[i] < percentilesSourceBytes[0] || sourceBytes[i] > percentilesSourceBytes[1]);
+              lowSourceBytesCOV = (Math.sqrt(varSourceBytes) <= params["max_beaconing_bytes_cov"] * Math.abs(meanSourceBytes));
+          }
+
+          // If there coefficient of variation of the destination bytes is too high this is
+          // not characterised as a beacon.
+          def lowDestBytesCOV = false;
+          def percentilesDestBytes = [0.0, 0.0];
+          def meanDestBytes = 0.0;
+          def varDestBytes = 0.0;
+          if (notEmptyDestination > params["min_number_periods"]) {
+              percentilesDestBytes = percentiles(params["truncate_at"], destinationBytes, (int i) -> destinationBytes[i] == 0);
+              meanDestBytes = mean(a, b, 1, destinationBytes, (int i) -> destinationBytes[i] < percentilesDestBytes[0] || destinationBytes[i] > percentilesDestBytes[1]);
+              varDestBytes = variance(meanDestBytes, a, b, 1, destinationBytes, (int i) -> destinationBytes[i] < percentilesDestBytes[0] || destinationBytes[i] > percentilesDestBytes[1]);
+              lowDestBytesCOV = (Math.sqrt(varDestBytes) <= params["max_beaconing_bytes_cov"] * Math.abs(meanDestBytes));
+          }
+
+          // If the period less than the bucket interval then we expect to see
+          // low variation in the count per bucket. For Poisson process we expect
+          // the variance to be equal to the mean so this condition on the relative
+          // variance implies that the signal is much more regular than a Poisson
+          // process.
+          def lowCountRV = false;
+          def percentilesCounts = [0.0, 0.0];
+          def meanCounts = 0.0;
+          def varCounts = 0.0;
+          if (notEmpty > (int)(params["min_not_empty"] * (b-a))) {
+              percentilesCounts = percentiles(params["truncate_at"], counts, (int i) -> counts[i] == 0);
+              meanCounts = mean(a, b, 1, counts, (int i) -> counts[i] < percentilesCounts[0] || counts[i] > percentilesCounts[1]);
+              varCounts = variance(meanCounts, a, b, 1, counts, (int i) -> counts[i] < percentilesCounts[0] || counts[i] > percentilesCounts[1]);
+              lowCountRV = (Math.sqrt(varCounts) <= params["max_beaconing_count_rv"] * Math.abs(meanCounts));
+          }
+
+          // If the period is greater than the bucket interval we can check for a
+          // periodic pattern in the bucket counts. We do this by looking for high
+          // values of the autocovariance function.
+
+          int maxPeriod = (int)((b - a) / params["min_number_periods"]);
+
+          double[] nCounts     = new double[maxPeriod - 1];
+          double[] xyCovCounts = new double[maxPeriod - 1];
+
+          for (int period = 2; period <= maxPeriod; period++) {
+
+              // Allow for jitter <= params["max_jitter"] fraction of period.
+              int maxJitter = (int)(params["max_jitter"] * period);
+
+              int a_ = a + maxJitter;
+              int b_ = b - 2 * period;
+
+              double meanCountsPeriod = mean(a_ + period, a_ + period * (int)((b_ + 1 - a_) / period), 1, counts, (int i) -> false);
+
+              double[] xVarCountsPeriod  = new double[period - 1];
+              double[] yVarCountsPeriod  = new double[period - 1];
+              double[] xyCovCountsPeriod = new double[period - 1];
+
+              for (int i = a_; i < b_ + 1; i += period) {
+                  double xVarCountsPeriodi    = 0.0;
+                  double[] yVarCountsPeriodi  = new double[2 * maxJitter + 1];
+                  double[] xyCovCountsPeriodi = new double[2 * maxJitter + 1];
+                  for (int j = i + period; j < i + 2 * period; j++) {
+                      xVarCountsPeriodi += (counts[j] - meanCountsPeriod) * (counts[j] - meanCountsPeriod);
+                  }
+                  for (int jitter = -maxJitter; jitter <= maxJitter; jitter++) {
+                      for (int j = i + period; j < i + 2 * period; j++) {
+                          yVarCountsPeriodi[maxJitter + jitter]  += (counts[j - period - jitter] - meanCountsPeriod) *
+                                                                  (counts[j - period - jitter] - meanCountsPeriod);
+                          xyCovCountsPeriodi[maxJitter + jitter] += (counts[j - period - jitter] - meanCountsPeriod) *
+                                                                  (counts[j] - meanCountsPeriod);
+                      }
+                  }
+
+                  // We are interested in maximizing the correlation coefficient.
+                  // In general, we don't know at this point which choice will
+                  // maximize the total correlation: we'd need to maximize over
+                  // all possible choices for each period. This is not readily
+                  // tractable so a good heuristic is greedy: choose the jitter
+                  // which maximizes autocorrelation for each period.
+                  double[] sigma = new double[2 * maxJitter + 1] ;
+                  for (int j = 0; j < 2 * maxJitter + 1; j++) {
+                      double Z = Math.sqrt(xVarCountsPeriodi * yVarCountsPeriodi[j]);
+                      sigma[j] = Z == 0.0 ? 1.0 : xyCovCountsPeriodi[j] / Z;
+                  }
+
+                  int j = max(0, 2 * maxJitter + 1, sigma);
+
+                  xVarCountsPeriod[period - 2]  += xVarCountsPeriodi;
+                  yVarCountsPeriod[period - 2]  += yVarCountsPeriodi[j];
+                  xyCovCountsPeriod[period - 2] += xyCovCountsPeriodi[j];
+
+                  for (int period_ = 2; period_ < period / 2; period_++) {
+                      if (period % period_ == 0) {
+                          int k = max(maxJitter - (int)(params["max_jitter"] * period_),
+                                      maxJitter + (int)(params["max_jitter"] * period_) + 1,
+                                      xyCovCountsPeriodi);
+                          xVarCountsPeriod[period_ - 2]  += xVarCountsPeriodi;
+                          yVarCountsPeriod[period_ - 2]  += yVarCountsPeriodi[k];
+                          xyCovCountsPeriod[period_ - 2] += xyCovCountsPeriodi[k];
+                      }
+                  }
+              }
+
+              double Z = Math.sqrt(xVarCountsPeriod[period - 2] * yVarCountsPeriod[period - 2]);
+
+              nCounts[period - 2]    += 1;
+              xyCovCounts[period - 2] = Z == 0.0 ? 1.0 : xyCovCountsPeriod[period - 2] / Z;
+
+              // We use the fact that if a signal is periodic with period p it will
+              // have high autocovariance for any shift i * p for integer i. So we
+              // average over the autocovariance for multiples of the period. This
+              // works around the fact that smoothly varying signals will have high
+              // autocovariance for small shifts.
+              for (int period_ = 2; period_ < period / 2; period_++) {
+                  if (period % period_ == 0) {
+                      double n     = nCounts[period_ - 2] + 1;
+                      double Z_    = Math.sqrt(xVarCountsPeriod[period_ - 2] * yVarCountsPeriod[period_ - 2]);
+                      double xyCov = Z_ == 0.0 ? 1.0 : xyCovCountsPeriod[period_ - 2] / Z_;
+                      nCounts[period_ - 2]    += 1;
+                      xyCovCounts[period_ - 2] = ((n - 1) * xyCovCounts[period_ - 2] + xyCov) / n;
+                  }
+              }
+          }
+
+          int period = max(0, xyCovCounts.length, xyCovCounts) + 2;
+          double maxCovCount = xyCovCounts[period - 2];
+
+          def highCov = (maxCovCount >= params["min_beaconing_count_autocovariance"]);
+
+          return ["is_beaconing": lowSourceBytesCOV || lowDestBytesCOV || lowCountRV || highCov,
+                  "beaconing_score": (lowCountRV || highCov?1:0) + (lowSourceBytesCOV?1:0) + (lowDestBytesCOV?1:0),
+                  "low_source_bytes_variation": lowSourceBytesCOV,
+                  "low_destination_bytes_variation": lowDestBytesCOV,
+                  "low_count_variation": lowCountRV,
+                  "periodic": highCov,
+                  "interval": b - a,
+                  "non_empty_buckets": notEmpty,
+                  "mean_source_bytes": meanSourceBytes,
+                  "std_dev_source_bytes": Math.sqrt(varSourceBytes),
+                  "source_bytes_percentiles": percentilesSourceBytes,
+                  "mean_destination_bytes": meanDestBytes,
+                  "std_dev_destination_bytes": Math.sqrt(varDestBytes),
+                  "destination_bytes_percentiles": percentilesDestBytes,
+                  "mean_counts": meanCounts,
+                  "variance_counts": varCounts,
+                  "counts_percentiles": percentilesCounts,
+                  "autocovariance": maxCovCount,
+                  "max_autocovariance_period": period,
+                  "destination_ips": topDestinationIps];
+  group_by:
+    host.name:
+      terms:
+        field: host.name
+    process.name:
+      terms:
+        field: process.name
+source:
+  index: logs-*
+  query:
+    bool:
+      filter:
+        - range:
+            '@timestamp':
+                gte: now-6h
+        - term:
+            event.category:
+              value: network
+        - term:
+            event.action:
+              value: disconnect_received
+      minimum_should_match: 1
+      must_not:
+        terms:
+          process.name: ["Acrobat.exe", "AcroCEF.exe", "AcroCEF Helper", "AddressBookSourceSync", "Adobe_CCXProcess.node", "Adobe CEF Helper", "Adobe CEF Helper.exe", "AdobeCollabSync.exe", "Adobe Desktop Service", "Adobe Desktop Service.exe", "accountsd", "akd", "appstoreagent", "apsd", "atmgr.exe", "assistantd", "backgroundTaskHost.exe", "BackgroundTransferHost.exe", "Brave Browser Helper", "CalendarAgent", "Camtasia 2020", "CCXProcess", "chrome.exe", "cloudd", "Code.exe", "Code Helper", "Code Helper (Renderer)", "CompatTelRunner.exe", "com.apple.geod", "com.apple.ncplugin.stocks", "com.apple.Safari.SafeBrowsing.Service", "com.apple.WebKit.Networking", "com.docker.vpnkit", "commerce", "Core Sync", "CoreSync.exe", "default-browser-agent.exe", "DeliveryService.exe", "DeviceCensus.exe", "Docker", "Dropbox", "Dsapi.exe", "elastic-agent", "elastic-agent.exe", "elastic-endpoint", "esensor", "EXCEL.EXE", "explorer.exe", "familycircled", "filebeat", "filebeat.exe", "FileCoAuth.exe", "firefox", "firefox.exe", "GitHub Desktop Helper", "Google Chrome Helper", "google_osconfig_agent", "google_osconfig_agent.exe", "google_guest_agent", "GCEWindowsAgent.exe", "Google Drive", "GoogleDriveFS.exe", "GoogleUpdate.exe", "IMRemoteURLConnectionAgent", "jamf", "keybase", "ksfetch", "Lenovo.Modern.ImController.PluginHost.CompanionApp.exe", "LenovoVantageService.exe", "locationd", "mapspushd", "mcautoreg.exe", "metricbeat", "mdmclient", "Mail", "MMSSHOST.exe", "Microsoft Excel", "Microsoft.Management.Services.IntuneWindowsAgent.exe", "Microsoft OneNote", "Microsoft PowerPoint", "Microsoft Teams Helper", "Microsoft Teams Helper (Renderer)", "Microsoft Update Assistant", "Microsoft Word", "ModuleCoreService.exe", "msedge.exe", "node", "node.exe", "nsurlsessiond", "OfficeC2RClient.exe", "ONENOTE.EXE", "officesvcmgr.exe", "OfficeClickToRun.exe", "OneDrive.exe", "parsec-fbf", "parsecd", "pingsender.exe", "SDXHelper.exe", "SearchApp.exe", "ServiceLayer.exe", "Skype for Business", "Slack.exe", "Slack Helper", "snapd", "smartscreen.exe", "softwareupdated", "Spotify.exe", "Spotify Helper", "ssm-agent-worker.exe", "ssm-document-worker.exe", "syspolicyd", "SystemIdleCheck.exe", "taskhostw.exe", "Teams", "Teams.exe", "trustd", "updater", "WINWORD.EXE", "WhatsApp Helper", "xpcproxy", "Zoom.exe", "zoom.us", "ZoomPresence"]
+      should:
+        - bool:
+            filter:
+              terms:
+                source.ip: ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]
+            must_not:
+              terms:
+                destination.ip: ["10.0.0.0/8", "169.254.0.0/16", "172.16.0.0/12", "127.0.0.0/8", "192.0.0.0/24", "192.0.0.0/29", "192.0.0.8/32", "192.0.0.9/32", "192.0.0.10/32", "192.0.0.170/32", "192.0.0.171/32", "192.0.2.0/24", "192.31.196.0/24", "192.52.193.0/24", "192.168.0.0/16", "192.88.99.0/24", "224.0.0.0/4", "100.64.0.0/10", "192.175.48.0/24", "198.18.0.0/15", "198.51.100.0/24", "203.0.113.0/24", "240.0.0.0/4", "::1", "FE80::/10", "FF00::/8"]
+        - bool:
+            filter:
+              terms:
+                process.name: ["lsass.exe", "Microsoft Outlook", "omadmclient.exe", "OUTLOOK.EXE", "SettingSyncHost.exe", "SIHClient.exe", "POWERPNT.EXE", "svchost.exe", "uhssvc.exe"]
+            must_not:
+              terms:
+                destination.ip: ["10.0.0.0/8", "169.254.0.0/16", "172.16.0.0/12", "127.0.0.0/8", "192.0.0.0/24", "192.0.0.0/29", "192.0.0.8/32", "192.0.0.9/32", "192.0.0.10/32", "192.0.0.170/32", "192.0.0.171/32", "192.0.2.0/24", "192.31.196.0/24", "192.52.193.0/24", "192.168.0.0/16", "192.88.99.0/24", "224.0.0.0/4", "100.64.0.0/10", "192.175.48.0/24", "198.18.0.0/15", "198.51.100.0/24", "203.0.113.0/24", "240.0.0.0/4", "::1", "FE80::/10", "FF00::/8", "13.64.0.0/11", "13.104.0.0/14", "13.96.0.0/13", "18.209.113.128/26", "20.33.0.0/16", "20.34.0.0/15", "20.36.0.0/14", "20.40.0.0/13", "20.48.0.0/12", "20.64.0.0/10", "20.128.0.0/16", "20.36.0.0/14", "20.34.0.0/15", "20.40.0.0/13", "20.128.0.0/16", "20.48.0.0/12", "20.33.0.0/16", "20.180.0.0/14", "20.184.0.0/13", "23.64.0.0/14", "23.32.0.0/11", "40.74.0.0/15", "40.76.0.0/14", "40.80.0.0/12", "40.96.0.0/12", "40.112.0.0/13", "40.120.0.0/14", "40.124.0.0/16", "40.126.0.0/18", "40.125.0.0/17", "52.132.0.0/14", "52.136.0.0/13", "52.148.0.0/14", "52.145.0.0/16", "52.146.0.0/15", "52.160.0.0/11", "52.152.0.0/13", "52.224.0.0/11"]
+sync:
+  time:
+    delay: 120s
+    field:  "@timestamp"
+_meta:
+  fleet_transform_version: 1.0.0
+  run_as_kibana_system: false
