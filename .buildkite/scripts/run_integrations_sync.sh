@@ -45,6 +45,7 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
     pushd ${integration} 2> /dev/null
 
     echo "Links file path: ${ELASTIC_PACKAGE_LINKS_FILE_PATH}"
+    echo "Base dir: ${BASE_DIR}"
     directory=$(dirname ${ELASTIC_PACKAGE_LINKS_FILE_PATH})
     echo "Folder links file path: $directory"
     ls -l  $directory
