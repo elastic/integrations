@@ -270,9 +270,6 @@
           description: The optional description of this folder
           type: text
         - name: file_version
-          description: The information about the current version of the file
-          type: object
-        - name: file_version
           type: group
           fields:
             - name: type
@@ -300,16 +297,13 @@
           description: Max upload size
           type: boolean
         - name: modified_by
-          description: The user who last modified this folder
-          type: object
-        - name: modified_by.type
-          description: Value is always `user`
-          type: keyword
-        - name: modified_by
           type: group
           fields:
+            - name: type
+              description: Value is always `user`
+              type: keyword
             - name: id
-              description: The unique identifier for this user
+              description: The unique identifier for this user that last modified the file.
               type: keyword
             - name: name
               description: The display name of this user. Maps from **.name
@@ -377,9 +371,6 @@
               description: The number of folders in this list
               type: long
             - name: entries
-              description: The parent folders for this item
-              type: object
-            - name: entries
               type: group
               fields:
                 - name: type
@@ -389,7 +380,7 @@
                   description: The unique identifier that represent a folder. This field is an array
                   type: keyword
                 - name: name
-                  description: The name of the folder. This field is an array
+                  description: The name of the parent folder. This field is an array
                   type: keyword
         - name: purged_at
           description: The time at which this file is expected to be purged from the trash
