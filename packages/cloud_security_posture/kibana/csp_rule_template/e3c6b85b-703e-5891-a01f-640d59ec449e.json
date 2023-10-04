@@ -1,0 +1,38 @@
+{
+    "id": "e3c6b85b-703e-5891-a01f-640d59ec449e",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "This creates authentication credentials for services that need access to storage resources so that services will no longer need to communicate via network request. There may be a temporary loss of communication as you set each Storage Account. It is recommended to not do this on mission-critical resources during business hours.",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/azure/storage/common/storage-network-security\n2. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-network-security#ns-2-secure-cloud-services-with-network-controls",
+            "id": "e3c6b85b-703e-5891-a01f-640d59ec449e",
+            "name": "Ensure 'Allow Azure services on the trusted services list to access this storage account' is Enabled for Storage Account Access",
+            "profile_applicability": "* Level 2",
+            "description": "Some Azure services that interact with storage accounts operate from networks that can't be granted access through network rules.\nTo help this type of service work as intended, allow the set of trusted Azure services to bypass the network rules.\nThese services will then use strong authentication to access the storage account.\nIf the Allow trusted Azure services exception is enabled, the following services are granted access to the storage account: Azure Backup, Azure Site Recovery, Azure DevTest Labs, Azure Event Grid, Azure Event Hubs, Azure Networking, Azure Monitor, and Azure SQL Data Warehouse (when registered in the subscription).",
+            "rationale": "Turning on firewall rules for storage account will block access to incoming requests for data, including from other Azure services.\nWe can re-enable this functionality by enabling `\"Trusted Azure Services\"` through networking exceptions.",
+            "audit": "**From Azure Portal**\n\n1. Go to `Storage Accounts`\n2. For each storage account, Click on the `Networking` blade\n3. Click on the `Firewalls and virtual networks` heading.\n4. Ensure that `Enabled from selected virtual networks and IP addresses` is selected.\n5. Ensure that `Allow Azure services on the trusted services list to access this storage account` is checked in `Exceptions`.\n\n**From Azure CLI**\n\nEnsure `bypass` contains `AzureServices`\n```\naz storage account list --query '[*].networkRuleSet'\n```\n\n**From PowerShell**\n\n```\nConnect-AzAccount\nSet-AzContext -Subscription <subscription ID>\nGet-AzStorageAccountNetworkRuleset -ResourceGroupName <resource group> -Name <storage account name> |Select-Object Bypass\n```\n\nIf the resultant output from the above command shows 'NULL', that storage account configuration is out of compliance with this check.\nIf the result of the above command shows 'AzureServices', that storage account configuration is in compliance with this check.",
+            "remediation": "**From Azure Portal**\n\n1. Go to `Storage Accounts`\n2. For each storage account, Click on the `Networking` blade\n3. Click on the `Firewalls and virtual networks` heading.\n4. Ensure that `Enabled from selected virtual networks and IP addresses` is selected.\n5. Under the 'Exceptions' label, enable check box for `Allow Azure services on the trusted services list to access this storage account`.\n6. Click Save to apply your changes.\n\n**From Azure CLI**\n\nUse the below command to update `Azure services`.\n```\naz storage account update --name <StorageAccountName> --resource-group <resourceGroupName> --bypass AzureServices\n```",
+            "section": "Storage Accounts",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 3.9",
+                "Storage Accounts"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "3.9",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_3_9"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

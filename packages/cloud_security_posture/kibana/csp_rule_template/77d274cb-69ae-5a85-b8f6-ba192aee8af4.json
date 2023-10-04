@@ -1,0 +1,38 @@
+{
+    "id": "77d274cb-69ae-5a85-b8f6-ba192aee8af4",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "The Azure Bastion service incurs additional costs and requires a specific virtual network configuration. The `Standard` tier offers additional configuration options compared to the `Basic` tier and may incur additional costs for those added features.",
+            "default_value": "",
+            "references": "1. https://learn.microsoft.com/en-us/azure/bastion/bastion-overview#sku\n2. https://learn.microsoft.com/en-us/powershell/module/az.network/get-azbastion?view=azps-9.2.0\n3. https://learn.microsoft.com/en-us/cli/azure/network/bastion?view=azure-cli-latest",
+            "id": "77d274cb-69ae-5a85-b8f6-ba192aee8af4",
+            "name": "Ensure an Azure Bastion Host Exists",
+            "profile_applicability": "* Level 2",
+            "description": "The Azure Bastion service allows secure remote access to Azure Virtual Machines over the Internet without exposing remote access protocol ports and services directly to the Internet.\nThe Azure Bastion service provides this access using TLS over 443/TCP, and subscribes to hardened configurations within an organization's Azure Active Directory service.",
+            "rationale": "The Azure Bastion service allows organizations a more secure means of accessing Azure Virtual Machines over the Internet without assigning public IP addresses to those Virtual Machines.\nThe Azure Bastion service provides Remote Desktop Protocol (RDP) and Secure Shell (SSH) access to Virtual Machines using TLS within a web browser, thus preventing organizations from opening up 3389/TCP and 22/TCP to the Internet on Azure Virtual Machines.\nAdditional benefits of the Bastion service includes Multi-Factor Authentication, Conditional Access Policies, and any other hardening measures configured within Azure Active Directory using a central point of access.",
+            "audit": "**From Azure Portal**\n1. Click on `Bastions`\n2. Ensure there is at least one `Bastion` host listed under the `Name` column\n\n**From Azure CLI**\n\n**Note:** The Azure CLI `network bastion` module is in `Preview` as of this writing\n\n```\naz network bastion list --subscription <subscription ID>\n```\n\nEnsure the output of the above command is not empty.\n\n**From PowerShell**\n\nRetrieve the `Bastion` host(s) information for a specific `Resource Group`\n\n````\nGet-AzBastion -ResourceGroupName <resource group name>\n```\n\nEnsure the output of the above command is not empty.",
+            "remediation": "Remediation Procedures\n\n**From Azure Portal***\n\n1. Click on `Bastions`\n2. Select the `Subscription`\n3. Select the `Resource group`\n4. Type a `Name` for the new Bastion host\n5. Select a `Region`\n6. Choose `Standard` next to `Tier`\n7. Use the slider to set the `Instance count`\n8. Select the `Virtual network` or `Create new` \n9. Select the `Subnet` named `AzureBastionSubnet`. Create a `Subnet` named `AzureBastionSubnet` using a `/26` CIDR range if it doesn't already exist.\n10. Selct the appropriate `Public IP address` option.\n11. If `Create new` is selected for the `Public IP address` option, provide a `Public IP address name`.\n12. If `Use existing` is selected for `Public IP address` option, select an IP address from `Choose public IP address`\n13. Click `Next: Tags >`\n14. Configure the appropriate `Tags`\n15. Click `Next: Advanced >`\n16. Select the appropriate `Advanced` options\n17. Click `Next: Review + create >`\n18. Click `Create`\n\n**From Azure CLI**\n\n```\naz network bastion create --location <location> --name <name of bastion host> --public-ip-address <public IP address name or ID> --resource-group <resource group name or ID> --vnet-name <virtual network containing subnet called \"AzureBastionSubnet\"> --scale-units <integer> --sku Standard [--disable-copy-paste true|false] [--enable-ip-connect true|false] [--enable-tunneling true|false]\n```\n\n**From PowerShell**\n\nCreate the appropriate `Virtual network` settings and `Public IP Address` settings.\n\n```\n$subnetName = \"AzureBastionSubnet\"\n$subnet = New-AzVirtualNetworkSubnetConfig -Name $subnetName -AddressPrefix <IP address range in CIDR notation making sure to use a /26>\n$virtualNet = New-AzVirtualNetwork -Name <virtual network name> -ResourceGroupName <resource group name> -Location <location> -AddressPrefix <IP address range in CIDR notation> -Subnet $subnet\n$publicip = New-AzPublicIpAddress -ResourceGroupName <resource group name> -Name <public IP address name> -Location <location> -AllocationMethod Dynamic -Sku Standard\n```\n\nCreate the `Azure Bastion` service using the information within the created variables from above.\n\n```\nNew-AzBastion -ResourceGroupName <resource group name> -Name <bastion name> -PublicIpAddress $publicip -VirtualNetwork $virtualNet -Sku \"Standard\" -ScaleUnit <integer> \n```",
+            "section": "Virtual Machines",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 7.1",
+                "Virtual Machines"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "7.1",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_7_1"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

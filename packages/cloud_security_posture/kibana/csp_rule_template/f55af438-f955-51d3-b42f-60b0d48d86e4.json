@@ -1,0 +1,38 @@
+{
+    "id": "f55af438-f955-51d3-b42f-60b0d48d86e4",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://azure.microsoft.com/en-us/updates/classic-alerting-monitoring-retirement\n2. https://docs.microsoft.com/en-in/azure/azure-monitor/platform/alerts-activity-log\n3. https://docs.microsoft.com/en-in/rest/api/monitor/activitylogalerts/createorupdate\n4. https://docs.microsoft.com/en-in/rest/api/monitor/activitylogalerts/listbysubscriptionid\n5. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-logging-threat-detection#lt-3-enable-logging-for-security-investigation",
+            "id": "f55af438-f955-51d3-b42f-60b0d48d86e4",
+            "name": "Ensure that Activity Log Alert exists for Create or Update Security Solution",
+            "profile_applicability": "* Level 1",
+            "description": "Create an activity log alert for the Create or Update Security Solution event.",
+            "rationale": "Monitoring for Create or Update Security Solution events gives insight into changes to the active security solutions and may reduce the time it takes to detect suspicious activity.",
+            "audit": "**From Azure Portal**\n\n1. Navigate to the `Monitor` blade\n2. Click on `Alerts`\n3. In the Alerts window, click on `Alert rules`\n4. Hover mouse over the values in the Condition column to find an alert where **`Operation name=Microsoft.Security/securitySolutions/write`**\n5. Click on the Alert `Name` associated with the previous step\n6. Click on the Condition name of **`Whenever the Activity Log has an event with Category='Security', Signal name='Create or Update Security Solutions (securitySolutions)'`** \n7. In the Configure signal logic window, ensure the following is configured:\n - Event level: `All selected`\n - Status: `All selected`\n - Event initiated by: `* (All services and users)`\n8. Click `Done`\n9. Back in the < Alert Name > window, review `Actions` to ensure that an Action group is assigned to notify the appropriate personnel in your organization.\n\n**From Azure CLI**\n\n```\naz monitor activity-log alert list --subscription <subscription Id> --query \"[].{Name:name,Enabled:enabled,Condition:condition.allOf,Actions:actions}\"\n```\n\nLook for `Microsoft.Security/securitySolutions/write` in the output\n\n**From PowerShell**\n\n```\nGet-AzActivityLogAlert -SubscriptionId <subscription ID>|where-object {$_.ConditionAllOf.Equal -match \"Microsoft.Security/securitySolutions/write\"}|select-object Location,Name,Enabled,ResourceGroupName,ConditionAllOf\n```",
+            "remediation": "**From Azure Portal**\n\n1. Navigate to the Monitor blade.\n2. Select `Alerts`.\n3. Select `Create`.\n4. Select `Alert rule`.\n5. Under `Filter by subscription`, choose a subscription.\n6. Under `Filter by resource type`, select `Security Solutions (securitySolutions)`.\n7. Under `Filter by location`, select `All`.\n8. From the results, select the subscription.\n9. Select `Done`.\n10. Select the `Condition` tab.\n11. Under `Signal name`, click `Create or Update Security Solutions (Microsoft.Security/securitySolutions)`.\n12. Select the `Actions` tab.\n13. To use an existing action group, click `Select action groups`. To create a new action group, click `Create action group`. Fill out the appropriate details for the selection.\n14. Select the `Details` tab.\n15. Select a `Resource group`, provide an `Alert rule name` and an optional `Alert rule description`.\n16. Click `Review + create`.\n17. Click `Create`.\n\n**From Azure CLI**\n\n```\naz monitor activity-log alert create --resource-group \"<resource group name>\" --condition category=Administrative and operationName=Microsoft.Security/securitySolutions/write and level=<verbose | information | warning | error | critical>--scope \"/subscriptions/<subscription ID>\" --name \"<activity log rule name>\" --subscription <subscription id> --action-group <action group ID> --location global\n```\n\n**From PowerShell**\n\nCreate the `Conditions` object.\n\n```\n$conditions = @()\n$conditions += New-AzActivityLogAlertAlertRuleAnyOfOrLeafConditionObject -Equal Administrative -Field category\n$conditions += New-AzActivityLogAlertAlertRuleAnyOfOrLeafConditionObject -Equal Microsoft.Security/securitySolutions/write -Field operationName\n$conditions += New-AzActivityLogAlertAlertRuleAnyOfOrLeafConditionObject -Equal Verbose -Field level\n```\n\nRetrieve the `Action Group` information and store in a variable, then create the `Actions` object.\n\n```\n$actionGroup = Get-AzActionGroup -ResourceGroupName <resource group name> -Name <action group name>\n$actionObject = New-AzActivityLogAlertActionGroupObject -Id $actionGroup.Id\n```\n\nCreate the `Scope` object\n\n```\n$scope = \"/subscriptions/<subscription ID>\"\n```\n\nCreate the `Activity Log Alert Rule` for `Microsoft.Security/securitySolutions/write`\n\n```\nNew-AzActivityLogAlert -Name \"<activity log alert rule name>\" -ResourceGroupName \"<resource group name>\" -Condition $conditions -Scope $scope -Location global -Action $actionObject -Subscription <subscription ID> -Enabled $true\n```",
+            "section": "Monitoring using Activity Log Alerts",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 5.2.5",
+                "Monitoring using Activity Log Alerts"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "5.2.5",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_5_2_5"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
