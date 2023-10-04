@@ -253,6 +253,8 @@ These logs contain data related to the connecting client, the request path throu
 | client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
+| cloudflare.bot.score.src | Detection engine responsible for generating the Bot Score. Possible values are Not Computed, Heuristics, Machine Learning, Behavioral Analysis, Verified Bot, JS Fingerprinting, Cloudflare Service. | text |
+| cloudflare.bot.score.value | Cloudflare Bot Score. Scores below 30 are commonly associated with automated traffic. | long |
 | cloudflare.cache.bytes | Number of bytes returned by the cache | long |
 | cloudflare.cache.status | Status of cache | keyword |
 | cloudflare.cache.status_code | HTTP status code returned by the cache to the edge. All requests (including non-cacheable ones) go through the cache. | long |
