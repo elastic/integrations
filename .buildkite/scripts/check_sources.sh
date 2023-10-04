@@ -8,3 +8,5 @@ add_bin_path
 with_mage
 
 mage -debug check
+
+check_git_diff

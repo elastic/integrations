@@ -13,14 +13,6 @@ use_elastic_package() {
     go build -o build/elastic-package github.com/elastic/elastic-package
 }
 
-check_git_diff() {
-    cd ${WORKSPACE}
-    echo "git update-index"
-    git update-index --refresh
-    echo "git diff-index"
-    git diff-index --exit-code HEAD --
-}
-
 is_pr_affected() {
     echo "1"
 }
@@ -37,6 +29,7 @@ add_bin_path
 
 with_mage
 with_docker_compose
+with_kubernetes
 
 
 cd packages

@@ -147,3 +147,12 @@ google_cloud_logout_active_account() {
     echo "No active GCP accounts found."
   fi
 }
+
+check_git_diff() {
+    cd ${WORKSPACE}
+    echo "git update-index"
+    git update-index --refresh
+    echo "git diff-index"
+    git diff-index --exit-code HEAD --
+}
+
