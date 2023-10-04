@@ -4,10 +4,8 @@
   fields:
     - name: name
       type: keyword
+      dimension: true
       description: Logstash Pipeline id/name
-    - name: id
-      type: wildcard
-      description: Logstash Pipeline hash
     - name: elasticsearch.cluster.id
       type: keyword
       description: Elasticsearch clusters this Logstash pipeline is attached to
@@ -21,6 +19,7 @@
         - name: address
           type: keyword
           description: address hosting this instance of logstash
+          dimension: true
     - name: total
       type: group
       description: Total metrics on Logstash Pipeline
@@ -28,25 +27,32 @@
         - name: events.filtered
           type: long
           description: Number of events filtered by the pipeline
+          metric_type: counter
         - name: events.in
           type: long
+          metric_type: counter
           description: Number of events received by the pipeline
         - name: events.out
           type: long
+          metric_type: counter
           description: Number of events emitted by the pipeline
         - name: time.duration.ms
           unit: ms
           type: long
+          metric_type: counter
           description: Time spent processing events through the pipeline.
         - name: time.queue_push_duration.ms
+          metric_type: counter
           unit: ms
           type: long
           description: Time spent pushing events to the queue for this pipeline.
         - name: reloads.successes
           type: long
+          metric_type: counter
           description: Number of successful reloads for this pipeline
         - name: reloads.failures
           type: long
+          metric_type: counter
           description: Number of failed reloads for this pipeline
         - name: flow
           type: group
@@ -117,6 +123,7 @@
             - name: events
               type: long
               description: Number of events in the PQ for this pipeline
+              metric_type: counter
             - name: current_size.bytes
               type: long
               metric_type: gauge
