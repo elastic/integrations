@@ -156,3 +156,18 @@ check_git_diff() {
     git diff-index --exit-code HEAD --
 }
 
+with_yq() {
+    check_platform_architeture
+    local platform_type_lowercase="${platform_type,,}"
+    local binary="yq_${platform_type_lowercase}_${arch_type}
+
+    retry 5 curl -sSL -o ${BIN_FOLDER}/yq.tar.gz "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${binary}.tar.gz"
+
+    tar -C ${BIN_FOLDER} -xpf ${BIN_FOLDER}/yq.tar.gz ./yq_linux_amd64
+
+    mv ${BIN_FOLDER}/yq_linux_amd64 ${BIN_FOLDER}/yq
+    chmod +x ${BIN_FOLDER}/yq
+    yq --version
+
+    rm -rf ${BIN_FOLDER}/yq.tar.gz
+}

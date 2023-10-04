@@ -15,6 +15,27 @@ use_elastic_package() {
 
 prepare_stack() {
     echo "Prepare stack"
+
+    local args=""
+    if [ -n "${STACK_VERSION+x}" ]; then
+        args="${args} --version ${STACK_VERSION}"
+    fi
+
+    echo "Update the Elastic stack"
+    ../../build/elastic-package stack update ${args}
+
+    echo "Boot up the Elastic stack"
+    ../../build/elastic-package stack up -d ${args}
+}
+
+is_spec_3_0_0() {
+    local pkg_spec=$(cat manifest.yml | yq '.format_version')
+    local major_version=$(echo $pkg_spec | cut -d '.' -f 1)
+
+    if [ $major_version -ge 3 ]; then
+        return 0
+    fi
+    return 1
 }
 
 is_pr_affected() {
@@ -31,11 +52,14 @@ is_pr() {
 
 add_bin_path
 
+with_yq
 with_mage
 with_docker_compose
 with_kubernetes
 
 use_elastic_package
+
+prepare_stack
 
 cd packages
 for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
@@ -44,15 +68,19 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
 
     pushd ${integration} 2> /dev/null
 
-    echo "Links file path: ${ELASTIC_PACKAGE_LINKS_FILE_PATH}"
-    echo "Base dir: ${BASE_DIR}"
-    directory=$(dirname ${ELASTIC_PACKAGE_LINKS_FILE_PATH})
-    echo "Folder links file path: $directory"
-    ls -l  $directory
+    if [ ! is_spec_3_0_0 ]; then
+        echo "Not v3 spec version. Skipped"
+        continue
+    fi
 
     echo "Check integration: ${integration}"
     ../../build/elastic-package check -v
 
+    # echo "Test integration: ${integration}"
+    #  # eval "$(../../build/elastic-package stack shellinit)"
+    # ../../build/elastic-package test -v --report-format xUnit --report-output file --test-coverage
+
     popd 2> /dev/null
+    exit 0
 done
 
