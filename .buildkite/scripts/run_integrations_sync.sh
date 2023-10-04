@@ -13,6 +13,10 @@ use_elastic_package() {
     go build -o build/elastic-package github.com/elastic/elastic-package
 }
 
+prepare_stack() {
+    echo "Prepare stack"
+}
+
 is_pr_affected() {
     echo "1"
 }
@@ -31,11 +35,18 @@ with_mage
 with_docker_compose
 with_kubernetes
 
+use_elastic_package
 
 cd packages
 for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
     integration=$(basename ${it})
-    echo "Package ${integration}"
+    echo "Package ${integration}: check"
 
+    pushd ${integration} 2> /dev/null
+
+    echo "Check integration: ${integration}"
+    ../../build/elastic-package check -v
+
+    popd 2> /dev/null
 done
 

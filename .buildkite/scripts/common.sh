@@ -102,7 +102,7 @@ with_mage() {
 
 with_docker_compose() {
     create_bin_folder
-    retry 5 curl -SL -o ${BIN_FOLDER}/docker-compose "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64"
+    retry 5 curl -sSL -o ${BIN_FOLDER}/docker-compose "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64"
     chmod +x ${BIN_FOLDER}/docker-compose
     docker-compose version
 }
