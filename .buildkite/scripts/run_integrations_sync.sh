@@ -10,7 +10,7 @@ fi
 use_elastic_package() {
     echo "Installing elastic-package"
     mkdir -p build
-    go build -o build/elastic-package github.com/elastic/elastic-package
+    go build -o ${ELASTIC_PACKAGE_BIN} github.com/elastic/elastic-package
 }
 
 prepare_stack() {
@@ -22,10 +22,10 @@ prepare_stack() {
     fi
 
     echo "Update the Elastic stack"
-    ../../build/elastic-package stack update ${args}
+    ${ELASTIC_PACKAGE_BIN} stack update ${args}
 
     echo "Boot up the Elastic stack"
-    ../../build/elastic-package stack up -d ${args}
+    ${ELASTIC_PACKAGE_BIN} stack up -d ${args}
 }
 
 is_spec_3_0_0() {
@@ -57,6 +57,7 @@ with_mage
 with_docker_compose
 with_kubernetes
 
+ELASTIC_PACKAGE_BIN=${WORKSPACE}/build/elastic-package
 use_elastic_package
 
 prepare_stack
@@ -74,11 +75,11 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
     fi
 
     echo "Check integration: ${integration}"
-    ../../build/elastic-package check -v
+    ${ELASTIC_PACKAGE_BIN} check -v
 
     # echo "Test integration: ${integration}"
     #  # eval "$(../../build/elastic-package stack shellinit)"
-    # ../../build/elastic-package test -v --report-format xUnit --report-output file --test-coverage
+    # ${ELASTIC_PACKAGE_BIN} test -v --report-format xUnit --report-output file --test-coverage
 
     popd 2> /dev/null
     exit 0
