@@ -33,8 +33,8 @@ program: |
    )
   .do_request().as(resp, bytes(resp.Body)
   .decode_json()
-  .as(body, {"b":body}
-    .with({"logstash":{"node":{"stats":{
+  .as(body,
+    {"logstash":{"node":{"stats":{
              "events":body['events'],
              "jvm":{
                 "uptime_in_millis":body['jvm']['uptime_in_millis'],
@@ -61,12 +61,11 @@ program: |
                "version":body['version'],
               }
           }}
-          }})
-    )
-    ).drop("b")
-    .as(eve, {
-      "events":eve.map(each, eve),
-      "cursor": {"username":(has(state.cursor) && has(state.cursor.username)) ? state.cursor.username : has(state.username) ? state.username : null,
-                 "password":has(state.cursor) && has(state.cursor.password) ? state.cursor.password : has(state.password) ? state.password : null
-                 },
-      })
+        }})
+  )
+  .as(eve, {
+    "events":eve.map(each, eve),
+    "cursor": {"username":(has(state.cursor) && has(state.cursor.username)) ? state.cursor.username : has(state.username) ? state.username : null,
+               "password":has(state.cursor) && has(state.cursor.password) ? state.cursor.password : has(state.password) ? state.password : null
+               },
+  })
