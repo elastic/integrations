@@ -152,6 +152,11 @@ processors:
         - _tmp
         - cisco_ise.log.log_details_raw
       ignore_missing: true
+  - set:
+      field: event.code
+      copy_from: cisco_ise.log.message.code
+      if: ctx.cisco_ise?.log?.message?.code != null
+      ignore_failure: true
   - remove:
       field: event.original
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
