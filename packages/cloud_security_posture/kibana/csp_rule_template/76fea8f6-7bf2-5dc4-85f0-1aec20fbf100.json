@@ -1,0 +1,38 @@
+{
+    "id": "76fea8f6-7bf2-5dc4-85f0-1aec20fbf100",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "The impact of enforcing Standard SKU's is twofold\n1) There will be a cost increase\n2) The monitoring and service level agreements will be available and will support the production service.\n\nAll resources should be either tagged or in separate Management Groups/Subscriptions",
+            "default_value": "",
+            "references": "",
+            "id": "76fea8f6-7bf2-5dc4-85f0-1aec20fbf100",
+            "name": "Ensure that SKU Basic/Consumption is not used on artifacts that need to be monitored (Particularly for Production Workloads)",
+            "profile_applicability": "* Level 2",
+            "description": "The use of Basic or Free SKUs in Azure whilst cost effective have significant limitations in terms of what can be monitored and what support can be realized from Microsoft.\nTypically, these SKU\u2019s do not have a service SLA and Microsoft will usually refuse to provide support for them.\nConsequently Basic/Free SKUs should never be used for production workloads.",
+            "rationale": "Typically, production workloads need to be monitored and should have an SLA with Microsoft, using Basic SKUs for any deployed product will mean that that these capabilities do not exist.\n\nThe following resource types should use standard SKUs as a minimum.\n- Public IP Addresses\n- Network Load Balancers\n- REDIS Cache\n- SQL PaaS Databases\n- VPN Gateways",
+            "audit": "This needs to be audited by Azure Policy (one for each resource type) and denied for each artifact that is production.\n\n**From Azure Portal**\n1. Open `Azure Resource Graph Explorer`\n2. Click `New query`\n3. Paste the following into the query window:\n```\nResources\n| where sku contains 'Basic' or sku contains 'consumption'\n| order by type\n```\n4. Click `Run query` then evaluate the results in the results window.\n\n**From Azure CLI**\n```\naz graph query -q \"Resources | sku contains 'Basic' or sku contains 'consumption' | order by type\"\n```\n\n**From PowerShell**\n```\nGet-AzResource | ?{ $_.Sku -EQ \"Basic\"}\n```",
+            "remediation": "Each artifact has its own process for upgrading from basic to standard SKU's and this should be followed if required.",
+            "section": "Logging and Monitoring",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 5.5",
+                "Logging and Monitoring"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "5.5",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_5_5"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

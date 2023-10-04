@@ -190,7 +190,7 @@ An example event for `entity` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "7b3a2a82-b753-4683-b215-a79f696c6f6b",
