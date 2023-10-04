@@ -257,7 +257,7 @@ An example event for `siem` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
