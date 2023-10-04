@@ -1200,7 +1200,7 @@ intelligence data matches.
 | zeek.intel.fuid | If a file was associated with this intelligence hit, this is the uid for the file. | keyword |
 | zeek.intel.matched | Event to represent a match in the intelligence data from data that was seen. | keyword |
 | zeek.intel.seen.conn | If the data was discovered within a connection, the connection record should go here to give context to the data. | keyword |
-| zeek.intel.seen.f | If the data was discovered within a file, the file record should go here to provide context to the data. | object |
+| zeek.intel.seen.f.\* | If the data was discovered within a file, the file record should go here to provide context to the data. | object |
 | zeek.intel.seen.fuid | If the data was discovered within a file, the file uid should go here to provide context to the data. If the file record f is provided, this will be automatically filled out. | keyword |
 | zeek.intel.seen.host | If the indicator type was Intel::ADDR, then this field will be present. | keyword |
 | zeek.intel.seen.indicator | The intelligence indicator. | keyword |
