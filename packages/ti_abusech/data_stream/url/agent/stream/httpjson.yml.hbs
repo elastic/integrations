@@ -28,17 +28,33 @@ request.ssl: {{ssl}}
 {{#if http_client_timeout}}
 request.timeout: {{http_client_timeout}}
 {{/if}}
+
+
+{{#if ioc_expiry}}
+request.transforms:
+- set:
+    target: header.Content-Type
+    value: application/zip
+- set:
+    target: header.Accept
+    value: '*/*'
+response.decode_as: application/zip
+response.transforms:
+- set:
+    target: body.temp_var
+    value: '[[ sprintf "Time %s %s" (formatDate (now) "2006-01-02") (formatDate (now (parseDuration "-1d")) "2006-01-02") ]]'
+- set:
+    target: body.results
+    value: '[[ toJSON .last_response.body ]]'
+    default: '{"var1": false, "var2": "all", "var3":"true"}'
+response.split:
+  target: body.results
+  type: map
+{{else}}
 request.transforms:
 - set:
     target: header.Content-Type
     value: application/json
-
-{{#if ioc_expiry}}
-response.decode_as: application/zip
-response.split:
-  target: body
-  type: map
-{{else}}
 response.split:
   target: body.urls
 {{/if}}
