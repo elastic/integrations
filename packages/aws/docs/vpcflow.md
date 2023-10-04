@@ -244,8 +244,12 @@ An example event for `vpcflow` looks as following:
         "kind": "event",
         "start": "2016-10-31T11:35:08.000Z",
         "end": "2016-10-31T11:37:00.000Z",
-        "type": "connection",
-        "category": "network",
+        "type": [
+            "connection"
+        ],
+        "category": [
+            "network"
+        ],
         "outcome": "success"
     },
     "aws": {
