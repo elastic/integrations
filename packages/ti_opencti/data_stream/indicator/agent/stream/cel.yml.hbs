@@ -30,9 +30,6 @@ fields_under_root: true
 fields:
   _conf:
     url: {{url}}
-redact:
-  fields:
-    - api_key
 program: |
   request("POST", state.url + "/graphql").with({
     "Header": ({
@@ -63,6 +60,9 @@ program: |
       "cursor": { "value": body.data.indicators.pageInfo.endCursor },
     }))
   )
+redact:
+  fields:
+    - api_key
 state:
   api_key: {{api_key}}
   page_size: {{page_size}}
