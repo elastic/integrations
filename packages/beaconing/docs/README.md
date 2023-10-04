@@ -16,6 +16,7 @@ To inspect the installed assets, you can navigate to **Stack Management > Data >
 For additional information on the transform's inner workings and the signals it generates, refer to [this blog post](https://www.elastic.co/security-labs/identifying-beaconing-malware-using-elastic).
 
 **Note**: When querying the destination index to enquire about beaconing activities, we advise using the alias for the destination index (`ml_beaconing.all`). In the event that the underlying package is upgraded, the alias will aid in maintaining the previous findings.
+
 ## Dashboards
 
 The **Network Beaconing Identification** has three dashboards: 
