@@ -176,13 +176,13 @@ An example event for `entity` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-09-22T11:27:09.928Z",
+    "@timestamp": "2023-10-04T13:04:18.243Z",
     "agent": {
-        "ephemeral_id": "4f72bf58-c25f-49b2-b3b1-39c93c17a2c6",
-        "id": "7b3a2a82-b753-4683-b215-a79f696c6f6b",
+        "ephemeral_id": "8edded2e-dda1-44d1-98f8-006ce1c53287",
+        "id": "b0126a34-5032-4c3f-b6ed-6a2d047f0919",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.11.0"
     },
     "data_stream": {
         "dataset": "entityanalytics_entra_id.entity",
@@ -193,26 +193,26 @@ An example event for `entity` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "7b3a2a82-b753-4683-b215-a79f696c6f6b",
-        "snapshot": false,
-        "version": "8.10.1"
+        "id": "b0126a34-5032-4c3f-b6ed-6a2d047f0919",
+        "snapshot": true,
+        "version": "8.11.0"
     },
     "event": {
         "action": "started",
         "agent_id_status": "verified",
         "dataset": "entityanalytics_entra_id.entity",
-        "ingested": "2023-09-22T11:27:12Z",
+        "ingested": "2023-10-04T13:04:21Z",
         "kind": "asset",
-        "start": "2023-09-22T11:27:09.928Z"
+        "start": "2023-10-04T13:04:18.243Z"
     },
     "input": {
         "type": "entity-analytics"
     },
     "labels": {
-        "identity_source": "entity-analytics-entityanalytics_entra_id.entity-029f3bfc-1782-43ae-a182-b64062786596"
+        "identity_source": "entity-analytics-entityanalytics_entra_id.entity-8db5f378-172a-4c55-ac81-50e816b021bf"
     },
     "tags": [
-        "all",
+        "all-entities",
         "forwarded",
         "entityanalytics_entra_id-entity"
     ]
