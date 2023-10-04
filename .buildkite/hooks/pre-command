@@ -7,4 +7,8 @@ set -euo pipefail
 export BASE_DIR=$(pwd)
 export GO_VERSION=$(cat .go-version)
 export startTimeInMillis="$(date +%s%3N)"
-export ELASTIC_PACKAGE_LINKS_FILE_PATH=${BASE_DIR}/${ELASTIC_PACKAGE_LINKS_FILE_PATH}
+
+if [ -n "${ELASTIC_PACKAGE_LINKS_FILE_PATH+x}" ]; then
+    # first upload pipeline does not have the environment variables defined in the YAML
+    export ELASTIC_PACKAGE_LINKS_FILE_PATH=${BASE_DIR}/${ELASTIC_PACKAGE_LINKS_FILE_PATH}
+fi
