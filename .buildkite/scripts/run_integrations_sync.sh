@@ -16,16 +16,18 @@ use_elastic_package() {
 prepare_stack() {
     echo "Prepare stack"
 
-    local args=""
+    local args="-v"
     if [ -n "${STACK_VERSION+x}" ]; then
         args="${args} --version ${STACK_VERSION}"
     fi
 
     echo "Update the Elastic stack"
     ${ELASTIC_PACKAGE_BIN} stack update ${args}
+    echo ""
 
     echo "Boot up the Elastic stack"
     ${ELASTIC_PACKAGE_BIN} stack up -d ${args}
+    echo ""
 }
 
 is_spec_3_0_0() {
