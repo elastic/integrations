@@ -14,8 +14,8 @@ auth.basic.password: {{escape_string password}}
 {{/if}}
 
 redact:
-  fields:
-    - password
+  fields: ~
+
 
 program: |
   get(state.url)
@@ -23,42 +23,38 @@ program: |
   .decode_json().as(body,
     body.pipelines.map(pipeline_name, pipeline_name != ".monitoring-logstash", {"name":pipeline_name}
       .with({
-        "elasticsearch.cluster.id":((body.pipelines[pipeline_name].vertices).as(vertices, vertices.map(each, has(each.cluster_uuid), each.cluster_uuid)))
-      })
-      .with({
+        "elasticsearch.cluster.id":((body.pipelines[pipeline_name].vertices).as(vertices, vertices.map(each, has(each.cluster_uuid), each.cluster_uuid))),
         "host":{
           "name":body.name,
           "address":body.http_address,
-        }
-      })
-      .with({
+        },
         "total":{
           "flow":body.pipelines[pipeline_name].flow,
           "time":{
             "queue_push_duration":{
-              "ms":body.pipelines[pipeline_name]["events"]["queue_push_duration_in_millis"],
+              "ms":body.pipelines[pipeline_name].events.queue_push_duration_in_millis,
             },
             "duration":{
-              "ms":body.pipelines[pipeline_name]["events"]["duration_in_millis"],
+              "ms":body.pipelines[pipeline_name].events.duration_in_millis,
             },
           },
           "reloads":{
-            "successes":body.pipelines[pipeline_name]["reloads"]["successes"],
-            "failures":body.pipelines[pipeline_name]["reloads"]["failures"]
+            "successes":body.pipelines[pipeline_name].reloads.successes,
+            "failures":body.pipelines[pipeline_name].reloads.failures
           },
           "events":{
-            "out":body.pipelines[pipeline_name]["events"]["out"],
-            "in":body.pipelines[pipeline_name]["events"]["in"],
-            "filtered":body.pipelines[pipeline_name]["events"]["filtered"],
+            "out":body.pipelines[pipeline_name].events.out,
+            "in":body.pipelines[pipeline_name].events["in"],
+            "filtered":body.pipelines[pipeline_name].events.filtered,
           },
           "queues":{
-            "type":body.pipelines[pipeline_name]["queue"]["type"],
-            "events":body.pipelines[pipeline_name]["queue"]["events_count"],
+            "type":body.pipelines[pipeline_name].queue["type"],
+            "events":body.pipelines[pipeline_name].queue.events_count,
             "current_size":{
-              "bytes":body.pipelines[pipeline_name]["queue"]["queue_size_in_bytes"],
+              "bytes":body.pipelines[pipeline_name].queue.queue_size_in_bytes,
             },
             "max_size":{
-              "bytes":body.pipelines[pipeline_name]["queue"]["max_queue_size_in_bytes"],
+              "bytes":body.pipelines[pipeline_name].queue.max_queue_size_in_bytes,
             }
           }
         }
@@ -66,7 +62,4 @@ program: |
     )
     ))
     .as(pipelines, {
-      "cursor": {"username":(has(state.cursor) && has(state.cursor.username)) ? state.cursor.username : has(state.username) ? state.username : null,
-                 "password":has(state.cursor) && has(state.cursor.password) ? state.cursor.password : has(state.password) ? state.password : null
-                 },
       "events":pipelines.map(pipeline, {"logstash":{"pipeline":pipeline}})})
