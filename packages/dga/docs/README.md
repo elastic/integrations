@@ -2,8 +2,17 @@
 
 The Domain Generated Algorithm (DGA) Detection package contains assets to detect DGA activity in your network data. This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under [Elastic License 2.0](https://www.elastic.co/licensing/elastic-license).
 
-**_Note_**: v2.0.0 of the package introduces breaking changes, namely deprecating detection rules from the package. To continue receiving updates to DGA Detection, we recommend uninstalling existing rules associated with this package, upgrading to v2.0.0, and installing the new rules as described in the [Enable detection rules](#enable-detection-rules) section below.
+## v2.0.0 and beyond
 
+v2.0.0 of the package introduces breaking changes, namely deprecating detection rules from the package. To continue receiving updates to DGA Detection, we recommend upgrading to v2.0.0 after doing the following:
+- Uninstall existing rules associated with this package: Navigate to **Security > Rules** and delete the following rules:
+    - Machine Learning Detected DGA activity using a known SUNBURST DNS domain
+    - Machine Learning Detected a DNS Request Predicted to be a DGA Domain
+    - Potential DGA Activity
+    - Machine Learning Detected a DNS Request With a High DGA Probability Score
+Depending on the version of the package you're using, you might also be able to search for the above rules using the tag `DGA`
+- Upgrade the DGA package to v2.0.0 using the steps [here](https://www.elastic.co/guide/en/fleet/current/upgrade-integration.html)
+- Install the new rules as described in the [Enable detection rules](#enable-detection-rules) section below
 
 ## Configuration
 
@@ -25,15 +34,12 @@ In **Machine Learning > Anomaly Detection**, when you create a job, you should s
 
 You can also enable detection rules to alert on DGA activity in your environment, based on anomalies flagged by the above ML jobs. As of version 2.0.0 of this package, these rules are available as part of the Detection Engine, and can be found using the tag `Use Case: Domain Generated Algorithm Detection`. See this [documentation](https://www.elastic.co/guide/en/security/current/prebuilt-rules-management.html#load-prebuilt-rules) for more information on importing and enabling the rules.
 
-
 ## Anomaly Detection Jobs
 
 | Job | Description |
 |---|---|
 | dga_high_sum_probability | Detects potential DGA (domain generation algorithm) activity that is often used by malware command and control (C2) channels. Looks for a source IP address making DNS requests that have an aggregate high probability of being DGA activity.| 
 
-
 ## Licensing
 
 Usage in production requires that you have a license key that permits use of machine learning features.
-
