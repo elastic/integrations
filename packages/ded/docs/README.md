@@ -2,9 +2,31 @@
 
 The Data Exfiltration Detection (DED) package contains assets for detecting data exfiltration in network and file data. This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under Elastic License v 2.0.
 
+## v2.0.0 and beyond
 
-**_Note_**: v2.0.0 of the package introduces breaking changes, namely updating ML job IDs and deprecating detection rules from the package. To continue recieving updates to Lateral Movement Detection, we recommend uninstalling existing ML jobs and rules associated with this package, upgrading to v2.0.0, and installing the new rules as described in the [Enabling detection rules](#enable-detection-rules) section below.
+v2.0.0 of the package introduces breaking changes, namely deprecating detection rules from the package. To continue receiving updates to Data Exfiltration Detection, we recommend upgrading to v2.0.0 after doing the following:
+- Delete existing ML jobs: Navigate to **Machine Learning > Anomaly Detection** and delete jobs corresponding to the following IDs:
+    - high-sent-bytes-destination-geo-country_iso_code
+    - high-sent-bytes-destination-ip
+    - high-sent-bytes-destination-port
+    - high-sent-bytes-destination-region_name
+    - high-bytes-written-to-external-device
+    - rare-process-writing-to-external-device
+    - high-bytes-written-to-external-device-airdrop
 
+Depending on the version of the package you're using, you might also be able to search for the above jobs using the group `data_exfiltration`.
+- Uninstall existing rules associated with this package: Navigate to **Security > Rules** and delete the following rules:
+    - Potential Data Exfiltration Activity to an Unusual ISO Code
+    - Potential Data Exfiltration Activity to an Unusual Region
+    - Potential Data Exfiltration Activity to an Unusual IP Address
+    - Potential Data Exfiltration Activity to an Unusual Destination Port
+    - Spike in Bytes Sent to an External Device
+    - Spike in Bytes Sent to an External Device via Airdrop
+    - Unusual Process Writing Data to an External Device 
+
+Depending on the version of the package you're using, you might also be able to search for the above rules using the tag `Data Exfiltration`.
+- Upgrade the Data Exfiltration Detection package to v2.0.0 using the steps [here](https://www.elastic.co/guide/en/fleet/current/upgrade-integration.html)
+- Install the new rules as described in the [Enable detection rules](#enable-detection-rules) section below
 
 ## Configuration
 
@@ -34,7 +56,6 @@ You can also enable detection rules to alert on Data Exfiltration activity in yo
  | ded_rare_process_writing_to_external_device | Detects data exfiltration activity by identifying a writing event started by a rare process to an external device. |
  | ded_high_bytes_written_to_external_device_airdrop | Detects data exfiltration activity by identifying high bytes written to an external device via Airdrop.|
 
-
 ## Dashboard
 
 The **Data Exfiltration Detection Dashboard** is available under **Analytics > Dashboard**. This dashboard gives an overview of anomalies triggered for the data exfiltration detection package.
@@ -49,8 +70,6 @@ For the dashboard to work as expected, the following settings need to be configu
     - Name: `.ml-anomalies-shared`
     - Custom data view ID: `.ml-anomalies-shared`
 
-
 ## Licensing
 
 Usage in production requires that you have a license key that permits use of machine learning features.
-
