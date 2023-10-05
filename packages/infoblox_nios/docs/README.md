@@ -238,7 +238,17 @@ An example event for `log` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| client.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| client.as.organization.name | Organization name. | keyword |
+| client.as.organization.name.text | Multi-field of `client.as.organization.name`. | match_only_text |
 | client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| client.geo.city_name | City name. | keyword |
+| client.geo.continent_name | Name of the continent. | keyword |
+| client.geo.country_iso_code | Country ISO code. | keyword |
+| client.geo.country_name | Country name. | keyword |
+| client.geo.location | Longitude and latitude. | geo_point |
+| client.geo.region_iso_code | Region ISO code. | keyword |
+| client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.mac | MAC address of the client. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | client.port | Port of the client. | long |
