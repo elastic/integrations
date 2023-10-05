@@ -313,14 +313,20 @@ processors:
         for (int i = 0; i < observables.length; i++) {
           Map observable = observables[i].node;
           if (observable.containsKey('hashes')) {
-            observable.hash = hashesToECS(observable.hashes);
+            def ecsHash = hashesToECS(observable.hashes);
+            if (ecsHash.size() > 0) {
+              observable.hash = ecsHash;
+            }
             observable.remove('hashes');
           }
           if (observable.containsKey('service_dlls')) {
             for (int ii = 0; ii < observable.service_dlls.length; ii++) {
               Map serviceDll = observable.service_dlls[ii];
               if (serviceDll.containsKey('hashes')) {
-                serviceDll.hash = hashesToECS(serviceDll.hashes);
+                def ecsHash = hashesToECS(serviceDll.hashes);
+                if (ecsHash.size() > 0) {
+                  serviceDll.hash = ecsHash;
+                }
                 serviceDll.remove('hashes');
               }
             }
