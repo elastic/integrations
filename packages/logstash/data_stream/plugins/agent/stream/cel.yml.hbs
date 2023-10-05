@@ -35,24 +35,12 @@ program: |
   .decode_json().as(body,
     body.pipelines.map(pipeline_name, pipeline_name != ".monitoring-logstash", {"name":pipeline_name}.with(body.pipelines[pipeline_name])
       .with({
-        "es_cluster_id":((body.pipelines[pipeline_name].vertices).as(vertices, vertices.map(each, has(each.cluster_uuid), each.cluster_uuid)))
-      })
-      .with({
-        "es_cluster_id_map":((body.pipelines[pipeline_name].vertices).as(vertices, vertices.map(each, has(each.cluster_uuid), {"plugin_id":each.id, "cluster_id":each.cluster_uuid})))
-      })
-      .with({
-        "outputs":body.pipelines[pipeline_name]["plugins"]["outputs"]
-      })
-      .with({
-        "inputs":body.pipelines[pipeline_name]["plugins"]["inputs"]
-      })
-      .with({
-        "filters":body.pipelines[pipeline_name]["plugins"]["filters"]
-      })
-      .with({
-        "codecs":body.pipelines[pipeline_name]["plugins"]["codecs"]
-      })
-      .with({
+        "es_cluster_id":((body.pipelines[pipeline_name].vertices).as(vertices, vertices.map(each, has(each.cluster_uuid), each.cluster_uuid))),
+        "es_cluster_id_map":((body.pipelines[pipeline_name].vertices).as(vertices, vertices.map(each, has(each.cluster_uuid), {"plugin_id":each.id, "cluster_id":each.cluster_uuid}))),
+        "outputs":body.pipelines[pipeline_name]["plugins"]["outputs"],
+        "inputs":body.pipelines[pipeline_name]["plugins"]["inputs"],
+        "filters":body.pipelines[pipeline_name]["plugins"]["filters"],
+        "codecs":body.pipelines[pipeline_name]["plugins"]["codecs"],
         "host":{
           "name":body.name,
           "address":body.http_address,
