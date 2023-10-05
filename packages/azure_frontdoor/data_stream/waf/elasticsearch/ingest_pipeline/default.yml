@@ -84,21 +84,17 @@ processors:
       field: client.port
       type: long
       ignore_missing: true
-
   - date:
       field: azure.frontdoor.waf.time
       target_field: "@timestamp"
       formats:
         - ISO8601
-
   - remove:
       field:
         - azure.frontdoor.waf.time
         - azure.frontdoor.waf.properties
         - azure.frontdoor.waf.details.matches
-        - event.original
       ignore_missing: true
-
   - geoip:
       field: client.ip
       target_field: source.geo
@@ -118,6 +114,11 @@ processors:
   - rename:
       field: source.as.organization_name
       target_field: source.as.organization.name
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
       ignore_missing: true
 
 on_failure:
