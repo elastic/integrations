@@ -15,6 +15,11 @@ processors:
         TIMESTAMP: (?:%{TIMESTAMP_ISO8601}|%{SYSLOGTIMESTAMP})
       patterns:
         - '^%{TIMESTAMP:system.auth.timestamp} %{SYSLOGHOST:host.hostname}? %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?:%{SPACE}%{GREEDYMULTILINE:_temp.message}$'
+        - '^<%{NONNEGINT:log.syslog.priority:int}>%{NONNEGINT:system.auth.syslog.version} +(?:-|%{TIMESTAMP_ISO8601:system.auth.timestamp}) 
+            +(?:-|%{IPORHOST:host.hostname}) +(?:-|%{SYSLOG5424PRINTASCII:process.name}) 
+            +(?:-|%{POSINT:process.pid:long}) +(?:-|%{SYSLOG5424PRINTASCII:event.code}) 
+            +(?:-|%{SYSLOG5424SD:syslog5424_sd})? 
+            +%{GREEDYDATA:_temp.message}$'
   - grok:
       description: Grok specific auth messages.
       tag: grok-specific-messages
@@ -63,6 +68,46 @@ processors:
       patterns:
         - '^pam_unix(%{DATA}:%{WORD:_temp.category})'
       if: ctx.message != null && ctx.message.contains('pam_unix(')
+  - kv:
+      tag: "kv_syslog_structured_semicolon_colon"
+      if: ctx.syslog5424_sd != null
+      field: syslog5424_sd
+      field_split: '(?<="); '
+      value_split: '(?i)(?<=[a-z]):{1,2}(?=")'
+      trim_key: " "
+      trim_value: " "
+      prefix: system.auth.
+      strip_brackets: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+  - grok:
+      field: syslog5424_sd
+      if: ctx.system?.auth == null
+      patterns:
+        - '(?:%{NOTSPACE} +)?%{GREEDYDATA:syslog5424_sd}'
+  - kv:
+      tag: "kv_syslog_structured_space_equals"
+      if: ctx.system?.auth == null
+      field: syslog5424_sd
+      field_split: '(?<=") '
+      value_split: '(?i)(?<=[a-z])=(?=")'
+      trim_key: " "
+      trim_value: " "
+      prefix: system.auth.
+      strip_brackets: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+  - foreach:
+      field: system.auth
+      if: ctx.system?.auth != null
+      ignore_missing: true
+      processor: 
+        lowercase:
+          field: "_ingest._key"
   - append:
       field: event.category
       value: session
