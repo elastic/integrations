@@ -34,8 +34,8 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
 
     package_zip="${name}-${version}.zip"
 
-    if is_already_published ${packageZip} ; then
-        echo "Skipping. ${packageZip} already published"
+    if is_already_published ${package_zip} ; then
+        echo "Skipping. ${package_zip} already published"
         continue
     fi
 
