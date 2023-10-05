@@ -2,16 +2,12 @@
 
 source .buildkite/scripts/common.sh
 
+set -euo pipefail
+
 if [ ! -d packages ]; then
     buildkite-agent annotate "Missing packages folder" --style "error"
     exit 1
 fi
-
-use_elastic_package() {
-    echo "Installing elastic-package"
-    mkdir -p build
-    go build -o ${ELASTIC_PACKAGE_BIN} github.com/elastic/elastic-package
-}
 
 prepare_stack() {
     echo "Prepare stack"
@@ -59,7 +55,6 @@ with_mage
 with_docker_compose
 with_kubernetes
 
-ELASTIC_PACKAGE_BIN=${WORKSPACE}/build/elastic-package
 use_elastic_package
 
 prepare_stack

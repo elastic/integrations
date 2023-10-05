@@ -8,6 +8,7 @@ REPO="integrations"
 TMP_FOLDER_TEMPLATE_BASE="tmp.${REPO}"
 platform_type="$(uname)"
 hw_type="$(uname -m)"
+export ELASTIC_PACKAGE_BIN=${WORKSPACE}/build/elastic-package
 
 retry() {
   local retries=$1
@@ -170,4 +171,21 @@ with_yq() {
     yq --version
 
     rm -rf ${BIN_FOLDER}/yq.tar.gz
+}
+
+use_elastic_package() {
+    echo "Installing elastic-package"
+    mkdir -p build
+    go build -o ${ELASTIC_PACKAGE_BIN} github.com/elastic/elastic-package
+}
+
+is_already_published() {
+    local packageZip=$1
+
+    if curl -s --head https://package-storage.elastic.co/artifacts/packages/${packageZip} | grep -q "HTTP/2 200" ; then
+        echo "- Already published ${packageZip}"
+        return 0
+    fi
+    echo "- Not published ${packageZip}"
+    return 1
 }
