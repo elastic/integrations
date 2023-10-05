@@ -485,7 +485,10 @@
                                                 "84007e47-0f47-4951-b26f-422e68b1fbacX3",
                                                 "84007e47-0f47-4951-b26f-422e68b1fbacX4",
                                                 "84007e47-0f47-4951-b26f-422e68b1fbacX5",
-                                                "84007e47-0f47-4951-b26f-422e68b1fbacX6"
+                                                "84007e47-0f47-4951-b26f-422e68b1fbacX6",
+                                                "8b340f82-b329-4adc-8a42-82c2a8495d2cX0",
+                                                "8b340f82-b329-4adc-8a42-82c2a8495d2cX1",
+                                                "d407e28c-5456-45a7-8dc3-fdb1407c9d59"
                                             ],
                                             "columns": {
                                                 "1c8d484c-64cf-4497-bede-36e69ad4047f": {
@@ -521,10 +524,10 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "7f9470fb-8d50-485f-a388-9c18afe3e735",
-                                                            "type": "column"
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
                                                         },
-                                                        "orderDirection": "desc",
+                                                        "orderDirection": "asc",
                                                         "otherBucket": true,
                                                         "parentFormat": {
                                                             "id": "terms"
@@ -572,12 +575,11 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Events emitted",
-                                                    "operationType": "max",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "logstash.pipeline.total.events.out"
+                                                    "operationType": "counter_rate",
+                                                    "references": [
+                                                        "d407e28c-5456-45a7-8dc3-fdb1407c9d59"
+                                                    ],
+                                                    "scale": "ratio"
                                                 },
                                                 "84007e47-0f47-4951-b26f-422e68b1fbac": {
                                                     "customLabel": true,
@@ -703,12 +705,39 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Events received",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "counter_rate(max(logstash.pipeline.total.events.in))",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "8b340f82-b329-4adc-8a42-82c2a8495d2cX1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "8b340f82-b329-4adc-8a42-82c2a8495d2cX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Events Received",
                                                     "operationType": "max",
                                                     "params": {
-                                                        "emptyAsNull": true
+                                                        "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "logstash.pipeline.total.events.in"
+                                                },
+                                                "8b340f82-b329-4adc-8a42-82c2a8495d2cX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Events Received",
+                                                    "operationType": "counter_rate",
+                                                    "references": [
+                                                        "8b340f82-b329-4adc-8a42-82c2a8495d2cX0"
+                                                    ],
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
                                                 },
                                                 "cc68d659-2c7d-4689-b30a-c536d451cf0f": {
                                                     "dataType": "number",
@@ -731,6 +760,18 @@
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "logstash.pipeline.total.time.duration.ms"
+                                                },
+                                                "d407e28c-5456-45a7-8dc3-fdb1407c9d59": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Events emitted",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "logstash.pipeline.total.events.out"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -1961,7 +2002,7 @@
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2023-10-04T17:11:25.489Z",
+    "created_at": "2023-10-05T15:55:00.707Z",
     "id": "logstash-c0594170-526a-11ee-9ecc-31444cb79548",
     "managed": false,
     "references": [
