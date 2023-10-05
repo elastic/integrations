@@ -2,9 +2,41 @@
 
 The Lateral movement detection model package contains assets that detect lateral movement based on file transfer activity and Windows RDP events. This package requires a Platinum subscription. Please ensure that you have a Trial, Platinum, or Enterprise subscription before proceeding. This package is licensed under [Elastic License 2.0](https://www.elastic.co/licensing/elastic-license).
 
+## v2.0.0 and beyond
 
-**_Note_**: v2.0.0 of the package introduces breaking changes, namely updating ML job IDs and deprecating detection rules from the package. To continue recieving updates to Lateral Movement Detection, we recommend uninstalling existing ML jobs and rules associated with this package, upgrading to v2.0.0, and installing the new rules as described in the [Enabling detection rules](#enabling-detection-rules) section below.
+v2.0.0 of the package introduces breaking changes, namely deprecating detection rules from the package. To continue receiving updates to Lateral Movement Detection, we recommend upgrading to v2.0.0 after doing the following:
+- Delete existing ML jobs: Navigate to **Machine Learning > Anomaly Detection** and delete jobs corresponding to the following IDs:
+    - high-count-remote-file-transfer
+    - high-file-size-remote-file-transfer
+    - rare-file-extension-remote-transfer
+    - rare-file-path-remote-transfer
+    - high-mean-rdp-session-duration
+    - high-var-rdp-session-duration
+    - high-sum-rdp-number-of-processes
+    - unusual-time-weekday-rdp-session-start
+    - high-rdp-distinct-count-source-ip-for-destination
+    - high-rdp-distinct-count-destination-ip-for-source
+    - high-mean-rdp-process-args
 
+Depending on the version of the package you're using, you might also be able to search for the above jobs using the group `lateral_movement`.
+- Uninstall existing rules associated with this package: Navigate to **Security > Rules** and delete the following rules:
+    - Spike in Remote File Transfers
+    - Unusual Remote File Size
+    - Unusual Remote File Directory
+    - Unusual Remote File Extension
+    - Malicious Remote File Creation
+    - Remote File Creation on a Sensitive Directory
+    - Spike in number of processes in an RDP session
+    - High mean of RDP session duration
+    - High variance in RDP session duration
+    - Unusually high number of process arguments in an RDP session
+    - Spike in number of connections made to a source IP
+    - Spike in number of connections made to a destination IP
+    - Unusual time or day for an RDP session start 
+
+Depending on the version of the package you're using, you might also be able to search for the above rules using the tag `Lateral Movement`.
+- Upgrade the Lateral Movement Detection package to v2.0.0 using the steps [here](https://www.elastic.co/guide/en/fleet/current/upgrade-integration.html)
+- Install the new rules as described in the [Enabling detection rules](#enabling-detection-rules) section below
 
 ## Configuration
 
@@ -90,7 +122,6 @@ Clone the anomaly detection jobs available under the Living off the Land Attack 
 }
 ````
 
-
 ## Anomaly Detection Jobs 
 
 Detects potential lateral movement activity by identifying malicious file transfers and RDP sessions in an environment.
@@ -109,7 +140,6 @@ Detects potential lateral movement activity by identifying malicious file transf
  | lmd_high_rdp_distinct_count_destination_ip_for_source | Detects a high count of destination IPs establishing an RDP connection with a single source IP. |
  | lmd_high_mean_rdp_process_args                        | Detects unusually high number of process arguments in an RDP session.                           |
 
-
 ## Dashboard
 
 The **Lateral Movement Detection Dashboard** is available under **Analytics > Dashboard**. This dashboard gives an overview of anomalies triggered for the lateral movement detection package.
@@ -124,8 +154,6 @@ For the dashboard to work as expected, the following settings need to be configu
     - Name: `.ml-anomalies-shared`
     - Custom data view ID: `.ml-anomalies-shared`
 
-
 ## Licensing
 
 Usage in production requires that you have a license key that permits use of machine learning features.
-
