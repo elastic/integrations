@@ -15,6 +15,7 @@ if [ "${BUILDKITE_PULL_REQUEST}" == "false" ]; then
     fi
 fi
 
+with_yq
 use_elastic_package
 
 unpublished="false"
