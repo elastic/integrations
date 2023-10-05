@@ -10,6 +10,7 @@ v2.0.0 of the package introduces breaking changes, namely deprecating detection 
     - Machine Learning Detected a DNS Request Predicted to be a DGA Domain
     - Potential DGA Activity
     - Machine Learning Detected a DNS Request With a High DGA Probability Score
+
 Depending on the version of the package you're using, you might also be able to search for the above rules using the tag `DGA`
 - Upgrade the DGA package to v2.0.0 using the steps [here](https://www.elastic.co/guide/en/fleet/current/upgrade-integration.html)
 - Install the new rules as described in the [Enable detection rules](#enable-detection-rules) section below
