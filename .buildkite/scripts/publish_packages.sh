@@ -36,6 +36,7 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
 
     if is_already_published ${package_zip} ; then
         echo "Skipping. ${package_zip} already published"
+        popd > /dev/null
         continue
     fi
 

@@ -83,9 +83,13 @@ use_elastic_package
 echo "Checking python command..."
 if ! command -v python &> /dev/null ; then
     echo "⚠️  python is not installed"
+else
+    echo "🐍 python is installed"
 fi
 if ! command -v python3 &> /dev/null ; then
     echo "⚠️  python3 is not installed"
+else
+    echo "🐍 python3 is installed"
 fi
 
 prepare_stack
