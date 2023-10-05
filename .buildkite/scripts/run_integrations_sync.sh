@@ -35,6 +35,7 @@ prepare_stack() {
         kibana_constraint=$(kibana_version)
         if [ "$condition" != "null" ]; then
             # FIXME
+            true
         fi
     fi
 
