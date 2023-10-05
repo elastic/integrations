@@ -58,7 +58,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
@@ -279,7 +279,6 @@ An example event for `audit` looks as following:
 | o365.audit.MailboxOwnerSid |  | keyword |
 | o365.audit.MailboxOwnerUPN |  | keyword |
 | o365.audit.Members |  | flattened |
-| o365.audit.Members.\* |  | object |
 | o365.audit.ModifiedProperties.\*.\* |  | object |
 | o365.audit.Name |  | keyword |
 | o365.audit.NewValue |  | keyword |

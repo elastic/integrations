@@ -68,7 +68,7 @@ An example event for `firewall` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "ecc82406-78ce-41c1-b1e2-7c12ce01f525",
@@ -518,7 +518,7 @@ An example event for `firewall` looks as following:
 | checkpoint.stormagentname |  | keyword |
 | checkpoint.sub_policy_name | Layer name. | keyword |
 | checkpoint.sub_policy_uid | Layer uid. | keyword |
-| checkpoint.subs_exp |  | keyword |
+| checkpoint.subs_exp |  | date |
 | checkpoint.subscriber | Source IP before CGNAT. | ip |
 | checkpoint.subscription_stat |  | keyword |
 | checkpoint.subscription_stat_desc |  | keyword |

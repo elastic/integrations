@@ -13,7 +13,11 @@ To open Prometheus endpoint read following [instructions](https://www.ibm.com/do
 
 ## Compatibility
 
-This integration has been tested against WebSphere Application Server traditional version `9.0.5.11`.
+This integration has been tested against WebSphere Application Server traditional version `9.0.5.17`.
+
+### Troubleshooting
+
+If host.ip is shown conflicted under ``metrics-*`` data view, then this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the ``JDBC``, ``Servlet``, ``Session Manager`` and ``ThreadPool`` data stream's indices.
 
 ## JDBC
 
