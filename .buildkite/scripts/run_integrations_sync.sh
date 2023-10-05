@@ -31,12 +31,13 @@ prepare_stack() {
     local args="-v"
     if [ -n "${STACK_VERSION+x}" ]; then
         args="${args} --version ${STACK_VERSION}"
-    else
-        kibana_constraint=$(kibana_version)
-        if [ "$condition" != "null" ]; then
-            # FIXME
-            true
-        fi
+    # TODO What stack version to use (for agents)?
+    # else
+    #     kibana_constraint=$(kibana_version)
+    #     if [ "$condition" != "null" ]; then
+    #         # FIXME
+    #         true
+    #     fi
     fi
 
     echo "Update the Elastic stack"
@@ -79,8 +80,6 @@ with_kubernetes
 
 use_elastic_package
 
-prepare_stack
-
 echo "Checking python command..."
 if ! command -v python &> /dev/null ; then
     echo "⚠️  python is not installed"
@@ -88,6 +87,8 @@ fi
 if ! command -v python3 &> /dev/null ; then
     echo "⚠️  python3 is not installed"
 fi
+
+prepare_stack
 
 cd packages
 for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
