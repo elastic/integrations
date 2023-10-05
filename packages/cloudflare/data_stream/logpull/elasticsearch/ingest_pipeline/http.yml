@@ -166,6 +166,23 @@ processors:
     tag: geoip_observer_ip
     target_field: observer.geo
     ignore_missing: true
+# Cloudflare Bot Fields
+- convert:
+    field: json.BotScore
+    target_field: cloudflare.bot.score.value
+    if: ctx.json?.BotScore != ''
+    tag: convert_bot_score_value
+    type: long
+    ignore_missing: true
+    on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+- rename:
+    field: json.BotScoreSrc
+    target_field: cloudflare.bot.score.src
+    tag: rename_bot_score_src
+    ignore_missing: true
 # Cloudflare Cache Fields
 - rename:
     field: json.CacheCacheStatus

@@ -146,11 +146,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2021-11-30T13:42:04.000Z",
     "agent": {
-        "ephemeral_id": "39e9d205-25b6-4c72-981c-790a9e82c064",
-        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "ephemeral_id": "a561323c-9fdc-46fd-aabb-e68f5a6e7cae",
+        "id": "66a70b18-9322-46eb-93a2-994e9da10b0d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.1"
+        "version": "8.10.1"
     },
     "cloud": {
         "account": {
@@ -181,9 +181,9 @@ An example event for `audit` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "id": "66a70b18-9322-46eb-93a2-994e9da10b0d",
         "snapshot": false,
-        "version": "8.9.1"
+        "version": "8.10.1"
     },
     "event": {
         "action": "rotate_api_key",
@@ -191,10 +191,10 @@ An example event for `audit` looks as following:
         "category": [
             "iam"
         ],
-        "created": "2023-08-29T18:00:18.207Z",
+        "created": "2023-10-04T16:53:12.640Z",
         "dataset": "cloudflare.audit",
         "id": "8d3396e8-c903-5a66-9421-00fc34570550",
-        "ingested": "2023-08-29T18:00:19Z",
+        "ingested": "2023-10-04T16:53:13Z",
         "kind": "event",
         "original": "{\"action\":{\"info\":\"key digest: c6b5d100d7ce492d24c5b13160fce1cc0092ce7e8d8430e9f5cf5468868be6f6\",\"result\":true,\"type\":\"rotate_API_key\"},\"actor\":{\"email\":\"user@example.com\",\"id\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"ip\":\"52.91.36.10\",\"type\":\"user\"},\"id\":\"8d3396e8-c903-5a66-9421-00fc34570550\",\"interface\":\"\",\"metadata\":{},\"newValue\":\"\",\"oldValue\":\"\",\"owner\":{\"id\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\"},\"resource\":{\"id\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"type\":\"account\"},\"when\":\"2021-11-30T13:42:04Z\"}",
         "outcome": "success",
@@ -253,6 +253,8 @@ These logs contain data related to the connecting client, the request path throu
 | client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
+| cloudflare.bot.score.src | Detection engine responsible for generating the Bot Score. Possible values are Not Computed, Heuristics, Machine Learning, Behavioral Analysis, Verified Bot, JS Fingerprinting, Cloudflare Service. | text |
+| cloudflare.bot.score.value | Cloudflare Bot Score. Scores below 30 are commonly associated with automated traffic. | long |
 | cloudflare.cache.bytes | Number of bytes returned by the cache | long |
 | cloudflare.cache.status | Status of cache | keyword |
 | cloudflare.cache.status_code | HTTP status code returned by the cache to the edge. All requests (including non-cacheable ones) go through the cache. | long |
@@ -437,11 +439,11 @@ An example event for `logpull` looks as following:
 {
     "@timestamp": "2019-08-02T15:29:08.000Z",
     "agent": {
-        "ephemeral_id": "00b965c0-5825-4d93-a9b8-1142d1a47d13",
-        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "ephemeral_id": "9bc7c4ad-fed6-486b-b0d5-3668f8f8a66e",
+        "id": "66a70b18-9322-46eb-93a2-994e9da10b0d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.1"
+        "version": "8.10.1"
     },
     "client": {
         "address": "35.232.161.245",
@@ -456,6 +458,12 @@ An example event for `logpull` looks as following:
         "port": 55028
     },
     "cloudflare": {
+        "bot": {
+            "score": {
+                "src": "Heuristics",
+                "value": 1
+            }
+        },
         "cache": {
             "status": "unknown",
             "tiered_fill": false
@@ -542,9 +550,9 @@ An example event for `logpull` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "id": "66a70b18-9322-46eb-93a2-994e9da10b0d",
         "snapshot": false,
-        "version": "8.9.1"
+        "version": "8.10.1"
     },
     "event": {
         "action": [
@@ -555,13 +563,13 @@ An example event for `logpull` looks as following:
         "category": [
             "network"
         ],
-        "created": "2023-08-29T18:01:11.111Z",
+        "created": "2023-10-04T16:54:00.889Z",
         "dataset": "cloudflare.logpull",
         "duration": 0,
         "end": "2019-08-02T15:29:08.000Z",
-        "ingested": "2023-08-29T18:01:14Z",
+        "ingested": "2023-10-04T16:54:03Z",
         "kind": "event",
-        "original": "{\"CacheCacheStatus\":\"unknown\",\"CacheResponseBytes\":0,\"CacheResponseStatus\":0,\"CacheTieredFill\":false,\"ClientASN\":15169,\"ClientCountry\":\"us\",\"ClientDeviceType\":\"desktop\",\"ClientIP\":\"35.232.161.245\",\"ClientIPClass\":\"noRecord\",\"ClientRequestBytes\":2577,\"ClientRequestHost\":\"cf-analytics.com\",\"ClientRequestMethod\":\"POST\",\"ClientRequestPath\":\"/wp-cron.php\",\"ClientRequestProtocol\":\"HTTP/1.1\",\"ClientRequestReferer\":\"https://cf-analytics.com/wp-cron.php?doing_wp_cron=1564759748.3962020874023437500000\",\"ClientRequestURI\":\"/wp-cron.php?doing_wp_cron=1564759748.3962020874023437500000\",\"ClientRequestUserAgent\":\"WordPress/5.2.2;https://cf-analytics.com\",\"ClientSSLCipher\":\"ECDHE-ECDSA-AES128-GCM-SHA256\",\"ClientSSLProtocol\":\"TLSv1.2\",\"ClientSrcPort\":55028,\"EdgeColoID\":14,\"EdgeEndTimestamp\":\"2019-08-02T15:29:08Z\",\"EdgePathingOp\":\"wl\",\"EdgePathingSrc\":\"filter_based_firewall\",\"EdgePathingStatus\":\"captchaNew\",\"EdgeRateLimitAction\":\"\",\"EdgeRateLimitID\":0,\"EdgeRequestHost\":\"\",\"EdgeResponseBytes\":2848,\"EdgeResponseCompressionRatio\":2.64,\"EdgeResponseContentType\":\"text/html\",\"EdgeResponseStatus\":403,\"EdgeServerIP\":\"\",\"EdgeStartTimestamp\":\"2019-08-02T15:29:08Z\",\"FirewallMatchesActions\":[\"simulate\",\"challenge\"],\"FirewallMatchesRuleIDs\":[\"094b71fea25d4860a61fa0c6fbbd8d8b\",\"e454fd4a0ce546b3a9a462536613692c\"],\"FirewallMatchesSources\":[\"firewallRules\",\"firewallRules\"],\"OriginIP\":\"\",\"OriginResponseBytes\":0,\"OriginResponseHTTPExpires\":\"\",\"OriginResponseHTTPLastModified\":\"\",\"OriginResponseStatus\":0,\"OriginResponseTime\":0,\"OriginSSLProtocol\":\"unknown\",\"ParentRayID\":\"00\",\"RayID\":\"500115ec386354d8\",\"SecurityLevel\":\"med\",\"WAFAction\":\"unknown\",\"WAFFlags\":\"0\",\"WAFMatchedVar\":\"\",\"WAFProfile\":\"unknown\",\"WAFRuleID\":\"\",\"WAFRuleMessage\":\"\",\"WorkerCPUTime\":0,\"WorkerStatus\":\"unknown\",\"WorkerSubrequest\":false,\"WorkerSubrequestCount\":0,\"ZoneID\":155978002}",
+        "original": "{\"BotScore\":1,\"BotScoreSrc\":\"Heuristics\",\"CacheCacheStatus\":\"unknown\",\"CacheResponseBytes\":0,\"CacheResponseStatus\":0,\"CacheTieredFill\":false,\"ClientASN\":15169,\"ClientCountry\":\"us\",\"ClientDeviceType\":\"desktop\",\"ClientIP\":\"35.232.161.245\",\"ClientIPClass\":\"noRecord\",\"ClientRequestBytes\":2577,\"ClientRequestHost\":\"cf-analytics.com\",\"ClientRequestMethod\":\"POST\",\"ClientRequestPath\":\"/wp-cron.php\",\"ClientRequestProtocol\":\"HTTP/1.1\",\"ClientRequestReferer\":\"https://cf-analytics.com/wp-cron.php?doing_wp_cron=1564759748.3962020874023437500000\",\"ClientRequestURI\":\"/wp-cron.php?doing_wp_cron=1564759748.3962020874023437500000\",\"ClientRequestUserAgent\":\"WordPress/5.2.2;https://cf-analytics.com\",\"ClientSSLCipher\":\"ECDHE-ECDSA-AES128-GCM-SHA256\",\"ClientSSLProtocol\":\"TLSv1.2\",\"ClientSrcPort\":55028,\"EdgeColoID\":14,\"EdgeEndTimestamp\":\"2019-08-02T15:29:08Z\",\"EdgePathingOp\":\"wl\",\"EdgePathingSrc\":\"filter_based_firewall\",\"EdgePathingStatus\":\"captchaNew\",\"EdgeRateLimitAction\":\"\",\"EdgeRateLimitID\":0,\"EdgeRequestHost\":\"\",\"EdgeResponseBytes\":2848,\"EdgeResponseCompressionRatio\":2.64,\"EdgeResponseContentType\":\"text/html\",\"EdgeResponseStatus\":403,\"EdgeServerIP\":\"\",\"EdgeStartTimestamp\":\"2019-08-02T15:29:08Z\",\"FirewallMatchesActions\":[\"simulate\",\"challenge\"],\"FirewallMatchesRuleIDs\":[\"094b71fea25d4860a61fa0c6fbbd8d8b\",\"e454fd4a0ce546b3a9a462536613692c\"],\"FirewallMatchesSources\":[\"firewallRules\",\"firewallRules\"],\"OriginIP\":\"\",\"OriginResponseBytes\":0,\"OriginResponseHTTPExpires\":\"\",\"OriginResponseHTTPLastModified\":\"\",\"OriginResponseStatus\":0,\"OriginResponseTime\":0,\"OriginSSLProtocol\":\"unknown\",\"ParentRayID\":\"00\",\"RayID\":\"500115ec386354d8\",\"SecurityLevel\":\"med\",\"WAFAction\":\"unknown\",\"WAFFlags\":\"0\",\"WAFMatchedVar\":\"\",\"WAFProfile\":\"unknown\",\"WAFRuleID\":\"\",\"WAFRuleMessage\":\"\",\"WorkerCPUTime\":0,\"WorkerStatus\":\"unknown\",\"WorkerSubrequest\":false,\"WorkerSubrequestCount\":0,\"ZoneID\":155978002}",
         "start": "2019-08-02T15:29:08.000Z"
     },
     "http": {
