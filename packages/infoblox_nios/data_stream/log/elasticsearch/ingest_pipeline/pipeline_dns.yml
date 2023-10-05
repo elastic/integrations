@@ -240,10 +240,47 @@ processors:
         }
         ctx.dns.put('header_flags', hf);
 
+  - registered_domain: 
+      field: "dns.question.name"
+      target_field: "dns.question"
+      if: ctx?.dns?.question != null
+  - set:
+      field: dns.flags.recursive
+      value: true
+      if: "ctx?.infoblox_nios?.log?.dns?.header_flags?.contains('+') ?: false"
+  - set:
+      field: dns.flags.recursive
+      value: false
+      if: "ctx?.infoblox_nios?.log?.dns?.header_flags?.contains('-') ?: false"
+  - set:
+      field: dns.flags.authoritive
+      value: true
+      if: "ctx?.infoblox_nios?.log?.dns?.header_flags?.contains('A') ?: false"
+  - set:
+      field: dns.flags.truncated_response
+      value: true
+      if: "ctx?.infoblox_nios?.log?.dns?.header_flags?.contains('T') ?: false"
+  - set:
+      field: dns.flags.edns_opt_record
+      value: true
+      if: "ctx?.infoblox_nios?.log?.dns?.header_flags?.contains('E') ?: false"
+  - set:
+      field: dns.flags.dnssec_ok
+      value: true
+      if: "ctx?.infoblox_nios?.log?.dns?.header_flags?.contains('D') ?: false"
+  - set:
+      field: dns.flags.dnssec_validated_server
+      value: true
+      if: "ctx?.infoblox_nios?.log?.dns?.header_flags?.contains('V') ?: false"
+  - set:
+      field: dns.flags.dtc_synthetic
+      value: true
+      if: "ctx?.infoblox_nios?.log?.dns?.header_flags?.contains('L') ?: false"
   - remove:
       field:
         - timestamp
         - repeat_message
+        - dns.question.domain
       ignore_missing: true
 on_failure:
   - set:
