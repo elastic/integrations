@@ -9,12 +9,33 @@ if [ ! -d packages ]; then
     exit 1
 fi
 
+kibana_version() {
+    kibana_version=$(cat manifest.yml | yq ".conditions.kibana.version")
+    if [ $kibana_version != "null" ]; then
+        echo $kibana_version
+        return
+    fi
+
+    kibana_version=$(cat manifest.yml | yq ".conditions.\"kibana.version\"")
+    if [ $kibana_version != "null" ]; then
+        echo $kibana_version
+        return
+    fi
+
+    echo "null"
+}
+
 prepare_stack() {
     echo "Prepare stack"
 
     local args="-v"
     if [ -n "${STACK_VERSION+x}" ]; then
         args="${args} --version ${STACK_VERSION}"
+    else
+        kibana_constraint=$(kibana_version)
+        if [ "$condition" != "null" ]; then
+            # FIXME
+        fi
     fi
 
     echo "Update the Elastic stack"
@@ -58,6 +79,14 @@ with_kubernetes
 use_elastic_package
 
 prepare_stack
+
+echo "Checking python command..."
+if ! command -v python &> /dev/null ; then
+    echo "⚠️  python is not installed"
+fi
+if ! command -v python3 &> /dev/null ; then
+    echo "⚠️  python3 is not installed"
+fi
 
 cd packages
 for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
