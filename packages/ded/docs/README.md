@@ -14,7 +14,7 @@ In **Machine Learning > Anomaly Detection**, when you create a job, you should s
 
 **_Note_**: In the Machine Learning app, these configurations are available only when data exists that matches the query specified in the [ded-ml file](https://github.com/elastic/integrations/blob/main/packages/ded/kibana/ml_module/ded-ml.json#L10).
 
-### (Optional) Enable Security rules
+### Enable Security rules
 
 To maximize the benefit of the Data Exfiltration Detection framework, activate the detection rules that are triggered when certain conditions for the anomaly detection jobs are satisfied. See the [documentation](https://www.elastic.co/guide/en/security/current/detection-engine-overview.html) for more information on importing and enabling the rules.
 
