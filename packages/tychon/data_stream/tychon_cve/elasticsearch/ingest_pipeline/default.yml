@@ -31,14 +31,15 @@ processors:
   - set:
       field: event.module
       value: tychon
-  - split:
-      field: host.ipv4
-      separator: ","
-      ignore_missing: true
   - gsub:
       field: host.mac
       pattern: ":"
       replacement: "-"
+      ignore_missing: true
+  - split:
+      field: host.ipv4
+      separator: ","
+      ignore_missing: true
   - convert:
       field: host.uptime
       type: string
@@ -82,6 +83,7 @@ processors:
   - convert:
       field: vulnerability.score.base
       type: float
+      ignore_failure: true
   - convert:
       field: vulnerability.year
       type: long

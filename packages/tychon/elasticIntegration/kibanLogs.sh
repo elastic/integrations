@@ -1,0 +1,1 @@
+journalctl -u kibana -f
