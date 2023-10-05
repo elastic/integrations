@@ -66,16 +66,16 @@ program: |
         "name":event.name,
         "id":event.hash,
         "host":event.host,
-        "elasticsearch.cluster.id":event['es_cluster_id'],
+        "elasticsearch.cluster.id":event.es_cluster_id,
         "plugin":{
           "type":"input",
           "input":{
             "elasticsearch.cluster.id":event['es_cluster_id_map'].map(tuple, (tuple.plugin_id == input.id), tuple.cluster_id),
             "name":input.name,
             "id":input.id,
-            "flow": has(input.flow) ? input["flow"] : {},
+            "flow": has(input.flow) ? input.flow : {},
             "events":{
-              "out":input.events["out"],
+              "out":input.events.out,
             },
             "time":{
               "queue_push_duration":{
@@ -91,22 +91,22 @@ program: |
         "name":event.name,
         "id":event.hash,
         "host":event.host,
-        "elasticsearch.cluster.id":event['es_cluster_id'],
+        "elasticsearch.cluster.id":event.es_cluster_id,
         "plugin":{
           "type":"codec",
           "codec":{
           "id":codec.id,
           "name":codec.name,
-            "flow": has(codec.flow) ? codec["flow"] : {},
+            "flow": has(codec.flow) ? codec.flow : {},
             "decode":{
               "duration":{
                 "ms":codec.decode.duration_in_millis
               },
-              "in":codec.decode["writes_in"],
-              "out":codec.decode["out"],
+              "in":codec.decode.writes_in,
+              "out":codec.decode.out,
             },
             "encode":{
-              "in":codec.encode["writes_in"],
+              "in":codec.encode.writes_in,
               "duration":{
                 "ms":codec.encode.duration_in_millis
               }
@@ -120,17 +120,17 @@ program: |
         "name":event.name,
         "id":event.hash,
         "host":event.host,
-        "elasticsearch.cluster.id":event['es_cluster_id'],
+        "elasticsearch.cluster.id":event.es_cluster_id,
         "plugin":{
           "type":"filter",
           "filter":{
             "id":filter.id,
             "name":filter.name,
             "elasticsearch.cluster.id":event['es_cluster_id_map'].map(tuple, (tuple.plugin_id == filter.id), tuple.cluster_id),
-            "flow": has(filter.flow) ? filter["flow"] : {},
+            "flow": has(filter.flow) ? filter.flow : {},
             "events":{
-              "in":filter.events["in"],
-              "out":filter.events["out"],
+              "in":filter.events['in'],
+              "out":filter.events.out,
             },
             "time":{
               "duration":{
@@ -153,10 +153,10 @@ program: |
             "id":output.id,
             "name":output.name,
             "elasticsearch.cluster.id":event['es_cluster_id_map'].map(tuple, (tuple.plugin_id == output.id), tuple.cluster_id),
-            "flow": has(output.flow) ? output["flow"] : {},
+            "flow": has(output.flow) ? output.flow : {},
             "events":{
-              "in":output.events["in"],
-              "out":output.events["out"],
+              "in":output.events['in'],
+              "out":output.events.out,
             },
             "time":{
               "duration":{

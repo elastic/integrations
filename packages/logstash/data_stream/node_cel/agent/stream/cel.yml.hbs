@@ -35,30 +35,30 @@ program: |
   .decode_json()
   .as(body,
     {"logstash":{"node":{"stats":{
-             "events":body['events'],
+             "events":body.events,
              "jvm":{
-                "uptime_in_millis":body['jvm']['uptime_in_millis'],
+                "uptime_in_millis":body.jvm.uptime_in_millis,
                 "mem":body['jvm']['mem'].drop("pools"),
-                "threads":body['jvm']['threads']
+                "threads":body.jvm.threads
               },
-             "queue":body['queue'],
-             "reloads":body['reloads'],
-             "process":body['process'],
+             "queue":body.queue,
+             "reloads":body.reloads,
+             "process":body.process,
              "os":{
-              "cpu":body['process']['cpu'],
-              "cgroup":has(body.os.group) ? body['os']['cgroup'] : {},
+              "cpu":body.process.cpu,
+              "cgroup":has(body.os.group) ? body.os.cgroup : {},
              },
              "logstash":{
-               "ephemeral_id":body['ephemeral_id'],
-               "host":body['host'],
-               "http_address":body['http_address'],
-               "name":body['name'],
-               "pipeline":body['pipeline'],
-               "pipelines":body['pipelines'].map(pipeline, [pipeline]).flatten(),
-               "snapshot":body['snapshot'],
-               "status":body['status'],
-               "uuid":body['id'],
-               "version":body['version'],
+               "ephemeral_id":body.ephemeral_id,
+               "host":body.host,
+               "http_address":body.http_address,
+               "name":body.name,
+               "pipeline":body.pipeline,
+               "pipelines":body.pipelines.map(pipeline, [pipeline]).flatten(),
+               "snapshot":body.snapshot,
+               "status":body.status,
+               "uuid":body.id,
+               "version":body.version,
               }
           }}
         }})
