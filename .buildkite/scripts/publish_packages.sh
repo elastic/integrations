@@ -27,6 +27,8 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
     integration=$(basename ${it})
     echo "Package ${integration}: check"
 
+    pushd ${integration} > /dev/null
+
     version=$(cat manifest.yml | yq .version)
     name=$(cat manifest.yml | yq .name)
 
@@ -37,7 +39,6 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
         continue
     fi
 
-    pushd ${integration} > /dev/null
     echo "Build integration as zip: ${integration}"
     ${ELASTIC_PACKAGE_BIN} check
     ${ELASTIC_PACKAGE_BIN} build --zip
