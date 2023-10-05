@@ -1,0 +1,38 @@
+{
+    "id": "449bf7bf-8070-580f-a3aa-66bc7f94a721",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Failure to whitelist the correct networks will result in a connection loss.",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/azure/cosmos-db/how-to-configure-private-endpoints\n2. https://docs.microsoft.com/en-us/azure/cosmos-db/how-to-configure-vnet-service-endpoint\n3. https://docs.microsoft.com/en-us/cli/azure/cosmosdb?view=azure-cli-latest#az-cosmosdb-show\n4. https://docs.microsoft.com/en-us/cli/azure/cosmosdb/database?view=azure-cli-latest#az-cosmosdb-database-list\n5. https://docs.microsoft.com/en-us/powershell/module/az.cosmosdb/?view=azps-8.1.0\n6. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-network-security#ns-2-secure-cloud-services-with-network-controls",
+            "id": "449bf7bf-8070-580f-a3aa-66bc7f94a721",
+            "name": "Ensure That 'Firewalls & Networks' Is Limited to Use Selected Networks Instead of All Networks",
+            "profile_applicability": "* Level 2",
+            "description": "Limiting your Cosmos DB to only communicate on whitelisted networks lowers its attack footprint.",
+            "rationale": "Selecting certain networks for your Cosmos DB to communicate restricts the number of networks including the internet that can interact with what is stored within the database.",
+            "audit": "**From Azure Portal**\n\n1. Open the portal menu.\n2. Select the Azure Cosmos DB blade\n3. Select a Cosmos DB to audit.\n4. Select `Networking`.\n5. Under `Public network access`, ensure `Selected networks` is selected.\n6. Under `Virtual networks`, ensure appropriate virtual networks are configured.\n\n**From Azure CLI**\n\n`az cosmosdb database list`\n\n`az cosmosdb show <database id>`\n\n`isVirtualNetworkFilterEnabled` should be set to `true`\n\n**From PowerShell**",
+            "remediation": "**From Azure Portal**\n\n1. Open the portal menu.\n2. Select the Azure Cosmos DB blade.\n3. Select a Cosmos DB account to audit.\n4. Select `Networking`.\n5. Under `Public network access`, select `Selected networks`.\n6. Under `Virtual networks`, select `+ Add existing virtual network` or `+ Add a new virtual network`.\n7. For existing networks, select subscription, virtual network, subnet and click `Add`. For new networks, provide a name, update the default values if required, and click `Create`.\n8. Click `Save`.\n\n**From Azure CLI**\n\n**From PowerShell**",
+            "section": "Cosmos DB",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 4.5.1",
+                "Cosmos DB"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "4.5.1",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_4_5_1"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
