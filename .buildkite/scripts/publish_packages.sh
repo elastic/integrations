@@ -15,6 +15,7 @@ if [ "${BUILDKITE_PULL_REQUEST}" == "false" ]; then
     fi
 fi
 
+add_bin_path
 with_yq
 use_elastic_package
 
