@@ -807,12 +807,12 @@ The TYCHON script scans an endpoint's Network Adapter Configurations and returns
 | event.agent_id_status | Agents are normally responsible for populating the `agent.id` field value. If the system receiving events is capable of validating the value based on authentication information for the client then this field can be used to reflect the outcome of that validation. For example if the agent's connection is authenticated with mTLS and the client cert contains the ID of the agent to which the cert was issued then the `agent.id` value in events can be checked against the certificate. If the values match then `event.agent_id_status: verified` is added to the event, otherwise one of the other allowed values should be used. If no validation is performed then the field should be omitted. The allowed values are: `verified` - The `agent.id` field value matches expected value obtained from auth metadata. `mismatch` - The `agent.id` field value does not match the expected value obtained from auth metadata. `missing` - There was no `agent.id` field in the event to validate. `auth_metadata_missing` - There was no auth metadata or it was missing information about the agent ID. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | host.adapter.alias | The Alias given to this adapter | keyword |
-| host.adapter.description | The network adatper description | text |
-| host.adapter.dhcp.enabled | Is DHCP Enabled on this adatper | boolean |
+| host.adapter.description | The network adapter description | text |
+| host.adapter.dhcp.enabled | Is DHCP Enabled on this adapter | boolean |
 | host.adapter.dhcp.lease_expires | When does this DHCP lease expire | date |
 | host.adapter.dhcp.lease_obtained | When was the DHCP lease obtained | date |
 | host.adapter.dhcp.server | What IP Address was the DHCP IP obtained from. | ip |
-| host.adapter.domain | What domain was assigned to this adatper | text |
+| host.adapter.domain | What domain was assigned to this adapter | text |
 | host.adapter.driver.date | Date the driver was installed | date |
 | host.adapter.driver.description | Description of the driver | text |
 | host.adapter.driver.file_name | Driver File name | keyword |
@@ -821,9 +821,9 @@ The TYCHON script scans an endpoint's Network Adapter Configurations and returns
 | host.adapter.driver.version | Version of the driver | keyword |
 | host.adapter.gateway | Gateway IP Address | ip |
 | host.adapter.id | ID Of the adapter | keyword |
-| host.adapter.ip | IP Addresses assigned to the adatper | ip |
+| host.adapter.ip | IP Addresses assigned to the adapter | ip |
 | host.adapter.ip_filter.enabled | Is IP Filtering Enabled | boolean |
-| host.adapter.link_speed | Link speed of the adatper | long |
+| host.adapter.link_speed | Link speed of the adapter | long |
 | host.adapter.mac | Hardware MAC Address | keyword |
 | host.adapter.media.connection_state | Current Connection State | keyword |
 | host.adapter.media.type | Current Connection Media Type | keyword |
@@ -841,7 +841,7 @@ The TYCHON script scans an endpoint's Network Adapter Configurations and returns
 | host.adapter.wifi.radio_type | The radio type of the connected WIFI Router | keyword |
 | host.adapter.wifi.signal_percent | Signal strenth to connected WIFI Router | integer |
 | host.adapter.wifi.ssid | The Connected WIFI Router SSID | keyword |
-| host.adapter.wins_server | The WINS Server attached to this adatper | ip |
+| host.adapter.wins_server | The WINS Server attached to this adapter | ip |
 | host.biossn | Host BIOS Serial Number. | keyword |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hardware.bios.name | Host BIOS Name. | keyword |
@@ -988,7 +988,6 @@ The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/X
 | agent.version | Version of the agent. | keyword |
 | benchmark.count | Benchmark Summary Name List Item Count. | long |
 | benchmark.generated_utc | Benchmark UTC. | date |
-| benchmark.guid | Benchmark GUID. | keyword |
 | benchmark.hash | Benchmark SHA256 Hash | keyword |
 | benchmark.id | Benchmark ID. | keyword |
 | benchmark.list | Benchmark Summary Name List. | keyword |
@@ -1043,7 +1042,7 @@ The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/X
 | package.name | Package name | keyword |
 | package.reference | Home page or reference URL of the software in this package, if available. | keyword |
 | package.type | Type of package. This should contain the package file type, rather than the package manager name. Examples: rpm, dpkg, brew, npm, gem, nupkg, jar. | keyword |
-| rule.benchmark.guid | Benchmark Rule GUID. | keyword |
+| rule.benchmark.id | Benchmark Rule ID. | keyword |
 | rule.benchmark.profile.id | Benchmark Rule Profile Identifier. | keyword |
 | rule.benchmark.title | Benchmark Rule Title. | keyword |
 | rule.finding_id | Benchmark Rule Finding Identifier. | keyword |

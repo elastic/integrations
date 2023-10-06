@@ -14,44 +14,61 @@ processors:
       value: 8.8.0
   - set:
       field: event.kind
-      value: state
+      value: state 
+  - remove:
+      field: host.adapter.ip
+      if: ctx.host.adapter.ip == ''
+  - remove:
+      field: host.adapter.gateway
+      if: ctx.host.adapter.gateway == ''
+  - remove:
+      field: host.adapter.dhcp.server
+      if: ctx.host.adapter.dhcp.server == ''
+  - remove:
+      field: host.adapter.dhcp.lease_obtained
+      if: ctx.host.adapter.dhcp.lease_obtained == ''
+  - remove:
+      field: host.adapter.dhcp.lease_expires
+      if: ctx.host.adapter.dhcp.lease_expires == ''
+  - remove:
+      field: host.adapter.driver.date
+      if: ctx.host.adapter.driver.date == ''
+  - remove:
+      field: host.adapter.wins_server
+      if: ctx.host.adapter.wins_server == ''
   - set:
       field: link_speed
       value: "{{host.adapter.link_speed}}"
   - set:
       field: host.adapter.link_speed
-      value: 1
+      value: 0
   - script:
-      source: |
+      source: 
+            |            
             if(ctx['link_speed'].contains(' ')){
-                String[] link_Speed=ctx['link_speed'].splitOnToken(' ');
+                String[] linkSpeed=ctx['link_speed'].splitOnToken(' ');
                 ctx.remove('link_speed');
-                ctx['host.adapter.link_speed']=Long.parseLong(link_Speed[0]);
-                if(link_Speed[1]=='Kbps'){
+                ctx['host.adapter.link_speed']=Long.parseLong(linkSpeed[0]);
+                if(linkSpeed[1]=='Kbps'){
                     ctx['host.adapter.link_speed']*=1024
                 }
-                if(link_Speed[1]=='Mbps'){
+                if(linkSpeed[1]=='Mbps'){
                     ctx['host.adapter.link_speed']*=1048576
                 }
-                if(link_Speed[1]=='Gbps'){
+                if(linkSpeed[1]=='Gbps'){
                     ctx['host.adapter.link_speed']*=1073741824
                 }
+            } else {
+                ctx.remove('link_speed');
             }
       ignore_failure: true   
-  - split:
-      field: host.ip
-      separator: ","
-      ignore_missing: true
-  - split:
-      field: host.ipv4
-      separator: ","
-      ignore_missing: true
   - gsub:
       field: host.mac
       pattern: ":"
       replacement: "-"
+      ignore_missing: true
   - split:
-      field: host.mac
+      field: host.ipv4
       separator: ","
       ignore_missing: true
   - convert:
@@ -84,27 +101,6 @@ processors:
   - set:
       field: event.type
       value: [info]
-  - remove:
-      field: host.adapter.ip
-      if: ctx.host.adapter.ip == ''
-  - remove:
-      field: host.adapter.wins_server      
-      if: ctx.host.adapter.wins_server == ''
-  - remove:
-      field: host.adapter.gateway
-      if: ctx.host.adapter.gateway == ''
-  - remove:
-      field: host.adapter.dhcp.server
-      if: ctx.host.adapter.dhcp.server == ''
-  - remove:
-      field: host.adapter.dhcp.lease_obtained
-      if: ctx.host.adapter.dhcp.lease_obtained == ''
-  - remove:
-      field: host.adapter.dhcp.lease_expires
-      if: ctx.host.adapter.dhcp.lease_expires == ''
-  - remove:
-      field: host.adapter.driver.date
-      if: ctx.host.adapter.driver.date == ''
   - convert:
       field: script.current_duration
       type: float
