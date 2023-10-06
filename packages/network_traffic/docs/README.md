@@ -411,7 +411,7 @@ Fields published for AMQP packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | amqp.app-id | Creating application id. | keyword |
-| amqp.arguments | Optional additional arguments passed to some methods. Can be of various types. | object |
+| amqp.arguments | Optional additional arguments passed to some methods. Can be of various types. | flattened |
 | amqp.auto-delete | If set, auto-delete queue when unused. | boolean |
 | amqp.class-id | Failing method class. | long |
 | amqp.consumer-count | The number of consumers of a queue. | long |
@@ -1134,7 +1134,7 @@ Fields published for DHCPv4 packets.
 | dhcpv4.option.subnet_mask | The subnet mask that the client should use on the currnet network. | ip |
 | dhcpv4.option.time_servers | The time server option specifies a list of RFC 868 time servers available to the client. | ip |
 | dhcpv4.option.utc_time_offset_sec | The time offset field specifies the offset of the client's subnet in seconds from Coordinated Universal Time (UTC). | long |
-| dhcpv4.option.vendor_identifying_options | A DHCP client may use this option to unambiguously identify the vendor that manufactured the hardware on which the client is running, the software in use, or an industry consortium to which the vendor belongs. This field is described in RFC 3925. | object |
+| dhcpv4.option.vendor_identifying_options | A DHCP client may use this option to unambiguously identify the vendor that manufactured the hardware on which the client is running, the software in use, or an industry consortium to which the vendor belongs. This field is described in RFC 3925. | flattened |
 | dhcpv4.relay_ip | The relay IP address used by the client to contact the server (i.e. a DHCP relay server). | ip |
 | dhcpv4.seconds | Number of seconds elapsed since client began address acquisition or renewal process. | long |
 | dhcpv4.server_ip | The IP address of the DHCP server that the client should use for the next step in the bootstrap process. | ip |
@@ -1409,7 +1409,7 @@ Fields published for DNS packets.
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
-| dns.additionals | An array containing a dictionary for each additional section from the answer. | object |
+| dns.additionals | An array containing a dictionary for each additional section from the answer. | flattened |
 | dns.additionals.class | The class of DNS data contained in this resource record. | keyword |
 | dns.additionals.data | The data describing the resource. The meaning of this data depends on the type and class of the resource record. | keyword |
 | dns.additionals.name | The domain name to which this resource record pertains. | keyword |
@@ -1423,7 +1423,7 @@ Fields published for DNS packets.
 | dns.answers.ttl | The time interval in seconds that this resource record may be cached before it should be discarded. Zero values mean that the data should not be cached. | long |
 | dns.answers.type | The type of data contained in this resource record. | keyword |
 | dns.answers_count | The number of resource records contained in the `dns.answers` field. | long |
-| dns.authorities | An array containing a dictionary for each authority section from the answer. | object |
+| dns.authorities | An array containing a dictionary for each authority section from the answer. | flattened |
 | dns.authorities.class | The class of DNS data contained in this resource record. | keyword |
 | dns.authorities.name | The domain name to which this resource record pertains. | keyword |
 | dns.authorities.type | The type of data contained in this resource record. | keyword |
