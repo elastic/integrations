@@ -735,8 +735,12 @@ processors:
       ignore_missing: true
   - set:
       field: network.direction
-      copy_from: aws.securityhub_findings.network.direction
-      ignore_failure: true
+      value: inbound
+      if: "ctx.aws?.securityhub_findings?.network?.direction == 'IN'"
+  - set:
+      field: network.direction
+      value: outbound
+      if: "ctx.aws?.securityhub_findings?.network?.direction == 'OUT'"
   - convert:
       field: json.Network.OpenPortRange.Begin
       target_field: aws.securityhub_findings.network.open_port_range.begin
@@ -1536,14 +1540,48 @@ processors:
           ignore_failure: true
       ignore_failure: true
       if: ctx.json?.ThreatIntelIndicators != null && ctx.json?.ThreatIntelIndicators instanceof List
-  - foreach:
-      field: json.ThreatIntelIndicators
-      processor:
-        set:
-          field: threat.indicator.type
-          copy_from: _ingest._value.type
-          ignore_failure: true
-      ignore_failure: true
+  - script:
+      description: Map box field ThreatIntelIndicator to ECS field threat.indicator.type
+      lang: painless
+      params:
+        "DOMAIN": domain-name
+        "EMAIL_ADDRESS": email-addr
+        "HASH_MD5": file
+        "HASH_SHA1": file
+        "HASH_SHA256": file
+        "HASH_SHA512": file
+        "IPV4_ADDRESS": ipv4-addr
+        "IPV6_ADDRESS": ipv6-addr
+        "MUTEX": mutex
+        "PROCESS": process
+        "URL": url
+      source: |-
+        for (ti in ctx.json.ThreatIntelIndicators) { 
+          def type = ti.type;
+          if (params.containsKey(type)) {
+            def mapped_type = params.get(type);
+            ctx.threat.indicator.type = mapped_type;
+
+            if (mapped_type == 'file') {
+              def hash_name = type.splitOnToken("_")[1].toLowerCase();
+              def hash_value = ti.value;
+
+              Map hash = new HashMap();
+              hash.put(hash_name,hash_value);
+              Map file = new HashMap();
+              file.put("hash",hash);
+              Map indicator = new HashMap();
+              indicator.indicator = new HashMap();
+              indicator.indicator.put("file", file);
+              
+              if (ctx.threat.enrichments == null) {
+                ctx.threat.enrichments = new ArrayList();
+              }
+
+              ctx.threat.enrichments.add(indicator);
+            }
+          }
+        } 
       if: ctx.json?.ThreatIntelIndicators != null && ctx.json?.ThreatIntelIndicators instanceof List
   - rename:
       field: json.ThreatIntelIndicators

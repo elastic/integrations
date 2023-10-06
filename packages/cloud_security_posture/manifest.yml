@@ -1,7 +1,7 @@
 format_version: 2.3.0
 name: cloud_security_posture
 title: "Security Posture Management"
-version: "1.6.0-preview12"
+version: "1.6.0"
 source:
   license: "Elastic-2.0"
 description: "Identify & remediate configuration risks in your Cloud infrastructure"
@@ -54,12 +54,11 @@ vars:
     required: true
     show_user: false
     description: Chosen deployment type (aws/gcp/azure/eks/k8s)
-# IMPORTANT: set all templates as not-multiple - we do no support multiple: true
 policy_templates:
   - name: kspm
     title: Kubernetes Security Posture Management (KSPM)
     description: Identify & remediate configuration risks in Kubernetes
-    multiple: false
+    multiple: true
     categories:
       - containers
       - kubernetes
@@ -87,7 +86,7 @@ policy_templates:
   - name: cspm
     title: Cloud Security Posture Management (CSPM)
     description: Identify & remediate configuration risks in the Cloud services you leverage
-    multiple: false
+    multiple: true
     categories:
       - security
       - cloud
@@ -125,14 +124,24 @@ policy_templates:
             required: true
             show_user: false
             description: A URL to CloudShell for creating a new deployment
-            default: https://shell.cloud.google.com/cloudshell/?ephemeral=true&cloudshell_git_repo=https%3A%2F%2Fgithub.com%2Felastic%2Fcloudbeat&cloudshell_git_branch=8.10&cloudshell_workspace=deploy%2Fdeployment-manager&show=terminal
+            default: https://shell.cloud.google.com/cloudshell/?ephemeral=true&cloudshell_git_repo=https%3A%2F%2Fgithub.com%2Felastic%2Fcloudbeat&cloudshell_git_branch=8.11&cloudshell_workspace=deploy%2Fdeployment-manager&show=terminal
       - type: cloudbeat/cis_azure
         title: Azure
         description: CIS Benchmark for Microsoft Azure Foundations
+        vars:
+          - name: arm_template_url
+            type: text
+            title: ARM Template URL
+            multi: false
+            required: true
+            show_user: false
+            description: A URL to the ARM Template for creating a new deployment
+            # TODO: Update main to 8.11 when ready
+            default: https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fcloudbeat%2Fmain%2Fdeploy%2Fazure%2FazureARMTemplate.json
   - name: vuln_mgmt
     title: Cloud Native Vulnerability Management (CNVM)
     description: Scan for cloud workload vulnerabilities
-    multiple: false
+    multiple: true
     categories:
       - security
       - cloud
