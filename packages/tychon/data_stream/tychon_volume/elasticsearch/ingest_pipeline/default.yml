@@ -44,6 +44,22 @@ processors:
       field: tempuptime
       ignore_failure: true
       ignore_missing: true
+  - set:
+      field: volume.block_size
+      value: 0
+      if: ctx.volume.block_size == ''
+  - set:
+      field: volume.freespace
+      value: 0
+      if: ctx.volume.freespace == ''
+  - set:
+      field: volume.percent_full
+      value: 100
+      if: ctx.volume.percent_full == '' || ctx.volume.percent_full == 'NaN'
+  - set:
+      field: volume.size
+      value: 0
+      if: ctx.volume.size == ''
   - convert:
       field: volume.block_size
       type: long
