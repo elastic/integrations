@@ -423,6 +423,7 @@ An example event for `route53_resolver` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| dns.answers |  | nested |
 | dns.answers.class | The class of DNS data contained in this resource record. | keyword |
 | dns.answers.data | The data describing the resource. The meaning of this data depends on the type and class of the resource record. | keyword |
 | dns.answers.name | The domain name to which this resource record pertains. If a chain of CNAME is being resolved, each answer's `name` should be the one that corresponds with the answer's `data`. It should not simply be the original `question.name` repeated. | keyword |

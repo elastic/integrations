@@ -1918,6 +1918,7 @@ An example event for `gateway_dns` looks as following:
 | destination.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
+| dns.answers |  | nested |
 | dns.answers.class | The class of DNS data contained in this resource record. | keyword |
 | dns.answers.data | The data describing the resource. The meaning of this data depends on the type and class of the resource record. | keyword |
 | dns.answers.name | The domain name to which this resource record pertains. If a chain of CNAME is being resolved, each answer's `name` should be the one that corresponds with the answer's `data`. It should not simply be the original `question.name` repeated. | keyword |
