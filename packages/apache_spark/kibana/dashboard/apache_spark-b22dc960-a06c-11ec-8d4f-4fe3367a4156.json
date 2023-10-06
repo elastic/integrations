@@ -597,7 +597,7 @@
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "cd121fe6-bb0a-4217-b691-dd52c2100256",
+                                "name": "2c0eb289-8dde-42c3-a4a2-039abffa9994",
                                 "type": "index-pattern"
                             }
                         ],
@@ -616,6 +616,10 @@
                                                 "02d81198-17ac-4861-870d-c481ba9a7dad": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "apache_spark.driver.tasks.completed : * "
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Completed",
                                                     "operationType": "max",
@@ -625,6 +629,10 @@
                                                 "16d7f486-58c7-46a1-96ea-d2be88b82633": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "apache_spark.driver.tasks.skipped : * "
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Skipped",
                                                     "operationType": "max",
@@ -634,6 +642,10 @@
                                                 "8c4d8d9d-46d4-4140-8aa7-5e8066fd577a": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "apache_spark.driver.tasks.failed : * "
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Failed",
                                                     "operationType": "max",
@@ -666,7 +678,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "cd121fe6-bb0a-4217-b691-dd52c2100256",
+                                        "index": "2c0eb289-8dde-42c3-a4a2-039abffa9994",
                                         "key": "event.dataset",
                                         "negate": false,
                                         "params": {
@@ -1157,7 +1169,7 @@
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "c5b4b675-16d1-4ea2-8bdf-6645d970eed2",
+                                "name": "0151e657-46f1-4dc0-969d-4a85689578ae",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1176,6 +1188,10 @@
                                                 "02d81198-17ac-4861-870d-c481ba9a7dad": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "apache_spark.executor.threadpool.started_tasks : * "
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Started",
                                                     "operationType": "max",
@@ -1185,6 +1201,10 @@
                                                 "16d7f486-58c7-46a1-96ea-d2be88b82633": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "apache_spark.executor.threadpool.active_tasks : * "
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Active",
                                                     "operationType": "max",
@@ -1194,6 +1214,10 @@
                                                 "8c4d8d9d-46d4-4140-8aa7-5e8066fd577a": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "apache_spark.executor.threadpool.complete_tasks : * "
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Completed",
                                                     "operationType": "max",
@@ -1226,7 +1250,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "c5b4b675-16d1-4ea2-8bdf-6645d970eed2",
+                                        "index": "0151e657-46f1-4dc0-969d-4a85689578ae",
                                         "key": "event.dataset",
                                         "negate": false,
                                         "params": {
@@ -2131,7 +2155,12 @@
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "c5d1d4ff-3497-4067-96b3-8dedc2f58de8",
+                                "name": "7c76ed08-e31a-4d5a-a8a3-d6f7763d3c40",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "fffcc31c-dfa7-4d03-baf5-d0c48357153f",
                                 "type": "index-pattern"
                             }
                         ],
@@ -2170,7 +2199,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "c5d1d4ff-3497-4067-96b3-8dedc2f58de8",
+                                        "index": "7c76ed08-e31a-4d5a-a8a3-d6f7763d3c40",
                                         "key": "event.dataset",
                                         "negate": false,
                                         "params": {
@@ -2181,6 +2210,25 @@
                                     "query": {
                                         "match_phrase": {
                                             "event.dataset": "apache_spark.node"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "fffcc31c-dfa7-4d03-baf5-d0c48357153f",
+                                        "key": "apache_spark.node.worker.cores.used",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "apache_spark.node.worker.cores.used"
                                         }
                                     }
                                 }
@@ -2231,7 +2279,12 @@
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "c413b9be-9a11-47d9-8d15-8059ff9a02ad",
+                                "name": "a871806a-160b-4da4-bcd5-700175899a73",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "55f22446-ec98-430e-b92e-0660335ab2d9",
                                 "type": "index-pattern"
                             }
                         ],
@@ -2270,7 +2323,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "c413b9be-9a11-47d9-8d15-8059ff9a02ad",
+                                        "index": "a871806a-160b-4da4-bcd5-700175899a73",
                                         "key": "event.dataset",
                                         "negate": false,
                                         "params": {
@@ -2281,6 +2334,25 @@
                                     "query": {
                                         "match_phrase": {
                                             "event.dataset": "apache_spark.node"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "55f22446-ec98-430e-b92e-0660335ab2d9",
+                                        "key": "apache_spark.node.worker.memory.used",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "apache_spark.node.worker.memory.used"
                                         }
                                     }
                                 }
@@ -2545,7 +2617,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "f84a1cd9-1b4b-484e-87f7-953c2f645570:cd121fe6-bb0a-4217-b691-dd52c2100256",
+            "name": "f84a1cd9-1b4b-484e-87f7-953c2f645570:2c0eb289-8dde-42c3-a4a2-039abffa9994",
             "type": "index-pattern"
         },
         {
@@ -2620,7 +2692,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "b5caa5d1-221e-400d-a11a-ea539f1f4546:c5b4b675-16d1-4ea2-8bdf-6645d970eed2",
+            "name": "b5caa5d1-221e-400d-a11a-ea539f1f4546:0151e657-46f1-4dc0-969d-4a85689578ae",
             "type": "index-pattern"
         },
         {
@@ -2760,7 +2832,12 @@
         },
         {
             "id": "metrics-*",
-            "name": "fa3bca1d-df9c-4e2b-8785-cfe9211a7843:c5d1d4ff-3497-4067-96b3-8dedc2f58de8",
+            "name": "fa3bca1d-df9c-4e2b-8785-cfe9211a7843:7c76ed08-e31a-4d5a-a8a3-d6f7763d3c40",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "fa3bca1d-df9c-4e2b-8785-cfe9211a7843:fffcc31c-dfa7-4d03-baf5-d0c48357153f",
             "type": "index-pattern"
         },
         {
@@ -2775,7 +2852,12 @@
         },
         {
             "id": "metrics-*",
-            "name": "18c0d3d3-912f-42e4-a322-a5fcaa9002b0:c413b9be-9a11-47d9-8d15-8059ff9a02ad",
+            "name": "18c0d3d3-912f-42e4-a322-a5fcaa9002b0:a871806a-160b-4da4-bcd5-700175899a73",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "18c0d3d3-912f-42e4-a322-a5fcaa9002b0:55f22446-ec98-430e-b92e-0660335ab2d9",
             "type": "index-pattern"
         },
         {
