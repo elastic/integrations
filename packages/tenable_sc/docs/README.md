@@ -1,14 +1,14 @@
-# Tenable.sc
+# Tenable Security Center
 
-The Tenable.sc integration collects and parses data from the [Tenable.sc](https://docs.tenable.com/tenablesc/Content/Welcome.htm) APIs.
+The Tenable Security Center integration collects and parses data from the [Tenable Security Center](https://docs.tenable.com/tenablesc/Content/Welcome.htm) APIs.
 
 ## Compatibility
 
-This module has been tested against `Tenable.sc version 5.23`.
+This module has been tested against `Tenable Security Center version 5.23`.
 
 ## Requirements
 
-In order to ingest data from the Tenable.sc you must have the **Access key** and **Secret Key**.
+In order to ingest data from the Tenable Security Center you must have the **Access key** and **Secret Key**.
 
 Enable API keys to allow users to perform API key authentication. 
 
