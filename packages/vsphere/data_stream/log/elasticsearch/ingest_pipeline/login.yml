@@ -8,12 +8,11 @@ processors:
       if: ctx.message.contains('Authenticated user')
   - dissect:
       field: message
-      pattern: "%{} [User %{user.name}@%{client.ip} %{_tmp.event} as %{user.agent.original}]"
+      pattern: "%{}User %{user.name}@%{client.ip} %{_tmp.event} as %{user_agent.original}"
       if: 'ctx.message.contains(''logged in as'') ?: false'
   - dissect:
       field: message
-      pattern: "%{} [User %{user.name}@%{client.ip} %{_tmp.event} out (login time: %{event.start},
-        number %{}: %{vsphere.api.invocations}, %{}: %{user.agent.original})]"
+      pattern: "%{}User %{user.name}@%{client.ip} %{_tmp.event} out (login time: %{event.start}, number %{}: %{vsphere.log.api.invocations}, %{}: %{user_agent.original}"
       if: 'ctx.message.contains(''logged out'') ?: false'
   - dissect:
       field: message
@@ -30,7 +29,9 @@ processors:
   - dissect:
       field: user.name
       pattern: "%{user.domain}\\%{user.name}"
-      ignore_failure: true
+      if: "ctx.user?.name?.contains('\\\\') ?: false"
+      # Java contains must escape the \. So that it is \\ for a single `\` to match. JSON requires this to be escaped as well. We are only checking if a single `\`
+      # is in the field such as domain\user
   - set:
       field: event.outcome
       value: success
@@ -39,19 +40,29 @@ processors:
       field: event.outcome
       value: failure
       if: 'ctx.event?.outcome?.toLowerCase()?.startsWith(''f'') ?: false'
+  - dissect:
+      field: user_agent.original
+      pattern: "%{user_agent.original})%{}"
+      if: ctx.user_agent?.original != null
   - user_agent:
-      field: user.agent.original
-      if: ctx.user?.agent?.original != null
+      field: user_agent.original
+      if: ctx.user_agent?.original != null
 ### the logout message contains the login timestamp.
   - set:
       field: event.end
       value: "{{@timestamp}}"
       if: ctx.event?.start != null
+  - date:
+      field: event.start
+      target_field: event.start
+      if: ctx.event?.start != null
+      formats:
+        - "EEEE, dd MMMM, yyyy hh:mm:ss a"
   - script:
-      source: "\n                ZonedDateTime start = ZonedDateTime.parse(ctx.event.start);\n
-        \               ZonedDateTime end = ZonedDateTime.parse(ctx.event.end);\n                ctx.event.duration
-        = ChronoUnit.NANOS.between(start, end);\n          "
-      if: ctx.event?.end != null
+      source: "ZonedDateTime start = ZonedDateTime.parse(ctx.event.start);\n
+        ZonedDateTime end = ZonedDateTime.parse(ctx.event.end);\n
+        ctx.event.duration= ChronoUnit.NANOS.between(start, end);"
+      if: ctx.event?.end != null && ctx.event?.start != null
   - set:
       field: event.action
       value: login
