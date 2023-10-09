@@ -480,7 +480,7 @@ An example event for `executor` looks as following:
 | apache_spark.executor.run_time | Elapsed time in the running this task | long | counter |
 | apache_spark.executor.shuffle.bytes_written | Number of bytes written in shuffle operations. | long | counter |
 | apache_spark.executor.shuffle.client.used.direct_memory | Amount of direct memory used by the shuffle client. | long | gauge |
-| apache_spark.executor.shuffle.client.used.heap_memory | Amount of heap memory used by the shuffle client. | long | counter |
+| apache_spark.executor.shuffle.client.used.heap_memory | Amount of heap memory used by the shuffle client. | long | gauge |
 | apache_spark.executor.shuffle.fetch_wait_time | Time the task spent waiting for remote shuffle blocks. | long | counter |
 | apache_spark.executor.shuffle.local.blocks_fetched | Number of local (as opposed to read from a remote executor) blocks fetched in shuffle operations. | long | counter |
 | apache_spark.executor.shuffle.local.bytes_read | Number of bytes read in shuffle operations from local disk (as opposed to read from a remote executor). | long | counter |
