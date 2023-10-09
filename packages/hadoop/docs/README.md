@@ -200,7 +200,7 @@ An example event for `cluster` looks as following:
         "type": "http"
     },
     "tags": [
-        "forwarded"
+        "hadoop-cluster"
     ]
 }
 ```
@@ -362,7 +362,7 @@ An example event for `datanode` looks as following:
         "type": "http"
     },
     "tags": [
-        "forwarded"
+        "hadoop-datanode"
     ]
 }
 ```
@@ -509,7 +509,7 @@ An example event for `namenode` looks as following:
         "type": "http"
     },
     "tags": [
-        "forwarded"
+        "hadoop-namenode"
     ]
 }
 ```
@@ -647,7 +647,7 @@ An example event for `node_manager` looks as following:
         "type": "http"
     },
     "tags": [
-        "forwarded"
+        "hadoop-node_manager"
     ]
 }
 ```
