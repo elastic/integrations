@@ -93,45 +93,12 @@ processors:
         %{GREEDYDATA:message}"
       EVENT2: Event \[%{POSINT:event.id}\] %{NOTSPACE} \[%{TIMESTAMP_ISO8601}\] \[%{JAVACLASS:log.logger}\]
         \[%{LOGLEVEL:log.level}\] %{GREEDYDATA:message}
-- dissect:
-    field: message
-    pattern: "%{} user %{user.name}@%{user.domain}"
-    if: ctx.message.contains('Authenticated user')
-- dissect:
-    field: message
-    pattern: "%{} [User %{user.name}@%{client.ip} %{_tmp.event} as %{user_agent.original}]"
-    if: 'ctx.message.contains(''logged in as'') ?: false'
-- dissect:
-    field: message
-    pattern: "%{} [User %{user.name}@%{client.ip} %{_tmp.event} out (login time: %{event.start},
-      number %{}: %{vsphere.log.api.invocations}, %{}: %{user_agent.original})]"
-    if: 'ctx.message.contains(''logged out'') ?: false'
-- dissect:
-    field: message
-    pattern: "%{} 'Upload' for path '%{vsphere.log.file.path}' %{} '%{client.ip}'
-      %{} '%{event.outcome}'"
-    if: 'ctx.message.contains(''Upload'') ?: false'
-- dissect:
-    field: user.name
-    pattern: "%{user.domain}\\%{user.name}"
-    ignore_failure: true
-- set:
-    field: event.outcome
-    value: success
-    if: 'ctx.event?.outcome?.toLowerCase()?.startsWith(''s'') ?: false'
-- set:
-    field: event.outcome
-    value: failure
-    if: 'ctx.event?.outcome?.toLowerCase()?.startsWith(''f'') ?: false'
-- user_agent:
-    field: user_agent.original
-    if: ctx.user_agent?.original != null
-- date:
-    field: event.start
-    target_field: event.start
-    formats:
-    - EEEE, dd MMMM, yyyy hh:mm:ss a
-    if: ctx.event?.start != null
+- pipeline:
+    name: '{{ IngestPipeline "dns" }}'
+    if: "ctx.process?.name == 'dnsmasq'"
+- pipeline:
+    name: '{{ IngestPipeline "login" }}'
+    if: "ctx.log?.logger != null && ['UserLoginSessionEvent', 'UserLogoutSessionEvent'].contains(ctx.log.logger)"
 - date:
     field: _tmp.timestamp
     target_field: "@timestamp"
