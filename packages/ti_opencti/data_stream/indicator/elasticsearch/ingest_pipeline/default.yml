@@ -359,7 +359,7 @@ processors:
       ignore_missing: true
 
   - script:
-      description: Remove null values from observables
+      description: Remove null values and empty fieldsets from observables
       lang: painless
       source: |
         def dropNulls(Object obj) {
@@ -391,6 +391,14 @@ processors:
         }
         if (ctx.opencti?.containsKey('observable')) {
           ctx.opencti.observable = dropNulls(ctx.opencti.observable);
+          for (def key : ctx.opencti.observable.keySet()) {
+            if (ctx.opencti.observable[key].size() == 0) {
+              ctx.opencti.observable.remove(key);
+            }
+          }
+          if (ctx.opencti.observable.size() == 0) {
+            ctx.opencti.remove('observable');
+          }
         }
 
   #########################################
@@ -789,11 +797,7 @@ processors:
         }
         if (ctx.opencti?.containsKey('observable')) {
           for (def key : ctx.opencti.observable.keySet()) {
-            if (ctx.opencti.observable[key].size() == 0) {
-              ctx.opencti.observable.remove(key);
-            } else {
-              ctx.opencti.observable[key] = mergeListOfMaps(ctx.opencti.observable[key]);
-            }
+            ctx.opencti.observable[key] = mergeListOfMaps(ctx.opencti.observable[key]);
           }
         }
         if (ctx.threat.indicator.containsKey('file')) {
