@@ -424,6 +424,8 @@ information in the form of Prometheus metrics. You can verify that metrics are
 enabled by making an HTTP request to
 `http://vault_server:8200/v1/sys/metrics?format=prometheus` on your Vault server.
 
+The metrics endpoint will return a 400 error if the prometheus endpoint is disabled. Refer to the [Vault telemetry](https://www.vaultproject.io/docs/configuration/telemetry) guide to enable prometheus metrics. 
+
 ### Requirements
 
 You must configure the Vault prometheus endpoint to disable the hostname
