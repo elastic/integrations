@@ -141,10 +141,18 @@ processors:
     field: event.end
     value: "{{@timestamp}}"
     if: ctx.event?.start != null
+- script:
+    lang: painless
+    description: Calculate the duration of the login session
+    if: ctx.event?.start != null && ctx.event?.end != null
+    source: >-
+      ZonedDateTime start = ZonedDateTime.parse(ctx.event.start);
+      ZonedDateTime end = ZonedDateTime.parse(ctx.event.end);
+      ctx.event.duration = ChronoUnit.NANOS.between(start, end);
 - convert:
-    field: "vsphere.log.api.invocations"
+    field: vsphere.log.api.invocations
     type: long
-    if: "ctx.vsphere?.log?.api?.invocations != null"
+    if: ctx.vsphere?.log?.api?.invocations != null
 - remove:
     field:
     - _tmp
