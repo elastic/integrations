@@ -144,7 +144,6 @@ An example event for `server` looks as following:
         "type": "http"
     },
     "tags": [
-        "forwarded",
         "couchdb-server"
     ]
 }
