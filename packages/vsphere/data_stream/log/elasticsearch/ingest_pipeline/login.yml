@@ -1,6 +1,7 @@
 ---
 description: "Parse login and logout events from VMware vSphere/vCenter"
 processors:
+##### Parse out all the authentication messages ###
   - dissect:
       field: message
       pattern: "%{} user %{user.name}@%{user.domain}"
@@ -14,6 +15,18 @@ processors:
       pattern: "%{} [User %{user.name}@%{client.ip} %{_tmp.event} out (login time: %{event.start},
         number %{}: %{vsphere.api.invocations}, %{}: %{user.agent.original})]"
       if: 'ctx.message.contains(''logged out'') ?: false'
+  - dissect:
+      field: message
+      pattern: "Received %{_tmp.status} from %{client.ip} port %{client.port}:%{destination.port}: %{}"
+      if: "ctx.message.startsWith('Received') ?: false"
+  - dissect:
+      field: message
+      pattern: "%{_tmp.status} from %{client.ip} port %{client.port} %{}"
+      if: "ctx.message.startsWith('Disconnected') ?: false"
+  - dissect:
+      field: message
+      pattern: "Connection %{_tmp.status} by %{client.ip} port %{client.port} %{}"
+      if: "ctx.message.startsWith('Connection') ?: false"
   - dissect:
       field: user.name
       pattern: "%{user.domain}\\%{user.name}"
@@ -29,6 +42,7 @@ processors:
   - user_agent:
       field: user.agent.original
       if: ctx.user?.agent?.original != null
+### the logout message contains the login timestamp.
   - set:
       field: event.end
       value: "{{@timestamp}}"
@@ -49,4 +63,18 @@ processors:
   - set:
       field: event.kind
       value: event
-      if: ctx.log?.logger != null && ['UserLogoutSessionEvent', 'UserLoginSessionEvent'].contains(ctx.log.logger)
+  - set:
+      field: event.type
+      value: access
+  - set:
+      field: event.category
+      value: authentication
+  - convert:
+      field: client.port
+      type: long
+      if: ctx.client?.port != null
+  - convert:
+      field: destination.port
+      type: long
+      if: ctx.destination?.port != null
+    

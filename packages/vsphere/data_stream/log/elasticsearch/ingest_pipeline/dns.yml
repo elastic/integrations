@@ -28,6 +28,18 @@ processors:
         field: dns.answers.name
         value: "{{dns.question.name}}"
         if: ctx.dns?.question?.name != null && ctx.dns?.resolved_ip != null
+    - set:
+        field: event.category
+        value: network
+    - set:
+        field: event.kind
+        value: event
+    - set:
+        field: event.type
+        value: protocol
+    - append:
+        field: event.type
+        value: connection
     - remove:
         field: "dns.question.domain"
         if: "ctx.dns?.question?.domain != null"
