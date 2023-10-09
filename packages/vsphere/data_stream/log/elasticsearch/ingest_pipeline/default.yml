@@ -99,6 +99,9 @@ processors:
 - pipeline:
     name: '{{ IngestPipeline "login" }}'
     if: "ctx.log?.logger != null && ['UserLoginSessionEvent', 'UserLogoutSessionEvent'].contains(ctx.log.logger) || ctx.process?.name == 'sshd'"
+- pipeline:
+    name: '{{ IngestPipeline "file" }}'
+    if: "ctx.message?.contains('Upload') ?: false"
 - date:
     field: _tmp.timestamp
     target_field: "@timestamp"
@@ -116,10 +119,6 @@ processors:
       ZonedDateTime start = ZonedDateTime.parse(ctx.event.start);
       ZonedDateTime end = ZonedDateTime.parse(ctx.event.end);
       ctx.event.duration = ChronoUnit.NANOS.between(start, end);
-- convert:
-    field: vsphere.log.api.invocations
-    type: long
-    if: ctx.vsphere?.log?.api?.invocations != null
 - remove:
     field:
     - _tmp
