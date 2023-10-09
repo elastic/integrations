@@ -463,48 +463,45 @@ processors:
       tag: set_source_bytes
       copy_from: trellix_edr_cloud.event.bytes_received
       ignore_empty_value: true
+  - set:
+      field: json.temp_certs
+      copy_from: json.certs.0
+      if: ctx.json?.certs instanceof List && ctx.json.certs.length == 1 && ctx.json.certs.0 instanceof List
+  - set:
+      field: json.certs
+      copy_from: json.temp_certs
+      ignore_empty_value: true
+      if: ctx.json?.temp_certs != null
   - foreach:
       field: json.certs
       if: ctx.json?.certs instanceof List
       ignore_failure: true
       processor:
-        foreach:
-          field: _ingest._value
+        rename:
+          field: _ingest._value.publicKeyHash
+          tag: rename_json_certs_publicKeyHash
+          target_field: _ingest._value.public_key_hash
           ignore_missing: true
-          processor:
-            rename:
-              field: _ingest._value.publicKeyHash
-              tag: rename_json_certs_publicKeyHash
-              target_field: _ingest._value.public_key_hash
-              ignore_missing: true
   - foreach:
       field: json.certs
       if: ctx.json?.certs instanceof List
       ignore_failure: true
       processor:
-        foreach:
-          field: _ingest._value
+        rename:
+          field: _ingest._value.issuerName
+          tag: rename_json_certs_issuerName
+          target_field: _ingest._value.issuer_name
           ignore_missing: true
-          processor:
-            rename:
-              field: _ingest._value.issuerName
-              tag: rename_json_certs_issuerName
-              target_field: _ingest._value.issuer_name
-              ignore_missing: true
   - foreach:
       field: json.certs
       if: ctx.json?.certs instanceof List
       ignore_failure: true
       processor:
-        foreach:
-          field: _ingest._value
-          ignore_missing: true
-          processor:
-            append:
-              field: related.hash
-              tag: append_related_hash
-              value: '{{{_ingest._value.public_key_hash}}}'
-              allow_duplicates: false
+        append:
+          field: related.hash
+          tag: append_related_hash
+          value: '{{{_ingest._value.public_key_hash}}}'
+          allow_duplicates: false
   - rename:
       field: json.certs
       tag: rename_json_certs_type
