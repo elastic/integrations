@@ -1,0 +1,329 @@
+---
+description: Pipeline for parsing Cloudflare Sinkhole HTTP logs.
+processors:
+  - set:
+      field: ecs.version
+      value: 8.9.0
+      tag: set_ecs_version
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      tag: rename_event_original
+  - json:
+      field: event.original
+      target_field: json
+      tag: json_event_original
+  - set:
+      field: event.kind
+      value: event
+      tag: set_event_kind
+  - set:
+      field: event.category
+      value: [network]
+      tag: set_event_category
+  - set:
+      field: event.type
+      value: [info]
+      tag: set_event_type
+
+# Timestamp
+  - script:
+      lang: painless
+      tag: painless_timestamp_to_milli
+      if: ctx.json?.Timestamp != null
+      source: |
+        try {
+          long t;
+          if (ctx.json.Timestamp instanceof String) {
+            t = Long.parseLong(ctx.json.Timestamp);
+          } else if (ctx.json.Timestamp instanceof Number) {
+            t = (long)(ctx.json.Timestamp);
+          } else {
+            return;
+          }
+          if (t > (long)(1e18)) {
+            ctx.json.Timestamp = t/(long)(1e6)
+          } else if (t < (long)(1e10))  {
+            ctx.json.Timestamp = t*(long)(1e3)
+          }
+        }
+        catch (Exception e) {}
+  - date:
+      field: json.Timestamp
+      if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
+      formats:
+        - UNIX_MS
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssZ
+      timezone: UTC
+      tag: date_event_timestamp
+      on_failure:
+      - append:
+          field: error.message
+          value: "{{{_ingest.on_failure_message}}}"
+  - set:
+      field: cloudflare_logpush.sinkhole_http.timestamp
+      copy_from: "@timestamp"
+      tag: set_timestamp
+
+# Handle destination IP
+  - rename:
+      field: json.DestAddr
+      target_field: cloudflare_logpush.sinkhole_http.destination.ip
+      ignore_missing: true
+      tag: rename_destination_ip
+  - set:
+      field: destination.ip
+      copy_from: cloudflare_logpush.sinkhole_http.destination.ip
+      tag: set_destination_ip
+# Geo enrichment (destination IP)
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      tag: geo_destination_ip
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      tag: geo_destination_as
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+      tag: rename_destination_as_number
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+      tag: rename_destination_as_org
+
+# Handle source IP
+  - rename:
+      field: json.SrcAddr
+      target_field: cloudflare_logpush.sinkhole_http.source.ip
+      ignore_missing: true
+      tag: rename_source_ip
+  - set:
+      field: source.ip
+      copy_from: cloudflare_logpush.sinkhole_http.source.ip
+      tag: set_source_ip
+# Geo enrichment (source IP)
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      tag: geo_source_ip
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      tag: geo_source_as
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+      tag: rename_source_as_number
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+      tag: rename_source_as_org
+
+# HTTP fields
+  - rename:
+      field: json.Body
+      target_field: cloudflare_logpush.sinkhole_http.request.body.content
+      ignore_missing: true
+      tag: rename_http_body
+  - set:
+      field: http.request.body.content
+      copy_from: cloudflare_logpush.sinkhole_http.request.body.content
+      tag: set_http_body
+  - rename:
+      field: json.BodyLength
+      target_field: cloudflare_logpush.sinkhole_http.request.body.bytes
+      ignore_missing: true
+      tag: rename_http_body_bytes
+  - set:
+      field: http.request.body.bytes
+      copy_from: cloudflare_logpush.sinkhole_http.request.body.bytes
+      tag: set_http_body_bytes
+  - rename:
+      field: json.Method
+      target_field: cloudflare_logpush.sinkhole_http.request.method
+      ignore_missing: true
+      tag: rename_http_method
+  - set:
+      field: http.request.method
+      copy_from: cloudflare_logpush.sinkhole_http.request.method
+      tag: set_http_method
+  - rename:
+      field: json.Referrer
+      target_field: cloudflare_logpush.sinkhole_http.request.referrer
+      ignore_missing: true
+      tag: rename_http_referrer
+  - set:
+      field: http.request.referrer
+      copy_from: cloudflare_logpush.sinkhole_http.request.referrer
+      tag: set_http_referrer
+
+  - rename:
+      field: json.Host
+      target_field: cloudflare_logpush.sinkhole_http.host.name
+      ignore_missing: true
+      tag: rename_http_host
+  - set:
+      field: host.name
+      copy_from: cloudflare_logpush.sinkhole_http.host.name
+      tag: set_http_host
+  - rename:
+      field: json.URI
+      target_field: cloudflare_logpush.sinkhole_http.request.uri
+      ignore_missing: true
+  - rename:
+      field: json.URL
+      target_field: cloudflare_logpush.sinkhole_http.request.url
+      ignore_missing: true
+  - uri_parts:
+      field: cloudflare_logpush.sinkhole_http.request.url
+      target_field: url
+      if: ctx.cloudflare_logpush?.sinkhole_http?.request?.url != null && ctx.cloudflare_logpush.sinkhole_http.request.url != ''
+  - rename:
+      field: json.UserAgent
+      target_field: cloudflare_logpush.sinkhole_http.user_agent
+      ignore_missing: true
+      tag: rename_user_agent
+  - user_agent:
+      field: cloudflare_logpush.sinkhole_http.user_agent
+      ignore_missing: true
+  - rename:
+      field: json.Username
+      target_field: cloudflare_logpush.sinkhole_http.user.name
+      ignore_missing: true
+      tag: rename_username
+  - set:
+      field: user.name
+      copy_from: cloudflare_logpush.sinkhole_http.user.name
+      tag: set_username
+
+# Custom fields
+  - rename:
+      field: json.AccountID
+      target_field: cloudflare_logpush.sinkhole_http.account_id
+      ignore_missing: true
+      tag: rename_account_id
+  - rename:
+      field: json.Headers
+      target_field: cloudflare_logpush.sinkhole_http.request.headers
+      ignore_missing: true
+      tag: rename_request_headers
+  - split:
+      field: cloudflare_logpush.sinkhole_http.request.headers
+      separator: '\n'
+      ignore_missing: true
+      tag: split_headers
+  - rename:
+      field: json.Password
+      target_field: cloudflare_logpush.sinkhole_http.request.password
+      ignore_missing: true
+      tag: rename_request_password
+  - rename:
+      field: json.R2Path
+      target_field: cloudflare_logpush.sinkhole_http.r2path
+      ignore_missing: true
+      tag: rename_r2path
+  - rename:
+      field: json.SinkholeID
+      target_field: cloudflare_logpush.sinkhole_http.sinkhole_id
+      ignore_missing: true
+      tag: rename_sinkhole_id
+
+# Create related fields
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      if: ctx.destination?.ip != null && ctx.destination.ip != ''
+      allow_duplicates: false
+      tag: append_related_destination_ip
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null && ctx.source.ip != ''
+      allow_duplicates: false
+      tag: append_related_source_ip
+  - append:
+      field: related.hosts
+      value: '{{{host.name}}}'
+      if: ctx.host?.name != null && ctx.host.name != ''
+      allow_duplicates: false
+      tag: append_related_host
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      if: ctx.user?.name != null && ctx.user.name != ''
+      allow_duplicates: false
+      tag: append_related_user
+
+# Clean resulting event
+  - remove:
+      field: json
+      ignore_missing: true
+      tag: remove_json
+  - remove:
+      field:
+        - cloudflare_logpush.sinkhole_http.timestamp
+        - cloudflare_logpush.sinkhole_http.destination.ip
+        - cloudflare_logpush.sinkhole_http.source.ip
+        - cloudflare_logpush.sinkhole_http.request.body.content
+        - cloudflare_logpush.sinkhole_http.request.body.bytes
+        - cloudflare_logpush.sinkhole_http.request.method
+        - cloudflare_logpush.sinkhole_http.request.referrer
+        - cloudflare_logpush.sinkhole_http.host.name
+        - cloudflare_logpush.sinkhole_http.user.name
+        - cloudflare_logpush.sinkhole_http.user_agent
+        - cloudflare_logpush.sinkhole_http.request.uri
+        - cloudflare_logpush.sinkhole_http.request.url
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_failure: true
+      ignore_missing: true
+      tag: remove_duplicated_custom_fields
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+      tag: remove_event_original
+  - script:
+      description: Drops null/empty values recursively.
+      tag: script_drop_empty_fields
+      lang: painless
+      source: |-
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
