@@ -30,7 +30,7 @@ processors:
       field: user.name
       pattern: "%{user.domain}\\%{user.name}"
       if: "ctx.user?.name?.contains('\\\\') ?: false"
-      # Java contains must escape the \. So that it is \\ for a single `\` to match. JSON requires this to be escaped as well. We are only checking if a single `\`
+      # Java contains must escape the \. So that it is \\ for a single `\` to match. JSON requires this to be escaped. YAML needs it escaped. We are only checking if a single `\`
       # is in the field such as domain\user
   - set:
       field: event.outcome
@@ -40,9 +40,10 @@ processors:
       field: event.outcome
       value: failure
       if: 'ctx.event?.outcome?.toLowerCase()?.startsWith(''f'') ?: false'
-  - dissect:
+  - grok:
       field: user_agent.original
-      pattern: "%{user_agent.original})%{}"
+      patterns:
+        - "%{DATA:user_agent.original}(?:\\]|\\)+)"
       if: ctx.user_agent?.original != null
   - user_agent:
       field: user_agent.original

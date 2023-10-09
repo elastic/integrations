@@ -103,7 +103,7 @@ processors:
     if: "ctx.process?.name == 'dnsmasq'"
 - pipeline:
     name: '{{ IngestPipeline "login" }}'
-    if: "ctx.log?.logger != null && ['vim.event.UserLogoutSessionEvent', 'vim.event.UserLogoutSessionEvent'].contains(ctx.log.logger) || ctx.process?.name == 'sshd'"
+    if: "(ctx.message != null && ctx.message.contains('logged')) || (ctx.log?.logger != null && ['vim.event.UserLogoutSessionEvent', 'vim.event.UserLogoutSessionEvent'].contains(ctx.log.logger)) || ctx.process?.name == 'sshd'"
 - pipeline:
     name: '{{ IngestPipeline "file" }}'
     if: "ctx.message?.contains('Upload') ?: false"
