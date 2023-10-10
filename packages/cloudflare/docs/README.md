@@ -146,8 +146,8 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2021-11-30T13:42:04.000Z",
     "agent": {
-        "ephemeral_id": "a561323c-9fdc-46fd-aabb-e68f5a6e7cae",
-        "id": "66a70b18-9322-46eb-93a2-994e9da10b0d",
+        "ephemeral_id": "c1f5062e-f467-4812-af6a-7d4b4e7c942d",
+        "id": "4b6522ee-8519-493a-b53a-a85672045358",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.10.1"
@@ -181,7 +181,7 @@ An example event for `audit` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "66a70b18-9322-46eb-93a2-994e9da10b0d",
+        "id": "4b6522ee-8519-493a-b53a-a85672045358",
         "snapshot": false,
         "version": "8.10.1"
     },
@@ -191,10 +191,10 @@ An example event for `audit` looks as following:
         "category": [
             "iam"
         ],
-        "created": "2023-10-04T16:53:12.640Z",
+        "created": "2023-10-10T14:41:04.679Z",
         "dataset": "cloudflare.audit",
         "id": "8d3396e8-c903-5a66-9421-00fc34570550",
-        "ingested": "2023-10-04T16:53:13Z",
+        "ingested": "2023-10-10T14:41:05Z",
         "kind": "event",
         "original": "{\"action\":{\"info\":\"key digest: c6b5d100d7ce492d24c5b13160fce1cc0092ce7e8d8430e9f5cf5468868be6f6\",\"result\":true,\"type\":\"rotate_API_key\"},\"actor\":{\"email\":\"user@example.com\",\"id\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"ip\":\"52.91.36.10\",\"type\":\"user\"},\"id\":\"8d3396e8-c903-5a66-9421-00fc34570550\",\"interface\":\"\",\"metadata\":{},\"newValue\":\"\",\"oldValue\":\"\",\"owner\":{\"id\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\"},\"resource\":{\"id\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"type\":\"account\"},\"when\":\"2021-11-30T13:42:04Z\"}",
         "outcome": "success",
@@ -439,8 +439,8 @@ An example event for `logpull` looks as following:
 {
     "@timestamp": "2019-08-02T15:29:08.000Z",
     "agent": {
-        "ephemeral_id": "9bc7c4ad-fed6-486b-b0d5-3668f8f8a66e",
-        "id": "66a70b18-9322-46eb-93a2-994e9da10b0d",
+        "ephemeral_id": "a27dd9de-634b-47ac-a284-09aaea297972",
+        "id": "4b6522ee-8519-493a-b53a-a85672045358",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.10.1"
@@ -458,12 +458,6 @@ An example event for `logpull` looks as following:
         "port": 55028
     },
     "cloudflare": {
-        "bot": {
-            "score": {
-                "src": "Heuristics",
-                "value": 1
-            }
-        },
         "cache": {
             "status": "unknown",
             "tiered_fill": false
@@ -550,7 +544,7 @@ An example event for `logpull` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "66a70b18-9322-46eb-93a2-994e9da10b0d",
+        "id": "4b6522ee-8519-493a-b53a-a85672045358",
         "snapshot": false,
         "version": "8.10.1"
     },
@@ -563,13 +557,13 @@ An example event for `logpull` looks as following:
         "category": [
             "network"
         ],
-        "created": "2023-10-04T16:54:00.889Z",
+        "created": "2023-10-10T14:42:46.310Z",
         "dataset": "cloudflare.logpull",
         "duration": 0,
         "end": "2019-08-02T15:29:08.000Z",
-        "ingested": "2023-10-04T16:54:03Z",
+        "ingested": "2023-10-10T14:42:49Z",
         "kind": "event",
-        "original": "{\"BotScore\":1,\"BotScoreSrc\":\"Heuristics\",\"CacheCacheStatus\":\"unknown\",\"CacheResponseBytes\":0,\"CacheResponseStatus\":0,\"CacheTieredFill\":false,\"ClientASN\":15169,\"ClientCountry\":\"us\",\"ClientDeviceType\":\"desktop\",\"ClientIP\":\"35.232.161.245\",\"ClientIPClass\":\"noRecord\",\"ClientRequestBytes\":2577,\"ClientRequestHost\":\"cf-analytics.com\",\"ClientRequestMethod\":\"POST\",\"ClientRequestPath\":\"/wp-cron.php\",\"ClientRequestProtocol\":\"HTTP/1.1\",\"ClientRequestReferer\":\"https://cf-analytics.com/wp-cron.php?doing_wp_cron=1564759748.3962020874023437500000\",\"ClientRequestURI\":\"/wp-cron.php?doing_wp_cron=1564759748.3962020874023437500000\",\"ClientRequestUserAgent\":\"WordPress/5.2.2;https://cf-analytics.com\",\"ClientSSLCipher\":\"ECDHE-ECDSA-AES128-GCM-SHA256\",\"ClientSSLProtocol\":\"TLSv1.2\",\"ClientSrcPort\":55028,\"EdgeColoID\":14,\"EdgeEndTimestamp\":\"2019-08-02T15:29:08Z\",\"EdgePathingOp\":\"wl\",\"EdgePathingSrc\":\"filter_based_firewall\",\"EdgePathingStatus\":\"captchaNew\",\"EdgeRateLimitAction\":\"\",\"EdgeRateLimitID\":0,\"EdgeRequestHost\":\"\",\"EdgeResponseBytes\":2848,\"EdgeResponseCompressionRatio\":2.64,\"EdgeResponseContentType\":\"text/html\",\"EdgeResponseStatus\":403,\"EdgeServerIP\":\"\",\"EdgeStartTimestamp\":\"2019-08-02T15:29:08Z\",\"FirewallMatchesActions\":[\"simulate\",\"challenge\"],\"FirewallMatchesRuleIDs\":[\"094b71fea25d4860a61fa0c6fbbd8d8b\",\"e454fd4a0ce546b3a9a462536613692c\"],\"FirewallMatchesSources\":[\"firewallRules\",\"firewallRules\"],\"OriginIP\":\"\",\"OriginResponseBytes\":0,\"OriginResponseHTTPExpires\":\"\",\"OriginResponseHTTPLastModified\":\"\",\"OriginResponseStatus\":0,\"OriginResponseTime\":0,\"OriginSSLProtocol\":\"unknown\",\"ParentRayID\":\"00\",\"RayID\":\"500115ec386354d8\",\"SecurityLevel\":\"med\",\"WAFAction\":\"unknown\",\"WAFFlags\":\"0\",\"WAFMatchedVar\":\"\",\"WAFProfile\":\"unknown\",\"WAFRuleID\":\"\",\"WAFRuleMessage\":\"\",\"WorkerCPUTime\":0,\"WorkerStatus\":\"unknown\",\"WorkerSubrequest\":false,\"WorkerSubrequestCount\":0,\"ZoneID\":155978002}",
+        "original": "{\"CacheCacheStatus\":\"unknown\",\"CacheResponseBytes\":0,\"CacheResponseStatus\":0,\"CacheTieredFill\":false,\"ClientASN\":15169,\"ClientCountry\":\"us\",\"ClientDeviceType\":\"desktop\",\"ClientIP\":\"35.232.161.245\",\"ClientIPClass\":\"noRecord\",\"ClientRequestBytes\":2577,\"ClientRequestHost\":\"cf-analytics.com\",\"ClientRequestMethod\":\"POST\",\"ClientRequestPath\":\"/wp-cron.php\",\"ClientRequestProtocol\":\"HTTP/1.1\",\"ClientRequestReferer\":\"https://cf-analytics.com/wp-cron.php?doing_wp_cron=1564759748.3962020874023437500000\",\"ClientRequestURI\":\"/wp-cron.php?doing_wp_cron=1564759748.3962020874023437500000\",\"ClientRequestUserAgent\":\"WordPress/5.2.2;https://cf-analytics.com\",\"ClientSSLCipher\":\"ECDHE-ECDSA-AES128-GCM-SHA256\",\"ClientSSLProtocol\":\"TLSv1.2\",\"ClientSrcPort\":55028,\"EdgeColoID\":14,\"EdgeEndTimestamp\":\"2019-08-02T15:29:08Z\",\"EdgePathingOp\":\"wl\",\"EdgePathingSrc\":\"filter_based_firewall\",\"EdgePathingStatus\":\"captchaNew\",\"EdgeRateLimitAction\":\"\",\"EdgeRateLimitID\":0,\"EdgeRequestHost\":\"\",\"EdgeResponseBytes\":2848,\"EdgeResponseCompressionRatio\":2.64,\"EdgeResponseContentType\":\"text/html\",\"EdgeResponseStatus\":403,\"EdgeServerIP\":\"\",\"EdgeStartTimestamp\":\"2019-08-02T15:29:08Z\",\"FirewallMatchesActions\":[\"simulate\",\"challenge\"],\"FirewallMatchesRuleIDs\":[\"094b71fea25d4860a61fa0c6fbbd8d8b\",\"e454fd4a0ce546b3a9a462536613692c\"],\"FirewallMatchesSources\":[\"firewallRules\",\"firewallRules\"],\"OriginIP\":\"\",\"OriginResponseBytes\":0,\"OriginResponseHTTPExpires\":\"\",\"OriginResponseHTTPLastModified\":\"\",\"OriginResponseStatus\":0,\"OriginResponseTime\":0,\"OriginSSLProtocol\":\"unknown\",\"ParentRayID\":\"00\",\"RayID\":\"500115ec386354d8\",\"SecurityLevel\":\"med\",\"WAFAction\":\"unknown\",\"WAFFlags\":\"0\",\"WAFMatchedVar\":\"\",\"WAFProfile\":\"unknown\",\"WAFRuleID\":\"\",\"WAFRuleMessage\":\"\",\"WorkerCPUTime\":0,\"WorkerStatus\":\"unknown\",\"WorkerSubrequest\":false,\"WorkerSubrequestCount\":0,\"ZoneID\":155978002}",
         "start": "2019-08-02T15:29:08.000Z"
     },
     "http": {
