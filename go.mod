@@ -4,7 +4,7 @@ go 1.21.0
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/elastic/elastic-package v0.89.1
+	github.com/elastic/elastic-package v0.89.2
 	github.com/elastic/go-licenser v0.4.1
 	github.com/elastic/package-registry v1.21.0
 	github.com/magefile/mage v1.15.0
@@ -201,5 +201,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
-
-replace github.com/elastic/elastic-package => github.com/elastic/elastic-package v0.89.2-0.20231009090150-6bc4c14aa772
