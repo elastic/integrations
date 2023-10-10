@@ -1016,6 +1016,8 @@ An example event for `pipeline` looks as following:
         }
     }
 }
+
+
 ```
 
 #### Plugin
