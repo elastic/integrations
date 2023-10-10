@@ -1,24 +1,22 @@
 # Wiz
 
-This [Wiz](https://www.wiz.io/) integration enables your security team to continuously prioritize critical risks based on a deep cloud analysis across misconfigurations, network exposure, secrets, vulnerabilities, malware, sensitive data and identities to build a single prioritized risk view for your cloud.
-
-Use the Wiz integration to collect and parse data from Wiz api.
+Wiz continuously prioritizes critical risks based on a deep cloud analysis across misconfigurations, network exposure, secrets, vulnerabilities, malware, and identities to build a single prioritized view of risk for your cloud. This [Wiz](https://www.wiz.io/) integration enables you to consume and analyze Wiz data within Elastic Security, including issues, vulnerability data and audit events, providing you with visibility and context for your cloud environments within Elastic Security.
 
 ## Data streams
 
 The Wiz integration collects three types of data: Audit, Issue and Vulnerability.
 
-[**Audit**](https://integrate.wiz.io/reference/audit-log) returns a set of Audit Log activities.
+**Audit** returns a set of Audit Log activities.
 
-[**Issue**](https://integrate.wiz.io/reference/issues-query) returns a set of Issues.
+**Issue** returns a set of Issues.
 
-[**Vulnerability**](https://integrate.wiz.io/reference/vulnerability-finding) returns a set of Vulnerability Findings.
+**Vulnerability** returns a set of Vulnerability Findings.
 
 Reference for [Graph APIs](https://integrate.wiz.io/reference/prerequisites) of Wiz.
 
 ## Requirements
 
-Elastic Agent must be installed. For more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).  
 
 ### Installing and managing an Elastic Agent:
 
@@ -38,12 +36,12 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **kibana.version** required is **8.10.1**.
+The minimum **kibana.version** required is **8.10.1**.  
 This module has been tested against the **Wiz API Version v1**.
 
 ## Setup
 
-### To collect data from Wiz Graph APIs, You must request the following parameters from your Wiz customer:
+### To collect data from Wiz, the following parameters from your Wiz instance are required:
 
 1. Client ID
 2. Client Secret
@@ -56,6 +54,19 @@ This module has been tested against the **Wiz API Version v1**.
     | Audit         | admin:audit   |
     | Issue         | read:issues   |
     | Vulnerability | read:vulnerabilities |
+
+### To obtain the Wiz URL
+1. Navigate to your user profile and copy the API Endpoint URL.
+
+### Steps to obtain Client ID and Client Secret:
+
+1. In the Wiz dashboard Navigate to Settings > Service Accounts.
+2. Click Add Service Account.
+3. Name the new service account, for example: Elastic Integration.
+4. If you desire, narrow the scope of this service account to specific projects.
+5. Select the permission read:resources and click Add Service Account.
+6. Copy the Client Secret. Note that you won't be able to copy it after this stage.
+7. Copy the Client ID, which is displayed under the Service Accounts page.
 
 ### Enabling the integration in Elastic:
 
