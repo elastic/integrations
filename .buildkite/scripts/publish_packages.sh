@@ -8,11 +8,24 @@ if [ ${SKIP_PUBLISHING:-"false"} == "true" ] ; then
     exit 0
 fi
 
-if [ "${BUILDKITE_PULL_REQUEST}" == "false" ]; then
-    if [[ "${BUILDKITE_BRANCH}" == "main" || "${BUILDKITE_BRANCH}" =~ ^backport- ]]; then
-        echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
-        exit 0
+skipPublishing() {
+    if [[ "${BUILDKITE_PULL_REQUEST}" == "true" ]]; then
+        return 0
     fi
+
+    if [[ "${BUILDKITE_BRANCH}" == "main" ]]; then
+        return 1
+    fi
+    if [[ "${BUILDKITE_BRANCH}" =~ ^backport- ]]; then
+        return 1
+    fi
+
+    return 0
+}
+
+if skipPublishing ; the
+    echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
+    exit 0
 fi
 
 add_bin_path
