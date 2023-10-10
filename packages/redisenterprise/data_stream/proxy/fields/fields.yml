@@ -4,9 +4,40 @@
   fields:
     - name: metrics.listener_*
       # use pattern for matching to ensure future extensibillity. 
-      type: float
-      description: Proxy prometheus metrics
-    - name: labels.*
       type: object
-      object_type: keyword
-      description: Label fields
+      description: Proxy prometheus metrics
+    - name: labels
+      type: group
+      fields:
+        - name: bdb
+          type: keyword
+          dimension: true
+          description: Back-end Database, indicating which database is being referred to.
+        - name: cluster
+          type: keyword
+          dimension: true
+          description: The RedisEnterprise cluster.
+        - name: endpoint
+          type: keyword
+          dimension: true
+          description: Specific network endpoint.
+        - name: instance
+          type: keyword
+          dimension: true
+          description: The <host>:<port> or network address or endpoint of the Redis Enterprise node.
+        - name: job
+          type: keyword
+          dimension: true
+          description: Configured job name like prometheus.
+        - name: proxy
+          type: keyword
+          dimension: true
+          description: specific proxy within RedisEnterprise.
+        - name: node
+          type: keyword
+          dimension: true
+          description:  The RedisEnterprise node that is being monitored.
+        - name: port
+          type: keyword
+          dimension: true
+          description: The port number associated with the network communication.
