@@ -34,6 +34,9 @@
       type: keyword
     - name: ExchangeMetaData.*
       type: object
+      # This object can also contain date fields, but we cannot express multiple dynamic mapping types here.
+      object_type: long
+      object_type_mapping_type: long
     - name: Category
       type: keyword
     - name: ClientAppId
@@ -68,8 +71,14 @@
       type: keyword
     - name: ExceptionInfo.*
       type: object
+      # This should be boolean→boolean falling back to *→keyword, but this is
+      # not expressible here; object_type_mapping_type cannot be 'boolean'.
+      object_type: keyword
+      object_type_mapping_type: '*'
     - name: ExtendedProperties.*
       type: object
+      object_type: keyword
+      object_type_mapping_type: '*'
     - name: ExternalAccess
       type: boolean
     - name: FileSizeBytes
@@ -90,8 +99,12 @@
       type: keyword
     - name: Item.*
       type: object
+      object_type: keyword
+      object_type_mapping_type: '*'
     - name: Item.*.*
       type: object
+      object_type: keyword
+      object_type_mapping_type: '*'
     - name: ItemName
       type: keyword
     - name: ItemType
@@ -118,10 +131,10 @@
       type: keyword
     - name: Members
       type: flattened
-    - name: Members.*
-      type: object
     - name: ModifiedProperties.*.*
       type: object
+      object_type: keyword
+      object_type_mapping_type: '*'
     - name: Name
       type: keyword
     - name: NewValue
@@ -138,6 +151,8 @@
       type: keyword
     - name: Parameters.*
       type: object
+      object_type: keyword
+      object_type_mapping_type: '*'
     - name: PolicyDetails
       type: flattened
     - name: PolicyId
@@ -150,6 +165,9 @@
       type: boolean
     - name: SharePointMetaData.*
       type: object
+      # This object may contain date formatted fields, but we do not ensure validity, so leave as keyword.
+      object_type: keyword
+      object_type_mapping_type: '*'
     - name: SessionId
       type: keyword
     - name: Severity
