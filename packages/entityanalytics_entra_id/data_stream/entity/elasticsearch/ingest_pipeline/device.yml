@@ -9,6 +9,14 @@ processors:
       field: event.type
       tag: append_event_type_info
       value: info
+  - set:
+      field: asset.category
+      tag: set_asset_category
+      value: entity
+  - set:
+      field: asset.type
+      tag: set_asset_type
+      value: microsoft_entra_id_device
   - convert:
       field: azure_ad.accountEnabled
       tag: convert_accountEnabled_to_boolean
@@ -264,11 +272,6 @@ processors:
       tag: rename_profileType
       target_field: entityanalytics_entra_id.device.profile_type
       ignore_missing: true
-  - set:
-      field: asset.type
-      copy_from: entityanalytics_entra_id.device.profile_type
-      tag: set_asset_type
-      ignore_empty_value: true
   - date:
       field: azure_ad.registrationDateTime
       tag: date_registration_date_time
@@ -300,11 +303,6 @@ processors:
       tag: rename_trustType
       target_field: entityanalytics_entra_id.device.trust_type
       ignore_missing: true
-  - set:
-      field: asset.category
-      copy_from: entityanalytics_entra_id.device.trust_type
-      tag: set_asset_category
-      ignore_empty_value: true
   - foreach:
       field: device.registered_owners
       if: ctx.device?.registered_owners instanceof List
