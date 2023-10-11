@@ -196,7 +196,7 @@ prepare_serverless_stack
 num_packages=0  # TODO: to be removed
 maximum_packages=5
 
-cd packages
+pushd packages > /dev/null
 for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
     integration=$(basename ${it})
     echo "--- Package ${integration}: check"
@@ -206,12 +206,14 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
     if [[ ${SERVERLESS} == "true" ]] ; then
         if ! is_spec_3_0_0 ]]; then
             echo "Not v3 spec version. Skipped"
+            popd 2> /dev/null
             continue
         fi
     fi
 
     if ! is_pr_affected ${integration} ; then
         echo "[${integration}] Skipped"
+        # popd 2> /dev/null
         # continue # TODO enable this skip after testing
     fi
 
@@ -230,7 +232,8 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
     num_packages=$((num_packages+1))
     popd 2> /dev/null
     if [ $num_packages -eq ${maximum_packages} ]; then
-        exit 0
+        break
     fi
 done
+popd > /dev/null
 
