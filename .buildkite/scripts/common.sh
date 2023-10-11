@@ -193,3 +193,11 @@ is_already_published() {
     echo "- Not published ${packageZip}"
     return 1
 }
+
+repo_name() {
+    # Example of URL: git@github.com:acme-inc/my-project.git
+    local repoUrl=$1
+
+    orgAndRepo=$(echo $repoUrl | cut -d':' -f 2)
+    echo "$(basename ${orgAndRepo} .git)"
+}
