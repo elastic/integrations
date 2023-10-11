@@ -11,6 +11,10 @@ if [[ "$BUILDKITE_PIPELINE_SLUG" == "integrations" ]]; then
         unset AWS_ACCESS_KEY_ID
         unset AWS_SECRET_ACCESS_KEY
 
+        # Ensure that kind cluster is deleted
+        delete_kind_cluster
+
+        # Ensure elastic stack is stopped
         if [ -f ${ELASTIC_PACKAGE_BIN} ]; then
             export EC_API_KEY=${EC_API_KEY_SECRET}
             export EC_HOST=${EC_HOST_SECRET}

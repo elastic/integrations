@@ -65,7 +65,7 @@ create_bin_folder() {
 add_bin_path() {
   create_bin_folder
   echo "Adding PATH to the environment variables..."
-  export PATH="${PATH}:${BIN_FOLDER}"
+  export PATH="${BIN_FOLDER}:${PATH}"  # TODO: set bin folder after PATH
 }
 
 with_go() {
@@ -198,4 +198,16 @@ repo_name() {
 
     orgAndRepo=$(echo $repoUrl | cut -d':' -f 2)
     echo "$(basename ${orgAndRepo} .git)"
+}
+
+
+create_kind_cluster() {
+    echo "--- Create kind cluster"
+    kind create cluster --config ${WORKSPACE}/kind-config.yaml --image kindest/node:${K8S_VERSION}
+}
+
+
+delete_kind_cluster() {
+    echo "--- Delete kind cluster"
+    kind delete cluster || true
 }

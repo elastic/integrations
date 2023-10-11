@@ -80,7 +80,6 @@ prepare_serverless_stack() {
     export EC_API_KEY=${EC_API_KEY_SECRET}
     export EC_HOST=${EC_HOST_SECRET}
 
-
     echo "Boot up the Elastic stack"
     # ${ELASTIC_PACKAGE_BIN} stack up -d ${args} --provider serverless -U stack.serverless.region=${EC_REGION_SECRET} -U stack.serverless.type=${SERVERLESS_PROJECT}
     ${ELASTIC_PACKAGE_BIN} stack up -d ${args}
@@ -90,9 +89,6 @@ prepare_serverless_stack() {
 is_spec_3_0_0() {
     local pkg_spec=$(cat manifest.yml | yq '.format_version')
     local major_version=$(echo $pkg_spec | cut -d '.' -f 1)
-
-    echo "pkg_spec ${pkg_spec}"
-    echo "major_version ${major_version}"
 
     if [ ${major_version} -ge 3 ]; then
         return 0
@@ -171,16 +167,6 @@ kubernetes_service_deployer_used() {
     find . -type d | egrep '_dev/deploy/k8s$'
 }
 
-create_kind_cluster() {
-    echo "--- Create kind cluster"
-    kind create cluster --config ${WORKSPACE}/kind-config.yaml --image kindest/node:${K8S_VERSION}
-}
-
-
-delete_kind_cluster() {
-    echo "--- Delete kind cluster"
-    kind delete cluster || true
-}
 
 add_bin_path
 
@@ -194,7 +180,7 @@ use_elastic_package
 prepare_serverless_stack
 
 num_packages=0  # TODO: to be removed
-maximum_packages=5
+maximum_packages=15
 
 pushd packages > /dev/null
 for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
