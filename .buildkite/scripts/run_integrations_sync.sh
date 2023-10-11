@@ -8,6 +8,7 @@ set -euo pipefail
 STACK_VERSION=${STACK_VERSION:-""}
 FORCE_CHECK_ALL=${FORCE_CHECK_ALL:-"false"}
 SKIP_PUBLISHING=${SKIP_PUBLISHING:-"false"}
+SERVERLESS=${SERVERLESS:-"false"}
 
 
 if [ ! -d packages ]; then
@@ -113,7 +114,7 @@ is_pr_affected() {
     local integration="${1}"
 
     if is_unsupported_stack ; then
-        echo "[${integrationName}] PR is not affected: unsupported stack (${STACK_VERSION})"
+        echo "[${integration}] PR is not affected: unsupported stack (${STACK_VERSION})"
         return 1
     fi
 
@@ -191,9 +192,15 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
 
     pushd ${integration} 2> /dev/null
 
-    if [ ! is_spec_3_0_0 ]; then
-        echo "Not v3 spec version. Skipped"
-        continue
+    if ! is_pr_affected ${integration} ; then
+        echo "[${integration}] Skipped"
+    fi
+
+    if [[ ${SERVERLESS} == "true" ]] ; then
+        if ! is_spec_3_0_0 ]]; then
+            echo "Not v3 spec version. Skipped"
+            continue
+        fi
     fi
 
     echo "Check integration: ${integration}"
