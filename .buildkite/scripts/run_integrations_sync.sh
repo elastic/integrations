@@ -4,21 +4,61 @@ source .buildkite/scripts/common.sh
 
 set -euo pipefail
 
+# default values
+STACK_VERSION=${STACK_VERSION:-""}
+FORCE_CHECK_ALL=${FORCE_CHECK_ALL:-"false"}
+SKIP_PUBLISHING=${SKIP_PUBLISHING:-"false"}
+
+
 if [ ! -d packages ]; then
     buildkite-agent annotate "Missing packages folder" --style "error"
     exit 1
 fi
 
-kibana_version() {
-    kibana_version=$(cat manifest.yml | yq ".conditions.kibana.version")
+kibana_version_manifest() {
+    local kibana_version=$(cat manifest.yml | yq ".conditions.kibana.version")
     if [ $kibana_version != "null" ]; then
-        echo $kibana_version
+        echo "${kibana_version}"
         return
     fi
 
     kibana_version=$(cat manifest.yml | yq ".conditions.\"kibana.version\"")
     if [ $kibana_version != "null" ]; then
-        echo $kibana_version
+        echo "${kibana_version}"
+        return
+    fi
+
+    echo "null"
+}
+
+is_unsupported_stack() {
+    if [ "${STACK_VERSION}" == "" ]; then
+        return 1
+    fi
+
+    local kibana_version=$(kibana_version_manifest)
+    if [ "${kibana_version}" == "null" ]; then
+        return 1
+    fi
+    if [[ ! ${kibana_version} =~ \^7\. && ${STACK_VERSION} =~ ^7\. ]]; then
+        return 0
+    fi
+    if [[ ! ${kibana_version} =~ \^8\. && ${STACK_VERSION} =~ ^8\. ]]; then
+        return 0
+    fi
+    return 1
+}
+
+oldest_supported_version() {
+    local kibana_version=$(cat manifest.yml | yq ".conditions.kibana.version")
+    if [ $kibana_version != "null" ]; then
+        python3 .buildkite/scripts/find_oldest_supported_version --manifest manifest.yml
+        return
+    fi
+
+    kibana_version=$(cat manifest.yml | yq ".conditions.\"kibana.version\"")
+    if [ $kibana_version != "null" ]; then
+        python3 .buildkite/scripts/find_oldest_supported_version --manifest manifest.yml
         return
     fi
 
@@ -31,13 +71,8 @@ prepare_stack() {
     local args="-v"
     if [ -n "${STACK_VERSION+x}" ]; then
         args="${args} --version ${STACK_VERSION}"
-    # TODO What stack version to use (for agents)?
+    # TODO What stack version to use (for agents) in serverless?
     # else
-    #     kibana_constraint=$(kibana_version)
-    #     if [ "$condition" != "null" ]; then
-    #         # FIXME
-    #         true
-    #     fi
     fi
 
     echo "Update the Elastic stack"
@@ -53,14 +88,69 @@ is_spec_3_0_0() {
     local pkg_spec=$(cat manifest.yml | yq '.format_version')
     local major_version=$(echo $pkg_spec | cut -d '.' -f 1)
 
-    if [ $major_version -ge 3 ]; then
+    if [ ${major_version} -ge 3 ]; then
         return 0
     fi
     return 1
 }
 
+get_from_changeset() {
+    if [ "${BUILDKITE_PULL_REQUEST_BASE_BRANCH}" != "false" ]; then
+        # pull request
+        echo "origin/${BUILDKITE_PULL_REQUEST_BASE_BRANCH}"
+        return
+    fi
+    # main or backport branches
+    previous_commit=$(git rev-parse --verify FETCH_HEAD~1)
+    echo "${previous_commit}"
+}
+
+get_to_changeset() {
+    echo "${BUILDKITE_COMMIT}"
+}
+
 is_pr_affected() {
-    echo "1"
+    local integration="${1}"
+
+    if is_unsupported_stack ; then
+        echo "[${integrationName}] PR is not affected: unsupported stack (${STACK_VERSION})"
+        return 1
+    fi
+
+    if [[ ${FORCE_CHECK_ALL} == "true" ]];then
+        echo "[${integration}] PR is affected: \"force_check_all\" parameter enabled"
+        return 0
+    fi
+
+    # setting default values for a PR
+    # TODO: get previous built commit as in Jenkins (groovy)
+    # def from = env.CHANGE_TARGET?.trim() ? "origin/${env.CHANGE_TARGET}" : "${env.GIT_PREVIOUS_COMMIT?.trim() ? env.GIT_PREVIOUS_COMMIT : env.GIT_BASE_COMMIT}"
+    local from="$(get_from_changeset)"
+    local to="$(get_to_changeset)"
+
+    # TODO: If running for an integration branch (main, backport-*) check with
+    # GIT_PREVIOUS_SUCCESSFUL_COMMIT to check if the branch is still healthy.
+    # If this value is not available, check with last commit.
+    if [[ ${BUILDKITE_BRANCH} == "main" || ${BUILDKITE_BRANCH} =~ ^backport- ]]; then
+        echo "[${integration}] PR is affected: running on ${BUILDKITE_BRANCH} branch"
+        # TODO: get previous successful commit as in Jenkins (groovy)
+        # from = env.GIT_PREVIOUS_SUCCESSFUL_COMMIT?.trim() ? env.GIT_PREVIOUS_SUCCESSFUL_COMMIT : "origin/${env.BRANCH_NAME}^"
+        from="origin/${BUILDKITE_BRANCH}^"
+        to="origin/${BUILDKITE_BRANCH}"
+    fi
+
+    echo "[${integration}] git-diff: check non-package files"
+    if git diff --name-only $(git merge-base ${from} ${to}) ${to} | egrep '^(packages/|.github/CODEOWNERS)' ; then
+        echo "[${integration}] PR is affected: found non-package files"
+        return 0
+    fi
+    echo "[${integration}] git-diff: check package files"
+    if git diff --name-only $(git merge-base ${from} ${to}) ${to} | egrep '^packages/${integration}/' ; then
+        echo "[${integration}] PR is affected: found package files"
+        return 0
+    fi
+    echo "[${integration}] PR is not affected"
+    return 1
 }
 
 is_pr() {
