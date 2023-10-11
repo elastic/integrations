@@ -23,6 +23,21 @@ skipPublishing() {
     return 0
 }
 
+check_and_build_package() {
+    ${ELASTIC_PACKAGE_BIN} check
+    ${ELASTIC_PACKAGE_BIN} build --zip
+}
+
+report_build_failure() {
+    local integration="${1}"
+    echo "Build package ${integration}failed"
+
+    # if running in Buildkite , add an annotation
+    if [ -n "$BUILDKITE_BRANCH" ]; then
+        buildkite-agent annotate "Build package ${integration} failed" --style "warning"
+    fi
+}
+
 if skipPublishing ; then
     echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
     exit 0
@@ -54,8 +69,7 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
     fi
 
     echo "Build integration as zip: ${integration}"
-    ${ELASTIC_PACKAGE_BIN} check
-    ${ELASTIC_PACKAGE_BIN} build --zip
+    check_and_build_package || report_build_failure ${integration}
     popd > /dev/null
 
     unpublished="true"
