@@ -180,7 +180,7 @@ TYCHON scans for Endpoint CPU's and returns the results.
 
 ### Vulnerablities
 
-TYCHON scans for Endpoint vulenrabilites and returns the results.  
+TYCHON scans for Endpoint vulnerablities and returns the results.  
 
 **Exported fields**
 **Exported fields**
@@ -197,13 +197,6 @@ TYCHON scans for Endpoint vulenrabilites and returns the results.
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| elastic.service.agent.status | Elastic Service Agent Status. | keyword |
-| elastic.service.agent.version | Elastic Service Agent Version. | version |
-| elastic.service.endpoint.behavior_protection | Elastic Service Endpoint Behavior Protection. | keyword |
-| elastic.service.endpoint.malware | Elastic Service Endpoint Malware. | keyword |
-| elastic.service.endpoint.memory_protection | Elastic Service Endpoint Memory Protection. | keyword |
-| elastic.service.endpoint.status | Elastic Service Endpoint Status. | keyword |
-| elastic.service.endpoint.version | Elastic Service Endpoint Version. | version |
 | elastic_agent.id | Elastic Agent Id. | keyword |
 | elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
 | elastic_agent.version | Elastic Agent Version. | keyword |
@@ -259,19 +252,6 @@ TYCHON scans for Endpoint vulenrabilites and returns the results.
 | script.type | Scanner Script Type. | keyword |
 | script.version | Scanner Script Version. | version |
 | tags | List of keywords used to tag each event. | keyword |
-| trellix.service.accm.status | Trellix Service Accm Status. | keyword |
-| trellix.service.accm.version | Trellix Service Accm Version. | version |
-| trellix.service.dlp.status | Trellix Service Dlp Status. | keyword |
-| trellix.service.dlp.version | Trellix Service Dlp Version. | version |
-| trellix.service.ens.signature_version | Trellix Service Ens Signature Version. | keyword |
-| trellix.service.ens.status | Trellix Service Ens Status. | keyword |
-| trellix.service.ens.version | Trellix Service Ens Version. | version |
-| trellix.service.ma.status | Trellix Service Ma Status. | keyword |
-| trellix.service.ma.version | Trellix Service Ma Version. | version |
-| trellix.service.pa.status | Trellix Service Pa Status. | keyword |
-| trellix.service.pa.version | Trellix Service Pa Version. | version |
-| trellix.service.rsd.status | Trellix Service Rsd Status. | keyword |
-| trellix.service.rsd.version | Trellix Service Rsd Version. | version |
 | tychon.id | TYCHON unique host identifier. | keyword |
 | vulnerability.category | The type of system or architecture that the vulnerability affects. These may be platform-specific (for example, Debian or SUSE) or general (for example, Database or Firewall). For example (https://qualysguard.qualys.com/qwebhelp/fo_portal/knowledgebase/vulnerability_categories.htm[Qualys vulnerability categories]) This field must be an array. | keyword |
 | vulnerability.classification | The classification of the vulnerability scoring system. For example (https://www.first.org/cvss/) | keyword |
@@ -292,22 +272,6 @@ TYCHON scans for Endpoint vulenrabilites and returns the results.
 | vulnerability.title | Vulnerability Title. | keyword |
 | vulnerability.version | Vulnerability Version. | keyword |
 | vulnerability.year | Vulnerability Year. | integer |
-| windows_defender.service.antimalware.engine_version | Windows Defender Service Antimalware Engine Version. | keyword |
-| windows_defender.service.antimalware.product_version | Windows Defender Service Antimalware Product Version. | keyword |
-| windows_defender.service.antimalware.signature_version | Windows Defender Service Antimalware Signature Version. | keyword |
-| windows_defender.service.antimalware.status | Windows Defender Service Antimalware Status. | keyword |
-| windows_defender.service.antispyware.signature_version | Windows Defender Service Antispyware Signature Version. | keyword |
-| windows_defender.service.antispyware.status | Windows Defender Service Antispyware Status. | keyword |
-| windows_defender.service.antivirus.status | Windows Defender Service Antivirus Status. | keyword |
-| windows_defender.service.behavior_monitor.status | Windows Defender Service Behavior Monitor Status. | keyword |
-| windows_defender.service.full_scan.signature_version | Windows Defender Service Antivirus Full Scan Signature Version. | keyword |
-| windows_defender.service.ioav_protection.status | Windows Defender Service Ioav Protection Status. | keyword |
-| windows_defender.service.nis.engine_version | Windows Defender Service Nis Engine Version. | keyword |
-| windows_defender.service.nis.signature_version | Windows Defender Service Nis Signature Version. | keyword |
-| windows_defender.service.nis.status | Windows Defender Service Nis Status. | keyword |
-| windows_defender.service.on_access_protection.status | Windows Defender Service On Access Protection Status. | keyword |
-| windows_defender.service.quick_scan.signature_version | Windows Defender Service Antivirus Quick Scan Signature Version. | keyword |
-| windows_defender.service.real_time_protection.status | Windows Defender Service Real Time Protection Status. | keyword |
 
 
 ### Endpoint Protection Platform
@@ -325,6 +289,9 @@ TYCHON scans the Endpoint's Windows Defender and returns protection status and v
 | agent.name | Custom name of the agent. This is a name that can be given to an agent. This can be helpful if for example two Filebeat instances are running on the same host but a human readable separation is needed on which Filebeat instance data is coming from. | keyword |
 | agent.type | Type of the agent. The agent type always stays the same and should be given by the agent used. In case of Filebeat the agent would always be Filebeat also if two Filebeat instances are run on the same machine. | keyword |
 | agent.version | Version of the agent. | keyword |
+| crowdstrike.service.falcon.signature_version |  | keyword |
+| crowdstrike.service.falcon.status |  | keyword |
+| crowdstrike.service.falcon.version |  | version |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
@@ -334,6 +301,7 @@ TYCHON scans the Endpoint's Windows Defender and returns protection status and v
 | elastic.service.endpoint.behavior_protection | Elastic Service Endpoint Behavior Protection. | keyword |
 | elastic.service.endpoint.malware | Elastic Service Endpoint Malware. | keyword |
 | elastic.service.endpoint.memory_protection | Elastic Service Endpoint Memory Protection. | keyword |
+| elastic.service.endpoint.ransomware |  | keyword |
 | elastic.service.endpoint.status | Elastic Service Endpoint Status. | keyword |
 | elastic.service.endpoint.version | Elastic Service Endpoint Version. | version |
 | elastic_agent.id | Elastic Agent Id. | keyword |
@@ -349,23 +317,33 @@ TYCHON scans the Endpoint's Windows Defender and returns protection status and v
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.biossn | Host BIOS Serial Number. | keyword |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hardware.bios.name | Host BIOS Name. | keyword |
 | host.hardware.bios.version | Host BIOS Version. | keyword |
 | host.hardware.cpu.caption | Host CPU Caption. | keyword |
 | host.hardware.manufacturer | Host BIOS Manufacturer. | keyword |
 | host.hardware.owner | Host BIOS Owner. | keyword |
 | host.hardware.serial_number | Host BIOS Serial Number. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
 | host.ipv4 | Host IPv4 addresses. | ip |
 | host.ipv6 | Host IPv6 addresses. | keyword |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.oem.manufacturer | Host OEM Manufacturer. | keyword |
 | host.oem.model | Host OEM Model. | keyword |
 | host.os.build | Host OS Build. | keyword |
 | host.os.description | Host OS Description. | text |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.organization | Host OS Organization. | keyword |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | host.uptime | Seconds the host has been up. | long |
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
@@ -413,7 +391,7 @@ TYCHON scans the Endpoint's Windows Defender and returns protection status and v
 | windows_defender.service.nis.signature_version | Windows Defender Network Inspection System Signature Version. | keyword |
 | windows_defender.service.nis.status | Windows Defender Network Inspection System Status. | keyword |
 | windows_defender.service.on_access_protection.status | Windows Defender On Access Protection Status. | keyword |
-| windows_defender.service.real_time_protection.status | Windows Defender Real-time Procection Status. | keyword |
+| windows_defender.service.real_time_protection.status | Windows Defender Real-time Protection Status. | keyword |
 
 
 ### Endpoint Exposed Services Information
@@ -434,6 +412,7 @@ The TYCHON script to scan Endpoint Exposed Services and returns information.
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| device.name |  | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | elastic_agent.id | Elastic Agent Id. | keyword |
 | elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
@@ -499,14 +478,17 @@ The TYCHON script to scan Endpoint Exposed Services and returns information.
 | script.start | Scanner Start datetime. | date |
 | script.type | Scanner Script Type. | keyword |
 | script.version | Scanner Script Version. | version |
-| service.description | The description text on the serivce. | keyword |
+| service.description | The description text on the service. | keyword |
 | service.display_name | The human readable name of the service | keyword |
 | service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
 | service.state | Current state of the service. | keyword |
+| service.status |  | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
 | tychon.id | TYCHON unique host identifier. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
 ### Endpoint Hard Drive Information
@@ -527,9 +509,9 @@ The TYCHON script scans an endpoint's Hard Drive Configurations and returns info
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
-| disk.adapter.serial_number | Disk Adatper Serial Number | keyword |
+| disk.adapter.serial_number | Disk Adapter Serial Number | keyword |
 | disk.boot_from | OS booted from this disk | boolean |
-| disk.bus_type | THe Disk Bus Type | keyword |
+| disk.bus_type | The Disk Bus Type | keyword |
 | disk.clustered | Is the Disk Clustered | boolean |
 | disk.firmware_version | Disk Firmware version | keyword |
 | disk.health_status | Health status of the disk | keyword |
@@ -543,7 +525,7 @@ The TYCHON script scans an endpoint's Hard Drive Configurations and returns info
 | disk.location.pci_slot | PCI Slot location | integer |
 | disk.manufacturer | The manufacturer of the Disk | keyword |
 | disk.model | The model of the disk | keyword |
-| disk.name | The firendly name of the disk | keyword |
+| disk.name | The friendly name of the disk | keyword |
 | disk.number | The number assigned to the disk | integer |
 | disk.number_of_partitions | Total number of partitions on the drive | integer |
 | disk.offline | Is the disk offline | boolean |
@@ -632,6 +614,7 @@ The TYCHON script scans an endpoint's Hardware Configurations and returns inform
 | device.friendly_name | Device Friendly Name. | keyword |
 | device.id | The unique identifier of a device. The identifier must not change across application sessions but stay fixed for an instance of a (mobile) device.  On iOS, this value must be equal to the vendor identifier (https://developer.apple.com/documentation/uikit/uidevice/1620059-identifierforvendor). On Android, this value must be equal to the Firebase Installation ID or a globally unique UUID which is persisted across sessions in your application. For GDPR and data protection law reasons this identifier should not carry information that would allow to identify a user. | keyword |
 | device.manufacturer | The vendor name of the device manufacturer. | keyword |
+| device.model.name | The human readable marketing name of the device model. | keyword |
 | device.name | Device Name. | keyword |
 | device.present | Device Present. | boolean |
 | device.status | Device Status. | keyword |
@@ -729,6 +712,17 @@ The TYCHON script scans an endpoint's OS Configurations and returns information.
 | event.ufi.enabled | Event UFI Enabled. | boolean |
 | host.architecture | Operating system architecture. | keyword |
 | host.biossn | Host BIOS Serial Number. | keyword |
+| host.cloud.compute.name | Host Cloud Compute Name. | keyword |
+| host.cloud.compute.resource_group_name | Host Cloud Compute Resource Group Name. | keyword |
+| host.cloud.compute.resource_id | Host Cloud Compute Resource Id. | keyword |
+| host.cloud.compute.subscription_id | Host Cloud Compute Subscription Id. | keyword |
+| host.cloud.compute.tags | Host Cloud Compute Tags. | keyword |
+| host.cloud.compute.vm_id | Host Cloud Compute Vm Id. | keyword |
+| host.cloud.hosted | Host Cloud Hosted. | boolean |
+| host.cloud.network.mac_address | Host Cloud Network Mac Address. | keyword |
+| host.cloud.network.public_ipv4 | Host Cloud Network Public Ipv4. | ip |
+| host.cloud.network.public_ipv6 | Host Cloud Network Public Ipv6. | ip |
+| host.compute.location | Host Compute Location. | keyword |
 | host.cpu.caption | Description of the CPU | text |
 | host.cpu.count | Total Number of CPUs on the system | integer |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -752,10 +746,13 @@ The TYCHON script scans an endpoint's OS Configurations and returns information.
 | host.os.build | Host OS Build. | keyword |
 | host.os.description | Host OS Description. | text |
 | host.os.edition | The Edition of the Opearting System | keyword |
+| host.os.extended_support_license | Host Os Extended Support License. | keyword |
+| host.os.extended_support_license_expiration | Host Os Extended Support License Expiration. | date |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.organization | Host OS Organization. | keyword |
+| host.os.suportted_plan | Host Os Suportted Plan. | keyword |
 | host.os.vendor | The vendor of the Operating System | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.security.antivirus.exists | Does the OS state that an AV program is installed | boolean |
@@ -768,7 +765,7 @@ The TYCHON script scans an endpoint's OS Configurations and returns information.
 | host.tpm.version | What version of TPM is being used | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | host.uptime | Seconds the host has been up. | long |
-| host.virtualization_status |  | keyword |
+| host.virtualization_status | Host Virtualization Status. | keyword |
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
@@ -779,7 +776,7 @@ The TYCHON script scans an endpoint's OS Configurations and returns information.
 | script.start | Scanner Start datetime. | date |
 | script.type | Scanner Script Type. | keyword |
 | script.version | Scanner Script Version. | version |
-| tychon.definition.oval | What version of the TYCHON oval defitnions are currently on this endpoint | date |
+| tychon.definition.oval | What version of the TYCHON oval definition are currently on this endpoint | date |
 | tychon.definition.stig | What version of the Benchmark checks are on this endpoint | date |
 | tychon.id | TYCHON unique host identifier. | keyword |
 | tychon.version.agent | The TYCHON Agent Version installed on the endpoint | version |
@@ -986,11 +983,9 @@ The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/X
 | agent.name | Custom name of the agent. This is a name that can be given to an agent. This can be helpful if for example two Filebeat instances are running on the same host but a human readable separation is needed on which Filebeat instance data is coming from. | keyword |
 | agent.type | Type of the agent. The agent type always stays the same and should be given by the agent used. In case of Filebeat the agent would always be Filebeat also if two Filebeat instances are run on the same machine. | keyword |
 | agent.version | Version of the agent. | keyword |
-| benchmark.count | Benchmark Summary Name List Item Count. | long |
 | benchmark.generated_utc | Benchmark UTC. | date |
 | benchmark.hash | Benchmark SHA256 Hash | keyword |
 | benchmark.id | Benchmark ID. | keyword |
-| benchmark.list | Benchmark Summary Name List. | keyword |
 | benchmark.name | Benchmark Name. | keyword |
 | benchmark.title | Benchmark Title. | keyword |
 | benchmark.version | Benchmark Version. | keyword |
@@ -1011,23 +1006,33 @@ The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/X
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.biossn | Host BIOS Serial Number. | keyword |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hardware.bios.name | Host BIOS Name. | keyword |
 | host.hardware.bios.version | Host BIOS Version. | keyword |
 | host.hardware.cpu.caption | Host CPU Caption. | keyword |
 | host.hardware.manufacturer | Host BIOS Manufacturer. | keyword |
 | host.hardware.owner | Host BIOS Owner. | keyword |
 | host.hardware.serial_number | Host BIOS Serial Number. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
 | host.ipv4 | Host IPv4 addresses. | ip |
 | host.ipv6 | Host IPv6 addresses. | keyword |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.oem.manufacturer | Host OEM Manufacturer. | keyword |
 | host.oem.model | Host OEM Model. | keyword |
 | host.os.build | Host OS Build. | keyword |
 | host.os.description | Host OS Description. | text |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.organization | Host OS Organization. | keyword |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | host.uptime | Seconds the host has been up. | long |
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
@@ -1042,7 +1047,6 @@ The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/X
 | package.name | Package name | keyword |
 | package.reference | Home page or reference URL of the software in this package, if available. | keyword |
 | package.type | Type of package. This should contain the package file type, rather than the package manager name. Examples: rpm, dpkg, brew, npm, gem, nupkg, jar. | keyword |
-| rule.benchmark.id | Benchmark Rule ID. | keyword |
 | rule.benchmark.profile.id | Benchmark Rule Profile Identifier. | keyword |
 | rule.benchmark.title | Benchmark Rule Title. | keyword |
 | rule.finding_id | Benchmark Rule Finding Identifier. | keyword |
@@ -1054,6 +1058,7 @@ The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/X
 | rule.result | Benchmark Rule Results. | keyword |
 | rule.severity | Benchmark Severity Status. | keyword |
 | rule.stig_id | Stig rule id | keyword |
+| rule.test_result |  | keyword |
 | rule.title | Benchmark Rule Title. | keyword |
 | rule.vulnerability_id | Rule vulnerability id. | keyword |
 | rule.weight | Benchmark Rule Weight. | float |
