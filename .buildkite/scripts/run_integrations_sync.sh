@@ -190,6 +190,9 @@ use_elastic_package
 
 prepare_serverless_stack
 
+num_packages=0  # TODO: to be removed
+maximum_packages=5
+
 cd packages
 for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
     integration=$(basename ${it})
@@ -215,11 +218,15 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
     echo "Check integration: ${integration}"
     ${ELASTIC_PACKAGE_BIN} check -v
 
-    # echo "Test integration: ${integration}"
+    echo "Test integration: ${integration}"
     #  # eval "$(../../build/elastic-package stack shellinit)"
-    # ${ELASTIC_PACKAGE_BIN} test -v --report-format xUnit --report-output file --test-coverage
+    ${ELASTIC_PACKAGE_BIN} test -v --report-format xUnit --report-output file --test-coverage
 
+    # TODO: debug to be removed
+    num_packages=$((num_packages+1))
     popd 2> /dev/null
-    exit 0
+    if [ $num_packages -eq ${maximum_packages} ]; then
+        exit 0
+    fi
 done
 
