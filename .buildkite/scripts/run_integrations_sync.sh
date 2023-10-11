@@ -203,16 +203,23 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
         # continue # TODO enable this skip after testing
     fi
 
+    echo "Check integration: ${integration}"
+    ${ELASTIC_PACKAGE_BIN} check -v
+
+    use_kind=0
     if kubernetes_service_deployer_used ; then
+        use_kind=1
         create_kind_cluster
     fi
 
-    echo "Check integration: ${integration}"
-    ${ELASTIC_PACKAGE_BIN} check -v
 
     echo "Test integration: ${integration}"
     #  # eval "$(../../build/elastic-package stack shellinit)"
     ${ELASTIC_PACKAGE_BIN} test -v --report-format xUnit --report-output file --test-coverage
+
+    if [ ${use_kind} -eq 1 ]; then
+        delete_kind_cluster
+    fi
 
     # TODO: debug to be removed
     num_packages=$((num_packages+1))
