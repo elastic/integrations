@@ -108,8 +108,6 @@ use_elastic_package
 
 unpublished="false"
 
-# build packages
-
 build_packages
 
 
