@@ -6,17 +6,11 @@ Wiz continuously prioritizes critical risks based on a deep cloud analysis acros
 
 The Wiz integration collects three types of data: Audit, Issue and Vulnerability.
 
-**Audit** returns a set of Audit Log activities.
-
-**Issue** returns a set of Issues.
-
-**Vulnerability** returns a set of Vulnerability Findings.
-
 Reference for [Graph APIs](https://integrate.wiz.io/reference/prerequisites) of Wiz.
 
 ## Requirements
 
-Elastic Agent must be installed. For more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).  
+Elastic Agent must be installed. For more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
 ### Installing and managing an Elastic Agent:
 
@@ -36,7 +30,7 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **kibana.version** required is **8.10.1**.  
+The minimum **kibana.version** required is **8.10.1**.
 This module has been tested against the **Wiz API Version v1**.
 
 ## Setup
