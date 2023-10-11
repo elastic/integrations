@@ -161,6 +161,21 @@ is_pr() {
     return 1
 }
 
+kubernetes_service_deployer_used() {
+    echo "Check if Kubernetes service deployer is used"
+    find . -type d | egrep '_dev/deploy/k8s$'
+}
+
+create_kind_cluster() {
+    echo "Create kind cluster"
+    kind create cluster --config ${WORKSPACE}/kind-config.yaml --image kindest/node:${K8S_VERSION}
+}
+
+
+delete_kind_cluster() {
+    echo "Delete kind cluster"
+    kind delete cluster || true
+}
 
 add_bin_path
 
@@ -201,6 +216,10 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
             echo "Not v3 spec version. Skipped"
             continue
         fi
+    fi
+
+    if kubernetes_service_deployer_used ; then
+        create_kind_cluster
     fi
 
     echo "Check integration: ${integration}"

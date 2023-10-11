@@ -110,11 +110,13 @@ with_docker_compose() {
 
 with_kubernetes() {
     create_bin_folder
+    echo "Install kind"
     retry 5 curl -sSLo ${BIN_FOLDER}/kind "https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-linux-amd64"
     chmod +x ${BIN_FOLDER}/kind
     kind version
     which kind
 
+    echo "Install kubectl"
     retry 5 curl -sSLo ${BIN_FOLDER}/kubectl "https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl"
     chmod +x ${BIN_FOLDER}/kubectl
     kubectl version --client
