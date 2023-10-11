@@ -26,7 +26,7 @@ fi
 
 # TODO: add schedule-daily too ?
 if [ ${BUILDKITE_PIPELINE_SLUG} == "integrations" ]; then
-    if [ ${BUILDKITE_PIPELINE_STEP} == "publish-packages" ]; then
+    if [ ${BUILDKITE_STEP_KEY} == "publish-packages" ]; then
         export JENKINS_USERNAME_SECRET=$(retry 5 vault kv get -field username ${JENKINS_API_TOKEN_PATH})
         export JENKINS_HOST_SECRET=$(retry 5 vault kv get -field internal_ci_host ${JENKINS_API_TOKEN_PATH})
         export JENKINS_TOKEN=$(retry 5 vault kv get -field internal_ci ${JENKINS_API_TOKEN_PATH})
@@ -41,7 +41,7 @@ fi
 
 # TODO: add schedule-daily too
 if [ ${BUILDKITE_PIPELINE_SLUG} == "integrations" ]; then
-    if [ ${BUILDKITE_PIPELINE_STEP} == "test-integrations-sync" ]; then
+    if [ ${BUILDKITE_STEP_KEY} == "test-integrations-sync" ]; then
         export ELASTIC_PACKAGE_AWS_SECRET_KEY=$(retry 5 vault kv get -field secret_key ${AWS_SERVICE_ACCOUNT_SECRET_PATH})
         export ELASTIC_PACKAGE_AWS_ACCESS_KEY=$(retry 5 vault kv get -field access_key ${AWS_SERVICE_ACCOUNT_SECRET_PATH})
 
