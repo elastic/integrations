@@ -67,11 +67,11 @@ processors:
   - set:
       field: event.action
       value: login
-      if: ctx.log?.logger == 'vim.event.UserLoginSessionEvent'
+      if: "ctx.message?.contains('logged in') ?: false"
   - set:
       field: event.action
       value: logout
-      if: ctx.log?.logger == 'vim.event.UserLogoutSessionEvent'
+      if: "ctx.message?.contains('logged out') ?: false"
   - set:
       field: event.type
       value: access
