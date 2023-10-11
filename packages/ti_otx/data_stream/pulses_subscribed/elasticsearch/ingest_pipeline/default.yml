@@ -39,6 +39,33 @@ processors:
       field: event.original
       target_field: otx
       tag: json_event_original
+# Add default expiration to expire all IOCs after duration: ioc_expiration_duration. If value not in d, h, or m, default to 90d.
+  - script:
+      lang: painless
+      tag: script-default-expiration
+      if: (ctx.otx?.created != null && ctx.otx?.expiration == null && ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != '')
+      description: >
+        Add default expiration
+      source: >
+        def dur = ctx._conf.ioc_expiration_duration;
+        String created = ctx.otx.created;
+        if (dur instanceof String){
+          Character time_unit = dur.charAt(dur.length() - 1);
+          String time_value = dur.substring(0, dur.length());
+          if (time_unit == 'd') {
+            ctx.otx.expiration = ZonedDateTime.parse(created, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusDays(Long.parseLong(time_value));
+          } else if (time_unit == 'h') {
+            ctx.otx.expiration = ZonedDateTime.parse(created, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusHours(Long.parseLong(time_value));
+          } else if (time_unit == 'm') {
+            ctx.otx.expiration = ZonedDateTime.parse(created, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusMinutes(Long.parseLong(time_value));
+          } else {
+            ctx.otx.expiration = ZonedDateTime.parse(created, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusDays(90L);
+          }        
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: otx.created
       target_field: otx.created
@@ -287,6 +314,7 @@ processors:
         - otx.type
         - otx.pulse.tags
         - otx.pulse_raw
+        - _conf
       ignore_missing: true
       if: ctx.threat?.indicator?.type != null
   - remove:
