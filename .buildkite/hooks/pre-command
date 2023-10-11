@@ -16,6 +16,9 @@ JENKINS_API_TOKEN_PATH=kv/ci-shared/platform-ingest/jenkins_api_tokens
 SIGNING_PACKAGES_GCS_CREDENTIALS_PATH=kv/ci-shared/platform-ingest/signing_packages_gcs_artifacts_credentials
 PACKAGE_UPLOADER_GCS_CREDENTIALS_PATH=kv/ci-shared/platform-ingest/package_storage_uploader
 
+EC_TOKEN_PATH=kv/ci-shared/platform-ingest/platform-ingest-ec-qa
+EC_DATA_PATH=secret/ci/elastic-integrations/ec_data
+
 if [ -n "${ELASTIC_PACKAGE_LINKS_FILE_PATH+x}" ]; then
     # first upload pipeline does not have the environment variables defined in the YAML
     export ELASTIC_PACKAGE_LINKS_FILE_PATH=${BASE_DIR}/${ELASTIC_PACKAGE_LINKS_FILE_PATH}
@@ -45,5 +48,9 @@ if [ ${BUILDKITE_PIPELINE_SLUG} == "integrations" ]; then
         # Environment variables required by the service deployer
         export AWS_SECRET_ACCESS_KEY=${ELASTIC_PACKAGE_AWS_SECRET_KEY}
         export AWS_ACCESS_KEY_ID=${ELASTIC_PACKAGE_AWS_ACCESS_KEY}
+
+        export EC_API_KEY_SECRET=$(retry 5 vault kv get -field apiKey ${EC_TOKEN_PATH})
+        export EC_HOST_SECRET=$(retry 5 vault kv get -field url ${EC_TOKEN_PATH})
+        export EC_REGION_SECRET=$(retry 5 vault read -field region_qa) ${EC_DATA_PATH}
     fi
 fi

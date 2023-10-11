@@ -4,8 +4,6 @@ set -euo pipefail
 
 WORKSPACE="$(pwd)"
 BIN_FOLDER="${WORKSPACE}/bin"
-REPO="integrations"
-TMP_FOLDER_TEMPLATE_BASE="tmp.${REPO}"
 platform_type="$(uname)"
 hw_type="$(uname -m)"
 export ELASTIC_PACKAGE_BIN=${WORKSPACE}/build/elastic-package
@@ -72,7 +70,7 @@ add_bin_path() {
 
 with_go() {
   create_bin_folder
-  echo "Setting up the Go environment..."
+  echo "--- Setting up the Go environment..."
   check_platform_architeture
   local platform_type_lowercase="${platform_type,,}"
   echo " GVM ${SETUP_GVM_VERSION} (platform ${platform_type_lowercase} arch ${arch_type}"
@@ -110,13 +108,13 @@ with_docker_compose() {
 
 with_kubernetes() {
     create_bin_folder
-    echo "Install kind"
+    echo "--- Install kind"
     retry 5 curl -sSLo ${BIN_FOLDER}/kind "https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-linux-amd64"
     chmod +x ${BIN_FOLDER}/kind
     kind version
     which kind
 
-    echo "Install kubectl"
+    echo "--- Install kubectl"
     retry 5 curl -sSLo ${BIN_FOLDER}/kubectl "https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl"
     chmod +x ${BIN_FOLDER}/kubectl
     kubectl version --client
@@ -178,7 +176,7 @@ with_yq() {
 }
 
 use_elastic_package() {
-    echo "Installing elastic-package"
+    echo "--- Installing elastic-package"
     mkdir -p build
     go build -o ${ELASTIC_PACKAGE_BIN} github.com/elastic/elastic-package
 }

@@ -9,6 +9,7 @@ STACK_VERSION=${STACK_VERSION:-""}
 FORCE_CHECK_ALL=${FORCE_CHECK_ALL:-"false"}
 SKIP_PUBLISHING=${SKIP_PUBLISHING:-"false"}
 SERVERLESS=${SERVERLESS:-"false"}
+SERVERLESS_PROJECT=${SERVERLESS_PROJECT:-"observability"}
 
 
 if [ ! -d packages ]; then
@@ -66,8 +67,8 @@ oldest_supported_version() {
     echo "null"
 }
 
-prepare_stack() {
-    echo "Prepare stack"
+prepare_serverless_stack() {
+    echo "--- Prepare serverless stack"
 
     local args="-v"
     if [ -n "${STACK_VERSION}" ]; then
@@ -76,11 +77,12 @@ prepare_stack() {
     # else
     fi
 
-    echo "Update the Elastic stack"
-    ${ELASTIC_PACKAGE_BIN} stack update ${args}
-    echo ""
+    export EC_API_KEY=${EC_API_KEY_SECRET}
+    export EC_HOST=${EC_HOST_SECRET}
+
 
     echo "Boot up the Elastic stack"
+    # ${ELASTIC_PACKAGE_BIN} stack up -d ${args} --provider serverless -U stack.serverless.region=${EC_REGION_SECRET} -U stack.serverless.type=${SERVERLESS_PROJECT}
     ${ELASTIC_PACKAGE_BIN} stack up -d ${args}
     echo ""
 }
@@ -167,13 +169,13 @@ kubernetes_service_deployer_used() {
 }
 
 create_kind_cluster() {
-    echo "Create kind cluster"
+    echo "--- Create kind cluster"
     kind create cluster --config ${WORKSPACE}/kind-config.yaml --image kindest/node:${K8S_VERSION}
 }
 
 
 delete_kind_cluster() {
-    echo "Delete kind cluster"
+    echo "--- Delete kind cluster"
     kind delete cluster || true
 }
 
@@ -186,24 +188,12 @@ with_kubernetes
 
 use_elastic_package
 
-echo "Checking python command..."
-if ! command -v python &> /dev/null ; then
-    echo "⚠️  python is not installed"
-else
-    echo "🐍 python is installed"
-fi
-if ! command -v python3 &> /dev/null ; then
-    echo "⚠️  python3 is not installed"
-else
-    echo "🐍 python3 is installed"
-fi
-
-prepare_stack
+prepare_serverless_stack
 
 cd packages
 for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
     integration=$(basename ${it})
-    echo "Package ${integration}: check"
+    echo "--- Package ${integration}: check"
 
     pushd ${integration} 2> /dev/null
 
