@@ -289,9 +289,9 @@ TYCHON scans the Endpoint's Windows Defender and returns protection status and v
 | agent.name | Custom name of the agent. This is a name that can be given to an agent. This can be helpful if for example two Filebeat instances are running on the same host but a human readable separation is needed on which Filebeat instance data is coming from. | keyword |
 | agent.type | Type of the agent. The agent type always stays the same and should be given by the agent used. In case of Filebeat the agent would always be Filebeat also if two Filebeat instances are run on the same machine. | keyword |
 | agent.version | Version of the agent. | keyword |
-| crowdstrike.service.falcon.signature_version |  | keyword |
-| crowdstrike.service.falcon.status |  | keyword |
-| crowdstrike.service.falcon.version |  | version |
+| crowdstrike.service.falcon.signature_version | Crowdstrike Service Falcon Signature Version. | keyword |
+| crowdstrike.service.falcon.status | Crowdstrike Service Falcon Status. | keyword |
+| crowdstrike.service.falcon.version | Crowdstrike Service Falcon Version. | version |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
@@ -301,7 +301,7 @@ TYCHON scans the Endpoint's Windows Defender and returns protection status and v
 | elastic.service.endpoint.behavior_protection | Elastic Service Endpoint Behavior Protection. | keyword |
 | elastic.service.endpoint.malware | Elastic Service Endpoint Malware. | keyword |
 | elastic.service.endpoint.memory_protection | Elastic Service Endpoint Memory Protection. | keyword |
-| elastic.service.endpoint.ransomware |  | keyword |
+| elastic.service.endpoint.ransomware | Elastic Service Endpoint Ransomware. | keyword |
 | elastic.service.endpoint.status | Elastic Service Endpoint Status. | keyword |
 | elastic.service.endpoint.version | Elastic Service Endpoint Version. | version |
 | elastic_agent.id | Elastic Agent Id. | keyword |
@@ -362,36 +362,36 @@ TYCHON scans the Endpoint's Windows Defender and returns protection status and v
 | script.type | Scanner Script Type. | keyword |
 | script.version | Scanner Script Version. | version |
 | tags | List of keywords used to tag each event. | keyword |
-| trellix.service.accm.status | Trellix Service Accum Status. | keyword |
-| trellix.service.accm.version | Trellix Service Accum Version. | version |
-| trellix.service.dlp.status | Trellix Service DLP Status. | keyword |
-| trellix.service.dlp.version | Trellix Service DLP Version. | version |
-| trellix.service.ens.signature_version | Trellix Service ENS Signature Version. | keyword |
-| trellix.service.ens.status | Trellix Service ENS Signature status. | keyword |
-| trellix.service.ens.version | Trellix Service ENS Signature Version. | version |
-| trellix.service.ma.status | Trellix Service MA Status. | keyword |
-| trellix.service.ma.version | Trellix Service MA Version. | version |
-| trellix.service.pa.status | Trellix Service PA Status. | keyword |
-| trellix.service.pa.version | Trellix Service PA Version. | version |
-| trellix.service.rsd.status | Trellix Service RSD Status. | keyword |
-| trellix.service.rsd.version | Trellix Service RSD Version. | version |
+| trellix.service.accm.status | Trellix Service Accm Status. | keyword |
+| trellix.service.accm.version | Trellix Service Accm Version. | version |
+| trellix.service.dlp.status | Trellix Service Dlp Status. | keyword |
+| trellix.service.dlp.version | Trellix Service Dlp Version. | version |
+| trellix.service.ens.signature_version | Trellix Service Ens Signature Version. | keyword |
+| trellix.service.ens.status | Trellix Service Ens Status. | keyword |
+| trellix.service.ens.version | Trellix Service Ens Version. | version |
+| trellix.service.ma.status | Trellix Service Ma Status. | keyword |
+| trellix.service.ma.version | Trellix Service Ma Version. | version |
+| trellix.service.pa.status | Trellix Service Pa Status. | keyword |
+| trellix.service.pa.version | Trellix Service Pa Version. | version |
+| trellix.service.rsd.status | Trellix Service Rsd Status. | keyword |
+| trellix.service.rsd.version | Trellix Service Rsd Version. | version |
 | tychon.id | TYCHON unique host identifier. | keyword |
-| windows_defender.service.antimalware.engine_version | Windows Defender Antimalware Engine Version. | keyword |
-| windows_defender.service.antimalware.product_version | Windows Defender Antimalware Product Version. | keyword |
-| windows_defender.service.antimalware.signature_version | Windows Defender Antimalware Signature Version. | keyword |
-| windows_defender.service.antimalware.status | Windows Defender Antimalware Status. | keyword |
-| windows_defender.service.antispyware.signature_version | Windows Defender Antispyware Signature Version. | keyword |
-| windows_defender.service.antispyware.status | Windows Defender Antispyware Status. | keyword |
-| windows_defender.service.antivirus.full_scan.signature_version | Windows Defender Antivirus Full Scan Version. | keyword |
-| windows_defender.service.antivirus.quick_scan.signature_version | Windows Defender Antivirus Signature Version. | keyword |
-| windows_defender.service.antivirus.status | Windows Defender Antivirus Status. | keyword |
-| windows_defender.service.behavior_monitor.status | Windows Defender Behavior Monitor Status. | keyword |
-| windows_defender.service.ioav_protection.status | Windows Defender iOffice Antivirus Protection Status. | keyword |
-| windows_defender.service.nis.engine_version | Windows Defender Network Inspection System Engine Version. | keyword |
-| windows_defender.service.nis.signature_version | Windows Defender Network Inspection System Signature Version. | keyword |
-| windows_defender.service.nis.status | Windows Defender Network Inspection System Status. | keyword |
-| windows_defender.service.on_access_protection.status | Windows Defender On Access Protection Status. | keyword |
-| windows_defender.service.real_time_protection.status | Windows Defender Real-time Protection Status. | keyword |
+| windows_defender.service.antimalware.engine_version | Windows Defender Service Antimalware Engine Version. | keyword |
+| windows_defender.service.antimalware.product_version | Windows Defender Service Antimalware Product Version. | keyword |
+| windows_defender.service.antimalware.signature_version | Windows Defender Service Antimalware Signature Version. | keyword |
+| windows_defender.service.antimalware.status | Windows Defender Service Antimalware Status. | keyword |
+| windows_defender.service.antispyware.signature_version | Windows Defender Service Antispyware Signature Version. | keyword |
+| windows_defender.service.antispyware.status | Windows Defender Service Antispyware Status. | keyword |
+| windows_defender.service.antivirus.full_scan.signature_version | Windows Defender Service Antivirus Full Scan Signature Version. | keyword |
+| windows_defender.service.antivirus.quick_scan.signature_version | Windows Defender Service Antivirus Quick Scan Signature Version. | keyword |
+| windows_defender.service.antivirus.status | Windows Defender Service Antivirus Status. | keyword |
+| windows_defender.service.behavior_monitor.status | Windows Defender Service Behavior Monitor Status. | keyword |
+| windows_defender.service.ioav_protection.status | Windows Defender Service Ioav Protection Status. | keyword |
+| windows_defender.service.nis.engine_version | Windows Defender Service Nis Engine Version. | keyword |
+| windows_defender.service.nis.signature_version | Windows Defender Service Nis Signature Version. | keyword |
+| windows_defender.service.nis.status | Windows Defender Service Nis Status. | keyword |
+| windows_defender.service.on_access_protection.status | Windows Defender Service On Access Protection Status. | keyword |
+| windows_defender.service.real_time_protection.status | Windows Defender Service Real Time Protection Status. | keyword |
 
 
 ### Endpoint Exposed Services Information
@@ -412,7 +412,7 @@ The TYCHON script to scan Endpoint Exposed Services and returns information.
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
-| device.name |  | keyword |
+| device.name | Device Name. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | elastic_agent.id | Elastic Agent Id. | keyword |
 | elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
@@ -482,7 +482,7 @@ The TYCHON script to scan Endpoint Exposed Services and returns information.
 | service.display_name | The human readable name of the service | keyword |
 | service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
 | service.state | Current state of the service. | keyword |
-| service.status |  | keyword |
+| service.status | Service Status. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
@@ -693,23 +693,23 @@ The TYCHON script scans an endpoint's OS Configurations and returns information.
 | elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
 | elastic_agent.version | Elastic Agent Version. | keyword |
 | error.message | Error message. | match_only_text |
-| event.deviceguard.basevirtualizationsupport.available | Event Device Base Virtualization Support Available. | boolean |
-| event.deviceguard.credentialguard.enabled | Event Device Credential Guard Enabled. | boolean |
-| event.deviceguard.credentialguard.running | Event Device Credential Guard Running. | boolean |
-| event.deviceguard.dmaprotection.available | Event Device | boolean |
-| event.deviceguard.hypervisorenforcedcodeint.enabled | Event Device Hypervisor Enforced Code Enabled. | boolean |
-| event.deviceguard.hypervisorenforcedcodeint.running | Event Device Hypervisor Enforced Code running. | boolean |
-| event.deviceguard.secureboot.available | Event Device Secure Boot Available. | boolean |
-| event.deviceguard.securememoverwrite.available | Event Device Secure Memory Overwrite Available. | boolean |
-| event.deviceguard.smmsecuritymigrations.available | Event Device SMM Security Migrations Available. | boolean |
-| event.deviceguard.systemguardsecurelaunch.enabled | Event Device Guard System Guard Secure Launch Enabled. | boolean |
-| event.deviceguard.systemguardsecurelaunch.running | Event Device Guard System Guard Secure Launch Running. | boolean |
-| event.deviceguard.ueficodereadonly.available | Event Device Guard UEFI Code Readonly Availability. | boolean |
-| event.deviceguard.usermodecodeintegrity.policyenforcement | Event Device Guard User Mode Code Integrity Policy Enforcement. | keyword |
-| event.deviceguard.version | Event Device Guard version. | keyword |
-| event.deviceguard.virtualizationbasedsecurity.status | Event Device Guard Virtualization Based Security Status. | keyword |
+| event.deviceguard.basevirtualizationsupport.available | Event Deviceguard Basevirtualizationsupport Available. | boolean |
+| event.deviceguard.credentialguard.enabled | Event Deviceguard Credentialguard Enabled. | boolean |
+| event.deviceguard.credentialguard.running | Event Deviceguard Credentialguard Running. | boolean |
+| event.deviceguard.dmaprotection.available | Event Deviceguard Dmaprotection Available. | boolean |
+| event.deviceguard.hypervisorenforcedcodeint.enabled | Event Deviceguard Hypervisorenforcedcodeint Enabled. | boolean |
+| event.deviceguard.hypervisorenforcedcodeint.running | Event Deviceguard Hypervisorenforcedcodeint Running. | boolean |
+| event.deviceguard.secureboot.available | Event Deviceguard Secureboot Available. | boolean |
+| event.deviceguard.securememoverwrite.available | Event Deviceguard Securememoverwrite Available. | boolean |
+| event.deviceguard.smmsecuritymigrations.available | Event Deviceguard Smmsecuritymigrations Available. | boolean |
+| event.deviceguard.systemguardsecurelaunch.enabled | Event Deviceguard Systemguardsecurelaunch Enabled. | boolean |
+| event.deviceguard.systemguardsecurelaunch.running | Event Deviceguard Systemguardsecurelaunch Running. | boolean |
+| event.deviceguard.ueficodereadonly.available | Event Deviceguard Ueficodereadonly Available. | boolean |
+| event.deviceguard.usermodecodeintegrity.policyenforcement | Event Deviceguard Usermodecodeintegrity Policyenforcement. | keyword |
+| event.deviceguard.version | Event Deviceguard Version. | keyword |
+| event.deviceguard.virtualizationbasedsecurity.status | Event Deviceguard Virtualizationbasedsecurity Status. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.ufi.enabled | Event UFI Enabled. | boolean |
+| event.ufi.enabled | Event Ufi Enabled. | boolean |
 | host.architecture | Operating system architecture. | keyword |
 | host.biossn | Host BIOS Serial Number. | keyword |
 | host.cloud.compute.name | Host Cloud Compute Name. | keyword |
@@ -723,8 +723,8 @@ The TYCHON script scans an endpoint's OS Configurations and returns information.
 | host.cloud.network.public_ipv4 | Host Cloud Network Public Ipv4. | ip |
 | host.cloud.network.public_ipv6 | Host Cloud Network Public Ipv6. | ip |
 | host.compute.location | Host Compute Location. | keyword |
-| host.cpu.caption | Description of the CPU | text |
-| host.cpu.count | Total Number of CPUs on the system | integer |
+| host.cpu.caption | Host Cpu Caption. | text |
+| host.cpu.count | Host Cpu Count. | integer |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hardware.bios.name | Host BIOS Name. | keyword |
 | host.hardware.bios.version | Host BIOS Version. | keyword |
@@ -738,14 +738,14 @@ The TYCHON script scans an endpoint's OS Configurations and returns information.
 | host.ipv4 | Host IPv4 addresses. | ip |
 | host.ipv6 | Host IPv6 addresses. | keyword |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.memory.size | Total RAM Size | long |
-| host.motherboard.chipset | Chipset of the Motherboard | keyword |
-| host.motherboard.serial_number | Serial Number of the Motherboard | keyword |
+| host.memory.size | Host Memory Size. | long |
+| host.motherboard.chipset | Host Motherboard Chipset. | keyword |
+| host.motherboard.serial_number | Host Motherboard Serial Number. | keyword |
 | host.oem.manufacturer | Host OEM Manufacturer. | keyword |
 | host.oem.model | Host OEM Model. | keyword |
 | host.os.build | Host OS Build. | keyword |
 | host.os.description | Host OS Description. | text |
-| host.os.edition | The Edition of the Opearting System | keyword |
+| host.os.edition | Host Os Edition. | keyword |
 | host.os.extended_support_license | Host Os Extended Support License. | keyword |
 | host.os.extended_support_license_expiration | Host Os Extended Support License Expiration. | date |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -753,19 +753,20 @@ The TYCHON script scans an endpoint's OS Configurations and returns information.
 | host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.organization | Host OS Organization. | keyword |
 | host.os.suportted_plan | Host Os Suportted Plan. | keyword |
-| host.os.vendor | The vendor of the Operating System | keyword |
+| host.os.vendor | Host Os Vendor. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
-| host.security.antivirus.exists | Does the OS state that an AV program is installed | boolean |
-| host.security.antivirus.name | Product name the Operating System states is the AV program installed | keyword |
-| host.security.antivirus.state | The Operating System state of the AV product | keyword |
-| host.security.antivirus.status | The Operating System current status of the AV product it says is installed. | keyword |
-| host.tpm.compliant | Is the endpoint compliant with TPM security settings | boolean |
-| host.tpm.digest.id | What digest is being used by TPM | keyword |
-| host.tpm.present | Is TPM module present on the operating system | boolean |
-| host.tpm.version | What version of TPM is being used | keyword |
+| host.security.antivirus.exists | Host Security Antivirus Exists. | boolean |
+| host.security.antivirus.name | Host Security Antivirus Name. | keyword |
+| host.security.antivirus.state | Host Security Antivirus State. | keyword |
+| host.security.antivirus.status | Host Security Antivirus Status. | keyword |
+| host.tpm.compliant | Host Tpm Compliant. | boolean |
+| host.tpm.digest.id | Host Tpm Digest Id. | keyword |
+| host.tpm.present | Host Tpm Present. | boolean |
+| host.tpm.version | Host Tpm Version. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | host.uptime | Seconds the host has been up. | long |
 | host.virtualization_status | Host Virtualization Status. | keyword |
+| host.virtulization_status | Host Virtulization Status. | keyword |
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
@@ -776,11 +777,11 @@ The TYCHON script scans an endpoint's OS Configurations and returns information.
 | script.start | Scanner Start datetime. | date |
 | script.type | Scanner Script Type. | keyword |
 | script.version | Scanner Script Version. | version |
-| tychon.definition.oval | What version of the TYCHON oval definition are currently on this endpoint | date |
-| tychon.definition.stig | What version of the Benchmark checks are on this endpoint | date |
+| tychon.definition.oval | Tychon Definition Oval. | date |
+| tychon.definition.stig | Tychon Definition Stig. | date |
 | tychon.id | TYCHON unique host identifier. | keyword |
-| tychon.version.agent | The TYCHON Agent Version installed on the endpoint | version |
-| tychon.version.content | The TYCHON Agentless Version installed on the endpoint | version |
+| tychon.version.agent | Tychon Version Agent. | version |
+| tychon.version.content | Tychon Version Content. | version |
 
 
 ### Endpoint Network Adapters Information
@@ -827,7 +828,7 @@ The TYCHON script scans an endpoint's Network Adapter Configurations and returns
 | host.adapter.mtu | MTU Size | integer |
 | host.adapter.ndis.version | NDIS Version | keyword |
 | host.adapter.subnet_bit | Subnet BIT | integer |
-| host.adapter.virtual | Is adapter virutal | boolean |
+| host.adapter.virtual | Is adapter virtual | boolean |
 | host.adapter.vlan.id | The VLAN ID | keyword |
 | host.adapter.wifi.authentication | The Authentication method used to connected to the WIFI Router | keyword |
 | host.adapter.wifi.band | The band used to connected to the WIFI Router | keyword |
@@ -836,7 +837,7 @@ The TYCHON script scans an endpoint's Network Adapter Configurations and returns
 | host.adapter.wifi.cipher | The CIPHER used to connected to the WIFI Router | keyword |
 | host.adapter.wifi.enabled | Is WIFI Enabled | boolean |
 | host.adapter.wifi.radio_type | The radio type of the connected WIFI Router | keyword |
-| host.adapter.wifi.signal_percent | Signal strenth to connected WIFI Router | integer |
+| host.adapter.wifi.signal_percent | Signal strength to connected WIFI Router | integer |
 | host.adapter.wifi.ssid | The Connected WIFI Router SSID | keyword |
 | host.adapter.wins_server | The WINS Server attached to this adapter | ip |
 | host.biossn | Host BIOS Serial Number. | keyword |
@@ -1058,7 +1059,7 @@ The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/X
 | rule.result | Benchmark Rule Results. | keyword |
 | rule.severity | Benchmark Severity Status. | keyword |
 | rule.stig_id | Stig rule id | keyword |
-| rule.test_result |  | keyword |
+| rule.test_result | Rule Test Result. | keyword |
 | rule.title | Benchmark Rule Title. | keyword |
 | rule.vulnerability_id | Rule vulnerability id. | keyword |
 | rule.weight | Benchmark Rule Weight. | float |
