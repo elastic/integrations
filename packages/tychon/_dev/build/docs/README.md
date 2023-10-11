@@ -27,7 +27,7 @@ TYCHON scans for Endpoint CPU's and returns the results.
 
 ### Vulnerablities
 
-TYCHON scans for Endpoint vulenrabilites and returns the results.  
+TYCHON scans for Endpoint vulnerablities and returns the results.  
 
 **Exported fields**
 {{fields "tychon_cve"}}
