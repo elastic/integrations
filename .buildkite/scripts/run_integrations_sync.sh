@@ -70,7 +70,7 @@ prepare_stack() {
     echo "Prepare stack"
 
     local args="-v"
-    if [ -n "${STACK_VERSION+x}" ]; then
+    if [ -n "${STACK_VERSION}" ]; then
         args="${args} --version ${STACK_VERSION}"
     # TODO What stack version to use (for agents) in serverless?
     # else
