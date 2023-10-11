@@ -1134,7 +1134,8 @@ Fields published for DHCPv4 packets.
 | dhcpv4.option.subnet_mask | The subnet mask that the client should use on the currnet network. | ip |
 | dhcpv4.option.time_servers | The time server option specifies a list of RFC 868 time servers available to the client. | ip |
 | dhcpv4.option.utc_time_offset_sec | The time offset field specifies the offset of the client's subnet in seconds from Coordinated Universal Time (UTC). | long |
-| dhcpv4.option.vendor_identifying_options | A DHCP client may use this option to unambiguously identify the vendor that manufactured the hardware on which the client is running, the software in use, or an industry consortium to which the vendor belongs. This field is described in RFC 3925. | flattened |
+| dhcpv4.option.vendor_identifying_options.data | Additional vendor data, encoded in hexadecimal format. | keyword |
+| dhcpv4.option.vendor_identifying_options.id | Device identifier. | keyword |
 | dhcpv4.relay_ip | The relay IP address used by the client to contact the server (i.e. a DHCP relay server). | ip |
 | dhcpv4.seconds | Number of seconds elapsed since client began address acquisition or renewal process. | long |
 | dhcpv4.server_ip | The IP address of the DHCP server that the client should use for the next step in the bootstrap process. | ip |

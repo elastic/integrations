@@ -49,7 +49,7 @@ Use the 1Password Events API to retrieve information about sign-in attempts. Eve
 | onepassword.client.platform_name | The name of the platform running the 1Password app | keyword |
 | onepassword.client.platform_version | The version of the browser or computer where the 1Password app is installed, or the CPU of the machine where the 1Password command-line tool is installed | keyword |
 | onepassword.country | The country code of the event. Uses the ISO 3166 standard | keyword |
-| onepassword.details | Additional information about the sign-in attempt, such as any firewall rules that prevent a user from signing in | flattened |
+| onepassword.details.value |  | keyword |
 | onepassword.session_uuid | The UUID of the session that created the event | keyword |
 | onepassword.type | Details about the sign-in attempt | keyword |
 | onepassword.uuid | The UUID of the event | keyword |
