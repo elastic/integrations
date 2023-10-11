@@ -130,7 +130,6 @@ An example event for `signin_attempts` looks as following:
             "platform_version": "93.0.4577.62"
         },
         "country": "AR",
-        "details": null,
         "session_uuid": "UED4KFZ5BH37IQWTJ7LG4VPWK7",
         "type": "credentials_ok",
         "uuid": "HGIF4OEWXDTVWKEQDIWTKV26HU"
@@ -158,6 +157,7 @@ An example event for `signin_attempts` looks as following:
         "id": "OJQGU46KAPROEJLCK674RHSAY5"
     }
 }
+
 ```
 
 ### Item Usages
