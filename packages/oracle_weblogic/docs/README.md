@@ -859,7 +859,7 @@ An example event for `threadpool` looks as following:
 | oracle_weblogic.threadpool.requests.pending | The number of pending user requests in the priority queue. The priority queue contains requests from internal subsystems and users. This is just the count of all user requests. | long | gauge |
 | oracle_weblogic.threadpool.threads.daemon | Current number of live daemon threads. | long | gauge |
 | oracle_weblogic.threadpool.threads.execute.idle | The number of idle threads in the pool. This count does not include standby threads and stuck threads. The count indicates threads that are ready to pick up new work when it arrives. | long | gauge |
-| oracle_weblogic.threadpool.threads.execute.total | The total number of threads in the pool. | long | counter |
+| oracle_weblogic.threadpool.threads.execute.total | The total number of threads in the pool. | long | gauge |
 | oracle_weblogic.threadpool.threads.hogging | The threads that are being held by a request right now. These threads will either be declared as stuck after the configured timeout or will return to the pool before that. The self-tuning mechanism will backfill if necessary. | long | gauge |
 | oracle_weblogic.threadpool.threads.standby | The number of threads in the standby pool. Threads that are not needed to handle the present work load are designated as standby and added to the standby pool. These threads are activated when more threads are needed. | long | gauge |
 | oracle_weblogic.threadpool.threads.stuck | Number of stuck threads in the thread pool. | long | gauge |
