@@ -91,6 +91,9 @@ is_spec_3_0_0() {
     local pkg_spec=$(cat manifest.yml | yq '.format_version')
     local major_version=$(echo $pkg_spec | cut -d '.' -f 1)
 
+    echo "pkg_spec ${pkg_spec}"
+    echo "major_version ${major_version}"
+
     if [ ${major_version} -ge 3 ]; then
         return 0
     fi
@@ -200,15 +203,16 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
 
     pushd ${integration} 2> /dev/null
 
-    if ! is_pr_affected ${integration} ; then
-        echo "[${integration}] Skipped"
-    fi
-
     if [[ ${SERVERLESS} == "true" ]] ; then
         if ! is_spec_3_0_0 ]]; then
             echo "Not v3 spec version. Skipped"
             continue
         fi
+    fi
+
+    if ! is_pr_affected ${integration} ; then
+        echo "[${integration}] Skipped"
+        # continue # TODO enable this skip after testing
     fi
 
     if kubernetes_service_deployer_used ; then
