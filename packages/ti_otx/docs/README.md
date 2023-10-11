@@ -289,11 +289,11 @@ An example event for `pulses_subscribed` looks as following:
 {
     "@timestamp": "2023-08-09T05:05:15.000Z",
     "agent": {
-        "ephemeral_id": "d57104b1-1d8b-4422-9f2d-9b03ed5db0a4",
-        "id": "ce0bce5a-6e51-4f74-abca-79147f80e169",
+        "ephemeral_id": "630b4d1a-ff20-4afe-917d-91bd48dfdf03",
+        "id": "600a00f7-4847-4076-8fc2-91c18ea2bc86",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.11.0"
+        "version": "8.10.3"
     },
     "data_stream": {
         "dataset": "ti_otx.pulses_subscribed",
@@ -304,9 +304,9 @@ An example event for `pulses_subscribed` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "ce0bce5a-6e51-4f74-abca-79147f80e169",
-        "snapshot": true,
-        "version": "8.11.0"
+        "id": "600a00f7-4847-4076-8fc2-91c18ea2bc86",
+        "snapshot": false,
+        "version": "8.10.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -314,9 +314,9 @@ An example event for `pulses_subscribed` looks as following:
             "threat"
         ],
         "dataset": "ti_otx.pulses_subscribed",
-        "ingested": "2023-09-26T06:01:25Z",
+        "ingested": "2023-10-11T15:00:48Z",
         "kind": "enrichment",
-        "original": "{\"content\":\"\",\"count\":2,\"created\":\"2023-08-09T05:05:15\",\"description\":\"\",\"expiration\":\"2023-09-05T00:00:00\",\"id\":3450933144,\"indicator\":\"172.67.177.165\",\"is_active\":1,\"prefetch_pulse_ids\":false,\"pulse_raw\":\"{\\\"adversary\\\":\\\"\\\",\\\"attack_ids\\\":[\\\"T1531\\\",\\\"T1059\\\",\\\"T1566\\\"],\\\"author_name\\\":\\\"SampleUser\\\",\\\"created\\\":\\\"2023-08-22T09:43:18.855000\\\",\\\"description\\\":\\\"\\\",\\\"extract_source\\\":[],\\\"id\\\":\\\"64e38336d783f91d6948a7b1\\\",\\\"industries\\\":[],\\\"malware_families\\\":[\\\"WHIRLPOOL\\\"],\\\"modified\\\":\\\"2023-08-22T09:43:18.855000\\\",\\\"more_indicators\\\":false,\\\"name\\\":\\\"Sample Pulse\\\",\\\"public\\\":1,\\\"references\\\":[\\\"https://www.cisa.gov/news-events/analysis-reports/ar23-230a\\\"],\\\"revision\\\":1,\\\"tags\\\":[\\\"cisa\\\",\\\"backdoor\\\",\\\"whirlpool\\\",\\\"malware\\\"],\\\"targeted_countries\\\":[],\\\"tlp\\\":\\\"white\\\"}\",\"role\":\"\",\"t\":0,\"t2\":0.0050694942474365234,\"t3\":2.7960586547851562,\"title\":\"\",\"type\":\"IPv4\"}",
+        "original": "{\"content\":\"\",\"count\":2,\"created\":\"2023-08-09T05:05:15\",\"description\":\"\",\"expiration\":\"2023-10-10T00:00:00\",\"id\":3450933144,\"indicator\":\"172.67.177.165\",\"is_active\":1,\"prefetch_pulse_ids\":false,\"pulse_raw\":\"{\\\"adversary\\\":\\\"\\\",\\\"attack_ids\\\":[\\\"T1531\\\",\\\"T1059\\\",\\\"T1566\\\"],\\\"author_name\\\":\\\"SampleUser\\\",\\\"created\\\":\\\"2023-08-22T09:43:18.855000\\\",\\\"description\\\":\\\"\\\",\\\"extract_source\\\":[],\\\"id\\\":\\\"64e38336d783f91d6948a7b1\\\",\\\"industries\\\":[],\\\"malware_families\\\":[\\\"WHIRLPOOL\\\"],\\\"modified\\\":\\\"2023-08-22T09:43:18.855000\\\",\\\"more_indicators\\\":false,\\\"name\\\":\\\"Sample Pulse\\\",\\\"public\\\":1,\\\"references\\\":[\\\"https://www.cisa.gov/news-events/analysis-reports/ar23-230a\\\"],\\\"revision\\\":1,\\\"tags\\\":[\\\"cisa\\\",\\\"backdoor\\\",\\\"whirlpool\\\",\\\"malware\\\"],\\\"targeted_countries\\\":[],\\\"tlp\\\":\\\"white\\\"}\",\"role\":\"\",\"t\":0,\"t2\":0.0050694942474365234,\"t3\":2.7960586547851562,\"title\":\"\",\"type\":\"IPv4\"}",
         "type": [
             "indicator"
         ]
@@ -327,7 +327,7 @@ An example event for `pulses_subscribed` looks as following:
     "otx": {
         "count": 2,
         "created": "2023-08-09T05:05:15.000Z",
-        "expiration": "2023-09-05T00:00:00.000Z",
+        "expiration": "2023-10-10T00:00:00.000Z",
         "id": 3450933144,
         "is_active": 1,
         "prefetch_pulse_ids": false,
