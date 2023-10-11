@@ -20,7 +20,7 @@ processors:
   - set:
       field: labels.is_ioc_transform_source
       value: true
-      if: "ctx.labels?.is_ioc_transform_source == null && ctx._conf?.ioc_expiry == true"
+      if: "ctx.labels?.is_ioc_transform_source == null && ctx._conf?.ioc_expiry != null && ctx._conf.ioc_expiry == true"
 
   ######################
   # General ECS fields #
@@ -36,6 +36,8 @@ processors:
       fields:
         - abusech.url.id
       target_field: "_id"
+      # TODO add IoC Expiry support
+      if: ctx.abusech?.url?.id != null
 
   #####################
   # Threat ECS Fields #
@@ -52,6 +54,8 @@ processors:
       if: "ctx.abusech?.url?.date_added != null"
   - uri_parts:
       field: abusech.url.url
+      # TODO add IoC Expiry support
+      if: ctx.abusech?.url?.url != null
       target_field: threat.indicator.url
       keep_original: true
       remove_if_successful: true
@@ -121,6 +125,7 @@ processors:
         - abusech.url.url
         - abusech.url.host
         - message
+        - _conf
       ignore_missing: true
   - script:
       description: Remove null/empty values recursively.

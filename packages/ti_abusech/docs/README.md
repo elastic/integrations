@@ -22,6 +22,7 @@ The AbuseCH URL data_stream retrieves threat intelligence indicators from the UR
 | abusech.url.id | The ID of the indicator. | keyword |
 | abusech.url.larted | Indicates whether the malware URL has been reported to the hosting provider (true or false) | boolean |
 | abusech.url.reporter | The Twitter handle of the reporter that has reported this malware URL (or anonymous). | keyword |
+| abusech.url.results |  | flattened |
 | abusech.url.tags | A list of tags associated with the queried malware URL | keyword |
 | abusech.url.threat | The threat corresponding to this malware URL. | keyword |
 | abusech.url.url_status | The current status of the URL. Possible values are: online, offline and unknown. | keyword |
@@ -71,7 +72,7 @@ The AbuseCH URL data_stream retrieves threat intelligence indicators from the UR
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
-| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | keyword |
+| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | boolean |
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
