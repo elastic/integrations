@@ -249,13 +249,13 @@ An example event for `memory` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-26T09:22:36.388Z",
+    "@timestamp": "2023-09-28T13:08:46.636Z",
     "agent": {
-        "ephemeral_id": "8a027bae-63d7-4116-afe4-62859acce4cc",
-        "id": "b82deaa8-f456-40b6-9265-b33c84cf0590",
+        "ephemeral_id": "f6ab2af3-153b-4970-99c9-a9c564407b18",
+        "id": "9a3f2233-d554-4847-9b74-1465e769563d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "data_stream": {
         "dataset": "spring_boot.memory",
@@ -266,16 +266,16 @@ An example event for `memory` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "b82deaa8-f456-40b6-9265-b33c84cf0590",
+        "id": "9a3f2233-d554-4847-9b74-1465e769563d",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "web",
         "dataset": "spring_boot.memory",
-        "duration": 469690835,
-        "ingested": "2022-07-26T09:22:39Z",
+        "duration": 566740708,
+        "ingested": "2023-09-28T13:08:48Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -284,21 +284,22 @@ An example event for `memory` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "75e38940166b4dbc90b6f5610e8e9c39",
         "ip": [
-            "192.168.16.7"
+            "192.168.246.7"
         ],
         "mac": [
-            "02:42:c0:a8:10:07"
+            "02-42-C0-A8-F6-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.71.1.el7.x86_64",
+            "kernel": "3.10.0-1160.90.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -312,19 +313,22 @@ An example event for `memory` looks as following:
     "spring_boot": {
         "memory": {
             "heap": {
-                "committed": 434634752,
-                "init": 161480704,
-                "max": 2289565696,
-                "used": 151002384
+                "committed": 579338240,
+                "init": 260046848,
+                "max": 3698851840,
+                "used": 172880800
             },
             "non_heap": {
-                "committed": 63438848,
+                "committed": 62873600,
                 "init": 2555904,
                 "max": -1,
-                "used": 57516496
+                "used": 56856368
             }
         }
-    }
+    },
+    "tags": [
+        "spring_boot.memory.metrics"
+    ]
 }
 ```
 
@@ -363,6 +367,7 @@ An example event for `memory` looks as following:
 | spring_boot.memory.non_heap.init | Init non-heap memory usage of JVM. | long |
 | spring_boot.memory.non_heap.max | Max non-heap memory usage of JVM. | long |
 | spring_boot.memory.non_heap.used | Used non-heap memory usage of JVM. | long |
+| tags | List of keywords used to tag each event. | keyword |
 
 
 ### Threading Metrics
@@ -375,13 +380,13 @@ An example event for `threading` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-26T09:23:23.966Z",
+    "@timestamp": "2023-09-28T13:09:36.850Z",
     "agent": {
-        "ephemeral_id": "f5e26cd6-fcf9-4508-af92-e62d403c37a0",
-        "id": "b82deaa8-f456-40b6-9265-b33c84cf0590",
+        "ephemeral_id": "f6ab2af3-153b-4970-99c9-a9c564407b18",
+        "id": "9a3f2233-d554-4847-9b74-1465e769563d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "data_stream": {
         "dataset": "spring_boot.threading",
@@ -392,16 +397,16 @@ An example event for `threading` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "b82deaa8-f456-40b6-9265-b33c84cf0590",
+        "id": "9a3f2233-d554-4847-9b74-1465e769563d",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "web",
         "dataset": "spring_boot.threading",
-        "duration": 96299770,
-        "ingested": "2022-07-26T09:23:27Z",
+        "duration": 197157690,
+        "ingested": "2023-09-28T13:09:38Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -410,21 +415,22 @@ An example event for `threading` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "75e38940166b4dbc90b6f5610e8e9c39",
         "ip": [
-            "192.168.16.7"
+            "192.168.246.7"
         ],
         "mac": [
-            "02:42:c0:a8:10:07"
+            "02-42-C0-A8-F6-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.71.1.el7.x86_64",
+            "kernel": "3.10.0-1160.90.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -440,17 +446,20 @@ An example event for `threading` looks as following:
             "threads": {
                 "count": 20,
                 "current": {
-                    "allocated_bytes": 540520,
+                    "allocated_bytes": 28523936,
                     "time": {
-                        "cpu": 281828822,
-                        "user": 280000000
+                        "cpu": 380757629,
+                        "user": 370000000
                     }
                 },
                 "daemon": 16,
                 "started": 23
             }
         }
-    }
+    },
+    "tags": [
+        "spring_boot.threading.metrics"
+    ]
 }
 ```
 
@@ -477,6 +486,7 @@ An example event for `threading` looks as following:
 | spring_boot.threading.threads.current.time.user | User time for the current thread. | long |
 | spring_boot.threading.threads.daemon | Current number of live daemon threads. | long |
 | spring_boot.threading.threads.started | Total number of threads created and also started since the Java virtual machine started. | long |
+| tags | List of keywords used to tag each event. | keyword |
 
 
 ### GC Metrics
@@ -489,13 +499,13 @@ An example event for `gc` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-26T09:21:00.452Z",
+    "@timestamp": "2023-09-28T13:07:07.602Z",
     "agent": {
-        "ephemeral_id": "db88f994-5a48-40d9-ad03-6b590820ed0b",
-        "id": "b82deaa8-f456-40b6-9265-b33c84cf0590",
+        "ephemeral_id": "dcb46246-ff32-4d0e-89ce-d72ce374bb33",
+        "id": "9a3f2233-d554-4847-9b74-1465e769563d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "data_stream": {
         "dataset": "spring_boot.gc",
@@ -506,16 +516,16 @@ An example event for `gc` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "b82deaa8-f456-40b6-9265-b33c84cf0590",
+        "id": "9a3f2233-d554-4847-9b74-1465e769563d",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "web",
         "dataset": "spring_boot.gc",
-        "duration": 103569878,
-        "ingested": "2022-07-26T09:21:03Z",
+        "duration": 221408484,
+        "ingested": "2023-09-28T13:07:08Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -524,21 +534,22 @@ An example event for `gc` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "75e38940166b4dbc90b6f5610e8e9c39",
         "ip": [
-            "192.168.16.7"
+            "192.168.246.7"
         ],
         "mac": [
-            "02:42:c0:a8:10:07"
+            "02-42-C0-A8-F6-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.71.1.el7.x86_64",
+            "kernel": "3.10.0-1160.90.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -556,91 +567,94 @@ An example event for `gc` looks as following:
                 "memory_usage": {
                     "after": {
                         "code_cache": {
-                            "committed": 14155776,
+                            "committed": 14286848,
                             "init": 2555904,
                             "max": 251658240,
-                            "used": 14077312
+                            "used": 14209088
                         },
                         "compressed_class_space": {
                             "committed": 4980736,
                             "init": 0,
                             "max": 1073741824,
-                            "used": 4442832
+                            "used": 4436328
                         },
                         "metaspace": {
                             "committed": 36265984,
                             "init": 0,
                             "max": -1,
-                            "used": 33744032
+                            "used": 33758840
                         },
                         "ps_eden_space": {
-                            "committed": 323485696,
-                            "init": 40894464,
-                            "max": 832045056,
+                            "committed": 435683328,
+                            "init": 65536000,
+                            "max": 1354760192,
                             "used": 0
                         },
                         "ps_old_gen": {
-                            "committed": 100663296,
-                            "init": 108003328,
-                            "max": 1717043200,
-                            "used": 15834712
+                            "committed": 118489088,
+                            "init": 173539328,
+                            "max": 2774007808,
+                            "used": 14683728
                         },
                         "ps_survivor_space": {
-                            "committed": 12582912,
-                            "init": 6291456,
-                            "max": 12582912,
+                            "committed": 16777216,
+                            "init": 10485760,
+                            "max": 16777216,
                             "used": 0
                         }
                     },
                     "before": {
                         "code_cache": {
-                            "committed": 14155776,
+                            "committed": 14286848,
                             "init": 2555904,
                             "max": 251658240,
-                            "used": 14077312
+                            "used": 14209088
                         },
                         "compressed_class_space": {
                             "committed": 4980736,
                             "init": 0,
                             "max": 1073741824,
-                            "used": 4442832
+                            "used": 4436328
                         },
                         "metaspace": {
                             "committed": 36265984,
                             "init": 0,
                             "max": -1,
-                            "used": 33744032
+                            "used": 33758840
                         },
                         "ps_eden_space": {
-                            "committed": 323485696,
-                            "init": 40894464,
-                            "max": 832045056,
+                            "committed": 435683328,
+                            "init": 65536000,
+                            "max": 1354760192,
                             "used": 0
                         },
                         "ps_old_gen": {
-                            "committed": 70778880,
-                            "init": 108003328,
-                            "max": 1717043200,
-                            "used": 10811944
+                            "committed": 94896128,
+                            "init": 173539328,
+                            "max": 2774007808,
+                            "used": 10795056
                         },
                         "ps_survivor_space": {
-                            "committed": 12582912,
-                            "init": 6291456,
-                            "max": 12582912,
-                            "used": 10582400
+                            "committed": 16777216,
+                            "init": 10485760,
+                            "max": 16777216,
+                            "used": 8519744
                         }
                     }
                 },
                 "thread_count": 10,
                 "time": {
-                    "duration": 53,
-                    "end": 3654,
-                    "start": 3601
+                    "duration": 40,
+                    "end": 3588,
+                    "start": 3548
                 }
             },
             "name": "PS MarkSweep"
         }
-    }
+    },
+    "tags": [
+        "spring_boot.gc.metrics"
+    ]
 }
 ```
 
@@ -718,4 +732,5 @@ An example event for `gc` looks as following:
 | spring_boot.gc.last_info.time.end | End time of the GC. | long |
 | spring_boot.gc.last_info.time.start | Start time of the GC. | long |
 | spring_boot.gc.name | Name of the GC. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 
