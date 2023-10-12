@@ -2,11 +2,37 @@
 
 The Data Exfiltration Detection (DED) package contains assets for detecting data exfiltration in network and file data. This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under Elastic License v 2.0.
 
+## v2.0.0 and beyond
+
+v2.0.0 of the package introduces breaking changes, namely deprecating detection rules from the package. To continue receiving updates to Data Exfiltration Detection, we recommend upgrading to v2.0.0 after doing the following:
+- Delete existing ML jobs: Navigate to **Machine Learning > Anomaly Detection** and delete jobs corresponding to the following IDs:
+    - high-sent-bytes-destination-geo-country_iso_code
+    - high-sent-bytes-destination-ip
+    - high-sent-bytes-destination-port
+    - high-sent-bytes-destination-region_name
+    - high-bytes-written-to-external-device
+    - rare-process-writing-to-external-device
+    - high-bytes-written-to-external-device-airdrop
+
+Depending on the version of the package you're using, you might also be able to search for the above jobs using the group `data_exfiltration`.
+- Uninstall existing rules associated with this package: Navigate to **Security > Rules** and delete the following rules:
+    - Potential Data Exfiltration Activity to an Unusual ISO Code
+    - Potential Data Exfiltration Activity to an Unusual Region
+    - Potential Data Exfiltration Activity to an Unusual IP Address
+    - Potential Data Exfiltration Activity to an Unusual Destination Port
+    - Spike in Bytes Sent to an External Device
+    - Spike in Bytes Sent to an External Device via Airdrop
+    - Unusual Process Writing Data to an External Device 
+
+Depending on the version of the package you're using, you might also be able to search for the above rules using the tag `Data Exfiltration`.
+- Upgrade the Data Exfiltration Detection package to v2.0.0 using the steps [here](https://www.elastic.co/guide/en/fleet/current/upgrade-integration.html)
+- Install the new rules as described in the [Enable detection rules](#enable-detection-rules) section below
+
 ## Configuration
 
 To download the assets, click **Settings** > **Install Data Exfiltration Detection assets**. 
 
-Then use these detection rules and anomaly detection jobs for data exfiltration detection.
+Then use the anomaly detection jobs from this package and associated rules from the Detection Engine, to detect Data Exfiltration.
 
 ### Add preconfigured anomaly detection jobs
 
@@ -14,33 +40,21 @@ In **Machine Learning > Anomaly Detection**, when you create a job, you should s
 
 **_Note_**: In the Machine Learning app, these configurations are available only when data exists that matches the query specified in the [ded-ml file](https://github.com/elastic/integrations/blob/main/packages/ded/kibana/ml_module/ded-ml.json#L10).
 
-### (Optional) Enable Security rules
+### Enable detection rules
 
-To maximize the benefit of the Data Exfiltration Detection framework, activate the detection rules that are triggered when certain conditions for the anomaly detection jobs are satisfied. See the [documentation](https://www.elastic.co/guide/en/security/current/detection-engine-overview.html) for more information on importing and enabling the rules.
+You can also enable detection rules to alert on Data Exfiltration activity in your environment, based on anomalies flagged by the above ML jobs. As of version 2.0.0 of this package, these rules are available as part of the Detection Engine, and can be found using the tag `Use Case: Data Exfiltration Detection`. See this [documentation](https://www.elastic.co/guide/en/security/current/prebuilt-rules-management.html#load-prebuilt-rules) for more information on importing and enabling the rules.
 
 ### Anomaly Detection Jobs
 
 | Job | Description                                                                                |
 |---|--------------------------------------------------------------------------------------------|
-| high-sent-bytes-destination-geo-country_iso_code | Detects data exfiltration to an unusual geo-location (by country iso code).                |
-| high-sent-bytes-destination-ip | Detects data exfiltration to an unusual geo-location (by IP address).                      |
-| high-sent-bytes-destination-port | Detects data exfiltration to an unusual destination port.                                  |
-| high-sent-bytes-destination-region_name | Detects data exfiltration to an unusual geo-location (by region name).                     |
- | high-bytes-written-to-external-device | Detects data exfiltration activity by identifying high bytes written to an external device. |
- | rare-process-writing-to-external-device | Detects data exfiltration activity by identifying a writing event started by a rare process to an external device. |
- | high-bytes-written-to-external-device-airdrop | Detects data exfiltration activity by identifying high bytes written to an external device via Airdrop.|
-
-## Security Detection Rules
-
-| Rule | Description                                                                                                    |
-|---|----------------------------------------------------------------------------------------------------------------|
-| Potential Data Exfiltration Activity to an Unusual ISO Code | An anomaly detection job to detect an abnormal volume of bytes being sent to an unusual country by its iso code. |
-| Potential Data Exfiltration Activity to an Unusual Region | An anomaly detection job to detect an abnormal volume of bytes being sent to an unusual region name.           |
-| Potential Data Exfiltration Activity to an Unusual IP Address | An anomaly detection job to detect an abnormal volume of bytes being sent to an unusual IP address.            |
-| Potential Data Exfiltration Activity to an Unusual Destination Port | An anomaly detection job to detect an abnormal volume of bytes being sent to an unusual destination port.      |
- | Spike in Bytes Sent to an External Device | An anomaly detection job to detect high bytes of data written to an external device.                           |
-| Spike in Bytes Sent to an External Device via Airdrop | An anomaly detection job to detect high bytes of data written to an external device via Airdrop. |
- | Unusual Process Writing Data to an External Device | An anomaly detection job to detect a rare process writing data to an external device.                          |
+| ded_high_sent_bytes_destination_geo_country_iso_code | Detects data exfiltration to an unusual geo-location (by country iso code).                |
+| ded_high_sent_bytes_destination_ip | Detects data exfiltration to an unusual geo-location (by IP address).                      |
+| ded_high_sent_bytes_destination_port | Detects data exfiltration to an unusual destination port.                                  |
+| ded_high_sent_bytes_destination_region_name | Detects data exfiltration to an unusual geo-location (by region name).                     |
+ | ded_high_bytes_written_to_external_device | Detects data exfiltration activity by identifying high bytes written to an external device. |
+ | ded_rare_process_writing_to_external_device | Detects data exfiltration activity by identifying a writing event started by a rare process to an external device. |
+ | ded_high_bytes_written_to_external_device_airdrop | Detects data exfiltration activity by identifying high bytes written to an external device via Airdrop.|
 
 ## Dashboard
 
@@ -55,5 +69,7 @@ For the dashboard to work as expected, the following settings need to be configu
     - Index pattern : `.ml-anomalies-shared`
     - Name: `.ml-anomalies-shared`
     - Custom data view ID: `.ml-anomalies-shared`
+
 ## Licensing
+
 Usage in production requires that you have a license key that permits use of machine learning features.
