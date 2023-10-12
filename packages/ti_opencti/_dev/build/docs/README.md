@@ -9,7 +9,7 @@ Use this integration to get indicator data from OpenCTI. You can monitor and exp
 The OpenCTI integration collects one type of data stream: logs.
 
 **Logs** are lists of records created over time.
-Each event in the log data stream collected by the OpencTI integration is an indicator that can be used to detect suspicious or malicious cyber activitity. The data is fetched from [OpenCTI's GraphQL API](https://docs.opencti.io/latest/deployment/integrations/#graphql-api).
+Each event in the log data stream collected by the OpenCTI integration is an indicator that can be used to detect suspicious or malicious cyber activity. The data is fetched from [OpenCTI's GraphQL API](https://docs.opencti.io/latest/deployment/integrations/#graphql-api).
 
 ## Requirements
 
@@ -19,7 +19,7 @@ It was developed using OpenCTI version 5.10.1.
 
 ## Setup
 
-For additinal information about threat intelligence integrations, including the steps required to add an integration, please refer to the {{ url "security-ti-integrations" "Enable threat intelligence integrations" }} page of the Elastic Security documentation.
+For additional information about threat intelligence integrations, including the steps required to add an integration, please refer to the {{ url "security-ti-integrations" "Enable threat intelligence integrations" }} page of the Elastic Security documentation.
 
 When adding the OpenCTI integration, you will need to provide a base URL for the target OpenCTI instance. It should be just the base URL (e.g. `https://demo.opencti.io`) and not include an additional path for the API or UI.
 

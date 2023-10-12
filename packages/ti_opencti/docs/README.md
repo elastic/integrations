@@ -9,7 +9,7 @@ Use this integration to get indicator data from OpenCTI. You can monitor and exp
 The OpenCTI integration collects one type of data stream: logs.
 
 **Logs** are lists of records created over time.
-Each event in the log data stream collected by the OpencTI integration is an indicator that can be used to detect suspicious or malicious cyber activitity. The data is fetched from [OpenCTI's GraphQL API](https://docs.opencti.io/latest/deployment/integrations/#graphql-api).
+Each event in the log data stream collected by the OpenCTI integration is an indicator that can be used to detect suspicious or malicious cyber activity. The data is fetched from [OpenCTI's GraphQL API](https://docs.opencti.io/latest/deployment/integrations/#graphql-api).
 
 ## Requirements
 
@@ -19,7 +19,7 @@ It was developed using OpenCTI version 5.10.1.
 
 ## Setup
 
-For additinal information about threat intelligence integrations, including the steps required to add an integration, please refer to the [Enable threat intelligence integrations](https://www.elastic.co/guide/en/security/current/es-threat-intel-integrations.html) page of the Elastic Security documentation.
+For additional information about threat intelligence integrations, including the steps required to add an integration, please refer to the [Enable threat intelligence integrations](https://www.elastic.co/guide/en/security/current/es-threat-intel-integrations.html) page of the Elastic Security documentation.
 
 When adding the OpenCTI integration, you will need to provide a base URL for the target OpenCTI instance. It should be just the base URL (e.g. `https://demo.opencti.io`) and not include an additional path for the API or UI.
 
@@ -193,7 +193,7 @@ The documentation for ECS fields can be found at:
 | opencti.indicator.pattern_version | The version of the pattern language used in this indicator. | keyword |
 | opencti.indicator.revoked | Whether the indicator is revoked. | boolean |
 | opencti.indicator.score | An integer score for the indicator. | long |
-| opencti.indicator.standard_id | A predictable STIX ID, generated based on one or mulitple attributes of the indicator. | keyword |
+| opencti.indicator.standard_id | A predictable STIX ID, generated based on one or multiple attributes of the indicator. | keyword |
 | opencti.indicator.valid_from | The time from which this indicator is considered a valid indicator of the behaviors it is related to or represents. | date |
 | opencti.indicator.valid_until | The time at which this indicator should no longer be considered a valid indicator of the behaviors it is related to or represents. | date |
 | opencti.observable.artifact.additional_names | Additional names of the artifact. | keyword |
