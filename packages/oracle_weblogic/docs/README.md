@@ -748,13 +748,13 @@ An example event for `threadpool` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-25T15:56:32.787Z",
+    "@timestamp": "2023-08-23T11:54:38.053Z",
     "agent": {
-        "ephemeral_id": "fa8d802c-63fd-414f-87df-87877f5c4910",
-        "id": "8b3c7161-5c36-4f53-a9c1-134be019ef4d",
+        "ephemeral_id": "4a2754ea-5dba-4b59-8d77-c0f70bfccae3",
+        "id": "89fbf5a1-dedd-4f8f-a1ee-97a7e3ec1ed2",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.1.0"
+        "version": "8.4.0"
     },
     "data_stream": {
         "dataset": "oracle_weblogic.threadpool",
@@ -765,16 +765,16 @@ An example event for `threadpool` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "8b3c7161-5c36-4f53-a9c1-134be019ef4d",
+        "id": "89fbf5a1-dedd-4f8f-a1ee-97a7e3ec1ed2",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.4.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "web",
         "dataset": "oracle_weblogic.threadpool",
-        "duration": 2237552,
-        "ingested": "2022-04-25T15:56:36Z",
+        "duration": 55017871,
+        "ingested": "2023-08-23T11:54:39Z",
         "kind": "metric",
         "module": "oracle_weblogic",
         "type": "info"
@@ -783,21 +783,22 @@ An example event for `threadpool` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "e8978f2086c14e13b7a0af9ed0011d19",
         "ip": [
-            "192.168.96.7"
+            "172.29.0.9"
         ],
         "mac": [
-            "02:42:c0:a8:60:07"
+            "02-42-AC-1D-00-09"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.4.0-107-generic",
+            "kernel": "3.10.0-1160.90.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -806,11 +807,12 @@ An example event for `threadpool` looks as following:
     },
     "oracle_weblogic": {
         "threadpool": {
+            "mbean": "com.bea:ServerRuntime=admin-server,Name=ThreadPoolRuntime,Type=ThreadPoolRuntime",
             "queue": {
                 "length": 0
             },
             "requests": {
-                "completed": 1199967,
+                "completed": 1466,
                 "overload": {
                     "rejected": 0
                 },
@@ -819,13 +821,13 @@ An example event for `threadpool` looks as following:
             "threads": {
                 "execute": {
                     "idle": 1,
-                    "total": 12
+                    "total": 15
                 },
                 "hogging": 0,
-                "standby": 11,
+                "standby": 14,
                 "stuck": 0
             },
-            "throughput": 3.99800099950025,
+            "throughput": 91.5,
             "work_manager": {
                 "capacity": {
                     "shared": 65536
@@ -834,7 +836,7 @@ An example event for `threadpool` looks as following:
         }
     },
     "service": {
-        "address": "http://elastic-package-service_oracle_weblogic_1:8010/jolokia",
+        "address": "http://elastic-package-service_wlsadmin_1:8005/jolokia",
         "type": "jolokia"
     },
     "tags": [
@@ -848,6 +850,13 @@ An example event for `threadpool` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |
+| container.id | Unique container id. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -861,6 +870,8 @@ An example event for `threadpool` looks as following:
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | host.ip | Host ip addresses. | ip |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| oracle_weblogic.threadpool.mbean | The name of the jolokia mbean. | keyword |
 | oracle_weblogic.threadpool.queue.length | The number of pending requests in the priority queue. This is the total of internal system requests and user requests. | long |
 | oracle_weblogic.threadpool.requests.completed | The number of completed requests in the priority queue. | long |
 | oracle_weblogic.threadpool.requests.overload.rejected | Number of requests rejected due to configured Shared Capacity for work managers have been reached. | long |
