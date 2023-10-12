@@ -153,7 +153,7 @@ An example event for `redshift` looks as following:
             "192.168.112.7"
         ],
         "mac": [
-            "02:42:c0:a8:70:07"
+            "02-42-C0-A8-70-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -182,7 +182,7 @@ An example event for `redshift` looks as following:
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
-| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |  |
+| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | double |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
 | aws.dimensions.ClusterIdentifier | This dimension filters the data that you request for a specific Cluster identifier | keyword |  |
 | aws.dimensions.NodeID | This dimension filters the data that you request for a specific NodeID. | keyword |  |
@@ -223,7 +223,7 @@ An example event for `redshift` looks as following:
 | aws.redshift.metrics.WriteIOPS.avg | The average number of write operations per second. | long | gauge |
 | aws.redshift.metrics.WriteLatency.avg | The average amount of time taken for disk write I/O operations. | long | gauge |
 | aws.redshift.metrics.WriteThroughput.avg | The average number of bytes written to disk per second. | long | gauge |
-| aws.tags.\* | Tag key value pairs from aws resources. | object |  |
+| aws.tags | Tag key value pairs from aws resources. | flattened |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |
@@ -251,6 +251,6 @@ An example event for `redshift` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
 | host.ip | Host ip addresses. | ip |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
