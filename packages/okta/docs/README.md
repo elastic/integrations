@@ -326,24 +326,14 @@ An example event for `system` looks as following:
 | okta.event_type | The type of the LogEvent. | keyword |
 | okta.outcome.reason | The reason of the outcome. | keyword |
 | okta.outcome.result | The result of the outcome. Must be one of: SUCCESS, FAILURE, SKIPPED, ALLOW, DENY, CHALLENGE, UNKNOWN. | keyword |
-| okta.request.ip_chain.geographical_context.city | The city. | keyword |
-| okta.request.ip_chain.geographical_context.country | The country. | keyword |
-| okta.request.ip_chain.geographical_context.geolocation | Geolocation information. | geo_point |
-| okta.request.ip_chain.geographical_context.postal_code | The postal code. | keyword |
-| okta.request.ip_chain.geographical_context.state | The state. | keyword |
-| okta.request.ip_chain.ip | IP address. | ip |
-| okta.request.ip_chain.source | Source information. | keyword |
-| okta.request.ip_chain.version | IP version. Must be one of V4, V6. | keyword |
+| okta.request.ip_chain |  | flattened |
 | okta.security_context.as.number | The AS number. | integer |
 | okta.security_context.as.organization.name | The organization name. | keyword |
 | okta.security_context.domain | The domain name. | keyword |
 | okta.security_context.is_proxy | Whether it is a proxy or not. | boolean |
 | okta.security_context.isp | The Internet Service Provider. | keyword |
 | okta.severity | The severity of the LogEvent. Must be one of DEBUG, INFO, WARN, or ERROR. | keyword |
-| okta.target.alternate_id | Alternate identifier of the actor. | keyword |
-| okta.target.display_name | Display name of the actor. | keyword |
-| okta.target.id | Identifier of the actor. | keyword |
-| okta.target.type | Type of the actor. | keyword |
+| okta.target | The list of targets. | flattened |
 | okta.transaction.id | Identifier of the transaction. | keyword |
 | okta.transaction.type | The type of transaction. Must be one of "WEB", "JOB". | keyword |
 | okta.uuid | The unique identifier of the Okta LogEvent. | keyword |

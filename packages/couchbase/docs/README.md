@@ -158,7 +158,6 @@ An example event for `bucket` looks as following:
         "type": "http"
     },
     "tags": [
-        "forwarded",
         "couchbase-bucket"
     ]
 }
@@ -305,7 +304,6 @@ An example event for `cache` looks as following:
         "type": "prometheus"
     },
     "tags": [
-        "forwarded",
         "couchbase-cache",
         "prometheus"
     ]
@@ -496,7 +494,6 @@ An example event for `cluster` looks as following:
         "type": "http"
     },
     "tags": [
-        "forwarded",
         "couchbase-cluster"
     ]
 }
@@ -693,7 +690,6 @@ An example event for `cbl_replication` looks as following:
         "type": "prometheus"
     },
     "tags": [
-        "forwarded",
         "couchbase-cbl_replication",
         "prometheus"
     ]
@@ -850,7 +846,6 @@ An example event for `database_stats` looks as following:
         "type": "prometheus"
     },
     "tags": [
-        "forwarded",
         "couchbase-database_stats",
         "prometheus"
     ]
@@ -1041,7 +1036,6 @@ An example event for `miscellaneous` looks as following:
         "type": "prometheus"
     },
     "tags": [
-        "forwarded",
         "couchbase-miscellaneous",
         "prometheus"
     ]
@@ -1207,7 +1201,6 @@ An example event for `resource` looks as following:
         "type": "prometheus"
     },
     "tags": [
-        "forwarded",
         "couchbase-resource",
         "prometheus"
     ]
@@ -1389,7 +1382,6 @@ An example event for `node` looks as following:
         "type": "httpjson"
     },
     "tags": [
-        "forwarded",
         "couchbase-node"
     ]
 }
@@ -1525,7 +1517,6 @@ An example event for `query_index` looks as following:
         "type": "http"
     },
     "tags": [
-        "forwarded",
         "couchbase-query_index"
     ]
 }
@@ -1662,7 +1653,6 @@ An example event for `xdcr` looks as following:
         "type": "http"
     },
     "tags": [
-        "forwarded",
         "couchbase-xdcr"
     ]
 }

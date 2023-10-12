@@ -136,27 +136,22 @@ processors:
       field: http.response.status_code
       type: long
       ignore_missing: true
-
   - date:
       field: azure.frontdoor.access.time
       target_field: "@timestamp"
       formats:
         - ISO8601
-
   - dissect:
       field: azure.frontdoor.access.properties.securityProtocol
       pattern: "%{tls.version_protocol} %{tls.version}"
       ignore_missing: true
-
   - remove:
       field:
         - azure.frontdoor.access.properties.securityProtocol
         - azure.frontdoor.access.properties.httpStatusDetails
         - azure.frontdoor.access.time
         - azure.frontdoor.access.properties
-        - event.original
       ignore_missing: true
-
   - geoip:
       field: client.ip
       target_field: source.geo
@@ -179,6 +174,11 @@ processors:
       ignore_missing: true
   - user_agent:
       field: user_agent.original
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
       ignore_missing: true
 
 on_failure:
