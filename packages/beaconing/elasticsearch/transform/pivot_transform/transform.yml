@@ -1,5 +1,5 @@
 dest:
-  index:  ml_beaconing-1.0.0
+  index: ml_beaconing-1.0.0
   pipeline: 1.0.0-ml_beaconing_ingest_pipeline
   aliases:
     - alias: ml_beaconing.latest
@@ -10,9 +10,9 @@ description: This transform runs hourly and flags beaconing activity seen in you
 frequency: 1h
 pivot:
   aggregations:
-    "@timestamp" :
+    "@timestamp":
       max:
-        field:  "@timestamp"
+        field: "@timestamp"
     beacon_stats:
       scripted_metric:
         combine_script: return state
@@ -61,7 +61,7 @@ pivot:
           number_destination_ips: 10
           source_bytes: source.bytes
           time_bucket_length: 60
-          time_field:  "@timestamp"
+          time_field: "@timestamp"
           truncate_at: [0.1, 0.8]
         reduce_script: |-
           int firstComplete(def counts) {
@@ -338,10 +338,10 @@ pivot:
                   "max_autocovariance_period": period,
                   "destination_ips": topDestinationIps];
   group_by:
-    host.name:
+    'host.name':
       terms:
         field: host.name
-    process.name:
+    'process.name':
       terms:
         field: process.name
 source:
@@ -351,36 +351,36 @@ source:
       filter:
         - range:
             '@timestamp':
-                gte: now-6h
+              gte: now-6h
         - term:
-            event.category:
+            'event.category':
               value: network
         - term:
-            event.action:
+            'event.action':
               value: disconnect_received
       minimum_should_match: 1
       must_not:
         terms:
-          process.name: ["Acrobat.exe", "AcroCEF.exe", "AcroCEF Helper", "AddressBookSourceSync", "Adobe_CCXProcess.node", "Adobe CEF Helper", "Adobe CEF Helper.exe", "AdobeCollabSync.exe", "Adobe Desktop Service", "Adobe Desktop Service.exe", "accountsd", "akd", "appstoreagent", "apsd", "atmgr.exe", "assistantd", "backgroundTaskHost.exe", "BackgroundTransferHost.exe", "Brave Browser Helper", "CalendarAgent", "Camtasia 2020", "CCXProcess", "chrome.exe", "cloudd", "Code.exe", "Code Helper", "Code Helper (Renderer)", "CompatTelRunner.exe", "com.apple.geod", "com.apple.ncplugin.stocks", "com.apple.Safari.SafeBrowsing.Service", "com.apple.WebKit.Networking", "com.docker.vpnkit", "commerce", "Core Sync", "CoreSync.exe", "default-browser-agent.exe", "DeliveryService.exe", "DeviceCensus.exe", "Docker", "Dropbox", "Dsapi.exe", "elastic-agent", "elastic-agent.exe", "elastic-endpoint", "esensor", "EXCEL.EXE", "explorer.exe", "familycircled", "filebeat", "filebeat.exe", "FileCoAuth.exe", "firefox", "firefox.exe", "GitHub Desktop Helper", "Google Chrome Helper", "google_osconfig_agent", "google_osconfig_agent.exe", "google_guest_agent", "GCEWindowsAgent.exe", "Google Drive", "GoogleDriveFS.exe", "GoogleUpdate.exe", "IMRemoteURLConnectionAgent", "jamf", "keybase", "ksfetch", "Lenovo.Modern.ImController.PluginHost.CompanionApp.exe", "LenovoVantageService.exe", "locationd", "mapspushd", "mcautoreg.exe", "metricbeat", "mdmclient", "Mail", "MMSSHOST.exe", "Microsoft Excel", "Microsoft.Management.Services.IntuneWindowsAgent.exe", "Microsoft OneNote", "Microsoft PowerPoint", "Microsoft Teams Helper", "Microsoft Teams Helper (Renderer)", "Microsoft Update Assistant", "Microsoft Word", "ModuleCoreService.exe", "msedge.exe", "node", "node.exe", "nsurlsessiond", "OfficeC2RClient.exe", "ONENOTE.EXE", "officesvcmgr.exe", "OfficeClickToRun.exe", "OneDrive.exe", "parsec-fbf", "parsecd", "pingsender.exe", "SDXHelper.exe", "SearchApp.exe", "ServiceLayer.exe", "Skype for Business", "Slack.exe", "Slack Helper", "snapd", "smartscreen.exe", "softwareupdated", "Spotify.exe", "Spotify Helper", "ssm-agent-worker.exe", "ssm-document-worker.exe", "syspolicyd", "SystemIdleCheck.exe", "taskhostw.exe", "Teams", "Teams.exe", "trustd", "updater", "WINWORD.EXE", "WhatsApp Helper", "xpcproxy", "Zoom.exe", "zoom.us", "ZoomPresence"]
+          'process.name': ["Acrobat.exe", "AcroCEF.exe", "AcroCEF Helper", "AddressBookSourceSync", "Adobe_CCXProcess.node", "Adobe CEF Helper", "Adobe CEF Helper.exe", "AdobeCollabSync.exe", "Adobe Desktop Service", "Adobe Desktop Service.exe", "accountsd", "akd", "appstoreagent", "apsd", "atmgr.exe", "assistantd", "backgroundTaskHost.exe", "BackgroundTransferHost.exe", "Brave Browser Helper", "CalendarAgent", "Camtasia 2020", "CCXProcess", "chrome.exe", "cloudd", "Code.exe", "Code Helper", "Code Helper (Renderer)", "CompatTelRunner.exe", "com.apple.geod", "com.apple.ncplugin.stocks", "com.apple.Safari.SafeBrowsing.Service", "com.apple.WebKit.Networking", "com.docker.vpnkit", "commerce", "Core Sync", "CoreSync.exe", "default-browser-agent.exe", "DeliveryService.exe", "DeviceCensus.exe", "Docker", "Dropbox", "Dsapi.exe", "elastic-agent", "elastic-agent.exe", "elastic-endpoint", "esensor", "EXCEL.EXE", "explorer.exe", "familycircled", "filebeat", "filebeat.exe", "FileCoAuth.exe", "firefox", "firefox.exe", "GitHub Desktop Helper", "Google Chrome Helper", "google_osconfig_agent", "google_osconfig_agent.exe", "google_guest_agent", "GCEWindowsAgent.exe", "Google Drive", "GoogleDriveFS.exe", "GoogleUpdate.exe", "IMRemoteURLConnectionAgent", "jamf", "keybase", "ksfetch", "Lenovo.Modern.ImController.PluginHost.CompanionApp.exe", "LenovoVantageService.exe", "locationd", "mapspushd", "mcautoreg.exe", "metricbeat", "mdmclient", "Mail", "MMSSHOST.exe", "Microsoft Excel", "Microsoft.Management.Services.IntuneWindowsAgent.exe", "Microsoft OneNote", "Microsoft PowerPoint", "Microsoft Teams Helper", "Microsoft Teams Helper (Renderer)", "Microsoft Update Assistant", "Microsoft Word", "ModuleCoreService.exe", "msedge.exe", "node", "node.exe", "nsurlsessiond", "OfficeC2RClient.exe", "ONENOTE.EXE", "officesvcmgr.exe", "OfficeClickToRun.exe", "OneDrive.exe", "parsec-fbf", "parsecd", "pingsender.exe", "SDXHelper.exe", "SearchApp.exe", "ServiceLayer.exe", "Skype for Business", "Slack.exe", "Slack Helper", "snapd", "smartscreen.exe", "softwareupdated", "Spotify.exe", "Spotify Helper", "ssm-agent-worker.exe", "ssm-document-worker.exe", "syspolicyd", "SystemIdleCheck.exe", "taskhostw.exe", "Teams", "Teams.exe", "trustd", "updater", "WINWORD.EXE", "WhatsApp Helper", "xpcproxy", "Zoom.exe", "zoom.us", "ZoomPresence"]
       should:
         - bool:
             filter:
               terms:
-                source.ip: ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]
+                'source.ip': ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]
             must_not:
               terms:
-                destination.ip: ["10.0.0.0/8", "169.254.0.0/16", "172.16.0.0/12", "127.0.0.0/8", "192.0.0.0/24", "192.0.0.0/29", "192.0.0.8/32", "192.0.0.9/32", "192.0.0.10/32", "192.0.0.170/32", "192.0.0.171/32", "192.0.2.0/24", "192.31.196.0/24", "192.52.193.0/24", "192.168.0.0/16", "192.88.99.0/24", "224.0.0.0/4", "100.64.0.0/10", "192.175.48.0/24", "198.18.0.0/15", "198.51.100.0/24", "203.0.113.0/24", "240.0.0.0/4", "::1", "FE80::/10", "FF00::/8"]
+                'destination.ip': ["10.0.0.0/8", "169.254.0.0/16", "172.16.0.0/12", "127.0.0.0/8", "192.0.0.0/24", "192.0.0.0/29", "192.0.0.8/32", "192.0.0.9/32", "192.0.0.10/32", "192.0.0.170/32", "192.0.0.171/32", "192.0.2.0/24", "192.31.196.0/24", "192.52.193.0/24", "192.168.0.0/16", "192.88.99.0/24", "224.0.0.0/4", "100.64.0.0/10", "192.175.48.0/24", "198.18.0.0/15", "198.51.100.0/24", "203.0.113.0/24", "240.0.0.0/4", "::1", "FE80::/10", "FF00::/8"]
         - bool:
             filter:
               terms:
-                process.name: ["lsass.exe", "Microsoft Outlook", "omadmclient.exe", "OUTLOOK.EXE", "SettingSyncHost.exe", "SIHClient.exe", "POWERPNT.EXE", "svchost.exe", "uhssvc.exe"]
+                'process.name': ["lsass.exe", "Microsoft Outlook", "omadmclient.exe", "OUTLOOK.EXE", "SettingSyncHost.exe", "SIHClient.exe", "POWERPNT.EXE", "svchost.exe", "uhssvc.exe"]
             must_not:
               terms:
-                destination.ip: ["10.0.0.0/8", "169.254.0.0/16", "172.16.0.0/12", "127.0.0.0/8", "192.0.0.0/24", "192.0.0.0/29", "192.0.0.8/32", "192.0.0.9/32", "192.0.0.10/32", "192.0.0.170/32", "192.0.0.171/32", "192.0.2.0/24", "192.31.196.0/24", "192.52.193.0/24", "192.168.0.0/16", "192.88.99.0/24", "224.0.0.0/4", "100.64.0.0/10", "192.175.48.0/24", "198.18.0.0/15", "198.51.100.0/24", "203.0.113.0/24", "240.0.0.0/4", "::1", "FE80::/10", "FF00::/8", "13.64.0.0/11", "13.104.0.0/14", "13.96.0.0/13", "18.209.113.128/26", "20.33.0.0/16", "20.34.0.0/15", "20.36.0.0/14", "20.40.0.0/13", "20.48.0.0/12", "20.64.0.0/10", "20.128.0.0/16", "20.36.0.0/14", "20.34.0.0/15", "20.40.0.0/13", "20.128.0.0/16", "20.48.0.0/12", "20.33.0.0/16", "20.180.0.0/14", "20.184.0.0/13", "23.64.0.0/14", "23.32.0.0/11", "40.74.0.0/15", "40.76.0.0/14", "40.80.0.0/12", "40.96.0.0/12", "40.112.0.0/13", "40.120.0.0/14", "40.124.0.0/16", "40.126.0.0/18", "40.125.0.0/17", "52.132.0.0/14", "52.136.0.0/13", "52.148.0.0/14", "52.145.0.0/16", "52.146.0.0/15", "52.160.0.0/11", "52.152.0.0/13", "52.224.0.0/11"]
+                'destination.ip': ["10.0.0.0/8", "169.254.0.0/16", "172.16.0.0/12", "127.0.0.0/8", "192.0.0.0/24", "192.0.0.0/29", "192.0.0.8/32", "192.0.0.9/32", "192.0.0.10/32", "192.0.0.170/32", "192.0.0.171/32", "192.0.2.0/24", "192.31.196.0/24", "192.52.193.0/24", "192.168.0.0/16", "192.88.99.0/24", "224.0.0.0/4", "100.64.0.0/10", "192.175.48.0/24", "198.18.0.0/15", "198.51.100.0/24", "203.0.113.0/24", "240.0.0.0/4", "::1", "FE80::/10", "FF00::/8", "13.64.0.0/11", "13.104.0.0/14", "13.96.0.0/13", "18.209.113.128/26", "20.33.0.0/16", "20.34.0.0/15", "20.36.0.0/14", "20.40.0.0/13", "20.48.0.0/12", "20.64.0.0/10", "20.128.0.0/16", "20.36.0.0/14", "20.34.0.0/15", "20.40.0.0/13", "20.128.0.0/16", "20.48.0.0/12", "20.33.0.0/16", "20.180.0.0/14", "20.184.0.0/13", "23.64.0.0/14", "23.32.0.0/11", "40.74.0.0/15", "40.76.0.0/14", "40.80.0.0/12", "40.96.0.0/12", "40.112.0.0/13", "40.120.0.0/14", "40.124.0.0/16", "40.126.0.0/18", "40.125.0.0/17", "52.132.0.0/14", "52.136.0.0/13", "52.148.0.0/14", "52.145.0.0/16", "52.146.0.0/15", "52.160.0.0/11", "52.152.0.0/13", "52.224.0.0/11"]
 sync:
   time:
     delay: 120s
-    field:  "@timestamp"
+    field: "@timestamp"
 _meta:
   fleet_transform_version: 1.0.0
   run_as_kibana_system: false

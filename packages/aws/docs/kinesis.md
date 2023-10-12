@@ -153,7 +153,7 @@ An example event for `kinesis` looks as following:
 | aws.kinesis.metrics.SubscribeToShard_Success.avg | This metric records whether the SubscribeToShard subscription was successfully established. | long | gauge |
 | aws.kinesis.metrics.WriteProvisionedThroughputExceeded.avg | The number of records rejected due to throttling for the stream over the specified time period. This metric includes throttling from PutRecord and PutRecords operations. | long | gauge |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |
-| aws.tags.\* | Tag key value pairs from aws resources. | object |  |
+| aws.tags | Tag key value pairs from aws resources. | flattened |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |

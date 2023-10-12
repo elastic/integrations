@@ -273,8 +273,8 @@ An example event for `user` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| entityanalytics_okta.user._embedded | embedded resources related to the user. | object |
-| entityanalytics_okta.user._links | link relations for the user's current status. | object |
+| entityanalytics_okta.user._embedded | embedded resources related to the user. | flattened |
+| entityanalytics_okta.user._links | link relations for the user's current status. | flattened |
 | entityanalytics_okta.user.activated | timestamp when transition to ACTIVE status completed. | date |
 | entityanalytics_okta.user.created | timestamp when user was created. | date |
 | entityanalytics_okta.user.credentials.provider.name |  | keyword |
@@ -317,7 +317,7 @@ An example event for `user` looks as following:
 | entityanalytics_okta.user.status | current status of user. | keyword |
 | entityanalytics_okta.user.status_changed | timestamp when status last changed. | date |
 | entityanalytics_okta.user.transitioning_to_status | target status of an in-progress asynchronous status transition. | keyword |
-| entityanalytics_okta.user.type | user type that determines the schema for the user's profile. | object |
+| entityanalytics_okta.user.type | user type that determines the schema for the user's profile. | flattened |
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |

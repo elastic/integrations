@@ -216,7 +216,7 @@ An example event for `alerts` looks as following:
 | panw_cortex.xdr.alert_type | The type of the alert. | keyword |
 | panw_cortex.xdr.attempt_counter | Attempts to block or stop the malicious process. | long |
 | panw_cortex.xdr.bioc_category_enum_key | Behavior Indicator type key. | keyword |
-| panw_cortex.xdr.bioc_description | A description of the related bioc event. | object |
+| panw_cortex.xdr.bioc_description | A description of the related bioc event. | flattened |
 | panw_cortex.xdr.bioc_indicator | The Behavioral Indicator type matching to the event. | keyword |
 | panw_cortex.xdr.category | The Alert category. | keyword |
 | panw_cortex.xdr.deduplicate_tokens |  | keyword |
@@ -534,7 +534,7 @@ An example event for `incidents` looks as following:
 | panw_cortex.xdr.assigned_user_pretty_name | Pretty name for the assigned user. | keyword |
 | panw_cortex.xdr.creation_time | Incident creation time. | date |
 | panw_cortex.xdr.critical_severity_alert_count | Count of critical severity alerts for this incident. | long |
-| panw_cortex.xdr.detection_time | Detection time. | object |
+| panw_cortex.xdr.detection_time | Detection time. | flattened |
 | panw_cortex.xdr.high_severity_alert_count | Count of high severity alerts for this incident. | long |
 | panw_cortex.xdr.host_count | Count of hosts related to this incident. | long |
 | panw_cortex.xdr.hosts | Host names and host ID's related to this incident. | keyword |
@@ -543,7 +543,7 @@ An example event for `incidents` looks as following:
 | panw_cortex.xdr.incident_sources | Detection sources for this incident. | keyword |
 | panw_cortex.xdr.low_severity_alert_count | Count of low severity alerts for this incident. | long |
 | panw_cortex.xdr.manual_description | Manual incident description. | keyword |
-| panw_cortex.xdr.manual_score | Manual incident score. | object |
+| panw_cortex.xdr.manual_score | Manual incident score. | flattened |
 | panw_cortex.xdr.manual_severity | Manual incident severity. | keyword |
 | panw_cortex.xdr.med_severity_alert_count | Count of medium severity alerts for this incident. | long |
 | panw_cortex.xdr.mitre_tactics_ids_and_names | MITRE tactic ID's and names | keyword |

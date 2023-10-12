@@ -182,7 +182,7 @@ An example event for `redshift` looks as following:
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
-| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |  |
+| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | double |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
 | aws.dimensions.ClusterIdentifier | This dimension filters the data that you request for a specific Cluster identifier | keyword |  |
 | aws.dimensions.NodeID | This dimension filters the data that you request for a specific NodeID. | keyword |  |
@@ -223,7 +223,7 @@ An example event for `redshift` looks as following:
 | aws.redshift.metrics.WriteIOPS.avg | The average number of write operations per second. | long | gauge |
 | aws.redshift.metrics.WriteLatency.avg | The average amount of time taken for disk write I/O operations. | long | gauge |
 | aws.redshift.metrics.WriteThroughput.avg | The average number of bytes written to disk per second. | long | gauge |
-| aws.tags.\* | Tag key value pairs from aws resources. | object |  |
+| aws.tags | Tag key value pairs from aws resources. | flattened |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |

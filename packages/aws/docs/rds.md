@@ -232,7 +232,7 @@ An example event for `rds` looks as following:
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
-| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |  |
+| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | double |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
 | aws.dimensions.DBClusterIdentifier | This dimension filters the data that you request for a specific Amazon Aurora DB cluster. | keyword |  |
 | aws.dimensions.DBInstanceIdentifier | This dimension filters the data that you request for a specific DB instance. | keyword |  |
@@ -287,7 +287,7 @@ An example event for `rds` looks as following:
 | aws.rds.latency.write | The average amount of time taken per disk I/O operation. | float | gauge |
 | aws.rds.login_failures | The average number of failed login attempts per second. | long | gauge |
 | aws.rds.maximum_used_transaction_ids | The maximum transaction ID that has been used. Applies to PostgreSQL. | long | counter |
-| aws.rds.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |  |
+| aws.rds.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | double |  |
 | aws.rds.oldest_replication_slot_lag.mb | The lagging size of the replica lagging the most in terms of WAL data received. Applies to PostgreSQL. | long | gauge |
 | aws.rds.queries | The average number of queries executed per second. | long | gauge |
 | aws.rds.rds_to_aurora_postgresql_replica_lag.sec | The amount of lag in seconds when replicating updates from the primary RDS PostgreSQL instance to other nodes in the cluster. | long | gauge |
@@ -316,7 +316,7 @@ An example event for `rds` looks as following:
 | aws.rds.volume_used.bytes | The amount of storage used by your Aurora DB instance, in bytes. | long | gauge |
 | aws.rds.write_io.ops_per_sec | The average number of disk write I/O operations per second. | float | gauge |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |
-| aws.tags.\* | Tag key value pairs from aws resources. | object |  |
+| aws.tags | Tag key value pairs from aws resources. | flattened |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |

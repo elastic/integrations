@@ -186,7 +186,7 @@ An example event for `apigateway` looks as following:
 | aws.dimensions.Route | Routes define the path and HTTP methods that clients can use to access different functionalities of the API. | keyword |  |  |
 | aws.dimensions.Stage | It represents a specific version of the API that is accessible to clients. A stage allows you to manage different environments or versions of your API, such as development, testing, and production. | keyword |  |  |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |  |
-| aws.tags.\* | Tag key-value pairs from AWS resources. | object |  |  |
+| aws.tags | Tag key-value pairs from AWS resources. | flattened |  |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |  |
