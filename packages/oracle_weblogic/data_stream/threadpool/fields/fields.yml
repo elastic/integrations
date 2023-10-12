@@ -15,51 +15,63 @@
             - name: length
               type: long
               description: The number of pending requests in the priority queue. This is the total of internal system requests and user requests.
+              metric_type: gauge
         - name: requests
           type: group
           fields:
             - name: completed
               type: long
               description: The number of completed requests in the priority queue.
+              metric_type: counter
             - name: overload
               type: group
               fields:
                 - name: rejected
                   type: long
                   description: Number of requests rejected due to configured Shared Capacity for work managers have been reached.
+                  metric_type: counter
             - name: pending
               type: long
               description: The number of pending user requests in the priority queue. The priority queue contains requests from internal subsystems and users. This is just the count of all user requests.
+              metric_type: gauge
         - name: threads
           type: group
           fields:
             - name: daemon
               type: long
               description: Current number of live daemon threads.
+              metric_type: gauge
             - name: execute
               type: group
               fields:
                 - name: idle
                   type: long
                   description: The number of idle threads in the pool. This count does not include standby threads and stuck threads. The count indicates threads that are ready to pick up new work when it arrives.
+                  metric_type: gauge
                 - name: total
                   type: long
                   description: The total number of threads in the pool.
+                  metric_type: gauge
             - name: hogging
               type: long
               description: The threads that are being held by a request right now. These threads will either be declared as stuck after the configured timeout or will return to the pool before that. The self-tuning mechanism will backfill if necessary.
+              metric_type: gauge
             - name: standby
               type: long
               description: The number of threads in the standby pool. Threads that are not needed to handle the present work load are designated as standby and added to the standby pool. These threads are activated when more threads are needed.
+              metric_type: gauge
             - name: stuck
               type: long
               description: Number of stuck threads in the thread pool.
+              metric_type: gauge
             - name: total
               type: long
               description: Current number of live threads including both daemon and non-daemon threads.
+              metric_type: gauge
         - name: throughput
           type: double
           description: The mean number of requests completed per second.
+          metric_type: gauge
         - name: work_manager
           type: group
           fields:
@@ -69,3 +81,4 @@
                 - name: shared
                   type: long
                   description: Maximum amount of requests that can be accepted in the priority queue. Note that a request with higher priority will be accepted in place of a lower priority request already in the queue even after the threshold is reached. The lower priority request is kept waiting in the queue till all high priority requests are executed. Also note that further enqueues of the low priority requests are rejected right away.
+                  metric_type: gauge
