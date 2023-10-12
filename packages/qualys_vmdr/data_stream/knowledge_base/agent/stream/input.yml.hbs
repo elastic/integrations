@@ -32,12 +32,16 @@ program: |
           "Authorization": ["Basic "+string(base64(state.user+":"+state.password))],
       }
   }).do_request().as(resp, bytes(resp.Body).decode_xml('qualys_api_2_0').as(body, {
-      "events": body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.map(e, {
-        "message": e.encode_json(),
-      }),
+      "events": (has(body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST) ?
+          body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.map(e,{
+            "message": e.encode_json()
+          })
+        :
+          body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.ID_SET
+      ),
       "cursor": {
         "last_modified": (
-          has(body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN) && body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.size() > 0
+          has(body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST) && has(body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN) && body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.size() > 0
           ?
             body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.map(e, e.LAST_SERVICE_MODIFICATION_DATETIME).max()
           :

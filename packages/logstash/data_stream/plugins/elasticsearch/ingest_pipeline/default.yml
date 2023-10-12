@@ -1,0 +1,123 @@
+---
+description: "Pipeline for Logstash Plugin monitoring"
+
+processors:
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.input.flow.throughput.lifetime
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.input.flow.throughput.current
+      if: ctx.logstash?.pipeline?.plugin?.input?.flow?.throughput?.current == "Infinity"
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.input.flow.throughput.last_1_minute
+      if: ctx.logstash?.pipeline?.plugin?.input?.flow?.throughput?.last_1_minute == "Infinity"
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.input.flow.throughput.last_5_minutes
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.input.flow.throughput.last_15_minutes
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.input.flow.throughput.last_1_hour
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.input.flow.throughput.last_24_hours
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.filter.flow.worker_millis_per_event.lifetime
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.filter.flow.worker_millis_per_event.current
+      if: ctx.logstash?.pipeline?.plugin?.filter?.flow?.worker_millis_per_event?.current == "Infinity"
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.filter.flow.worker_millis_per_event.last_1_minute
+      if: ctx.logstash?.pipeline?.plugin?.filter?.flow?.worker_millis_per_event?.last_1_minute == "Infinity"
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.filter.flow.worker_millis_per_event.last_5_minutes
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.filter.flow.worker_millis_per_event.last_15_minutes
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.filter.flow.worker_millis_per_event.last_1_hour
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.filter.flow.worker_millis_per_event.last_24_hours
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.filter.flow.worker_utilization.lifetime
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.filter.flow.worker_utilization.current
+      if: ctx.logstash?.pipeline?.plugin?.filter?.flow?.worker_utilization?.current == "Infinity"
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.filter.flow.worker_utilization.last_1_minute
+      if: ctx.logstash?.pipeline?.plugin?.filter?.flow?.worker_utilization?.last_1_minute == "Infinity"
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.filter.flow.worker_utilization.last_5_minutes
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.filter.flow.worker_utilization.last_15_minutes
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.filter.flow.worker_utilization.last_1_hour
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.filter.flow.worker_utilization.last_24_hours
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.output.flow.worker_millis_per_event.lifetime
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.output.flow.worker_millis_per_event.current
+      if: ctx.logstash?.pipeline?.plugin?.output?.flow?.worker_millis_per_event?.current == "Infinity"
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.output.flow.worker_millis_per_event.last_1_minute
+      if: ctx.logstash?.pipeline?.plugin?.output?.flow?.worker_millis_per_event?.last_1_minute == "Infinity"
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.output.flow.worker_millis_per_event.last_5_minutes
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.output.flow.worker_millis_per_event.last_15_minutes
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.output.flow.worker_millis_per_event.last_1_hour
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.output.flow.worker_millis_per_event.last_24_hours
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.output.flow.worker_utilization.lifetime
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.output.flow.worker_utilization.current
+      if: ctx.logstash?.pipeline?.plugin?.output?.flow?.worker_utilization?.current == "Infinity"
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.output.flow.worker_utilization.last_1_minute
+      if: ctx.logstash?.pipeline?.plugin?.output?.flow?.worker_utilization?.last_1_minute == "Infinity"
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.output.flow.worker_utilization.last_5_minutes
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.output.flow.worker_utilization.last_15_minutes
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.output.flow.worker_utilization.last_1_hour
+  - remove:
+      ignore_missing: true
+      field: logstash.pipeline.plugin.output.flow.worker_utilization.last_24_hours
+on_failure:
+  - set:
+      field: 'error.message'
+      value: '{{ _ingest.on_failure_message }}'
