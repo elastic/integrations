@@ -43,15 +43,15 @@ processors:
   - script:
       lang: painless
       tag: script-default-expiration
-      if: (ctx.otx?.created != null && ctx.otx?.expiration == null && ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != '')
+      if: ctx.otx?.created != null && ctx.otx.expiration == null && ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != ''
       description: >
         Add default expiration
       source: >
         def dur = ctx._conf.ioc_expiration_duration;
         String created = ctx.otx.created;
-        if (dur instanceof String){
+        if (dur instanceof String && dur.length() != 0){
           Character time_unit = dur.charAt(dur.length() - 1);
-          String time_value = dur.substring(0, dur.length());
+          String time_value = dur.substring(0, dur.length()-1);
           if (time_unit == 'd') {
             ctx.otx.expiration = ZonedDateTime.parse(created, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusDays(Long.parseLong(time_value));
           } else if (time_unit == 'h') {
