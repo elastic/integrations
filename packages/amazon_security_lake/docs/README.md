@@ -31,57 +31,56 @@ The Amazon Security Lake integration collects logs for the below [AWS services](
 ## Requirements
 
 - Elastic Agent must be installed.
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data from the S3 bucket and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
-
-### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-The minimum **kibana.version** required is **8.11.0**.
+- Elastic Agent is required to stream data from Amazon Security Lake and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
 ## Setup
 
-### To collect data from an AWS S3 bucket or AWS SQS, follow the below steps:
+### To collect data from Amazon Security Lake follow the below steps:
 
 1. To enable and start Amazon Security Lake, follow the steps mentioned here: [`https://docs.aws.amazon.com/security-lake/latest/userguide/getting-started.html`](https://docs.aws.amazon.com/security-lake/latest/userguide/getting-started.html).
-2. Above mentioned steps will create and provide required details such as IAM roles/AWS role ID, external id and queue url to configure AWS Security Lake Integration.
+2. After creating data lake, follow below steps to create a data subscribers to consume data.
+   - Open the [Security Lake console](https://console.aws.amazon.com/securitylake/).
+   - By using the AWS Region selector in the upper-right corner of the page, select the Region where you want to create the subscriber.
+   - In the navigation pane, choose **Subscribers**.
+   - On the Subscribers page, choose **Create subscriber**.
+   - For **Subscriber details**, enter **Subscriber name** and an optional Description.
+   - For **Log and event sources**, choose which sources the subscriber is authorized to consume.
+   - For **Data access method**, choose **S3** to set up data access for the subscriber.
+   - For **Subscriber credentials**, provide the subscriber's **AWS account ID** and **external ID**.
+   - For **Notification details**, select **SQS queue**.
+   - Choose Create.
+3. Above mentioned steps will create and provide required details such as IAM roles/AWS role ID, external id and queue url to configure AWS Security Lake Integration.
 
 ### Enabling the integration in Elastic:
 
 1. In Kibana go to Management > Integrations.
 2. In "Search for integrations" search bar, type Amazon Security Lake.
+   ![Search](../img/search.png)
 3. Click on the "Amazon Security Lake" integration from the search results.
 4. Click on the Add Amazon Security Lake Integration button to add the integration.
+   ![Home Page](../img/home_page.png)
 5. By default collect logs via S3 Bucket toggle will be off and collect logs for AWS SQS.
 6. While adding the integration, if you want to collect logs via AWS SQS, then you have to put the following details:
    - queue url
+      ![Queue URL](../img/queue_url.png)
    - collect logs via S3 Bucket toggled off
-   - Shared Credential File Path and Credential Profile Name / Access Key Id and Secret Access Key
    - role ARN
    - external id
+      ![Role ARN and External ID](../img/role_arn_and_external_id.png)
 
    or if you want to collect logs via AWS S3, then you have to put the following details:
    - bucket arn
    - collect logs via S3 Bucket toggled on
-   - Shared Credential File Path and Credential Profile Name / Access Key Id and Secret Access Key
-7. If user wants to access security lake by Assuming Role then add Role ARN or if user want to access resources of another account using Role ARN then add Role ARN and external ID.
+   - role ARN
+   - external id
 
-**NOTE**: There are other input combination options available, please check [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html).
+**NOTE**:
+
+   - There are other input combination options available, please check [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html).
+   - Metrics are not part of the Amazon Security Lake integration.
+   - Events are included in the Amazon Security Lake integration.
+   - Service checks are not incorporated into the Amazon Security Lake integration.
+   - To troubleshoot, ensure that the IAM role in your AWS account has the correct permissions.
 
 ## Logs reference
 
