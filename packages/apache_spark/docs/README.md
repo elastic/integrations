@@ -77,20 +77,19 @@ An example event for `application` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-11T09:45:08.887Z",
+    "@timestamp": "2023-09-28T09:24:33.812Z",
     "agent": {
-        "ephemeral_id": "fd3ce7d1-e237-45c7-88f9-875edafec41e",
-        "id": "e7990c69-6909-48d1-be06-89dbe36d302c",
+        "ephemeral_id": "20d060ec-da41-4f14-a187-d020b9fbec7d",
+        "id": "a6bdbb4a-4bac-4243-83cb-dba157f24987",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.1.0"
+        "version": "8.8.0"
     },
     "apache_spark": {
         "application": {
-            "name": "PythonWordCount.1649670292906",
-            "runtime": {
-                "ms": 16007
-            }
+            "cores": 8,
+            "mbean": "metrics:name=application.PythonWordCount.1695893057562.cores,type=gauges",
+            "name": "PythonWordCount.1695893057562"
         }
     },
     "data_stream": {
@@ -102,15 +101,15 @@ An example event for `application` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "e7990c69-6909-48d1-be06-89dbe36d302c",
+        "id": "a6bdbb4a-4bac-4243-83cb-dba157f24987",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.8.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "apache_spark.application",
-        "duration": 21401735,
-        "ingested": "2022-04-11T09:45:12Z",
+        "duration": 23828342,
+        "ingested": "2023-09-28T09:24:37Z",
         "kind": "metric",
         "module": "apache_spark",
         "type": "info"
@@ -119,21 +118,18 @@ An example event for `application` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "ip": [
-            "192.168.0.5"
-        ],
-        "mac": [
-            "02:42:c0:a8:00:05"
-        ],
+        "id": "e8978f2086c14e13b7a0af9ed0011d19",
+        "ip": "172.20.0.7",
+        "mac": "02-42-AC-14-00-07",
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.4.0-107-generic",
+            "kernel": "3.10.0-1160.90.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -152,10 +148,18 @@ An example event for `application` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |
 | apache_spark.application.cores | Number of cores. | long |
+| apache_spark.application.mbean | The name of the jolokia mbean. | keyword |
 | apache_spark.application.name | Name of the application. | keyword |
 | apache_spark.application.runtime.ms | Time taken to run the application (ms). | long |
 | apache_spark.application.status | Current status of the application. | keyword |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |
+| container.id | Unique container id. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -166,6 +170,7 @@ An example event for `application` looks as following:
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | host.ip | Host ip addresses. | ip |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
