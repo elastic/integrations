@@ -207,10 +207,16 @@ processors:
       field: source.ip
       copy_from: cloudflare_logpush.http_request.client.ip
       ignore_failure: true
+  - rename:
+      field: json.BotDetectionIDs
+      target_field: cloudflare_logpush.http_request.bot.detection_ids
+      tag: rename_bot_detections_ids
+      ignore_missing: true
   - convert:
       field: json.BotScore
       target_field: cloudflare_logpush.http_request.bot.score.value
       if: ctx.json?.BotScore != ''
+      tag: convert_bot_score_value
       type: long
       ignore_missing: true
       on_failure:
@@ -220,10 +226,12 @@ processors:
   - rename:
       field: json.BotScoreSrc
       target_field: cloudflare_logpush.http_request.bot.score.src
+      tag: rename_bot_score_src
       ignore_missing: true
   - rename:
       field: json.BotTags
       target_field: cloudflare_logpush.http_request.bot.tag
+      tag: rename_bot_tags
       ignore_missing: true
   - rename:
       field: json.CacheCacheStatus
