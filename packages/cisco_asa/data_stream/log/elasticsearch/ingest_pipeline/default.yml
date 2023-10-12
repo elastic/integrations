@@ -465,6 +465,15 @@ processors:
       - "AAA user authentication Successful(%{SPACE})?: local database(%{SPACE})?: [Uu]ser = %{CISCO_USER:source.user.name}"
       pattern_definitions:
         CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '113015'"
+      field: "message"
+      description: "113015"
+      patterns:
+      - "AAA user authentication Rejected(%{SPACE})?: reason = %{REASON:_temp_.cisco.rejection_reason}(%{SPACE})?: local database(%{SPACE})?: [Uu]ser = %{CISCO_USER:source.user.name}(%{SPACE})?: [Uu]ser IP = %{IP:source.address}"
+      pattern_definitions:
+        REASON: (AAA failure|Account has been disabled|Invalid password|Password is expiring|Password has expired|Password malformed|Unspecified)
+        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
 
   - dissect:
       if: "ctx._temp_.cisco.message_id == '113019'"
