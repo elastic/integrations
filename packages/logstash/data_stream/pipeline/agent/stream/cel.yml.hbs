@@ -1,0 +1,65 @@
+config_version: "2"
+interval: {{period}}
+resource.url: "{{url}}/_node/stats?graph=true&vertices=true"
+{{#if resource_ssl}}
+resource.ssl:
+  {{resource_ssl}}
+{{/if}}
+
+{{#if username}}
+auth.basic.user: {{escape_string username}}
+{{/if}}
+{{#if password}}
+auth.basic.password: {{escape_string password}}
+{{/if}}
+
+redact:
+  fields: ~
+
+
+program: |
+  get(state.url)
+  .as(resp, bytes(resp.Body)
+  .decode_json().as(body,
+    body.pipelines.map(pipeline_name, pipeline_name != ".monitoring-logstash", {"name":pipeline_name}
+      .with({
+        "elasticsearch.cluster.id":((body.pipelines[pipeline_name].vertices).as(vertices, vertices.map(each, has(each.cluster_uuid), each.cluster_uuid))),
+        "host":{
+          "name":body.name,
+          "address":body.http_address,
+        },
+        "total":{
+          "flow":body.pipelines[pipeline_name].flow,
+          "time":{
+            "queue_push_duration":{
+              "ms":body.pipelines[pipeline_name].events.queue_push_duration_in_millis,
+            },
+            "duration":{
+              "ms":body.pipelines[pipeline_name].events.duration_in_millis,
+            },
+          },
+          "reloads":{
+            "successes":body.pipelines[pipeline_name].reloads.successes,
+            "failures":body.pipelines[pipeline_name].reloads.failures
+          },
+          "events":{
+            "out":body.pipelines[pipeline_name].events.out,
+            "in":body.pipelines[pipeline_name].events["in"],
+            "filtered":body.pipelines[pipeline_name].events.filtered,
+          },
+          "queues":{
+            "type":body.pipelines[pipeline_name].queue.type,
+            "events":body.pipelines[pipeline_name].queue.events_count,
+            "current_size":{
+              "bytes":body.pipelines[pipeline_name].queue.queue_size_in_bytes,
+            },
+            "max_size":{
+              "bytes":body.pipelines[pipeline_name].queue.max_queue_size_in_bytes,
+            }
+          }
+        }
+      })
+    )
+    ))
+    .as(pipelines, {
+      "events":pipelines.map(pipeline, {"logstash":{"pipeline":pipeline}})})

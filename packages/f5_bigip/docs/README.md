@@ -161,12 +161,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2018-11-19T22:34:40.000Z",
     "agent": {
-        "ephemeral_id": "e53fc33d-3e0e-4f88-a338-d65c29e5d7de",
-        "hostname": "docker-fleet-agent",
-        "id": "121c9eba-d12d-4405-9bf4-83bc92e8c764",
+        "ephemeral_id": "b2702795-ff0f-4411-b118-3905167e6def",
+        "id": "28857421-72df-47d1-a881-abece3f8bd81",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.10.2"
     },
     "client": {
         "ip": "81.2.69.142"
@@ -184,9 +183,9 @@ An example event for `log` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "121c9eba-d12d-4405-9bf4-83bc92e8c764",
+        "id": "28857421-72df-47d1-a881-abece3f8bd81",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.10.2"
     },
     "event": {
         "agent_id_status": "verified",
@@ -194,9 +193,9 @@ An example event for `log` looks as following:
             "network"
         ],
         "dataset": "f5_bigip.log",
-        "ingested": "2022-10-21T06:12:02Z",
+        "ingested": "2023-10-03T09:46:22Z",
         "kind": "event",
-        "original": "{\"application\":\"app.app\",\"attack_type\":\"Detection Evasion\",\"blocking_exception_reason\":\"test\",\"captcha_result\":\"not_received\",\"date_time\":\"2018-11-19 22:34:40\",\"dest_ip\":\"81.2.69.142\",\"dest_port\":\"80\",\"device_id\":\"12bdca32\",\"fragment\":\"test_Fragment\",\"geo_location\":\"US\",\"hostname\":\"hostname\",\"http_class_name\":\"/Common/abc/test\",\"ip_address_intelligence\":\"host1\",\"ip_client\":\"81.2.69.142\",\"management_ip_address\":\"81.2.69.142\",\"management_ip_address_2\":\"81.2.69.144\",\"method\":\"GET\",\"policy_apply_date\":\"2018-11-19 22:17:57\",\"policy_name\":\"/Common/abc\",\"protocol\":\"HTTP\",\"query_string\":\"name=abc\",\"request\":\"GET /admin/.\",\"request_status\":\"blocked\",\"response_code\":\"0\",\"route_domain\":\"example.com\",\"session_id\":\"abc123abcd\",\"severity\":\"Critical\",\"sig_ids\":\"abc12bcd\",\"sig_names\":\"Sig_Name\",\"src_port\":\"49804\",\"staged_sig_ids\":\"abc23121bc\",\"staged_sig_names\":\"test_name\",\"staged_threat_campaign_names\":\"test\",\"sub_violations\":\"Evasion technique detected:Directory traversals\",\"support_id\":\"123456789\",\"telemetryEventCategory\":\"ASM\",\"tenant\":\"Common\",\"threat_campaign_names\":\"threat\",\"uri\":\"/directory/file\",\"username\":\"test User\",\"violation_rating\":\"3\",\"violations\":\"Evasion technique detected\",\"virus_name\":\"test Virus\",\"web_application_name\":\"/Common/abc\",\"websocket_direction\":\"test\",\"websocket_message_type\":\"test\",\"x_forwarded_for_header_value\":\"81.2.69.144\"}",
+        "original": "{\"hostname\":\"hostname\",\"management_ip_address\":\"81.2.69.142\",\"management_ip_address_2\":\"81.2.69.144\",\"http_class_name\":\"/Common/abc/test\",\"web_application_name\":\"/Common/abc\",\"policy_name\":\"/Common/abc\",\"policy_apply_date\":\"2018-11-19 22:17:57\",\"violations\":\"Evasion technique detected\",\"support_id\":\"123456789\",\"request_status\":\"blocked\",\"response_code\":\"0\",\"ip_client\":\"81.2.69.142\",\"route_domain\":\"example.com\",\"method\":\"GET\",\"protocol\":\"HTTP\",\"query_string\":\"name=abc\",\"x_forwarded_for_header_value\":\"81.2.69.144\",\"sig_ids\":\"abc12bcd\",\"sig_names\":\"Sig_Name\",\"date_time\":\"2018-11-19 22:34:40\",\"severity\":\"Critical\",\"attack_type\":\"Detection Evasion\",\"geo_location\":\"US\",\"ip_address_intelligence\":\"host1\",\"username\":\"test User\",\"session_id\":\"abc123abcd\",\"src_port\":\"49804\",\"dest_port\":\"80\",\"dest_ip\":\"81.2.69.142\",\"sub_violations\":\"Evasion technique detected:Directory traversals\",\"virus_name\":\"test Virus\",\"violation_rating\":\"3\",\"websocket_direction\":\"test\",\"websocket_message_type\":\"test\",\"device_id\":\"12bdca32\",\"staged_sig_ids\":\"abc23121bc\",\"staged_sig_names\":\"test_name\",\"threat_campaign_names\":\"threat\",\"staged_threat_campaign_names\":\"test\",\"blocking_exception_reason\":\"test\",\"captcha_result\":\"not_received\",\"uri\":\"/directory/file\",\"fragment\":\"test_Fragment\",\"request\":\"GET /admin/.\",\"tenant\":\"Common\",\"application\":\"app.app\",\"telemetryEventCategory\":\"ASM\"}",
         "type": [
             "info"
         ]
@@ -311,10 +310,16 @@ An example event for `log` looks as following:
         }
     },
     "input": {
-        "type": "http_endpoint"
+        "type": "filestream"
     },
     "log": {
-        "level": "critical"
+        "file": {
+            "device_id": 2080,
+            "inode": 89387,
+            "path": "/tmp/service_logs/log.log"
+        },
+        "level": "critical",
+        "offset": 1876
     },
     "network": {
         "application": "app.app",
@@ -702,7 +707,13 @@ An example event for `log` looks as following:
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
 | input.type | Input type | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Log offset | long |
 | log.syslog.severity.code | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different numeric severity value (e.g. firewall, IDS), your source's numeric severity should go to `event.severity`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `event.severity`. | long |
