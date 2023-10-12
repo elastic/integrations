@@ -33,9 +33,12 @@ processors:
           ctx.apache_spark.executors.application_name = app_name;
           ctx.apache_spark.executors.id = executor_id;
         }
+  - rename:
+      field: apache_spark.mbean
+      target_field: apache_spark.driver.mbean
+      ignore_missing: true
   - remove:
-      field: 
-        - apache_spark.mbean
+      field:
         - jolokia
       ignore_failure: true
 on_failure:
