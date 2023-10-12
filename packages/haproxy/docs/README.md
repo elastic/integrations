@@ -14,6 +14,10 @@ The integration supports the default log patterns below:
 
 The `info` and `stat` datasets were tested with tested with HAProxy versions from 1.6, 1.7, 1.8 to 2.0. 
 
+## Troubleshooting
+
+If `source.address` is shown conflicted under ``metrics-*`` data view, then this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the `stat` data stream indices.
+
 ## Logs
 
 ### log
@@ -302,6 +306,7 @@ An example event for `log` looks as following:
 | url.username | Username of the request. | keyword |
 
 
+
 ## Metrics
 
 ### info
@@ -431,6 +436,7 @@ The fields reported are:
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
+| agent.id |  | keyword |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
@@ -731,7 +737,7 @@ The fields reported are:
 | haproxy.stat.session.rate.max | Maximum number of new sessions per second. | integer | gauge |
 | haproxy.stat.session.rate.value | Number of sessions per second over the last elapsed second. | integer | gauge |
 | haproxy.stat.session.total | Number of all sessions. | long | counter |
-| haproxy.stat.source.address | Address of the source. | text |  |
+| haproxy.stat.source.address | Address of the source. | keyword |  |
 | haproxy.stat.status | Status (UP, DOWN, NOLB, MAINT, or MAINT(via)...). | keyword |  |
 | haproxy.stat.throttle.pct | Current throttle percentage for the server when slowstart is active, or no value if slowstart is inactive. | scaled_float | gauge |
 | haproxy.stat.tracked.id | ID of the proxy/server if tracking is enabled. | long |  |

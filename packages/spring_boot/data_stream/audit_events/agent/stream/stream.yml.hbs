@@ -1,5 +1,8 @@
 config_version: 2
 interval: {{period}}
+{{#if enable_request_tracer}}
+request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+{{/if}}
 request.method: GET
 request.url: {{hostname}}/actuator/auditevents
 {{#if proxy_url }} 
@@ -14,7 +17,7 @@ tags:
 {{#if preserve_original_event}}
   - preserve_original_event
 {{/if}}
-{{#each tags as |tag i|}}
+{{#each tags as |tag|}}
   - {{tag}}
 {{/each}}
 {{#contains "forwarded" tags}}

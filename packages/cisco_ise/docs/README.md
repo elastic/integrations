@@ -37,11 +37,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2020-02-21T19:13:08.328Z",
     "agent": {
-        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
-        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "ephemeral_id": "1c70d737-7545-456d-8fb9-7033dca67ed3",
+        "id": "901f4c48-583a-4848-aa7b-89dc8e9c4b76",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.10.2"
     },
     "cisco_ise": {
         "log": {
@@ -65,7 +65,7 @@ An example event for `log` looks as following:
             "category": {
                 "name": "CISE_TACACS_Accounting"
             },
-            "cmdset": "[ CmdAV=show mac-address-table \u003ccr\u003e ]",
+            "cmdset": "[ CmdAV=show mac-address-table <cr> ]",
             "config_version": {
                 "id": 1829
             },
@@ -158,12 +158,12 @@ An example event for `log` looks as following:
         "ip": "81.2.69.144"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "901f4c48-583a-4848-aa7b-89dc8e9c4b76",
+        "snapshot": false,
+        "version": "8.10.2"
     },
     "event": {
         "action": "tacacs-accounting",
@@ -172,8 +172,9 @@ An example event for `log` looks as following:
             "configuration"
         ],
         "dataset": "cisco_ise.log",
-        "ingested": "2023-01-13T12:14:37Z",
+        "ingested": "2023-10-03T09:31:56Z",
         "kind": "event",
+        "original": "<182>Feb 21 19:13:08 cisco-ise-host CISE_TACACS_Accounting 0000000001 4 0 2020-02-21 19:13:08.328 +00:00 0018415781 3300 NOTICE Tacacs-Accounting: TACACS+ Accounting with Command, ConfigVersionId=1829, Device IP Address=81.2.69.144, CmdSet=[ CmdAV=show mac-address-table <cr> ], RequestLatency=1, NetworkDeviceName=wlnwan1, Type=Accounting, Privilege-Level=15, Service=Login, User=psxvne, Port=tty10, Remote-Address=81.2.69.144, Authen-Method=TacacsPlus, AVPair=task_id=2962, AVPair=timezone=GMT, AVPair=start_time=1585185432, AVPair=priv-lvl=15, AcctRequest-Flags=Stop, Service-Argument=shell, AcsSessionID=ldnnacpsn1/359344348/952729, SelectedAccessService=Device Admin - TACACS, Step=13006, Step=15049, Step=15008, Step=15048, Step=13035, NetworkDeviceGroups=Location#All Locations#EMEA, NetworkDeviceGroups=Device Type#All Device Types#Routers, NetworkDeviceGroups=IPSEC#Is IPSEC Device, CPMSessionID=81.2.69.144Accounting306034364, Model Name=Unknown, Software Version=Unknown, Network Device Profile=Cisco, Location=Location#All Locations#EMEA, Device Type=Device Type#All Device Types#Routers, IPSEC=IPSEC#Is IPSEC Device, Response={AcctReply-Status=Success; }, Network Device Profile=Cisco, Location=Location#All Locations#EMEA, Device Type=Device Type#All Device Types#Routers, IPSEC=IPSEC#Is IPSEC Device, Response={AcctReply-Status=Success; }",
         "sequence": 18415781,
         "timezone": "+00:00",
         "type": [
@@ -184,13 +185,16 @@ An example event for `log` looks as following:
         "hostname": "cisco-ise-host"
     },
     "input": {
-        "type": "udp"
+        "type": "filestream"
     },
     "log": {
-        "level": "notice",
-        "source": {
-            "address": "172.27.0.4:59237"
+        "file": {
+            "device_id": 2080,
+            "inode": 88860,
+            "path": "/tmp/service_logs/log.log"
         },
+        "level": "notice",
+        "offset": 71596,
         "syslog": {
             "priority": 182,
             "severity": {
@@ -198,7 +202,7 @@ An example event for `log` looks as following:
             }
         }
     },
-    "message": "2020-02-21 19:13:08.328 +00:00 0018415781 3300 NOTICE Tacacs-Accounting: TACACS+ Accounting with Command, ConfigVersionId=1829, Device IP Address=81.2.69.144, CmdSet=[ CmdAV=show mac-address-table \u003ccr\u003e ], RequestLatency=1, NetworkDeviceName=wlnwan1, Type=Accounting, Privilege-Level=15, Service=Login, User=psxvne, Port=tty10, Remote-Address=81.2.69.144, Authen-Method=TacacsPlus, AVPair=task_id=2962, AVPair=timezone=GMT, AVPair=start_time=1585185432, AVPair=priv-lvl=15, AcctRequest-Flags=Stop, Service-Argument=shell, AcsSessionID=ldnnacpsn1/359344348/952729, SelectedAccessService=Device Admin - TACACS, Step=13006, Step=15049, Step=15008, Step=15048, Step=13035, NetworkDeviceGroups=Location#All Locations#EMEA, NetworkDeviceGroups=Device Type#All Device Types#Routers, NetworkDeviceGroups=IPSEC#Is IPSEC Device, CPMSessionID=81.2.69.144Accounting306034364, Model Name=Unknown, Software Version=Unknown, Network Device Profile=Cisco, Location=Location#All Locations#EMEA, Device Type=Device Type#All Device Types#Routers, IPSEC=IPSEC#Is IPSEC Device, Response={AcctReply-Status=Success; }, Network Device Profile=Cisco, Location=Location#All Locations#EMEA, Device Type=Device Type#All Device Types#Routers, IPSEC=IPSEC#Is IPSEC Device, Response={AcctReply-Status=Success; }",
+    "message": "2020-02-21 19:13:08.328 +00:00 0018415781 3300 NOTICE Tacacs-Accounting: TACACS+ Accounting with Command, ConfigVersionId=1829, Device IP Address=81.2.69.144, CmdSet=[ CmdAV=show mac-address-table <cr> ], RequestLatency=1, NetworkDeviceName=wlnwan1, Type=Accounting, Privilege-Level=15, Service=Login, User=psxvne, Port=tty10, Remote-Address=81.2.69.144, Authen-Method=TacacsPlus, AVPair=task_id=2962, AVPair=timezone=GMT, AVPair=start_time=1585185432, AVPair=priv-lvl=15, AcctRequest-Flags=Stop, Service-Argument=shell, AcsSessionID=ldnnacpsn1/359344348/952729, SelectedAccessService=Device Admin - TACACS, Step=13006, Step=15049, Step=15008, Step=15048, Step=13035, NetworkDeviceGroups=Location#All Locations#EMEA, NetworkDeviceGroups=Device Type#All Device Types#Routers, NetworkDeviceGroups=IPSEC#Is IPSEC Device, CPMSessionID=81.2.69.144Accounting306034364, Model Name=Unknown, Software Version=Unknown, Network Device Profile=Cisco, Location=Location#All Locations#EMEA, Device Type=Device Type#All Device Types#Routers, IPSEC=IPSEC#Is IPSEC Device, Response={AcctReply-Status=Success; }, Network Device Profile=Cisco, Location=Location#All Locations#EMEA, Device Type=Device Type#All Device Types#Routers, IPSEC=IPSEC#Is IPSEC Device, Response={AcctReply-Status=Success; }",
     "related": {
         "hosts": [
             "cisco-ise-host"
@@ -211,6 +215,7 @@ An example event for `log` looks as following:
         ]
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "cisco_ise-log"
     ],
@@ -491,6 +496,7 @@ An example event for `log` looks as following:
 | destination.user.name.text | Multi-field of `destination.user.name`. | match_only_text |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
 | event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
@@ -527,6 +533,13 @@ An example event for `log` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
 | log.offset | Log offset | long |
