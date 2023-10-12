@@ -13,4 +13,12 @@ Since we want to retain only valuable information and avoid duplicated data, the
 ### How it works
 This is possible thanks to a transform rule installed along with the integration. The transform rule parses the data_stream content that is pulled from Maltiverse and only adds new indicators.
 
-Both, the data_stream and the _latest index have applied expiration through ILM and a retention policy in the transform respectively.
+Both, the data_stream and the _latest index have applied expiration through ILM and a retention policy in the transform respectively._
+
+## Logs
+
+### Indicator
+
+{{fields "indicator"}}
+
+{{event "indicator"}}
