@@ -14,6 +14,10 @@ The integration supports the default log patterns below:
 
 The `info` and `stat` datasets were tested with tested with HAProxy versions from 1.6, 1.7, 1.8 to 2.0. 
 
+## Troubleshooting
+
+If `source.address` is shown conflicted under ``metrics-*`` data view, then this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the `stat` data stream indices.
+
 ## Logs
 
 ### log
@@ -23,6 +27,7 @@ The `log` dataset collects the HAProxy application logs.
 {{event "log"}}
 
 {{fields "log"}}
+
 
 ## Metrics
 

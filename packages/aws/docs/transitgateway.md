@@ -156,7 +156,7 @@ An example event for `transitgateway` looks as following:
 | aws.dimensions.TransitGateway | Filters the metric data by transit gateway. | keyword |  |
 | aws.dimensions.TransitGatewayAttachment | Filters the metric data by transit gateway attachment. | keyword |  |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |
-| aws.tags.\* | Tag key value pairs from aws resources. | object |  |
+| aws.tags | Tag key value pairs from aws resources. | flattened |  |
 | aws.transitgateway.metrics.BytesDropCountBlackhole.sum | The number of bytes dropped because they matched a blackhole route. | long | gauge |
 | aws.transitgateway.metrics.BytesDropCountNoRoute.sum | The number of bytes dropped because they did not match a route. | long | gauge |
 | aws.transitgateway.metrics.BytesIn.sum | The number of bytes received by the transit gateway. | long | gauge |

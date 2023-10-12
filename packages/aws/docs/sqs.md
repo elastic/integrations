@@ -139,7 +139,7 @@ An example event for `sqs` looks as following:
 | aws.sqs.oldest_message_age.sec | The approximate age of the oldest non-deleted message in the queue. | long | gauge |
 | aws.sqs.queue.name | SQS queue name | keyword |  |
 | aws.sqs.sent_message_size.bytes | The size of messages added to a queue. | long | gauge |
-| aws.tags.\* | Tag key value pairs from aws resources. | object |  |
+| aws.tags | Tag key value pairs from aws resources. | flattened |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |
