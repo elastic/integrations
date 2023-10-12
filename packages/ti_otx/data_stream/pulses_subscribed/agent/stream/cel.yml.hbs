@@ -1,0 +1,100 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  api_key: {{api_key}}
+  want_more: false
+redact:
+  fields:
+    - api_key
+program: |
+  request("GET", (
+    !state.want_more
+    ?
+      state.url + "?modified_since=" + (
+      (has(state.modified_since) &&  state.modified_since != "")
+      ?
+        state.modified_since
+      :
+        (now() - duration("{{first_interval}}")).format(time_layout.RFC3339)
+      )
+    :
+      state.url
+  )).with({
+    "Header":{
+      "Content-Type": ["application/json"],
+      "X-OTX-API-KEY": [state.api_key],
+    }
+  }).do_request().as(resp, bytes(resp.Body).decode_json().as(body, 
+    has(body.results) && body.results.size() > 0
+    ?
+      (body.results.map(pulse,
+        pulse.indicators.map(ind, 
+          ind.with({
+            "count": body.count, 
+            "prefetch_pulse_ids": body.prefetch_pulse_ids, 
+            "t": body.t, 
+            "t2": body.t2, 
+            "t3": body.t3,
+            "pulse_raw": [pulse].drop("indicators")[0].encode_json()
+          }))).flatten().drop_empty().as(res, 
+            {
+              "events": res.map(e, {
+                "message": e.encode_json(),
+              }),
+              "url": (
+                has(body.next) && body.next != null && body.next != ""
+                ?
+                  body.next
+                :
+                  state.url.parse_url().as(parsed_url, parsed_url.Scheme + "://" + parsed_url.Host + parsed_url.Path)
+              ),
+              "want_more": has(body.next) && body.next != null && body.next != "",
+              "api_key": state.api_key,
+              "modified_since": (now() - duration("{{lookback_range}}")).format(time_layout.RFC3339)
+            })
+      )
+    :
+      ({
+        "events": [],
+        "url": state.url.parse_url().as(parsed_url, parsed_url.Scheme + "://" + parsed_url.Host + parsed_url.Path),
+        "want_more": false,
+        "api_key": state.api_key,
+        "modified_since": (now() - duration("{{lookback_range}}")).format(time_layout.RFC3339)
+      })
+    ))
+{{#if ioc_expiration_duration}}
+fields_under_root: true
+fields:
+  _conf:
+    ioc_expiration_duration: "{{ioc_expiration_duration}}"
+{{/if}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
