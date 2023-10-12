@@ -203,6 +203,17 @@ processors:
       field: json.type
       target_field: infoblox_bloxone_ddi.dhcp_lease.type
       ignore_missing: true
+  - json:
+      field: infoblox_bloxone_ddi.dhcp_lease.options
+      target_field: infoblox_bloxone_ddi.dhcp_lease.options
+      if: ctx.infoblox_bloxone_ddi?.dhcp_lease?.options instanceof String
+      on_failure:
+      - remove:
+          field: infoblox_bloxone_ddi.dhcp_lease.options
+          ignore_failure: true
+      - append:
+          field: error.message
+          value: '{{{_ingest.on_failure_message}}}'
   - remove:
       field: json
       ignore_missing: true
