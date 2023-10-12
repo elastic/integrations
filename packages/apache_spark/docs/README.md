@@ -112,7 +112,9 @@ An example event for `application` looks as following:
         "ingested": "2023-09-28T09:24:37Z",
         "kind": "metric",
         "module": "apache_spark",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "host": {
         "architecture": "x86_64",
@@ -223,7 +225,9 @@ An example event for `driver` looks as following:
         "ingested": "2023-09-29T12:04:41Z",
         "kind": "metric",
         "module": "apache_spark",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "host": {
         "architecture": "x86_64",
@@ -401,7 +405,9 @@ An example event for `executor` looks as following:
         "ingested": "2022-04-11T08:29:59Z",
         "kind": "metric",
         "module": "apache_spark",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "host": {
         "architecture": "x86_64",
@@ -574,7 +580,9 @@ An example event for `node` looks as following:
         "ingested": "2022-04-12T04:42:53Z",
         "kind": "metric",
         "module": "apache_spark",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "host": {
         "architecture": "x86_64",
