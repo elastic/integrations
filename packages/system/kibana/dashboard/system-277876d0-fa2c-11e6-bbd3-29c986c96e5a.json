@@ -1,25 +1,50 @@
 {
     "attributes": {
         "description": "Sudo commands dashboard from the Logs System integration",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
-                "highlightAll": true,
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "system.auth"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "system.auth"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
-                },
-                "version": true
+                }
             }
         },
         "optionsJSON": {
-            "darkTheme": false
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
         },
         "panelsJSON": [
             {
                 "embeddableConfig": {
                     "enhancements": {},
+                    "hidePanelTitles": false,
                     "savedVis": {
                         "data": {
                             "aggs": [],
@@ -33,8 +58,7 @@
                         "title": "Dashboards [Logs System]",
                         "type": "markdown",
                         "uiState": {}
-                    },
-                    "type": "visualization"
+                    }
                 },
                 "gridData": {
                     "h": 4,
@@ -44,91 +68,147 @@
                     "y": 0
                 },
                 "panelIndex": "4",
+                "title": "Dashboards",
                 "type": "visualization",
-                "version": "8.6.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {},
-                                    "schema": "metric",
-                                    "type": "count"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "field": "system.auth.sudo.command",
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 5
-                                    },
-                                    "schema": "bucket",
-                                    "type": "terms"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "3",
-                                    "params": {
-                                        "field": "user.name",
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 5
-                                    },
-                                    "schema": "bucket",
-                                    "type": "terms"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": []
-                            }
-                        },
+                    "attributes": {
                         "description": "",
-                        "params": {
-                            "autoFitRowToContent": false,
-                            "filter": {
-                                "language": "kuery",
-                                "query": "data_stream.dataset : \"system.auth\""
-                            },
-                            "perPage": 10,
-                            "percentageCol": "",
-                            "showMetricsAtAllLevels": false,
-                            "showPartialRows": false,
-                            "showToolbar": true,
-                            "showTotal": false,
-                            "sort": {
-                                "columnIndex": null,
-                                "direction": null
-                            },
-                            "totalFunc": "sum"
-                        },
-                        "type": "table",
-                        "uiState": {
-                            "vis": {
-                                "params": {
-                                    "sort": {
-                                        "columnIndex": null,
-                                        "direction": null
-                                    }
-                                }
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-146227b6-7fd1-41c7-a851-e5a243641dec",
+                                "type": "index-pattern"
                             }
-                        }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "146227b6-7fd1-41c7-a851-e5a243641dec": {
+                                            "columnOrder": [
+                                                "753a4606-5875-46fe-af85-aca691b47b88",
+                                                "88193874-02ad-4ecc-8049-2c0844ccde7f",
+                                                "3ca357c2-537e-4d5a-8e88-567a6a15f436"
+                                            ],
+                                            "columns": {
+                                                "3ca357c2-537e-4d5a-8e88-567a6a15f436": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "753a4606-5875-46fe-af85-aca691b47b88": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "system.auth.sudo.command: Descending",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "3ca357c2-537e-4d5a-8e88-567a6a15f436",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "system.auth.sudo.command"
+                                                },
+                                                "88193874-02ad-4ecc-8049-2c0844ccde7f": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "user.name: Descending",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "3ca357c2-537e-4d5a-8e88-567a6a15f436",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "user.name"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "3ca357c2-537e-4d5a-8e88-567a6a15f436"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "753a4606-5875-46fe-af85-aca691b47b88"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "88193874-02ad-4ecc-8049-2c0844ccde7f"
+                                    }
+                                ],
+                                "headerRowHeight": "single",
+                                "layerId": "146227b6-7fd1-41c7-a851-e5a243641dec",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
+                                "rowHeight": "single"
+                            }
+                        },
+                        "title": "Top sudo commands [Logs System] (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
                     },
-                    "type": "visualization"
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 16,
@@ -138,161 +218,204 @@
                     "y": 4
                 },
                 "panelIndex": "9176826e-b47b-405c-9fed-7928177e627b",
-                "title": "Top sudo commands [Logs System]",
-                "type": "visualization",
-                "version": "8.6.0"
+                "title": "Top sudo commands",
+                "type": "lens",
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {},
-                                    "schema": "metric",
-                                    "type": "count"
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-3d3f0685-8d51-43ae-bf6e-5d98e99df7de",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "de31f22f-8003-4921-a8a5-234491c70105",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "3d3f0685-8d51-43ae-bf6e-5d98e99df7de": {
+                                            "columnOrder": [
+                                                "e41fac2c-a7ff-4b8e-ab33-f78d1f5a4cd8",
+                                                "8e2360a3-0284-4044-97f5-b4cce23ffe8f",
+                                                "1dba4d1a-355a-41dd-84b6-83123b524a3d"
+                                            ],
+                                            "columns": {
+                                                "1dba4d1a-355a-41dd-84b6-83123b524a3d": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "8e2360a3-0284-4044-97f5-b4cce23ffe8f": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "user.name: Descending",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "1dba4d1a-355a-41dd-84b6-83123b524a3d",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "user.name"
+                                                },
+                                                "e41fac2c-a7ff-4b8e-ab33-f78d1f5a4cd8": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {}
+                                        }
+                                    }
                                 },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "drop_partials": false,
-                                        "extended_bounds": {},
-                                        "field": "@timestamp",
-                                        "interval": "auto",
-                                        "min_doc_count": 1,
-                                        "scaleMetricValues": false,
-                                        "timeRange": {
-                                            "from": "now-15m",
-                                            "to": "now"
-                                        },
-                                        "useNormalizedEsInterval": true,
-                                        "used_interval": "30s"
-                                    },
-                                    "schema": "segment",
-                                    "type": "date_histogram"
+                                "indexpattern": {
+                                    "layers": {}
                                 },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
                                 {
-                                    "enabled": true,
-                                    "id": "3",
-                                    "params": {
-                                        "field": "user.name",
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 5
+                                    "$state": {
+                                        "store": "appState"
                                     },
-                                    "schema": "group",
-                                    "type": "terms"
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "system.auth.sudo.command",
+                                        "index": "de31f22f-8003-4921-a8a5-234491c70105",
+                                        "key": "system.auth.sudo.command",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "system.auth.sudo.command"
+                                        }
+                                    }
                                 }
                             ],
-                            "searchSource": {
-                                "filter": []
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": -90
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "1dba4d1a-355a-41dd-84b6-83123b524a3d"
+                                        ],
+                                        "isHistogram": true,
+                                        "layerId": "3d3f0685-8d51-43ae-bf6e-5d98e99df7de",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "bar_stacked",
+                                        "simpleView": false,
+                                        "splitAccessor": "8e2360a3-0284-4044-97f5-b4cce23ffe8f",
+                                        "xAccessor": "e41fac2c-a7ff-4b8e-ab33-f78d1f5a4cd8",
+                                        "xScaleType": "time",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "1dba4d1a-355a-41dd-84b6-83123b524a3d"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": false,
+                                "yLeftExtent": {
+                                    "enforce": true,
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightScale": "linear",
+                                "yTitle": ""
                             }
                         },
-                        "description": "",
-                        "params": {
-                            "addLegend": true,
-                            "addTimeMarker": false,
-                            "addTooltip": true,
-                            "categoryAxes": [
-                                {
-                                    "id": "CategoryAxis-1",
-                                    "labels": {
-                                        "filter": true,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "position": "bottom",
-                                    "scale": {
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {},
-                                    "type": "category"
-                                }
-                            ],
-                            "defaultYExtents": false,
-                            "detailedTooltip": true,
-                            "grid": {
-                                "categoryLines": false
-                            },
-                            "labels": {
-                                "show": false
-                            },
-                            "legendPosition": "right",
-                            "legendSize": "auto",
-                            "maxLegendLines": 1,
-                            "mode": "stacked",
-                            "palette": {
-                                "name": "default",
-                                "type": "palette"
-                            },
-                            "radiusRatio": 0,
-                            "scale": "linear",
-                            "seriesParams": [
-                                {
-                                    "circlesRadius": 1,
-                                    "data": {
-                                        "id": "1",
-                                        "label": "Count"
-                                    },
-                                    "drawLinesBetweenPoints": true,
-                                    "interpolate": "linear",
-                                    "lineWidth": 2,
-                                    "mode": "stacked",
-                                    "show": true,
-                                    "showCircles": true,
-                                    "type": "histogram",
-                                    "valueAxis": "ValueAxis-1"
-                                }
-                            ],
-                            "setYExtents": false,
-                            "thresholdLine": {
-                                "color": "#E7664C",
-                                "show": false,
-                                "style": "full",
-                                "value": 10,
-                                "width": 1
-                            },
-                            "times": [],
-                            "truncateLegend": true,
-                            "type": "histogram",
-                            "valueAxes": [
-                                {
-                                    "id": "ValueAxis-1",
-                                    "labels": {
-                                        "filter": true,
-                                        "rotate": 0,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "name": "LeftAxis-1",
-                                    "position": "left",
-                                    "scale": {
-                                        "mode": "normal",
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {
-                                        "text": ""
-                                    },
-                                    "type": "value"
-                                }
-                            ]
-                        },
-                        "type": "histogram",
-                        "uiState": {}
+                        "title": "Sudo commands by user [Logs System] (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
                     },
-                    "type": "visualization"
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 16,
@@ -302,167 +425,204 @@
                     "y": 20
                 },
                 "panelIndex": "f3e4b05c-4eab-4e12-98ac-5e5a7ae4fac7",
-                "title": "Sudo commands by user [Logs System]",
-                "type": "visualization",
-                "version": "8.6.0"
+                "title": "Sudo commands by user",
+                "type": "lens",
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {},
-                                    "schema": "metric",
-                                    "type": "count"
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-a1f46854-af46-4387-b7c5-0b674ab5b1e3",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "5f8ad652-efdd-4a71-a6c7-b14538243381",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "a1f46854-af46-4387-b7c5-0b674ab5b1e3": {
+                                            "columnOrder": [
+                                                "22917083-d646-474a-a41f-37981d5e3b14",
+                                                "8493afaa-5055-4cb7-aa3b-ae4d00966bc5",
+                                                "611257c0-ee9d-48bb-bca9-c158782c6445"
+                                            ],
+                                            "columns": {
+                                                "22917083-d646-474a-a41f-37981d5e3b14": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "611257c0-ee9d-48bb-bca9-c158782c6445": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "8493afaa-5055-4cb7-aa3b-ae4d00966bc5": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "system.auth.sudo.error: Descending",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "611257c0-ee9d-48bb-bca9-c158782c6445",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "system.auth.sudo.error"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {}
+                                        }
+                                    }
                                 },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
                                 {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "drop_partials": false,
-                                        "extended_bounds": {},
-                                        "field": "@timestamp",
-                                        "interval": "auto",
-                                        "min_doc_count": 1,
-                                        "scaleMetricValues": false,
-                                        "timeRange": {
-                                            "from": "now-15m",
-                                            "to": "now"
-                                        },
-                                        "useNormalizedEsInterval": true,
-                                        "used_interval": "30s"
+                                    "$state": {
+                                        "store": "appState"
                                     },
-                                    "schema": "segment",
-                                    "type": "date_histogram"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "3",
-                                    "params": {
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
                                         "field": "system.auth.sudo.error",
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 5
+                                        "index": "5f8ad652-efdd-4a71-a6c7-b14538243381",
+                                        "key": "system.auth.sudo.error",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
                                     },
-                                    "schema": "group",
-                                    "type": "terms"
+                                    "query": {
+                                        "exists": {
+                                            "field": "system.auth.sudo.error"
+                                        }
+                                    }
                                 }
                             ],
-                            "searchSource": {
-                                "filter": [],
-                                "highlightAll": true,
-                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
-                                "query": {
-                                    "language": "kuery",
-                                    "query": "system.auth.sudo.error:*"
-                                }
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "system.auth.sudo.error:*"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": -90
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "611257c0-ee9d-48bb-bca9-c158782c6445"
+                                        ],
+                                        "isHistogram": true,
+                                        "layerId": "a1f46854-af46-4387-b7c5-0b674ab5b1e3",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "bar_stacked",
+                                        "simpleView": false,
+                                        "splitAccessor": "8493afaa-5055-4cb7-aa3b-ae4d00966bc5",
+                                        "xAccessor": "22917083-d646-474a-a41f-37981d5e3b14",
+                                        "xScaleType": "time",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "611257c0-ee9d-48bb-bca9-c158782c6445"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": false,
+                                "yLeftExtent": {
+                                    "enforce": true,
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightScale": "linear",
+                                "yTitle": ""
                             }
                         },
-                        "description": "",
-                        "params": {
-                            "addLegend": true,
-                            "addTimeMarker": false,
-                            "addTooltip": true,
-                            "categoryAxes": [
-                                {
-                                    "id": "CategoryAxis-1",
-                                    "labels": {
-                                        "filter": true,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "position": "bottom",
-                                    "scale": {
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {},
-                                    "type": "category"
-                                }
-                            ],
-                            "defaultYExtents": false,
-                            "detailedTooltip": true,
-                            "grid": {
-                                "categoryLines": false
-                            },
-                            "labels": {
-                                "show": false
-                            },
-                            "legendPosition": "right",
-                            "legendSize": "auto",
-                            "maxLegendLines": 1,
-                            "mode": "stacked",
-                            "palette": {
-                                "name": "default",
-                                "type": "palette"
-                            },
-                            "radiusRatio": 0,
-                            "scale": "linear",
-                            "seriesParams": [
-                                {
-                                    "circlesRadius": 1,
-                                    "data": {
-                                        "id": "1",
-                                        "label": "Count"
-                                    },
-                                    "drawLinesBetweenPoints": true,
-                                    "interpolate": "linear",
-                                    "lineWidth": 2,
-                                    "mode": "stacked",
-                                    "show": true,
-                                    "showCircles": true,
-                                    "type": "histogram",
-                                    "valueAxis": "ValueAxis-1"
-                                }
-                            ],
-                            "setYExtents": false,
-                            "thresholdLine": {
-                                "color": "#E7664C",
-                                "show": false,
-                                "style": "full",
-                                "value": 10,
-                                "width": 1
-                            },
-                            "times": [],
-                            "truncateLegend": true,
-                            "type": "histogram",
-                            "valueAxes": [
-                                {
-                                    "id": "ValueAxis-1",
-                                    "labels": {
-                                        "filter": true,
-                                        "rotate": 0,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "name": "LeftAxis-1",
-                                    "position": "left",
-                                    "scale": {
-                                        "mode": "normal",
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {
-                                        "text": ""
-                                    },
-                                    "type": "value"
-                                }
-                            ]
-                        },
-                        "type": "histogram",
-                        "uiState": {}
+                        "title": "Sudo errors [Logs System] (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
                     },
-                    "type": "visualization"
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 12,
@@ -472,42 +632,51 @@
                     "y": 36
                 },
                 "panelIndex": "fd4d0b9e-760d-4d7a-90e9-62aca0609b9e",
-                "title": "Sudo errors [Logs System]",
-                "type": "visualization",
-                "version": "8.6.0"
+                "title": "Sudo errors",
+                "type": "lens",
+                "version": "8.10.2"
             }
         ],
         "timeRestore": false,
         "title": "[Logs System] Sudo commands",
         "version": 1
     },
-    "coreMigrationVersion": "8.6.1",
-    "created_at": "2023-03-23T04:03:56.987Z",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-09T20:43:31.398Z",
     "id": "system-277876d0-fa2c-11e6-bbd3-29c986c96e5a",
-    "migrationVersion": {
-        "dashboard": "8.6.0"
-    },
+    "managed": false,
     "references": [
         {
-            "id": "system-b6f321e0-fa25-11e6-bbd3-29c986c96e5a",
-            "name": "9176826e-b47b-405c-9fed-7928177e627b:search_0",
-            "type": "search"
-        },
-        {
-            "id": "system-b6f321e0-fa25-11e6-bbd3-29c986c96e5a",
-            "name": "f3e4b05c-4eab-4e12-98ac-5e5a7ae4fac7:search_0",
-            "type": "search"
-        },
-        {
             "id": "logs-*",
-            "name": "fd4d0b9e-760d-4d7a-90e9-62aca0609b9e:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         },
         {
-            "id": "system-fleet-pkg-system-default",
-            "name": "tag-ref-fleet-pkg-system-default",
-            "type": "tag"
+            "id": "logs-*",
+            "name": "9176826e-b47b-405c-9fed-7928177e627b:indexpattern-datasource-layer-146227b6-7fd1-41c7-a851-e5a243641dec",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "f3e4b05c-4eab-4e12-98ac-5e5a7ae4fac7:indexpattern-datasource-layer-3d3f0685-8d51-43ae-bf6e-5d98e99df7de",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "f3e4b05c-4eab-4e12-98ac-5e5a7ae4fac7:de31f22f-8003-4921-a8a5-234491c70105",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "fd4d0b9e-760d-4d7a-90e9-62aca0609b9e:indexpattern-datasource-layer-a1f46854-af46-4387-b7c5-0b674ab5b1e3",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "fd4d0b9e-760d-4d7a-90e9-62aca0609b9e:5f8ad652-efdd-4a71-a6c7-b14538243381",
+            "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }
