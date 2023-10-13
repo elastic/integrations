@@ -433,100 +433,100 @@ An example event for `executor` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |
-| apache_spark.executor.application_name | Name of application. | keyword |
-| apache_spark.executor.bytes.read | Total number of bytes read. | long |
-| apache_spark.executor.bytes.written | Total number of bytes written. | long |
-| apache_spark.executor.disk_bytes_spilled | Total number of disk bytes spilled. | long |
-| apache_spark.executor.file_cache_hits | Total number of file cache hits. | long |
-| apache_spark.executor.files_discovered | Total number of files discovered. | long |
-| apache_spark.executor.filesystem.file.large_read_ops | Total number of large read operations from the files. | long |
-| apache_spark.executor.filesystem.file.read_bytes | Total number of bytes read from the files. | long |
-| apache_spark.executor.filesystem.file.read_ops | Total number of read operations from the files. | long |
-| apache_spark.executor.filesystem.file.write_bytes | Total number of bytes written from the files. | long |
-| apache_spark.executor.filesystem.file.write_ops | Total number of write operations from the files. | long |
-| apache_spark.executor.filesystem.hdfs.large_read_ops | Total number of large read operations from HDFS. | long |
-| apache_spark.executor.filesystem.hdfs.read_bytes | Total number of read bytes from HDFS. | long |
-| apache_spark.executor.filesystem.hdfs.read_ops | Total number of read operations from HDFS. | long |
-| apache_spark.executor.filesystem.hdfs.write_bytes | Total number of write bytes from HDFS. | long |
-| apache_spark.executor.filesystem.hdfs.write_ops | Total number of write operations from HDFS. | long |
-| apache_spark.executor.gc.major.count | Total major GC count. For example, the garbage collector is one of MarkSweepCompact, PS MarkSweep, ConcurrentMarkSweep, G1 Old Generation and so on. | long |
-| apache_spark.executor.gc.major.time | Elapsed total major GC time. The value is expressed in milliseconds. | long |
-| apache_spark.executor.gc.minor.count | Total minor GC count. For example, the garbage collector is one of Copy, PS Scavenge, ParNew, G1 Young Generation and so on. | long |
-| apache_spark.executor.gc.minor.time | Elapsed total minor GC time. The value is expressed in milliseconds. | long |
-| apache_spark.executor.heap_memory.off.execution | Peak off heap execution memory in use, in bytes. | long |
-| apache_spark.executor.heap_memory.off.storage | Peak off heap storage memory in use, in bytes. | long |
-| apache_spark.executor.heap_memory.off.unified | Peak off heap memory (execution and storage). | long |
-| apache_spark.executor.heap_memory.on.execution | Peak on heap execution memory in use, in bytes. | long |
-| apache_spark.executor.heap_memory.on.storage | Peak on heap storage memory in use, in bytes. | long |
-| apache_spark.executor.heap_memory.on.unified | Peak on heap memory (execution and storage). | long |
-| apache_spark.executor.hive_client_calls | Total number of Hive Client calls. | long |
-| apache_spark.executor.id | ID of executor. | keyword |
-| apache_spark.executor.jvm.cpu_time | Elapsed CPU time the JVM spent. | long |
-| apache_spark.executor.jvm.gc_time | Elapsed time the JVM spent in garbage collection while executing this task. | long |
-| apache_spark.executor.mbean | The name of the jolokia mbean. | keyword |
-| apache_spark.executor.memory.direct_pool | Peak memory that the JVM is using for direct buffer pool. | long |
-| apache_spark.executor.memory.jvm.heap | Peak memory usage of the heap that is used for object allocation. | long |
-| apache_spark.executor.memory.jvm.off_heap | Peak memory usage of non-heap memory that is used by the Java virtual machine. | long |
-| apache_spark.executor.memory.mapped_pool | Peak memory that the JVM is using for mapped buffer pool | long |
-| apache_spark.executor.memory_bytes_spilled | The number of in-memory bytes spilled by this task. | long |
-| apache_spark.executor.parallel_listing_job_count | Number of jobs running parallely. | long |
-| apache_spark.executor.partitions_fetched | Number of partitions fetched. | long |
-| apache_spark.executor.process_tree.jvm.rss_memory | Resident Set Size: number of pages the process has in real memory. This is just the pages which count toward text, data, or stack space. This does not include pages which have not been demand-loaded in, or which are swapped out. | long |
-| apache_spark.executor.process_tree.jvm.v_memory | Virtual memory size in bytes. | long |
-| apache_spark.executor.process_tree.other.rss_memory | Resident Set Size for other kind of process. | long |
-| apache_spark.executor.process_tree.other.v_memory | Virtual memory size for other kind of process in bytes. | long |
-| apache_spark.executor.process_tree.python.rss_memory | Resident Set Size for Python. | long |
-| apache_spark.executor.process_tree.python.v_memory | Virtual memory size for Python in bytes. | long |
-| apache_spark.executor.records.read | Total number of records read. | long |
-| apache_spark.executor.records.written | Total number of records written. | long |
-| apache_spark.executor.result.serialization_time | Elapsed time spent serializing the task result. The value is expressed in milliseconds. | long |
-| apache_spark.executor.result.size | The number of bytes this task transmitted back to the driver as the TaskResult. | long |
-| apache_spark.executor.run_time | Elapsed time in the running this task | long |
-| apache_spark.executor.shuffle.bytes_written | Number of bytes written in shuffle operations. | long |
-| apache_spark.executor.shuffle.client.used.direct_memory | Amount of direct memory used by the shuffle client. | long |
-| apache_spark.executor.shuffle.client.used.heap_memory | Amount of heap memory used by the shuffle client. | long |
-| apache_spark.executor.shuffle.fetch_wait_time | Time the task spent waiting for remote shuffle blocks. | long |
-| apache_spark.executor.shuffle.local.blocks_fetched | Number of local (as opposed to read from a remote executor) blocks fetched in shuffle operations. | long |
-| apache_spark.executor.shuffle.local.bytes_read | Number of bytes read in shuffle operations from local disk (as opposed to read from a remote executor). | long |
-| apache_spark.executor.shuffle.records.read | Number of records read in shuffle operations. | long |
-| apache_spark.executor.shuffle.records.written | Number of records written in shuffle operations. | long |
-| apache_spark.executor.shuffle.remote.blocks_fetched | Number of remote blocks fetched in shuffle operations. | long |
-| apache_spark.executor.shuffle.remote.bytes_read | Number of remote bytes read in shuffle operations. | long |
-| apache_spark.executor.shuffle.remote.bytes_read_to_disk | Number of remote bytes read to disk in shuffle operations. Large blocks are fetched to disk in shuffle read operations, as opposed to being read into memory, which is the default behavior. | long |
-| apache_spark.executor.shuffle.server.used.direct_memory | Amount of direct memory used by the shuffle server. | long |
-| apache_spark.executor.shuffle.server.used.heap_memory | Amount of heap memory used by the shuffle server. | long |
-| apache_spark.executor.shuffle.total.bytes_read | Number of bytes read in shuffle operations (both local and remote) | long |
-| apache_spark.executor.shuffle.write.time | Time spent blocking on writes to disk or buffer cache. The value is expressed in nanoseconds. | long |
-| apache_spark.executor.succeeded_tasks | The number of tasks succeeded. | long |
-| apache_spark.executor.threadpool.active_tasks | Number of tasks currently executing. | long |
-| apache_spark.executor.threadpool.complete_tasks | Number of tasks that have completed in this executor. | long |
-| apache_spark.executor.threadpool.current_pool_size | The size of the current thread pool of the executor. | long |
-| apache_spark.executor.threadpool.max_pool_size | The maximum size of the thread pool of the executor. | long |
-| apache_spark.executor.threadpool.started_tasks | The number of tasks started in the thread pool of the executor. | long |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
-| container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
+| apache_spark.executor.application_name | Name of application. | keyword |  |
+| apache_spark.executor.bytes.read | Total number of bytes read. | long | counter |
+| apache_spark.executor.bytes.written | Total number of bytes written. | long | counter |
+| apache_spark.executor.disk_bytes_spilled | Total number of disk bytes spilled. | long | counter |
+| apache_spark.executor.file_cache_hits | Total number of file cache hits. | long | counter |
+| apache_spark.executor.files_discovered | Total number of files discovered. | long | counter |
+| apache_spark.executor.filesystem.file.large_read_ops | Total number of large read operations from the files. | long | gauge |
+| apache_spark.executor.filesystem.file.read_bytes | Total number of bytes read from the files. | long | gauge |
+| apache_spark.executor.filesystem.file.read_ops | Total number of read operations from the files. | long | gauge |
+| apache_spark.executor.filesystem.file.write_bytes | Total number of bytes written from the files. | long | gauge |
+| apache_spark.executor.filesystem.file.write_ops | Total number of write operations from the files. | long | gauge |
+| apache_spark.executor.filesystem.hdfs.large_read_ops | Total number of large read operations from HDFS. | long | gauge |
+| apache_spark.executor.filesystem.hdfs.read_bytes | Total number of read bytes from HDFS. | long | gauge |
+| apache_spark.executor.filesystem.hdfs.read_ops | Total number of read operations from HDFS. | long | gauge |
+| apache_spark.executor.filesystem.hdfs.write_bytes | Total number of write bytes from HDFS. | long | gauge |
+| apache_spark.executor.filesystem.hdfs.write_ops | Total number of write operations from HDFS. | long | gauge |
+| apache_spark.executor.gc.major.count | Total major GC count. For example, the garbage collector is one of MarkSweepCompact, PS MarkSweep, ConcurrentMarkSweep, G1 Old Generation and so on. | long | gauge |
+| apache_spark.executor.gc.major.time | Elapsed total major GC time. The value is expressed in milliseconds. | long | gauge |
+| apache_spark.executor.gc.minor.count | Total minor GC count. For example, the garbage collector is one of Copy, PS Scavenge, ParNew, G1 Young Generation and so on. | long | gauge |
+| apache_spark.executor.gc.minor.time | Elapsed total minor GC time. The value is expressed in milliseconds. | long | gauge |
+| apache_spark.executor.heap_memory.off.execution | Peak off heap execution memory in use, in bytes. | long | gauge |
+| apache_spark.executor.heap_memory.off.storage | Peak off heap storage memory in use, in bytes. | long | gauge |
+| apache_spark.executor.heap_memory.off.unified | Peak off heap memory (execution and storage). | long | gauge |
+| apache_spark.executor.heap_memory.on.execution | Peak on heap execution memory in use, in bytes. | long | gauge |
+| apache_spark.executor.heap_memory.on.storage | Peak on heap storage memory in use, in bytes. | long | gauge |
+| apache_spark.executor.heap_memory.on.unified | Peak on heap memory (execution and storage). | long | gauge |
+| apache_spark.executor.hive_client_calls | Total number of Hive Client calls. | long | counter |
+| apache_spark.executor.id | ID of executor. | keyword |  |
+| apache_spark.executor.jvm.cpu_time | Elapsed CPU time the JVM spent. | long | gauge |
+| apache_spark.executor.jvm.gc_time | Elapsed time the JVM spent in garbage collection while executing this task. | long | counter |
+| apache_spark.executor.mbean | The name of the jolokia mbean. | keyword |  |
+| apache_spark.executor.memory.direct_pool | Peak memory that the JVM is using for direct buffer pool. | long | gauge |
+| apache_spark.executor.memory.jvm.heap | Peak memory usage of the heap that is used for object allocation. | long | gauge |
+| apache_spark.executor.memory.jvm.off_heap | Peak memory usage of non-heap memory that is used by the Java virtual machine. | long | gauge |
+| apache_spark.executor.memory.mapped_pool | Peak memory that the JVM is using for mapped buffer pool | long | gauge |
+| apache_spark.executor.memory_bytes_spilled | The number of in-memory bytes spilled by this task. | long | counter |
+| apache_spark.executor.parallel_listing_job_count | Number of jobs running parallely. | long | counter |
+| apache_spark.executor.partitions_fetched | Number of partitions fetched. | long | counter |
+| apache_spark.executor.process_tree.jvm.rss_memory | Resident Set Size: number of pages the process has in real memory. This is just the pages which count toward text, data, or stack space. This does not include pages which have not been demand-loaded in, or which are swapped out. | long | gauge |
+| apache_spark.executor.process_tree.jvm.v_memory | Virtual memory size in bytes. | long | gauge |
+| apache_spark.executor.process_tree.other.rss_memory | Resident Set Size for other kind of process. | long | gauge |
+| apache_spark.executor.process_tree.other.v_memory | Virtual memory size for other kind of process in bytes. | long | gauge |
+| apache_spark.executor.process_tree.python.rss_memory | Resident Set Size for Python. | long | gauge |
+| apache_spark.executor.process_tree.python.v_memory | Virtual memory size for Python in bytes. | long | gauge |
+| apache_spark.executor.records.read | Total number of records read. | long | counter |
+| apache_spark.executor.records.written | Total number of records written. | long | counter |
+| apache_spark.executor.result.serialization_time | Elapsed time spent serializing the task result. The value is expressed in milliseconds. | long | counter |
+| apache_spark.executor.result.size | The number of bytes this task transmitted back to the driver as the TaskResult. | long | counter |
+| apache_spark.executor.run_time | Elapsed time in the running this task | long | counter |
+| apache_spark.executor.shuffle.bytes_written | Number of bytes written in shuffle operations. | long | counter |
+| apache_spark.executor.shuffle.client.used.direct_memory | Amount of direct memory used by the shuffle client. | long | gauge |
+| apache_spark.executor.shuffle.client.used.heap_memory | Amount of heap memory used by the shuffle client. | long | gauge |
+| apache_spark.executor.shuffle.fetch_wait_time | Time the task spent waiting for remote shuffle blocks. | long | counter |
+| apache_spark.executor.shuffle.local.blocks_fetched | Number of local (as opposed to read from a remote executor) blocks fetched in shuffle operations. | long | counter |
+| apache_spark.executor.shuffle.local.bytes_read | Number of bytes read in shuffle operations from local disk (as opposed to read from a remote executor). | long | counter |
+| apache_spark.executor.shuffle.records.read | Number of records read in shuffle operations. | long | counter |
+| apache_spark.executor.shuffle.records.written | Number of records written in shuffle operations. | long | counter |
+| apache_spark.executor.shuffle.remote.blocks_fetched | Number of remote blocks fetched in shuffle operations. | long | counter |
+| apache_spark.executor.shuffle.remote.bytes_read | Number of remote bytes read in shuffle operations. | long | counter |
+| apache_spark.executor.shuffle.remote.bytes_read_to_disk | Number of remote bytes read to disk in shuffle operations. Large blocks are fetched to disk in shuffle read operations, as opposed to being read into memory, which is the default behavior. | long | counter |
+| apache_spark.executor.shuffle.server.used.direct_memory | Amount of direct memory used by the shuffle server. | long | gauge |
+| apache_spark.executor.shuffle.server.used.heap_memory | Amount of heap memory used by the shuffle server. | long | counter |
+| apache_spark.executor.shuffle.total.bytes_read | Number of bytes read in shuffle operations (both local and remote) | long | counter |
+| apache_spark.executor.shuffle.write.time | Time spent blocking on writes to disk or buffer cache. The value is expressed in nanoseconds. | long | counter |
+| apache_spark.executor.succeeded_tasks | The number of tasks succeeded. | long | counter |
+| apache_spark.executor.threadpool.active_tasks | Number of tasks currently executing. | long | gauge |
+| apache_spark.executor.threadpool.complete_tasks | Number of tasks that have completed in this executor. | long | gauge |
+| apache_spark.executor.threadpool.current_pool_size | The size of the current thread pool of the executor. | long | gauge |
+| apache_spark.executor.threadpool.max_pool_size | The maximum size of the thread pool of the executor. | long | counter |
+| apache_spark.executor.threadpool.started_tasks | The number of tasks started in the thread pool of the executor. | long | counter |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| error.message | Error message. | match_only_text |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
+| tags | List of keywords used to tag each event. | keyword |  |
 
 
 ### Node
