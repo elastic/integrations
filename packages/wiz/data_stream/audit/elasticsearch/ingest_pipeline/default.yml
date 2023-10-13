@@ -100,6 +100,11 @@ processors:
       ignore_missing: true
   - set:
       field: event.outcome
+      tag: set_outcome_unknown
+      value: unknown
+      if: ctx.wiz?.audit?.status instanceof String
+  - set:
+      field: event.outcome
       tag: set_outcome_success
       value: success
       if: ctx.wiz?.audit?.status instanceof String && ctx.wiz.audit.status.toLowerCase().contains("success")
@@ -107,7 +112,7 @@ processors:
       field: event.outcome
       tag: set_outcome_failure
       value: failure
-      if: ctx.wiz?.audit?.status instanceof String && ctx.wiz.audit.status.toLowerCase().contains("failure")
+      if: ctx.wiz?.audit?.status instanceof String && ctx.wiz.audit.status.toLowerCase().contains("fail")
   - set:
       field: event.type
       tag: set_event_type
