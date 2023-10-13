@@ -3,7 +3,7 @@ description: Pipeline for parsing DNS data logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.9.0'
+      value: '8.10.0'
   - set:
       field: event.kind
       value: event
@@ -20,6 +20,8 @@ processors:
   - json:
       field: event.original
       target_field: json
+  - drop:
+      if: ctx.json?.results instanceof List && ctx.json.results.length == 0
   - fingerprint:
       fields:
         - json.created_at
@@ -117,6 +119,14 @@ processors:
       field: json.name_in_zone
       target_field: infoblox_bloxone_ddi.dns_data.name_in_zone
       ignore_missing: true
+  - json:
+      field: json.options
+      target_field: json.options
+      if: ctx.json?.options instanceof String
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.options.create_ptr
       target_field: infoblox_bloxone_ddi.dns_data.options.create_ptr
