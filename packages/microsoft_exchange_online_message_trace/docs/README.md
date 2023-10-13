@@ -19,19 +19,11 @@ The `log` dataset collects the Microsoft Exchange Online Message Trace logs.
 The basic authentication configuration fields have been removed from this integration as Microsoft has deprecated and disabled basic authentication for Exchange Online. See the [deprecation notification](https://learn.microsoft.com/en-us/exchange/clients-and-mobile-in-exchange-online/deprecation-of-basic-authentication-exchange-online) for details.
 In order to continue using the Microsoft Exchange Online Message Trace you will need to enable and configure OAuth2 authentication.
 
-### Steps :
+### Steps:
 You'll need to register your application with Azure Active Directory and obtain the necessary credentials: Client ID, Client Secret, and Tenant ID. 
 You can follow these steps to create an Azure AD application:
 
-1) Go to the Azure portal (https://portal.azure.com/) and sign in.
-2) Click on "Azure Active Directory" in the left-hand menu.
-3) Select "App registrations" and click "New registration".
-4) Enter a name for your application, select "Accounts in this organizational directory only" for "Supported account types", and enter the redirect 
-   URI for your application.
-5) Click "Register" to create the application.
-6) On the application page, make note of the "Application (client) ID" (which is your client ID) and the "Directory (tenant) ID" (which is your 
-   tenant ID).
-7) Under "Certificates & secrets", click "New client secret" to create a new secret. Make note of the secret value (which is your client secret).
+For a detailed guide on how to setup your account and credentials please refer to the official guide linked [here](https://learn.microsoft.com/en-gb/previous-versions/office/developer/o365-enterprise-developers/jj984325(v=office.15)#get-started-with-reporting-web-service)
 
 With these credentials in hand, you can now configure the integration with the appropriate parameters.
 
