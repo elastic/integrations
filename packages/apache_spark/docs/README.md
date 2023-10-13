@@ -256,102 +256,102 @@ An example event for `driver` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |
-| apache_spark.driver.application_name | Name of the application. | keyword |
-| apache_spark.driver.dag_scheduler.job.active | Number of active jobs. | long |
-| apache_spark.driver.dag_scheduler.job.all | Total number of jobs. | long |
-| apache_spark.driver.dag_scheduler.stages.failed | Number of failed stages. | long |
-| apache_spark.driver.dag_scheduler.stages.running | Number of running stages. | long |
-| apache_spark.driver.dag_scheduler.stages.waiting | Number of waiting stages | long |
-| apache_spark.driver.disk.space_used | Amount of the disk space utilized in MB. | long |
-| apache_spark.driver.executor_metrics.gc.major.count | Total major GC count. For example, the garbage collector is one of MarkSweepCompact, PS MarkSweep, ConcurrentMarkSweep, G1 Old Generation and so on. | long |
-| apache_spark.driver.executor_metrics.gc.major.time | Elapsed total major GC time. The value is expressed in milliseconds. | long |
-| apache_spark.driver.executor_metrics.gc.minor.count | Total minor GC count. For example, the garbage collector is one of Copy, PS Scavenge, ParNew, G1 Young Generation and so on. | long |
-| apache_spark.driver.executor_metrics.gc.minor.time | Elapsed total minor GC time. The value is expressed in milliseconds. | long |
-| apache_spark.driver.executor_metrics.heap_memory.off.execution | Peak off heap execution memory in use, in bytes. | long |
-| apache_spark.driver.executor_metrics.heap_memory.off.storage | Peak off heap storage memory in use, in bytes. | long |
-| apache_spark.driver.executor_metrics.heap_memory.off.unified | Peak off heap memory (execution and storage). | long |
-| apache_spark.driver.executor_metrics.heap_memory.on.execution | Peak on heap execution memory in use, in bytes. | long |
-| apache_spark.driver.executor_metrics.heap_memory.on.storage | Peak on heap storage memory in use, in bytes. | long |
-| apache_spark.driver.executor_metrics.heap_memory.on.unified | Peak on heap memory (execution and storage). | long |
-| apache_spark.driver.executor_metrics.memory.direct_pool | Peak memory that the JVM is using for direct buffer pool. | long |
-| apache_spark.driver.executor_metrics.memory.jvm.heap | Peak memory usage of the heap that is used for object allocation. | long |
-| apache_spark.driver.executor_metrics.memory.jvm.off_heap | Peak memory usage of non-heap memory that is used by the Java virtual machine. | long |
-| apache_spark.driver.executor_metrics.memory.mapped_pool | Peak memory that the JVM is using for mapped buffer pool | long |
-| apache_spark.driver.executor_metrics.process_tree.jvm.rss_memory | Resident Set Size: number of pages the process has in real memory. This is just the pages which count toward text, data, or stack space. This does not include pages which have not been demand-loaded in, or which are swapped out. | long |
-| apache_spark.driver.executor_metrics.process_tree.jvm.v_memory | Virtual memory size in bytes. | long |
-| apache_spark.driver.executor_metrics.process_tree.other.rss_memory |  | long |
-| apache_spark.driver.executor_metrics.process_tree.other.v_memory |  | long |
-| apache_spark.driver.executor_metrics.process_tree.python.rss_memory |  | long |
-| apache_spark.driver.executor_metrics.process_tree.python.v_memory |  | long |
-| apache_spark.driver.executors.all | Total number of executors. | long |
-| apache_spark.driver.executors.decommission_unfinished | Total number of decommissioned unfinished executors. | long |
-| apache_spark.driver.executors.exited_unexpectedly | Total number of executors exited unexpectedly. | long |
-| apache_spark.driver.executors.gracefully_decommissioned | Total number of executors gracefully decommissioned. | long |
-| apache_spark.driver.executors.killed_by_driver | Total number of executors killed by driver. | long |
-| apache_spark.driver.executors.max_needed | Maximum number of executors needed. | long |
-| apache_spark.driver.executors.pending_to_remove | Total number of executors pending to be removed. | long |
-| apache_spark.driver.executors.target | Total number of target executors. | long |
-| apache_spark.driver.executors.to_add | Total number of executors to be added. | long |
-| apache_spark.driver.hive_external_catalog.file_cache_hits | Total number of file cache hits. | long |
-| apache_spark.driver.hive_external_catalog.files_discovered | Total number of files discovered. | long |
-| apache_spark.driver.hive_external_catalog.hive_client_calls | Total number of Hive Client calls. | long |
-| apache_spark.driver.hive_external_catalog.parallel_listing_job.count | Number of jobs running parallely. | long |
-| apache_spark.driver.hive_external_catalog.partitions_fetched | Number of partitions fetched. | long |
-| apache_spark.driver.job_duration | Duration of the job. | long |
-| apache_spark.driver.jobs.failed | Number of failed jobs. | long |
-| apache_spark.driver.jobs.succeeded | Number of successful jobs. | long |
-| apache_spark.driver.jvm.cpu.time | Elapsed CPU time the JVM spent. | long |
-| apache_spark.driver.mbean | The name of the jolokia mbean. | keyword |
-| apache_spark.driver.memory.max_mem | Maximum amount of memory available for storage, in MB. | long |
-| apache_spark.driver.memory.off_heap.max | Maximum amount of off heap memory available, in MB. | long |
-| apache_spark.driver.memory.off_heap.remaining | Remaining amount of off heap memory, in MB. | long |
-| apache_spark.driver.memory.off_heap.used | Total amount of off heap memory used, in MB. | long |
-| apache_spark.driver.memory.on_heap.max | Maximum amount of on heap memory available, in MB. | long |
-| apache_spark.driver.memory.on_heap.remaining | Remaining amount of on heap memory, in MB. | long |
-| apache_spark.driver.memory.on_heap.used | Total amount of on heap memory used, in MB. | long |
-| apache_spark.driver.memory.remaining | Remaining amount of storage memory, in MB. | long |
-| apache_spark.driver.memory.used | Total amount of memory used for storage, in MB. | long |
-| apache_spark.driver.spark.streaming.event_time.watermark |  | long |
-| apache_spark.driver.spark.streaming.input_rate.total | Total rate of the input. | double |
-| apache_spark.driver.spark.streaming.latency |  | long |
-| apache_spark.driver.spark.streaming.processing_rate.total | Total rate of processing. | double |
-| apache_spark.driver.spark.streaming.states.rows.total | Total number of rows. | long |
-| apache_spark.driver.spark.streaming.states.used_bytes | Total number of bytes utilized. | long |
-| apache_spark.driver.stages.completed_count | Total number of completed stages. | long |
-| apache_spark.driver.stages.failed_count | Total number of failed stages. | long |
-| apache_spark.driver.stages.skipped_count | Total number of skipped stages. | long |
-| apache_spark.driver.tasks.completed | Number of completed tasks. | long |
-| apache_spark.driver.tasks.executors.black_listed | Number of blacklisted executors for the tasks. | long |
-| apache_spark.driver.tasks.executors.excluded | Number of excluded executors for the tasks. | long |
-| apache_spark.driver.tasks.executors.unblack_listed | Number of unblacklisted executors for the tasks. | long |
-| apache_spark.driver.tasks.executors.unexcluded | Number of unexcluded executors for the tasks. | long |
-| apache_spark.driver.tasks.failed | Number of failed tasks. | long |
-| apache_spark.driver.tasks.killed | Number of killed tasks. | long |
-| apache_spark.driver.tasks.skipped | Number of skipped tasks. | long |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
-| container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
+| apache_spark.driver.application_name | Name of the application. | keyword |  |
+| apache_spark.driver.dag_scheduler.job.active | Number of active jobs. | long | gauge |
+| apache_spark.driver.dag_scheduler.job.all | Total number of jobs. | long | gauge |
+| apache_spark.driver.dag_scheduler.stages.failed | Number of failed stages. | long | gauge |
+| apache_spark.driver.dag_scheduler.stages.running | Number of running stages. | long | gauge |
+| apache_spark.driver.dag_scheduler.stages.waiting | Number of waiting stages | long | gauge |
+| apache_spark.driver.disk.space_used | Amount of the disk space utilized in MB. | long | gauge |
+| apache_spark.driver.executor_metrics.gc.major.count | Total major GC count. For example, the garbage collector is one of MarkSweepCompact, PS MarkSweep, ConcurrentMarkSweep, G1 Old Generation and so on. | long | gauge |
+| apache_spark.driver.executor_metrics.gc.major.time | Elapsed total major GC time. The value is expressed in milliseconds. | long | gauge |
+| apache_spark.driver.executor_metrics.gc.minor.count | Total minor GC count. For example, the garbage collector is one of Copy, PS Scavenge, ParNew, G1 Young Generation and so on. | long | gauge |
+| apache_spark.driver.executor_metrics.gc.minor.time | Elapsed total minor GC time. The value is expressed in milliseconds. | long | gauge |
+| apache_spark.driver.executor_metrics.heap_memory.off.execution | Peak off heap execution memory in use, in bytes. | long | gauge |
+| apache_spark.driver.executor_metrics.heap_memory.off.storage | Peak off heap storage memory in use, in bytes. | long | gauge |
+| apache_spark.driver.executor_metrics.heap_memory.off.unified | Peak off heap memory (execution and storage). | long | gauge |
+| apache_spark.driver.executor_metrics.heap_memory.on.execution | Peak on heap execution memory in use, in bytes. | long | gauge |
+| apache_spark.driver.executor_metrics.heap_memory.on.storage | Peak on heap storage memory in use, in bytes. | long | gauge |
+| apache_spark.driver.executor_metrics.heap_memory.on.unified | Peak on heap memory (execution and storage). | long | gauge |
+| apache_spark.driver.executor_metrics.memory.direct_pool | Peak memory that the JVM is using for direct buffer pool. | long | gauge |
+| apache_spark.driver.executor_metrics.memory.jvm.heap | Peak memory usage of the heap that is used for object allocation. | long | counter |
+| apache_spark.driver.executor_metrics.memory.jvm.off_heap | Peak memory usage of non-heap memory that is used by the Java virtual machine. | long | counter |
+| apache_spark.driver.executor_metrics.memory.mapped_pool | Peak memory that the JVM is using for mapped buffer pool | long | gauge |
+| apache_spark.driver.executor_metrics.process_tree.jvm.rss_memory | Resident Set Size: number of pages the process has in real memory. This is just the pages which count toward text, data, or stack space. This does not include pages which have not been demand-loaded in, or which are swapped out. | long | gauge |
+| apache_spark.driver.executor_metrics.process_tree.jvm.v_memory | Virtual memory size in bytes. | long | gauge |
+| apache_spark.driver.executor_metrics.process_tree.other.rss_memory |  | long | gauge |
+| apache_spark.driver.executor_metrics.process_tree.other.v_memory |  | long | gauge |
+| apache_spark.driver.executor_metrics.process_tree.python.rss_memory |  | long | gauge |
+| apache_spark.driver.executor_metrics.process_tree.python.v_memory |  | long | gauge |
+| apache_spark.driver.executors.all | Total number of executors. | long | gauge |
+| apache_spark.driver.executors.decommission_unfinished | Total number of decommissioned unfinished executors. | long | counter |
+| apache_spark.driver.executors.exited_unexpectedly | Total number of executors exited unexpectedly. | long | counter |
+| apache_spark.driver.executors.gracefully_decommissioned | Total number of executors gracefully decommissioned. | long | counter |
+| apache_spark.driver.executors.killed_by_driver | Total number of executors killed by driver. | long | counter |
+| apache_spark.driver.executors.max_needed | Maximum number of executors needed. | long | gauge |
+| apache_spark.driver.executors.pending_to_remove | Total number of executors pending to be removed. | long | gauge |
+| apache_spark.driver.executors.target | Total number of target executors. | long | gauge |
+| apache_spark.driver.executors.to_add | Total number of executors to be added. | long | gauge |
+| apache_spark.driver.hive_external_catalog.file_cache_hits | Total number of file cache hits. | long | counter |
+| apache_spark.driver.hive_external_catalog.files_discovered | Total number of files discovered. | long | counter |
+| apache_spark.driver.hive_external_catalog.hive_client_calls | Total number of Hive Client calls. | long | counter |
+| apache_spark.driver.hive_external_catalog.parallel_listing_job.count | Number of jobs running parallely. | long | counter |
+| apache_spark.driver.hive_external_catalog.partitions_fetched | Number of partitions fetched. | long | counter |
+| apache_spark.driver.job_duration | Duration of the job. | long | gauge |
+| apache_spark.driver.jobs.failed | Number of failed jobs. | long | counter |
+| apache_spark.driver.jobs.succeeded | Number of successful jobs. | long | counter |
+| apache_spark.driver.jvm.cpu.time | Elapsed CPU time the JVM spent. | long | gauge |
+| apache_spark.driver.mbean | The name of the jolokia mbean. | keyword |  |
+| apache_spark.driver.memory.max_mem | Maximum amount of memory available for storage, in MB. | long | gauge |
+| apache_spark.driver.memory.off_heap.max | Maximum amount of off heap memory available, in MB. | long | gauge |
+| apache_spark.driver.memory.off_heap.remaining | Remaining amount of off heap memory, in MB. | long | gauge |
+| apache_spark.driver.memory.off_heap.used | Total amount of off heap memory used, in MB. | long | gauge |
+| apache_spark.driver.memory.on_heap.max | Maximum amount of on heap memory available, in MB. | long | gauge |
+| apache_spark.driver.memory.on_heap.remaining | Remaining amount of on heap memory, in MB. | long | gauge |
+| apache_spark.driver.memory.on_heap.used | Total amount of on heap memory used, in MB. | long | gauge |
+| apache_spark.driver.memory.remaining | Remaining amount of storage memory, in MB. | long | gauge |
+| apache_spark.driver.memory.used | Total amount of memory used for storage, in MB. | long | gauge |
+| apache_spark.driver.spark.streaming.event_time.watermark |  | long | gauge |
+| apache_spark.driver.spark.streaming.input_rate.total | Total rate of the input. | double | gauge |
+| apache_spark.driver.spark.streaming.latency |  | long | gauge |
+| apache_spark.driver.spark.streaming.processing_rate.total | Total rate of processing. | double | gauge |
+| apache_spark.driver.spark.streaming.states.rows.total | Total number of rows. | long | gauge |
+| apache_spark.driver.spark.streaming.states.used_bytes | Total number of bytes utilized. | long | gauge |
+| apache_spark.driver.stages.completed_count | Total number of completed stages. | long | counter |
+| apache_spark.driver.stages.failed_count | Total number of failed stages. | long | counter |
+| apache_spark.driver.stages.skipped_count | Total number of skipped stages. | long | counter |
+| apache_spark.driver.tasks.completed | Number of completed tasks. | long | counter |
+| apache_spark.driver.tasks.executors.black_listed | Number of blacklisted executors for the tasks. | long | counter |
+| apache_spark.driver.tasks.executors.excluded | Number of excluded executors for the tasks. | long | counter |
+| apache_spark.driver.tasks.executors.unblack_listed | Number of unblacklisted executors for the tasks. | long | counter |
+| apache_spark.driver.tasks.executors.unexcluded | Number of unexcluded executors for the tasks. | long | counter |
+| apache_spark.driver.tasks.failed | Number of failed tasks. | long | counter |
+| apache_spark.driver.tasks.killed | Number of killed tasks. | long | counter |
+| apache_spark.driver.tasks.skipped | Number of skipped tasks. | long | counter |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| error.message | Error message. | match_only_text |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
+| tags | List of keywords used to tag each event. | keyword |  |
 
 
 ### Executor
