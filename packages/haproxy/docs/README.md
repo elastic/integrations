@@ -14,6 +14,10 @@ The integration supports the default log patterns below:
 
 The `info` and `stat` datasets were tested with tested with HAProxy versions from 1.6, 1.7, 1.8 to 2.0. 
 
+## Troubleshooting
+
+If `source.address` is shown conflicted under ``metrics-*`` data view, then this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the `stat` data stream indices.
+
 ## Logs
 
 ### log
@@ -300,6 +304,7 @@ An example event for `log` looks as following:
 | url.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
 | url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | url.username | Username of the request. | keyword |
+
 
 
 ## Metrics
@@ -731,7 +736,7 @@ The fields reported are:
 | haproxy.stat.session.rate.max | Maximum number of new sessions per second. | integer | gauge |
 | haproxy.stat.session.rate.value | Number of sessions per second over the last elapsed second. | integer | gauge |
 | haproxy.stat.session.total | Number of all sessions. | long | counter |
-| haproxy.stat.source.address | Address of the source. | text |  |
+| haproxy.stat.source.address | Address of the source. | keyword |  |
 | haproxy.stat.status | Status (UP, DOWN, NOLB, MAINT, or MAINT(via)...). | keyword |  |
 | haproxy.stat.throttle.pct | Current throttle percentage for the server when slowstart is active, or no value if slowstart is inactive. | scaled_float | gauge |
 | haproxy.stat.tracked.id | ID of the proxy/server if tracking is enabled. | long |  |
