@@ -85,9 +85,9 @@ The minimum **kibana.version** required is **8.8.0**.
 ### Enabling the integration in Elastic:
 
 1. In Kibana go to Management > Integrations
-2. In "Search for integrations" search bar, type Prisma Cloud.
-3. Click on the "Prisma Cloud" integration from the search results.
-4. Click on the Add Prisma Cloud Integration button to add the integration.
+2. In "Search for integrations" search bar, type Palo Alto Prisma Cloud.
+3. Click on the "Palo Alto Prisma Cloud" integration from the search results.
+4. Click on the Add Palo Alto Prisma Cloud Integration button to add the integration.
 5. While adding the integration, if you want to collect Alert and Audit data via REST API, then you have to put the following details:
    - username
    - password

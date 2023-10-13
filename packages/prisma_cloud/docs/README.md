@@ -85,9 +85,9 @@ The minimum **kibana.version** required is **8.8.0**.
 ### Enabling the integration in Elastic:
 
 1. In Kibana go to Management > Integrations
-2. In "Search for integrations" search bar, type Prisma Cloud.
-3. Click on the "Prisma Cloud" integration from the search results.
-4. Click on the Add Prisma Cloud Integration button to add the integration.
+2. In "Search for integrations" search bar, type Palo Alto Prisma Cloud.
+3. Click on the "Palo Alto Prisma Cloud" integration from the search results.
+4. Click on the Add Palo Alto Prisma Cloud Integration button to add the integration.
 5. While adding the integration, if you want to collect Alert and Audit data via REST API, then you have to put the following details:
    - username
    - password
@@ -125,8 +125,8 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2023-09-06T12:30:41.966Z",
     "agent": {
-        "ephemeral_id": "0c580847-1b84-4134-bedf-135f03344552",
-        "id": "41580bc3-bf5c-4446-b4fc-781edc7bf879",
+        "ephemeral_id": "4578e102-268c-449e-a5db-6cb9583090f1",
+        "id": "a9223e44-1b7f-495a-aaf7-299d8ec5ea55",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.0"
@@ -146,10 +146,10 @@ An example event for `alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "41580bc3-bf5c-4446-b4fc-781edc7bf879",
+        "id": "a9223e44-1b7f-495a-aaf7-299d8ec5ea55",
         "snapshot": false,
         "version": "8.8.0"
     },
@@ -161,7 +161,7 @@ An example event for `alert` looks as following:
         "dataset": "prisma_cloud.alert",
         "end": "2023-09-06T12:30:41.966Z",
         "id": "N-3910",
-        "ingested": "2023-10-05T07:28:21Z",
+        "ingested": "2023-10-12T09:44:04Z",
         "kind": "alert",
         "original": "{\"alertAdditionalInfo\":{\"scannerVersion\":\"CS_2.0\"},\"alertAttribution\":{\"attributionEventList\":[{\"event\":\"first_event\",\"event_ts\":1694003441966,\"username\":\"alex123\"}],\"resourceCreatedBy\":\"string\",\"resourceCreatedOn\":0},\"alertRules\":[],\"alertTime\":1694003441966,\"firstSeen\":1694003441966,\"history\":[{\"modifiedBy\":\"alex123\",\"modifiedOn\":\"1694003441966\",\"reason\":\"Reason1\",\"status\":\"OPEN\"}],\"id\":\"N-3910\",\"investigateOptions\":{\"alertId\":\"N-3910\"},\"lastSeen\":1694003441966,\"lastUpdated\":1694003441966,\"metadata\":null,\"policy\":{\"complianceMetadata\":[{\"complianceId\":\"qwer345bv\",\"customAssigned\":true,\"policyId\":\"werf435tr\",\"requirementDescription\":\"Description of policy compliance.\",\"requirementId\":\"req-123-xyz\",\"requirementName\":\"rigidity\",\"sectionDescription\":\"Description of section.\",\"sectionId\":\"sect-453-abc\",\"sectionLabel\":\"label-1\",\"standardDescription\":\"Description of standard.\",\"standardId\":\"stand-543-pqr\",\"standardName\":\"Class 1\"}],\"deleted\":false,\"description\":\"This policy identifies AWS EC2 instances that are internet reachable with unrestricted access (0.0.0.0/0). EC2 instances with unrestricted access to the internet may enable bad actors to use brute force on a system to gain unauthorised access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit the access to known hosts, services, or specific entities.\",\"findingTypes\":[],\"labels\":[\"Prisma_Cloud\",\"Attack Path Rule\"],\"lastModifiedBy\":\"template@redlock.io\",\"lastModifiedOn\":1687474999057,\"name\":\"AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0)\",\"policyId\":\"ad23603d-754e-4499-8988-b8017xxxx98\",\"policyType\":\"network\",\"recommendation\":\"The following steps are recommended to restrict unrestricted access from the Internet:\\n1. Visit the Network path Analysis from Source to Destination and review the network path components that allow internet access.\\n2. Identify the network component on which restrictive rules can be implemented.\\n3. Implement the required changes and make sure no other resources have been impacted due to these changes:\\n a) The overly permissive Security Group rules can be made more restrictive.\\n b) Move the instance inside a restrictive subnet if the instance does not need to be publicly accessible.\\n c) Define a NAT rule to restrict traffic coming from the Internet to the respective instance.\",\"remediable\":false,\"remediation\":{\"actions\":[{\"operation\":\"buy\",\"payload\":\"erefwsdf\"}],\"cliScriptTemplate\":\"temp1\",\"description\":\"Description of CLI Script Template.\"},\"severity\":\"high\",\"systemDefault\":true},\"policyId\":\"ad23603d-754e-4499-8988-b801xxx85898\",\"reason\":\"NEW_ALERT\",\"resource\":{\"account\":\"AWS Cloud Account\",\"accountId\":\"710002259376\",\"additionalInfo\":null,\"cloudAccountGroups\":[\"Default Account Group\"],\"cloudServiceName\":\"Amazon EC2\",\"cloudType\":\"aws\",\"data\":null,\"id\":\"i-04578exxxx8100947\",\"name\":\"IS-37133\",\"region\":\"AWS Virginia\",\"regionId\":\"us-east-1\",\"resourceApiName\":\"aws-ec2-describe-instances\",\"resourceConfigJsonAvailable\":false,\"resourceDetailsAvailable\":true,\"resourceTs\":1694003441915,\"resourceType\":\"INSTANCE\",\"rrn\":\"rrn:aws:instance:us-east-1:710000059376:e7ddce5a1ffcb47bxxxxxerf2635a3b4d9da3:i-04578e0008100947\",\"unifiedAssetId\":\"66c543b6261c4d9edxxxxxb42e15f4\",\"url\":\"https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#Instances:instanceId=i-0457xxxxx00947\"},\"status\":\"open\"}",
         "start": "2023-09-06T12:30:41.966Z",
@@ -494,8 +494,8 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2023-09-13T08:40:39.068Z",
     "agent": {
-        "ephemeral_id": "255b5651-8c5d-43bc-8dbb-f09845b9c40b",
-        "id": "41580bc3-bf5c-4446-b4fc-781edc7bf879",
+        "ephemeral_id": "3f0cd721-9e28-4d24-80c9-c3364111abc3",
+        "id": "a9223e44-1b7f-495a-aaf7-299d8ec5ea55",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.0"
@@ -506,10 +506,10 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "41580bc3-bf5c-4446-b4fc-781edc7bf879",
+        "id": "a9223e44-1b7f-495a-aaf7-299d8ec5ea55",
         "snapshot": false,
         "version": "8.8.0"
     },
@@ -520,7 +520,7 @@ An example event for `audit` looks as following:
             "authentication"
         ],
         "dataset": "prisma_cloud.audit",
-        "ingested": "2023-10-05T07:29:19Z",
+        "ingested": "2023-10-12T09:44:52Z",
         "kind": "event",
         "original": "{\"action\":\"'john.user@google.com'(with role 'System Admin':'System Admin') logged in via access key.\",\"actionType\":\"LOGIN\",\"ipAddress\":\"81.2.69.192\",\"resourceName\":\"john.user@google.com\",\"resourceType\":\"Login\",\"result\":\"Successful\",\"timestamp\":1694594439068,\"user\":\"john.user@google.com\"}",
         "outcome": "success",
@@ -605,10 +605,10 @@ An example event for `host` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-10-05T07:32:15.839Z",
+    "@timestamp": "2023-10-12T09:47:38.681Z",
     "agent": {
-        "ephemeral_id": "ff857441-63e2-40c7-84e2-68a3a6fd743f",
-        "id": "41580bc3-bf5c-4446-b4fc-781edc7bf879",
+        "ephemeral_id": "e718eeb3-bfdd-4574-9e4f-861ff3dde0d1",
+        "id": "a9223e44-1b7f-495a-aaf7-299d8ec5ea55",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.0"
@@ -635,10 +635,10 @@ An example event for `host` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "41580bc3-bf5c-4446-b4fc-781edc7bf879",
+        "id": "a9223e44-1b7f-495a-aaf7-299d8ec5ea55",
         "snapshot": false,
         "version": "8.8.0"
     },
@@ -649,7 +649,7 @@ An example event for `host` looks as following:
         ],
         "dataset": "prisma_cloud.host",
         "id": "DESKTOP-6PQXXMS",
-        "ingested": "2023-10-05T07:32:16Z",
+        "ingested": "2023-10-12T09:47:39Z",
         "kind": "event",
         "original": "{\"_id\":\"DESKTOP-6PQXXMS\",\"binaries\":[{\"altered\":true,\"cveCount\":0,\"deps\":[\"string\"],\"fileMode\":0,\"functionLayer\":\"string\",\"md5\":\"string\",\"missingPkg\":true,\"name\":\"string\",\"path\":\"string\",\"pkgRootDir\":\"string\",\"services\":[\"string\"],\"version\":\"string\"}],\"cloudMetadata\":{\"accountID\":\"Non-onboarded cloud accounts\",\"awsExecutionEnv\":\"string\",\"image\":\"string\",\"labels\":[{\"key\":\"string\",\"sourceName\":\"string\",\"sourceType\":[\"namespace\"],\"timestamp\":\"2023-09-08T04:01:49.949Z\",\"value\":\"string\"}],\"name\":\"string\",\"provider\":[\"aws\"],\"region\":\"string\",\"resourceID\":\"string\",\"resourceURL\":\"string\",\"type\":\"string\",\"vmID\":\"string\",\"vmImageID\":\"string\"},\"type\":\"host\",\"hostname\":\"DESKTOP-6PQXXMS\",\"scanTime\":\"2023-08-23T11:48:41.803Z\",\"Secrets\":[],\"osDistro\":\"windows\",\"osDistroVersion\":\"string\",\"osDistroRelease\":\"Windows\",\"distro\":\"Microsoft Windows [Version 10.0.19045.2006]\",\"packageManager\":true,\"packages\":[{\"pkgs\":[{\"binaryIdx\":[0],\"binaryPkgs\":[\"string\"],\"cveCount\":0,\"defaultGem\":true,\"files\":[{\"md5\":\"string\",\"path\":\"string\",\"sha1\":\"string\",\"sha256\":\"string\"}],\"functionLayer\":\"string\",\"goPkg\":true,\"jarIdentifier\":\"string\",\"layerTime\":0,\"license\":\"string\",\"name\":\"string\",\"osPackage\":true,\"path\":\"string\",\"version\":\"string\"}],\"pkgsType\":\"nodejs\"}],\"isARM64\":false,\"packageCorrelationDone\":true,\"redHatNonRPMImage\":false,\"image\":{\"created\":\"0001-01-01T00:00:00Z\",\"entrypoint\":[\"string\"],\"env\":[\"string\"],\"healthcheck\":true,\"id\":\"string\",\"labels\":{},\"layers\":[\"string\"],\"os\":\"string\",\"repoDigest\":[\"string\"],\"repoTags\":[\"string\"],\"user\":\"string\",\"workingDir\":\"string\"},\"allCompliance\":{\"compliance\":[{\"applicableRules\":[\"string\"],\"binaryPkgs\":[\"string\"],\"block\":true,\"cause\":\"string\",\"cri\":true,\"custom\":true,\"cve\":\"string\",\"cvss\":0,\"description\":\"string\",\"discovered\":\"2023-09-08T04:01:49.949Z\",\"exploit\":[\"exploit-db\"],\"fixDate\":0,\"fixLink\":\"string\",\"functionLayer\":\"string\",\"gracePeriodDays\":0,\"id\":0,\"layerTime\":0,\"link\":\"string\",\"packageName\":\"string\",\"packageVersion\":\"string\",\"published\":0,\"riskFactors\":{},\"severity\":\"string\",\"status\":\"string\",\"templates\":[[\"PCI\"]],\"text\":\"string\",\"title\":\"string\",\"twistlock\":true,\"type\":[\"container\"],\"vecStr\":\"string\",\"vulnTagInfos\":[{\"color\":\"string\",\"comment\":\"string\",\"name\":\"string\"}],\"wildfireMalware\":{\"md5\":\"string\",\"path\":\"string\",\"verdict\":\"string\"}}],\"enabled\":\"true\"},\"clusters\":[\"string\"],\"repoTag\":null,\"tags\":[{\"digest\":\"string\",\"id\":\"string\",\"registry\":\"string\",\"repo\":\"string\",\"tag\":\"string\"}],\"trustResult\":{\"hostsStatuses\":[{\"host\":\"string\",\"status\":\"trusted\"}]},\"repoDigests\":[],\"creationTime\":\"0001-01-01T00:00:00Z\",\"pushTime\":\"0001-01-01T00:00:00Z\",\"vulnerabilitiesCount\":0,\"complianceIssuesCount\":4,\"vulnerabilityDistribution\":{\"critical\":0,\"high\":0,\"medium\":0,\"low\":0,\"total\":0},\"complianceDistribution\":{\"critical\":4,\"high\":0,\"medium\":0,\"low\":0,\"total\":4},\"vulnerabilityRiskScore\":0,\"complianceRiskScore\":4000000,\"riskFactors\":{},\"firstScanTime\":\"2023-08-11T06:53:57.456Z\",\"history\":[{\"baseLayer\":true,\"created\":0,\"emptyLayer\":true,\"id\":\"string\",\"instruction\":\"string\",\"sizeBytes\":0,\"tags\":[\"string\"],\"vulnerabilities\":[{\"applicableRules\":[\"string\"],\"binaryPkgs\":[\"string\"],\"block\":true,\"cause\":\"string\",\"cri\":true,\"custom\":true,\"cve\":\"string\",\"cvss\":0,\"description\":\"string\",\"discovered\":\"2023-09-08T04:01:49.950Z\",\"exploit\":[\"exploit-db\"],\"exploits\":[{\"kind\":[\"poc\",\"in-the-wild\"],\"link\":\"string\",\"source\":[\"\",\"exploit-db\"]}],\"fixDate\":0,\"fixLink\":\"string\",\"functionLayer\":\"string\",\"gracePeriodDays\":0,\"id\":0,\"layerTime\":0,\"link\":\"string\",\"packageName\":\"string\",\"packageVersion\":\"string\",\"published\":0,\"riskFactors\":{},\"severity\":\"string\",\"status\":\"string\",\"templates\":[[\"PCI\"]],\"text\":\"string\",\"title\":\"string\",\"twistlock\":true,\"type\":[\"container\"],\"vecStr\":\"string\",\"vulnTagInfos\":[{\"color\":\"string\",\"comment\":\"string\",\"name\":\"string\"}],\"wildfireMalware\":{\"md5\":\"string\",\"path\":\"string\",\"verdict\":\"string\"}}]}],\"hostDevices\":[{\"ip\":\"0.0.0.0\",\"name\":\"string\"}],\"hosts\":{},\"id\":\"string\",\"err\":\"\",\"collections\":[\"All\"],\"instances\":[{\"host\":\"string\",\"image\":\"string\",\"modified\":\"2023-09-08T04:01:49.951Z\",\"registry\":\"string\",\"repo\":\"string\",\"tag\":\"string\"}],\"scanID\":0,\"trustStatus\":\"\",\"externalLabels\":[{\"key\":\"string\",\"sourceName\":\"string\",\"sourceType\":[\"namespace\"],\"timestamp\":\"2023-09-08T04:01:49.949Z\",\"value\":\"string\"}],\"files\":[{\"md5\":\"string\",\"path\":\"string\",\"sha1\":\"string\",\"sha256\":\"string\"}],\"firewallProtection\":{\"enabled\":false,\"supported\":false,\"outOfBandMode\":\"Observation\",\"ports\":[0],\"tlsPorts\":[0],\"unprotectedProcesses\":[{\"port\":0,\"process\":\"string\",\"tls\":true}]},\"applications\":[{\"installedFromPackage\":true,\"knownVulnerabilities\":0,\"layerTime\":0,\"name\":\"string\",\"path\":\"string\",\"service\":true,\"version\":\"string\"}],\"appEmbedded\":false,\"wildFireUsage\":null,\"agentless\":false,\"malwareAnalyzedTime\":\"0001-01-01T00:00:00Z\"}",
         "start": "0001-01-01T00:00:00.000Z",
@@ -685,7 +685,7 @@ An example event for `host` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.18.0.1:49459"
+            "address": "192.168.252.7:48494"
         }
     },
     "os": {
@@ -1586,10 +1586,10 @@ An example event for `host_profile` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-10-05T07:34:56.953Z",
+    "@timestamp": "2023-10-12T09:50:05.902Z",
     "agent": {
-        "ephemeral_id": "7aac08dc-8216-47f5-b0e3-a8468f742c0c",
-        "id": "41580bc3-bf5c-4446-b4fc-781edc7bf879",
+        "ephemeral_id": "834b71b1-bb61-4636-8b37-de5838c59348",
+        "id": "a9223e44-1b7f-495a-aaf7-299d8ec5ea55",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.0"
@@ -1600,10 +1600,10 @@ An example event for `host_profile` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "41580bc3-bf5c-4446-b4fc-781edc7bf879",
+        "id": "a9223e44-1b7f-495a-aaf7-299d8ec5ea55",
         "snapshot": false,
         "version": "8.8.0"
     },
@@ -1614,7 +1614,7 @@ An example event for `host_profile` looks as following:
         ],
         "created": "2023-08-11T06:53:48.855Z",
         "dataset": "prisma_cloud.host_profile",
-        "ingested": "2023-10-05T07:34:57Z",
+        "ingested": "2023-10-12T09:50:06Z",
         "kind": "asset",
         "original": "{\"_id\":\"DESKTOP-6PXXAMS\",\"hash\":1,\"created\":\"2023-08-11T06:53:48.855Z\",\"time\":\"0001-01-01T00:00:00Z\",\"collections\":[\"All\"]}",
         "type": [
@@ -1629,7 +1629,7 @@ An example event for `host_profile` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.18.0.1:32982"
+            "address": "192.168.252.7:57525"
         }
     },
     "prisma_cloud": {
@@ -1737,8 +1737,8 @@ An example event for `incident_audit` looks as following:
 {
     "@timestamp": "2023-08-30T08:42:17.834Z",
     "agent": {
-        "ephemeral_id": "f4e37092-753a-4e13-93ca-a6c6cc3e9a97",
-        "id": "41580bc3-bf5c-4446-b4fc-781edc7bf879",
+        "ephemeral_id": "f005bcdb-d614-41d1-9b40-d4d79bdde221",
+        "id": "a9223e44-1b7f-495a-aaf7-299d8ec5ea55",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.0"
@@ -1771,10 +1771,10 @@ An example event for `incident_audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "41580bc3-bf5c-4446-b4fc-781edc7bf879",
+        "id": "a9223e44-1b7f-495a-aaf7-299d8ec5ea55",
         "snapshot": false,
         "version": "8.8.0"
     },
@@ -1782,7 +1782,7 @@ An example event for `incident_audit` looks as following:
         "agent_id_status": "verified",
         "dataset": "prisma_cloud.incident_audit",
         "id": "thgry1736",
-        "ingested": "2023-10-05T07:36:45Z",
+        "ingested": "2023-10-12T09:51:43Z",
         "kind": "event",
         "original": "{\"_id\":\"thgry1736\",\"accountID\":\"accounttest\",\"acknowledged\":true,\"app\":\"test\",\"appID\":\"test123\",\"audits\":[{\"_id\":\"id1234\",\"accountID\":\"accounttest\",\"app\":\"test\",\"appID\":\"test123\",\"attackTechniques\":[\"exploitationForPrivilegeEscalation\"],\"attackType\":[\"cloudMetadataProbing\"],\"cluster\":\"clustertest\",\"collections\":[\"collectiontest\"],\"command\":\"commandtest\",\"container\":true,\"containerId\":\"testcontainerid\",\"containerName\":\"testcontainername\",\"count\":0,\"country\":\"in\",\"domain\":\"testdomain\",\"effect\":\"block\",\"err\":\"testerr\",\"filepath\":\"testfilepath\",\"fqdn\":\"testfqdn\",\"function\":\"testfun\",\"functionID\":\"testfunid\",\"hostname\":\"testhostname\",\"imageId\":\"testimgid\",\"imageName\":\"testimgname\",\"interactive\":true,\"ip\":\"81.2.69.142\",\"label\":\"testlabel\",\"labels\":{\"sjhia\": \"ifo\"},\"md5\":\"testmd5\",\"msg\":\"testmsg\",\"namespace\":\"testnamespace\",\"os\":\"testos\",\"pid\":0,\"port\":0,\"processPath\":\"testprocesspath\",\"profileId\":\"testprofileid\",\"provider\":\"aws\",\"rawEvent\":\"testrawevent\",\"region\":\"testregion\",\"requestID\":\"testrequestid\",\"resourceID\":\"testresourceid\",\"ruleName\":\"testrulename\",\"runtime\":\"python\",\"severity\":\"low\",\"time\":\"2023-08-30T08:42:17.834Z\",\"type\":\"processes\",\"user\":\"testuser\",\"version\":\"testversion\",\"vmID\":\"testvmid\",\"wildFireReportURL\":\"testwildfirereporturl\"}],\"category\":\"portScanning\",\"cluster\":\"testcluster\",\"collections\":[\"testcollections\"],\"containerID\":\"testcontainer\",\"containerName\":\"testcontainername\",\"customRuleName\":\"testcustomrulename\",\"fqdn\":\"testfqdn\",\"function\":\"testfunction\",\"functionID\":\"testfunctionid\",\"hostname\":\"testhostname\",\"imageID\":\"testimgid\",\"imageName\":\"testimgname\",\"labels\":{\"aaa\":\"bbb\"},\"namespace\":\"testnamespace\",\"profileID\":\"testprofileid\",\"provider\":\"aws\",\"region\":\"testregion\",\"resourceID\":\"testresourceid\",\"runtime\":\"testruntime\",\"serialNum\":0,\"shouldCollect\":true,\"time\":\"2023-08-30T08:42:17.834Z\",\"type\":\"host\",\"vmID\":\"testvmid\",\"windows\":true}"
     },
@@ -1797,7 +1797,7 @@ An example event for `incident_audit` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.18.0.1:37170"
+            "address": "192.168.252.7:41522"
         }
     },
     "prisma_cloud": {
