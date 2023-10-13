@@ -279,7 +279,6 @@ An example event for `audit` looks as following:
 | o365.audit.MailboxOwnerSid |  | keyword |
 | o365.audit.MailboxOwnerUPN |  | keyword |
 | o365.audit.Members |  | flattened |
-| o365.audit.Members.\* |  | object |
 | o365.audit.ModifiedProperties.\*.\* |  | object |
 | o365.audit.Name |  | keyword |
 | o365.audit.NewValue |  | keyword |
