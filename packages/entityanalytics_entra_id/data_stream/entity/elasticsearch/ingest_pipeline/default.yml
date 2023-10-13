@@ -1,91 +1,155 @@
 ---
-description: Pipeline for processing Microsoft Entra ID user entities.
+description: Pipeline for processing Microsoft Entra ID entities.
 processors:
-- set:
-    field: ecs.version
-    value: "8.10.0"
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.10.0
 
-# Only user documents are currently supported.
-- drop:
-    if: ctx.device?.id != null
+# Drop data(devices) based on the selected dataset "users".
+  - drop:
+      tag: drop_devices_dataset
+      if: ctx.device?.id != null && ctx.tags.contains('users-entities')
+# Drop data(users) based on the selected dataset "devices".
+  - drop:
+      tag: drop_users_dataset
+      if: ctx.user?.id != null && ctx.tags.contains('devices-entities')
 
-# Event properties.
-- set:
-    field: event.category
-    value: ["iam"]
-- set:
-    field: event.type
-    value: ["user", "info"]
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: asset
+  - pipeline:
+      name: '{{ IngestPipeline "device" }}'
+      tag: pipeline_to_device
+      if: ctx.device?.id != null
+  - pipeline:
+      name: '{{ IngestPipeline "user" }}'
+      tag: pipeline_to_user
+      if: ctx.user?.id != null
 
-# User properties.
-- rename:
-    field: azure_ad.mail
-    target_field: user.email
-    ignore_missing: true
-- append:
-    field: user.name
-    value: "{{{azure_ad.userPrincipalName}}}"
-    allow_duplicates: false
-    if: ctx.azure_ad?.userPrincipalName != null
-- rename:
-    field: azure_ad.displayName
-    target_field: user.full_name
-    ignore_missing: true
-- rename:
-    field: azure_ad.givenName
-    target_field: user.first_name
-    ignore_missing: true
-- rename:
-    field: azure_ad.surname
-    target_field: user.last_name
-    ignore_missing: true
-- rename:
-    field: azure_ad.accountEnabled
-    target_field: user.enabled
-    ignore_missing: true
-- append:
-    field: user.phone
-    value: "{{{azure_ad.mobilePhone}}}"
-    allow_duplicates: false
-    if: ctx.azure_ad?.mobilePhone != null
-- append:
-    field: user.phone
-    value: "{{{azure_ad.businessPhones}}}"
-    allow_duplicates: false
-    if: ctx.azure_ad?.businessPhones instanceof String
-- foreach:
-    field: azure_ad.businessPhones
-    if: ctx.azure_ad?.businessPhones instanceof List
-    processor:
-      append:
-        field: user.phone
-        value: "{{{_ingest._value}}}"
-        allow_duplicates: false
-- rename:
-    field: azure_ad.jobTitle
-    target_field: user.job_title
-    ignore_missing: true
-- rename:
-    field: azure_ad.officeLocation
-    target_field: user.work.location
-    ignore_missing: true
-- rename:
-    field: user.group
-    target_field: asset.group
-    ignore_missing: true
-
-- remove:
-    field:
-      - azure_ad
-    ignore_missing: true
-- remove:
-    field: event.original
-    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-    ignore_failure: true
-    ignore_missing: true
+  - remove:
+      field:
+        - azure_ad
+      tag: remove_azure_ad
+      ignore_missing: true
+  - remove:
+      field:
+        - entityanalytics_entra_id.user.account_enabled
+        - entityanalytics_entra_id.user.mail
+        - entityanalytics_entra_id.user.user_principal_name
+        - entityanalytics_entra_id.user.display_name
+        - entityanalytics_entra_id.user.given_name
+        - entityanalytics_entra_id.user.surname
+        - entityanalytics_entra_id.user.mobile_phone
+        - entityanalytics_entra_id.user.business_phones
+        - entityanalytics_entra_id.user.job_title
+        - entityanalytics_entra_id.user.office_location
+        - entityanalytics_entra_id.user.id
+        - entityanalytics_entra_id.device.version
+        - entityanalytics_entra_id.device.display_name
+        - entityanalytics_entra_id.device.is_managed
+        - entityanalytics_entra_id.device.manufacturer
+        - entityanalytics_entra_id.device.model
+        - entityanalytics_entra_id.device.on_premises_last_sync_date_time
+        - entityanalytics_entra_id.device.operating_system
+        - entityanalytics_entra_id.device.operating_system_version
+        - entityanalytics_entra_id.device.registration_date_time
+        - entityanalytics_entra_id.device.system_labels
+        - entityanalytics_entra_id.device.id
+      tag: remove_duplicate_custom_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - foreach:
+      field: entityanalytics_entra_id.device.registered_users
+      if: ctx.entityanalytics_entra_id?.device?.registered_users instanceof List
+      ignore_failure: true
+      processor:
+        remove:
+          field:
+            - _ingest._value.id
+            - _ingest._value.user_principal_name
+            - _ingest._value.mail
+            - _ingest._value.display_name
+            - _ingest._value.given_name
+            - _ingest._value.surname
+            - _ingest._value.job_title
+            - _ingest._value.mobile_phone
+            - _ingest._value.business_phones
+          tag: remove_duplicate_custom_fields_from_device_registered_users
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - foreach:
+      field: entityanalytics_entra_id.device.registered_owners
+      if: ctx.entityanalytics_entra_id?.device?.registered_owners instanceof List
+      ignore_failure: true
+      processor:
+        remove:
+          field:
+            - _ingest._value.id
+            - _ingest._value.user_principal_name
+            - _ingest._value.mail
+            - _ingest._value.display_name
+            - _ingest._value.given_name
+            - _ingest._value.surname
+            - _ingest._value.job_title
+            - _ingest._value.mobile_phone
+            - _ingest._value.business_phones
+          tag: remove_duplicate_custom_fields_from_device_registered_owners
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - foreach:
+      field: entityanalytics_entra_id.device.group
+      if: ctx.entityanalytics_entra_id?.device?.group instanceof List
+      ignore_failure: true
+      processor:
+        remove:
+          field:
+            -  _ingest._value.id
+            - _ingest._value.name
+          tag: remove_duplicate_custom_fields_from_device_group
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - foreach:
+      field: entityanalytics_entra_id.user.group
+      if: ctx.entityanalytics_entra_id?.user?.group instanceof List
+      ignore_failure: true
+      processor:
+        remove:
+          field:
+            -  _ingest._value.id
+            - _ingest._value.name
+          tag: remove_duplicate_custom_fields_from_user_group
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
 
 on_failure:
-- set:
-    field: error.message
-    value: |-
-      Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
