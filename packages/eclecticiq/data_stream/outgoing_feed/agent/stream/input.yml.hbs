@@ -1,0 +1,41 @@
+config_version: 2
+interval: {{interval}}
+resource.timeout: 60s
+resource.url: {{url}}
+
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+{{/if}}
+
+state:
+  url: {{url}}
+  token: {{token}}
+  outgoing_feed_id: {{outgoing_feed_id}}
+redact:
+  fields:
+    - token
+program: |
+  request("GET", state.url + "/private/outgoing-feed-download/" + string(state.outgoing_feed_id)).with({
+    "Header":{"Authorization": ["Bearer " + state.token]}
+  }).do_request().as(
+    og_feed_response, bytes(og_feed_response.Body).decode_json().data.content_blocks.as(
+      block_paths, block_paths.map(
+        block_path, request("GET", state.url + block_path).with({
+          "Header": {
+            "Authorization": ["Bearer " + state.token],
+            "Content-Type": ["text/csv"]
+           }
+        }).do_request().as(
+        block_response, bytes(block_response.Body).mime("text/csv; header=present"))
+      )
+    )
+  ).as(
+    event_data, {
+      "events": event_data.map(e, {
+        "message": e[0].encode_json()
+      }),
+      "url": state.url,
+      "token": state.token,
+      "outgoing_feed_id": state.outgoing_feed_id,
+    }
+  )
