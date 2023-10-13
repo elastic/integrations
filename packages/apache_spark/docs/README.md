@@ -362,23 +362,22 @@ An example event for `executor` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-11T08:29:56.056Z",
+    "@timestamp": "2023-09-28T09:26:45.771Z",
     "agent": {
-        "ephemeral_id": "c7d892ac-3b23-471c-80e4-041490eaab8d",
-        "id": "c5e2a51e-e10a-4561-9861-75b38aa09f4b",
+        "ephemeral_id": "3a3db920-eb4b-4045-b351-33526910ae8a",
+        "id": "a6bdbb4a-4bac-4243-83cb-dba157f24987",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.1.0"
+        "version": "8.8.0"
     },
     "apache_spark": {
         "executor": {
-            "application_name": "app-20220411082945-0000",
-            "gc": {
-                "major": {
-                    "count": 0
-                }
+            "application_name": "app-20230928092630-0000",
+            "id": "0",
+            "jvm": {
+                "cpu_time": 20010000000
             },
-            "id": "0"
+            "mbean": "metrics:name=app-20230928092630-0000.0.JVMCPU.jvmCpuTime,type=gauges"
         }
     },
     "data_stream": {
@@ -390,15 +389,15 @@ An example event for `executor` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "c5e2a51e-e10a-4561-9861-75b38aa09f4b",
+        "id": "a6bdbb4a-4bac-4243-83cb-dba157f24987",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.8.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "apache_spark.executor",
-        "duration": 32964497,
-        "ingested": "2022-04-11T08:29:59Z",
+        "duration": 2849184715,
+        "ingested": "2023-09-28T09:26:49Z",
         "kind": "metric",
         "module": "apache_spark",
         "type": "info"
@@ -407,21 +406,18 @@ An example event for `executor` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "ip": [
-            "172.23.0.7"
-        ],
-        "mac": [
-            "02:42:ac:17:00:07"
-        ],
+        "id": "e8978f2086c14e13b7a0af9ed0011d19",
+        "ip": "172.20.0.7",
+        "mac": "02-42-AC-14-00-07",
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.4.0-107-generic",
+            "kernel": "3.10.0-1160.90.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -440,6 +436,7 @@ An example event for `executor` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |
 | apache_spark.executor.application_name | Name of application. | keyword |
 | apache_spark.executor.bytes.read | Total number of bytes read. | long |
 | apache_spark.executor.bytes.written | Total number of bytes written. | long |
@@ -470,6 +467,7 @@ An example event for `executor` looks as following:
 | apache_spark.executor.id | ID of executor. | keyword |
 | apache_spark.executor.jvm.cpu_time | Elapsed CPU time the JVM spent. | long |
 | apache_spark.executor.jvm.gc_time | Elapsed time the JVM spent in garbage collection while executing this task. | long |
+| apache_spark.executor.mbean | The name of the jolokia mbean. | keyword |
 | apache_spark.executor.memory.direct_pool | Peak memory that the JVM is using for direct buffer pool. | long |
 | apache_spark.executor.memory.jvm.heap | Peak memory usage of the heap that is used for object allocation. | long |
 | apache_spark.executor.memory.jvm.off_heap | Peak memory usage of non-heap memory that is used by the Java virtual machine. | long |
@@ -509,6 +507,12 @@ An example event for `executor` looks as following:
 | apache_spark.executor.threadpool.current_pool_size | The size of the current thread pool of the executor. | long |
 | apache_spark.executor.threadpool.max_pool_size | The maximum size of the thread pool of the executor. | long |
 | apache_spark.executor.threadpool.started_tasks | The number of tasks started in the thread pool of the executor. | long |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |
+| container.id | Unique container id. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -519,6 +523,7 @@ An example event for `executor` looks as following:
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | host.ip | Host ip addresses. | ip |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
