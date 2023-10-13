@@ -215,11 +215,11 @@ An example event for `ioc` looks as following:
 {
     "@timestamp": "2022-05-05T10:39:07.851Z",
     "agent": {
-        "ephemeral_id": "6dc8114b-1fd0-4282-ad4a-35d8c834f388",
-        "id": "11119654-0c23-4f69-bf69-62e3eeb94a21",
+        "ephemeral_id": "26a79bb1-c4ec-498b-b31e-e125ba1f3bc3",
+        "id": "dc81497a-8431-4ec0-aeca-be9bfd9982ba",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.11.0"
     },
     "data_stream": {
         "dataset": "ti_rapid7_threat_command.ioc",
@@ -227,21 +227,21 @@ An example event for `ioc` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "11119654-0c23-4f69-bf69-62e3eeb94a21",
-        "snapshot": false,
-        "version": "8.4.0"
+        "id": "dc81497a-8431-4ec0-aeca-be9bfd9982ba",
+        "snapshot": true,
+        "version": "8.11.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "threat"
         ],
-        "created": "2023-02-01T09:43:14.830Z",
+        "created": "2023-09-26T13:26:21.497Z",
         "dataset": "ti_rapid7_threat_command.ioc",
-        "ingested": "2023-02-01T09:43:15Z",
+        "ingested": "2023-09-26T13:26:22Z",
         "kind": "enrichment",
         "module": "ti_rapid7_threat_command",
         "original": "{\"firstSeen\":\"2022-05-04T20:11:04.000Z\",\"lastSeen\":\"2022-05-04T20:11:04.000Z\",\"lastUpdateDate\":\"2022-05-05T10:39:07.851Z\",\"relatedCampaigns\":[],\"relatedMalware\":[\"remcos\"],\"relatedThreatActors\":[],\"reportedFeeds\":[{\"confidenceLevel\":2,\"id\":\"5b68306df84f7c8696047fdd\",\"name\":\"Test Feed\"}],\"score\":13.26086956521739,\"severity\":\"Low\",\"status\":\"Active\",\"tags\":[\"Test\"],\"type\":\"IpAddresses\",\"value\":\"89.160.20.112\",\"whitelisted\":false}",
@@ -352,9 +352,9 @@ An example event for `ioc` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.risk_score | Risk score or priority of the event (e.g. security solutions). Use your system's original value here. | float |
@@ -382,7 +382,7 @@ An example event for `ioc` looks as following:
 | rapid7.tc.ioc.geolocation | Geographical location of an IP address. | keyword |
 | rapid7.tc.ioc.last_seen | IOC last seen date in Unix Millisecond Timestamp. | date |
 | rapid7.tc.ioc.last_update_date | IOC last update date in Unix Millisecond Timestamp. | date |
-| rapid7.tc.ioc.provider | List of the indicator providers. | array |
+| rapid7.tc.ioc.provider | List of the indicator providers. | keyword |
 | rapid7.tc.ioc.related.campaigns | List of IOC related campaigns. | keyword |
 | rapid7.tc.ioc.related.malware | List of IOC related malware families. | keyword |
 | rapid7.tc.ioc.related.threat_actors | List of IOC related threat actors. | keyword |
@@ -453,11 +453,11 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2022-11-02T10:03:56.139Z",
     "agent": {
-        "ephemeral_id": "1da637f3-ae1f-45bb-9dca-72a087917374",
-        "id": "11119654-0c23-4f69-bf69-62e3eeb94a21",
+        "ephemeral_id": "743b16ad-875e-4038-9516-8f13a9aa47df",
+        "id": "dc81497a-8431-4ec0-aeca-be9bfd9982ba",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.11.0"
     },
     "data_stream": {
         "dataset": "ti_rapid7_threat_command.alert",
@@ -465,19 +465,19 @@ An example event for `alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "11119654-0c23-4f69-bf69-62e3eeb94a21",
-        "snapshot": false,
-        "version": "8.4.0"
+        "id": "dc81497a-8431-4ec0-aeca-be9bfd9982ba",
+        "snapshot": true,
+        "version": "8.11.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-02-01T09:42:42.976Z",
+        "created": "2023-09-26T13:25:23.714Z",
         "dataset": "ti_rapid7_threat_command.alert",
         "id": "123456789abcdefgh8866123",
-        "ingested": "2023-02-01T09:42:45Z",
+        "ingested": "2023-09-26T13:25:26Z",
         "kind": "alert",
         "module": "ti_rapid7_threat_command",
         "original": "{\"Assets\":[{\"Type\":\"Domains\",\"Value\":\"example.com\"}],\"Assignees\":[],\"Closed\":{\"IsClosed\":true},\"Details\":{\"Description\":\"A suspicious domain 'example.com' was found to have characteristics indicating it may be used to carry out phishing attacks. | Recommendations:  It is recommended to block the domain in your URL filtering and mail systems. This can prevent phishing emails being received by your employees and access to websites attempting to steal sensitive information. Click “Remediate” in order to initiate the takedown process for this domain.\",\"Images\":[\"1al5s6789z6e2b0m9s8a8q60\"],\"Severity\":\"Low\",\"Source\":{\"NetworkType\":\"ClearWeb\",\"Type\":\"WHOIS servers\",\"URL\":\"http://example.com\"},\"SubType\":\"RegisteredSuspiciousDomain\",\"Tags\":[{\"CreatedBy\":\"ProfilingRule\",\"Name\":\"Phishing Domain - Default Detection Rule\",\"_id\":\"1al3p6789zxcvbnmas8a8q60\"}],\"Title\":\"Suspected Phishing Domain - 'example.com'\",\"Type\":\"Phishing\"},\"FoundDate\":\"2022-11-02T10:03:56.139Z\",\"IsFlagged\":false,\"RelatedIocs\":[\"example.com\"],\"RelatedThreatIDs\":[\"6a4e7t9a111bd0003bcc2a57\"],\"TakedownStatus\":\"NotSent\",\"UpdateDate\":\"2022-11-02T10:03:56.139Z\",\"_id\":\"123456789abcdefgh8866123\"}",
@@ -564,10 +564,10 @@ An example event for `alert` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.id | Unique ID to describe the event. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.reference | Reference URL linking to additional information about this event. This URL links to a static definition of this event. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
@@ -631,11 +631,11 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2020-08-24T21:46:48.619Z",
     "agent": {
-        "ephemeral_id": "746f88dd-40e1-4ee0-a6ee-6c227edf2ee0",
-        "id": "11119654-0c23-4f69-bf69-62e3eeb94a21",
+        "ephemeral_id": "79ef7310-154a-4f30-a450-263900ebad89",
+        "id": "dc81497a-8431-4ec0-aeca-be9bfd9982ba",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.11.0"
     },
     "data_stream": {
         "dataset": "ti_rapid7_threat_command.vulnerability",
@@ -643,26 +643,27 @@ An example event for `vulnerability` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "11119654-0c23-4f69-bf69-62e3eeb94a21",
-        "snapshot": false,
-        "version": "8.4.0"
+        "id": "dc81497a-8431-4ec0-aeca-be9bfd9982ba",
+        "snapshot": true,
+        "version": "8.11.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
-            "threat"
+            "threat",
+            "vulnerability"
         ],
-        "created": "2023-02-01T09:43:53.270Z",
+        "created": "2023-09-26T13:27:12.970Z",
         "dataset": "ti_rapid7_threat_command.vulnerability",
-        "ingested": "2023-02-01T09:43:56Z",
+        "ingested": "2023-09-26T13:27:15Z",
         "kind": "event",
         "module": "ti_rapid7_threat_command",
         "original": "{\"cpe\":[{\"Range\":{\"VersionEndExcluding\":\"\",\"VersionEndIncluding\":\"4.0.0\",\"VersionStartExcluding\":\"\",\"VersionStartIncluding\":\"1.0.0\"},\"Title\":\"Php\",\"Value\":\"cpe:2.3:a:php:php:*:*:*:*:*:*:*:*\",\"VendorProduct\":\"php php\"}],\"cveId\":\"CVE-2020-7064\",\"cvssScore\":5.4,\"exploitAvailability\":false,\"firstMentionDate\":\"N/A\",\"intsightsScore\":16,\"lastMentionDate\":\"2020-04-01T04:15:00.000Z\",\"mentionsAmount\":0,\"mentionsPerSource\":{\"ClearWebCyberBlogs\":0,\"CodeRepositories\":0,\"DarkWeb\":0,\"Exploit\":0,\"HackingForum\":0,\"InstantMessage\":0,\"PasteSite\":0,\"SocialMedia\":0},\"publishedDate\":\"2020-04-01T04:15:00.000Z\",\"relatedCampaigns\":[\"SolarWinds\"],\"relatedMalware\":[\"doppeldridex\",\"dridex\"],\"relatedThreatActors\":[\"doppelspider\"],\"severity\":\"Low\",\"updateDate\":\"2020-08-24T21:46:48.619Z\",\"vulnerabilityOrigin\":[\"Qualys\"]}",
         "type": [
-            "info"
+            "indicator"
         ]
     },
     "input": {
@@ -775,9 +776,9 @@ An example event for `vulnerability` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |

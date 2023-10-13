@@ -47,13 +47,13 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-05-12T07:01:02.145Z",
+    "@timestamp": "2023-09-22T03:31:55.887Z",
     "agent": {
-        "ephemeral_id": "5ad04d6b-7576-496c-aadf-72e9c1e72eab",
-        "id": "26dd4270-014a-48d2-8f5d-6aa3f48a273c",
+        "ephemeral_id": "20bd2ad7-6c7e-4d34-9d55-57edc09ba1a6",
+        "id": "a4d1a8b2-b45c-4d97-a37a-bd371f13111b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.8.1"
     },
     "cloud": {
         "account": {
@@ -70,12 +70,12 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "26dd4270-014a-48d2-8f5d-6aa3f48a273c",
+        "id": "a4d1a8b2-b45c-4d97-a37a-bd371f13111b",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.8.1"
     },
     "event": {
         "action": "Execution",
@@ -88,15 +88,14 @@ An example event for `log` looks as following:
         "duration": 101466100,
         "end": "2021-01-26T20:31:33.0577322Z",
         "id": "da637472900382838869_1364969609",
-        "ingested": "2023-05-12T07:01:03Z",
+        "ingested": "2023-09-22T03:31:58Z",
         "kind": "alert",
         "provider": "defender_endpoint",
         "severity": 2,
         "start": "2021-01-26T20:31:32.9562661Z",
         "timezone": "UTC",
         "type": [
-            "user",
-            "creation",
+            "access",
             "start"
         ]
     },
@@ -147,7 +146,9 @@ An example event for `log` looks as following:
     "threat": {
         "framework": "MITRE ATT\u0026CK",
         "technique": {
-            "name": "Execution"
+            "name": [
+                "Execution"
+            ]
         }
     },
     "user": {
@@ -185,17 +186,17 @@ An example event for `log` looks as following:
 | error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
-| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
+| event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
+| event.end | `event.end` contains the date when the event ended or when the activity was last observed. | date |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
-| event.start | event.start contains the date when the event started or when the activity was first observed. | date |
+| event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.extension | File extension, excluding the leading dot. Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | file.hash.md5 | MD5 hash. | keyword |

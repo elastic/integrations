@@ -3,7 +3,7 @@ description: Pipeline for parsing Slack Audit logs
 processors:
 - set:
     field: ecs.version
-    value: '8.8.0'
+    value: '8.10.0'
 - rename:
     field: message
     target_field: event.original
@@ -138,6 +138,15 @@ processors:
     field: json.details.reason
     target_field: slack.audit.details.reason
     ignore_missing: true
+- script:
+    if: ctx.json?.details?.action_timestamp != null && ctx.json.details.action_timestamp > 1e13
+    description: Parse action_timestamp as microseconds since unix epoch.
+    tag: action-timestamp-microseconds
+    source: |
+      def secs = (long)(ctx.json.details.action_timestamp/1e6);
+      def nanos = (long)(ctx.json.details.action_timestamp % 1e6) * 1000;
+      ctx["@timestamp"] = Instant.ofEpochSecond(secs, nanos).atZone(ZoneId.of("UTC"));
+      ctx.json.details.remove("action_timestamp");
 - date:
     if: ctx.json?.details?.action_timestamp != null
     field: json.details.action_timestamp
@@ -339,7 +348,7 @@ processors:
         category:
           - file
         type:
-          - allowed
+          - access
       file_downloaded_blocked:
         category:
           - file
@@ -373,7 +382,7 @@ processors:
           - info
     source: |
       ctx.event.kind = 'event';
-      ctx.event.type = 'info';
+      ctx.event.type = ['info'];
       if (ctx.event?.action == null) {
           return;
       }

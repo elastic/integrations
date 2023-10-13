@@ -10,7 +10,7 @@ processors:
       ignore_missing: true
   - set:
       field: ecs.version
-      value: '8.8.0'
+      value: '8.10.0'
   - grok:
       field: event.original
       patterns:
@@ -77,6 +77,14 @@ processors:
           return;
         }
         ctx.log.syslog.severity.name = params[(ctx.log.syslog.severity.code).toString()];
+
+  # Remove port number from syslog source, and put to ECS log.syslog.hostname
+  - gsub:
+      if: ctx.log?.source?.address != null && ctx.log.source.address != ''
+      field: log.source.address
+      pattern: :.*
+      replacement: ''
+      target_field: log.syslog.hostname
         
   # Parse the JSON message to arista.*
   - json:
@@ -369,6 +377,10 @@ processors:
       field: arista.sessionId
       target_field: event.id
       ignore_missing: true
+  - convert:
+      field: event.id
+      type: string
+      ignore_missing: true
   - script:
       lang: painless
       source: |
@@ -572,10 +584,14 @@ processors:
         }
         if (ctx.event.category.contains('network') || ctx.event.category.contains('intrusion_detection')) {
           if (ctx.event.outcome == 'success') {
-            ctx.event.type.add('allowed');
+            if (ctx.event?.type == null || !ctx.event.type.contains('allowed')) {
+              ctx.event.type.add('allowed');
+            }
           }
           if (ctx.event.outcome == 'failure') {
-            ctx.event.type.add('denied');
+            if (ctx.event?.type == null || !ctx.event.type.contains('denied')) {
+              ctx.event.type.add('denied');
+            }
           }
         }
 
@@ -594,6 +610,38 @@ processors:
       field: arista.protocolName
       target_field: network.transport
       ignore_missing: true
+  - script:
+      description: Calculate network.bytes
+      if: (ctx.source?.bytes != null || ctx.destination?.bytes != null) && ctx.network?.bytes == null
+      ignore_failure: true
+      lang: painless
+      source: |
+        if (ctx.network == null) {
+          ctx.network = new HashMap();
+        }
+        if (ctx.source.bytes != null && ctx.destination.bytes != null) {
+          ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes
+        } else if (ctx.source.bytes == null && ctx.destination.bytes != null) {
+          ctx.network.bytes = ctx.destination.bytes
+        } else if (ctx.source.bytes != null && ctx.destination.bytes == null) {
+          ctx.network.bytes = ctx.source.bytes
+        }
+  - script:
+      description: Calculate network.packets
+      if: (ctx.source?.packets != null || ctx.destination?.packets != null) && ctx.network?.packets == null
+      ignore_failure: true
+      lang: painless
+      source: |
+        if (ctx.network == null) {
+          ctx.network = new HashMap();
+        }
+        if (ctx.source.packets != null && ctx.destination.packets != null) {
+          ctx.network.packets = ctx.source.packets + ctx.destination.packets
+        } else if (ctx.source.packets == null && ctx.destination.packets != null) {
+          ctx.network.packets = ctx.destination.packets
+        } else if (ctx.source.packets != null && ctx.destination.packets == null) {
+          ctx.network.packets = ctx.source.packets
+        }
   - script:
       description: Calculate network.direction if zones are not configured
       lang: painless
@@ -789,10 +837,23 @@ processors:
       target_field: user.name
       ignore_missing: true
 
+  ######################
+  ## ECS Host Mapping ##
+  ######################
+  - rename:
+      field: arista.hostname
+      target_field: host.name
+      ignore_missing: true
+
   #########################
   ## ECS Related Mapping ##
   #########################
   # Hosts
+  - append:
+      if: ctx.host?.name != null
+      field: related.hosts
+      value: '{{{host.name}}}'
+      allow_duplicates: false
   - append:
       if: ctx.destination?.domain != null
       field: related.hosts
@@ -861,7 +922,6 @@ processors:
         - arista.clientLatitude
         - arista.clientLongitude
         - arista.filterPrefix
-        - arista.hostname
         - arista.localAddr
         - arista.remoteAddr
         - arista.httpRequestEvent.sessionEvent

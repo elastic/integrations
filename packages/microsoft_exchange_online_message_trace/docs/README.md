@@ -19,19 +19,11 @@ The `log` dataset collects the Microsoft Exchange Online Message Trace logs.
 The basic authentication configuration fields have been removed from this integration as Microsoft has deprecated and disabled basic authentication for Exchange Online. See the [deprecation notification](https://learn.microsoft.com/en-us/exchange/clients-and-mobile-in-exchange-online/deprecation-of-basic-authentication-exchange-online) for details.
 In order to continue using the Microsoft Exchange Online Message Trace you will need to enable and configure OAuth2 authentication.
 
-### Steps :
+### Steps:
 You'll need to register your application with Azure Active Directory and obtain the necessary credentials: Client ID, Client Secret, and Tenant ID. 
 You can follow these steps to create an Azure AD application:
 
-1) Go to the Azure portal (https://portal.azure.com/) and sign in.
-2) Click on "Azure Active Directory" in the left-hand menu.
-3) Select "App registrations" and click "New registration".
-4) Enter a name for your application, select "Accounts in this organizational directory only" for "Supported account types", and enter the redirect 
-   URI for your application.
-5) Click "Register" to create the application.
-6) On the application page, make note of the "Application (client) ID" (which is your client ID) and the "Directory (tenant) ID" (which is your 
-   tenant ID).
-7) Under "Certificates & secrets", click "New client secret" to create a new secret. Make note of the secret value (which is your client secret).
+For a detailed guide on how to setup your account and credentials please refer to the official guide linked [here](https://learn.microsoft.com/en-gb/previous-versions/office/developer/o365-enterprise-developers/jj984325(v=office.15)#get-started-with-reporting-web-service)
 
 With these credentials in hand, you can now configure the integration with the appropriate parameters.
 
@@ -119,11 +111,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2022-09-05T18:10:13.490Z",
     "agent": {
-        "ephemeral_id": "8de97862-77fa-4e44-91be-5d3947dd67aa",
-        "id": "6f0c420a-c434-4d40-90cb-956665a6fdd6",
+        "ephemeral_id": "f42c0a8e-b2c0-4772-ab85-278acafa95f5",
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.5.1"
+        "version": "8.8.2"
     },
     "data_stream": {
         "dataset": "microsoft_exchange_online_message_trace.log",
@@ -149,15 +141,21 @@ An example event for `log` looks as following:
         },
         "ip": "216.160.83.56",
         "registered_domain": "contoso.com",
-        "top_level_domain": "com"
+        "top_level_domain": "com",
+        "user": {
+            "domain": "contoso.com",
+            "email": "linus@contoso.com",
+            "id": "linus@contoso.com",
+            "name": "linus"
+        }
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "6f0c420a-c434-4d40-90cb-956665a6fdd6",
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
         "snapshot": false,
-        "version": "8.5.1"
+        "version": "8.8.2"
     },
     "email": {
         "attachments": {
@@ -167,21 +165,25 @@ An example event for `log` looks as following:
         },
         "delivery_timestamp": "2022-09-05T18:10:13.4907658",
         "from": {
-            "address": "azure-noreply@microsoft.com"
+            "address": [
+                "azure-noreply@microsoft.com"
+            ]
         },
         "local_id": "cf7a249a-5edd-4350-130a-08da8f69e0f6",
         "message_id": "\u003ca210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com\u003e",
         "subject": "PIM: A privileged directory role was assigned outside of PIM",
         "to": {
-            "address": "linus@contoso.com"
+            "address": [
+                "linus@contoso.com"
+            ]
         }
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-02-05T23:16:02.721Z",
+        "created": "2023-07-24T14:46:09.199Z",
         "dataset": "microsoft_exchange_online_message_trace.log",
         "end": "2022-09-06T09:01:46.036Z",
-        "ingested": "2023-02-05T23:16:03Z",
+        "ingested": "2023-07-24T14:46:12Z",
         "original": "{\"EndDate\":\"2022-09-06T09:01:46.0369423Z\",\"FromIP\":\"81.2.69.144\",\"Index\":0,\"MessageId\":\"\\u003ca210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com\\u003e\",\"MessageTraceId\":\"cf7a249a-5edd-4350-130a-08da8f69e0f6\",\"Organization\":\"contoso.com\",\"Received\":\"2022-09-05T18:10:13.4907658\",\"RecipientAddress\":\"linus@contoso.com\",\"SenderAddress\":\"azure-noreply@microsoft.com\",\"Size\":87891,\"StartDate\":\"2022-09-04T09:01:46.0369423Z\",\"Status\":\"Delivered\",\"Subject\":\"PIM: A privileged directory role was assigned outside of PIM\",\"ToIP\":\"216.160.83.56\"}",
         "outcome": "Delivered",
         "start": "2022-09-04T09:01:46.036Z"
@@ -207,6 +209,14 @@ An example event for `log` looks as following:
             "ToIP": "216.160.83.56"
         }
     },
+    "related": {
+        "user": [
+            "linus@contoso.com",
+            "azure-noreply@microsoft.com",
+            "linus",
+            "azure-noreply"
+        ]
+    },
     "source": {
         "domain": "microsoft.com",
         "geo": {
@@ -223,7 +233,13 @@ An example event for `log` looks as following:
         },
         "ip": "81.2.69.144",
         "registered_domain": "microsoft.com",
-        "top_level_domain": "com"
+        "top_level_domain": "com",
+        "user": {
+            "domain": "microsoft.com",
+            "email": "azure-noreply@microsoft.com",
+            "id": "azure-noreply@microsoft.com",
+            "name": "azure-noreply"
+        }
     },
     "tags": [
         "preserve_original_event",
@@ -270,10 +286,10 @@ An example event for `log` looks as following:
 | email.subject | A brief summary of the topic of the message. | keyword |
 | email.subject.text | Multi-field of `email.subject`. | match_only_text |
 | email.to.address | The email address of recipient | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
-| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.start | event.start contains the date when the event started or when the activity was first observed. | date |
+| event.end | `event.end` contains the date when the event ended or when the activity was last observed. | date |
+| event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | input.type |  | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset |  | long |

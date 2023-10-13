@@ -34,10 +34,10 @@ By default the indicators will be collected every 1 minute, and deduplication is
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
@@ -106,11 +106,11 @@ An example event for `threat` looks as following:
 {
     "@timestamp": "2021-10-01T18:36:03.000Z",
     "agent": {
-        "ephemeral_id": "9d50b50e-cf01-4905-b2ed-3557c6d540db",
-        "id": "a7be703c-0d78-40ea-8ad7-a02245cca635",
+        "ephemeral_id": "37eb63bd-5e42-4366-be2e-c82dfceae102",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.3.2"
+        "version": "8.9.1"
     },
     "data_stream": {
         "dataset": "ti_threatq.threat",
@@ -118,22 +118,26 @@ An example event for `threat` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "a7be703c-0d78-40ea-8ad7-a02245cca635",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
         "snapshot": false,
-        "version": "8.3.2"
+        "version": "8.9.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "threat",
-        "created": "2022-08-01T16:06:47.804Z",
+        "category": [
+            "threat"
+        ],
+        "created": "2023-08-29T13:46:54.929Z",
         "dataset": "ti_threatq.threat",
-        "ingested": "2022-08-01T16:06:48Z",
+        "ingested": "2023-08-29T13:46:57Z",
         "kind": "enrichment",
         "original": "{\"adversaries\":[],\"attributes\":[{\"attribute_id\":5,\"created_at\":\"2021-10-01 18:36:06\",\"id\":4893068,\"indicator_id\":106767,\"name\":\"Contact\",\"touched_at\":\"2021-10-24 18:36:10\",\"updated_at\":\"2021-10-24 18:36:10\",\"value\":\"email:Quetzalcoatl_relays[]protonmail.com url:https://quetzalcoatl-relays.org proof:uri-rsa hoster:frantech.ca\"},{\"attribute_id\":9,\"created_at\":\"2021-10-01 18:36:06\",\"id\":4893069,\"indicator_id\":106767,\"name\":\"Router Port\",\"touched_at\":\"2021-10-24 18:36:10\",\"updated_at\":\"2021-10-24 18:36:10\",\"value\":\"9000\"},{\"attribute_id\":6,\"created_at\":\"2021-10-01 18:36:06\",\"id\":4893070,\"indicator_id\":106767,\"name\":\"Flags\",\"touched_at\":\"2021-10-02 18:36:08\",\"updated_at\":\"2021-10-02 18:36:08\",\"value\":\"ERDV\"}],\"class\":\"network\",\"created_at\":\"2021-10-01 18:36:03\",\"expires_calculated_at\":\"2021-10-23 18:40:17\",\"hash\":\"69beef49fdbd1f54eef3cab324c7b6cf\",\"id\":106767,\"published_at\":\"2021-10-01 18:36:03\",\"score\":0,\"sources\":[{\"created_at\":\"2021-10-01 18:36:06\",\"creator_source_id\":12,\"id\":3699669,\"indicator_id\":106767,\"indicator_status_id\":1,\"indicator_type_id\":15,\"name\":\"www.dan.me.uk Tor Node List\",\"published_at\":\"2021-10-01 18:36:06\",\"reference_id\":37,\"source_id\":12,\"source_type\":\"connectors\",\"updated_at\":\"2021-10-24 18:36:10\"}],\"status\":{\"description\":\"Poses a threat and is being exported to detection tools.\",\"id\":1,\"name\":\"Active\"},\"status_id\":1,\"touched_at\":\"2021-10-24 18:36:10\",\"type\":{\"class\":\"network\",\"id\":15,\"name\":\"IP Address\"},\"type_id\":15,\"updated_at\":\"2021-10-01 18:36:03\",\"value\":\"107.189.1.90\"}",
-        "type": "indicator"
+        "type": [
+            "indicator"
+        ]
     },
     "input": {
         "type": "httpjson"

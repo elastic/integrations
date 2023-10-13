@@ -92,7 +92,7 @@ Audit logs summarize the history of changes made within your Cloudflare account.
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
@@ -146,11 +146,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2021-11-30T13:42:04.000Z",
     "agent": {
-        "ephemeral_id": "cda31903-d3e4-4a1a-acb3-7e49abd31cb8",
-        "id": "b24488e9-8abc-4656-b489-a14346cd8097",
+        "ephemeral_id": "c1f5062e-f467-4812-af6a-7d4b4e7c942d",
+        "id": "4b6522ee-8519-493a-b53a-a85672045358",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.10.1"
     },
     "cloud": {
         "account": {
@@ -178,12 +178,12 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "b24488e9-8abc-4656-b489-a14346cd8097",
+        "id": "4b6522ee-8519-493a-b53a-a85672045358",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.10.1"
     },
     "event": {
         "action": "rotate_api_key",
@@ -191,10 +191,10 @@ An example event for `audit` looks as following:
         "category": [
             "iam"
         ],
-        "created": "2023-05-30T15:16:32.942Z",
+        "created": "2023-10-10T14:41:04.679Z",
         "dataset": "cloudflare.audit",
         "id": "8d3396e8-c903-5a66-9421-00fc34570550",
-        "ingested": "2023-05-30T15:16:33Z",
+        "ingested": "2023-10-10T14:41:05Z",
         "kind": "event",
         "original": "{\"action\":{\"info\":\"key digest: c6b5d100d7ce492d24c5b13160fce1cc0092ce7e8d8430e9f5cf5468868be6f6\",\"result\":true,\"type\":\"rotate_API_key\"},\"actor\":{\"email\":\"user@example.com\",\"id\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"ip\":\"52.91.36.10\",\"type\":\"user\"},\"id\":\"8d3396e8-c903-5a66-9421-00fc34570550\",\"interface\":\"\",\"metadata\":{},\"newValue\":\"\",\"oldValue\":\"\",\"owner\":{\"id\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\"},\"resource\":{\"id\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"type\":\"account\"},\"when\":\"2021-11-30T13:42:04Z\"}",
         "outcome": "success",
@@ -253,6 +253,8 @@ These logs contain data related to the connecting client, the request path throu
 | client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
+| cloudflare.bot.score.src | Detection engine responsible for generating the Bot Score. Possible values are Not Computed, Heuristics, Machine Learning, Behavioral Analysis, Verified Bot, JS Fingerprinting, Cloudflare Service. | text |
+| cloudflare.bot.score.value | Cloudflare Bot Score. Scores below 30 are commonly associated with automated traffic. | long |
 | cloudflare.cache.bytes | Number of bytes returned by the cache | long |
 | cloudflare.cache.status | Status of cache | keyword |
 | cloudflare.cache.status_code | HTTP status code returned by the cache to the edge. All requests (including non-cacheable ones) go through the cache. | long |
@@ -317,17 +319,17 @@ These logs contain data related to the connecting client, the request path throu
 | error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
-| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
+| event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
+| event.end | `event.end` contains the date when the event ended or when the activity was last observed. | date |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
-| event.start | event.start contains the date when the event started or when the activity was first observed. | date |
+| event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -437,11 +439,11 @@ An example event for `logpull` looks as following:
 {
     "@timestamp": "2019-08-02T15:29:08.000Z",
     "agent": {
-        "ephemeral_id": "942c0900-9eb8-43ac-bf2f-3a7070a381dc",
-        "id": "b24488e9-8abc-4656-b489-a14346cd8097",
+        "ephemeral_id": "a27dd9de-634b-47ac-a284-09aaea297972",
+        "id": "4b6522ee-8519-493a-b53a-a85672045358",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.10.1"
     },
     "client": {
         "address": "35.232.161.245",
@@ -539,12 +541,12 @@ An example event for `logpull` looks as following:
         "bytes": 2848
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "b24488e9-8abc-4656-b489-a14346cd8097",
+        "id": "4b6522ee-8519-493a-b53a-a85672045358",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.10.1"
     },
     "event": {
         "action": [
@@ -555,11 +557,11 @@ An example event for `logpull` looks as following:
         "category": [
             "network"
         ],
-        "created": "2023-05-30T15:16:56.928Z",
+        "created": "2023-10-10T14:42:46.310Z",
         "dataset": "cloudflare.logpull",
         "duration": 0,
         "end": "2019-08-02T15:29:08.000Z",
-        "ingested": "2023-05-30T15:16:57Z",
+        "ingested": "2023-10-10T14:42:49Z",
         "kind": "event",
         "original": "{\"CacheCacheStatus\":\"unknown\",\"CacheResponseBytes\":0,\"CacheResponseStatus\":0,\"CacheTieredFill\":false,\"ClientASN\":15169,\"ClientCountry\":\"us\",\"ClientDeviceType\":\"desktop\",\"ClientIP\":\"35.232.161.245\",\"ClientIPClass\":\"noRecord\",\"ClientRequestBytes\":2577,\"ClientRequestHost\":\"cf-analytics.com\",\"ClientRequestMethod\":\"POST\",\"ClientRequestPath\":\"/wp-cron.php\",\"ClientRequestProtocol\":\"HTTP/1.1\",\"ClientRequestReferer\":\"https://cf-analytics.com/wp-cron.php?doing_wp_cron=1564759748.3962020874023437500000\",\"ClientRequestURI\":\"/wp-cron.php?doing_wp_cron=1564759748.3962020874023437500000\",\"ClientRequestUserAgent\":\"WordPress/5.2.2;https://cf-analytics.com\",\"ClientSSLCipher\":\"ECDHE-ECDSA-AES128-GCM-SHA256\",\"ClientSSLProtocol\":\"TLSv1.2\",\"ClientSrcPort\":55028,\"EdgeColoID\":14,\"EdgeEndTimestamp\":\"2019-08-02T15:29:08Z\",\"EdgePathingOp\":\"wl\",\"EdgePathingSrc\":\"filter_based_firewall\",\"EdgePathingStatus\":\"captchaNew\",\"EdgeRateLimitAction\":\"\",\"EdgeRateLimitID\":0,\"EdgeRequestHost\":\"\",\"EdgeResponseBytes\":2848,\"EdgeResponseCompressionRatio\":2.64,\"EdgeResponseContentType\":\"text/html\",\"EdgeResponseStatus\":403,\"EdgeServerIP\":\"\",\"EdgeStartTimestamp\":\"2019-08-02T15:29:08Z\",\"FirewallMatchesActions\":[\"simulate\",\"challenge\"],\"FirewallMatchesRuleIDs\":[\"094b71fea25d4860a61fa0c6fbbd8d8b\",\"e454fd4a0ce546b3a9a462536613692c\"],\"FirewallMatchesSources\":[\"firewallRules\",\"firewallRules\"],\"OriginIP\":\"\",\"OriginResponseBytes\":0,\"OriginResponseHTTPExpires\":\"\",\"OriginResponseHTTPLastModified\":\"\",\"OriginResponseStatus\":0,\"OriginResponseTime\":0,\"OriginSSLProtocol\":\"unknown\",\"ParentRayID\":\"00\",\"RayID\":\"500115ec386354d8\",\"SecurityLevel\":\"med\",\"WAFAction\":\"unknown\",\"WAFFlags\":\"0\",\"WAFMatchedVar\":\"\",\"WAFProfile\":\"unknown\",\"WAFRuleID\":\"\",\"WAFRuleMessage\":\"\",\"WorkerCPUTime\":0,\"WorkerStatus\":\"unknown\",\"WorkerSubrequest\":false,\"WorkerSubrequestCount\":0,\"ZoneID\":155978002}",
         "start": "2019-08-02T15:29:08.000Z"

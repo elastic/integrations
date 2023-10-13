@@ -271,7 +271,7 @@ The `audit` dataset collects audit logs of administrative activities and accesse
 | gcp.audit.request_metadata.caller_ip | The IP address of the caller. | ip |
 | gcp.audit.request_metadata.caller_supplied_user_agent | The user agent of the caller. This information is not authenticated and  should be treated accordingly. | keyword |
 | gcp.audit.request_metadata.raw.caller_ip | The raw IP address of the caller. | keyword |
-| gcp.audit.resource_location.current_locations | Current locations of the resource. | array |
+| gcp.audit.resource_location.current_locations | Current locations of the resource. | keyword |
 | gcp.audit.resource_name | The resource or collection that is the target of the operation.  The name is a scheme-less URI, not including the API service name.  For example, 'shelves/SHELF_ID/books'. | keyword |
 | gcp.audit.response |  | flattened |
 | gcp.audit.service_name | The name of the API service performing the operation.  For example, datastore.googleapis.com. | keyword |
@@ -358,11 +358,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2019-12-19T00:44:25.051Z",
     "agent": {
-        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "ephemeral_id": "7780bdcf-661a-4891-83bd-dd5233873f9d",
+        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.7.1"
     },
     "client": {
         "user": {
@@ -384,9 +384,9 @@ An example event for `audit` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
+        "snapshot": false,
+        "version": "8.7.1"
     },
     "event": {
         "action": "beta.compute.instances.aggregatedList",
@@ -395,10 +395,10 @@ An example event for `audit` looks as following:
             "network",
             "configuration"
         ],
-        "created": "2023-01-13T14:59:20.459Z",
+        "created": "2023-07-19T18:53:36.388Z",
         "dataset": "gcp.audit",
         "id": "yonau2dg2zi",
-        "ingested": "2023-01-13T14:59:21Z",
+        "ingested": "2023-07-19T18:53:40Z",
         "kind": "event",
         "outcome": "success",
         "provider": "data_access",
@@ -540,7 +540,7 @@ The `firewall` dataset collects logs from Firewall Rules in your Virtual Private
 | gcp.firewall.rule_details.action | Action that the rule performs on match. | keyword |
 | gcp.firewall.rule_details.destination_range | List of destination ranges that the firewall applies to. | keyword |
 | gcp.firewall.rule_details.direction | Direction of traffic that matches this rule. | keyword |
-| gcp.firewall.rule_details.ip_port_info | List of ip protocols and applicable port ranges for rules. | array |
+| gcp.firewall.rule_details.ip_port_info | List of ip protocols and applicable port ranges for rules. | nested |
 | gcp.firewall.rule_details.priority | The priority for the firewall rule. | long |
 | gcp.firewall.rule_details.reference | Reference to the firewall rule. | keyword |
 | gcp.firewall.rule_details.source_range | List of source ranges that the firewall rule applies to. | keyword |
@@ -611,11 +611,11 @@ An example event for `firewall` looks as following:
 {
     "@timestamp": "2019-10-30T13:52:42.191Z",
     "agent": {
-        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "ephemeral_id": "cf009128-e43c-42e4-9158-9b088bd6f3f5",
+        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.7.1"
     },
     "cloud": {
         "availability_zone": "us-east1-b",
@@ -640,20 +640,25 @@ An example event for `firewall` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
+        "snapshot": false,
+        "version": "8.7.1"
     },
     "event": {
         "action": "firewall-rule",
         "agent_id_status": "verified",
-        "category": "network",
-        "created": "2023-01-13T15:01:23.807Z",
+        "category": [
+            "network"
+        ],
+        "created": "2023-07-19T18:55:10.718Z",
         "dataset": "gcp.firewall",
         "id": "1f21ciqfpfssuo",
-        "ingested": "2023-01-13T15:01:24Z",
+        "ingested": "2023-07-19T18:55:14Z",
         "kind": "event",
-        "type": "connection"
+        "type": [
+            "allowed",
+            "connection"
+        ]
     },
     "gcp": {
         "destination": {
@@ -859,14 +864,19 @@ An example event for `vpcflow` looks as following:
 {
     "@timestamp": "2019-06-14T03:50:10.845Z",
     "agent": {
-        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "ephemeral_id": "a47f1e8b-f681-4e3b-87cd-6b2d54144577",
+        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.7.1"
     },
     "cloud": {
-        "provider": "gcp"
+        "availability_zone": "us-east1-b",
+        "project": {
+            "id": "my-sample-project"
+        },
+        "provider": "gcp",
+        "region": "us-east1"
     },
     "data_stream": {
         "dataset": "gcp.vpcflow",
@@ -874,30 +884,46 @@ An example event for `vpcflow` looks as following:
         "type": "logs"
     },
     "destination": {
-        "address": "10.87.40.76",
+        "address": "67.43.156.13",
+        "as": {
+            "number": 35908
+        },
         "domain": "kibana",
-        "ip": "10.87.40.76",
-        "port": 5601
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
+        "ip": "67.43.156.13",
+        "port": 33548
     },
     "ecs": {
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
+        "snapshot": false,
+        "version": "8.7.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "network",
-        "created": "2023-01-13T15:03:19.118Z",
+        "category": [
+            "network"
+        ],
+        "created": "2023-07-19T18:56:47.758Z",
         "dataset": "gcp.vpcflow",
-        "end": "2019-06-14T03:40:37.048196137Z",
-        "id": "ut8lbrffooxzf",
-        "ingested": "2023-01-13T15:03:20Z",
+        "end": "2019-06-14T03:49:56.393651211Z",
+        "id": "ut8lbrffooxz4",
+        "ingested": "2023-07-19T18:56:51Z",
         "kind": "event",
-        "start": "2019-06-14T03:40:36.895188084Z",
-        "type": "connection"
+        "start": "2019-06-14T03:40:05.147252064Z",
+        "type": [
+            "connection"
+        ]
     },
     "gcp": {
         "destination": {
@@ -912,10 +938,22 @@ An example event for `vpcflow` looks as following:
                 "vpc_name": "default"
             }
         },
+        "source": {
+            "instance": {
+                "project_id": "my-sample-project",
+                "region": "us-east1",
+                "zone": "us-east1-b"
+            },
+            "vpc": {
+                "project_id": "my-sample-project",
+                "subnetwork_name": "default",
+                "vpc_name": "default"
+            }
+        },
         "vpcflow": {
-            "reporter": "DEST",
+            "reporter": "SRC",
             "rtt": {
-                "ms": 36
+                "ms": 50
             }
         }
     },
@@ -926,33 +964,28 @@ An example event for `vpcflow` looks as following:
         "logger": "projects/my-sample-project/logs/compute.googleapis.com%2Fvpc_flows"
     },
     "network": {
-        "bytes": 1464,
-        "community_id": "1:++9/JiESSUdwTGGcxwXk4RA0lY8=",
-        "direction": "inbound",
+        "bytes": 159704,
+        "community_id": "1:+S3/6PF+UXU7wlJD68HIrz0Mo6c=",
+        "direction": "internal",
         "iana_number": "6",
-        "packets": 7,
+        "name": "default",
+        "packets": 241,
         "transport": "tcp",
         "type": "ipv4"
     },
     "related": {
         "ip": [
-            "192.168.2.117",
-            "10.87.40.76"
+            "10.139.99.242",
+            "67.43.156.13"
         ]
     },
     "source": {
-        "address": "192.168.2.117",
-        "as": {
-            "number": 15169
-        },
-        "bytes": 1464,
-        "geo": {
-            "continent_name": "America",
-            "country_name": "usa"
-        },
-        "ip": "192.168.2.117",
-        "packets": 7,
-        "port": 50646
+        "address": "10.139.99.242",
+        "bytes": 159704,
+        "domain": "elasticsearch",
+        "ip": "10.139.99.242",
+        "packets": 241,
+        "port": 9200
     },
     "tags": [
         "forwarded",
@@ -988,7 +1021,7 @@ The `dns` dataset collects queries that name servers resolve for your Virtual Pr
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
-| dns.answers | An array containing an object for each answer section returned by the server. The main keys that should be present in these objects are defined by ECS. Records that have more information may contain more keys than what ECS defines. Not all DNS data sources give all details about DNS answers. At minimum, answer objects must contain the `data` key. If more information is available, map as much of it to ECS as possible, and add any additional fields to the answer objects as custom fields. | object |
+| dns.answers | An array containing an object for each answer section returned by the server. The main keys that should be present in these objects are defined by ECS. Records that have more information may contain more keys than what ECS defines. Not all DNS data sources give all details about DNS answers. At minimum, answer objects must contain the `data` key. If more information is available, map as much of it to ECS as possible, and add any additional fields to the answer objects as custom fields. | group |
 | dns.answers.class | The class of DNS data contained in this resource record. | keyword |
 | dns.answers.data | The data describing the resource. The meaning of this data depends on the type and class of the resource record. | keyword |
 | dns.answers.name | The domain name to which this resource record pertains. If a chain of CNAME is being resolved, each answer's `name` should be the one that corresponds with the answer's `data`. It should not simply be the original `question.name` repeated. | keyword |
@@ -1523,75 +1556,75 @@ The `compute` dataset is designed to fetch metrics for [Compute Engine](https://
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |
-| error.message | Error message. | match_only_text |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| gcp.compute.firewall.dropped.bytes | Incoming bytes dropped by the firewall | long |
-| gcp.compute.firewall.dropped_packets_count.value | Incoming packets dropped by the firewall | long |
-| gcp.compute.instance.cpu.reserved_cores.value | Number of cores reserved on the host of the instance | double |
-| gcp.compute.instance.cpu.usage.pct | The fraction of the allocated CPU that is currently in use on the instance | double |
-| gcp.compute.instance.cpu.usage_time.sec | Usage for all cores in seconds | double |
-| gcp.compute.instance.disk.read.bytes | Count of bytes read from disk | long |
-| gcp.compute.instance.disk.read_ops_count.value | Count of disk read IO operations | long |
-| gcp.compute.instance.disk.write.bytes | Count of bytes written to disk | long |
-| gcp.compute.instance.disk.write_ops_count.value | Count of disk write IO operations | long |
-| gcp.compute.instance.memory.balloon.ram_size.value | The total amount of memory in the VM. This metric is only available for VMs that belong to the e2 family. | long |
-| gcp.compute.instance.memory.balloon.ram_used.value | Memory currently used in the VM. This metric is only available for VMs that belong to the e2 family. | long |
-| gcp.compute.instance.memory.balloon.swap_in.bytes | The amount of memory read into the guest from its own swap space. This metric is only available for VMs that belong to the e2 family. | long |
-| gcp.compute.instance.memory.balloon.swap_out.bytes | The amount of memory written from the guest to its own swap space. This metric is only available for VMs that belong to the e2 family. | long |
-| gcp.compute.instance.network.egress.bytes | Count of bytes sent over the network | long |
-| gcp.compute.instance.network.egress.packets.count | Count of packets sent over the network | long |
-| gcp.compute.instance.network.ingress.bytes | Count of bytes received from the network | long |
-| gcp.compute.instance.network.ingress.packets.count | Count of packets received from the network | long |
-| gcp.compute.instance.uptime.sec | Number of seconds the VM has been running. | long |
-| gcp.compute.instance.uptime_total.sec | Elapsed time since the VM was started, in seconds. Sampled every 60 seconds. After sampling, data is not visible for up to 120 seconds. | long |
-| gcp.labels.metadata.\* |  | object |
-| gcp.labels.metrics.\* |  | object |
-| gcp.labels.resource.\* |  | object |
-| gcp.labels.system.\* |  | object |
-| gcp.labels.user.\* |  | object |
-| gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.instance.name | Instance name of the host machine. | keyword |  |
+| cloud.machine.type | Machine type of the host machine. | keyword |  |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| container.image.name | Name of the image the container was built on. | keyword |  |
+| container.labels | Image labels. | object |  |
+| container.name | Container name. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |  |
+| error.message | Error message. | match_only_text |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| gcp.compute.firewall.dropped.bytes | Delta of incoming bytes dropped by the firewall | long | gauge |
+| gcp.compute.firewall.dropped_packets_count.value | Delta of incoming packets dropped by the firewall | long | gauge |
+| gcp.compute.instance.cpu.reserved_cores.value | Number of cores reserved on the host of the instance | double | gauge |
+| gcp.compute.instance.cpu.usage.pct | The fraction of the allocated CPU that is currently in use on the instance | double | gauge |
+| gcp.compute.instance.cpu.usage_time.sec | Delta of usage for all cores in seconds | double | gauge |
+| gcp.compute.instance.disk.read.bytes | Delta of count of bytes read from disk | long | gauge |
+| gcp.compute.instance.disk.read_ops_count.value | Delta of count of disk read IO operations | long | gauge |
+| gcp.compute.instance.disk.write.bytes | Delta of count of bytes written to disk | long | gauge |
+| gcp.compute.instance.disk.write_ops_count.value | Delta of count of disk write IO operations | long | gauge |
+| gcp.compute.instance.memory.balloon.ram_size.value | The total amount of memory in the VM. This metric is only available for VMs that belong to the e2 family. | long | gauge |
+| gcp.compute.instance.memory.balloon.ram_used.value | Memory currently used in the VM. This metric is only available for VMs that belong to the e2 family. | long | gauge |
+| gcp.compute.instance.memory.balloon.swap_in.bytes | Delta of the amount of memory read into the guest from its own swap space. This metric is only available for VMs that belong to the e2 family. | long | gauge |
+| gcp.compute.instance.memory.balloon.swap_out.bytes | Delta of the amount of memory written from the guest to its own swap space. This metric is only available for VMs that belong to the e2 family. | long | gauge |
+| gcp.compute.instance.network.egress.bytes | Delta of count of bytes sent over the network | long | gauge |
+| gcp.compute.instance.network.egress.packets.count | Delta of count of packets sent over the network | long | gauge |
+| gcp.compute.instance.network.ingress.bytes | Delta of count of bytes received from the network | long | gauge |
+| gcp.compute.instance.network.ingress.packets.count | Delta of count of packets received from the network | long | gauge |
+| gcp.compute.instance.uptime.sec | Delta of number of seconds the VM has been running. | long | gauge |
+| gcp.compute.instance.uptime_total.sec | Elapsed time since the VM was started, in seconds. Sampled every 60 seconds. After sampling, data is not visible for up to 120 seconds. | long | gauge |
+| gcp.labels.metadata.\* |  | object |  |
+| gcp.labels.metrics.\* |  | object |  |
+| gcp.labels.resource.\* |  | object |  |
+| gcp.labels.system.\* |  | object |  |
+| gcp.labels.user.\* |  | object |  |
+| gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
+| host.architecture | Operating system architecture. | keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.mac | Host mac addresses. | keyword |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
+| host.os.name | Operating system name, without the version. | keyword |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 An example event for `compute` looks as following:
@@ -1689,78 +1722,78 @@ The `dataproc` dataset is designed to fetch metrics from [Dataproc](https://clou
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |
-| error.message | Error message. | match_only_text |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| gcp.dataproc.batch.spark.executors.count | Indicates the number of Batch Spark executors. | long |
-| gcp.dataproc.cluster.hdfs.datanodes.count | Indicates the number of HDFS DataNodes that are running inside a cluster. | long |
-| gcp.dataproc.cluster.hdfs.storage_capacity.value | Indicates capacity of HDFS system running on cluster in GB. | double |
-| gcp.dataproc.cluster.hdfs.storage_utilization.value | The percentage of HDFS storage currently used. | double |
-| gcp.dataproc.cluster.hdfs.unhealthy_blocks.count | Indicates the number of unhealthy blocks inside the cluster. | long |
-| gcp.dataproc.cluster.job.completion_time.value | The time jobs took to complete from the time the user submits a job to the time Dataproc reports it is completed. | object |
-| gcp.dataproc.cluster.job.duration.value | The time jobs have spent in a given state. | object |
-| gcp.dataproc.cluster.job.failed.count | Indicates the number of jobs that have failed on a cluster. | long |
-| gcp.dataproc.cluster.job.running.count | Indicates the number of jobs that are running on a cluster. | long |
-| gcp.dataproc.cluster.job.submitted.count | Indicates the number of jobs that have been submitted to a cluster. | long |
-| gcp.dataproc.cluster.operation.completion_time.value | The time operations took to complete from the time the user submits a operation to the time Dataproc reports it is completed. | object |
-| gcp.dataproc.cluster.operation.duration.value | The time operations have spent in a given state. | object |
-| gcp.dataproc.cluster.operation.failed.count | Indicates the number of operations that have failed on a cluster. | long |
-| gcp.dataproc.cluster.operation.running.count | Indicates the number of operations that are running on a cluster. | long |
-| gcp.dataproc.cluster.operation.submitted.count | Indicates the number of operations that have been submitted to a cluster. | long |
-| gcp.dataproc.cluster.yarn.allocated_memory_percentage.value | The percentage of YARN memory is allocated. | double |
-| gcp.dataproc.cluster.yarn.apps.count | Indicates the number of active YARN applications. | long |
-| gcp.dataproc.cluster.yarn.containers.count | Indicates the number of YARN containers. | long |
-| gcp.dataproc.cluster.yarn.memory_size.value | Indicates the YARN memory size in GB. | double |
-| gcp.dataproc.cluster.yarn.nodemanagers.count | Indicates the number of YARN NodeManagers running inside cluster. | long |
-| gcp.dataproc.cluster.yarn.pending_memory_size.value | The current memory request, in GB, that is pending to be fulfilled by the scheduler. | double |
-| gcp.dataproc.cluster.yarn.virtual_cores.count | Indicates the number of virtual cores in YARN. | long |
-| gcp.labels.metadata.\* |  | object |
-| gcp.labels.metrics.\* |  | object |
-| gcp.labels.resource.\* |  | object |
-| gcp.labels.system.\* |  | object |
-| gcp.labels.user.\* |  | object |
-| gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.instance.name | Instance name of the host machine. | keyword |  |
+| cloud.machine.type | Machine type of the host machine. | keyword |  |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| container.image.name | Name of the image the container was built on. | keyword |  |
+| container.labels | Image labels. | object |  |
+| container.name | Container name. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |  |
+| error.message | Error message. | match_only_text |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| gcp.dataproc.batch.spark.executors.count | Indicates the number of Batch Spark executors. | long | gauge |
+| gcp.dataproc.cluster.hdfs.datanodes.count | Indicates the number of HDFS DataNodes that are running inside a cluster. | long | gauge |
+| gcp.dataproc.cluster.hdfs.storage_capacity.value | Indicates capacity of HDFS system running on cluster in GB. | double | gauge |
+| gcp.dataproc.cluster.hdfs.storage_utilization.value | The percentage of HDFS storage currently used. | double | gauge |
+| gcp.dataproc.cluster.hdfs.unhealthy_blocks.count | Indicates the number of unhealthy blocks inside the cluster. | long | gauge |
+| gcp.dataproc.cluster.job.completion_time.value | The time jobs took to complete from the time the user submits a job to the time Dataproc reports it is completed. | object |  |
+| gcp.dataproc.cluster.job.duration.value | The time jobs have spent in a given state. | object |  |
+| gcp.dataproc.cluster.job.failed.count | Indicates the delta of the number of jobs that have failed on a cluster. | long | gauge |
+| gcp.dataproc.cluster.job.running.count | Indicates the number of jobs that are running on a cluster. | long | gauge |
+| gcp.dataproc.cluster.job.submitted.count | Indicates the delta of the number of jobs that have been submitted to a cluster. | long | gauge |
+| gcp.dataproc.cluster.operation.completion_time.value | The time operations took to complete from the time the user submits a operation to the time Dataproc reports it is completed. | object |  |
+| gcp.dataproc.cluster.operation.duration.value | The time operations have spent in a given state. | object |  |
+| gcp.dataproc.cluster.operation.failed.count | Indicates the delta of the number of operations that have failed on a cluster. | long | gauge |
+| gcp.dataproc.cluster.operation.running.count | Indicates the number of operations that are running on a cluster. | long | gauge |
+| gcp.dataproc.cluster.operation.submitted.count | Indicates the delta of the number of operations that have been submitted to a cluster. | long | gauge |
+| gcp.dataproc.cluster.yarn.allocated_memory_percentage.value | The percentage of YARN memory is allocated. | double | gauge |
+| gcp.dataproc.cluster.yarn.apps.count | Indicates the number of active YARN applications. | long | gauge |
+| gcp.dataproc.cluster.yarn.containers.count | Indicates the number of YARN containers. | long | gauge |
+| gcp.dataproc.cluster.yarn.memory_size.value | Indicates the YARN memory size in GB. | double | gauge |
+| gcp.dataproc.cluster.yarn.nodemanagers.count | Indicates the number of YARN NodeManagers running inside cluster. | long | gauge |
+| gcp.dataproc.cluster.yarn.pending_memory_size.value | The current memory request, in GB, that is pending to be fulfilled by the scheduler. | double | gauge |
+| gcp.dataproc.cluster.yarn.virtual_cores.count | Indicates the number of virtual cores in YARN. | long | gauge |
+| gcp.labels.metadata.\* |  | object |  |
+| gcp.labels.metrics.\* |  | object |  |
+| gcp.labels.resource.\* |  | object |  |
+| gcp.labels.system.\* |  | object |  |
+| gcp.labels.user.\* |  | object |  |
+| gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
+| host.architecture | Operating system architecture. | keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.mac | Host mac addresses. | keyword |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
+| host.os.name | Operating system name, without the version. | keyword |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 An example event for `dataproc` looks as following:
@@ -1825,59 +1858,59 @@ The `firestore` dataset fetches metrics from [Firestore](https://cloud.google.co
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |
-| error.message | Error message. | match_only_text |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| gcp.firestore.document.delete.count | The number of successful document deletes. | long |
-| gcp.firestore.document.read.count | The number of successful document reads from queries or lookups. | long |
-| gcp.firestore.document.write.count | The number of successful document writes. | long |
-| gcp.labels.metadata.\* |  | object |
-| gcp.labels.metrics.\* |  | object |
-| gcp.labels.resource.\* |  | object |
-| gcp.labels.system.\* |  | object |
-| gcp.labels.user.\* |  | object |
-| gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.instance.name | Instance name of the host machine. | keyword |  |
+| cloud.machine.type | Machine type of the host machine. | keyword |  |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| container.image.name | Name of the image the container was built on. | keyword |  |
+| container.labels | Image labels. | object |  |
+| container.name | Container name. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |  |
+| error.message | Error message. | match_only_text |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| gcp.firestore.document.delete.count | Delta of the number of successful document deletes. | long | gauge |
+| gcp.firestore.document.read.count | Delta of the number of successful document reads from queries or lookups. | long | gauge |
+| gcp.firestore.document.write.count | Delta of the number of successful document writes. | long | gauge |
+| gcp.labels.metadata.\* |  | object |  |
+| gcp.labels.metrics.\* |  | object |  |
+| gcp.labels.resource.\* |  | object |  |
+| gcp.labels.system.\* |  | object |  |
+| gcp.labels.user.\* |  | object |  |
+| gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
+| host.architecture | Operating system architecture. | keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.mac | Host mac addresses. | keyword |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
+| host.os.name | Operating system name, without the version. | keyword |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 An example event for `firestore` looks as following:
@@ -1946,96 +1979,96 @@ The `gke` dataset is designed to fetch metrics from [GKE](https://cloud.google.c
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |
-| error.message | Error message. | match_only_text |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| gcp.gke.container.cpu.core_usage_time.sec | Cumulative CPU usage on all cores used by the container in seconds. Sampled every 60 seconds. | double |
-| gcp.gke.container.cpu.limit_cores.value | CPU cores limit of the container. Sampled every 60 seconds. | double |
-| gcp.gke.container.cpu.limit_utilization.pct | The fraction of the CPU limit that is currently in use on the instance. This value cannot exceed 1 as usage cannot exceed the limit. Sampled every 60 seconds. After sampling, data is not visible for up to 240 seconds. | double |
-| gcp.gke.container.cpu.request_cores.value | Number of CPU cores requested by the container. Sampled every 60 seconds. After sampling, data is not visible for up to 120 seconds. | double |
-| gcp.gke.container.cpu.request_utilization.pct | The fraction of the requested CPU that is currently in use on the instance. This value can be greater than 1 as usage can exceed the request. Sampled every 60 seconds. After sampling, data is not visible for up to 240 seconds. | double |
-| gcp.gke.container.ephemeral_storage.limit.bytes | Local ephemeral storage limit in bytes. Sampled every 60 seconds. | long |
-| gcp.gke.container.ephemeral_storage.request.bytes | Local ephemeral storage request in bytes. Sampled every 60 seconds. | long |
-| gcp.gke.container.ephemeral_storage.used.bytes | Local ephemeral storage usage in bytes. Sampled every 60 seconds. | long |
-| gcp.gke.container.memory.limit.bytes | Memory limit of the container in bytes. Sampled every 60 seconds. | long |
-| gcp.gke.container.memory.limit_utilization.pct | The fraction of the memory limit that is currently in use on the instance. This value cannot exceed 1 as usage cannot exceed the limit. Sampled every 60 seconds. After sampling, data is not visible for up to 120 seconds. | double |
-| gcp.gke.container.memory.page_fault.count | Number of page faults, broken down by type, major and minor. | long |
-| gcp.gke.container.memory.request.bytes | Memory request of the container in bytes. Sampled every 60 seconds. After sampling, data is not visible for up to 120 seconds. | long |
-| gcp.gke.container.memory.request_utilization.pct | The fraction of the requested memory that is currently in use on the instance. This value can be greater than 1 as usage can exceed the request. Sampled every 60 seconds. After sampling, data is not visible for up to 240 seconds. | double |
-| gcp.gke.container.memory.used.bytes | Memory usage in bytes. Sampled every 60 seconds. | long |
-| gcp.gke.container.restart.count | Number of times the container has restarted. Sampled every 60 seconds. After sampling, data is not visible for up to 120 seconds. | long |
-| gcp.gke.container.uptime.sec | Time in seconds that the container has been running. Sampled every 60 seconds. | double |
-| gcp.gke.node.cpu.allocatable_cores.value | Number of allocatable CPU cores on the node. Sampled every 60 seconds. | double |
-| gcp.gke.node.cpu.allocatable_utilization.pct | The fraction of the allocatable CPU that is currently in use on the instance. Sampled every 60 seconds. After sampling, data is not visible for up to 240 seconds. | double |
-| gcp.gke.node.cpu.core_usage_time.sec | Cumulative CPU usage on all cores used on the node in seconds. Sampled every 60 seconds. | double |
-| gcp.gke.node.cpu.total_cores.value | Total number of CPU cores on the node. Sampled every 60 seconds. | double |
-| gcp.gke.node.ephemeral_storage.allocatable.bytes | Local ephemeral storage bytes allocatable on the node. Sampled every 60 seconds. | long |
-| gcp.gke.node.ephemeral_storage.inodes_free.value | Free number of inodes on local ephemeral storage. Sampled every 60 seconds. | long |
-| gcp.gke.node.ephemeral_storage.inodes_total.value | Total number of inodes on local ephemeral storage. Sampled every 60 seconds. | long |
-| gcp.gke.node.ephemeral_storage.total.bytes | Total ephemeral storage bytes on the node. Sampled every 60 seconds. | long |
-| gcp.gke.node.ephemeral_storage.used.bytes | Local ephemeral storage bytes used by the node. Sampled every 60 seconds. | long |
-| gcp.gke.node.memory.allocatable.bytes | Cumulative memory bytes used by the node. Sampled every 60 seconds. | long |
-| gcp.gke.node.memory.allocatable_utilization.pct | The fraction of the allocatable memory that is currently in use on the instance. This value cannot exceed 1 as usage cannot exceed allocatable memory bytes. Sampled every 60 seconds. After sampling, data is not visible for up to 120 seconds. | double |
-| gcp.gke.node.memory.total.bytes | Number of bytes of memory allocatable on the node. Sampled every 60 seconds. | long |
-| gcp.gke.node.memory.used.bytes | Cumulative memory bytes used by the node. Sampled every 60 seconds. | long |
-| gcp.gke.node.network.received_bytes.count | Cumulative number of bytes received by the node over the network. Sampled every 60 seconds. | long |
-| gcp.gke.node.network.sent_bytes.count | Cumulative number of bytes transmitted by the node over the network. Sampled every 60 seconds. | long |
-| gcp.gke.node.pid_limit.value | The max PID of OS on the node. Sampled every 60 seconds. | long |
-| gcp.gke.node.pid_used.value | The number of running process in the OS on the node. Sampled every 60 seconds. | long |
-| gcp.gke.node_daemon.cpu.core_usage_time.sec | Cumulative CPU usage on all cores used by the node level system daemon in seconds. Sampled every 60 seconds. | double |
-| gcp.gke.node_daemon.memory.used.bytes | Memory usage by the system daemon in bytes. Sampled every 60 seconds. | long |
-| gcp.gke.pod.network.received.bytes | Cumulative number of bytes received by the pod over the network. Sampled every 60 seconds. | long |
-| gcp.gke.pod.network.sent.bytes | Cumulative number of bytes transmitted by the pod over the network. Sampled every 60 seconds. | long |
-| gcp.gke.pod.volume.total.bytes | Total number of disk bytes available to the pod. Sampled every 60 seconds. After sampling, data is not visible for up to 120 seconds. | long |
-| gcp.gke.pod.volume.used.bytes | Number of disk bytes used by the pod. Sampled every 60 seconds. | long |
-| gcp.gke.pod.volume.utilization.pct | The fraction of the volume that is currently being used by the instance. This value cannot be greater than 1 as usage cannot exceed the total available volume space. Sampled every 60 seconds. After sampling, data is not visible for up to 120 seconds. | double |
-| gcp.labels.metadata.\* |  | object |
-| gcp.labels.metrics.\* |  | object |
-| gcp.labels.resource.\* |  | object |
-| gcp.labels.system.\* |  | object |
-| gcp.labels.user.\* |  | object |
-| gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.instance.name | Instance name of the host machine. | keyword |  |
+| cloud.machine.type | Machine type of the host machine. | keyword |  |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| container.image.name | Name of the image the container was built on. | keyword |  |
+| container.labels | Image labels. | object |  |
+| container.name | Container name. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |  |
+| error.message | Error message. | match_only_text |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| gcp.gke.container.cpu.core_usage_time.sec | Cumulative CPU usage on all cores used by the container in seconds. Sampled every 60 seconds. | double | counter |
+| gcp.gke.container.cpu.limit_cores.value | CPU cores limit of the container. Sampled every 60 seconds. | double | gauge |
+| gcp.gke.container.cpu.limit_utilization.pct | The fraction of the CPU limit that is currently in use on the instance. This value cannot exceed 1 as usage cannot exceed the limit. Sampled every 60 seconds. After sampling, data is not visible for up to 240 seconds. | double | gauge |
+| gcp.gke.container.cpu.request_cores.value | Number of CPU cores requested by the container. Sampled every 60 seconds. After sampling, data is not visible for up to 120 seconds. | double | gauge |
+| gcp.gke.container.cpu.request_utilization.pct | The fraction of the requested CPU that is currently in use on the instance. This value can be greater than 1 as usage can exceed the request. Sampled every 60 seconds. After sampling, data is not visible for up to 240 seconds. | double | gauge |
+| gcp.gke.container.ephemeral_storage.limit.bytes | Local ephemeral storage limit in bytes. Sampled every 60 seconds. | long | gauge |
+| gcp.gke.container.ephemeral_storage.request.bytes | Local ephemeral storage request in bytes. Sampled every 60 seconds. | long | gauge |
+| gcp.gke.container.ephemeral_storage.used.bytes | Local ephemeral storage usage in bytes. Sampled every 60 seconds. | long | gauge |
+| gcp.gke.container.memory.limit.bytes | Memory limit of the container in bytes. Sampled every 60 seconds. | long | gauge |
+| gcp.gke.container.memory.limit_utilization.pct | The fraction of the memory limit that is currently in use on the instance. This value cannot exceed 1 as usage cannot exceed the limit. Sampled every 60 seconds. After sampling, data is not visible for up to 120 seconds. | double | gauge |
+| gcp.gke.container.memory.page_fault.count | Number of page faults, broken down by type, major and minor. | long | counter |
+| gcp.gke.container.memory.request.bytes | Memory request of the container in bytes. Sampled every 60 seconds. After sampling, data is not visible for up to 120 seconds. | long | gauge |
+| gcp.gke.container.memory.request_utilization.pct | The fraction of the requested memory that is currently in use on the instance. This value can be greater than 1 as usage can exceed the request. Sampled every 60 seconds. After sampling, data is not visible for up to 240 seconds. | double | gauge |
+| gcp.gke.container.memory.used.bytes | Memory usage in bytes. Sampled every 60 seconds. | long | gauge |
+| gcp.gke.container.restart.count | Number of times the container has restarted. Sampled every 60 seconds. After sampling, data is not visible for up to 120 seconds. | long | counter |
+| gcp.gke.container.uptime.sec | Time in seconds that the container has been running. Sampled every 60 seconds. | double | gauge |
+| gcp.gke.node.cpu.allocatable_cores.value | Number of allocatable CPU cores on the node. Sampled every 60 seconds. | double | gauge |
+| gcp.gke.node.cpu.allocatable_utilization.pct | The fraction of the allocatable CPU that is currently in use on the instance. Sampled every 60 seconds. After sampling, data is not visible for up to 240 seconds. | double | gauge |
+| gcp.gke.node.cpu.core_usage_time.sec | Cumulative CPU usage on all cores used on the node in seconds. Sampled every 60 seconds. | double | counter |
+| gcp.gke.node.cpu.total_cores.value | Total number of CPU cores on the node. Sampled every 60 seconds. | double | gauge |
+| gcp.gke.node.ephemeral_storage.allocatable.bytes | Local ephemeral storage bytes allocatable on the node. Sampled every 60 seconds. | long | gauge |
+| gcp.gke.node.ephemeral_storage.inodes_free.value | Free number of inodes on local ephemeral storage. Sampled every 60 seconds. | long | gauge |
+| gcp.gke.node.ephemeral_storage.inodes_total.value | Total number of inodes on local ephemeral storage. Sampled every 60 seconds. | long | gauge |
+| gcp.gke.node.ephemeral_storage.total.bytes | Total ephemeral storage bytes on the node. Sampled every 60 seconds. | long | gauge |
+| gcp.gke.node.ephemeral_storage.used.bytes | Local ephemeral storage bytes used by the node. Sampled every 60 seconds. | long | gauge |
+| gcp.gke.node.memory.allocatable.bytes | Cumulative memory bytes used by the node. Sampled every 60 seconds. | long | gauge |
+| gcp.gke.node.memory.allocatable_utilization.pct | The fraction of the allocatable memory that is currently in use on the instance. This value cannot exceed 1 as usage cannot exceed allocatable memory bytes. Sampled every 60 seconds. After sampling, data is not visible for up to 120 seconds. | double | gauge |
+| gcp.gke.node.memory.total.bytes | Number of bytes of memory allocatable on the node. Sampled every 60 seconds. | long | gauge |
+| gcp.gke.node.memory.used.bytes | Cumulative memory bytes used by the node. Sampled every 60 seconds. | long | gauge |
+| gcp.gke.node.network.received_bytes.count | Cumulative number of bytes received by the node over the network. Sampled every 60 seconds. | long | counter |
+| gcp.gke.node.network.sent_bytes.count | Cumulative number of bytes transmitted by the node over the network. Sampled every 60 seconds. | long | counter |
+| gcp.gke.node.pid_limit.value | The max PID of OS on the node. Sampled every 60 seconds. | long | gauge |
+| gcp.gke.node.pid_used.value | The number of running process in the OS on the node. Sampled every 60 seconds. | long | gauge |
+| gcp.gke.node_daemon.cpu.core_usage_time.sec | Cumulative CPU usage on all cores used by the node level system daemon in seconds. Sampled every 60 seconds. | double | counter |
+| gcp.gke.node_daemon.memory.used.bytes | Memory usage by the system daemon in bytes. Sampled every 60 seconds. | long | gauge |
+| gcp.gke.pod.network.received.bytes | Cumulative number of bytes received by the pod over the network. Sampled every 60 seconds. | long | counter |
+| gcp.gke.pod.network.sent.bytes | Cumulative number of bytes transmitted by the pod over the network. Sampled every 60 seconds. | long | counter |
+| gcp.gke.pod.volume.total.bytes | Total number of disk bytes available to the pod. Sampled every 60 seconds. After sampling, data is not visible for up to 120 seconds. | long | gauge |
+| gcp.gke.pod.volume.used.bytes | Number of disk bytes used by the pod. Sampled every 60 seconds. | long | gauge |
+| gcp.gke.pod.volume.utilization.pct | The fraction of the volume that is currently being used by the instance. This value cannot be greater than 1 as usage cannot exceed the total available volume space. Sampled every 60 seconds. After sampling, data is not visible for up to 120 seconds. | double | gauge |
+| gcp.labels.metadata.\* |  | object |  |
+| gcp.labels.metrics.\* |  | object |  |
+| gcp.labels.resource.\* |  | object |  |
+| gcp.labels.system.\* |  | object |  |
+| gcp.labels.user.\* |  | object |  |
+| gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
+| host.architecture | Operating system architecture. | keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.mac | Host mac addresses. | keyword |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
+| host.os.name | Operating system name, without the version. | keyword |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 An example event for `gke` looks as following:
@@ -2100,85 +2133,85 @@ The `loadbalancing_metrics` dataset is designed to fetch HTTPS, HTTP, and Layer 
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |
-| error.message | Error message. | match_only_text |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| gcp.labels.metadata.\* |  | object |
-| gcp.labels.metrics.\* |  | object |
-| gcp.labels.resource.\* |  | object |
-| gcp.labels.system.\* |  | object |
-| gcp.labels.user.\* |  | object |
-| gcp.loadbalancing.https.backend_latencies.value | A distribution of the latency calculated from when the request was sent by the proxy to the backend until the proxy received from the backend the last byte of response. | object |
-| gcp.loadbalancing.https.backend_request.bytes | The number of bytes sent as requests from HTTP/S load balancer to backends. | long |
-| gcp.loadbalancing.https.backend_request.count | The number of requests served by backends of HTTP/S load balancer. | long |
-| gcp.loadbalancing.https.backend_response.bytes | The number of bytes sent as responses from backends (or cache) to external HTTP(S) load balancer. | long |
-| gcp.loadbalancing.https.external.regional.backend_latencies.value | A distribution of the latency calculated from when the request was sent by the proxy to the backend until the proxy received from the backend the last byte of response. | object |
-| gcp.loadbalancing.https.external.regional.total_latencies.value | A distribution of the latency calculated from when the request was received by the proxy until the proxy got ACK from client on last response byte. | object |
-| gcp.loadbalancing.https.frontend_tcp_rtt.value | A distribution of the RTT measured for each connection between client and proxy. | object |
-| gcp.loadbalancing.https.internal.backend_latencies.value | A distribution of the latency calculated from when the request was sent by the internal HTTP/S load balancer proxy to the backend until the proxy received from the backend the last byte of response. | object |
-| gcp.loadbalancing.https.internal.total_latencies.value | A distribution of the latency calculated from when the request was received by the internal HTTP/S load balancer proxy until the proxy got ACK from client on last response byte. | object |
-| gcp.loadbalancing.https.request.bytes | The number of bytes sent as requests from clients to HTTP/S load balancer. | long |
-| gcp.loadbalancing.https.request.count | The number of requests served by HTTP/S load balancer. | long |
-| gcp.loadbalancing.https.response.bytes | The number of bytes sent as responses from HTTP/S load balancer to clients. | long |
-| gcp.loadbalancing.https.total_latencies.value | A distribution of the latency calculated from when the request was received by the external HTTP/S load balancer proxy until the proxy got ACK from client on last response byte. | object |
-| gcp.loadbalancing.l3.external.egress.bytes | The number of bytes sent from external TCP/UDP network load balancer backend to client of the flow. For TCP flows it's counting bytes on application stream only. | long |
-| gcp.loadbalancing.l3.external.egress_packets.count | The number of packets sent from external TCP/UDP network load balancer backend to client of the flow. | long |
-| gcp.loadbalancing.l3.external.ingress.bytes | The number of bytes sent from client to external TCP/UDP network load balancer backend. For TCP flows it's counting bytes on application stream only. | long |
-| gcp.loadbalancing.l3.external.ingress_packets.count | The number of packets sent from client to external TCP/UDP network load balancer backend. | long |
-| gcp.loadbalancing.l3.external.rtt_latencies.value | A distribution of the round trip time latency, measured over TCP connections for the external network load balancer. | object |
-| gcp.loadbalancing.l3.internal.egress.bytes | The number of bytes sent from ILB backend to client (for TCP flows it's counting bytes on application stream only). | long |
-| gcp.loadbalancing.l3.internal.egress_packets.count | The number of packets sent from ILB backend to client of the flow. | long |
-| gcp.loadbalancing.l3.internal.ingress.bytes | The number of bytes sent from client to ILB backend (for TCP flows it's counting bytes on application stream only). | long |
-| gcp.loadbalancing.l3.internal.ingress_packets.count | The number of packets sent from client to ILB backend. | long |
-| gcp.loadbalancing.l3.internal.rtt_latencies.value | A distribution of RTT measured over TCP connections for internal TCP/UDP load balancer flows. | object |
-| gcp.loadbalancing.tcp_ssl_proxy.closed_connections.value | Number of connections that were terminated over TCP/SSL proxy. | long |
-| gcp.loadbalancing.tcp_ssl_proxy.egress.bytes | Number of bytes sent from VM to client using proxy. | long |
-| gcp.loadbalancing.tcp_ssl_proxy.frontend_tcp_rtt.value | A distribution of the smoothed RTT (in ms) measured by the proxy's TCP stack, each minute application layer bytes pass from proxy to client. | object |
-| gcp.loadbalancing.tcp_ssl_proxy.ingress.bytes | Number of bytes sent from client to VM using proxy. | long |
-| gcp.loadbalancing.tcp_ssl_proxy.new_connections.value | Number of connections that were created over TCP/SSL proxy. | long |
-| gcp.loadbalancing.tcp_ssl_proxy.open_connections.value | Current number of outstanding connections through the TCP/SSL proxy. | long |
-| gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.instance.name | Instance name of the host machine. | keyword |  |
+| cloud.machine.type | Machine type of the host machine. | keyword |  |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| container.image.name | Name of the image the container was built on. | keyword |  |
+| container.labels | Image labels. | object |  |
+| container.name | Container name. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |  |
+| error.message | Error message. | match_only_text |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| gcp.labels.metadata.\* |  | object |  |
+| gcp.labels.metrics.\* |  | object |  |
+| gcp.labels.resource.\* |  | object |  |
+| gcp.labels.system.\* |  | object |  |
+| gcp.labels.user.\* |  | object |  |
+| gcp.loadbalancing_metrics.https.backend_latencies.value | A distribution of the latency calculated from when the request was sent by the proxy to the backend until the proxy received from the backend the last byte of response. | object |  |
+| gcp.loadbalancing_metrics.https.backend_request.bytes | Delta of the number of bytes sent as requests from HTTP/S load balancer to backends. | long | gauge |
+| gcp.loadbalancing_metrics.https.backend_request.count | Delta of the number of requests served by backends of HTTP/S load balancer. | long | gauge |
+| gcp.loadbalancing_metrics.https.backend_response.bytes | Delta of the number of bytes sent as responses from backends (or cache) to external HTTP(S) load balancer. | long | gauge |
+| gcp.loadbalancing_metrics.https.external.regional.backend_latencies.value | A distribution of the latency calculated from when the request was sent by the proxy to the backend until the proxy received from the backend the last byte of response. | object |  |
+| gcp.loadbalancing_metrics.https.external.regional.total_latencies.value | A distribution of the latency calculated from when the request was received by the proxy until the proxy got ACK from client on last response byte. | object |  |
+| gcp.loadbalancing_metrics.https.frontend_tcp_rtt.value | A distribution of the RTT measured for each connection between client and proxy. | object |  |
+| gcp.loadbalancing_metrics.https.internal.backend_latencies.value | A distribution of the latency calculated from when the request was sent by the internal HTTP/S load balancer proxy to the backend until the proxy received from the backend the last byte of response. | object |  |
+| gcp.loadbalancing_metrics.https.internal.total_latencies.value | A distribution of the latency calculated from when the request was received by the internal HTTP/S load balancer proxy until the proxy got ACK from client on last response byte. | object |  |
+| gcp.loadbalancing_metrics.https.request.bytes | Delta of the number of bytes sent as requests from clients to HTTP/S load balancer. | long | gauge |
+| gcp.loadbalancing_metrics.https.request.count | Delta of the number of requests served by HTTP/S load balancer. | long | gauge |
+| gcp.loadbalancing_metrics.https.response.bytes | Delta of the number of bytes sent as responses from HTTP/S load balancer to clients. | long | gauge |
+| gcp.loadbalancing_metrics.https.total_latencies.value | A distribution of the latency calculated from when the request was received by the external HTTP/S load balancer proxy until the proxy got ACK from client on last response byte. | object |  |
+| gcp.loadbalancing_metrics.l3.external.egress.bytes | Delta of the number of bytes sent from external TCP/UDP network load balancer backend to client of the flow. For TCP flows it's counting bytes on application stream only. | long | gauge |
+| gcp.loadbalancing_metrics.l3.external.egress_packets.count | Delta of the number of packets sent from external TCP/UDP network load balancer backend to client of the flow. | long | gauge |
+| gcp.loadbalancing_metrics.l3.external.ingress.bytes | Delta of the number of bytes sent from client to external TCP/UDP network load balancer backend. For TCP flows it's counting bytes on application stream only. | long | gauge |
+| gcp.loadbalancing_metrics.l3.external.ingress_packets.count | Delta of the number of packets sent from client to external TCP/UDP network load balancer backend. | long | gauge |
+| gcp.loadbalancing_metrics.l3.external.rtt_latencies.value | A distribution of the round trip time latency, measured over TCP connections for the external network load balancer. | object |  |
+| gcp.loadbalancing_metrics.l3.internal.egress.bytes | Delta of the number of bytes sent from ILB backend to client (for TCP flows it's counting bytes on application stream only). | long | gauge |
+| gcp.loadbalancing_metrics.l3.internal.egress_packets.count | Delta of the number of packets sent from ILB backend to client of the flow. | long | gauge |
+| gcp.loadbalancing_metrics.l3.internal.ingress.bytes | Delta of the number of bytes sent from client to ILB backend (for TCP flows it's counting bytes on application stream only). | long | gauge |
+| gcp.loadbalancing_metrics.l3.internal.ingress_packets.count | Delta of the number of packets sent from client to ILB backend. | long | gauge |
+| gcp.loadbalancing_metrics.l3.internal.rtt_latencies.value | A distribution of RTT measured over TCP connections for internal TCP/UDP load balancer flows. | object |  |
+| gcp.loadbalancing_metrics.tcp_ssl_proxy.closed_connections.value | Delta of the number of connections that were terminated over TCP/SSL proxy. | long | gauge |
+| gcp.loadbalancing_metrics.tcp_ssl_proxy.egress.bytes | Delta of the number of bytes sent from VM to client using proxy. | long | gauge |
+| gcp.loadbalancing_metrics.tcp_ssl_proxy.frontend_tcp_rtt.value | A distribution of the smoothed RTT (in ms) measured by the proxy's TCP stack, each minute application layer bytes pass from proxy to client. | object |  |
+| gcp.loadbalancing_metrics.tcp_ssl_proxy.ingress.bytes | Delta of the number of bytes sent from client to VM using proxy. | long | gauge |
+| gcp.loadbalancing_metrics.tcp_ssl_proxy.new_connections.value | Delta of the number of connections that were created over TCP/SSL proxy. | long | gauge |
+| gcp.loadbalancing_metrics.tcp_ssl_proxy.open_connections.value | Current number of outstanding connections through the TCP/SSL proxy. | long | gauge |
+| gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
+| host.architecture | Operating system architecture. | keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.mac | Host mac addresses. | keyword |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
+| host.os.name | Operating system name, without the version. | keyword |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 An example event for `loadbalancing` looks as following:
@@ -2220,7 +2253,7 @@ An example event for `loadbalancing` looks as following:
                 "region": "us-central1"
             }
         },
-        "loadbalancing": {
+        "loadbalancing_metrics": {
             "l3": {
                 "internal": {
                     "egress_packets": {
@@ -2283,13 +2316,13 @@ The `redis` dataset is designed to fetch metrics from [GCP Memorystore](https://
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |  |
 | gcp.redis.clients.blocked.count | Number of blocked clients. | long |  | gauge |
 | gcp.redis.clients.connected.count | Number of client connections. | long |  | gauge |
-| gcp.redis.commands.calls.count | Total number of calls for this command in one minute. | long |  | counter |
-| gcp.redis.commands.total_time.us | The amount of time in microseconds that this command took in the last second. | long | micros | counter |
+| gcp.redis.commands.calls.count | Delta of the number of calls for this command in one minute. | long |  | gauge |
+| gcp.redis.commands.total_time.us | Delta of the amount of time in microseconds that this command took in the last second. | long | micros | gauge |
 | gcp.redis.commands.usec_per_call.sec | Average time per call over 1 minute by command. | double | s | gauge |
 | gcp.redis.keyspace.avg_ttl.sec | Average TTL for keys in this database. | double | s | gauge |
 | gcp.redis.keyspace.keys.count | Number of keys stored in this database. | long |  | gauge |
 | gcp.redis.keyspace.keys_with_expiration.count | Number of keys with an expiration in this database. | long |  | gauge |
-| gcp.redis.persistence.rdb.bgsave_in_progress | Flag indicating a RDB save is on-going. | boolean |  |  |
+| gcp.redis.persistence.rdb.bgsave_in_progress | Flag indicating a RDB save is on-going. | long |  | gauge |
 | gcp.redis.replication.master.slaves.lag.sec | The number of seconds that replica is lagging behind primary. | long | s | gauge |
 | gcp.redis.replication.master.slaves.offset.bytes | The number of bytes that have been acknowledged by replicas. | long | byte | gauge |
 | gcp.redis.replication.master_repl_offset.bytes | The number of bytes that master has produced and sent to replicas. | long | byte | gauge |
@@ -2297,18 +2330,18 @@ The `redis` dataset is designed to fetch metrics from [GCP Memorystore](https://
 | gcp.redis.replication.role | Returns a value indicating the node role. 1 indicates primary and 0 indicates replica. | long |  | gauge |
 | gcp.redis.server.uptime.sec | Uptime in seconds. | long | s | gauge |
 | gcp.redis.stats.cache_hit_ratio | Cache Hit ratio as a fraction. | double |  | gauge |
-| gcp.redis.stats.connections.total.count | Total number of connections accepted by the server. | long |  | counter |
+| gcp.redis.stats.connections.total.count | Delta of the total number of connections accepted by the server. | long |  | gauge |
 | gcp.redis.stats.cpu_utilization.sec | CPU-seconds consumed by the Redis server, broken down by system/user space and parent/child relationship. | double | s | gauge |
-| gcp.redis.stats.evicted_keys.count | Number of evicted keys due to maxmemory limit. | long |  | counter |
-| gcp.redis.stats.expired_keys.count | Total number of key expiration events. | long |  | counter |
-| gcp.redis.stats.keyspace_hits.count | Number of successful lookup of keys in the main dictionary. | long |  | counter |
-| gcp.redis.stats.keyspace_misses.count | Number of failed lookup of keys in the main dictionary. | long |  | counter |
+| gcp.redis.stats.evicted_keys.count | Delta of the number of evicted keys due to maxmemory limit. | long |  | gauge |
+| gcp.redis.stats.expired_keys.count | Delta of the total number of key expiration events. | long |  | gauge |
+| gcp.redis.stats.keyspace_hits.count | Delta of the number of successful lookup of keys in the main dictionary. | long |  | gauge |
+| gcp.redis.stats.keyspace_misses.count | Delta of the number of failed lookup of keys in the main dictionary. | long |  | gauge |
 | gcp.redis.stats.memory.maxmemory.mb | Maximum amount of memory Redis can consume. | long | m | gauge |
 | gcp.redis.stats.memory.system_memory_overload_duration.us | The amount of time in microseconds the instance is in system memory overload mode. | long | micros | gauge |
 | gcp.redis.stats.memory.system_memory_usage_ratio | Memory usage as a ratio of maximum system memory. | double |  | gauge |
 | gcp.redis.stats.memory.usage.bytes | Total number of bytes allocated by Redis. | long | byte | gauge |
 | gcp.redis.stats.memory.usage_ratio | Memory usage as a ratio of maximum memory. | double |  | gauge |
-| gcp.redis.stats.network_traffic.bytes | Total number of bytes sent to/from redis (includes bytes from commands themselves, payload data, and delimiters). | long | byte | counter |
+| gcp.redis.stats.network_traffic.bytes | Delta of the total number of bytes sent to/from redis (includes bytes from commands themselves, payload data, and delimiters). | long | byte | gauge |
 | gcp.redis.stats.pubsub.channels.count | Global number of pub/sub channels with client subscriptions. | long |  | gauge |
 | gcp.redis.stats.pubsub.patterns.count | Global number of pub/sub pattern with client subscriptions. | long |  | gauge |
 | gcp.redis.stats.reject_connections.count | Number of connections rejected because of maxclients limit. | long |  | gauge |
@@ -2392,65 +2425,65 @@ The `storage` dataset fetches metrics from [Storage](https://cloud.google.com/st
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |
-| error.message | Error message. | match_only_text |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| gcp.labels.metadata.\* |  | object |
-| gcp.labels.metrics.\* |  | object |
-| gcp.labels.resource.\* |  | object |
-| gcp.labels.system.\* |  | object |
-| gcp.labels.user.\* |  | object |
-| gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |
-| gcp.storage.api.request.count | Delta count of API calls, grouped by the API method name and response code. | long |
-| gcp.storage.authz.acl_based_object_access.count | Delta count of requests that result in an object being granted access solely due to object ACLs. | long |
-| gcp.storage.authz.acl_operations.count | Usage of ACL operations broken down by type. | long |
-| gcp.storage.authz.object_specific_acl_mutation.count | Delta count of changes made to object specific ACLs. | long |
-| gcp.storage.network.received.bytes | Delta count of bytes received over the network, grouped by the API method name and response code. | long |
-| gcp.storage.network.sent.bytes | Delta count of bytes sent over the network, grouped by the API method name and response code. | long |
-| gcp.storage.storage.object.count | Total number of objects per bucket, grouped by storage class. This value is measured once per day, and the value is repeated at each sampling interval throughout the day. | long |
-| gcp.storage.storage.total.bytes | Total size of all objects in the bucket, grouped by storage class. This value is measured once per day, and the value is repeated at each sampling interval throughout the day. | long |
-| gcp.storage.storage.total_byte_seconds.bytes | Delta count of bytes received over the network, grouped by the API method name and response code. | long |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.instance.name | Instance name of the host machine. | keyword |  |
+| cloud.machine.type | Machine type of the host machine. | keyword |  |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| container.image.name | Name of the image the container was built on. | keyword |  |
+| container.labels | Image labels. | object |  |
+| container.name | Container name. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |  |
+| error.message | Error message. | match_only_text |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| gcp.labels.metadata.\* |  | object |  |
+| gcp.labels.metrics.\* |  | object |  |
+| gcp.labels.resource.\* |  | object |  |
+| gcp.labels.system.\* |  | object |  |
+| gcp.labels.user.\* |  | object |  |
+| gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
+| gcp.storage.api.request.count | Delta count of API calls, grouped by the API method name and response code. | long | gauge |
+| gcp.storage.authz.acl_based_object_access.count | Delta count of requests that result in an object being granted access solely due to object ACLs. | long | gauge |
+| gcp.storage.authz.acl_operations.count | Usage of ACL operations broken down by type. | long | gauge |
+| gcp.storage.authz.object_specific_acl_mutation.count | Delta count of changes made to object specific ACLs. | long | gauge |
+| gcp.storage.network.received.bytes | Delta count of bytes received over the network, grouped by the API method name and response code. | long | gauge |
+| gcp.storage.network.sent.bytes | Delta count of bytes sent over the network, grouped by the API method name and response code. | long | gauge |
+| gcp.storage.storage.object.count | Total number of objects per bucket, grouped by storage class. This value is measured once per day, and the value is repeated at each sampling interval throughout the day. | long | gauge |
+| gcp.storage.storage.total.bytes | Total size of all objects in the bucket, grouped by storage class. This value is measured once per day, and the value is repeated at each sampling interval throughout the day. | long | gauge |
+| gcp.storage.storage.total_byte_seconds.bytes | Delta count of bytes received over the network, grouped by the API method name and response code. | long | gauge |
+| host.architecture | Operating system architecture. | keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.mac | Host mac addresses. | keyword |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
+| host.os.name | Operating system name, without the version. | keyword |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 An example event for `storage` looks as following:

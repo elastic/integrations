@@ -129,7 +129,7 @@ An example event for `asset` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",
@@ -520,7 +520,7 @@ An example event for `finding` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",
@@ -603,7 +603,7 @@ An example event for `finding` looks as following:
 | google_scc.finding.access.principal.email | Associated email, such as "foo@google.com". | keyword |
 | google_scc.finding.access.principal.subject | A string that represents the principalSubject that is associated with the identity. Unlike principalEmail, principalSubject supports principals that aren't associated with email addresses, such as third party principals. For most identities, the format is principal://iam.googleapis.com/\{identity pool name\}/subject/\{subject\}. Some GKE identities, such as GKE_WORKLOAD, FREEFORM, and GKE_HUB_WORKLOAD, still use the legacy format serviceAccount:\{identity pool name\}[\{subject\}]. | keyword |
 | google_scc.finding.access.service_account.delegation_info.principal.email | The email address of a Google account. | keyword |
-| google_scc.finding.access.service_account.delegation_info.principal.subject | A string representing the principalSubject associated with the identity. As compared to principalEmail, supports principals that aren't associated with email addresses, such as third party principals. For most identities, the format will be principal://iam.googleapis.com/\{identity pool name\}/subject/\{subject) except for some GKE identities (GKE_WORKLOAD, FREEFORM, GKE_HUB_WORKLOAD) that are still in the legacy format serviceAccount:\{identity pool name\}[\{subject\}]. | keyword |
+| google_scc.finding.access.service_account.delegation_info.principal.subject | A string representing the principalSubject associated with the identity. As compared to principalEmail, supports principals that aren't associated with email addresses, such as third party principals. For most identities, the format will be principal://iam.googleapis.com/\{identity pool name\}/subject/\{subject\} except for some GKE identities (GKE_WORKLOAD, FREEFORM, GKE_HUB_WORKLOAD) that are still in the legacy format serviceAccount:\{identity pool name\}[\{subject\}]. | keyword |
 | google_scc.finding.access.service_account.key_name | The name of the service account key that was used to create or exchange credentials for authenticating the service account that made the request. This is a scheme-less URI full resource name. For example:  "//iam.googleapis.com/projects/\{PROJECT_ID\}/serviceAccounts/\{ACCOUNT\}/keys/\{key\}". | keyword |
 | google_scc.finding.access.service_name | This is the API service that the service account made a call to, e.g. "iam.googleapis.com". | keyword |
 | google_scc.finding.access.user_agent_family | Type of user agent associated with the finding, for example, operating system shells and embedded or stand-alone applications. | keyword |
@@ -806,7 +806,7 @@ An example event for `source` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",
@@ -895,7 +895,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",
@@ -997,9 +997,9 @@ An example event for `audit` looks as following:
 | google_scc.audit.proto_payload.authentication_info.principal_email | The email address of the authenticated user (or service account on behalf of third party principal) making the request. | keyword |
 | google_scc.audit.proto_payload.authentication_info.principal_subject | String representation of identity of requesting party. Populated for both first and third party identities. | keyword |
 | google_scc.audit.proto_payload.authentication_info.service_account_delegation_info.first_party_principal.email | The email address of a Google account. | keyword |
-| google_scc.audit.proto_payload.authentication_info.service_account_delegation_info.first_party_principal.service_metadata | Metadata about the service that uses the service account. | object |
+| google_scc.audit.proto_payload.authentication_info.service_account_delegation_info.first_party_principal.service_metadata | Metadata about the service that uses the service account. | flattened |
 | google_scc.audit.proto_payload.authentication_info.service_account_delegation_info.principal_subject | A string representing the principalSubject associated with the identity. | keyword |
-| google_scc.audit.proto_payload.authentication_info.service_account_delegation_info.third_party_principal.claims | Metadata about third party identity. | object |
+| google_scc.audit.proto_payload.authentication_info.service_account_delegation_info.third_party_principal.claims | Metadata about third party identity. | flattened |
 | google_scc.audit.proto_payload.authentication_info.service_account_key_name | The name of the service account key used to create or exchange credentials for authenticating the service account making the request. This is a scheme-less URI full resource name. | keyword |
 | google_scc.audit.proto_payload.authentication_info.third_party_principal | The third party identification (if any) of the authenticated user making the request. | flattened |
 | google_scc.audit.proto_payload.authorization_info.granted | Whether or not authorization for resource and permission was granted. | boolean |
@@ -1017,11 +1017,11 @@ An example event for `audit` looks as following:
 | google_scc.audit.proto_payload.authorization_info.resource_attributes.type | The type of the resource. The syntax is platform-specific because different platforms define their resources differently. | keyword |
 | google_scc.audit.proto_payload.authorization_info.resource_attributes.uid | The unique identifier of the resource. | keyword |
 | google_scc.audit.proto_payload.authorization_info.resource_attributes.update_time | The timestamp when the resource was last updated. | date |
-| google_scc.audit.proto_payload.metadata | Other service-specific data about the request, response, and other information associated with the current audited event. | object |
+| google_scc.audit.proto_payload.metadata | Other service-specific data about the request, response, and other information associated with the current audited event. | flattened |
 | google_scc.audit.proto_payload.method_name | The name of the service method or operation. For API calls, this should be the name of the API method. | keyword |
 | google_scc.audit.proto_payload.num_response_items | The number of items returned from a List or Query API method, if applicable. | long |
 | google_scc.audit.proto_payload.policy_violation_info.org_policy_violation_info.payload | Resource payload that is currently in scope and is subjected to orgpolicy conditions. | flattened |
-| google_scc.audit.proto_payload.policy_violation_info.org_policy_violation_info.resource.tags | Tags referenced on the resource at the time of evaluation. | object |
+| google_scc.audit.proto_payload.policy_violation_info.org_policy_violation_info.resource.tags | Tags referenced on the resource at the time of evaluation. | flattened |
 | google_scc.audit.proto_payload.policy_violation_info.org_policy_violation_info.resource.type | Resource type that the orgpolicy is checked against. | keyword |
 | google_scc.audit.proto_payload.policy_violation_info.org_policy_violation_info.violation_info.checked_value | Value that is being checked for the policy. | keyword |
 | google_scc.audit.proto_payload.policy_violation_info.org_policy_violation_info.violation_info.constraint | Constraint name. | keyword |
@@ -1058,7 +1058,7 @@ An example event for `audit` looks as following:
 | google_scc.audit.proto_payload.resource_name | The resource or collection that is the target of the operation. The name is a scheme-less URI, not including the API service name. | keyword |
 | google_scc.audit.proto_payload.resource_original_state | The resource's original state before mutation. | flattened |
 | google_scc.audit.proto_payload.response | The operation response. | flattened |
-| google_scc.audit.proto_payload.service_data | Other service-specific data about the request, response, and other activities. | object |
+| google_scc.audit.proto_payload.service_data | Other service-specific data about the request, response, and other activities. | flattened |
 | google_scc.audit.proto_payload.service_name | The name of the API service performing the operation. | keyword |
 | google_scc.audit.proto_payload.status.code | The status code, which should be an enum value of google.rpc.Code. | long |
 | google_scc.audit.proto_payload.status.details | A list of messages that carry the error details. | nested |

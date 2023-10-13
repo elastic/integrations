@@ -800,6 +800,8 @@ An example event for `state_deployment` looks as following:
 | kubernetes.deployment.replicas.desired | Deployment number of desired replicas (spec) | integer | gauge |
 | kubernetes.deployment.replicas.unavailable | Deployment unavailable replicas | integer | gauge |
 | kubernetes.deployment.replicas.updated | Deployment updated replicas | integer | gauge |
+| kubernetes.deployment.status.available | Deployment Available Condition status (true, false or unknown) | keyword |  |
+| kubernetes.deployment.status.progressing | Deployment Progresing Condition status (true, false or unknown) | keyword |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |
 | kubernetes.namespace_labels.\* | Kubernetes namespace labels map | object |  |
@@ -1134,7 +1136,7 @@ An example event for `state_node` looks as following:
         "address": "kube-state-metrics:8080"
     },
     "event": {
-        "dataset": "kubernetes.node",
+        "dataset": "kubernetes.state_node",
         "module": "kubernetes",
         "duration": 8194220
     }
@@ -1229,7 +1231,7 @@ An example event for `state_persistentvolume` looks as following:
     "event": {
         "module": "kubernetes",
         "duration": 12149615,
-        "dataset": "kubernetes.persistentvolume"
+        "dataset": "kubernetes.state_persistentvolume"
     },
     "agent": {
         "version": "8.0.0",
@@ -1968,7 +1970,7 @@ An example event for `state_resourcequota` looks as following:
         "type": "kubernetes"
     },
     "event": {
-        "dataset": "kubernetes.resourcequota",
+        "dataset": "kubernetes.state_resourcequota",
         "module": "kubernetes",
         "duration": 6324269
     },
@@ -2481,7 +2483,7 @@ An example event for `state_storageclass` looks as following:
     "event": {
         "module": "kubernetes",
         "duration": 5713503,
-        "dataset": "kubernetes.storageclass"
+        "dataset": "kubernetes.state_storageclass"
     },
     "metricset": {
         "name": "state_storageclass",

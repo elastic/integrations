@@ -155,11 +155,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2021-01-16T00:35:25.258Z",
     "agent": {
-        "ephemeral_id": "fa387b80-fca3-4488-ac1b-460792f3a8ea",
-        "id": "02ab444e-ca97-437b-85dc-d580f055047c",
+        "ephemeral_id": "35e38c15-1a71-4f27-be32-fa338af49c11",
+        "id": "891454b6-66ae-48e0-a2df-0f093ea30e4c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.1.0"
+        "version": "8.10.2"
     },
     "data_stream": {
         "dataset": "hid_bravura_monitor.log",
@@ -167,17 +167,17 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "02ab444e-ca97-437b-85dc-d580f055047c",
+        "id": "891454b6-66ae-48e0-a2df-0f093ea30e4c",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.10.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "hid_bravura_monitor.log",
-        "ingested": "2022-11-22T08:13:24Z",
+        "ingested": "2023-10-03T10:00:58Z",
         "original": "\u00182021-01-16 00:35:25.258.7085 - [] pamlws.exe [44408,52004] Error: LWS [HID-TEST] foundcomputer record not found",
         "timezone": "UTC"
     },
@@ -189,23 +189,24 @@ An example event for `log` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": false,
+        "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "efe661d97f0c4d9883075c393da6b0d8",
         "ip": [
-            "172.29.0.7"
+            "172.23.0.7"
         ],
         "mac": [
-            "02:42:ac:1d:00:07"
+            "02-42-AC-17-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.104-linuxkit",
+            "kernel": "5.15.90.1-microsoft-standard-WSL2",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "input": {
@@ -213,11 +214,13 @@ An example event for `log` looks as following:
     },
     "log": {
         "file": {
+            "device_id": 2080,
+            "inode": 90160,
             "path": "/tmp/service_logs/hid_bravura_monitor.log"
         },
         "level": "Error",
         "logger": "pamlws.exe",
-        "offset": 218
+        "offset": 104
     },
     "message": "LWS [HID-TEST] foundcomputer record not found",
     "process": {
@@ -285,16 +288,16 @@ An example event for `log` looks as following:
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
-| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
+| event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
+| event.end | `event.end` contains the date when the event ended or when the activity was last observed. | date |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
-| event.start | event.start contains the date when the event started or when the activity was first observed. | date |
+| event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
@@ -349,7 +352,13 @@ An example event for `log` looks as following:
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type. | keyword |
 | labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
@@ -359,7 +368,7 @@ An example event for `log` looks as following:
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
-| network.inner | Network.inner fields are added in addition to network.vlan fields to describe the innermost VLAN when q-in-q VLAN tagging is present. Allowed fields include vlan.id and vlan.name. Inner vlan fields are typically used when sending traffic with multiple 802.1q encapsulations to a network sensor (e.g. Zeek, Wireshark.) | object |
+| network.inner | Network.inner fields are added in addition to network.vlan fields to describe the innermost VLAN when q-in-q VLAN tagging is present. Allowed fields include vlan.id and vlan.name. Inner vlan fields are typically used when sending traffic with multiple 802.1q encapsulations to a network sensor (e.g. Zeek, Wireshark.) | group |
 | network.inner.vlan.id | VLAN ID as reported by the observer. | keyword |
 | network.inner.vlan.name | Optional VLAN name as reported by the observer. | keyword |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
@@ -438,73 +447,43 @@ An example event for `winlog` looks as following:
 ```json
 {
     "@timestamp": "2021-10-29T14:05:50.739Z",
+    "agent": {
+        "ephemeral_id": "d061bfcf-e51b-4586-9ace-3d5b15f86e37",
+        "hostname": "node1",
+        "id": "aa12ad42-61bc-466c-8887-1a15d4646fc7",
+        "name": "node1",
+        "type": "filebeat",
+        "version": "8.0.0"
+    },
     "cloud": {
-        "provider": "aws",
+        "account": {
+            "id": "753231555564"
+        },
+        "availability_zone": "us-east-1a",
+        "image": {
+            "id": "ami-0e6ddc753bf04d004"
+        },
         "instance": {
             "id": "i-043997b05c5fa45ee"
         },
         "machine": {
             "type": "t3a.xlarge"
         },
-        "region": "us-east-1",
-        "availability_zone": "us-east-1a",
-        "account": {
-            "id": "753231555564"
-        },
-        "image": {
-            "id": "ami-0e6ddc753bf04d004"
-        }
+        "provider": "aws",
+        "region": "us-east-1"
     },
-    "log": {
-        "level": "information"
-    },
-    "message": "User successfully logged in.|Profile=JOHND|Language=|Skin=",
-    "winlog": {
-        "record_id": 1548167,
-        "api": "wineventlog",
-        "opcode": "Info",
-        "provider_guid": "{5a744344-18a9-480d-8a3a-0560ac58b841}",
-        "channel": "Hitachi-Hitachi ID Systems-Hitachi ID Suite/Operational",
-        "activity_id": "{4ffdfadd-63f2-41b2-9a4f-13534a729c54}",
-        "user": {
-            "identifier": "S-1-5-21-1512184445-966971527-3399726218-1035",
-            "name": "psadmin",
-            "domain": "DOMAIN1",
-            "type": "User"
-        },
-        "event_data": {
-            "Module": "psf.exe",
-            "Profile": "JOHND",
-            "Instance": "pmim"
-        },
-        "event_id": 92,
-        "computer_name": "bravurasecurity1.corp",
-        "provider_name": "Hitachi-Hitachi ID Systems-Hitachi ID Suite",
-        "task": "",
-        "process": {
-            "pid": 6368,
-            "thread": {
-                "id": 9064
-            }
-        }
+    "ecs": {
+        "version": "8.10.0"
     },
     "event": {
-        "kind": "event",
         "code": 92,
-        "provider": "Hitachi-Hitachi ID Systems-Hitachi ID Suite",
-        "created": "2021-10-29T14:05:52.111Z"
+        "created": "2021-10-29T14:05:52.111Z",
+        "kind": "event",
+        "provider": "Hitachi-Hitachi ID Systems-Hitachi ID Suite"
     },
     "host": {
-        "name": "bravurasecurity1.corp",
         "architecture": "x86_64",
-        "os": {
-            "family": "windows",
-            "name": "Windows Server 2019 Datacenter",
-            "kernel": "10.0.17763.1999 (WinBuild.160101.0800)",
-            "build": "17763.1999",
-            "platform": "windows",
-            "version": "10.0"
-        },
+        "hostname": "node1",
         "id": "a9d2b7f5-6d62-46b3-8fbe-35a7e83d1dc8",
         "ip": [
             "0.0.0.0"
@@ -512,18 +491,48 @@ An example event for `winlog` looks as following:
         "mac": [
             "0a:a5:af:ad:d3:ab"
         ],
-        "hostname": "node1"
+        "name": "bravurasecurity1.corp",
+        "os": {
+            "build": "17763.1999",
+            "family": "windows",
+            "kernel": "10.0.17763.1999 (WinBuild.160101.0800)",
+            "name": "Windows Server 2019 Datacenter",
+            "platform": "windows",
+            "version": "10.0"
+        }
     },
-    "agent": {
-        "version": "8.0.0",
-        "hostname": "node1",
-        "ephemeral_id": "d061bfcf-e51b-4586-9ace-3d5b15f86e37",
-        "id": "aa12ad42-61bc-466c-8887-1a15d4646fc7",
-        "name": "node1",
-        "type": "filebeat"
+    "log": {
+        "level": "information"
     },
-    "ecs": {
-        "version": "8.8.0"
+    "message": "User successfully logged in.|Profile=JOHND|Language=|Skin=",
+    "winlog": {
+        "activity_id": "{4ffdfadd-63f2-41b2-9a4f-13534a729c54}",
+        "api": "wineventlog",
+        "channel": "Hitachi-Hitachi ID Systems-Hitachi ID Suite/Operational",
+        "computer_name": "bravurasecurity1.corp",
+        "event_data": {
+            "Instance": "pmim",
+            "Module": "psf.exe",
+            "Profile": "JOHND"
+        },
+        "event_id": 92,
+        "opcode": "Info",
+        "process": {
+            "pid": 6368,
+            "thread": {
+                "id": 9064
+            }
+        },
+        "provider_guid": "{5a744344-18a9-480d-8a3a-0560ac58b841}",
+        "provider_name": "Hitachi-Hitachi ID Systems-Hitachi ID Suite",
+        "record_id": 1548167,
+        "task": "",
+        "user": {
+            "domain": "DOMAIN1",
+            "identifier": "S-1-5-21-1512184445-966971527-3399726218-1035",
+            "name": "psadmin",
+            "type": "User"
+        }
     }
 }
 ```
@@ -554,10 +563,10 @@ An example event for `winlog` looks as following:
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
@@ -586,7 +595,7 @@ An example event for `winlog` looks as following:
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
-| message | initial raw message | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
@@ -715,7 +724,7 @@ An example event for `winlog` looks as following:
 | winlog.related_activity_id | A globally unique identifier that identifies the activity to which control was transferred to. The related events would then have this identifier as their `activity_id` identifier. | keyword |
 | winlog.symbolic_id | Symbolic event id | keyword |
 | winlog.task | The task defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. The category used by the Event Logging API (on pre Windows Vista operating systems) is written to this field. | keyword |
-| winlog.time_created | Time event was created | keyword |
+| winlog.time_created | Time event was created | date |
 | winlog.trustAttribute |  | keyword |
 | winlog.trustDirection |  | keyword |
 | winlog.trustType |  | keyword |

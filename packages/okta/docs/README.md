@@ -8,17 +8,38 @@ The Okta integration collects events from the Okta API, specifically reading fro
 
 The Okta System Log records system events related to your organization in order to provide an audit trail that can be used to understand platform activity and to diagnose problems. This module is implemented using the httpjson input and is configured to paginate through the logs while honoring any rate-limiting headers sent by Okta.
 
+## Types Of Authentication
+### API Key
+In this type of authentication, we only require an API Key for authenticating the client and polling for Okta System Logs.
+
+### Oauth2
+**In this type of authentication, we require the following information:**
+1. Your Okta domain URL. [ Example: https://dev-123456.okta.com ]
+2. Your Okta service app Client ID.
+3. Your Okta service app JWK Private Key
+4. The Okta scope that is required for OAuth2. [ By default this is set to `okta.logs.read` which should suffice for most use cases ]
+
+**Steps to acquire Okta Oauth2 credentials:**
+1. Acquire an Okta dev or user account with privileges to mint tokens with the `okta.*` scopes.
+2. Log into your Okta account, navigate to `Applications` on the left-hand side, click on the `Create App Integration` button and create an API Services application.
+3. Click on the created app, note down the `Client ID` and select the option for `Public key/Private key`.
+4. Generate your own `Private/Public key` pair in the `JWK` format (PEM is not supported at the moment) and save it in a credentials JSON file or copy it to use directly in the config.
+
+> **_NOTE:_**
+ Tokens with `okta.*` Scopes are generally minted from the Okta Org Auth server and not the default/custom authorization server.
+ The standard Okta Org Auth server endpoint to mint tokens is https://<your_okta_org>.okta.com/oauth2/v1/token
+
 An example event for `system` looks as following:
 
 ```json
 {
     "@timestamp": "2020-02-14T20:18:57.718Z",
     "agent": {
-        "ephemeral_id": "3f562d57-6507-4263-ab9a-20c02bca1d39",
-        "id": "5223cc35-5786-4527-8d08-bb0418a81831",
+        "ephemeral_id": "3b6c86fa-7cc1-4bd2-8064-b2f3c8c38bef",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.10.1"
     },
     "client": {
         "geo": {
@@ -43,12 +64,12 @@ An example event for `system` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "5223cc35-5786-4527-8d08-bb0418a81831",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "snapshot": false,
-        "version": "8.8.0"
+        "version": "8.10.1"
     },
     "event": {
         "action": "user.session.start",
@@ -57,16 +78,16 @@ An example event for `system` looks as following:
             "authentication",
             "session"
         ],
-        "created": "2023-05-26T15:12:31.660Z",
+        "created": "2023-09-22T17:12:24.505Z",
         "dataset": "okta.system",
         "id": "3aeede38-4f67-11ea-abd3-1f5d113f2546",
-        "ingested": "2023-05-26T15:12:32Z",
+        "ingested": "2023-09-22T17:12:25Z",
         "kind": "event",
         "original": "{\"actor\":{\"alternateId\":\"xxxxxx@elastic.co\",\"detailEntry\":null,\"displayName\":\"xxxxxx\",\"id\":\"00u1abvz4pYqdM8ms4x6\",\"type\":\"User\"},\"authenticationContext\":{\"authenticationProvider\":null,\"authenticationStep\":0,\"credentialProvider\":null,\"credentialType\":null,\"externalSessionId\":\"102bZDNFfWaQSyEZQuDgWt-uQ\",\"interface\":null,\"issuer\":null},\"client\":{\"device\":\"Computer\",\"geographicalContext\":{\"city\":\"Dublin\",\"country\":\"United States\",\"geolocation\":{\"lat\":37.7201,\"lon\":-121.919},\"postalCode\":\"94568\",\"state\":\"California\"},\"id\":null,\"ipAddress\":\"108.255.197.247\",\"userAgent\":{\"browser\":\"FIREFOX\",\"os\":\"Mac OS X\",\"rawUserAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:72.0) Gecko/20100101 Firefox/72.0\"},\"zone\":\"null\"},\"debugContext\":{\"debugData\":{\"deviceFingerprint\":\"541daf91d15bef64a7e08c946fd9a9d0\",\"requestId\":\"XkcAsWb8WjwDP76xh@1v8wAABp0\",\"requestUri\":\"/api/v1/authn\",\"threatSuspected\":\"false\",\"url\":\"/api/v1/authn?\"}},\"displayMessage\":\"User login to Okta\",\"eventType\":\"user.session.start\",\"legacyEventType\":\"core.user_auth.login_success\",\"outcome\":{\"reason\":null,\"result\":\"SUCCESS\"},\"published\":\"2020-02-14T20:18:57.718Z\",\"request\":{\"ipChain\":[{\"geographicalContext\":{\"city\":\"Dublin\",\"country\":\"United States\",\"geolocation\":{\"lat\":37.7201,\"lon\":-121.919},\"postalCode\":\"94568\",\"state\":\"California\"},\"ip\":\"108.255.197.247\",\"source\":null,\"version\":\"V4\"}]},\"securityContext\":{\"asNumber\":null,\"asOrg\":null,\"domain\":null,\"isProxy\":null,\"isp\":null},\"severity\":\"INFO\",\"target\":null,\"transaction\":{\"detail\":{},\"id\":\"XkcAsWb8WjwDP76xh@1v8wAABp0\",\"type\":\"WEB\"},\"uuid\":\"3aeede38-4f67-11ea-abd3-1f5d113f2546\",\"version\":\"0\"}",
         "outcome": "success",
         "type": [
             "start",
-            "user"
+            "info"
         ]
     },
     "input": {
@@ -230,11 +251,11 @@ An example event for `system` looks as following:
 | error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
@@ -281,6 +302,7 @@ An example event for `system` looks as following:
 | okta.client.user_agent.raw_user_agent | The raw informaton of the user agent. | keyword |
 | okta.client.zone | The zone information of the client. | keyword |
 | okta.debug_context.debug_data.device_fingerprint | The fingerprint of the device. | keyword |
+| okta.debug_context.debug_data.dt_hash | The device token hash | keyword |
 | okta.debug_context.debug_data.factor | The factor used for authentication. | keyword |
 | okta.debug_context.debug_data.flattened | The complete debug_data object. | flattened |
 | okta.debug_context.debug_data.request_id | The identifier of the request. | keyword |
@@ -304,24 +326,14 @@ An example event for `system` looks as following:
 | okta.event_type | The type of the LogEvent. | keyword |
 | okta.outcome.reason | The reason of the outcome. | keyword |
 | okta.outcome.result | The result of the outcome. Must be one of: SUCCESS, FAILURE, SKIPPED, ALLOW, DENY, CHALLENGE, UNKNOWN. | keyword |
-| okta.request.ip_chain.geographical_context.city | The city. | keyword |
-| okta.request.ip_chain.geographical_context.country | The country. | keyword |
-| okta.request.ip_chain.geographical_context.geolocation | Geolocation information. | geo_point |
-| okta.request.ip_chain.geographical_context.postal_code | The postal code. | keyword |
-| okta.request.ip_chain.geographical_context.state | The state. | keyword |
-| okta.request.ip_chain.ip | IP address. | ip |
-| okta.request.ip_chain.source | Source information. | keyword |
-| okta.request.ip_chain.version | IP version. Must be one of V4, V6. | keyword |
+| okta.request.ip_chain |  | flattened |
 | okta.security_context.as.number | The AS number. | integer |
 | okta.security_context.as.organization.name | The organization name. | keyword |
 | okta.security_context.domain | The domain name. | keyword |
 | okta.security_context.is_proxy | Whether it is a proxy or not. | boolean |
 | okta.security_context.isp | The Internet Service Provider. | keyword |
 | okta.severity | The severity of the LogEvent. Must be one of DEBUG, INFO, WARN, or ERROR. | keyword |
-| okta.target.alternate_id | Alternate identifier of the actor. | keyword |
-| okta.target.display_name | Display name of the actor. | keyword |
-| okta.target.id | Identifier of the actor. | keyword |
-| okta.target.type | Type of the actor. | keyword |
+| okta.target | The list of targets. | flattened |
 | okta.transaction.id | Identifier of the transaction. | keyword |
 | okta.transaction.type | The type of transaction. Must be one of "WEB", "JOB". | keyword |
 | okta.uuid | The unique identifier of the Okta LogEvent. | keyword |

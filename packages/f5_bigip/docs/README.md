@@ -161,12 +161,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2018-11-19T22:34:40.000Z",
     "agent": {
-        "ephemeral_id": "e53fc33d-3e0e-4f88-a338-d65c29e5d7de",
-        "hostname": "docker-fleet-agent",
-        "id": "121c9eba-d12d-4405-9bf4-83bc92e8c764",
+        "ephemeral_id": "b2702795-ff0f-4411-b118-3905167e6def",
+        "id": "28857421-72df-47d1-a881-abece3f8bd81",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.10.2"
     },
     "client": {
         "ip": "81.2.69.142"
@@ -181,12 +180,12 @@ An example event for `log` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "121c9eba-d12d-4405-9bf4-83bc92e8c764",
+        "id": "28857421-72df-47d1-a881-abece3f8bd81",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.10.2"
     },
     "event": {
         "agent_id_status": "verified",
@@ -194,9 +193,9 @@ An example event for `log` looks as following:
             "network"
         ],
         "dataset": "f5_bigip.log",
-        "ingested": "2022-10-21T06:12:02Z",
+        "ingested": "2023-10-03T09:46:22Z",
         "kind": "event",
-        "original": "{\"application\":\"app.app\",\"attack_type\":\"Detection Evasion\",\"blocking_exception_reason\":\"test\",\"captcha_result\":\"not_received\",\"date_time\":\"2018-11-19 22:34:40\",\"dest_ip\":\"81.2.69.142\",\"dest_port\":\"80\",\"device_id\":\"12bdca32\",\"fragment\":\"test_Fragment\",\"geo_location\":\"US\",\"hostname\":\"hostname\",\"http_class_name\":\"/Common/abc/test\",\"ip_address_intelligence\":\"host1\",\"ip_client\":\"81.2.69.142\",\"management_ip_address\":\"81.2.69.142\",\"management_ip_address_2\":\"81.2.69.144\",\"method\":\"GET\",\"policy_apply_date\":\"2018-11-19 22:17:57\",\"policy_name\":\"/Common/abc\",\"protocol\":\"HTTP\",\"query_string\":\"name=abc\",\"request\":\"GET /admin/.\",\"request_status\":\"blocked\",\"response_code\":\"0\",\"route_domain\":\"example.com\",\"session_id\":\"abc123abcd\",\"severity\":\"Critical\",\"sig_ids\":\"abc12bcd\",\"sig_names\":\"Sig_Name\",\"src_port\":\"49804\",\"staged_sig_ids\":\"abc23121bc\",\"staged_sig_names\":\"test_name\",\"staged_threat_campaign_names\":\"test\",\"sub_violations\":\"Evasion technique detected:Directory traversals\",\"support_id\":\"123456789\",\"telemetryEventCategory\":\"ASM\",\"tenant\":\"Common\",\"threat_campaign_names\":\"threat\",\"uri\":\"/directory/file\",\"username\":\"test User\",\"violation_rating\":\"3\",\"violations\":\"Evasion technique detected\",\"virus_name\":\"test Virus\",\"web_application_name\":\"/Common/abc\",\"websocket_direction\":\"test\",\"websocket_message_type\":\"test\",\"x_forwarded_for_header_value\":\"81.2.69.144\"}",
+        "original": "{\"hostname\":\"hostname\",\"management_ip_address\":\"81.2.69.142\",\"management_ip_address_2\":\"81.2.69.144\",\"http_class_name\":\"/Common/abc/test\",\"web_application_name\":\"/Common/abc\",\"policy_name\":\"/Common/abc\",\"policy_apply_date\":\"2018-11-19 22:17:57\",\"violations\":\"Evasion technique detected\",\"support_id\":\"123456789\",\"request_status\":\"blocked\",\"response_code\":\"0\",\"ip_client\":\"81.2.69.142\",\"route_domain\":\"example.com\",\"method\":\"GET\",\"protocol\":\"HTTP\",\"query_string\":\"name=abc\",\"x_forwarded_for_header_value\":\"81.2.69.144\",\"sig_ids\":\"abc12bcd\",\"sig_names\":\"Sig_Name\",\"date_time\":\"2018-11-19 22:34:40\",\"severity\":\"Critical\",\"attack_type\":\"Detection Evasion\",\"geo_location\":\"US\",\"ip_address_intelligence\":\"host1\",\"username\":\"test User\",\"session_id\":\"abc123abcd\",\"src_port\":\"49804\",\"dest_port\":\"80\",\"dest_ip\":\"81.2.69.142\",\"sub_violations\":\"Evasion technique detected:Directory traversals\",\"virus_name\":\"test Virus\",\"violation_rating\":\"3\",\"websocket_direction\":\"test\",\"websocket_message_type\":\"test\",\"device_id\":\"12bdca32\",\"staged_sig_ids\":\"abc23121bc\",\"staged_sig_names\":\"test_name\",\"threat_campaign_names\":\"threat\",\"staged_threat_campaign_names\":\"test\",\"blocking_exception_reason\":\"test\",\"captcha_result\":\"not_received\",\"uri\":\"/directory/file\",\"fragment\":\"test_Fragment\",\"request\":\"GET /admin/.\",\"tenant\":\"Common\",\"application\":\"app.app\",\"telemetryEventCategory\":\"ASM\"}",
         "type": [
             "info"
         ]
@@ -311,10 +310,16 @@ An example event for `log` looks as following:
         }
     },
     "input": {
-        "type": "http_endpoint"
+        "type": "filestream"
     },
     "log": {
-        "level": "critical"
+        "file": {
+            "device_id": 2080,
+            "inode": 89387,
+            "path": "/tmp/service_logs/log.log"
+        },
+        "level": "critical",
+        "offset": 1876
     },
     "network": {
         "application": "app.app",
@@ -379,9 +384,9 @@ An example event for `log` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
@@ -702,6 +707,13 @@ An example event for `log` looks as following:
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
 | input.type | Input type | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Log offset | long |
 | log.syslog.severity.code | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different numeric severity value (e.g. firewall, IDS), your source's numeric severity should go to `event.severity`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `event.severity`. | long |

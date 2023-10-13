@@ -32,6 +32,11 @@ processors:
             description: Leave the unmatched content in message.
             field: _temp.message
             target_field: message
+  - append:
+      field: event.category
+      value: process
+      allow_duplicates: false
+      if: ctx.system?.auth?.sudo?.command != null
   - remove:
       field: _temp
   - grok:
@@ -49,6 +54,46 @@ processors:
         QUOTE: "['\"]"
         BOUNDARY: "(?<! )"
       if: ctx.message != null && ctx.message != ""
+  - grok:
+      description: Grok category from PAM messages.
+      tag: grok-pam-category
+      field: message
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - '^pam_unix(%{DATA}:%{WORD:_temp.category})'
+      if: ctx.message != null && ctx.message.contains('pam_unix(')
+  - append:
+      field: event.category
+      value: session
+      allow_duplicates: false
+      if: ctx._temp?.category == 'session'
+  - append:
+      field: event.category
+      value: authentication
+      allow_duplicates: false
+      if: ctx._temp?.category == 'auth'
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx._temp?.category == 'auth' && ctx.message != null && !ctx.message.contains('authentication failure')
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.message != null && ctx.message.contains('authentication failure')
+  - append:
+      field: event.category
+      value: authentication
+      allow_duplicates: false
+      if: ctx.message != null && ctx.message.contains('authentication failure')
+  - set:
+      field: event.action
+      value: 'logged-on'
+      if: ctx.message != null && ctx.message.contains('session opened')
+  - set:
+      field: event.action
+      value: 'logged-off'
+      if: ctx.message != null && ctx.message.contains('session closed')
   - rename:
       field: _temp.byuser
       target_field: user.name

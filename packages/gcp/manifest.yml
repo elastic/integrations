@@ -1,7 +1,6 @@
 name: gcp
 title: Google Cloud Platform
-version: "2.22.0"
-release: ga
+version: "2.30.1"
 description: Collect logs and metrics from Google Cloud Platform with Elastic Agent.
 type: integration
 icons:
@@ -9,12 +8,12 @@ icons:
     title: logo gcp
     size: 32x32
     type: image/svg+xml
-format_version: 1.0.0
-license: basic
+format_version: 3.0.0
 categories:
   - google_cloud
 conditions:
-  kibana.version: ^8.6.0
+  kibana:
+    version: ^8.7.1
 screenshots:
   - src: /img/filebeat-gcp-audit.png
     title: filebeat gcp audit
@@ -239,5 +238,18 @@ policy_templates:
       - type: gcp/metrics
         title: Collect GCP Cloud Run Metrics
         description: Collect GCP Cloud Run Metrics
+  - name: cloudsql
+    title: Google Cloud Platform (GCP) CloudSQL metrics
+    description: Collect CloudSQL metrics from Google Cloud Platform (GCP) with Elastic Agent
+    data_streams:
+      - cloudsql_mysql
+      - cloudsql_postgresql
+      - cloudsql_sqlserver
+    inputs:
+      - type: gcp/metrics
+        title: Collect GCP CloudSQL Metrics
+        description: Collect GCP CloudSQL Metrics
+        input_group: metrics
 owner:
-  github: elastic/security-external-integrations
+  github: elastic/obs-cloud-monitoring
+  type: elastic

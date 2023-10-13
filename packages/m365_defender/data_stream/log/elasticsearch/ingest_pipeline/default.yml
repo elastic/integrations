@@ -3,11 +3,18 @@ description: Pipeline for parsing m365 defender logs
 processors:
   - set:
       field: ecs.version
-      value: '8.8.0'
+      value: '8.10.0'
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: 'ctx.event?.original == null'
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
       target_field: json
@@ -26,10 +33,10 @@ processors:
       if: "ctx.json?.alerts?.entities == null || ctx.json?.alerts?.entities instanceof List"
   - fingerprint:
       fields:
+        - json.incidentId
         - json.alerts.alertId
         - json.alerts.creationTime
-        - json.alerts.entities.deviceId
-        - json.alerts.entities.evidenceCreationTime
+        - json.alerts.entities
       target_field: _id
       ignore_missing: true
   - date:
@@ -47,7 +54,7 @@ processors:
       value: azure
   - set:
       field: "@timestamp"
-      value: "{{json.lastUpdateTime}}"
+      value: "{{{json.lastUpdateTime}}}"
       if: ctx.json?.lastUpdateTime != null
   - rename:
       field: json.alerts.title
@@ -95,17 +102,19 @@ processors:
   - append:
       field: event.type
       value: user
-      if: ctx.json?.alerts?.entities?.entityType == 'User'
+      if: ctx.json?.alerts?.entities?.entityType == 'User' && ctx.event?.category != null && ctx.event.category.contains('process')
   - append:
       field: event.type
-      value:
-        - creation
-        - start
-      if: ctx.json?.status == 'New'
+      value: start
+      if: ctx.json?.status == 'New' && ctx.event?.category != null && !ctx.event.category.contains('malware')
   - append:
       field: event.type
       value: end
-      if: ctx.json?.status == 'Resolved'
+      if: ctx.json?.status == 'Resolved' && ctx.event?.category != null && !ctx.event.category.contains('malware')
+  - append:
+      field: event.type
+      value: info
+      if: ctx.event?.category != null && ctx.event?.type == null
   - rename:
       field: json.alerts.alertId
       target_field: event.id
@@ -255,19 +264,19 @@ processors:
   #########################
   - append:
       field: related.ip
-      value: "{{json.alerts.entities.ipAddress}}"
+      value: "{{{json.alerts.entities.ipAddress}}}"
       if: ctx.json?.alerts?.entities?.ipAddress != null
   - append:
       field: related.user
-      value: "{{user.name}}"
+      value: "{{{user.name}}}"
       if: ctx.user?.name != null
   - append:
       field: related.hash
-      value: "{{file.hash.sha1}}"
+      value: "{{{file.hash.sha1}}}"
       if: ctx.file?.hash?.sha1 != null
   - append:
       field: related.hash
-      value: "{{file.hash.sha256}}"
+      value: "{{{file.hash.sha256}}}"
       if: ctx.file?.hash?.sha256 != null
   - foreach:
       field: json.alerts.devices
@@ -275,7 +284,7 @@ processors:
       processor:
         append:
           field: related.hosts
-          value: "{{ _ingest._value.deviceDnsName }}"
+          value: "{{{ _ingest._value.deviceDnsName }}}"
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -284,7 +293,7 @@ processors:
       processor:
         append:
           field: host.name
-          value: "{{ _ingest._value.deviceDnsName }}"
+          value: "{{{ _ingest._value.deviceDnsName }}}"
           allow_duplicates: false
           ignore_failure: true
   - lowercase:
@@ -368,5 +377,8 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
-      value: "{{_ingest.on_failure_message}}"
+      value: "{{{_ingest.on_failure_message}}}"

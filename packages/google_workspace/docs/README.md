@@ -162,7 +162,7 @@ An example event for `saml` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
@@ -299,7 +299,7 @@ An example event for `user_accounts` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
@@ -422,7 +422,7 @@ An example event for `login` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
@@ -560,7 +560,7 @@ An example event for `rules` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
@@ -766,7 +766,7 @@ An example event for `admin` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
@@ -997,7 +997,7 @@ An example event for `drive` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
@@ -1164,7 +1164,7 @@ An example event for `groups` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
@@ -1318,7 +1318,7 @@ An example event for `alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
@@ -1633,7 +1633,7 @@ An example event for `device` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
@@ -1892,7 +1892,7 @@ An example event for `group_enterprise` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
@@ -2070,7 +2070,7 @@ An example event for `token` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
@@ -2248,7 +2248,7 @@ An example event for `token` looks as following:
 | google_workspace.token.client.type | The client type. | keyword |
 | google_workspace.token.method_name | The method name which was used in the OAuth Activity. | keyword |
 | google_workspace.token.num_response_bytes | The number of response bytes in the OAuth Activity. | long |
-| google_workspace.token.scope.data | Scope Data. | object |
+| google_workspace.token.scope.data | Scope Data. | flattened |
 | google_workspace.token.scope.value | Scopes under which access was granted / revoked. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
@@ -2277,7 +2277,7 @@ An example event for `access_transparency` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
@@ -2447,7 +2447,7 @@ An example event for `context_aware_access` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
@@ -2606,7 +2606,7 @@ An example event for `gcp` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",

@@ -1,0 +1,65 @@
+---
+description: Pipeline for processing Azure App Service HTTP logs.
+processors:
+  - rename:
+      field: azure.app_service.resourceId
+      target_field: azure.resource.id
+      ignore_missing: true
+  - rename:
+      field: azure.app_service.properties.CIp
+      target_field: azure.app_service.properties.client_ip
+  - rename:
+      field: azure.app_service.properties.ComputerName
+      target_field: azure.app_service.properties.computer_name
+  - rename:
+      field: azure.app_service.properties.Cookie
+      target_field: azure.app_service.properties.cookie
+  - rename:
+      field: azure.app_service.properties.CsBytes
+      target_field: azure.app_service.properties.cs_bytes
+  - rename:
+      field: azure.app_service.properties.CsHost
+      target_field: azure.app_service.properties.cs_host
+  - rename:
+      field: azure.app_service.properties.CsMethod
+      target_field: azure.app_service.properties.cs_method
+  - rename:
+      field: azure.app_service.properties.CsUriQuery
+      target_field: azure.app_service.properties.cs_uri_query
+  - rename:
+      field: azure.app_service.properties.CsUriStem
+      target_field: azure.app_service.properties.cs_uri_stem
+  - rename:
+      field: azure.app_service.properties.CsUsername
+      target_field: azure.app_service.properties.cs_username
+  - rename:
+      field: azure.app_service.properties.Referer
+      target_field: azure.app_service.properties.referer
+  - rename:
+      field: azure.app_service.properties.Result
+      target_field: azure.app_service.properties.result
+  - rename:
+      field: azure.app_service.properties.SPort
+      target_field: azure.app_service.properties.s_port
+  - rename:
+      field: azure.app_service.properties.ScBytes
+      target_field: azure.app_service.properties.sc_bytes
+  - rename:
+      field: azure.app_service.properties.ScStatus
+      target_field: azure.app_service.properties.sc_status
+  - rename:
+      field: azure.app_service.properties.ScSubStatus
+      target_field: azure.app_service.properties.sc_substatus
+  - rename:
+      field: azure.app_service.properties.ScWin32Status
+      target_field: azure.app_service.properties.sc_win32status
+  - rename:
+      field: azure.app_service.properties.TimeTaken
+      target_field: azure.app_service.properties.time_taken
+  - rename:
+      field: azure.app_service.properties.UserAgent
+      target_field: azure.app_service.properties.user_agent
+on_failure:
+  - append:
+      field: "error.message"
+      value: "{{ _ingest.on_failure_message }} {{ _ingest.on_failure_processor_type }}"

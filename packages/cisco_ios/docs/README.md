@@ -24,18 +24,18 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-06T22:11:43.398+11:00",
+    "@timestamp": "2022-01-06T20:52:12.861Z",
     "agent": {
-        "ephemeral_id": "b4eeb540-5cc1-4878-b94d-09d0a0d440dd",
-        "id": "7fcefa24-63f3-457e-b11c-ccf7f1edaad6",
+        "ephemeral_id": "960a0fda-a7b7-4362-9018-34b1d0d119c4",
+        "id": "f00ff835-626e-4a18-a8a2-0bb3ebb7503f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.2"
+        "version": "8.0.0"
     },
     "cisco": {
         "ios": {
-            "facility": "FOO",
-            "message_count": 2361044
+            "facility": "SYS",
+            "message_count": 2360957
         }
     },
     "data_stream": {
@@ -44,45 +44,43 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "7fcefa24-63f3-457e-b11c-ccf7f1edaad6",
+        "id": "f00ff835-626e-4a18-a8a2-0bb3ebb7503f",
         "snapshot": false,
-        "version": "8.6.2"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "code": "BAR",
+        "code": "CONFIG_I",
         "dataset": "cisco_ios.log",
-        "ingested": "2023-06-01T11:59:13Z",
-        "original": "\u003c190\u003e2361044: sw01: Jan  6 2022 22:11:43.398 AEST: %FOO-6-BAR: Test date format.",
+        "ingested": "2023-07-13T09:20:48Z",
+        "original": "\u003c189\u003e2360957: Jan  6 2022 20:52:12.861: %SYS-5-CONFIG_I: Configured from console by akroh on vty0 (10.100.11.10)",
         "provider": "firewall",
-        "sequence": 2361044,
-        "severity": 6,
-        "timezone": "Australia/Sydney",
+        "sequence": 2360957,
+        "severity": 5,
+        "timezone": "+00:00",
         "type": [
             "info"
         ]
     },
     "input": {
-        "type": "log"
+        "type": "tcp"
     },
     "log": {
-        "file": {
-            "path": "/tmp/service_logs/cisco-ios-timezones.log"
+        "level": "notification",
+        "source": {
+            "address": "172.25.0.4:46792"
         },
-        "level": "informational",
-        "offset": 0,
         "syslog": {
-            "hostname": "sw01",
-            "priority": 190
+            "priority": 189
         }
     },
-    "message": "Test date format.",
+    "message": "Configured from console by akroh on vty0 (10.100.11.10)",
     "observer": {
         "product": "IOS",
         "type": "firewall",
@@ -104,6 +102,7 @@ An example event for `log` looks as following:
 | cisco.ios.access_list | Name of the IP access list. | keyword |
 | cisco.ios.action | Action taken by the device | keyword |
 | cisco.ios.facility | The facility to which the message refers (for example, SNMP, SYS, and so forth). A facility can be a hardware device, a protocol, or a module of the system software. It denotes the source or the cause of the system message. | keyword |
+| cisco.ios.interface.name | The name of the network interface. | keyword |
 | cisco.ios.message_count | Message count number provided by the device when the device's service message-counter global configuration is set. | long |
 | cisco.ios.outcome | The result of the event | keyword |
 | cisco.ios.pim.group.ip | Multicast group IP | ip |
@@ -132,6 +131,7 @@ An example event for `log` looks as following:
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
 | destination.as.organization.name.text | Multi-field of `destination.as.organization.name`. | match_only_text |
+| destination.bytes | Bytes sent from the destination to the source. | long |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
@@ -148,17 +148,17 @@ An example event for `log` looks as following:
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
-| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
+| event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
+| event.end | `event.end` contains the date when the event ended or when the activity was last observed. | date |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
-| event.start | event.start contains the date when the event started or when the activity was first observed. | date |
+| event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -188,9 +188,10 @@ An example event for `log` looks as following:
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset |  | long |
 | log.source.address |  | keyword |
-| log.syslog.hostname | Hostname parsed from syslog header. | keyword |
+| log.syslog.hostname | The hostname, FQDN, or IP of the machine that originally sent the Syslog message. This is sourced from the hostname field of the syslog header. Depending on the environment, this value may be different from the host that handled the event, especially if the host handling the events is acting as a collector. | keyword |
 | log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
@@ -206,6 +207,7 @@ An example event for `log` looks as following:
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
+| source.bytes | Bytes sent from the source to the destination. | long |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |

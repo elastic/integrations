@@ -50,23 +50,11 @@ The following processes and tags are supported:
 | agent.name | Custom name of the agent. This is a name that can be given to an agent. This can be helpful if for example two Filebeat instances are running on the same host but a human readable separation is needed on which Filebeat instance data is coming from. | keyword |
 | agent.type | Type of the agent. The agent type always stays the same and should be given by the agent used. In case of Filebeat the agent would always be Filebeat also if two Filebeat instances are run on the same machine. | keyword |
 | agent.version | Version of the agent. | keyword |
-| as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
-| as.organization.name | Organization name. | keyword |
-| as.organization.name.text | Multi-field of `as.organization.name`. | match_only_text |
 | client.address | Some event client addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| client.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | client.as.organization.name | Organization name. | keyword |
 | client.as.organization.name.text | Multi-field of `client.as.organization.name`. | match_only_text |
 | client.bytes | Bytes sent from the client to the server. | long |
 | client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
-| client.geo.city_name | City name. | keyword |
-| client.geo.continent_name | Name of the continent. | keyword |
-| client.geo.country_iso_code | Country ISO code. | keyword |
-| client.geo.country_name | Country name. | keyword |
-| client.geo.location | Longitude and latitude. | geo_point |
-| client.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
-| client.geo.region_iso_code | Region ISO code. | keyword |
-| client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.mac | MAC address of the client. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | client.nat.ip | Translated IP of source based NAT sessions (e.g. internal client to internet). Typically connections traversing load balancers, firewalls, or routers. | ip |
@@ -98,11 +86,6 @@ The following processes and tags are supported:
 | cloud.project.name | The cloud project name. Examples: Google Cloud Project name, Azure Project name. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host, resource, or service is located. | keyword |
-| code_signature.exists | Boolean to capture if a signature is present. | boolean |
-| code_signature.status | Additional information about the certificate status. This is useful for logging cryptographic errors with the certificate validity or trust status. Leave unpopulated if the validity or trust of the certificate was unchecked. | keyword |
-| code_signature.subject_name | Subject name of the code signer | keyword |
-| code_signature.trusted | Stores the trust status of the certificate chain. Validating the trust of the certificate chain may be complicated, and this field should only be populated by tools that actively check the status. | boolean |
-| code_signature.valid | Boolean to capture if the digital signature is verified against the binary content. Leave unpopulated if a certificate was unchecked. | boolean |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.image.tag | Container image tags. | keyword |
@@ -164,7 +147,7 @@ The following processes and tags are supported:
 | dll.pe.imphash | A hash of the imports in a PE file. An imphash -- or import hash -- can be used to fingerprint binaries even after recompilation or other code-level transformations have occurred, which would change more traditional hash values. Learn more at https://www.fireeye.com/blog/threat-research/2014/01/tracking-malware-import-hashing.html. | keyword |
 | dll.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
 | dll.pe.product | Internal product name of the file, provided at compile-time. | keyword |
-| dns.answers | An array containing an object for each answer section returned by the server. The main keys that should be present in these objects are defined by ECS. Records that have more information may contain more keys than what ECS defines. Not all DNS data sources give all details about DNS answers. At minimum, answer objects must contain the `data` key. If more information is available, map as much of it to ECS as possible, and add any additional fields to the answer objects as custom fields. | object |
+| dns.answers | An array containing an object for each answer section returned by the server. The main keys that should be present in these objects are defined by ECS. Records that have more information may contain more keys than what ECS defines. Not all DNS data sources give all details about DNS answers. At minimum, answer objects must contain the `data` key. If more information is available, map as much of it to ECS as possible, and add any additional fields to the answer objects as custom fields. | group |
 | dns.answers.class | The class of DNS data contained in this resource record. | keyword |
 | dns.answers.data | The data describing the resource. The meaning of this data depends on the type and class of the resource record. | keyword |
 | dns.answers.name | The domain name to which this resource record pertains. If a chain of CNAME is being resolved, each answer's `name` should be the one that corresponds with the answer's `data`. It should not simply be the original `question.name` repeated. | keyword |
@@ -192,14 +175,14 @@ The following processes and tags are supported:
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
-| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
+| event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
+| event.end | `event.end` contains the date when the event ended or when the activity was last observed. | date |
 | event.hash | Hash (perhaps logstash fingerprint) of raw field to be able to demonstrate log integrity. | keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
@@ -210,7 +193,7 @@ The following processes and tags are supported:
 | event.risk_score_norm | Normalized risk score or priority of the event, on a scale of 0 to 100. This is mainly useful if you use more than one system that assigns risk scores, and you want to see a normalized value across all systems. | float |
 | event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
-| event.start | event.start contains the date when the event started or when the activity was first observed. | date |
+| event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | event.url | URL linking to an external system to continue investigation of this event. This URL links to another system where in-depth investigation of the specific occurrence of this event can take place. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
@@ -253,56 +236,12 @@ The following processes and tags are supported:
 | file.target_path.text | Multi-field of `file.target_path`. | match_only_text |
 | file.type | File type (file, dir, or symlink). | keyword |
 | file.uid | The user ID (UID) or security identifier (SID) of the file owner. | keyword |
-| file.x509.alternative_names | List of subject alternative names (SAN). Name types vary by certificate authority and certificate type but commonly contain IP addresses, DNS names (and wildcards), and email addresses. | keyword |
-| file.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
-| file.x509.issuer.country | List of country \(C) codes | keyword |
-| file.x509.issuer.distinguished_name | Distinguished name (DN) of issuing certificate authority. | keyword |
-| file.x509.issuer.locality | List of locality names (L) | keyword |
-| file.x509.issuer.organization | List of organizations (O) of issuing certificate authority. | keyword |
-| file.x509.issuer.organizational_unit | List of organizational units (OU) of issuing certificate authority. | keyword |
-| file.x509.issuer.state_or_province | List of state or province names (ST, S, or P) | keyword |
-| file.x509.not_after | Time at which the certificate is no longer considered valid. | date |
-| file.x509.not_before | Time at which the certificate is first considered valid. | date |
-| file.x509.public_key_algorithm | Algorithm used to generate the public key. | keyword |
-| file.x509.public_key_curve | The curve used by the elliptic curve public key algorithm. This is algorithm specific. | keyword |
-| file.x509.public_key_exponent | Exponent used to derive the public key. This is algorithm specific. | long |
-| file.x509.public_key_size | The size of the public key space in bits. | long |
-| file.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters. | keyword |
-| file.x509.signature_algorithm | Identifier for certificate signature algorithm. We recommend using names found in Go Lang Crypto library. See https://github.com/golang/go/blob/go1.14/src/crypto/x509/x509.go#L337-L353. | keyword |
-| file.x509.subject.common_name | List of common names (CN) of subject. | keyword |
-| file.x509.subject.country | List of country \(C) code | keyword |
-| file.x509.subject.distinguished_name | Distinguished name (DN) of the certificate subject entity. | keyword |
-| file.x509.subject.locality | List of locality names (L) | keyword |
-| file.x509.subject.organization | List of organizations (O) of subject. | keyword |
-| file.x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
-| file.x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
-| file.x509.version_number | Version of x509 format. | keyword |
-| geo.city_name | City name. | keyword |
-| geo.continent_name | Name of the continent. | keyword |
-| geo.country_iso_code | Country ISO code. | keyword |
-| geo.country_name | Country name. | keyword |
-| geo.location | Longitude and latitude. | geo_point |
-| geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
-| geo.region_iso_code | Region ISO code. | keyword |
-| geo.region_name | Region name. | keyword |
 | group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
-| hash.md5 | MD5 hash. | keyword |
-| hash.sha1 | SHA1 hash. | keyword |
-| hash.sha256 | SHA256 hash. | keyword |
-| hash.sha512 | SHA512 hash. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.geo.city_name | City name. | keyword |
-| host.geo.continent_name | Name of the continent. | keyword |
-| host.geo.country_iso_code | Country ISO code. | keyword |
-| host.geo.country_name | Country name. | keyword |
-| host.geo.location | Longitude and latitude. | geo_point |
-| host.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
-| host.geo.region_iso_code | Region ISO code. | keyword |
-| host.geo.region_name | Region name. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
@@ -333,9 +272,6 @@ The following processes and tags are supported:
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
 | input.type | Input type. | keyword |
-| interface.alias | Interface alias as reported by the system, typically used in firewall implementations for e.g. inside, outside, or dmz logical interface naming. | keyword |
-| interface.id | Interface ID as reported by an observer (typically SNMP interface ID). | keyword |
-| interface.name | Interface name as reported by the system. | keyword |
 | juniper.srx.action | action | keyword |
 | juniper.srx.action_detail | action detail | keyword |
 | juniper.srx.admin_status |  | keyword |
@@ -357,6 +293,9 @@ The following processes and tags are supported:
 | juniper.srx.context_value | context value | keyword |
 | juniper.srx.context_value_hit_rate | context value hit rate | integer |
 | juniper.srx.ddos_application_name | ddos application name | keyword |
+| juniper.srx.dpdk.port_number |  | integer |
+| juniper.srx.dpdk.port_state |  | integer |
+| juniper.srx.dpdk.swt_port_state |  | integer |
 | juniper.srx.dscp_value | apbr rule type | integer |
 | juniper.srx.dst_nat_rule_name | dst nat rule name | keyword |
 | juniper.srx.dst_nat_rule_type | dst nat rule type | keyword |
@@ -376,21 +315,12 @@ The following processes and tags are supported:
 | juniper.srx.function_name |  | keyword |
 | juniper.srx.hostname | hostname | keyword |
 | juniper.srx.icmp_type | icmp type | integer |
-| juniper.srx.ike_negotiation.err_msg |  | keyword |
-| juniper.srx.ike_negotiation.gateway |  | keyword |
-| juniper.srx.ike_negotiation.local.ike_id |  | keyword |
-| juniper.srx.ike_negotiation.local.ip_range |  | keyword |
-| juniper.srx.ike_negotiation.remote.ike_id |  | keyword |
-| juniper.srx.ike_negotiation.remote.ip_range |  | keyword |
-| juniper.srx.ike_negotiation.role |  | keyword |
-| juniper.srx.ike_negotiation.version |  | keyword |
-| juniper.srx.ike_negotiation.vpn |  | keyword |
-| juniper.srx.ike_negotiation.vr_id |  | keyword |
 | juniper.srx.inbound_bytes | bytes from server | integer |
 | juniper.srx.inbound_packets | packets from server | integer |
 | juniper.srx.index | index | keyword |
 | juniper.srx.index1 |  | keyword |
 | juniper.srx.index2 |  | keyword |
+| juniper.srx.ip_mon_reth_scan.trigger |  | keyword |
 | juniper.srx.kern_arp_addr_change.ip |  | ip |
 | juniper.srx.kern_arp_addr_change.mac1 |  | keyword |
 | juniper.srx.kern_arp_addr_change.mac2 |  | keyword |
@@ -403,6 +333,9 @@ The following processes and tags are supported:
 | juniper.srx.mode |  | keyword |
 | juniper.srx.name | name | keyword |
 | juniper.srx.nat_connection_tag | nat connection tag | keyword |
+| juniper.srx.negotiation.err_msg |  | keyword |
+| juniper.srx.negotiation.message |  | keyword |
+| juniper.srx.negotiation.type |  | keyword |
 | juniper.srx.nested_application | nested application | keyword |
 | juniper.srx.obj | url path | keyword |
 | juniper.srx.occur_count | occur count | integer |
@@ -453,6 +386,24 @@ The following processes and tags are supported:
 | juniper.srx.state | state | keyword |
 | juniper.srx.status | status | keyword |
 | juniper.srx.sub_category | sub category | keyword |
+| juniper.srx.system.aux_spi |  | integer |
+| juniper.srx.system.direction |  | keyword |
+| juniper.srx.system.ike_version |  | integer |
+| juniper.srx.system.local |  | keyword |
+| juniper.srx.system.local_gateway |  | ip |
+| juniper.srx.system.local_id |  | keyword |
+| juniper.srx.system.local_ike_id |  | keyword |
+| juniper.srx.system.mode |  | keyword |
+| juniper.srx.system.remote |  | keyword |
+| juniper.srx.system.remote_gateway |  | keyword |
+| juniper.srx.system.remote_id |  | keyword |
+| juniper.srx.system.remote_ike_id |  | keyword |
+| juniper.srx.system.role |  | keyword |
+| juniper.srx.system.spi |  | keyword |
+| juniper.srx.system.traffic_selector |  | keyword |
+| juniper.srx.system.type |  | keyword |
+| juniper.srx.system.vpn |  | keyword |
+| juniper.srx.system.vr_id |  | keyword |
 | juniper.srx.tag | system log message tag, which uniquely identifies the message. | keyword |
 | juniper.srx.temporary_filename | temporary_filename | keyword |
 | juniper.srx.tenant_id | tenant id | keyword |
@@ -473,12 +424,18 @@ The following processes and tags are supported:
 | juniper.srx.verdict_number | verdict number | integer |
 | juniper.srx.verdict_source | verdict source | keyword |
 | labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
 | log.offset | Byte offset of the log line within its file. | long |
 | log.source.address | Source address of the syslog message. | keyword |
-| log.syslog | The Syslog metadata of the event, if the event was transmitted via Syslog. Please see RFCs 5424 or 3164. | object |
+| log.syslog | The Syslog metadata of the event, if the event was transmitted via Syslog. Please see RFCs 5424 or 3164. | group |
 | log.syslog.facility.code | The Syslog numeric facility of the log event, if available. According to RFCs 5424 and 3164, this value should be an integer between 0 and 23. | long |
 | log.syslog.facility.name | The Syslog text-based facility of the log event, if available. | keyword |
 | log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
@@ -491,7 +448,7 @@ The following processes and tags are supported:
 | network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
-| network.inner | Network.inner fields are added in addition to network.vlan fields to describe the innermost VLAN when q-in-q VLAN tagging is present. Allowed fields include vlan.id and vlan.name. Inner vlan fields are typically used when sending traffic with multiple 802.1q encapsulations to a network sensor (e.g. Zeek, Wireshark.) | object |
+| network.inner | Network.inner fields are added in addition to network.vlan fields to describe the innermost VLAN when q-in-q VLAN tagging is present. Allowed fields include vlan.id and vlan.name. Inner vlan fields are typically used when sending traffic with multiple 802.1q encapsulations to a network sensor (e.g. Zeek, Wireshark.) | group |
 | network.inner.vlan.id | VLAN ID as reported by the observer. | keyword |
 | network.inner.vlan.name | Optional VLAN name as reported by the observer. | keyword |
 | network.name | Name given by operators to sections of their network. | keyword |
@@ -501,23 +458,15 @@ The following processes and tags are supported:
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | network.vlan.id | VLAN ID as reported by the observer. | keyword |
 | network.vlan.name | Optional VLAN name as reported by the observer. | keyword |
-| observer.egress | Observer.egress holds information like interface number and name, vlan, and zone information to classify egress traffic.  Single armed monitoring such as a network sensor on a span port should only use observer.ingress to categorize traffic. | object |
+| observer.egress | Observer.egress holds information like interface number and name, vlan, and zone information to classify egress traffic.  Single armed monitoring such as a network sensor on a span port should only use observer.ingress to categorize traffic. | group |
 | observer.egress.interface.alias | Interface alias as reported by the system, typically used in firewall implementations for e.g. inside, outside, or dmz logical interface naming. | keyword |
 | observer.egress.interface.id | Interface ID as reported by an observer (typically SNMP interface ID). | keyword |
 | observer.egress.interface.name | Interface name as reported by the system. | keyword |
 | observer.egress.vlan.id | VLAN ID as reported by the observer. | keyword |
 | observer.egress.vlan.name | Optional VLAN name as reported by the observer. | keyword |
 | observer.egress.zone | Network zone of outbound traffic as reported by the observer to categorize the destination area of egress traffic, e.g. Internal, External, DMZ, HR, Legal, etc. | keyword |
-| observer.geo.city_name | City name. | keyword |
-| observer.geo.continent_name | Name of the continent. | keyword |
-| observer.geo.country_iso_code | Country ISO code. | keyword |
-| observer.geo.country_name | Country name. | keyword |
-| observer.geo.location | Longitude and latitude. | geo_point |
-| observer.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
-| observer.geo.region_iso_code | Region ISO code. | keyword |
-| observer.geo.region_name | Region name. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
-| observer.ingress | Observer.ingress holds information like interface number and name, vlan, and zone information to classify ingress traffic.  Single armed monitoring such as a network sensor on a span port should only use observer.ingress to categorize traffic. | object |
+| observer.ingress | Observer.ingress holds information like interface number and name, vlan, and zone information to classify ingress traffic.  Single armed monitoring such as a network sensor on a span port should only use observer.ingress to categorize traffic. | group |
 | observer.ingress.interface.alias | Interface alias as reported by the system, typically used in firewall implementations for e.g. inside, outside, or dmz logical interface naming. | keyword |
 | observer.ingress.interface.id | Interface ID as reported by an observer (typically SNMP interface ID). | keyword |
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
@@ -527,14 +476,6 @@ The following processes and tags are supported:
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| observer.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| observer.os.full | Operating system name, including the version or code name. | keyword |
-| observer.os.full.text | Multi-field of `observer.os.full`. | match_only_text |
-| observer.os.kernel | Operating system kernel version as a raw string. | keyword |
-| observer.os.name | Operating system name, without the version. | keyword |
-| observer.os.name.text | Multi-field of `observer.os.name`. | match_only_text |
-| observer.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| observer.os.version | Operating system version as a raw string. | keyword |
 | observer.product | The product name of the observer. | keyword |
 | observer.serial_number | Observer serial number. | keyword |
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
@@ -543,14 +484,6 @@ The following processes and tags are supported:
 | organization.id | Unique identifier for the organization. | keyword |
 | organization.name | Organization name. | keyword |
 | organization.name.text | Multi-field of `organization.name`. | match_only_text |
-| os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| os.full | Operating system name, including the version or code name. | keyword |
-| os.full.text | Multi-field of `os.full`. | match_only_text |
-| os.kernel | Operating system kernel version as a raw string. | keyword |
-| os.name | Operating system name, without the version. | keyword |
-| os.name.text | Multi-field of `os.name`. | match_only_text |
-| os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| os.version | Operating system version as a raw string. | keyword |
 | package.architecture | Package architecture. | keyword |
 | package.build_version | Additional information about the build version of the installed package. For example use the commit SHA of a non-released package. | keyword |
 | package.checksum | Checksum of the installed package for verification. | keyword |
@@ -564,13 +497,6 @@ The following processes and tags are supported:
 | package.size | Package size in bytes. | long |
 | package.type | Type of package. This should contain the package file type, rather than the package manager name. Examples: rpm, dpkg, brew, npm, gem, nupkg, jar. | keyword |
 | package.version | Package version | keyword |
-| pe.architecture | CPU architecture target for the file. | keyword |
-| pe.company | Internal company name of the file, provided at compile-time. | keyword |
-| pe.description | Internal description of the file, provided at compile-time. | keyword |
-| pe.file_version | Internal version of the file, provided at compile-time. | keyword |
-| pe.imphash | A hash of the imports in a PE file. An imphash -- or import hash -- can be used to fingerprint binaries even after recompilation or other code-level transformations have occurred, which would change more traditional hash values. Learn more at https://www.fireeye.com/blog/threat-research/2014/01/tracking-malware-import-hashing.html. | keyword |
-| pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
-| pe.product | Internal product name of the file, provided at compile-time. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
 | process.code_signature.exists | Boolean to capture if a signature is present. | boolean |
@@ -665,19 +591,10 @@ The following processes and tags are supported:
 | rule.uuid | A rule ID that is unique within the scope of a set or group of agents, observers, or other entities using the rule for detection of this event. | keyword |
 | rule.version | The version / revision of the rule being used for analysis. | keyword |
 | server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| server.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | server.as.organization.name | Organization name. | keyword |
 | server.as.organization.name.text | Multi-field of `server.as.organization.name`. | match_only_text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
-| server.geo.city_name | City name. | keyword |
-| server.geo.continent_name | Name of the continent. | keyword |
-| server.geo.country_iso_code | Country ISO code. | keyword |
-| server.geo.country_name | Country name. | keyword |
-| server.geo.location | Longitude and latitude. | geo_point |
-| server.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
-| server.geo.region_iso_code | Region ISO code. | keyword |
-| server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.mac | MAC address of the server. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | server.nat.ip | Translated ip of destination based NAT sessions (e.g. internet to private DMZ) Typically used with load balancers, firewalls, or routers. | ip |
@@ -762,30 +679,6 @@ The following processes and tags are supported:
 | tls.client.server_name | Also called an SNI, this tells the server which hostname to which the client is attempting to connect to. When this value is available, it should get copied to `destination.domain`. | keyword |
 | tls.client.subject | Distinguished name of subject of the x.509 certificate presented by the client. | keyword |
 | tls.client.supported_ciphers | Array of ciphers offered by the client during the client hello. | keyword |
-| tls.client.x509.alternative_names | List of subject alternative names (SAN). Name types vary by certificate authority and certificate type but commonly contain IP addresses, DNS names (and wildcards), and email addresses. | keyword |
-| tls.client.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
-| tls.client.x509.issuer.country | List of country \(C) codes | keyword |
-| tls.client.x509.issuer.distinguished_name | Distinguished name (DN) of issuing certificate authority. | keyword |
-| tls.client.x509.issuer.locality | List of locality names (L) | keyword |
-| tls.client.x509.issuer.organization | List of organizations (O) of issuing certificate authority. | keyword |
-| tls.client.x509.issuer.organizational_unit | List of organizational units (OU) of issuing certificate authority. | keyword |
-| tls.client.x509.issuer.state_or_province | List of state or province names (ST, S, or P) | keyword |
-| tls.client.x509.not_after | Time at which the certificate is no longer considered valid. | date |
-| tls.client.x509.not_before | Time at which the certificate is first considered valid. | date |
-| tls.client.x509.public_key_algorithm | Algorithm used to generate the public key. | keyword |
-| tls.client.x509.public_key_curve | The curve used by the elliptic curve public key algorithm. This is algorithm specific. | keyword |
-| tls.client.x509.public_key_exponent | Exponent used to derive the public key. This is algorithm specific. | long |
-| tls.client.x509.public_key_size | The size of the public key space in bits. | long |
-| tls.client.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters. | keyword |
-| tls.client.x509.signature_algorithm | Identifier for certificate signature algorithm. We recommend using names found in Go Lang Crypto library. See https://github.com/golang/go/blob/go1.14/src/crypto/x509/x509.go#L337-L353. | keyword |
-| tls.client.x509.subject.common_name | List of common names (CN) of subject. | keyword |
-| tls.client.x509.subject.country | List of country \(C) code | keyword |
-| tls.client.x509.subject.distinguished_name | Distinguished name (DN) of the certificate subject entity. | keyword |
-| tls.client.x509.subject.locality | List of locality names (L) | keyword |
-| tls.client.x509.subject.organization | List of organizations (O) of subject. | keyword |
-| tls.client.x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
-| tls.client.x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
-| tls.client.x509.version_number | Version of x509 format. | keyword |
 | tls.curve | String indicating the curve used for the given cipher, when applicable. | keyword |
 | tls.established | Boolean flag indicating if the TLS negotiation was successful and transitioned to an encrypted tunnel. | boolean |
 | tls.next_protocol | String indicating the protocol being tunneled. Per the values in the IANA registry (https://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xhtml#alpn-protocol-ids), this string should be lower case. | keyword |
@@ -800,30 +693,6 @@ The following processes and tags are supported:
 | tls.server.not_after | Timestamp indicating when server certificate is no longer considered valid. | date |
 | tls.server.not_before | Timestamp indicating when server certificate is first considered valid. | date |
 | tls.server.subject | Subject of the x.509 certificate presented by the server. | keyword |
-| tls.server.x509.alternative_names | List of subject alternative names (SAN). Name types vary by certificate authority and certificate type but commonly contain IP addresses, DNS names (and wildcards), and email addresses. | keyword |
-| tls.server.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
-| tls.server.x509.issuer.country | List of country \(C) codes | keyword |
-| tls.server.x509.issuer.distinguished_name | Distinguished name (DN) of issuing certificate authority. | keyword |
-| tls.server.x509.issuer.locality | List of locality names (L) | keyword |
-| tls.server.x509.issuer.organization | List of organizations (O) of issuing certificate authority. | keyword |
-| tls.server.x509.issuer.organizational_unit | List of organizational units (OU) of issuing certificate authority. | keyword |
-| tls.server.x509.issuer.state_or_province | List of state or province names (ST, S, or P) | keyword |
-| tls.server.x509.not_after | Time at which the certificate is no longer considered valid. | date |
-| tls.server.x509.not_before | Time at which the certificate is first considered valid. | date |
-| tls.server.x509.public_key_algorithm | Algorithm used to generate the public key. | keyword |
-| tls.server.x509.public_key_curve | The curve used by the elliptic curve public key algorithm. This is algorithm specific. | keyword |
-| tls.server.x509.public_key_exponent | Exponent used to derive the public key. This is algorithm specific. | long |
-| tls.server.x509.public_key_size | The size of the public key space in bits. | long |
-| tls.server.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters. | keyword |
-| tls.server.x509.signature_algorithm | Identifier for certificate signature algorithm. We recommend using names found in Go Lang Crypto library. See https://github.com/golang/go/blob/go1.14/src/crypto/x509/x509.go#L337-L353. | keyword |
-| tls.server.x509.subject.common_name | List of common names (CN) of subject. | keyword |
-| tls.server.x509.subject.country | List of country \(C) code | keyword |
-| tls.server.x509.subject.distinguished_name | Distinguished name (DN) of the certificate subject entity. | keyword |
-| tls.server.x509.subject.locality | List of locality names (L) | keyword |
-| tls.server.x509.subject.organization | List of organizations (O) of subject. | keyword |
-| tls.server.x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
-| tls.server.x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
-| tls.server.x509.version_number | Version of x509 format. | keyword |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |
 | tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
 | trace.id | Unique identifier of the trace. A trace groups multiple events like transactions that belong together. For example, a user request handled by multiple inter-connected services. | keyword |
@@ -859,17 +728,7 @@ The following processes and tags are supported:
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
 | user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
-| user_agent.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| user_agent.os.full | Operating system name, including the version or code name. | keyword |
-| user_agent.os.full.text | Multi-field of `user_agent.os.full`. | match_only_text |
-| user_agent.os.kernel | Operating system kernel version as a raw string. | keyword |
-| user_agent.os.name | Operating system name, without the version. | keyword |
-| user_agent.os.name.text | Multi-field of `user_agent.os.name`. | match_only_text |
-| user_agent.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
-| vlan.id | VLAN ID as reported by the observer. | keyword |
-| vlan.name | Optional VLAN name as reported by the observer. | keyword |
 | vulnerability.category | The type of system or architecture that the vulnerability affects. These may be platform-specific (for example, Debian or SUSE) or general (for example, Database or Firewall). For example (https://qualysguard.qualys.com/qwebhelp/fo_portal/knowledgebase/vulnerability_categories.htm[Qualys vulnerability categories]) This field must be an array. | keyword |
 | vulnerability.classification | The classification of the vulnerability scoring system. For example (https://www.first.org/cvss/) | keyword |
 | vulnerability.description | The description of the vulnerability that provides additional context of the vulnerability. For example (https://cve.mitre.org/about/faqs.html#cve_entry_descriptions_created[Common Vulnerabilities and Exposure CVE description]) | keyword |
@@ -884,27 +743,3 @@ The following processes and tags are supported:
 | vulnerability.score.temporal | Scores can range from 0.0 to 10.0, with 10.0 being the most severe. Temporal scores cover an assessment for code maturity, remediation level, and confidence. For example (https://www.first.org/cvss/specification-document) | float |
 | vulnerability.score.version | The National Vulnerability Database (NVD) provides qualitative severity rankings of "Low", "Medium", and "High" for CVSS v2.0 base score ranges in addition to the severity ratings for CVSS v3.0 as they are defined in the CVSS v3.0 specification. CVSS is owned and managed by FIRST.Org, Inc. (FIRST), a US-based non-profit organization, whose mission is to help computer security incident response teams across the world. For example (https://nvd.nist.gov/vuln-metrics/cvss) | keyword |
 | vulnerability.severity | The severity of the vulnerability can help with metrics and internal prioritization regarding remediation. For example (https://nvd.nist.gov/vuln-metrics/cvss) | keyword |
-| x509.alternative_names | List of subject alternative names (SAN). Name types vary by certificate authority and certificate type but commonly contain IP addresses, DNS names (and wildcards), and email addresses. | keyword |
-| x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
-| x509.issuer.country | List of country \(C) codes | keyword |
-| x509.issuer.distinguished_name | Distinguished name (DN) of issuing certificate authority. | keyword |
-| x509.issuer.locality | List of locality names (L) | keyword |
-| x509.issuer.organization | List of organizations (O) of issuing certificate authority. | keyword |
-| x509.issuer.organizational_unit | List of organizational units (OU) of issuing certificate authority. | keyword |
-| x509.issuer.state_or_province | List of state or province names (ST, S, or P) | keyword |
-| x509.not_after | Time at which the certificate is no longer considered valid. | date |
-| x509.not_before | Time at which the certificate is first considered valid. | date |
-| x509.public_key_algorithm | Algorithm used to generate the public key. | keyword |
-| x509.public_key_curve | The curve used by the elliptic curve public key algorithm. This is algorithm specific. | keyword |
-| x509.public_key_exponent | Exponent used to derive the public key. This is algorithm specific. | long |
-| x509.public_key_size | The size of the public key space in bits. | long |
-| x509.serial_number | Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters. | keyword |
-| x509.signature_algorithm | Identifier for certificate signature algorithm. We recommend using names found in Go Lang Crypto library. See https://github.com/golang/go/blob/go1.14/src/crypto/x509/x509.go#L337-L353. | keyword |
-| x509.subject.common_name | List of common names (CN) of subject. | keyword |
-| x509.subject.country | List of country \(C) code | keyword |
-| x509.subject.distinguished_name | Distinguished name (DN) of the certificate subject entity. | keyword |
-| x509.subject.locality | List of locality names (L) | keyword |
-| x509.subject.organization | List of organizations (O) of subject. | keyword |
-| x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
-| x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
-| x509.version_number | Version of x509 format. | keyword |

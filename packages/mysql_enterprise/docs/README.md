@@ -43,7 +43,7 @@ The `audit` dataset collects MySQL Enterprise Audit logs.
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
@@ -68,7 +68,13 @@ The `audit` dataset collects MySQL Enterprise Audit logs.
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log offset | long |
 | message | human-readable summary of the event | text |
 | mysqlenterprise.audit.account.host | A string representing the client host name. | keyword |
@@ -124,11 +130,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-10-19T19:21:33.000Z",
     "agent": {
-        "ephemeral_id": "d192381e-e559-464a-876d-058ff4104145",
-        "id": "1202ee7c-96a3-47b6-8ddf-4fd17e23f288",
+        "ephemeral_id": "9b24d1b7-d491-4e8f-b484-2f0b07a4344c",
+        "id": "2c39d956-ec71-4ff1-ba44-ee2a67272f8f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.10.2"
     },
     "data_stream": {
         "dataset": "mysql_enterprise.audit",
@@ -136,12 +142,12 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "1202ee7c-96a3-47b6-8ddf-4fd17e23f288",
+        "id": "2c39d956-ec71-4ff1-ba44-ee2a67272f8f",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.10.2"
     },
     "event": {
         "action": "mysql-startup",
@@ -150,7 +156,7 @@ An example event for `audit` looks as following:
             "database"
         ],
         "dataset": "mysql_enterprise.audit",
-        "ingested": "2022-02-24T08:19:02Z",
+        "ingested": "2023-10-03T10:32:19Z",
         "kind": "event",
         "outcome": "unknown",
         "timezone": "+00:00"
@@ -159,22 +165,23 @@ An example event for `audit` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "efe661d97f0c4d9883075c393da6b0d8",
         "ip": [
-            "192.168.192.4"
+            "192.168.16.7"
         ],
         "mac": [
-            "02:42:c0:a8:c0:04"
+            "02-42-C0-A8-10-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
             "full": "x86_64-Linux",
-            "kernel": "5.10.60.1-microsoft-standard-WSL2",
+            "kernel": "5.15.90.1-microsoft-standard-WSL2",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "input": {
@@ -182,9 +189,11 @@ An example event for `audit` looks as following:
     },
     "log": {
         "file": {
+            "device_id": 2080,
+            "inode": 90785,
             "path": "/tmp/service_logs/mysql_audit.log"
         },
-        "offset": 462
+        "offset": 0
     },
     "mysqlenterprise": {
         "audit": {
