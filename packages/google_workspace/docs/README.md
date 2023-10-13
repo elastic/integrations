@@ -2248,7 +2248,7 @@ An example event for `token` looks as following:
 | google_workspace.token.client.type | The client type. | keyword |
 | google_workspace.token.method_name | The method name which was used in the OAuth Activity. | keyword |
 | google_workspace.token.num_response_bytes | The number of response bytes in the OAuth Activity. | long |
-| google_workspace.token.scope.data | Scope Data. | object |
+| google_workspace.token.scope.data | Scope Data. | flattened |
 | google_workspace.token.scope.value | Scopes under which access was granted / revoked. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
