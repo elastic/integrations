@@ -21,7 +21,7 @@ source:
               value: RemoteInteractive
   runtime_mappings:
         destination.ip:
-          type: keyword
+          type: ip
           script:
             source: "if (doc['host.ip'].size()!=0){emit(doc['host.ip'][1]);} else{emit('None');}"
 dest:
@@ -79,10 +79,13 @@ pivot:
     process.Ext.authentication_id:
       terms:
         field: process.Ext.authentication_id
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
+  deduce_mappings: false
 sync:
   time:
     delay: 60s
     field: '@timestamp'
 _meta:
-  fleet_transform_version: 2.0.0
+  fleet_transform_version: 2.1.0
   run_as_kibana_system: false
