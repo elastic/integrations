@@ -240,10 +240,15 @@ processors:
         }
         ctx.dns.put('header_flags', hf);
 
+  - registered_domain: 
+      field: "dns.question.name"
+      target_field: "dns.question"
+      if: ctx.dns?.question != null
   - remove:
       field:
         - timestamp
         - repeat_message
+        - dns.question.domain
       ignore_missing: true
 on_failure:
   - set:

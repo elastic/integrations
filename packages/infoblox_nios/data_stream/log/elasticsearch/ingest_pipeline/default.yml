@@ -111,6 +111,30 @@ processors:
       field: event.action
       if: ctx.event?.action != null
       ignore_failure: true
+  - geoip:
+      field: "client.ip"
+      target_field: "client.geo"
+      if: ctx.client?.geo == null && ctx.client?.ip != null
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: client.ip
+      target_field: client.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+      if: ctx.client?.ip != null
+  - rename:
+      field: client.as.asn
+      target_field: client.as.number
+      ignore_missing: true
+      if: ctx.client?.as?.asn != null
+  - rename:
+      field: client.as.organization_name
+      target_field: client.as.organization.name
+      ignore_missing: true
+      if: ctx.client?.as?.organization_name != null
   - script:
       description: Drops null/empty values recursively.
       lang: painless
