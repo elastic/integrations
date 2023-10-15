@@ -75,7 +75,9 @@ An example event for `audit_events` looks as following:
         "ingested": "2022-08-05T09:30:14Z",
         "kind": "event",
         "module": "spring_boot",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "host": {
         "architecture": "x86_64",
@@ -176,7 +178,9 @@ An example event for `http_trace` looks as following:
         "ingested": "2022-08-05T09:31:48Z",
         "kind": "event",
         "module": "spring_boot",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "host": {
         "architecture": "x86_64",
