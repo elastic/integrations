@@ -180,17 +180,15 @@ processors:
     target_field: user.id
     ignore_failure: true
     ignore_missing: true
-- script:
+- set:
+    value: ["{{{json.UserType}}}"]
+    field: user.roles
     ignore_failure: true
-    lang: painless
-    source: |
-      def userType = ctx.json?.UserType;
-      if (userType != null) {
-        if (ctx.user == null) {
-          ctx.user = new HashMap();
-        }
-        ctx.user.roles = [userType];
-      }
+    ignore_empty_value: true
+- remove:
+      field: json.UserType
+      ignore_failure: true
+      ignore_missing: true
 - convert:
     field: json.SourceIp
     type: ip
