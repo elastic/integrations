@@ -66,11 +66,14 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
     echo "Test integration: ${integration}"
     ${ELASTIC_PACKAGE_BIN} test -v --report-format xUnit --report-output file --test-coverage
 
-    # TODO: add benchmarks support
+    # TODO: add benchmarks support (https://github.com/elastic/integrations/blob/befdc5cb752a08aaf5f79b0d9bdb68588ade9f27/.ci/Jenkinsfile#L180)
+    # ${ELASTIC_PACKAGE_BIN} benchmark pipeline -v --report-format json --report-output file
 
     if [ ${use_kind} -eq 1 ]; then
         delete_kind_cluster
     fi
+
+    teardown_serverless_test_package
 
     popd 2> /dev/null
 

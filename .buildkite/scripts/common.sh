@@ -402,3 +402,26 @@ kubernetes_service_deployer_used() {
     echo "Check if Kubernetes service deployer is used"
     find . -type d | egrep '_dev/deploy/k8s$'
 }
+
+teardown_serverless_test_package() {
+    local integration=$1
+    local dump_directory="${WORKSPACE}/build/elastic-stack-dump/${integration}"
+
+    echo "Collect Elastic stack logs"
+    ${ELASTIC_PACKAGE_BIN} stack dump -v --output ${dump_directory}
+
+    # TODO: upload insecure logs
+}
+
+teardown_test_package() {
+    local integration=$1
+    local dump_directory="${WORKSPACE}/build/elastic-stack-dump/${integration}"
+
+    echo "Collect Elastic stack logs"
+    ${ELASTIC_PACKAGE_BIN} stack dump -v --output ${dump_directory}
+
+    # TODO: upload insecure logs
+
+    echo "Take down the Elastic stack"
+    ${ELASTIC_PACKAGE_BIN} stack down -v
+}
