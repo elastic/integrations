@@ -44,6 +44,8 @@ steps:
       FORCE_CHECK_ALL: true
     agents:
       provider: "gcp"
+    artifact_paths:
+      - build/results/*.xml
     depends_on:
       - step: "publish-packages"
         allow_failure: false
@@ -61,3 +63,10 @@ steps:
   #   depends_on:
   #     - step: "publish-packages"
   #       allow_failure: false
+
+  - label: ":junit: Junit annotate"
+    plugins:
+      - junit-annotate#v2.4.1:
+          artifacts: "build/results/*.xml"
+    agents:
+      provider: "gcp"  # junit plugin requires docker
