@@ -180,11 +180,17 @@ processors:
     target_field: user.id
     ignore_failure: true
     ignore_missing: true
-- rename:
-    field: json.UserType
-    target_field: user.roles
+- script:
     ignore_failure: true
-    ignore_missing: true
+    lang: painless
+    source: |
+      def userType = ctx.json?.UserType;
+      if (userType != null) {
+        if (ctx.user == null) {
+          ctx.user = new HashMap();
+        }
+        ctx.user.roles = [userType];
+      }
 - convert:
     field: json.SourceIp
     type: ip
