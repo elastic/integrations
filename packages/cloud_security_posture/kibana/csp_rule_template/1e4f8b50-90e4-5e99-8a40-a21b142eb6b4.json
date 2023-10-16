@@ -1,0 +1,38 @@
+{
+    "id": "1e4f8b50-90e4-5e99-8a40-a21b142eb6b4",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Locking a bucket is an irreversible action. Once you lock a bucket, you cannot remove the retention policy from the bucket or decrease the retention period for the policy. You will then have to wait for the retention period for all items within the bucket before you can delete them, and then the bucket.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/storage/docs/bucket-lock\n2. https://cloud.google.com/storage/docs/using-bucket-lock\n3. https://cloud.google.com/storage/docs/bucket-lock",
+            "id": "1e4f8b50-90e4-5e99-8a40-a21b142eb6b4",
+            "name": "Ensure That Retention Policies on Cloud Storage Buckets Used for Exporting Logs Are Configured Using Bucket Lock",
+            "profile_applicability": "* Level 2",
+            "description": "Enabling retention policies on log buckets will protect logs stored in cloud storage buckets from being overwritten or accidentally deleted.\nIt is recommended to set up retention policies and configure Bucket Lock on all storage buckets that are used as log sinks.",
+            "rationale": "Logs can be exported by creating one or more sinks that include a log filter and a destination.\nAs Cloud Logging receives new log entries, they are compared against each sink.\nIf a log entry matches a sink's filter, then a copy of the log entry is written to the destination.\n\nSinks can be configured to export logs in storage buckets.\nIt is recommended to configure a data retention policy for these cloud storage buckets and to lock the data retention policy; thus permanently preventing the policy from being reduced or removed.\nThis way, if the system is ever compromised by an attacker or a malicious insider who wants to cover their tracks, the activity logs are definitely preserved for forensics and security investigations.",
+            "audit": "**From Google Cloud Console**\n\n1. Open the Cloud Storage browser in the Google Cloud Console by visiting [https://console.cloud.google.com/storage/browser](https://console.cloud.google.com/storage/browser).\n\n2. In the Column display options menu, make sure `Retention policy` is checked.\n\n3. In the list of buckets, the retention period of each bucket is found in the `Retention policy` column. If the retention policy is locked, an image of a lock appears directly to the left of the retention period.\n\n**From Google Cloud CLI**\n\n4. To list all sinks destined to storage buckets:\n```\ngcloud logging sinks list --folder=FOLDER_ID | --organization=ORGANIZATION_ID | --project=PROJECT_ID\n```\n5. For every storage bucket listed above, verify that retention policies and Bucket Lock are enabled:\n```\ngsutil retention get gs://BUCKET_NAME\n```\n\nFor more information, see [https://cloud.google.com/storage/docs/using-bucket-lock#view-policy](https://cloud.google.com/storage/docs/using-bucket-lock#view-policy).",
+            "remediation": "**From Google Cloud Console**\n\n1. If sinks are **not** configured, first follow the instructions in the recommendation: `Ensure that sinks are configured for all Log entries`.\n\n2. For each storage bucket configured as a sink, go to the Cloud Storage browser at `https://console.cloud.google.com/storage/browser/<BUCKET_NAME>`.\n\n3. Select the Bucket Lock tab near the top of the page.\n\n4. In the Retention policy entry, click the Add Duration link. The `Set a retention policy` dialog box appears.\n\n5. Enter the desired length of time for the retention period and click `Save policy`.\n\n6. Set the `Lock status` for this retention policy to `Locked`.\n\n**From Google Cloud CLI**\n\n7. To list all sinks destined to storage buckets:\n```\ngcloud logging sinks list --folder=FOLDER_ID | --organization=ORGANIZATION_ID | --project=PROJECT_ID\n```\n8. For each storage bucket listed above, set a retention policy and lock it:\n```\ngsutil retention set [TIME_DURATION] gs://[BUCKET_NAME]\ngsutil retention lock gs://[BUCKET_NAME]\n```\n\nFor more information, visit [https://cloud.google.com/storage/docs/using-bucket-lock#set-policy](https://cloud.google.com/storage/docs/using-bucket-lock#set-policy).",
+            "section": "Logging and Monitoring",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 2.3",
+                "Logging and Monitoring"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "2.3",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_2_3"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

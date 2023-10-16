@@ -122,6 +122,51 @@ processors:
     field: json.actor_location.country_code
     target_field: client.geo.country_iso_code
     ignore_missing: true
+- convert:
+    field: json.actor_ip
+    target_field: github.actor_ip
+    type: ip
+    ignore_missing: true
+    if: ctx.json?.actor_ip != null && ctx.json.actor_ip != ''
+    on_failure:
+      - append:
+          field: error.message
+          value: '{{{ _ingest.on_failure_message }}}'
+- append:
+    field: related.ip
+    value: '{{github.actor_ip}}'
+    if: ctx.github?.actor_ip != null
+- rename:
+    field: json.hashed_token
+    target_field: github.hashed_token
+    ignore_missing: true
+- rename:
+    field: json.programmatic_access_type
+    target_field: github.programmatic_access_type
+    ignore_missing: true
+- rename:
+    field: json.user_agent
+    target_field: github.user_agent
+    ignore_missing: true
+- user_agent:
+    field: github.user_agent
+    ignore_missing: true
+- rename:
+    field: json.integration
+    target_field: github.integration
+    ignore_missing: true
+- rename:
+    field: json.repositories_added_names
+    target_field: github.repositories_added_names
+    ignore_missing: true
+- rename:
+    field: json.repositories_removed_names
+    target_field: github.repositories_removed_names
+    ignore_missing: true
+- rename:
+    field: json.repository_selection
+    target_field: github.repository_selection
+    ignore_missing: true
 - grok:
     field: event.action
     ignore_missing: true
