@@ -4,7 +4,7 @@ source:
     bool:
       must_not:
         term:
-          user.name:
+          'user.name':
             value: system
       filter:
         - exists:
@@ -14,14 +14,14 @@ source:
         - exists:
             field: host.ip
         - term:
-            event.category:
+            'event.category':
               value: process
         - term:
-            process.Ext.session_info.logon_type:
+            'process.Ext.session_info.logon_type':
               value: RemoteInteractive
   runtime_mappings:
-        destination.ip:
-          type: keyword
+        'destination.ip':
+          type: ip
           script:
             source: "if (doc['host.ip'].size()!=0){emit(doc['host.ip'][1]);} else{emit('None');}"
 dest:
@@ -64,25 +64,28 @@ pivot:
             ret['duration'] = duration;
             return ret;
   group_by:
-    host.name:
+    'host.name':
       terms:
         field: host.name
-    destination.ip:
+    'destination.ip':
       terms:
         field: destination.ip
-    user.name:
+    'user.name':
       terms:
         field: user.name
-    source.ip:
+    'source.ip':
       terms:
         field: process.Ext.session_info.client_address
-    process.Ext.authentication_id:
+    'process.Ext.authentication_id':
       terms:
         field: process.Ext.authentication_id
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
+  deduce_mappings: false
 sync:
   time:
     delay: 60s
     field: '@timestamp'
 _meta:
-  fleet_transform_version: 2.0.0
+  fleet_transform_version: 2.1.0
   run_as_kibana_system: false
