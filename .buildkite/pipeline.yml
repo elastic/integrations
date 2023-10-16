@@ -40,9 +40,24 @@ steps:
     command: ".buildkite/scripts/run_integrations_sync.sh"
     env:
       SERVERLESS: true
+      SERVERLESS_PROJECT: observability
       FORCE_CHECK_ALL: true
     agents:
       provider: "gcp"
     depends_on:
-      - step: "check"
+      - step: "publish-packages"
         allow_failure: false
+          #
+  # to be moved to schedule-daily job
+  # - label: "Check integrations"
+  #   key: "test-integrations-sync"
+  #   command: ".buildkite/scripts/run_integrations_sync.sh"
+  #   env:
+  #     SERVERLESS: true
+  #     SERVERLESS_PROJECT: security
+  #     FORCE_CHECK_ALL: true
+  #   agents:
+  #     provider: "gcp"
+  #   depends_on:
+  #     - step: "publish-packages"
+  #       allow_failure: false

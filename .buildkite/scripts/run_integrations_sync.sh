@@ -50,8 +50,8 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
 
     if ! is_pr_affected ${integration} ; then
         echo "[${integration}] Skipped"
-        # popd 2> /dev/null
-        # continue # TODO enable this skip after testing
+        popd 2> /dev/null
+        continue
     fi
 
     echo "Check integration: ${integration}"
@@ -63,18 +63,19 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
         create_kind_cluster
     fi
 
-
     echo "Test integration: ${integration}"
-    #  # eval "$(../../build/elastic-package stack shellinit)"
     ${ELASTIC_PACKAGE_BIN} test -v --report-format xUnit --report-output file --test-coverage
+
+    # TODO: add benchmarks support
 
     if [ ${use_kind} -eq 1 ]; then
         delete_kind_cluster
     fi
 
+    popd 2> /dev/null
+
     # TODO: debug to be removed
     num_packages=$((num_packages+1))
-    popd 2> /dev/null
     if [ $num_packages -eq ${maximum_packages} ]; then
         break
     fi

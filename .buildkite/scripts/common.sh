@@ -228,22 +228,58 @@ kibana_version_manifest() {
     echo "null"
 }
 
-is_unsupported_stack() {
+capabilities_manifest() {
+    cat manifest.yml | yq ".conditions.elastic.capabilitites"
+}
+
+is_supported_capability() {
+    if [ "${SERVERLESS_PROJECT}" == "" ]; then
+        return 0
+    fi
+
+    local capabilities=$(capabilities_manifest)
+
+    # if no capabilities defined, it is available iavailable all projects
+    if [[  "${capabilities}" == "null" ]]; then
+        return 0
+    fi
+
+    if [[ ${SERVERLESS_PROJECT} == "observability" ]]; then
+        if echo ${capabilities} |egrep 'apm|observability|uptime' ; then
+            return 0
+        else
+            return 1
+        fi
+    fi
+
+    if [[ ${SERVERLESS_PROJECT} == "security" ]]; then
+        if echo ${capabilities} |egrep 'security' ; then
+            return 0
+        else
+            return 1
+        fi
+    fi
+
+    echo "Unsupported serverless project"
+    return 1
+}
+
+is_supported_stack() {
     if [ "${STACK_VERSION}" == "" ]; then
-        return 1
+        return 0
     fi
 
     local kibana_version=$(kibana_version_manifest)
     if [ "${kibana_version}" == "null" ]; then
-        return 1
+        return 0
     fi
     if [[ ! ${kibana_version} =~ \^7\. && ${STACK_VERSION} =~ ^7\. ]]; then
-        return 0
+        return 1
     fi
     if [[ ! ${kibana_version} =~ \^8\. && ${STACK_VERSION} =~ ^8\. ]]; then
-        return 0
+        return 1
     fi
-    return 1
+    return 0
 }
 
 oldest_supported_version() {
@@ -309,8 +345,13 @@ get_to_changeset() {
 is_pr_affected() {
     local integration="${1}"
 
-    if is_unsupported_stack ; then
+    if ! is_supported_stack ; then
         echo "[${integration}] PR is not affected: unsupported stack (${STACK_VERSION})"
+        return 1
+    fi
+
+    if ! is_supported_capability ; then
+        echo "[${integration}] PR is not affected: capabilities not mached with the project (${SERVERLESS_PROJECT})"
         return 1
     fi
 
