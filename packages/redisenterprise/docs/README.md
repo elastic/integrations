@@ -146,7 +146,7 @@ An example event for `node` looks as following:
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | redisenterprise.node.labels.\* | Label fields | object |
-| redisenterprise.node.metrics.\* | Node prometheus metrics | float |
+| redisenterprise.node.metrics.node_\* | Node prometheus metrics | object |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
@@ -302,7 +302,7 @@ An example event for `proxy` looks as following:
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | redisenterprise.proxy.labels.\* | Label fields | object |
-| redisenterprise.proxy.metrics.listener_\* | Proxy prometheus metrics | float |
+| redisenterprise.proxy.metrics.listener_\* | Proxy prometheus metrics | object |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
