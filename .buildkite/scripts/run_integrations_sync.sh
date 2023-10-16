@@ -30,6 +30,7 @@ use_elastic_package
 
 prepare_serverless_stack
 
+packages_visited=0
 num_packages=0  # TODO: to be removed
 maximum_packages=25
 
@@ -39,6 +40,7 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
     echo "--- Package ${integration}: check"
 
     pushd ${integration} > /dev/null
+    packages_visited=$((packages_visited+1))
 
     if [[ ${SERVERLESS} == "true" ]] ; then
         if ! is_spec_3_0_0 ]]; then
@@ -85,3 +87,4 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
 done
 popd > /dev/null
 
+echo "Total packages examined: ${packages_visited}"
