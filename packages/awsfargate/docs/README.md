@@ -304,7 +304,6 @@ If you want to learn more about Amazon ECS metrics, take a look at the blog post
 | @timestamp | Event timestamp. | date |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | awsfargate.task_stats.cluster_name | Cluster name | keyword |  |
-| awsfargate.task_stats.cpu.core |  | object |  |
 | awsfargate.task_stats.cpu.core.\*.norm.pct | Percentage of time per CPU core normalized by the number of CPU cores. | scaled_float | gauge |
 | awsfargate.task_stats.cpu.core.\*.pct | Percentage of time per CPU core. | scaled_float | gauge |
 | awsfargate.task_stats.cpu.core.\*.ticks | CPU ticks per CPU core. | long | counter |
@@ -351,7 +350,7 @@ If you want to learn more about Amazon ECS metrics, take a look at the blog post
 | awsfargate.task_stats.memory.rss.usage.max | Max memory usage. | long | counter |
 | awsfargate.task_stats.memory.rss.usage.pct | Memory usage percentage. | scaled_float | gauge |
 | awsfargate.task_stats.memory.rss.usage.total | Total memory usage. | long | gauge |
-| awsfargate.task_stats.memory.stats.\* | Raw memory stats from the cgroups memory.stat interface | object |  |
+| awsfargate.task_stats.memory.stats.\* | Raw memory stats from the cgroups memory.stat interface | unsigned_long |  |
 | awsfargate.task_stats.memory.usage.max | Max memory usage. | long | counter |
 | awsfargate.task_stats.memory.usage.pct | Memory usage percentage. | scaled_float | gauge |
 | awsfargate.task_stats.memory.usage.total | Total memory usage. | long | gauge |
@@ -403,7 +402,22 @@ An example event for `task_stats` looks as following:
             "task_known_status": "RUNNING",
             "task_desired_status": "RUNNING",
             "cpu": {
-                "core": null,
+                "core": {
+                    "1": {
+                        "pct": 0,
+                        "norm": {
+                            "pct": 0
+                        },
+                        "ticks": 1520000000
+                    },
+                    "2": {
+                        "pct": 0,
+                        "norm": {
+                            "pct": 0
+                        },
+                        "ticks": 1420180000000
+                    }
+                },
                 "kernel": {
                     "norm": {
                         "pct": 0
