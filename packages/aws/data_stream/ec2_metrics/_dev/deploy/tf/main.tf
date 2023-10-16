@@ -12,9 +12,9 @@ provider "aws" {
       created_date = var.CREATED_DATE
 
       division = "engineering"
-      org      = "ingest"
-      team     = "ecosystem"
-      project  = "ci-testing"
+      org      = "obs"
+      team     = "obs-cloud-monitoring"
+      project  = "integrations-aws-package"
     }
   }
 }
