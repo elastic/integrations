@@ -280,7 +280,8 @@ processors:
       field: "message"
       description: "106010"
       patterns:
-      - "%{NOTSPACE:event.outcome} %{NOTSPACE:network.direction} %{NOTSPACE:network.transport} src %{NOTSPACE:_temp_.cisco.source_interface}:%{NOTSPACE:source.address}/%{POSINT:source.port} (%{DATA})?dst %{NOTSPACE:_temp_.cisco.destination_interface}:%{NOTSPACE:destination.address}/%{POSINT:destination.port}(%{GREEDYDATA})?"
+      - "%{NOTSPACE:event.outcome} %{NOTSPACE:network.direction} ((protocol %{POSINT:network.iana_number})|%{NOTSPACE:network.transport}) src %{NOTSPACE:_temp_.cisco.source_interface}:%{NOTSPACE:source.address}/%{POSINT:source.port} (%{DATA})?dst %{NOTSPACE:_temp_.cisco.destination_interface}:%{NOTSPACE:destination.address}/%{POSINT:destination.port}(%{GREEDYDATA})?"
+      - "%{NOTSPACE:event.outcome} %{NOTSPACE:network.direction} ((protocol %{POSINT:network.iana_number})|%{NOTSPACE:network.transport}) src %{NOTSPACE:_temp_.cisco.source_interface}:%{NOTSPACE:source.address}(/%{POSINT:source.port})? (%{DATA})?dst %{NOTSPACE:_temp_.cisco.destination_interface}:%{NOTSPACE:destination.address}(/%{POSINT:destination.port})?(%{GREEDYDATA})?"
       on_failure:
         - append:
             field: error.message
@@ -328,7 +329,7 @@ processors:
       field: "message"
       description: "106015"
       patterns:
-      - "%{NOTSPACE:event.outcome} %{NOTSPACE:network.transport} %{NOTSPACE} %{NOTSPACE} from %{IP:source.address}/%{POSINT:source.port} to %{IPORHOST:destination.address}/%{POSINT:destination.port} flags %{DATA} on interface %{NOTSPACE:_temp_.cisco.source_interface}"
+      - "%{NOTSPACE:event.outcome} %{NOTSPACE:network.transport} %{NOTSPACE} %{NOTSPACE} from %{IPORHOST:source.address}/%{POSINT:source.port} to %{IPORHOST:destination.address}/%{POSINT:destination.port} flags %{DATA} on interface %{NOTSPACE:_temp_.cisco.source_interface}"
       on_failure:
         - append:
             field: error.message
@@ -384,7 +385,7 @@ processors:
       field: "message"
       description: "106023"
       patterns:
-        - ^%{NOTSPACE:event.outcome} ((protocol %{POSINT:network.iana_number})|%{NOTSPACE:network.transport}) src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}(/%{POSINT:source.port})?\s*(\(%{CISCO_USER_OR_SGT:_temp_.cisco.source_user_or_sgt}\) )?dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address}(/%{POSINT:destination.port})?%{DATA}by access-group "%{NOTSPACE:_temp_.cisco.list_id}"
+        - ^%{NOTSPACE:event.outcome} ((protocol %{POSINT:network.iana_number})|%{NOTSPACE:network.transport}) src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}(/%{NUMBER:source.port})?\s*(\(%{CISCO_USER_OR_SGT:_temp_.cisco.source_user_or_sgt}\) )?dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address}(/%{NUMBER:destination.port})?%{DATA}by access-group "%{NOTSPACE:_temp_.cisco.list_id}"
       pattern_definitions:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
