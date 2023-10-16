@@ -1,0 +1,115 @@
+---
+description: Pipeline for parsing TYCHON Network Adapters
+processors:
+  - dot_expander:
+      field: "*"
+  - set:
+      field: "@timestamp"
+      value: "{{_ingest.timestamp}}"
+  - set:
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - set:
+      field: ecs.version
+      value: 8.8.0
+  - set:
+      field: event.kind
+      value: state 
+  - remove:
+      field: host.adapter.ip
+      if: ctx.host.adapter.ip == ''
+  - remove:
+      field: host.adapter.gateway
+      if: ctx.host.adapter.gateway == ''
+  - remove:
+      field: host.adapter.dhcp.server
+      if: ctx.host.adapter.dhcp.server == ''
+  - remove:
+      field: host.adapter.dhcp.lease_obtained
+      if: ctx.host.adapter.dhcp.lease_obtained == ''
+  - remove:
+      field: host.adapter.dhcp.lease_expires
+      if: ctx.host.adapter.dhcp.lease_expires == ''
+  - remove:
+      field: host.adapter.driver.date
+      if: ctx.host.adapter.driver.date == ''
+  - remove:
+      field: host.adapter.wins_server
+      if: ctx.host.adapter.wins_server == ''
+  - set:
+      field: link_speed
+      value: "{{host.adapter.link_speed}}"
+  - set:
+      field: host.adapter.link_speed
+      value: 0
+  - script:
+      source: 
+            |            
+            if(ctx['link_speed'].contains(' ')){
+                String[] linkSpeed=ctx['link_speed'].splitOnToken(' ');
+                ctx.remove('link_speed');
+                ctx['host.adapter.link_speed']=Long.parseLong(linkSpeed[0]);
+                if(linkSpeed[1]=='Kbps'){
+                    ctx['host.adapter.link_speed']*=1024
+                }
+                if(linkSpeed[1]=='Mbps'){
+                    ctx['host.adapter.link_speed']*=1048576
+                }
+                if(linkSpeed[1]=='Gbps'){
+                    ctx['host.adapter.link_speed']*=1073741824
+                }
+            } else {
+                ctx.remove('link_speed');
+            }
+      ignore_failure: true   
+  - gsub:
+      field: host.mac
+      pattern: ":"
+      replacement: "-"
+      ignore_missing: true
+  - split:
+      field: host.ipv4
+      separator: ","
+      ignore_missing: true
+  - convert:
+      field: host.uptime
+      type: string
+      ignore_missing: true
+  - split:
+      field: host.uptime
+      separator: "\\.+"
+      target_field: tempuptime
+      ignore_failure: true
+  - set:
+      field: host.uptime
+      value: "{{tempuptime.0}}"
+      ignore_failure: true
+  - remove:
+      field: tempuptime
+      ignore_failure: true
+      ignore_missing: true
+  - convert:
+      field: host.uptime
+      type: long
+      ignore_missing: true
+  - set:
+      field: event.module
+      value: tychon
+  - set:
+      field: event.category
+      value: [configuration]
+  - set:
+      field: event.type
+      value: [info]
+  - convert:
+      field: script.current_duration
+      type: float
+      ignore_missing: true
+      ignore_failure: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
