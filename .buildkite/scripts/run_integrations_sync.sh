@@ -66,7 +66,11 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
     fi
 
     echo "Test integration: ${integration}"
+    set +e
     ${ELASTIC_PACKAGE_BIN} test -v --report-format xUnit --report-output file --test-coverage
+    exit_code=$?
+    echo "[$integration] failed testing (exit code $exit_code)"
+    set -è
 
     # TODO: add benchmarks support (https://github.com/elastic/integrations/blob/befdc5cb752a08aaf5f79b0d9bdb68588ade9f27/.ci/Jenkinsfile#L180)
     # ${ELASTIC_PACKAGE_BIN} benchmark pipeline -v --report-format json --report-output file
