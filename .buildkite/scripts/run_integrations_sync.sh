@@ -73,7 +73,7 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
         delete_kind_cluster
     fi
 
-    teardown_serverless_test_package
+    teardown_serverless_test_package ${integration}
 
     popd 2> /dev/null
 
