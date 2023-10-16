@@ -38,19 +38,19 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
     integration=$(basename ${it})
     echo "--- Package ${integration}: check"
 
-    pushd ${integration} 2> /dev/null
+    pushd ${integration} > /dev/null
 
     if [[ ${SERVERLESS} == "true" ]] ; then
         if ! is_spec_3_0_0 ]]; then
             echo "Not v3 spec version. Skipped"
-            popd 2> /dev/null
+            popd > /dev/null
             continue
         fi
     fi
 
     if ! is_pr_affected ${integration} ; then
         echo "[${integration}] Skipped"
-        popd 2> /dev/null
+        popd > /dev/null
         continue
     fi
 
@@ -75,7 +75,7 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
 
     teardown_serverless_test_package ${integration}
 
-    popd 2> /dev/null
+    popd > /dev/null
 
     # TODO: debug to be removed
     num_packages=$((num_packages+1))
