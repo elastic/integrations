@@ -180,7 +180,7 @@ use_elastic_package
 prepare_serverless_stack
 
 num_packages=0  # TODO: to be removed
-maximum_packages=15
+maximum_packages=25
 
 pushd packages > /dev/null
 for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
