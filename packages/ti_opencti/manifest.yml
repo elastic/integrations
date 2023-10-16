@@ -1,0 +1,98 @@
+format_version: "3.0.0"
+name: ti_opencti
+title: OpenCTI
+version: "0.1.0"
+description: "Ingest threat intelligence indicators from OpenCTI with Elastic Agent."
+type: integration
+source:
+  license: "Elastic-2.0"
+categories:
+  - security
+  - threat_intel
+conditions:
+  kibana:
+    version: "^8.9.0"
+screenshots:
+  - src: /img/screenshot1.png
+    title: "Dashboard: OpenCTI Overview"
+    size: 1280x1323
+    type: image/png
+  - src: /img/screenshot2.png
+    title: "Dashboard: OpenCTI Tags & Quality"
+    size: 1280x1323
+    type: image/png
+  - src: /img/screenshot3.png
+    title: "Add OpenCTI integration"
+    size: 1268x1323
+    type: image/png
+icons:
+  - src: /img/opencti-logo.svg
+    title: OpenCTI logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: opencti
+    title: OpenCTI
+    description: Collect OpenCTI data.
+    inputs:
+      - type: cel
+        title: OpenCTI
+        description: Collect OpenCTI data.
+        vars:
+          - name: url
+            type: text
+            title: URL
+            description: Base URL of the OpenCTI instance. E.g. https://demo.opencti.io
+            multi: false
+            required: true
+            show_user: true
+          - name: api_key
+            type: password
+            title: API Key
+            description: API key from your profile page in OpenCTI, for bearer authentication.
+            multi: false
+            required: false
+            show_user: true
+          - name: oauth2
+            type: yaml
+            title: OAuth2 Configuration
+            description: i.e. client.id, client.secret, token_url and [other OAuth2 options](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_auth_basic_enabled).
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #client.id: 12345678901234567890abcdef
+              #client.secret: abcdef12345678901234567890
+              #token_url: http://example.com/oauth2/token
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate, key, certificate_authorities, and [other SSL options](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html).
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
+owner:
+  github: elastic/security-external-integrations
+  type: elastic

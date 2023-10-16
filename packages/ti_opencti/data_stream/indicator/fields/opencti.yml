@@ -1,0 +1,1102 @@
+- name: opencti
+  type: group
+  description: Fields from OpenCTI.
+  fields:
+    - name: indicator
+      type: group
+      description: Indicator fields that don't fit into ECS.
+      fields:
+        - name: standard_id
+          type: keyword
+          description: A predictable STIX ID, generated based on one or multiple attributes of the indicator.
+        - name: is_inferred
+          type: boolean
+          description: Whether the indicator is inferred.
+        - name: revoked
+          type: boolean
+          description: Whether the indicator is revoked.
+        - name: lang
+          type: keyword
+          description: A language associated with the indicator record.
+        - name: pattern_type
+          type: keyword
+          description: The pattern language used in this indicator.
+        - name: pattern_version
+          type: keyword
+          description: The version of the pattern language used in this indicator.
+        - name: pattern
+          type: keyword
+          description: The detection pattern for this indicator, expressed as a STIX pattern or using another appropriate language such as SNORT, YARA, etc.
+        - name: valid_from
+          type: date
+          description: The time from which this indicator is considered a valid indicator of the behaviors it is related to or represents.
+        - name: valid_until
+          type: date
+          description: The time at which this indicator should no longer be considered a valid indicator of the behaviors it is related to or represents.
+        - name: score
+          type: long
+          description: An integer score for the indicator.
+        - name: detection
+          type: boolean
+          description: Whether the indicator has been detected.
+        - name: creator_identity_class
+          type: keyword
+          description: The type of the creator of this indicator (e.g. "organization").
+        - name: kill_chain_phase
+          type: keyword
+          description: The kill chain name and kill change phase name (e.g. "[mitre-attack] exfiltration").
+        - name: external_reference
+          type: group
+          description: Fields to describe an external reference.
+          fields:
+            - name: external_id
+              type: keyword
+              description: A non-STIX ID for a related record in an external system.
+            - name: source_name
+              type: keyword
+              description: The name of an external source of related records.
+            - name: url
+              type: keyword
+              description: A URL for a related record in an external system.
+            - name: description
+              type: keyword
+              description: A description for a related record in an external system.
+        - name: observables_count
+          type: long
+          description: The number of observables related to this indicator, which may exceed the number fetched.
+    - name: observable
+      type: group
+      description: Fields describing related observables.
+      fields:
+        - name: autonomous_system
+          type: group
+          description: Fields describing an autonomous system observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: The main value for the observable.
+            - name: number
+              type: long
+              description: The number assigned to the AS, typically by a Regional Internet Registry (RIR).
+            - name: name
+              type: keyword
+              description: The name of the AS.
+            - name: rir
+              type: keyword
+              description: The name of the Regional Internet Registry (RIR) that assigned the number to the AS.
+        - name: directory
+          type: group
+          description: Fields describing a directory observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: The main value for the observable.
+            - name: path
+              type: keyword
+              description: The path, as originally observed, to the directory on the file system.
+            - name: path_enc
+              type: keyword
+              description: The observed encoding for the path, using the IANA character set registry.
+            - name: ctime
+              type: date
+              description: The date/time the directory was created.
+            - name: mtime
+              type: date
+              description: The date/time the directory was last written to/modified.
+            - name: atime
+              type: date
+              description: The date/time the directory was last accessed.
+        - name: domain_name
+          type: group
+          description: Fields describing a domain name observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: The value of the domain name, using RFC1034, RFC5890.
+        - name: email_addr
+          type: group
+          description: Fields describing an email address observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: The value of the email address, using RFC5322.
+            - name: display_name
+              type: keyword
+              description: A single email display name, i.e., the name that is displayed to the human user of a mail application, using RFC5322.
+        - name: email_message
+          type: group
+          description: Fields describing an email message observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: The main value for the observable.
+            - name: is_multipart
+              type: boolean
+              description: Indicates whether the email body contains multiple MIME parts.
+            - name: attribute_date
+              type: date
+              description: The date/time that the email message was sent.
+            - name: content_type
+              type: keyword
+              description: The value of the "Content-Type" header of the email message.
+            - name: message_id
+              type: keyword
+              description: The Message-ID field of the email message.
+            - name: subject
+              type: keyword
+              description: The subject of the email message.
+            - name: received_lines
+              type: keyword
+              description: One or more "Received" header fields that may be included in the email headers.
+            - name: body
+              type: keyword
+              description: A string containing the email body.
+        - name: email_mime_part_type
+          type: group
+          description: Fields describing an email MIME component type observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: The main value for the observable.
+            - name: body
+              type: keyword
+              description: The contents of the MIME part.
+            - name: content_type
+              type: keyword
+              description: The value of the "Content-Type" header field of the MIME part.
+            - name: content_disposition
+              type: keyword
+              description: The value of the "Content-Disposition" header field of the MIME part.
+        - name: artifact
+          type: group
+          description: Fields describing an artifact observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: The main value for the observable.
+            - name: hash
+              type: group
+              description: Hashes for the contents of the url or the payload_bin.
+              fields:
+                - name: md5
+                  type: keyword
+                  description: MD5 hash for the contents of the url or the payload_bin.
+                - name: sha1
+                  type: keyword
+                  description: SHA1 hash for the contents of the url or the payload_bin.
+                - name: sha256
+                  type: keyword
+                  description: SHA-256 hash for the contents of the url or the payload_bin.
+                - name: sha512
+                  type: keyword
+                  description: SHA-512 hash for the contents of the url or the payload_bin.
+                - name: ssdeep
+                  type: keyword
+                  description: SSDEEP hash for the contents of the url or the payload_bin.
+                - name: tlsh
+                  type: keyword
+                  description: TLSH hash for the contents of the url or the payload_bin.
+                - name: sha3_256
+                  type: keyword
+                  description: SHA3-256 hash for the contents of the url or the payload_bin.
+                - name: sha3_512
+                  type: keyword
+                  description: SHA3-512 hash for the contents of the url or the payload_bin.
+            - name: mime_type
+              type: keyword
+              description: MIME type of the artifact, given as of the values defined in the Template column in the IANA media type registry, when feasible.
+            - name: payload_bin
+              type: keyword
+              description: The binary data contained in the artifact as a base64-encoded string.
+            - name: url
+              type: keyword
+              description: A valid URL that resolves to the unencoded content.
+            - name: encryption_algorithm
+              type: keyword
+              description: The type of encryption algorithm the binary data is encoded in, if the artifact is encrypted.
+            - name: decryption_key
+              type: keyword
+              description: The decryption key for the encrypted binary data.
+            - name: additional_names
+              type: keyword
+              description: Additional names of the artifact.
+        - name: file
+          type: group
+          description: Fields describing a file observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: The main value for the observable.
+            - name: hash
+              type: group
+              description: Hashes for the file.
+              fields:
+                - name: md5
+                  type: keyword
+                  description: MD5 hash for the file.
+                - name: sha1
+                  type: keyword
+                  description: SHA1 hash for the file.
+                - name: sha256
+                  type: keyword
+                  description: SHA-256 hash for the file.
+                - name: sha512
+                  type: keyword
+                  description: SHA-512 hash for the file.
+                - name: ssdeep
+                  type: keyword
+                  description: SSDEEP hash for the file.
+                - name: tlsh
+                  type: keyword
+                  description: TLSH hash for the file.
+                - name: sha3_256
+                  type: keyword
+                  description: SHA3-256 hash for the file.
+                - name: sha3_512
+                  type: keyword
+                  description: SHA3-512 hash for the file.
+            - name: size
+              type: long
+              description: The size of the file, in bytes.
+            - name: name
+              type: keyword
+              description: The name of the file.
+            - name: name_enc
+              type: keyword
+              description: The observed encoding for the name of the file, using the IANA character set registry.
+            - name: magic_number_hex
+              type: keyword
+              description: The hexadecimal constant ("magic number") associated with a specific file format that corresponds to the file, if applicable.
+            - name: mime_type
+              type: keyword
+              description: MIME type of the file, given as of the values defined in the Template column in the IANA media type registry, when feasible.
+            - name: ctime
+              type: date
+              description: The date/time the file was created.
+            - name: mtime
+              type: date
+              description: The date/time the file was last written to/modified.
+            - name: atime
+              type: date
+              description: The date/time the file was last accessed.
+            - name: additional_names
+              type: keyword
+              description: Additional names of the file.
+            - name: content
+              type: group
+              description: Fields describing the file's content.
+              fields:
+                - name: payload_bin
+                  type: keyword
+                  description: The binary data contained in the file as a base64-encoded string.
+                - name: url
+                  type: keyword
+                  description: A valid URL that resolves to the unencoded content.
+                - name: encryption_algorithm
+                  type: keyword
+                  description: The type of encryption algorithm the binary data is encoded in, if the file is encrypted.
+                - name: decryption_key
+                  type: keyword
+                  description: The decryption key for the encrypted binary data.
+        - name: x509_certificate
+          type: group
+          description: Fields describing an x509 certificate observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: The main value for the observable.
+            - name: hash
+              type: group
+              description: Hashes calculated for the entire contents of the certificate.
+              fields:
+                - name: md5
+                  type: keyword
+                  description: MD5 hash calculated for the entire contents of the certificate.
+                - name: sha1
+                  type: keyword
+                  description: SHA1 hash calculated for the entire contents of the certificate.
+                - name: sha256
+                  type: keyword
+                  description: SHA-256 hash calculated for the entire contents of the certificate.
+                - name: sha512
+                  type: keyword
+                  description: SHA-512 hash calculated for the entire contents of the certificate.
+                - name: ssdeep
+                  type: keyword
+                  description: SSDEEP hash calculated for the entire contents of the certificate.
+                - name: tlsh
+                  type: keyword
+                  description: TLSH hash calculated for the entire contents of the certificate.
+                - name: sha3_256
+                  type: keyword
+                  description: SHA3-256 hash calculated for the entire contents of the certificate.
+                - name: sha3_512
+                  type: keyword
+                  description: SHA3-512 hash calculated for the entire contents of the certificate.
+            - name: is_self_signed
+              type: boolean
+              description: Whether the certificate is self-signed, i.e., whether it is signed by the same entity whose identity it certifies.
+            - name: version
+              type: keyword
+              description: The version of the encoded certificate.
+            - name: serial_number
+              type: keyword
+              description: The unique identifier for the certificate, as issued by a specific Certificate Authority.
+            - name: signature_algorithm
+              type: keyword
+              description: The name of the algorithm used to sign the certificate.
+            - name: issuer
+              type: keyword
+              description: The name of the Certificate Authority that issued the certificate.
+            - name: subject
+              type: keyword
+              description: The name of the entity associated with the public key stored in the subject public key field of the certificate.
+            - name: subject_public_key_algorithm
+              type: keyword
+              description: The name of the algorithm with which to encrypt data being sent to the subject.
+            - name: subject_public_key_modulus
+              type: keyword
+              description: The modulus portion of the subject’s public RSA key.
+            - name: subject_public_key_exponent
+              type: long
+              description: The exponent portion of the subject’s public RSA key, as an integer.
+            - name: validity_not_before
+              type: date
+              description: The date on which the certificate validity period begins.
+            - name: validity_not_after
+              type: date
+              description: The date on which the certificate validity period ends.
+            - name: basic_constraints
+              type: keyword
+              description: A multi-valued extension which indicates whether a certificate is a CA certificate.
+            - name: name_constraints
+              type: keyword
+              description: A namespace within which all subject names in subsequent certificates in a certification path are located.
+            - name: policy_constraints
+              type: keyword
+              description: Any constraints on path validation for certificates issued to CAs.
+            - name: key_usage
+              type: keyword
+              description: A multi-valued extension consisting of a list of names of the permitted key usages.
+            - name: extended_key_usage
+              type: keyword
+              description: A list of usages indicating purposes for which the certificate public key can be used for.
+            - name: subject_key_identifier
+              type: keyword
+              description: The identifier that provides a means of identifying certificates that contain a particular public key.
+            - name: authority_key_identifier
+              type: keyword
+              description: The identifier that provides a means of identifying the public key corresponding to the private key used to sign a certificate.
+            - name: subject_alternative_name
+              type: keyword
+              description: The additional identities to be bound to the subject of the certificate.
+            - name: issuer_alternative_name
+              type: keyword
+              description: The additional identities to be bound to the issuer of the certificate.
+            - name: subject_directory_attributes
+              type: keyword
+              description: The identification attributes (e.g., nationality) of the subject.
+            - name: crl_distribution_points
+              type: keyword
+              description: How CRL information is obtained.
+            - name: inhibit_any_policy
+              type: keyword
+              description: The number of additional certificates that may appear in the path before anyPolicy is no longer permitted.
+            - name: private_key_usage_period_not_before
+              type: date
+              description: The date on which the validity period begins for the private key, if it is different from the validity period of the certificate.
+            - name: private_key_usage_period_not_after
+              type: date
+              description: The date on which the validity period ends for the private key, if it is different from the validity period of the certificate.
+            - name: certificate_policies
+              type: keyword
+              description: A sequence of one or more policy information terms, each of which consists of an object identifier (OID) and optional qualifiers.
+            - name: policy_mappings
+              type: keyword
+              description: One or more pairs of OIDs; each pair includes an issuerDomainPolicy and a subjectDomainPolicy.
+        - name: ipv4_addr
+          type: group
+          description: Fields describing an IPv4 address observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: The values of one or more IPv4 addresses expressed using CIDR notation.
+        - name: ipv6_addr
+          type: group
+          description: Fields describing an IPv6 address observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: The values of one or more IPv6 addresses expressed using CIDR notation.
+        - name: mac_addr
+          type: group
+          description: Fields describing a mac address observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: The value of a single MAC address.
+        - name: mutex
+          type: group
+          description: Fields describing a mutex observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: The main value for the observable.
+            - name: name
+              type: keyword
+              description: The name of the mutex object.
+        - name: network_traffic
+          type: group
+          description: Fields describing a network traffic observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: The main value for the observable.
+            - name: start
+              type: date
+              description: The date/time the network traffic was initiated, if known.
+            - name: end
+              type: date
+              description: The date/time the network traffic ended, if known.
+            - name: is_active
+              type: boolean
+              description: Indicates whether the network traffic is still ongoing.
+            - name: src_port
+              type: long
+              description: The source port used in the network traffic, as an integer.
+            - name: dst_port
+              type: long
+              description: The destination port used in the network traffic, as an integer.
+            - name: protocols
+              type: keyword
+              description: The protocols observed in the network traffic, along with their corresponding state.
+            - name: src_byte_count
+              type: long
+              description: The number of bytes, as a positive integer, sent from the source to the destination.
+            - name: dst_byte_count
+              type: long
+              description: The number of bytes, as a positive integer, sent from the destination to the source.
+            - name: src_packets
+              type: long
+              description: The number of packets, as a positive integer, sent from the source to the destination.
+            - name: dst_packets
+              type: long
+              description: The number of packets, as a positive integer, sent from the destination to the source.
+        - name: process
+          type: group
+          description: Fields describing a process observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: The main value for the observable.
+            - name: is_hidden
+              type: boolean
+              description: Whether the process is hidden.
+            - name: pid
+              type: long
+              description: The Process ID, or PID, of the process.
+            - name: created_time
+              type: date
+              description: The date/time at which the process was created.
+            - name: cwd
+              type: keyword
+              description: The current working directory of the process.
+            - name: description
+              type: keyword
+              description: Description of the process.
+            - name: command_line
+              type: keyword
+              description: The full command line used in executing the process, including the process name and any arguments.
+            - name: environment_variables
+              type: keyword
+              description: The list of environment variables associated with the process.
+            - name: aslr_enabled
+              type: boolean
+              description: Whether Address Space Layout Randomization (ASLR) is enabled for the process (on Windows).
+            - name: dep_enabled
+              type: boolean
+              description: Whether Data Execution Prevention (DEP) is enabled for the process (on Windows).
+            - name: priority
+              type: keyword
+              description: The current priority class of the process in Windows.
+            - name: owner_sid
+              type: keyword
+              description: The Security ID (SID) value of the owner of the process (on Windows).
+            - name: window_title
+              type: keyword
+              description: The title of the main window of the process (on Windows).
+            - name: startup_info
+              type: flattened
+              description: The STARTUP_INFO struct used by the process (on Windows).
+            - name: integrity_level
+              type: keyword
+              description: The Windows integrity level, or trustworthiness, of the process.
+            - name: service_name
+              type: keyword
+              description: The name of the (Windows) service.
+            - name: descriptions
+              type: keyword
+              description: The descriptions defined for the (Windows) service.
+            - name: display_name
+              type: keyword
+              description: The display name of the service in Windows GUI controls.
+            - name: group_name
+              type: keyword
+              description: The name of the load ordering group of which the (Windows) service is a member.
+            - name: start_type
+              type: keyword
+              description: The start options defined for the (Windows) service.
+            - name: service_type
+              type: keyword
+              description: The DLLs loaded by the (Windows) service, as a reference to one or more File objects.
+            - name: service_status
+              type: keyword
+              description: The type of the (Windows) service.
+            - name: service_dll
+              type: group
+              description: Fields describing a service DLL.
+              fields:
+                - name: hash
+                  type: group
+                  description: Hashes for the service DLL file.
+                  fields:
+                    - name: md5
+                      type: keyword
+                      description: MD5 hash for the service DLL file.
+                    - name: sha1
+                      type: keyword
+                      description: SHA1 hash for the service DLL file.
+                    - name: sha256
+                      type: keyword
+                      description: SHA-256 hash for the service DLL file.
+                    - name: sha512
+                      type: keyword
+                      description: SHA-512 hash for the service DLL file.
+                    - name: ssdeep
+                      type: keyword
+                      description: SSDEEP hash for the service DLL file.
+                    - name: tlsh
+                      type: keyword
+                      description: TLSH hash for the service DLL file.
+                    - name: sha3_256
+                      type: keyword
+                      description: SHA3-256 hash for the service DLL file.
+                    - name: sha3_512
+                      type: keyword
+                      description: SHA3-512 hash for the service DLL file.
+                - name: size
+                  type: long
+                  description: The size of the service DLL file, in bytes.
+                - name: name
+                  type: keyword
+                  description: The name of the service DLL file.
+                - name: name_enc
+                  type: keyword
+                  description: The observed encoding for the name of the service DLL file, using the IANA character set registry.
+                - name: magic_number_hex
+                  type: keyword
+                  description: The hexadecimal constant ("magic number") associated with a specific file format that corresponds to the service DLL file, if applicable.
+                - name: mime_type
+                  type: keyword
+                  description: MIME type of the service DLL file, given as of the values defined in the Template column in the IANA media type registry, when feasible.
+                - name: ctime
+                  type: date
+                  description: The date/time the service DLL file was created.
+                - name: mtime
+                  type: date
+                  description: The date/time the service DLL file was last written to/modified.
+                - name: atime
+                  type: date
+                  description: The date/time the service DLL file was last accessed.
+                - name: additional_names
+                  type: keyword
+                  description: Additional names of the service DLL file.
+                - name: content
+                  type: group
+                  description: Fields describing service DLL file content.
+                  fields:
+                    - name: payload_bin
+                      type: keyword
+                      description: The binary data contained in the service DLL file as a base64-encoded string.
+                    - name: url
+                      type: keyword
+                      description: A valid URL that resolves to the unencoded content of the service DLL file.
+                    - name: encryption_algorithm
+                      type: keyword
+                      description: The type of encryption algorithm the binary data is encoded in, if the service DLL file is encrypted.
+                    - name: decryption_key
+                      type: keyword
+                      description: The decryption key for the encrypted binary data of the service DLL file.
+        - name: software
+          type: group
+          description: Fields describing a software observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: The main value for the observable.
+            - name: name
+              type: keyword
+              description: The name of the software.
+            - name: cpe
+              type: keyword
+              description: The Common Platform Enumeration (CPE) entry for the software, if available.
+            - name: swid
+              type: keyword
+              description: The Software Identification (SWID) Tags entry for the software, if available.
+            - name: languages
+              type: keyword
+              description: The languages supported by the software, using RFC5646.
+            - name: vendor
+              type: keyword
+              description: The name of the vendor of the software.
+            - name: version
+              type: keyword
+              description: The version of the software.
+        - name: url
+          type: group
+          description: Fields describing a URL observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: The value of the URL, using RFC3986.
+        - name: user_account
+          type: group
+          description: Fields describing a user account observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: The main value for the observable.
+            - name: user_id
+              type: keyword
+              description: The identifier of the account and may be a numeric ID, a GUID, an account name, an email address, etc.
+            - name: credential
+              type: keyword
+              description: A cleartext credential, not PII.
+            - name: account_login
+              type: keyword
+              description: The account login string, where it differs from the user_id.
+            - name: account_type
+              type: keyword
+              description: The type of the account.
+            - name: display_name
+              type: keyword
+              description: The display name of the account, to be shown in user interfaces, if applicable.
+            - name: is_service_account
+              type: boolean
+              description: Indicates that the account is associated with a network service or system process (daemon), not a specific individual.
+            - name: is_privileged
+              type: boolean
+              description: That the account has elevated privileges.
+            - name: can_escalate_privs
+              type: boolean
+              description: That the account has the ability to escalate privileges.
+            - name: is_disabled
+              type: boolean
+              description: If the account is disabled.
+            - name: account_created
+              type: date
+              description: When the account was created.
+            - name: account_expires
+              type: date
+              description: The expiration date of the account.
+            - name: credential_last_changed
+              type: date
+              description: When the account credential was last changed.
+            - name: account_first_login
+              type: date
+              description: When the account was first accessed.
+            - name: account_last_login
+              type: date
+              description: When the account was last accessed.
+        - name: windows_registry_key
+          type: group
+          description: Fields describing a Windows registry key observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: The main value for the observable.
+            - name: attribute_key
+              type: keyword
+              description: The full registry key including the hive.
+            - name: modified_time
+              type: date
+              description: The last date/time that the registry key was modified.
+            - name: number_of_subkeys
+              type: long
+              description: The number of subkeys contained under the registry key.
+        - name: windows_registry_value_type
+          type: group
+          description: Fields describing a Windows registry value type observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: The main value for the observable.
+            - name: name
+              type: keyword
+              description: The name of the registry value.
+            - name: data
+              type: keyword
+              description: The data contained in the registry value.
+            - name: data_type
+              type: keyword
+              description: The registry (REG_*) data type used in the registry value.
+        - name: cryptographic_key
+          type: group
+          description: Fields describing a cryptographic key observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: A cryptographic key.
+        - name: cryptocurrency_wallet
+          type: group
+          description: Fields describing a cryptocurrency wallet observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: A cryptocurrency wallet ID.
+        - name: hostname
+          type: group
+          description: Fields describing a hostname observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: A hostname.
+        - name: text
+          type: group
+          description: Fields describing a text observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: Text.
+        - name: user_agent
+          type: group
+          description: Fields describing a user agent observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: An HTTP User-Agent string.
+        - name: bank_account
+          type: group
+          description: Fields describing a bank account observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: The main value for the observable.
+            - name: iban
+              type: keyword
+              description: An International Bank Account Number (IBAN).
+            - name: bic
+              type: keyword
+              description: A Bank Identifier Code (BIC).
+            - name: account_number
+              type: keyword
+              description: A bank account number.
+        - name: phone_number
+          type: group
+          description: Fields describing a phone number observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: A phone number.
+        - name: payment_card
+          type: group
+          description: Fields describing a payment card observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: The main value for the observable.
+            - name: card_number
+              type: keyword
+              description: A payment card number.
+            - name: expiration_date
+              type: date
+              description: A payment card expiration date.
+            - name: cvv
+              type: keyword
+              description: A Card Verification Value (CVV) for a payment card.
+            - name: holder_name
+              type: long
+              description: The name of a payment card holder.
+        - name: media_content
+          type: group
+          description: Fields describing a media content observable.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the observable in OpenCTI.
+            - name: standard_id
+              type: keyword
+              description: A predictable STIX ID, generated based on one or multiple attributes of the observable.
+            - name: entity_type
+              type: keyword
+              description: The observable type.
+            - name: value
+              type: keyword
+              description: The main value for the observable.
+            - name: title
+              type: keyword
+              description: The title of an item of media content.
+            - name: content
+              type: keyword
+              description: The content of an item of media content.
+            - name: media_category
+              type: keyword
+              description: The category of an item of media content.
+            - name: url
+              type: keyword
+              description: The URL of an item of media content.
+            - name: publication_date
+              type: date
+              description: The publication date of an item of media content.

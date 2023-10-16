@@ -1,0 +1,28 @@
+---
+description: Build ECS fields from an OpenCTI windows registry value type observable
+processors:
+
+  - set:
+      field: _tmp_registry.value
+      value: "{{{_ingest._value.name}}}"
+
+  - set:
+      field: _tmp_registry.data.type
+      value: "{{{_ingest._value.data_type}}}"
+
+  - append:
+      field: _tmp_registry.data.strings
+      value: "{{{_ingest._value.data}}}"
+
+  # append object
+  - append:
+      field: threat.indicator.registry
+      value: []
+  - script:
+      description: Append to the destination
+      lang: painless
+      source: |
+        ctx.threat.indicator.registry.add(ctx._tmp_registry);
+
+  - remove:
+      field: _tmp_registry
