@@ -145,7 +145,7 @@ An example event for `log` looks as following:
 | cisco.asa.dap_records | The assigned DAP records | keyword |
 | cisco.asa.destination_interface | Destination interface for the flow or event. | keyword |
 | cisco.asa.destination_user_security_group_tag | The Security Group Tag for the destination user. Security Group Tag are 16-bit identifiers used to represent logical group privilege. | long |
-| cisco.asa.destination_user_security_group_tag_name | The name of Security Group Tag for the destination user. | long |
+| cisco.asa.destination_user_security_group_tag_name | The name of Security Group Tag for the destination user. | keyword |
 | cisco.asa.destination_username | Name of the user that is the destination for this event. | keyword |
 | cisco.asa.full_message | The Cisco log message text. | keyword |
 | cisco.asa.icmp_code | ICMP code. | short |
@@ -167,7 +167,7 @@ An example event for `log` looks as following:
 | cisco.asa.session_type | Session type (for example, IPsec or UDP). | keyword |
 | cisco.asa.source_interface | Source interface for the flow or event. | keyword |
 | cisco.asa.source_user_security_group_tag | The Security Group Tag for the source user. Security Group Tag are 16-bit identifiers used to represent logical group privilege. | long |
-| cisco.asa.source_user_security_group_tag_name | The name of Security Group Tag for the source user. | long |
+| cisco.asa.source_user_security_group_tag_name | The name of Security Group Tag for the source user. | keyword |
 | cisco.asa.source_username | Name of the user that is the source for this event. | keyword |
 | cisco.asa.suffix | Optional suffix after %ASA identifier. | keyword |
 | cisco.asa.termination_initiator | Interface name of the side that initiated the teardown | keyword |
