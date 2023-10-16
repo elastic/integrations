@@ -121,7 +121,9 @@ An example event for `application` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "id": "e8978f2086c14e13b7a0af9ed0011d19",
-        "ip": "172.20.0.7",
+        "ip": [
+            "172.20.0.7"
+        ],
         "mac": "02-42-AC-14-00-07",
         "name": "docker-fleet-agent",
         "os": {
@@ -234,7 +236,9 @@ An example event for `driver` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "id": "e8978f2086c14e13b7a0af9ed0011d19",
-        "ip": "172.26.0.7",
+        "ip": [
+            "172.26.0.7"
+        ],
         "mac": "02-42-AC-1A-00-07",
         "name": "docker-fleet-agent",
         "os": {
@@ -413,7 +417,9 @@ An example event for `executor` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "id": "e8978f2086c14e13b7a0af9ed0011d19",
-        "ip": "172.20.0.7",
+        "ip": [
+            "172.20.0.7"
+        ],
         "mac": "02-42-AC-14-00-07",
         "name": "docker-fleet-agent",
         "os": {
