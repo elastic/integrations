@@ -29,10 +29,8 @@ TYCHON scans Endpoint ARP Tables and returns the results.
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
-| destination.hostname | The Translated Hostname of the IP in the ARP Table | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.mac | MAC address of the destination. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| destination.name |  | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | elastic_agent.id | Elastic Agent Id. | keyword |
 | elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
@@ -76,13 +74,10 @@ TYCHON scans Endpoint ARP Tables and returns the results.
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | host.uptime | Seconds the host has been up. | long |
 | host.workgroup | Host Workgroup Network Name. | keyword |
-| id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Log Offset. | long |
 | network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
-| network.interface | The interface the ARP Table has associated the destination. | keyword |
-| network.state | Current state | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | script.current_duration | Scanner Script Duration. | long |
 | script.current_time | Current datetime. | date |
@@ -91,5 +86,10 @@ TYCHON scans Endpoint ARP Tables and returns the results.
 | script.type | Scanner Script Type. | keyword |
 | script.version | Scanner Script Version. | version |
 | tags | List of keywords used to tag each event. | keyword |
-| tychon.id | TYCHON unique host identifier. | keyword |
+| tychon.arp.destination |  | flattened |
+| tychon.arp.host |  | flattened |
+| tychon.arp.network |  | flattened |
+| tychon.arp.script |  | flattened |
+| tychon.id | TYCHON unique document identifier. | keyword |
+| tychon.timestamp |  | date |
 

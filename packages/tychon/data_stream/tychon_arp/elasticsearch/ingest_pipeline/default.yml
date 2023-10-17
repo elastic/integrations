@@ -1,13 +1,30 @@
 ---
 description: Pipeline for TYCHON ARP Tables
 processors:
+  - rename:
+      tag: rename_message
+      field: message
+      target_field: event.original
+  - json:
+      field: event.original
+      target_field: tychon.arp
+  - dot_expander:
+      tag: expand_dots
+      path: tychon.arp
+      field: '*'
+  - rename:
+      tag: rename_tychon_timestamp
+      field: 'tychon.arp.@timestamp'
+      target_field: 'tychon.timestamp'
+  - rename:
+      tag: rename_tychon_id
+      field: 'tychon.arp.id'
+      target_field: 'tychon.id'
   - date:
       tag: date_timestamp
-      field: '@timestamp'
+      field: 'tychon.timestamp'
       formats:
         - ISO8601
-  - dot_expander:
-      field: '*'
   - set:
       field: ecs.version
       value: 8.10.0
@@ -18,25 +35,25 @@ processors:
       field: event.module
       value: tychon
   - gsub:
-      field: host.mac
+      field: tychon.arp.host.mac
       pattern: ':'
       replacement: '-'
       ignore_missing: true
   - split:
-      field: host.ipv4
+      field: tychon.arp.host.ipv4
       separator: ','
       ignore_missing: true
   - convert:
-      field: host.uptime
+      field: tychon.arp.host.uptime
       type: string
       ignore_missing: true
   - split:
-      field: host.uptime
+      field: tychon.arp.host.uptime
       separator: '\.+'
       target_field: tempuptime
       ignore_failure: true
   - set:
-      field: host.uptime
+      field: tychon.arp.host.uptime
       value: '{{{tempuptime.0}}}'
       ignore_failure: true
   - remove:
@@ -45,7 +62,7 @@ processors:
       ignore_missing: true
   - convert:
       tag: convert_host_uptime
-      field: host.uptime
+      field: tychon.arp.host.uptime
       type: long
       ignore_missing: true
   - set:
@@ -56,7 +73,7 @@ processors:
       value: [info]
   - convert:
       tag: convert_script_current_duration
-      field: script.current_duration
+      field: tychon.script.current_duration
       type: float
       ignore_missing: true
 on_failure:
