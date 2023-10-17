@@ -51,6 +51,7 @@ for integration in $(list_all_directories); do
 
     if ! is_pr_affected ${integration} ; then
         echo "[${integration}] Skipped"
+        buildkite-agent annotate "Package ${integration} skipped" --context "ctx-skipped-packages" --style "info" --append
         popd > /dev/null
         continue
     fi
@@ -61,7 +62,7 @@ for integration in $(list_all_directories); do
         create_kind_cluster
     fi
 
-    check_install_and_test_package ${integration} || buildkite-agent annotate "Package ${integration} failed" --style "error"
+    check_install_and_test_package ${integration} || buildkite-agent annotate "Package ${integration} failed" --context "ctx-failed-packages" --style "error" --append
 
     # TODO: add benchmarks support (https://github.com/elastic/integrations/blob/befdc5cb752a08aaf5f79b0d9bdb68588ade9f27/.ci/Jenkinsfile#L180)
     # ${ELASTIC_PACKAGE_BIN} benchmark pipeline -v --report-format json --report-output file
