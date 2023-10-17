@@ -56,21 +56,27 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
         continue
     fi
 
-    echo "Check integration: ${integration}"
-    ${ELASTIC_PACKAGE_BIN} check -v
-
     use_kind=0
     if kubernetes_service_deployer_used ; then
         use_kind=1
         create_kind_cluster
     fi
 
-    echo "Test integration: ${integration}"
     set +e
-    ${ELASTIC_PACKAGE_BIN} test -v --report-format xUnit --report-output file --test-coverage
+    echo "Check integration: ${integration}"
+    ${ELASTIC_PACKAGE_BIN} check -v
     exit_code=$?
-    echo "[$integration] failed testing (exit code $exit_code)"
-    set -è
+
+    if [ ${exit_code} -eq 0 ]; then
+        echo "Test integration: ${integration}"
+        ${ELASTIC_PACKAGE_BIN} test -v --report-format xUnit --report-output file --test-coverage
+        exit_code=$?
+    fi
+
+    if [ ${exit_code} -ne 0 ]; then
+        echo "[$integration] failed (exit code $exit_code)"
+    fi
+     set -e
 
     # TODO: add benchmarks support (https://github.com/elastic/integrations/blob/befdc5cb752a08aaf5f79b0d9bdb68588ade9f27/.ci/Jenkinsfile#L180)
     # ${ELASTIC_PACKAGE_BIN} benchmark pipeline -v --report-format json --report-output file
