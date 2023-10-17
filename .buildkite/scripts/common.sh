@@ -315,6 +315,8 @@ prepare_serverless_stack() {
     # ${ELASTIC_PACKAGE_BIN} stack up -d ${args} --provider serverless -U stack.serverless.region=${EC_REGION_SECRET} -U stack.serverless.type=${SERVERLESS_PROJECT}
     ${ELASTIC_PACKAGE_BIN} stack up -d ${args}
     echo ""
+    ${ELASTIC_PACKAGE_BIN} stack status
+    echo ""
 }
 
 is_spec_3_0_0() {
