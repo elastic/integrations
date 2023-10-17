@@ -2,6 +2,10 @@
   type: group
   fields:
     - name: remote_ip_list
+      # Change from "array" to "keyword" as in Elasticsearch, there is no dedicated "array" data type.
+      # Any field can contain zero or more values.
+      # See: https://www.elastic.co/guide/en/elasticsearch/reference/current/array.html
+      # Not setting the type to "ip" as "remote_ip_list" might get values like "localhost" which is not type "ip".
       type: keyword
       description: |
         An array of remote IP addresses. It is a list because it is common to include, besides the client IP address, IP addresses from headers like `X-Forwarded-For`. Real source IP is restored to `source.ip`.
