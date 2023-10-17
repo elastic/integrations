@@ -430,7 +430,7 @@ list_all_directories() {
     find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {}
 }
 
-check_and_test_packages() {
+check_install_and_test_packages() {
     local integration=$1
     echo "Check integration: ${integration}"
     ${ELASTIC_PACKAGE_BIN} check -v

@@ -35,8 +35,8 @@ steps:
         allow_failure: false
 
   # to be moved to schedule-daily job
-  - label: "Check integrations"
-    key: "test-integrations-sync"
+  - label: "Check integrations in serverless"
+    key: "trigger-integrations-serverless"
     command: ".buildkite/scripts/run_integrations_sync.sh"
     env:
       SERVERLESS: true
@@ -44,12 +44,12 @@ steps:
       FORCE_CHECK_ALL: true
     agents:
       provider: "gcp"
-    artifact_paths:
-      - build/results/*.xml
     depends_on:
       - step: "publish-packages"
         allow_failure: false
-          #
+    artifact_paths:
+      - build/test-results/*.xml
+
   # to be moved to schedule-daily job
   # - label: "Check integrations"
   #   key: "test-integrations-sync"
@@ -70,6 +70,6 @@ steps:
   - label: ":junit: Junit annotate"
     plugins:
       - junit-annotate#v2.4.1:
-          artifacts: "build/results/*.xml"
+          artifacts: "build/test-results/*.xml"
     agents:
       provider: "gcp"  # junit plugin requires docker
