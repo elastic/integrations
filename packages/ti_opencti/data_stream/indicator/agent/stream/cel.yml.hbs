@@ -1,0 +1,420 @@
+config_version: 2
+resource.url: {{url}}
+{{#if oauth2}}
+auth.oauth2: {{oauth2}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+interval: {{interval}}
+max_executions: {{max_executions}}
+resource.timeout: {{http_client_timeout}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/opencti-indicator/http-request-trace-*.ndjson"
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+fields_under_root: true
+fields:
+  _conf:
+    url: {{url}}
+program: |
+  request("POST", state.url + "/graphql").with({
+    "Header": ({
+      "Content-Type": ["application/json"]
+    }).with(
+      has(state.api_key) && size(state.api_key) > 0 ?
+        { "Authorization": ["Bearer " + state.api_key] } :
+        {}
+    )
+  }).with({
+    "Body": {
+      "query": state.query,
+      "variables": {
+        "after": has(state.cursor) && has(state.cursor.value) ? state.cursor.value : null,
+        "first": state.page_size,
+        "orderBy": "modified",
+        "orderMode": "asc",
+      }
+    }.encode_json()
+  }).do_request().as(resp,
+    bytes(resp.Body).decode_json().as(body, state.with({
+      "events": body.data.indicators.edges.map(e, e.node.with(
+        has(state.preserve_original_event) && state.preserve_original_event ?
+          { "event": { "original": e.node } } :
+          {}
+      )),
+      "want_more": body.data.indicators.pageInfo.hasNextPage,
+      "cursor": { "value": body.data.indicators.pageInfo.endCursor },
+    }))
+  )
+redact:
+  fields:
+    - api_key
+state:
+  api_key: {{api_key}}
+  page_size: {{page_size}}
+  preserve_original_event: {{preserve_original_event}}
+  want_more: false
+  # How to work with this API: https://docs.opencti.io/latest/deployment/integrations/#graphql-api
+  # Relevant schema source: https://github.com/OpenCTI-Platform/opencti/blob/master/opencti-platform/opencti-graphql/config/schema/opencti.graphql
+  query: |
+
+    query IndicatorsLinesPaginationQuery(
+      $search: String
+      $first: Int!
+      $after: ID
+      $filters: [IndicatorsFiltering]
+      $orderBy: IndicatorsOrdering
+      $orderMode: OrderingMode
+    ) {
+      indicators(
+        search: $search
+        first: $first
+        after: $after
+        filters: $filters
+        orderBy: $orderBy
+        orderMode: $orderMode
+      ) {
+        edges {
+          node {
+            ...IndicatorLine_node
+          }
+          cursor
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+          globalCount
+        }
+      }
+    }
+    fragment IndicatorLine_node on Indicator {
+      id
+      standard_id
+      is_inferred
+      revoked
+      confidence
+      lang
+      created
+      modified
+      pattern_type
+      pattern_version
+      pattern
+      name
+      description
+      valid_from
+      valid_until
+      x_opencti_score
+      x_opencti_detection
+      x_opencti_main_observable_type
+      createdBy {
+        identity_class
+        name
+      }
+      objectMarking {
+        edges {
+          node {
+            definition_type
+            definition
+          }
+        }
+      }
+      objectLabel {
+        edges {
+          node {
+            value
+          }
+        }
+      }
+      killChainPhases {
+        edges {
+          node {
+            phase_name
+            kill_chain_name
+          }
+        }
+      }
+      externalReferences(first: 100) {
+        edges {
+          node {
+            external_id
+            source_name
+            url
+            description
+          }
+        }
+      }
+      observables(first: 100) { # StixCyberObservableConnection
+        edges {
+          node {
+            id
+            standard_id
+            entity_type
+            observable_value
+            ... on AutonomousSystem {
+              number # Int!
+              name # String
+              rir # String
+            }
+            ... on Directory {
+              path # String!
+              path_enc # String
+              ctime # DateTime
+              mtime # DateTime
+              atime # DateTime
+            }
+            ... on DomainName {
+              value # String!
+            }
+            ... on EmailAddr {
+              value # String
+              display_name # String
+            }
+            ... on EmailMessage {
+              is_multipart # Boolean
+              attribute_date # DateTime
+              content_type # String
+              message_id # String
+              subject # String
+              received_lines # [String]
+              body # String
+            }
+            ... on EmailMimePartType {
+              body # String
+              content_type # String
+              content_disposition # String
+            }
+            ... on Artifact {
+              hashes { # [Hash]
+                algorithm
+                hash
+              }
+              mime_type # String
+              payload_bin # String
+              url # String
+              encryption_algorithm # String
+              decryption_key # String
+              x_opencti_additional_names # [String]
+            }
+            ... on StixFile {
+              hashes { # [Hash]
+                algorithm
+                hash
+              }
+              size # Int
+              name # String
+              name_enc # String
+              magic_number_hex # String
+              mime_type # String
+              ctime # DateTime
+              mtime # DateTime
+              atime # DateTime
+              x_opencti_additional_names # [String]
+              obsContent { # Artifact
+                payload_bin # String
+                url # String
+                encryption_algorithm # String
+                decryption_key # String
+              }
+            }
+            ... on X509Certificate {
+              hashes { # [Hash]
+                algorithm
+                hash
+              }
+              is_self_signed # Boolean
+              version # String
+              serial_number # String
+              signature_algorithm # String
+              issuer # String
+              subject # String
+              subject_public_key_algorithm # String
+              subject_public_key_modulus # String
+              subject_public_key_exponent # Int
+              validity_not_before # DateTime
+              validity_not_after # DateTime
+              basic_constraints # String
+              name_constraints # String
+              policy_constraints # String
+              key_usage # String
+              extended_key_usage # String
+              subject_key_identifier # String
+              authority_key_identifier # String
+              subject_alternative_name # String
+              issuer_alternative_name # String
+              subject_directory_attributes # String
+              crl_distribution_points # String
+              inhibit_any_policy # String
+              private_key_usage_period_not_before # DateTime
+              private_key_usage_period_not_after # DateTime
+              certificate_policies # String
+              policy_mappings # String
+            }
+            ... on IPv4Addr {
+              value # String
+            }
+            ... on IPv6Addr {
+              value # String
+            }
+            ... on MacAddr {
+              value # String
+            }
+            ... on Mutex {
+              name # String
+            }
+            ... on NetworkTraffic {
+              start # DateTime
+              end # DateTime
+              is_active # Boolean
+              src_port # Int
+              dst_port # Int
+              protocols # [String]
+              src_byte_count # Int
+              dst_byte_count # Int
+              src_packets # Int
+              dst_packets # Int
+            }
+            ... on Process {
+              is_hidden # Boolean
+              pid # Int
+              created_time # DateTime
+              cwd # String
+              x_opencti_description # String
+              command_line # String!
+              environment_variables # [String]
+              aslr_enabled # Boolean
+              dep_enabled # Boolean
+              priority # String
+              owner_sid # String
+              window_title # String
+              startup_info { # [Dictionary]
+                key
+                value
+              }
+              integrity_level # String
+              service_name # String
+              descriptions # [String]
+              display_name # String
+              group_name # String
+              start_type # String
+              service_type # String
+              service_status # String
+              serviceDlls { # StixFileConnection
+                edges {
+                  node {
+                    hashes { # [Hash]
+                      algorithm
+                      hash
+                    }
+                    size # Int
+                    name # String
+                    name_enc # String
+                    magic_number_hex # String
+                    mime_type # String
+                    ctime # DateTime
+                    mtime # DateTime
+                    atime # DateTime
+                    x_opencti_additional_names # [String]
+                    obsContent { # Artifact
+                      payload_bin # String
+                      url # String
+                      encryption_algorithm # String
+                      decryption_key # String
+                    }
+                  }
+                }
+              }
+            }
+            ... on Software {
+              name # String
+              cpe # String
+              swid # String
+              languages # [String]
+              vendor # String
+              version # String
+            }
+            ... on Url {
+              value # String
+            }
+            ... on UserAccount {
+              user_id # String
+              credential # String
+              account_login # String
+              account_type # String
+              display_name # String
+              is_service_account # Boolean
+              is_privileged # Boolean
+              can_escalate_privs # Boolean
+              is_disabled # Boolean
+              account_created # DateTime
+              account_expires # DateTime
+              credential_last_changed # DateTime
+              account_first_login # DateTime
+              account_last_login # DateTime
+            }
+            ... on WindowsRegistryKey {
+              attribute_key # String
+              modified_time # DateTime
+              number_of_subkeys # Int
+            }
+            ... on WindowsRegistryValueType {
+              name # String
+              data # String
+              data_type # String
+            }
+            ... on CryptographicKey {
+              value # String
+            }
+            ... on CryptocurrencyWallet {
+              value # String
+            }
+            ... on Hostname {
+              value # String
+            }
+            ... on Text {
+              value # String
+            }
+            ... on UserAgent {
+              value # String
+            }
+            ... on BankAccount {
+              iban # String
+              bic # String
+              account_number # String
+            }
+            ... on PhoneNumber {
+              value # String
+            }
+            ... on PaymentCard {
+              card_number # String!
+              expiration_date # DateTime
+              cvv # Int
+              holder_name # String
+            }
+            ... on MediaContent {
+              title # String
+              content # String
+              media_category # String
+              url # String!
+              publication_date # DateTime
+            }
+          }
+        }
+        pageInfo {
+          globalCount
+        }
+      }
+    }
