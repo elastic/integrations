@@ -159,11 +159,11 @@
               description: |
                 If the device is managed
         - name: applied_conditional_access_policies
-          type: array
+          type: flattened
           description: |
             A list of conditional access policies that are triggered by the corresponding sign-in activity.
         - name: authentication_details
-          type: array
+          type: flattened
           description: |
             The result of the authentication attempt and additional details on the authentication method.
         - name: authentication_processing_details
@@ -183,7 +183,7 @@
         - name: home_tenant_id
           type: keyword
         - name: network_location_details
-          type: array
+          type: flattened
           description: The network location details including the type of network used and its names.
         - name: resource_id
           type: keyword
@@ -226,3 +226,25 @@
         - name: service_principal_credential_key_id
           type: keyword
           description: Key id of the service principal that initiated the sign-in.
+# the following `geo` mappings are not allowed at root level in ECS, and are defined here for backward compatibility.
+- name: geo
+  type: group
+  description: 'Geo fields can carry data about a specific location related to an event.
+
+    This geolocation information can be derived from techniques such as Geo IP, or be user-supplied.'
+  fields:
+    - name: continent_name
+      type: keyword
+      description: Name of the continent.
+    - name: country_iso_code
+      type: keyword
+      description: Country ISO code.
+    - name: country_name
+      type: keyword
+      description: Country name.
+    - name: location
+      type: geo_point
+      description: Longitude and latitude.
+    - name: city_name
+      type: keyword
+      description: City name.

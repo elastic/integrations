@@ -1,0 +1,25 @@
+---
+description: Build ECS fields from an OpenCTI domain name or hostname observable
+processors:
+
+  - rename:
+      field: _ingest._value
+      target_field: _tmp_url.domain
+
+  - registered_domain:
+      field: _tmp_url.domain
+      target_field: _tmp_url
+      ignore_missing: true
+
+  # append object
+  - append:
+      field: threat.indicator.url
+      value: []
+  - script:
+      description: Append to the destination
+      lang: painless
+      source: |
+        ctx.threat.indicator.url.add(ctx._tmp_url);
+
+  - remove:
+      field: _tmp_url

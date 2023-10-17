@@ -1,50 +1,50 @@
 {
     "attributes": {
         "description": "Syslog dashboard from the Logs System integration",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
-                "highlightAll": true,
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "system.syslog"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "system.syslog"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
-                },
-                "version": true
+                }
             }
         },
         "optionsJSON": {
-            "darkTheme": false
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
         },
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "columns": [
-                        "host.hostname",
-                        "process.name",
-                        "message"
-                    ],
                     "enhancements": {},
-                    "sort": [
-                        "@timestamp",
-                        "desc"
-                    ]
-                },
-                "gridData": {
-                    "h": 28,
-                    "i": "3",
-                    "w": 48,
-                    "x": 0,
-                    "y": 20
-                },
-                "panelIndex": "3",
-                "panelRefName": "panel_3",
-                "type": "search",
-                "version": "8.1.0"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
+                    "hidePanelTitles": false,
                     "savedVis": {
                         "data": {
                             "aggs": [],
@@ -53,13 +53,13 @@
                         "description": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "[Syslog](#/dashboard/system-Logs-syslog-dashboard) | [Sudo commands](#/dashboard/system-277876d0-fa2c-11e6-bbd3-29c986c96e5a) | [SSH logins](#/dashboard/system-5517a150-f9ce-11e6-8115-a7c18106d86a) | [New users and groups](#/dashboard/system-0d3f2380-fa78-11e6-ae9b-81e5311e8cab)"
+                            "markdown": "[Syslog](#/dashboard/system-Logs-syslog-dashboard) | [Sudo commands](#/dashboard/system-277876d0-fa2c-11e6-bbd3-29c986c96e5a) | [SSH logins](#/dashboard/system-5517a150-f9ce-11e6-8115-a7c18106d86a) | [New users and groups](#/dashboard/system-0d3f2380-fa78-11e6-ae9b-81e5311e8cab)",
+                            "openLinksInNewTab": false
                         },
                         "title": "Dashboards [Logs System]",
                         "type": "markdown",
                         "uiState": {}
-                    },
-                    "type": "visualization"
+                    }
                 },
                 "gridData": {
                     "h": 4,
@@ -69,162 +69,206 @@
                     "y": 0
                 },
                 "panelIndex": "4",
+                "title": "Dashboards",
                 "type": "visualization",
-                "version": "8.6.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {},
-                                    "schema": "metric",
-                                    "type": "count"
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-8f45c87e-f4ca-4c71-96ab-026ed8a35c8c",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "f7f6545d-5fd2-4a91-a85d-2f8658db9051",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "8f45c87e-f4ca-4c71-96ab-026ed8a35c8c": {
+                                            "columnOrder": [
+                                                "c504c7d3-9faa-44bc-94bb-998c6772f966",
+                                                "568fce8c-ccac-4c94-9710-562f57e72425",
+                                                "2c84cbc1-b091-4dc6-a3cf-cee67993e4d7"
+                                            ],
+                                            "columns": {
+                                                "2c84cbc1-b091-4dc6-a3cf-cee67993e4d7": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "568fce8c-ccac-4c94-9710-562f57e72425": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "host.hostname: Descending",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "2c84cbc1-b091-4dc6-a3cf-cee67993e4d7",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "host.hostname"
+                                                },
+                                                "c504c7d3-9faa-44bc-94bb-998c6772f966": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {}
+                                        }
+                                    }
                                 },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
                                 {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "drop_partials": false,
-                                        "extended_bounds": {},
-                                        "field": "@timestamp",
-                                        "interval": "auto",
-                                        "min_doc_count": 1,
-                                        "scaleMetricValues": false,
-                                        "timeRange": {
-                                            "from": "now-15m",
-                                            "to": "now"
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "f7f6545d-5fd2-4a91-a85d-2f8658db9051",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "system.syslog"
                                         },
-                                        "useNormalizedEsInterval": true,
-                                        "used_interval": "30s"
+                                        "type": "phrase"
                                     },
-                                    "schema": "segment",
-                                    "type": "date_histogram"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "3",
-                                    "params": {
-                                        "field": "host.hostname",
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 5
-                                    },
-                                    "schema": "group",
-                                    "type": "terms"
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "system.syslog"
+                                        }
+                                    }
                                 }
                             ],
-                            "searchSource": {
-                                "filter": []
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": -90
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "2c84cbc1-b091-4dc6-a3cf-cee67993e4d7"
+                                        ],
+                                        "isHistogram": true,
+                                        "layerId": "8f45c87e-f4ca-4c71-96ab-026ed8a35c8c",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "bar_stacked",
+                                        "simpleView": false,
+                                        "splitAccessor": "568fce8c-ccac-4c94-9710-562f57e72425",
+                                        "xAccessor": "c504c7d3-9faa-44bc-94bb-998c6772f966",
+                                        "xScaleType": "time",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "2c84cbc1-b091-4dc6-a3cf-cee67993e4d7"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": false,
+                                "yLeftExtent": {
+                                    "enforce": true,
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightScale": "linear",
+                                "yTitle": ""
                             }
                         },
-                        "description": "",
-                        "params": {
-                            "addLegend": true,
-                            "addTimeMarker": false,
-                            "addTooltip": true,
-                            "categoryAxes": [
-                                {
-                                    "id": "CategoryAxis-1",
-                                    "labels": {
-                                        "filter": true,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "position": "bottom",
-                                    "scale": {
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {},
-                                    "type": "category"
-                                }
-                            ],
-                            "defaultYExtents": false,
-                            "detailedTooltip": true,
-                            "grid": {
-                                "categoryLines": false
-                            },
-                            "labels": {
-                                "show": false
-                            },
-                            "legendPosition": "right",
-                            "legendSize": "auto",
-                            "maxLegendLines": 1,
-                            "mode": "stacked",
-                            "palette": {
-                                "name": "default",
-                                "type": "palette"
-                            },
-                            "radiusRatio": 0,
-                            "scale": "linear",
-                            "seriesParams": [
-                                {
-                                    "circlesRadius": 1,
-                                    "data": {
-                                        "id": "1",
-                                        "label": "Count"
-                                    },
-                                    "drawLinesBetweenPoints": true,
-                                    "interpolate": "linear",
-                                    "lineWidth": 2,
-                                    "mode": "stacked",
-                                    "show": true,
-                                    "showCircles": true,
-                                    "type": "histogram",
-                                    "valueAxis": "ValueAxis-1"
-                                }
-                            ],
-                            "setYExtents": false,
-                            "shareYAxis": true,
-                            "thresholdLine": {
-                                "color": "#E7664C",
-                                "show": false,
-                                "style": "full",
-                                "value": 10,
-                                "width": 1
-                            },
-                            "times": [],
-                            "truncateLegend": true,
-                            "type": "histogram",
-                            "valueAxes": [
-                                {
-                                    "id": "ValueAxis-1",
-                                    "labels": {
-                                        "filter": true,
-                                        "rotate": 0,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "name": "LeftAxis-1",
-                                    "position": "left",
-                                    "scale": {
-                                        "mode": "normal",
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {
-                                        "text": ""
-                                    },
-                                    "type": "value"
-                                }
-                            ],
-                            "yAxis": {}
-                        },
-                        "type": "histogram",
-                        "uiState": {}
+                        "title": "Syslog events by hostname [Logs System] (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
                     },
-                    "type": "visualization"
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 16,
@@ -234,92 +278,183 @@
                     "y": 4
                 },
                 "panelIndex": "1c0a80d4-cd4d-488a-a06d-e9b816e733a8",
-                "title": "Syslog events by hostname [Logs System]",
-                "type": "visualization",
-                "version": "8.6.0"
+                "title": "Syslog events by hostname",
+                "type": "lens",
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {},
-                                    "schema": "metric",
-                                    "type": "count"
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-ba63915a-72df-4880-bac5-f067139f3142",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "7aabb672-f3fa-4670-bd1b-e37cb30db8ca",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "ba63915a-72df-4880-bac5-f067139f3142": {
+                                            "columnOrder": [
+                                                "1781dbc0-d6d4-4a38-9dc8-759bcbff16c0",
+                                                "ac43a8d9-5d72-4544-8148-5b11de0457df",
+                                                "83185f2b-dcfb-49a1-b04d-e9db44c75e22"
+                                            ],
+                                            "columns": {
+                                                "1781dbc0-d6d4-4a38-9dc8-759bcbff16c0": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "host.hostname: Descending",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "83185f2b-dcfb-49a1-b04d-e9db44c75e22",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "host.hostname"
+                                                },
+                                                "83185f2b-dcfb-49a1-b04d-e9db44c75e22": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "ac43a8d9-5d72-4544-8148-5b11de0457df": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "process.name: Descending",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "83185f2b-dcfb-49a1-b04d-e9db44c75e22",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "process.name"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {}
+                                        }
+                                    }
                                 },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "field": "host.hostname",
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 5
-                                    },
-                                    "schema": "segment",
-                                    "type": "terms"
+                                "indexpattern": {
+                                    "layers": {}
                                 },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
                                 {
-                                    "enabled": true,
-                                    "id": "3",
-                                    "params": {
-                                        "field": "process.name",
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 5
+                                    "$state": {
+                                        "store": "appState"
                                     },
-                                    "schema": "segment",
-                                    "type": "terms"
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "7aabb672-f3fa-4670-bd1b-e37cb30db8ca",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "system.syslog"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "system.syslog"
+                                        }
+                                    }
                                 }
                             ],
-                            "searchSource": {
-                                "filter": []
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "emptySizeRatio": 0.3,
+                                        "layerId": "ba63915a-72df-4880-bac5-f067139f3142",
+                                        "layerType": "data",
+                                        "legendDisplay": "hide",
+                                        "legendMaxLines": 1,
+                                        "legendPosition": "bottom",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "83185f2b-dcfb-49a1-b04d-e9db44c75e22"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "percentDecimals": 2,
+                                        "primaryGroups": [
+                                            "1781dbc0-d6d4-4a38-9dc8-759bcbff16c0",
+                                            "ac43a8d9-5d72-4544-8148-5b11de0457df"
+                                        ],
+                                        "secondaryGroups": [],
+                                        "showValuesInLegend": true,
+                                        "truncateLegend": true
+                                    }
+                                ],
+                                "palette": {
+                                    "name": "default",
+                                    "type": "palette"
+                                },
+                                "shape": "treemap"
                             }
                         },
-                        "description": "",
-                        "params": {
-                            "addLegend": true,
-                            "addTooltip": true,
-                            "distinctColors": true,
-                            "emptySizeRatio": 0.3,
-                            "isDonut": true,
-                            "labels": {
-                                "last_level": false,
-                                "percentDecimals": 2,
-                                "position": "default",
-                                "show": true,
-                                "truncate": 100,
-                                "values": true,
-                                "valuesFormat": "percent"
-                            },
-                            "legendPosition": "bottom",
-                            "legendSize": "auto",
-                            "maxLegendLines": 1,
-                            "nestedLegend": false,
-                            "palette": {
-                                "name": "kibana_palette",
-                                "type": "palette"
-                            },
-                            "shareYAxis": true,
-                            "truncateLegend": true,
-                            "type": "pie"
-                        },
-                        "type": "pie",
-                        "uiState": {}
+                        "title": "Syslog hostnames and processes [Logs System] (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
                     },
-                    "type": "visualization"
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 16,
@@ -329,42 +464,100 @@
                     "y": 4
                 },
                 "panelIndex": "30ce1a8d-6460-45b6-be1a-841db5ca7c8b",
-                "title": "Syslog hostnames and processes [Logs System]",
-                "type": "visualization",
-                "version": "8.6.0"
+                "title": "Syslog hostnames and processes",
+                "type": "lens",
+                "version": "8.10.2"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "columns": [
+                            "host.hostname",
+                            "process.name",
+                            "message"
+                        ],
+                        "kibanaSavedObjectMeta": {
+                            "searchSourceJSON": "{\"filter\":[],\"highlight\":{\"fields\":{\"*\":{}},\"fragment_size\":2147483647,\"post_tags\":[\"@/kibana-highlighted-field@\"],\"pre_tags\":[\"@kibana-highlighted-field@\"],\"require_field_match\":false},\"highlightAll\":true,\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\",\"query\":{\"language\":\"kuery\",\"query\":\"data_stream.dataset:system.syslog\"}}"
+                        },
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "sort": [
+                            [
+                                "@timestamp",
+                                "desc"
+                            ]
+                        ]
+                    },
+                    "columns": [
+                        "host.hostname",
+                        "process.name",
+                        "message"
+                    ],
+                    "enhancements": {},
+                    "hidePanelTitles": false,
+                    "sort": [
+                        "@timestamp",
+                        "desc"
+                    ]
+                },
+                "gridData": {
+                    "h": 28,
+                    "i": "f08ec141-4b46-4e87-9b1c-3bb1bb502d3e",
+                    "w": 48,
+                    "x": 0,
+                    "y": 20
+                },
+                "panelIndex": "f08ec141-4b46-4e87-9b1c-3bb1bb502d3e",
+                "title": "Syslog logs",
+                "type": "search",
+                "version": "8.10.2"
             }
         ],
         "timeRestore": false,
         "title": "[Logs System] Syslog dashboard",
         "version": 1
     },
-    "coreMigrationVersion": "8.6.1",
-    "created_at": "2023-03-23T04:03:56.987Z",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-09T18:39:32.591Z",
     "id": "system-Logs-syslog-dashboard",
-    "migrationVersion": {
-        "dashboard": "8.6.0"
-    },
+    "managed": false,
     "references": [
         {
-            "id": "system-Syslog-system-logs",
-            "name": "3:panel_3",
-            "type": "search"
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         },
         {
-            "id": "system-Syslog-system-logs",
-            "name": "1c0a80d4-cd4d-488a-a06d-e9b816e733a8:search_0",
-            "type": "search"
+            "id": "logs-*",
+            "name": "1c0a80d4-cd4d-488a-a06d-e9b816e733a8:indexpattern-datasource-layer-8f45c87e-f4ca-4c71-96ab-026ed8a35c8c",
+            "type": "index-pattern"
         },
         {
-            "id": "system-Syslog-system-logs",
-            "name": "30ce1a8d-6460-45b6-be1a-841db5ca7c8b:search_0",
-            "type": "search"
+            "id": "logs-*",
+            "name": "1c0a80d4-cd4d-488a-a06d-e9b816e733a8:f7f6545d-5fd2-4a91-a85d-2f8658db9051",
+            "type": "index-pattern"
         },
         {
-            "id": "system-fleet-pkg-system-default",
-            "name": "tag-ref-fleet-pkg-system-default",
-            "type": "tag"
+            "id": "logs-*",
+            "name": "30ce1a8d-6460-45b6-be1a-841db5ca7c8b:indexpattern-datasource-layer-ba63915a-72df-4880-bac5-f067139f3142",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "30ce1a8d-6460-45b6-be1a-841db5ca7c8b:7aabb672-f3fa-4670-bd1b-e37cb30db8ca",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "f08ec141-4b46-4e87-9b1c-3bb1bb502d3e:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }
