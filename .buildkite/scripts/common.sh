@@ -425,3 +425,22 @@ teardown_test_package() {
     echo "Take down the Elastic stack"
     ${ELASTIC_PACKAGE_BIN} stack down -v
 }
+
+list_all_directories() {
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {}
+}
+
+check_and_test_packages() {
+    local integration=$1
+    echo "Check integration: ${integration}"
+    ${ELASTIC_PACKAGE_BIN} check -v
+
+    echo "Install integration: ${integration}"
+    ${ELASTIC_PACKAGE_BIN} install -v
+
+    echo "Test integration: ${integration}"
+    TEST_OPTIONS="-v --report-format xUnit --report-output file --test-coverage"
+    ${ELASTIC_PACKAGE_BIN} test asset ${TEST_OPTIONS}
+    ${ELASTIC_PACKAGE_BIN} test static ${TEST_OPTIONS}
+    ${ELASTIC_PACKAGE_BIN} test pipeline ${TEST_OPTIONS}
+}

@@ -18,7 +18,6 @@ if [ ! -d packages ]; then
     exit 1
 fi
 
-
 add_bin_path
 
 with_yq
@@ -35,8 +34,8 @@ num_packages=0  # TODO: to be removed
 maximum_packages=25
 
 pushd packages > /dev/null
-for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
-    integration=$(basename ${it})
+
+for integration in $(list_all_directories); do
     echo "--- Package ${integration}: check"
 
     pushd ${integration} > /dev/null
@@ -62,21 +61,7 @@ for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
         create_kind_cluster
     fi
 
-    set +e
-    echo "Check integration: ${integration}"
-    ${ELASTIC_PACKAGE_BIN} check -v
-    exit_code=$?
-
-    if [ ${exit_code} -eq 0 ]; then
-        echo "Test integration: ${integration}"
-        ${ELASTIC_PACKAGE_BIN} test -v --report-format xUnit --report-output file --test-coverage
-        exit_code=$?
-    fi
-
-    if [ ${exit_code} -ne 0 ]; then
-        echo "[$integration] failed (exit code $exit_code)"
-    fi
-     set -e
+    check_install_and_test_package ${integration} || buildkite-agent annotate "Package ${integration} failed" --style "error"
 
     # TODO: add benchmarks support (https://github.com/elastic/integrations/blob/befdc5cb752a08aaf5f79b0d9bdb68588ade9f27/.ci/Jenkinsfile#L180)
     # ${ELASTIC_PACKAGE_BIN} benchmark pipeline -v --report-format json --report-output file
