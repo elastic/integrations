@@ -390,9 +390,9 @@ processors:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         NOTCOLON: "[^:]*"
-        CISCO_USER_OR_SGT: (%{CISCO_USER}|%{CISCO_SGT})
-        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?%{CISCO_SGT}?))
-        CISCO_SGT: (, *)?%{NUMBER}(:%{WORD})?
+        CISCO_USER_OR_SGT: (?:%{CISCO_USER}|%{CISCO_SGT})
+        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}(?:@%{HOSTNAME})?%{CISCO_SGT}?))
+        CISCO_SGT: (?:, *)?%{NUMBER}(?::%{WORD})?
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106027'"
       field: "message"
@@ -522,9 +522,9 @@ processors:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         NOTCOLON: "[^:]*"
-        CISCO_USER_OR_SGT: (%{CISCO_USER}|%{CISCO_SGT})
-        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?%{CISCO_SGT}?))
-        CISCO_SGT: (, *)?%{NUMBER}(:%{WORD})?
+        CISCO_USER_OR_SGT: (?:%{CISCO_USER}|%{CISCO_SGT})
+        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}(?:@%{HOSTNAME})?%{CISCO_SGT}?))
+        CISCO_SGT: (?:, *)?%{NUMBER}(?::%{WORD})?
 # For messages: 302013, 302015, if outbound is specified in `network.direction`, the original control connection was initiated from the inside.
 # Hence reverse src and dst.
 # https://www.cisco.com/c/en/us/td/docs/security/asa/syslog/b_syslog/syslogs3.html#con_4770603
@@ -538,9 +538,9 @@ processors:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         NOTCOLON: "[^:]*"
-        CISCO_USER_OR_SGT: (%{CISCO_USER}|%{CISCO_SGT})
-        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?%{CISCO_SGT}?))
-        CISCO_SGT: (, *)?%{NUMBER}(:%{WORD})?
+        CISCO_USER_OR_SGT: (?:%{CISCO_USER}|%{CISCO_SGT})
+        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}(?:@%{HOSTNAME})?%{CISCO_SGT}?))
+        CISCO_SGT: (?:, *)?%{NUMBER}(?::%{WORD})?
   - dissect:
       if: "ctx._temp_.cisco.message_id == '303002'"
       field: "message"
@@ -576,9 +576,9 @@ processors:
         ECSSOURCEIPORHOST: "(?:%{IP:source.address}|%{HOSTNAME:source.domain})"
         ECSDESTIPORHOST: "(?:%{IP:destination.address}|%{HOSTNAME:destination.domain})"
         MAPPEDSRC: "(?:%{DATA:_temp_.natsrcip}|%{HOSTNAME})"
-        CISCO_USER_OR_SGT: (%{CISCO_USER}|%{CISCO_SGT})
-        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?%{CISCO_SGT}?))
-        CISCO_SGT: (, *)?%{NUMBER}(:%{WORD})?
+        CISCO_USER_OR_SGT: (?:%{CISCO_USER}|%{CISCO_SGT})
+        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}(?:@%{HOSTNAME})?%{CISCO_SGT}?))
+        CISCO_SGT: (?:, *)?%{NUMBER}(?::%{WORD})?
   - dissect:
       if: "ctx._temp_.cisco.message_id == '302022'"
       field: "message"
@@ -635,9 +635,9 @@ processors:
         NOTCOLON: "[^:]*"
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
-        CISCO_USER_OR_SGT: (%{CISCO_USER}|%{CISCO_SGT})
-        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?%{CISCO_SGT}?))
-        CISCO_SGT: (, *)?%{NUMBER}(:%{WORD})?
+        CISCO_USER_OR_SGT: (?:%{CISCO_USER}|%{CISCO_SGT})
+        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}(?:@%{HOSTNAME})?%{CISCO_SGT}?))
+        CISCO_SGT: (?:, *)?%{NUMBER}(?::%{WORD})?
   - dissect:
       if: "ctx._temp_.cisco.message_id == '313008'"
       field: "message"
@@ -1136,9 +1136,9 @@ processors:
         ECSDESTIPORHOST: "(?:%{IP:destination.address}|%{HOSTNAME:destination.domain})"
         MAPPEDSRC: "(?:%{IPORHOST:_temp_.natsrcip}|%{HOSTNAME})"
         DURATION: "%{INT}:%{MINUTE}:%{SECOND}"
-        CISCO_USER_OR_SGT: (%{CISCO_USER}|%{CISCO_SGT})
-        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?%{CISCO_SGT}?))
-        CISCO_SGT: (, *)?%{NUMBER}(:%{WORD})?
+        CISCO_USER_OR_SGT: (?:%{CISCO_USER}|%{CISCO_SGT})
+        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}(?:@%{HOSTNAME})?%{CISCO_SGT}?))
+        CISCO_SGT: (?:, *)?%{NUMBER}(?::%{WORD})?
       on_failure:
         - append:
             field: error.message
@@ -1728,7 +1728,7 @@ processors:
       patterns:
         - '%{CISCO_SGT}'
       pattern_definitions:
-        CISCO_SGT: (, *)?(%{NUMBER:_temp_.cisco.source_user_security_group_tag})?(:)?%{WORD:_temp_.cisco.source_user_security_group_tag_name}?
+        CISCO_SGT: (, *)?(%{NUMBER:_temp_.cisco.source_user_security_group_tag})?:?%{WORD:_temp_.cisco.source_user_security_group_tag_name}?
       on_failure:
         - append:
             field: error.message
@@ -1767,7 +1767,7 @@ processors:
       patterns:
         - '%{CISCO_SGT}'
       pattern_definitions:
-        CISCO_SGT: (, *)?(%{NUMBER:_temp_.cisco.destination_user_security_group_tag})?(:)?%{WORD:_temp_.cisco.destination_user_security_group_tag_name}?
+        CISCO_SGT: (, *)?(%{NUMBER:_temp_.cisco.destination_user_security_group_tag})?:?%{WORD:_temp_.cisco.destination_user_security_group_tag_name}?
       on_failure:
         - append:
             field: error.message
