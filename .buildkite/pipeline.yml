@@ -46,24 +46,10 @@ steps:
     agents:
       provider: "gcp"
     depends_on:
-      - step: "publish-packages"
+      - step: "check"   # TODO: change to publish-packages if re-added
         allow_failure: false
     artifact_paths:
-      - build/test-results/*.xml
-
-  # to be moved to schedule-daily job
-  # - label: "Check integrations"
-  #   key: "test-integrations-sync"
-  #   command: ".buildkite/scripts/run_integrations_sync.sh"
-  #   env:
-  #     SERVERLESS: true
-  #     SERVERLESS_PROJECT: security
-  #     FORCE_CHECK_ALL: true
-  #   agents:
-  #     provider: "gcp"
-  #   depends_on:
-  #     - step: "publish-packages"
-  #       allow_failure: false
+      - "build/test-results/*.xml"
 
   - wait: ~
     continue_on_failure: true
