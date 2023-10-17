@@ -300,7 +300,7 @@ An example event for `flow` looks as following:
         "packets": 2
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "c70d142e-4a17-4f44-8e4f-ae1b216f2ea2",
@@ -411,7 +411,7 @@ Fields published for AMQP packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | amqp.app-id | Creating application id. | keyword |
-| amqp.arguments | Optional additional arguments passed to some methods. Can be of various types. | object |
+| amqp.arguments | Optional additional arguments passed to some methods. Can be of various types. | flattened |
 | amqp.auto-delete | If set, auto-delete queue when unused. | boolean |
 | amqp.class-id | Failing method class. | long |
 | amqp.consumer-count | The number of consumers of a queue. | long |
@@ -611,7 +611,7 @@ An example event for `amqp` looks as following:
         "port": 5672
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "24617916-b7fd-4486-af56-1754af7b012c",
@@ -980,7 +980,7 @@ An example event for `cassandra` looks as following:
         "port": 9042
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "adef13cd-055b-465e-bc3e-5f12f6a4c481",
@@ -1134,7 +1134,8 @@ Fields published for DHCPv4 packets.
 | dhcpv4.option.subnet_mask | The subnet mask that the client should use on the currnet network. | ip |
 | dhcpv4.option.time_servers | The time server option specifies a list of RFC 868 time servers available to the client. | ip |
 | dhcpv4.option.utc_time_offset_sec | The time offset field specifies the offset of the client's subnet in seconds from Coordinated Universal Time (UTC). | long |
-| dhcpv4.option.vendor_identifying_options | A DHCP client may use this option to unambiguously identify the vendor that manufactured the hardware on which the client is running, the software in use, or an industry consortium to which the vendor belongs. This field is described in RFC 3925. | object |
+| dhcpv4.option.vendor_identifying_options.data | Additional vendor data, encoded in hexadecimal format. | keyword |
+| dhcpv4.option.vendor_identifying_options.id | Device identifier. | keyword |
 | dhcpv4.relay_ip | The relay IP address used by the client to contact the server (i.e. a DHCP relay server). | ip |
 | dhcpv4.seconds | Number of seconds elapsed since client began address acquisition or renewal process. | long |
 | dhcpv4.server_ip | The IP address of the DHCP server that the client should use for the next step in the bootstrap process. | ip |
@@ -1272,7 +1273,7 @@ An example event for `dhcpv4` looks as following:
         "transaction_id": "0x00003d1d"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "9e89fcea-696e-4a75-9119-4c7bc3a85882",
@@ -1409,21 +1410,21 @@ Fields published for DNS packets.
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
-| dns.additionals | An array containing a dictionary for each additional section from the answer. | object |
+| dns.additionals | An array containing a dictionary for each additional section from the answer. | flattened |
 | dns.additionals.class | The class of DNS data contained in this resource record. | keyword |
 | dns.additionals.data | The data describing the resource. The meaning of this data depends on the type and class of the resource record. | keyword |
 | dns.additionals.name | The domain name to which this resource record pertains. | keyword |
 | dns.additionals.ttl | The time interval in seconds that this resource record may be cached before it should be discarded. Zero values mean that the data should not be cached. | long |
 | dns.additionals.type | The type of data contained in this resource record. | keyword |
 | dns.additionals_count | The number of resource records contained in the `dns.additionals` field. The `dns.additionals` field may or may not be included depending on the configuration of Packetbeat. | long |
-| dns.answers | An array containing an object for each answer section returned by the server. The main keys that should be present in these objects are defined by ECS. Records that have more information may contain more keys than what ECS defines. Not all DNS data sources give all details about DNS answers. At minimum, answer objects must contain the `data` key. If more information is available, map as much of it to ECS as possible, and add any additional fields to the answer objects as custom fields. | object |
+| dns.answers | An array containing an object for each answer section returned by the server. The main keys that should be present in these objects are defined by ECS. Records that have more information may contain more keys than what ECS defines. Not all DNS data sources give all details about DNS answers. At minimum, answer objects must contain the `data` key. If more information is available, map as much of it to ECS as possible, and add any additional fields to the answer objects as custom fields. | group |
 | dns.answers.class | The class of DNS data contained in this resource record. | keyword |
 | dns.answers.data | The data describing the resource. The meaning of this data depends on the type and class of the resource record. | keyword |
 | dns.answers.name | The domain name to which this resource record pertains. If a chain of CNAME is being resolved, each answer's `name` should be the one that corresponds with the answer's `data`. It should not simply be the original `question.name` repeated. | keyword |
 | dns.answers.ttl | The time interval in seconds that this resource record may be cached before it should be discarded. Zero values mean that the data should not be cached. | long |
 | dns.answers.type | The type of data contained in this resource record. | keyword |
 | dns.answers_count | The number of resource records contained in the `dns.answers` field. | long |
-| dns.authorities | An array containing a dictionary for each authority section from the answer. | object |
+| dns.authorities | An array containing a dictionary for each authority section from the answer. | flattened |
 | dns.authorities.class | The class of DNS data contained in this resource record. | keyword |
 | dns.authorities.name | The domain name to which this resource record pertains. | keyword |
 | dns.authorities.type | The type of data contained in this resource record. | keyword |
@@ -1624,7 +1625,7 @@ An example event for `dns` looks as following:
         "type": "answer"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
@@ -2025,7 +2026,7 @@ An example event for `http` looks as following:
         "port": 8080
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "20cb5c83-48bd-4c1e-ab57-1a86b91daedc",
@@ -2313,7 +2314,7 @@ An example event for `icmp` looks as following:
         "ip": "10.0.0.2"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "138c995b-c63c-44be-aba8-a8cb9a58872d",
@@ -2644,7 +2645,7 @@ An example event for `memcached` looks as following:
         "port": 11211
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "f617d9af-c859-41da-b89c-a10379936378",
@@ -2938,7 +2939,7 @@ An example event for `mongodb` looks as following:
         "port": 27017
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -3214,7 +3215,7 @@ An example event for `mysql` looks as following:
         "port": 3306
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -3483,7 +3484,7 @@ An example event for `nfs` looks as following:
         "port": 2049
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -3766,7 +3767,7 @@ An example event for `pgsql` looks as following:
         "port": 5432
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -4026,7 +4027,7 @@ An example event for `redis` looks as following:
         "port": 6380
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -4366,7 +4367,7 @@ An example event for `sip` looks as following:
         "port": 5060
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -4781,7 +4782,7 @@ An example event for `thrift` looks as following:
         "port": 9090
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -5257,7 +5258,7 @@ An example event for `tls` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "8a4932f4-ce31-4183-b0c7-a7008f14e6fa",
