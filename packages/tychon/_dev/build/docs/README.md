@@ -11,6 +11,7 @@
 * This integration supports Elastic 8.8+.
 
 ## Returned Data Fields
+
 ### ARP Table Information
 
 TYCHON scans Endpoint ARP Tables and returns the results.

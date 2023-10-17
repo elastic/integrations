@@ -1,17 +1,16 @@
 ---
 description: Pipeline for TYCHON ARP Tables
 processors:
+  - date:
+      tag: date_timestamp
+      field: '@timestamp'
+      formats:
+        - ISO8601
   - dot_expander:
-      field: "*"
-  - set:
-      field: "@timestamp"
-      value: "{{_ingest.timestamp}}"
-  - set:
-      field: event.ingested
-      value: "{{_ingest.timestamp}}"
+      field: '*'
   - set:
       field: ecs.version
-      value: 8.8.0
+      value: 8.10.0
   - set:
       field: event.kind
       value: state
@@ -20,12 +19,12 @@ processors:
       value: tychon
   - gsub:
       field: host.mac
-      pattern: ":"
-      replacement: "-"
+      pattern: ':'
+      replacement: '-'
       ignore_missing: true
   - split:
       field: host.ipv4
-      separator: ","
+      separator: ','
       ignore_missing: true
   - convert:
       field: host.uptime
@@ -33,18 +32,19 @@ processors:
       ignore_missing: true
   - split:
       field: host.uptime
-      separator: "\\.+"
+      separator: '\.+'
       target_field: tempuptime
       ignore_failure: true
   - set:
       field: host.uptime
-      value: "{{tempuptime.0}}"
+      value: '{{{tempuptime.0}}}'
       ignore_failure: true
   - remove:
       field: tempuptime
       ignore_failure: true
       ignore_missing: true
   - convert:
+      tag: convert_host_uptime
       field: host.uptime
       type: long
       ignore_missing: true
@@ -55,6 +55,7 @@ processors:
       field: event.type
       value: [info]
   - convert:
+      tag: convert_script_current_duration
       field: script.current_duration
       type: float
       ignore_missing: true
@@ -64,4 +65,4 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
