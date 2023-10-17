@@ -30,8 +30,8 @@ use_elastic_package
 prepare_serverless_stack
 
 packages_visited=0
-num_packages=0  # TODO: to be removed
-maximum_packages=25
+# num_packages=0  # TODO: to be removed
+# maximum_packages=25
 
 pushd packages > /dev/null
 
@@ -75,10 +75,10 @@ for integration in $(list_all_directories); do
     popd > /dev/null
 
     # TODO: debug to be removed
-    num_packages=$((num_packages+1))
-    if [ $num_packages -eq ${maximum_packages} ]; then
-        break
-    fi
+    # num_packages=$((num_packages+1))
+    # if [ $num_packages -eq ${maximum_packages} ]; then
+    #     break
+    # fi
 done
 popd > /dev/null
 
