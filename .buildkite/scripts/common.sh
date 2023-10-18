@@ -480,6 +480,8 @@ create_collapsed_annotation() {
 
     local annotation_file="tmp.annotation.md"
     echo "<details><summary>${title}</summary>" >> ${annotation_file}
+    echo "" >> ${annotation_file}
+    echo "" >> ${annotation_file}
     cat ${file} >> ${annotation_file}
     echo "</details>" >> ${annotation_file}
 
