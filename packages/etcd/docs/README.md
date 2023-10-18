@@ -180,11 +180,11 @@ An example event for `metrics` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | etcd.api_version | Etcd API version for metrics retrieval | keyword |
-| etcd.disk.backend_commit_duration.ns.bucket.\* | Latency for writing backend changes to disk | object |
+| etcd.disk.backend_commit_duration.ns.bucket.\* | Latency for writing backend changes to disk | long |
 | etcd.disk.backend_commit_duration.ns.count | Backend commits count | long |
 | etcd.disk.backend_commit_duration.ns.sum | Backend commits latency sum | long |
 | etcd.disk.mvcc_db_total_size.bytes | Size of stored data at MVCC | long |
-| etcd.disk.wal_fsync_duration.ns.bucket.\* | Latency for writing ahead logs to disk | object |
+| etcd.disk.wal_fsync_duration.ns.bucket.\* | Latency for writing ahead logs to disk | long |
 | etcd.disk.wal_fsync_duration.ns.count | Write ahead logs count | long |
 | etcd.disk.wal_fsync_duration.ns.sum | Write ahead logs latency sum | long |
 | etcd.memory.go_memstats_alloc.bytes | Memory allocated bytes as of MemStats Go | long |
