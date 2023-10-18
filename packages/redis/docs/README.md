@@ -468,9 +468,9 @@ An example event for `info` looks as following:
 | redis.info.stats.sync.full | The number of full resyncs with slaves | long | gauge |
 | redis.info.stats.sync.partial.err | The number of denied partial resync requests | long | gauge |
 | redis.info.stats.sync.partial.ok | The number of accepted partial resync requests | long | gauge |
-| service.address | Client address | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
-| service.version | Version of the service the data was collected from | keyword |  |
+| service.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |  |
 
 
 ### key
