@@ -30,21 +30,27 @@ request.transforms:
 {{/if}}
   - set:
       target: url.params.start
-      value: "[[.cursor.last_execution_datetime]]"
+      value: '[[formatDate (parseTimestamp (max (toInt .cursor.last_execution_datetime) ((now).Add (parseDuration "-168h")).Unix ))]]'
       default: '[[formatDate (((now).Add (parseDuration "-1m")).Add (parseDuration "-{{interval}}"))]]'
   - set:
       target: url.params.end
-      value: '[[formatDate ((parseDate .cursor.last_execution_datetime).Add (parseDuration "{{interval}}"))]]'
+      value: '[[formatDate (parseTimestamp (min ((parseTimestamp (max (toInt .cursor.last_execution_datetime) ((now).Add (parseDuration "-168h")).Unix)).Add (parseDuration "1h")).Unix ((now).Add (parseDuration "-1m")).Unix))]]'
       default: '[[formatDate ((now).Add (parseDuration "-1m"))]]'
+{{#if enable_bot_fields}}
+  - set:
+      target: url.params.fields
+      value: BotScore,BotScoreSrc,CacheCacheStatus,CacheResponseBytes,CacheResponseStatus,CacheTieredFill,ClientASN,ClientCountry,ClientDeviceType,ClientIP,ClientIPClass,ClientRequestBytes,ClientRequestHost,ClientRequestMethod,ClientRequestPath,ClientRequestProtocol,ClientRequestReferer,ClientRequestURI,ClientRequestUserAgent,ClientSSLCipher,ClientSSLProtocol,ClientSrcPort,ClientXRequestedWith,EdgeColoCode,EdgeColoID,EdgeEndTimestamp,EdgePathingOp,EdgePathingSrc,EdgePathingStatus,EdgeRateLimitAction,EdgeRateLimitID,EdgeRequestHost,EdgeResponseBytes,EdgeResponseCompressionRatio,EdgeResponseContentType,EdgeResponseStatus,EdgeServerIP,EdgeStartTimestamp,FirewallMatchesActions,FirewallMatchesRuleIDs,FirewallMatchesSources,OriginIP,OriginResponseBytes,OriginResponseHTTPExpires,OriginResponseHTTPLastModified,OriginResponseStatus,OriginResponseTime,OriginSSLProtocol,ParentRayID,RayID,SecurityLevel,WAFAction,WAFFlags,WAFMatchedVar,WAFProfile,WAFRuleID,WAFRuleMessage,WorkerCPUTime,WorkerStatus,WorkerSubrequest,WorkerSubrequestCount,ZoneID,Action
+{{else}}
   - set:
       target: url.params.fields
       value: CacheCacheStatus,CacheResponseBytes,CacheResponseStatus,CacheTieredFill,ClientASN,ClientCountry,ClientDeviceType,ClientIP,ClientIPClass,ClientRequestBytes,ClientRequestHost,ClientRequestMethod,ClientRequestPath,ClientRequestProtocol,ClientRequestReferer,ClientRequestURI,ClientRequestUserAgent,ClientSSLCipher,ClientSSLProtocol,ClientSrcPort,ClientXRequestedWith,EdgeColoCode,EdgeColoID,EdgeEndTimestamp,EdgePathingOp,EdgePathingSrc,EdgePathingStatus,EdgeRateLimitAction,EdgeRateLimitID,EdgeRequestHost,EdgeResponseBytes,EdgeResponseCompressionRatio,EdgeResponseContentType,EdgeResponseStatus,EdgeServerIP,EdgeStartTimestamp,FirewallMatchesActions,FirewallMatchesRuleIDs,FirewallMatchesSources,OriginIP,OriginResponseBytes,OriginResponseHTTPExpires,OriginResponseHTTPLastModified,OriginResponseStatus,OriginResponseTime,OriginSSLProtocol,ParentRayID,RayID,SecurityLevel,WAFAction,WAFFlags,WAFMatchedVar,WAFProfile,WAFRuleID,WAFRuleMessage,WorkerCPUTime,WorkerStatus,WorkerSubrequest,WorkerSubrequestCount,ZoneID,Action
-      
+{{/if}}
+
 response.decode_as: application/x-ndjson
 
 cursor:
   last_execution_datetime:
-    value: '[[.last_response.url.params.Get "end"]]'
+    value: '[[(parseDate (.last_response.url.params.Get "end")).Unix]]'
 
 {{#if tags.length}}
 tags:
