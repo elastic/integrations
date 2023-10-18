@@ -394,11 +394,15 @@ processors:
     target_field: user.id
     ignore_missing: true
     ignore_failure: true
-- rename:
-    field: json.USER_TYPE
-    target_field: user.roles
-    ignore_missing: true
+- set:
+    value: ["{{{json.USER_TYPE}}}"]
+    field: user.roles
     ignore_failure: true
+    ignore_empty_value: true
+- remove:
+    field: json.USER_TYPE
+    ignore_failure: true
+    ignore_missing: true
 # A Salesforce internal IP (such as a login from Salesforce Workbench or AppExchange) is shown as “Salesforce.com IP”
 - rename:
     field: json.CLIENT_IP
