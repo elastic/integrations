@@ -297,6 +297,12 @@ oldest_supported_version() {
     echo "null"
 }
 
+create_elastic_package_profile() {
+    local name="$1"
+    ${ELASTIC_PACKAGE_BIN} profiles create "${name}"
+    ${ELASTIC_PACKAGE_BIN} profiles use "${name}"
+}
+
 prepare_serverless_stack() {
     echo "--- Prepare serverless stack"
 
@@ -307,12 +313,14 @@ prepare_serverless_stack() {
     # else
     fi
 
+    create_elastic_package_profile "integrations-${BUILDKITE_PULL_REQUEST}-${BUILDKITE_BUILD_NUMBER}"
+
     export EC_API_KEY=${EC_API_KEY_SECRET}
     export EC_HOST=${EC_HOST_SECRET}
 
     echo "Boot up the Elastic stack"
-    # ${ELASTIC_PACKAGE_BIN} stack up -d ${args} --provider serverless -U stack.serverless.region=${EC_REGION_SECRET} -U stack.serverless.type=${SERVERLESS_PROJECT}
-    ${ELASTIC_PACKAGE_BIN} stack up -d ${args}
+    ${ELASTIC_PACKAGE_BIN} stack up -d ${args} --provider serverless -U stack.serverless.region=${EC_REGION_SECRET},stack.serverless.type=${SERVERLESS_PROJECT}
+    # ${ELASTIC_PACKAGE_BIN} stack up -d ${args}
     echo ""
     ${ELASTIC_PACKAGE_BIN} stack status
     echo ""
@@ -429,7 +437,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort #|egrep "logstash|azure|osquery_manager|nginx"
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort |egrep "logstash|azure|osquery_manager|nginx"
 }
 
 check_package() {
