@@ -344,6 +344,21 @@ processors:
       if: 'ctx.json.type == "ipv4" || ctx.json.type == "ipv6"'
       allow_duplicates: false
 
+  # custom fields used for transformation
+  - fingerprint:
+      target_field: eclecticiq.outgoing_feed.observable_id
+      fields:
+        - json.type
+        - json.value
+  # if observable is deleted from outgoing feed dataset, set deleted_at to anything to exclude it from transform result
+  - date:
+      field: json.timestamp
+      target_field: eclecticiq.outgoing_feed.deleted_at
+      formats:
+        - "yyyy-MM-dd HH:mm:ss.SSSSSSz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSz"
+      if: "ctx.json.diff == 'del'"
+
   # other
   - set:
       field: server.mac
@@ -391,6 +406,7 @@ processors:
       fields:
         - json.type
         - json.value
+        - json.timestamp
   - set:
       field: _id
       value: "{{ event.id }}"

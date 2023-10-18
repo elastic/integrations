@@ -102,6 +102,8 @@ An example event for `outgoing_feed` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| eclecticiq.outgoing_feed.deleted_at | Date when observable was removed from dataset | date |
+| eclecticiq.outgoing_feed.observable_id | The ID of the observable, based on kind and value. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | email.subject | A brief summary of the topic of the message. | keyword |
 | email.subject.text | Multi-field of `email.subject`. | match_only_text |
@@ -117,6 +119,7 @@ An example event for `outgoing_feed` looks as following:
 | event.url | URL linking to an external system to continue investigation of this event. This URL links to another system where in-depth investigation of the specific occurrence of this event can take place. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | input.type | Input type | keyword |
+| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | organization.name | Organization name. | keyword |
 | organization.name.text | Multi-field of `organization.name`. | match_only_text |
