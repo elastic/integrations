@@ -42,7 +42,7 @@ for integration in $(list_all_directories); do
     if [[ ${SERVERLESS} == "true" ]] ; then
         if ! is_spec_3_0_0 ]]; then
             echo "Not v3 spec version. Skipped"
-            echo "- ${integration} (spec <3.0.0)" >> ${SKIPPED_PACKAGES_FILE_PATH}
+            echo "- [${integration}] spec <3.0.0" >> ${SKIPPED_PACKAGES_FILE_PATH}
             popd > /dev/null
             continue
         fi
