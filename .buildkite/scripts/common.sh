@@ -319,7 +319,11 @@ prepare_serverless_stack() {
     export EC_HOST=${EC_HOST_SECRET}
 
     echo "Boot up the Elastic stack"
-    ${ELASTIC_PACKAGE_BIN} stack up -d ${args} --provider serverless -U stack.serverless.region=${EC_REGION_SECRET},stack.serverless.type=${SERVERLESS_PROJECT}
+    ${ELASTIC_PACKAGE_BIN} stack up \
+        -d \
+        ${args} \
+        --provider serverless \
+        -U stack.serverless.region=${EC_REGION_SECRET},stack.serverless.type=${SERVERLESS_PROJECT} 2>&1 | egrep -v "^Password: " # To remove password from the output
     # ${ELASTIC_PACKAGE_BIN} stack up -d ${args}
     echo ""
     ${ELASTIC_PACKAGE_BIN} stack status
@@ -437,7 +441,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort |egrep "logstash|azure|osquery_manager|nginx"
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort |egrep "logstash|azure|osquery_manager|nginx|1password"
 }
 
 check_package() {
