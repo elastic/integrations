@@ -12,6 +12,9 @@ SERVERLESS=${SERVERLESS:-"false"}
 SERVERLESS_PROJECT=${SERVERLESS_PROJECT:-"observability"}
 
 
+SKIPPED_PACKAGES_FILE_PATH="${WORKSPACE}/skipped_packages.txt"
+FAILED_PACKAGES_FILE_PATH="${WORKSPACE}/failed_packages.txt"
+
 if [ ! -d packages ]; then
     echo "Missing packages folder"
     buildkite-agent annotate "Missing packages folder" --style "error"
@@ -44,6 +47,7 @@ for integration in $(list_all_directories); do
     if [[ ${SERVERLESS} == "true" ]] ; then
         if ! is_spec_3_0_0 ]]; then
             echo "Not v3 spec version. Skipped"
+            echo "- ${integration} (spec <3.0.0)" >> ${SKIPPED_PACKAGES_FILE_PATH}
             popd > /dev/null
             continue
         fi
@@ -51,7 +55,7 @@ for integration in $(list_all_directories); do
 
     if ! is_pr_affected ${integration} ; then
         echo "[${integration}] Skipped"
-        echo "- ${integration}" >> skipped_packages.txt
+        echo "- ${integration}" >> ${SKIPPED_PACKAGES_FILE_PATH}
         popd > /dev/null
         continue
     fi
@@ -63,7 +67,7 @@ for integration in $(list_all_directories); do
     fi
 
     if ! check_install_and_test_package ${integration} ; then
-        echo "- ${integration}" >> failed_packages.txt
+        echo "- ${integration}" >> ${FAILED_PACKAGES_FILE_PATH}
     fi
 
     # TODO: add benchmarks support (https://github.com/elastic/integrations/blob/befdc5cb752a08aaf5f79b0d9bdb68588ade9f27/.ci/Jenkinsfile#L180)
@@ -85,15 +89,15 @@ for integration in $(list_all_directories); do
 done
 popd > /dev/null
 
-if [ -f skipped_packages.txt ]; then
+if [ -f ${SKIPPED_PACKAGES_FILE_PATH} ]; then
     echo "Found skipped_packages.txt"  # TODO: remove
-    sed -i '1s/^/Skipped packages:\n/' skipped_packages.txt
-    cat skipped_packages.txt | buildkite-agetn annotate --style info --append --ontext "ctx-skipped-packages"
+    sed -i '1s/^/Skipped packages:\n/' ${SKIPPED_PACKAGES_FILE_PATH}
+    cat ${SKIPPED_PACKAGES_FILE_PATH} | buildkite-agent annotate --style info --append --ontext "ctx-skipped-packages"
 fi
 
-if [ -f failed_packages.txt ]; then
+if [ -f ${FAILED_PACKAGES_FILE_PATH} ]; then
     echo "Found failed_packages.txt"  # TODO: remove
-    sed -i '1s/^/Failed packages:\n/' failed_packages.txt
-    cat failed_packages.txt | buildkite-agetn annotate --style error --append --context "ctx-failed-packages"
+    sed -i '1s/^/Failed packages:\n/' ${FAILED_PACKAGES_FILE_PATH}
+    cat ${FAILED_PACKAGES_FILE_PATH} | buildkite-agent annotate --style error --append --context "ctx-failed-packages"
 fi
 echo "Total packages examined: ${packages_visited}"
