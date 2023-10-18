@@ -57,6 +57,7 @@ for integration in $(list_all_directories); do
 
     use_kind=0
     if kubernetes_service_deployer_used ; then
+        echo "Kubernetes service deployer is used. Creating Kind cluster"
         use_kind=1
         create_kind_cluster
     fi

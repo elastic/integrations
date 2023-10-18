@@ -402,7 +402,6 @@ is_pr() {
 }
 
 kubernetes_service_deployer_used() {
-    echo "Check if Kubernetes service deployer is used"
     find . -type d | egrep '_dev/deploy/k8s$'
 }
 
