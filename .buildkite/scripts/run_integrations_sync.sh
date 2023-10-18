@@ -34,6 +34,8 @@ prepare_serverless_stack
 
 pushd packages > /dev/null
 
+any_package_failing=0
+
 for integration in $(list_all_directories); do
     echo "--- Package ${integration}: check"
 
@@ -63,7 +65,9 @@ for integration in $(list_all_directories); do
     fi
 
     if ! run_tests_package ${integration} ; then
+        echo "[${integration}] run_tests_package failed"
         echo "- ${integration}" >> ${FAILED_PACKAGES_FILE_PATH}
+        any_package_failing=1
     fi
 
     # TODO: add benchmarks support (https://github.com/elastic/integrations/blob/befdc5cb752a08aaf5f79b0d9bdb68588ade9f27/.ci/Jenkinsfile#L180)
@@ -87,4 +91,10 @@ fi
 if [ -f ${FAILED_PACKAGES_FILE_PATH} ]; then
     echo "Found failed_packages.txt"  # TODO: remove
     create_collapsed_annotation "Failed packages in ${SERVERLESS_PROJECT}" ${FAILED_PACKAGES_FILE_PATH} "error" "ctx-failed-packages-${SERVERLESS_PROJECT}"
+fi
+
+if [ $any_package_failing -eq 1 ] ; then
+    echo "These packages have failed:"
+    cat ${FAILED_PACKAGES_FILE_PATH}
+    exit 1
 fi
