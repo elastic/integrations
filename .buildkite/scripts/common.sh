@@ -441,7 +441,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort  |egrep "netskope|logstash"
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort  #|egrep "netskope|logstash"
 }
 
 check_package() {
