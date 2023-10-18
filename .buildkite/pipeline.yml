@@ -36,12 +36,27 @@ steps:
   #       allow_failure: false
 
   # to be moved to schedule-daily job
-  - label: "Check integrations in serverless"
-    key: "test-integrations-serverless"
+  - label: "Check integrations in serverless - project observability"
+    key: "test-integrations-serverless-obs"
     command: ".buildkite/scripts/run_integrations_sync.sh"
     env:
       SERVERLESS: true
       SERVERLESS_PROJECT: observability
+      FORCE_CHECK_ALL: true
+    agents:
+      provider: "gcp"
+    depends_on:
+      - step: "check"   # TODO: change to publish-packages if re-added
+        allow_failure: false
+    artifact_paths:
+      - "build/test-results/*.xml"
+
+  - label: "Check integrations in serverless - project security"
+    key: "test-integrations-serverless-security"
+    command: ".buildkite/scripts/run_integrations_sync.sh"
+    env:
+      SERVERLESS: true
+      SERVERLESS_PROJECT: security
       FORCE_CHECK_ALL: true
     agents:
       provider: "gcp"

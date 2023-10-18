@@ -6,5 +6,32 @@ env:
 
 # The pipeline is triggered by the scheduler every day
 steps:
-  - label: "Placeholder"
-    command: echo "Hello!"
+  - label: ":white_check_mark: Check go sources"
+    key: "check"
+    command: ".buildkite/scripts/check_sources.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "8"
+      memory: "4G"
+
+  - label: "Check integrations in serverless - project: Observability"
+    key: "trigger-integrations-serverless-obs"
+    command: ".buildkite/scripts/run_integrations_sync.sh"
+    env:
+      SERVERLESS: true
+      SERVERLESS_PROJECT: observability
+      FORCE_CHECK_ALL: true
+    depends_on:
+      - step: "check-sources"
+        allow_failure: false
+
+  - label: "Check integrations in serverless - project: security"
+    key: "trigger-integrations-serverless-security"
+    command: ".buildkite/scripts/run_integrations_sync.sh"
+    env:
+      SERVERLESS: true
+      SERVERLESS_PROJECT: security
+      FORCE_CHECK_ALL: true
+    depends_on:
+      - step: "check-sources"
+        allow_failure: false
