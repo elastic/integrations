@@ -119,6 +119,14 @@ processors:
       field: json.name_in_zone
       target_field: infoblox_bloxone_ddi.dns_data.name_in_zone
       ignore_missing: true
+  - json:
+      field: json.options
+      target_field: json.options
+      if: ctx.json?.options instanceof String
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.options.create_ptr
       target_field: infoblox_bloxone_ddi.dns_data.options.create_ptr
