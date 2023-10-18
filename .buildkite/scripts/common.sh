@@ -471,3 +471,19 @@ run_tests_package() {
     install_package ${integration}
     test_package_no_system ${integration}
 }
+
+create_collapsed_annotation() {
+    local title="$1"
+    local file="$2"
+    local style="$3"
+    local context="$4"
+
+    local annotation_file="tmp.annotation.md"
+    echo "<details><summary>${title}</summary>" >> ${annotation_file}
+    cat ${file} >> ${annotation_file}
+    echo "</details>" >> ${annotation_file}
+
+    cat ${annotation_file} | buildkite-agent annotate --style "${style}" --context "${context}"
+
+    rm -f ${annotation_file}
+}

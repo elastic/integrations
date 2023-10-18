@@ -81,12 +81,10 @@ popd > /dev/null
 
 if [ -f ${SKIPPED_PACKAGES_FILE_PATH} ]; then
     echo "Found skipped_packages.txt"  # TODO: remove
-    sed -i "1s/^/Skipped packages in ${SERVERLESS_PROJECT}:\n/" ${SKIPPED_PACKAGES_FILE_PATH}
-    cat ${SKIPPED_PACKAGES_FILE_PATH} | buildkite-agent annotate --style info --append --context "ctx-skipped-packages-${SERVERLESS_PROJECT}"
+    create_collapsed_annotation "Skipped packages in ${SERVERLESS_PROJECT}" ${SKIPPED_PACKAGES_FILE_PATH} "info" "ctx-skipped-packages-${SERVERLESS_PROJECT}"
 fi
 
 if [ -f ${FAILED_PACKAGES_FILE_PATH} ]; then
     echo "Found failed_packages.txt"  # TODO: remove
-    sed -i "1s/^/Failed packages in ${SERVERLESS_PROJECT}:\n/" ${FAILED_PACKAGES_FILE_PATH}
-    cat ${FAILED_PACKAGES_FILE_PATH} | buildkite-agent annotate --style error --append --context "ctx-failed-packages-${SERVERLESS_PROJECT}"
+    create_collapsed_annotation "Failed packages in ${SERVERLESS_PROJECT}" ${FAILED_PACKAGES_FILE_PATH} "error" "ctx-failed-packages-${SERVERLESS_PROJECT}"
 fi
