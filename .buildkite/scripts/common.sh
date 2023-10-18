@@ -241,32 +241,25 @@ is_supported_capability() {
 
     # if no capabilities defined, it is available iavailable all projects
     if [[  "${capabilities}" == "null" ]]; then
-        echo "No capabilities defined"
         return 0
     fi
 
-    echo "Project: ${SERVERLESS_PROJECT} capabilities: ${capabilities}"
     if [[ ${SERVERLESS_PROJECT} == "observability" ]]; then
         if echo ${capabilities} |egrep 'apm|observability|uptime' ; then
-            echo "Supported"
             return 0
         else
-            echo "Not Supported"
             return 1
         fi
     fi
 
     if [[ ${SERVERLESS_PROJECT} == "security" ]]; then
         if echo ${capabilities} |egrep 'security' ; then
-            echo "Supported"
             return 0
         else
-            echo "Not Supported"
             return 1
         fi
     fi
 
-    echo "Unsupported serverless project"
     return 1
 }
 
