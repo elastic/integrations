@@ -35,11 +35,11 @@ An example event for `system` looks as following:
 {
     "@timestamp": "2020-02-14T20:18:57.718Z",
     "agent": {
-        "ephemeral_id": "3f42021e-4a96-4f9e-a171-f1270261873e",
-        "id": "12fae7e9-e1d1-4d7d-935d-77da8e90f576",
+        "ephemeral_id": "3b6c86fa-7cc1-4bd2-8064-b2f3c8c38bef",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.0"
+        "version": "8.10.1"
     },
     "client": {
         "geo": {
@@ -64,12 +64,12 @@ An example event for `system` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "12fae7e9-e1d1-4d7d-935d-77da8e90f576",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "snapshot": false,
-        "version": "8.9.0"
+        "version": "8.10.1"
     },
     "event": {
         "action": "user.session.start",
@@ -78,16 +78,16 @@ An example event for `system` looks as following:
             "authentication",
             "session"
         ],
-        "created": "2023-08-09T18:07:16.315Z",
+        "created": "2023-09-22T17:12:24.505Z",
         "dataset": "okta.system",
         "id": "3aeede38-4f67-11ea-abd3-1f5d113f2546",
-        "ingested": "2023-08-09T18:07:17Z",
+        "ingested": "2023-09-22T17:12:25Z",
         "kind": "event",
         "original": "{\"actor\":{\"alternateId\":\"xxxxxx@elastic.co\",\"detailEntry\":null,\"displayName\":\"xxxxxx\",\"id\":\"00u1abvz4pYqdM8ms4x6\",\"type\":\"User\"},\"authenticationContext\":{\"authenticationProvider\":null,\"authenticationStep\":0,\"credentialProvider\":null,\"credentialType\":null,\"externalSessionId\":\"102bZDNFfWaQSyEZQuDgWt-uQ\",\"interface\":null,\"issuer\":null},\"client\":{\"device\":\"Computer\",\"geographicalContext\":{\"city\":\"Dublin\",\"country\":\"United States\",\"geolocation\":{\"lat\":37.7201,\"lon\":-121.919},\"postalCode\":\"94568\",\"state\":\"California\"},\"id\":null,\"ipAddress\":\"108.255.197.247\",\"userAgent\":{\"browser\":\"FIREFOX\",\"os\":\"Mac OS X\",\"rawUserAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:72.0) Gecko/20100101 Firefox/72.0\"},\"zone\":\"null\"},\"debugContext\":{\"debugData\":{\"deviceFingerprint\":\"541daf91d15bef64a7e08c946fd9a9d0\",\"requestId\":\"XkcAsWb8WjwDP76xh@1v8wAABp0\",\"requestUri\":\"/api/v1/authn\",\"threatSuspected\":\"false\",\"url\":\"/api/v1/authn?\"}},\"displayMessage\":\"User login to Okta\",\"eventType\":\"user.session.start\",\"legacyEventType\":\"core.user_auth.login_success\",\"outcome\":{\"reason\":null,\"result\":\"SUCCESS\"},\"published\":\"2020-02-14T20:18:57.718Z\",\"request\":{\"ipChain\":[{\"geographicalContext\":{\"city\":\"Dublin\",\"country\":\"United States\",\"geolocation\":{\"lat\":37.7201,\"lon\":-121.919},\"postalCode\":\"94568\",\"state\":\"California\"},\"ip\":\"108.255.197.247\",\"source\":null,\"version\":\"V4\"}]},\"securityContext\":{\"asNumber\":null,\"asOrg\":null,\"domain\":null,\"isProxy\":null,\"isp\":null},\"severity\":\"INFO\",\"target\":null,\"transaction\":{\"detail\":{},\"id\":\"XkcAsWb8WjwDP76xh@1v8wAABp0\",\"type\":\"WEB\"},\"uuid\":\"3aeede38-4f67-11ea-abd3-1f5d113f2546\",\"version\":\"0\"}",
         "outcome": "success",
         "type": [
             "start",
-            "user"
+            "info"
         ]
     },
     "input": {
@@ -326,24 +326,14 @@ An example event for `system` looks as following:
 | okta.event_type | The type of the LogEvent. | keyword |
 | okta.outcome.reason | The reason of the outcome. | keyword |
 | okta.outcome.result | The result of the outcome. Must be one of: SUCCESS, FAILURE, SKIPPED, ALLOW, DENY, CHALLENGE, UNKNOWN. | keyword |
-| okta.request.ip_chain.geographical_context.city | The city. | keyword |
-| okta.request.ip_chain.geographical_context.country | The country. | keyword |
-| okta.request.ip_chain.geographical_context.geolocation | Geolocation information. | geo_point |
-| okta.request.ip_chain.geographical_context.postal_code | The postal code. | keyword |
-| okta.request.ip_chain.geographical_context.state | The state. | keyword |
-| okta.request.ip_chain.ip | IP address. | ip |
-| okta.request.ip_chain.source | Source information. | keyword |
-| okta.request.ip_chain.version | IP version. Must be one of V4, V6. | keyword |
+| okta.request.ip_chain |  | flattened |
 | okta.security_context.as.number | The AS number. | integer |
 | okta.security_context.as.organization.name | The organization name. | keyword |
 | okta.security_context.domain | The domain name. | keyword |
 | okta.security_context.is_proxy | Whether it is a proxy or not. | boolean |
 | okta.security_context.isp | The Internet Service Provider. | keyword |
 | okta.severity | The severity of the LogEvent. Must be one of DEBUG, INFO, WARN, or ERROR. | keyword |
-| okta.target.alternate_id | Alternate identifier of the actor. | keyword |
-| okta.target.display_name | Display name of the actor. | keyword |
-| okta.target.id | Identifier of the actor. | keyword |
-| okta.target.type | Type of the actor. | keyword |
+| okta.target | The list of targets. | flattened |
 | okta.transaction.id | Identifier of the transaction. | keyword |
 | okta.transaction.type | The type of transaction. Must be one of "WEB", "JOB". | keyword |
 | okta.uuid | The unique identifier of the Okta LogEvent. | keyword |

@@ -20,7 +20,7 @@ request.transforms:
       value: 'Bearer {{api_token}}'
   - set:
       target: header.TMV1-Query
-      value: 'uuid'
+      value: "uuid:*"
   - set:
       target: url.params.top
       value: '5000'
@@ -44,6 +44,10 @@ cursor:
     value: '[[.last_response.url.params.Get "endDateTime"]]'
 response.split:
   target: body.items
+  split:
+    target: body.requests
+    ignore_empty_value: true
+    keep_parent: true
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
