@@ -62,7 +62,9 @@ for integration in $(list_all_directories); do
         create_kind_cluster
     fi
 
-    check_install_and_test_package ${integration} || echo "- ${integration}" >> failed_packages.txt
+    if ! check_install_and_test_package ${integration} ; then
+        echo "- ${integration}" >> failed_packages.txt
+    fi
 
     # TODO: add benchmarks support (https://github.com/elastic/integrations/blob/befdc5cb752a08aaf5f79b0d9bdb68588ade9f27/.ci/Jenkinsfile#L180)
     # ${ELASTIC_PACKAGE_BIN} benchmark pipeline -v --report-format json --report-output file
@@ -84,11 +86,13 @@ done
 popd > /dev/null
 
 if [ -f skipped_packages.txt ]; then
+    echo "Found skipped_packages.txt"  # TODO: remove
     sed -i '1s/^/Skipped packages:\n/' skipped_packages.txt
     cat skipped_packages.txt | buildkite-agetn annotate --style info --append --ontext "ctx-skipped-packages"
 fi
 
 if [ -f failed_packages.txt ]; then
+    echo "Found failed_packages.txt"  # TODO: remove
     sed -i '1s/^/Failed packages:\n/' failed_packages.txt
     cat failed_packages.txt | buildkite-agetn annotate --style error --append --context "ctx-failed-packages"
 fi

@@ -229,7 +229,7 @@ kibana_version_manifest() {
 }
 
 capabilities_manifest() {
-    cat manifest.yml | yq ".conditions.elastic.capabilitites"
+    cat manifest.yml | yq ".conditions.elastic.capabilities"
 }
 
 is_supported_capability() {
