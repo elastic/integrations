@@ -17,3 +17,5 @@
 TYCHON scans Endpoint ARP Tables and returns the results.
 
 {{fields "tychon_arp"}}
+
+{{event "tychon_arp"}}
