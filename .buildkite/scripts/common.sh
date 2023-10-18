@@ -463,10 +463,17 @@ test_package_no_system() {
     TEST_OPTIONS="-v --report-format xUnit --report-output file --test-coverage"
 
     echo "Test integration: ${integration}"
-    ${ELASTIC_PACKAGE_BIN} test asset ${TEST_OPTIONS}
-    ${ELASTIC_PACKAGE_BIN} test static ${TEST_OPTIONS}
-    ${ELASTIC_PACKAGE_BIN} test pipeline ${TEST_OPTIONS}
+    if ! ${ELASTIC_PACKAGE_BIN} test asset ${TEST_OPTIONS} ; then
+        return 1
+    fi
+    if ! ${ELASTIC_PACKAGE_BIN} test static ${TEST_OPTIONS} ; then
+        return 1
+    fi
+    if ! ${ELASTIC_PACKAGE_BIN} test pipeline ${TEST_OPTIONS} ; then
+        return 1
+    fi
     echo ""
+    return 0
 }
 
 run_tests_package() {
