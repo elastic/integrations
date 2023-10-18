@@ -73,6 +73,19 @@ processors:
       field: tychon.script.current_duration
       type: float
       ignore_missing: true
+  - remove:
+      tag: remove_preserve_original_event
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      tag: remove_preserve_duplicate_custom_fields
+      # add fields here that have been copied into ECS fields.
+      field:
+        - tychon.timestamp
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_missing: true
 on_failure:
   - set:
       field: event.kind

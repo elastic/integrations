@@ -143,8 +143,8 @@ An example event for `tychon_arp` looks as following:
 {
     "@timestamp": "2023-08-16T05:22:36.000Z",
     "agent": {
-        "ephemeral_id": "8a4a9843-33c7-4b84-b709-f7a06f81a26e",
-        "id": "c53ee9bf-2cdd-4052-8b51-927fedf04601",
+        "ephemeral_id": "ee26f1c6-89c7-42c9-8f72-13b1d52bc1c2",
+        "id": "0874c904-40cc-4817-b0f8-557b17245c75",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.0"
@@ -158,7 +158,7 @@ An example event for `tychon_arp` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "c53ee9bf-2cdd-4052-8b51-927fedf04601",
+        "id": "0874c904-40cc-4817-b0f8-557b17245c75",
         "snapshot": false,
         "version": "8.8.0"
     },
@@ -168,7 +168,7 @@ An example event for `tychon_arp` looks as following:
             "network"
         ],
         "dataset": "tychon.tychon_arp",
-        "ingested": "2023-10-18T03:07:39Z",
+        "ingested": "2023-10-18T03:41:39Z",
         "kind": "state",
         "original": "{\"script.type\":\"powershell\",\"host.os.build\":\"22621\",\"host.ip\":[\"10.154.5.200\"],\"host.hostname\":\"DESKTOP-AF7CIQM\",\"host.os.name\":\"Microsoft Windows 11 Pro\",\"host.hardware.manufacturer\":\"Dell Inc.\",\"@timestamp\":\"2023-08-16T05:22:36Z\",\"script.start\":\"2023-08-16T05:22:36Z\",\"destination.mac\":\"00-09-0F-AA-00-02\",\"host.hardware.owner\":\"james_sudbury@msn.com\",\"host.hardware.cpu.caption\":\"Intel64 Family 6 Model 141 Stepping 1\",\"destination.hostname\":\"Request timed out (700 ms)\",\"host.os.organization\":\"\",\"host.workgroup\":\"WORKGROUP\",\"host.hardware.serial_number\":\"HYLCKG3\",\"host.ipv4\":\"10.154.5.200\",\"host.os.version\":\"2009\",\"network.direction\":\"external\",\"host.hardware.bios.name\":\"Dell Inc.\",\"host.type\":\"Workstation\",\"network.type\":\"IPv4\",\"destination.name\":\"Request timed out (700 ms)\",\"host.id\":\"47b5d5906f7d4b288a1366b2f6483148_4C4C4544-0059-4C10-8043-C8C04F4B4733_DESKTOP-AF7CIQM_WORKGROUP\",\"host.biossn\":\"4C4C4544-0059-4C10-8043-C8C04F4B4733\",\"host.mac\":[\"60:E3:2B:4B:40:E2\"],\"network.interface\":\"Ethernet 3\",\"host.oem.model\":\"XPS 17 9710\",\"host.uptime\":\"594263.4592614\",\"id\":\"DESKTOP-AF7CIQM#6#10.70.4.15#10.70.4.16\",\"script.current_time\":\"2023-08-16T05:22:37Z\",\"script.name\":\"Get-TychonArpInfo.ps1\",\"network.state\":\"dynamic\",\"script.version\":\"2.3.53.0\",\"host.oem.manufacturer\":\"Dell\",\"host.os.description\":\"\",\"script.current_duration\":\"1809.94\",\"host.ipv6\":\"fe80::c2c9:f4e0:eb65:2c33\",\"destination.ip\":\"10.70.4.16\",\"host.hardware.bios.version\":\"1.20.1\",\"host.domain\":\"\",\"host.os.family\":\"Windows\"}",
         "type": [
@@ -181,10 +181,10 @@ An example event for `tychon_arp` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "e8978f2086c14e13b7a0af9ed0011d19",
         "ip": [
-            "172.30.0.7"
+            "192.168.128.7"
         ],
         "mac": [
-            "02-42-AC-1E-00-07"
+            "02-42-C0-A8-80-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -207,6 +207,8 @@ An example event for `tychon_arp` looks as following:
         "offset": 0
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "tychon-arp-info"
     ],
     "tychon": {
