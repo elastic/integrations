@@ -92,7 +92,7 @@ popd > /dev/null
 if [ -f ${SKIPPED_PACKAGES_FILE_PATH} ]; then
     echo "Found skipped_packages.txt"  # TODO: remove
     sed -i '1s/^/Skipped packages:\n/' ${SKIPPED_PACKAGES_FILE_PATH}
-    cat ${SKIPPED_PACKAGES_FILE_PATH} | buildkite-agent annotate --style info --append --ontext "ctx-skipped-packages"
+    cat ${SKIPPED_PACKAGES_FILE_PATH} | buildkite-agent annotate --style info --append --context "ctx-skipped-packages"
 fi
 
 if [ -f ${FAILED_PACKAGES_FILE_PATH} ]; then
