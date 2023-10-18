@@ -32,17 +32,12 @@ use_elastic_package
 
 prepare_serverless_stack
 
-packages_visited=0
-# num_packages=0  # TODO: to be removed
-# maximum_packages=25
-
 pushd packages > /dev/null
 
 for integration in $(list_all_directories); do
     echo "--- Package ${integration}: check"
 
     pushd ${integration} > /dev/null
-    packages_visited=$((packages_visited+1))
 
     if [[ ${SERVERLESS} == "true" ]] ; then
         if ! is_spec_3_0_0 ]]; then
@@ -53,9 +48,9 @@ for integration in $(list_all_directories); do
         fi
     fi
 
-    if ! is_pr_affected ${integration} ; then
-        echo "[${integration}] Skipped"
-        echo "- ${integration}" >> ${SKIPPED_PACKAGES_FILE_PATH}
+    if ! reason=$(is_pr_affected ${integration}) ; then
+        echo "${reason}"
+        echo "- ${reason}" >> ${SKIPPED_PACKAGES_FILE_PATH}
         popd > /dev/null
         continue
     fi
@@ -66,7 +61,7 @@ for integration in $(list_all_directories); do
         create_kind_cluster
     fi
 
-    if ! check_install_and_test_package ${integration} ; then
+    if ! run_tests_package ${integration} ; then
         echo "- ${integration}" >> ${FAILED_PACKAGES_FILE_PATH}
     fi
 
@@ -80,12 +75,6 @@ for integration in $(list_all_directories); do
     teardown_serverless_test_package ${integration}
 
     popd > /dev/null
-
-    # TODO: debug to be removed
-    # num_packages=$((num_packages+1))
-    # if [ $num_packages -eq ${maximum_packages} ]; then
-    #     break
-    # fi
 done
 popd > /dev/null
 
@@ -100,4 +89,3 @@ if [ -f ${FAILED_PACKAGES_FILE_PATH} ]; then
     sed -i '1s/^/Failed packages:\n/' ${FAILED_PACKAGES_FILE_PATH}
     cat ${FAILED_PACKAGES_FILE_PATH} | buildkite-agent annotate --style error --append --context "ctx-failed-packages"
 fi
-echo "Total packages examined: ${packages_visited}"

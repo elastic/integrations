@@ -350,6 +350,8 @@ get_to_changeset() {
     echo "${BUILDKITE_COMMIT}"
 }
 
+# TODO: it is required to have GIT_PREVIOUS_COMMIT and GIT_PREVIOUS_SUCCESSFUL_COMMIT
+# as in Jenkins to set the right from (changesets)
 is_pr_affected() {
     local integration="${1}"
 
@@ -438,17 +440,34 @@ list_all_directories() {
     find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort |egrep "logstash|azure|osquery_manager|nginx"
 }
 
-check_install_and_test_package() {
+check_package() {
     local integration=$1
     echo "Check integration: ${integration}"
     ${ELASTIC_PACKAGE_BIN} check -v
+    echo ""
+}
 
+install_package() {
+    local integration=$1
     echo "Install integration: ${integration}"
     ${ELASTIC_PACKAGE_BIN} install -v
+    echo ""
+}
+
+test_package_no_system() {
+    local integration=$1
+    TEST_OPTIONS="-v --report-format xUnit --report-output file --test-coverage"
 
     echo "Test integration: ${integration}"
-    TEST_OPTIONS="-v --report-format xUnit --report-output file --test-coverage"
     ${ELASTIC_PACKAGE_BIN} test asset ${TEST_OPTIONS}
     ${ELASTIC_PACKAGE_BIN} test static ${TEST_OPTIONS}
     ${ELASTIC_PACKAGE_BIN} test pipeline ${TEST_OPTIONS}
+    echo ""
+}
+
+run_tests_package() {
+    local integration=$1
+    check_package ${integration}
+    install_package ${integration}
+    test_package_no_system ${integration}
 }
