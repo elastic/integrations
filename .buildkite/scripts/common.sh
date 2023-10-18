@@ -471,9 +471,16 @@ test_package_no_system() {
 
 run_tests_package() {
     local integration=$1
-    check_package ${integration}
-    install_package ${integration}
-    test_package_no_system ${integration}
+    if ! check_package ${integration} ; then
+        return 1
+    fi
+    if ! install_package ${integration} ; then
+        return 1
+    fi
+    if ! test_package_no_system ${integration} ; then
+        return 1
+    fi
+    return 0
 }
 
 create_collapsed_annotation() {
