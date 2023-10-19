@@ -541,7 +541,9 @@ upload_safe_logs() {
 
     google_cloud_auth_safe_logs
 
-    gsutil cp ${source} "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${target}"
+    echo "Repo build tag: $REPO_BUILD_TAG"
+    echo "Target path: $target"
+    # gsutil cp ${source} "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${target}"
 
     google_cloud_logout_active_account
 }
