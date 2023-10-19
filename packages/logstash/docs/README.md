@@ -1119,6 +1119,16 @@ pipeline collection period, and setting it to an appropriate value.
 | logstash.pipeline.plugin.output.flow.worker_utilization.current | worker utilization for this plugin | scaled_float |  | gauge |
 | logstash.pipeline.plugin.output.flow.worker_utilization.last_1_minute | worker utilization for this plugin | scaled_float |  | gauge |
 | logstash.pipeline.plugin.output.id | Id of output plugin | keyword |  |  |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.200 |  | long |  | counter |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.201 |  | long |  | counter |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.401 |  | long |  | counter |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.403 |  | long |  | counter |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.404 |  | long |  | counter |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.409 |  | long |  | counter |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.413 |  | long |  | counter |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.successes |  | long |  | counter |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.documents.non_retryable_failures |  | long |  | counter |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.documents.successes |  | long |  | counter |
 | logstash.pipeline.plugin.output.name | Name of output plugin | keyword |  |  |
 | logstash.pipeline.plugin.output.source.column |  | keyword |  |  |
 | logstash.pipeline.plugin.output.source.id |  | keyword |  |  |

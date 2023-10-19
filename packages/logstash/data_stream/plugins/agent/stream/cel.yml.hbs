@@ -34,6 +34,7 @@ program: |
         ),
         "es_cluster_id":((body.pipelines[pipeline_name].vertices).as(vertices, vertices.map(each, has(each.cluster_uuid), each.cluster_uuid))),
         "es_cluster_id_map":((body.pipelines[pipeline_name].vertices).as(vertices, vertices.map(each, has(each.cluster_uuid), {"plugin_id":each.id, "cluster_id":each.cluster_uuid}))),
+        "counter_map":((body.pipelines[pipeline_name].vertices).as(vertices, vertices.map(each, has(each.long_counters), each.long_counters.map(counter, {"plugin_id":each.id, "name":counter.name, "value":counter.value})))),
         "outputs":body.pipelines[pipeline_name].plugins.outputs,
         "inputs":body.pipelines[pipeline_name].plugins.inputs,
         "filters":body.pipelines[pipeline_name].plugins.filters,
@@ -57,6 +58,8 @@ program: |
           "input":{
             "source":event.pipeline_source_map.map(tuple, (tuple.plugin_id == input.id), tuple.source)[0],
             "elasticsearch.cluster.id":event.es_cluster_id_map.map(tuple, (tuple.plugin_id == input.id), tuple.cluster_id),
+            "metrics":{input.name:zip(event['counter_map'].flatten().map(tuple, (tuple.plugin_id == input.id), tuple.name),
+                event['counter_map'].flatten().map(tuple, (tuple.plugin_id == input.id), tuple.value))},
             "name":input.name,
             "id":input.id,
             "flow": has(input.flow) ? input.flow : {},
@@ -114,6 +117,8 @@ program: |
             "id":filter.id,
             "name":filter.name,
             "elasticsearch.cluster.id":event.es_cluster_id_map.map(tuple, (tuple.plugin_id == filter.id), tuple.cluster_id),
+            "metrics":{filter.name:zip(event['counter_map'].flatten().map(tuple, (tuple.plugin_id == filter.id), tuple.name),
+                event['counter_map'].flatten().map(tuple, (tuple.plugin_id == filter.id), tuple.value))},
             "flow": has(filter.flow) ? filter.flow : {},
             "events":{
               "in":filter.events['in'],
@@ -141,6 +146,8 @@ program: |
             "name":output.name,
             "source":event.pipeline_source_map.map(tuple, (tuple.plugin_id == output.id), tuple.source).flatten()[0],
             "elasticsearch.cluster.id":event.es_cluster_id_map.map(tuple, (tuple.plugin_id == output.id), tuple.cluster_id),
+            "metrics":{output.name:zip(event['counter_map'].flatten().map(tuple, (tuple.plugin_id == output.id), tuple.name),
+                event['counter_map'].flatten().map(tuple, (tuple.plugin_id == output.id), tuple.value))},
             "flow": has(output.flow) ? output.flow : {},
             "events":{
               "in":output.events['in'],
