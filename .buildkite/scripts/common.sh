@@ -458,17 +458,19 @@ install_package() {
     echo ""
 }
 
-test_package_no_system() {
+test_package_in_serverless() {
     local integration=$1
-    TEST_OPTIONS="-v --report-format xUnit --report-output file --test-coverage"
+    TEST_OPTIONS="-v --report-format xUnit --report-output file"
 
     echo "Test integration: ${integration}"
-    if ! ${ELASTIC_PACKAGE_BIN} test asset ${TEST_OPTIONS} ; then
+    if ! ${ELASTIC_PACKAGE_BIN} test asset ${TEST_OPTIONS} --test-coverage ; then
         return 1
     fi
-    if ! ${ELASTIC_PACKAGE_BIN} test static ${TEST_OPTIONS} ; then
+    if ! ${ELASTIC_PACKAGE_BIN} test static ${TEST_OPTIONS} --test-coverage ; then
         return 1
     fi
+    # FIXME: adding test-coverage for serverless results in errors like this:
+    # Error: error running package pipeline tests: could not complete test run: error calculating pipeline coverage: error fetching pipeline stats for code coverage calculations: need exactly one ES node in stats response (got 4)
     if ! ${ELASTIC_PACKAGE_BIN} test pipeline ${TEST_OPTIONS} ; then
         return 1
     fi
@@ -484,8 +486,10 @@ run_tests_package() {
     if ! install_package ${integration} ; then
         return 1
     fi
-    if ! test_package_no_system ${integration} ; then
-        return 1
+    if [[ $SERVERLESS == "true" ]]; then
+        if ! test_package_in_serverless ${integration} ; then
+            return 1
+        fi
     fi
     return 0
 }
