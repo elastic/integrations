@@ -4,6 +4,7 @@
   fields:
     - name: timegrain
       type: keyword
+      dimension: true
       description: >
         The Azure metric timegrain
 
@@ -25,6 +26,7 @@
 
         - name: id
           type: keyword
+          dimension: true
           description: >
             The id of the resource
 
@@ -40,6 +42,7 @@
 
     - name: namespace
       type: keyword
+      dimension: true
       description: >
         The namespace selected
 
@@ -54,14 +57,33 @@
         The application ID
 
     - name: dimensions
-      type: flattened
-      description: >
-        Azure metric dimensions.
-
-    - name: metrics.*.*
-      type: object
-      object_type: float
-      object_type_mapping_type: "*"
-      description: >
-        Metrics returned.
-
+      type: group
+      fields:
+        - name: cloud_role_instance
+          type: keyword
+          dimension: true
+          description: The unique identifier of the cloud instance where the application is running.
+        - name: cloud_role_name
+          type: keyword
+          dimension: true
+          description: The name of the role that the cloud instance is performing.
+        - name: exception_type
+          type: keyword
+          dimension: true
+          description: The type of exception that was thrown.
+        - name: browser_timing_url_host
+          type: keyword
+          dimension: true
+          description: The host part of the URL that the browser was accessing when timings were captured.
+        - name: browser_timing_url_path
+          type: keyword
+          dimension: true
+          description: The path part of the URL that the browser was accessing when timings were captured.
+        - name: request_url_host
+          type: keyword
+          dimension: true
+          description: The host part of the URL that was requested.
+        - name: request_name
+          type: keyword
+          dimension: true
+          description: The name of the request that was made.

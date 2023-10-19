@@ -1,0 +1,533 @@
+---
+description: Pipeline for processing device dataset.
+processors:
+  - append:
+      field: event.category
+      tag: append_event_category_host
+      value: host
+  - append:
+      field: event.type
+      tag: append_event_type_info
+      value: info
+  - set:
+      field: asset.category
+      tag: set_asset_category
+      value: entity
+  - set:
+      field: asset.type
+      tag: set_asset_type
+      value: microsoft_entra_id_device
+  - convert:
+      field: azure_ad.accountEnabled
+      tag: convert_accountEnabled_to_boolean
+      target_field: entityanalytics_entra_id.device.account_enabled
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: asset.status
+      value: enabled
+      tag: set_asset_status_to_enabled
+      if: ctx.entityanalytics_entra_id?.device?.account_enabled == true
+  - set:
+      field: asset.status
+      value: disabled
+      tag: set_asset_status_to_disabled
+      if: ctx.entityanalytics_entra_id?.device?.account_enabled == false
+  - foreach:
+      field: azure_ad.alternativeSecurityIds
+      if: ctx.azure_ad?.alternativeSecurityIds instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.type
+          tag: convert_alternativeSecurityIds_type_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.type
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: azure_ad.alternativeSecurityIds
+      if: ctx.azure_ad?.alternativeSecurityIds instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.identityProvider
+          tag: rename_alternativeSecurityIds_identityProvider
+          target_field: _ingest._value.identity_provider
+          ignore_missing: true
+  - rename:
+      field: azure_ad.alternativeSecurityIds
+      tag: rename_alternativeSecurityIds
+      target_field: entityanalytics_entra_id.device.alternative_security_ids
+      ignore_missing: true
+  - date:
+      field: azure_ad.approximateLastSignInDateTime
+      tag: date_approximate_last_sign_in_date_time
+      target_field: entityanalytics_entra_id.device.approximate_last_sign_in_date_time
+      formats:
+        - ISO8601
+      if: ctx.azure_ad?.approximateLastSignInDateTime != null && ctx.azure_ad?.approximateLastSignInDateTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: azure_ad.complianceExpirationDateTime
+      tag: date_compliance_expiration_date_time
+      target_field: entityanalytics_entra_id.device.compliance_expiration_date_time
+      formats:
+        - ISO8601
+      if: ctx.azure_ad?.complianceExpirationDateTime != null && ctx.azure_ad?.complianceExpirationDateTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: azure_ad.deviceCategory
+      tag: rename_deviceCategory
+      target_field: entityanalytics_entra_id.device.category
+      ignore_missing: true
+  - rename:
+      field: azure_ad.deviceId
+      tag: rename_deviceId
+      target_field: entityanalytics_entra_id.device.d_id
+      ignore_missing: true
+  - rename:
+      field: azure_ad.deviceMetadata
+      tag: rename_deviceMetadata
+      target_field: entityanalytics_entra_id.device.metadata
+      ignore_missing: true
+  - rename:
+      field: azure_ad.deviceOwnership
+      tag: rename_deviceOwnership
+      target_field: entityanalytics_entra_id.device.ownership
+      ignore_missing: true
+  - convert:
+      field: azure_ad.deviceVersion
+      tag: convert_deviceVersion_to_string
+      target_field: entityanalytics_entra_id.device.version
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: asset.version
+      copy_from: entityanalytics_entra_id.device.version
+      tag: set_asset_version
+      ignore_empty_value: true
+  - rename:
+      field: azure_ad.displayName
+      tag: rename_displayName
+      target_field: entityanalytics_entra_id.device.display_name
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: "{{{entityanalytics_entra_id.device.display_name}}}"
+      tag: append_display_name_into_related_hosts
+      allow_duplicates: false
+      if: ctx.entityanalytics_entra_id?.device?.display_name != null
+  - set:
+      field: asset.name
+      copy_from: entityanalytics_entra_id.device.display_name
+      tag: set_asset_name
+      ignore_empty_value: true
+  - set:
+      field: host.name
+      copy_from: entityanalytics_entra_id.device.display_name
+      tag: set_host_name
+      ignore_empty_value: true
+  - rename:
+      field: azure_ad.enrollmentProfileName
+      tag: rename_enrollmentProfileName
+      target_field: entityanalytics_entra_id.device.enrollment_profile_name
+      ignore_missing: true
+  - rename:
+      field: azure_ad.extensionAttributes
+      tag: rename_extensionAttributes
+      target_field: entityanalytics_entra_id.device.extension_attributes
+      ignore_missing: true
+  - convert:
+      field: azure_ad.isCompliant
+      tag: convert_isCompliant_to_boolean
+      target_field: entityanalytics_entra_id.device.is_compliant
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: azure_ad.isManaged
+      tag: convert_isManaged_to_boolean
+      target_field: entityanalytics_entra_id.device.is_managed
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: asset.is_managed
+      copy_from: entityanalytics_entra_id.device.is_managed
+      tag: set_asset_is_managed
+      ignore_empty_value: true
+  - rename:
+      field: azure_ad.manufacturer
+      tag: rename_manufacturer
+      target_field: entityanalytics_entra_id.device.manufacturer
+      ignore_missing: true
+  - set:
+      field: asset.vendor
+      copy_from: entityanalytics_entra_id.device.manufacturer
+      tag: set_asset_vendor
+      ignore_empty_value: true
+  - rename:
+      field: azure_ad.mdmAppId
+      tag: rename_mdmAppId
+      target_field: entityanalytics_entra_id.device.mdm_app_id
+      ignore_missing: true
+  - rename:
+      field: azure_ad.model
+      tag: rename_model
+      target_field: entityanalytics_entra_id.device.model
+      ignore_missing: true
+  - set:
+      field: asset.model
+      copy_from: entityanalytics_entra_id.device.model
+      tag: set_asset_model
+      ignore_empty_value: true
+  - date:
+      field: azure_ad.onPremisesLastSyncDateTime
+      tag: date_on_premises_last_sync_date_time
+      target_field: entityanalytics_entra_id.device.on_premises_last_sync_date_time
+      formats:
+        - ISO8601
+      if: ctx.azure_ad?.onPremisesLastSyncDateTime != null && ctx.azure_ad?.onPremisesLastSyncDateTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: asset.last_updated
+      copy_from: entityanalytics_entra_id.device.on_premises_last_sync_date_time
+      tag: set_asset_last_updated
+      ignore_empty_value: true
+  - set:
+      field: asset.last_seen
+      copy_from: entityanalytics_entra_id.device.on_premises_last_sync_date_time
+      tag: set_asset_last_seen
+      ignore_empty_value: true
+  - convert:
+      field: azure_ad.onPremisesSyncEnabled
+      tag: convert_onPremisesSyncEnabled_to_boolean
+      target_field: entityanalytics_entra_id.device.on_premises_sync_enabled
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: azure_ad.operatingSystem
+      tag: rename_operatingSystem
+      target_field: entityanalytics_entra_id.device.operating_system
+      ignore_missing: true
+  - set:
+      field: host.os.type
+      copy_from: entityanalytics_entra_id.device.operating_system
+      tag: set_host_os_type
+      ignore_empty_value: true
+  - lowercase:
+      field: host.os.type
+      tag: lowercase_host_os_type
+      ignore_missing: true
+  - rename:
+      field: azure_ad.operatingSystemVersion
+      tag: rename_operatingSystemVersion
+      target_field: entityanalytics_entra_id.device.operating_system_version
+      ignore_missing: true
+  - set:
+      field: host.os.version
+      copy_from: entityanalytics_entra_id.device.operating_system_version
+      tag: set_host_os_version
+      ignore_empty_value: true
+  - rename:
+      field: azure_ad.physicalIds
+      tag: rename_physicalIds
+      target_field: entityanalytics_entra_id.device.physical_ids
+      ignore_missing: true
+  - rename:
+      field: azure_ad.profileType
+      tag: rename_profileType
+      target_field: entityanalytics_entra_id.device.profile_type
+      ignore_missing: true
+  - date:
+      field: azure_ad.registrationDateTime
+      tag: date_registration_date_time
+      target_field: entityanalytics_entra_id.device.registration_date_time
+      formats:
+        - ISO8601
+      if: ctx.azure_ad?.registrationDateTime != null && ctx.azure_ad?.registrationDateTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: asset.first_seen
+      copy_from: entityanalytics_entra_id.device.registration_date_time
+      tag: set_asset_first_seen
+      ignore_empty_value: true
+  - rename:
+      field: azure_ad.systemLabels
+      tag: rename_systemLabels
+      target_field: entityanalytics_entra_id.device.system_labels
+      ignore_missing: true
+  - set:
+      field: asset.tags
+      copy_from: entityanalytics_entra_id.device.system_labels
+      tag: set_asset_tags
+      ignore_empty_value: true
+  - rename:
+      field: azure_ad.trustType
+      tag: rename_trustType
+      target_field: entityanalytics_entra_id.device.trust_type
+      ignore_missing: true
+  - foreach:
+      field: device.registered_owners
+      if: ctx.device?.registered_owners instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.userPrincipalName
+          tag: rename_device_registered_owners_userPrincipalName
+          target_field: _ingest._value.user_principal_name
+          ignore_missing: true
+  - foreach:
+      field: device.registered_owners
+      if: ctx.device?.registered_owners instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          value: "{{{_ingest._value.user_principal_name}}}"
+          tag: append_device_registered_owners_user_principal_name_into_related_user
+          allow_duplicates: false
+  - foreach:
+      field: device.registered_owners
+      if: ctx.device?.registered_owners instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          value: "{{{_ingest._value.mail}}}"
+          tag: append_device_registered_owners_mail_into_related_user
+          allow_duplicates: false
+  - foreach:
+      field: device.registered_owners
+      if: ctx.device?.registered_owners instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.displayName
+          tag: rename_device_registered_owners_displayName
+          target_field: _ingest._value.display_name
+          ignore_missing: true
+  - foreach:
+      field: device.registered_owners
+      if: ctx.device?.registered_owners instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          value: "{{{_ingest._value.display_name}}}"
+          tag: append_device_registered_owners_display_name_into_related_user
+          allow_duplicates: false
+  - foreach:
+      field: device.registered_owners
+      if: ctx.device?.registered_owners instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.givenName
+          tag: rename_device_registered_owners_givenName
+          target_field: _ingest._value.given_name
+          ignore_missing: true
+  - foreach:
+      field: device.registered_owners
+      if: ctx.device?.registered_owners instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.jobTitle
+          tag: rename_device_registered_owners_jobTitle
+          target_field: _ingest._value.job_title
+          ignore_missing: true
+  - foreach:
+      field: device.registered_owners
+      if: ctx.device?.registered_owners instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.mobilePhone
+          tag: rename_device_registered_owners_mobilePhone
+          target_field: _ingest._value.mobile_phone
+          ignore_missing: true
+  - foreach:
+      field: device.registered_owners
+      if: ctx.device?.registered_owners instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.businessPhones
+          tag: rename_device_registered_owners_businessPhones
+          target_field: _ingest._value.business_phones
+          ignore_missing: true
+  - foreach:
+      field: device.registered_users
+      if: ctx.device?.registered_users instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.userPrincipalName
+          tag: rename_device_registered_users_userPrincipalName
+          target_field: _ingest._value.user_principal_name
+          ignore_missing: true
+  - foreach:
+      field: device.registered_users
+      if: ctx.device?.registered_users instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          value: "{{{_ingest._value.user_principal_name}}}"
+          tag: append_device_registered_users_principal_name_into_related_user
+          allow_duplicates: false
+  - foreach:
+      field: device.registered_users
+      if: ctx.device?.registered_users instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          value: "{{{_ingest._value.mail}}}"
+          tag: append_device_registered_users_mail_into_related_user
+          allow_duplicates: false
+  - foreach:
+      field: device.registered_users
+      if: ctx.device?.registered_users instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.displayName
+          tag: rename_device_registered_users_displayName
+          target_field: _ingest._value.display_name
+          ignore_missing: true
+  - foreach:
+      field: device.registered_users
+      if: ctx.device?.registered_users instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          value: "{{{_ingest._value.display_name}}}"
+          tag: append_device_registered_users_display_name_into_related_user
+          allow_duplicates: false
+  - foreach:
+      field: device.registered_users
+      if: ctx.device?.registered_users instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.givenName
+          tag: rename_device_registered_users_givenName
+          target_field: _ingest._value.given_name
+          ignore_missing: true
+  - foreach:
+      field: device.registered_users
+      if: ctx.device?.registered_users instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.jobTitle
+          tag: rename_device_registered_users_jobTitle
+          target_field: _ingest._value.job_title
+          ignore_missing: true
+  - foreach:
+      field: device.registered_users
+      if: ctx.device?.registered_users instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.mobilePhone
+          tag: rename_device_registered_users_mobilePhone
+          target_field: _ingest._value.mobile_phone
+          ignore_missing: true
+  - foreach:
+      field: device.registered_users
+      if: ctx.device?.registered_users instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.businessPhones
+          tag: rename_device_registered_users_businessPhones
+          target_field: _ingest._value.business_phones
+          ignore_missing: true
+  - set:
+      field: entityanalytics_entra_id.device.id
+      copy_from: device.id
+      tag: set_entityanalytics_entra_id_device_id
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      value: "{{{entityanalytics_entra_id.device.id}}}"
+      tag: append_id_into_related_hosts
+      allow_duplicates: false
+      if: ctx.entityanalytics_entra_id?.device?.id != null
+  - set:
+      field: asset.id
+      copy_from: device.id
+      tag: set_asset_id
+      ignore_empty_value: true
+  - set:
+      field: host.id
+      copy_from: device.id
+      tag: set_host_id
+      ignore_empty_value: true
+  - set:
+      field: entityanalytics_entra_id.device.group
+      copy_from: device.group
+      tag: set_entityanalytics_entra_id_device_group
+      ignore_empty_value: true
+  - set:
+      field: asset.group
+      copy_from: device.group
+      tag: set_asset_group
+      ignore_empty_value: true
+  - set:
+      field: entityanalytics_entra_id.device.registered_users
+      copy_from: device.registered_users
+      tag: set_entityanalytics_entra_id_device_registered_users
+      ignore_empty_value: true
+  - set:
+      field: entityanalytics_entra_id.device.registered_owners
+      copy_from: device.registered_owners
+      tag: set_entityanalytics_entra_id_device_registered_owners
+      ignore_empty_value: true
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
