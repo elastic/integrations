@@ -555,7 +555,7 @@ buildkite_pr_branch_build_id() {
 }
 
 upload_safe_logs_from_package() {
-    if [[ "${UPLOAD_SAFE_LOGS}" -eq 1 ]] ; then
+    if [[ "${UPLOAD_SAFE_LOGS}" -eq 0 ]] ; then
         return
     fi
 
