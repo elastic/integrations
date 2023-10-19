@@ -313,7 +313,7 @@ prepare_serverless_stack() {
     # else
     fi
 
-    create_elastic_package_profile "integrations-${BUILDKITE_PULL_REQUEST}-${BUILDKITE_BUILD_NUMBER}"
+    create_elastic_package_profile "integrations-${BUILDKITE_PULL_REQUEST}-${BUILDKITE_BUILD_NUMBER}-${SERVERLESS_PROJECT}"
 
     export EC_API_KEY=${EC_API_KEY_SECRET}
     export EC_HOST=${EC_HOST_SECRET}
