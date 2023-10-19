@@ -1095,6 +1095,10 @@ pipeline collection period, and setting it to an appropriate value.
 | logstash.pipeline.plugin.filter.flow.worker_utilization.last_1_minute | worker utilization for this plugin | scaled_float |  | gauge |
 | logstash.pipeline.plugin.filter.id | Id of filter plugin | keyword |  |  |
 | logstash.pipeline.plugin.filter.name | Name of filter plugin | keyword |  |  |
+| logstash.pipeline.plugin.filter.source.column |  | keyword |  |  |
+| logstash.pipeline.plugin.filter.source.id |  | keyword |  |  |
+| logstash.pipeline.plugin.filter.source.line |  | long |  |  |
+| logstash.pipeline.plugin.filter.source.protocol |  | keyword |  |  |
 | logstash.pipeline.plugin.filter.time.duration.ms | amount of time working on events in this plugin | long | ms | counter |
 | logstash.pipeline.plugin.input.elasticsearch.cluster.id | Elasticsearch clusters this Logstash plugin is attached to | keyword |  |  |
 | logstash.pipeline.plugin.input.events.out | number of events emitted by the input | long |  | counter |
@@ -1102,6 +1106,10 @@ pipeline collection period, and setting it to an appropriate value.
 | logstash.pipeline.plugin.input.flow.throughput.last_1_minute | throughput of this input plugin | scaled_float |  | gauge |
 | logstash.pipeline.plugin.input.id | Id of input plugin | keyword |  |  |
 | logstash.pipeline.plugin.input.name | Name of input plugin | keyword |  |  |
+| logstash.pipeline.plugin.input.source.column |  | keyword |  |  |
+| logstash.pipeline.plugin.input.source.id |  | keyword |  |  |
+| logstash.pipeline.plugin.input.source.line |  | long |  |  |
+| logstash.pipeline.plugin.input.source.protocol |  | keyword |  |  |
 | logstash.pipeline.plugin.input.time.queue_push_duration.ms | amount of time spend pushing events to the queue | long | ms | counter |
 | logstash.pipeline.plugin.output.elasticsearch.cluster.id | Elasticsearch clusters this Logstash plugin is attached to | keyword |  |  |
 | logstash.pipeline.plugin.output.events.in | number of events received by the output | long |  | counter |
@@ -1112,6 +1120,10 @@ pipeline collection period, and setting it to an appropriate value.
 | logstash.pipeline.plugin.output.flow.worker_utilization.last_1_minute | worker utilization for this plugin | scaled_float |  | gauge |
 | logstash.pipeline.plugin.output.id | Id of output plugin | keyword |  |  |
 | logstash.pipeline.plugin.output.name | Name of output plugin | keyword |  |  |
+| logstash.pipeline.plugin.output.source.column |  | keyword |  |  |
+| logstash.pipeline.plugin.output.source.id |  | keyword |  |  |
+| logstash.pipeline.plugin.output.source.line |  | long |  |  |
+| logstash.pipeline.plugin.output.source.protocol |  | keyword |  |  |
 | logstash.pipeline.plugin.output.time.duration.ms | amount of time working on events in this plugin | long | ms | counter |
 | logstash.pipeline.plugin.type | Type of the plugin | keyword |  |  |
 | process.pid | Process id. | long |  |  |
