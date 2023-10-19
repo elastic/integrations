@@ -755,6 +755,7 @@ An example event for `security` looks as following:
 | winlog.event_data.DriverNameLength |  | keyword |
 | winlog.event_data.Dummy |  | keyword |
 | winlog.event_data.DwordVal |  | keyword |
+| winlog.event_data.EnabledPrivilegeList |  | keyword |
 | winlog.event_data.EntryCount |  | keyword |
 | winlog.event_data.EventSourceId |  | keyword |
 | winlog.event_data.ExtraInfo |  | keyword |
