@@ -1,0 +1,39 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
+
+env:
+  SETUP_GVM_VERSION: "v0.5.1"
+  LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
+  DOCKER_COMPOSE_VERSION: "v2.17.2"
+  KIND_VERSION: 'v0.20.0'
+  K8S_VERSION: 'v1.27.3'
+  YQ_VERSION: 'v4.35.2'
+  # Elastic package settings
+  # Manage docker output/logs
+  ELASTIC_PACKAGE_COMPOSE_DISABLE_ANSI: "true"
+  ELASTIC_PACKAGE_COMPOSE_DISABLE_PULL_PROGRESS_INFORMATION: "true"
+  # Default license to use by `elastic-package build`
+  ELASTIC_PACKAGE_REPOSITORY_LICENSE: "licenses/Elastic-2.0.txt"
+  # Link definitions path (full path to be set in the corresponding step)
+  ELASTIC_PACKAGE_LINKS_FILE_PATH: "links_table.yml"
+
+steps:
+  - label: ":white_check_mark: Check go sources"
+    key: "check"
+    command: ".buildkite/scripts/check_sources.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "8"
+      memory: "4G"
+
+  - label: "Check integrations in serverless - project ${SERVERLESS_PROJECT}"
+    key: "run-integrations-serverless-project"
+    command: ".buildkite/scripts/run_integrations_sync.sh"
+    timeout_in_minutes: 120
+    env:
+      SERVERLESS: true
+      FORCE_CHECK_ALL: true
+    agents:
+      provider: "gcp"
+    depends_on:
+      - step: "check"
+        allow_failure: false
