@@ -38,8 +38,9 @@ any_package_failing=0
 
 for integration in $(list_all_directories); do
     echo "--- Package ${integration}: check"
-
     pushd ${integration} > /dev/null
+
+    clean_safe_logs
 
     if [[ ${SERVERLESS} == "true" ]] ; then
         if ! is_spec_3_0_0 ]]; then

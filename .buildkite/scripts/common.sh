@@ -420,22 +420,24 @@ kubernetes_service_deployer_used() {
 
 teardown_serverless_test_package() {
     local integration=$1
-    local dump_directory="${WORKSPACE}/build/elastic-stack-dump/${integration}"
+    local build_directory="${WORKSPACE}/build"
+    local dump_directory="${build_directory}/elastic-stack-dump/${integration}"
 
     echo "Collect Elastic stack logs"
     ${ELASTIC_PACKAGE_BIN} stack dump -v --output ${dump_directory}
 
-    upload_safe_logs_from_package ${integration}
+    upload_safe_logs_from_package ${integration} ${build_directory}
 }
 
 teardown_test_package() {
     local integration=$1
-    local dump_directory="${WORKSPACE}/build/elastic-stack-dump/${integration}"
+    local build_directory="${WORKSPACE}/build"
+    local dump_directory="${build_directory}/elastic-stack-dump/${integration}"
 
     echo "Collect Elastic stack logs"
     ${ELASTIC_PACKAGE_BIN} stack dump -v --output ${dump_directory}
 
-    upload_safe_logs_from_package ${integration}
+    upload_safe_logs_from_package ${integration} ${build_directory}
 
     echo "Take down the Elastic stack"
     ${ELASTIC_PACKAGE_BIN} stack down -v
@@ -556,12 +558,19 @@ buildkite_pr_branch_build_id() {
     echo "PR-${BUILDKITE_PULL_REQUEST}-${BUILDKITE_BUILD_NUMBER}"
 }
 
+clean_safe_logs() {
+    rm -rf ${WORKSPACE}/build/elastic-stack-dump
+    rm -rf ${WORKSPACE}/build/container-logs
+}
+
 upload_safe_logs_from_package() {
     if [[ "${UPLOAD_SAFE_LOGS}" -eq 0 ]] ; then
         return
     fi
 
     local integration=$1
+    local build_directory=$2
+
     local parent_folder="insecure-logs"
     if [[ "${SERVERLESS_PROJECT}" != "" ]]; then
         #TODO remove this if when just triggered from pipeline-serverless
@@ -570,17 +579,17 @@ upload_safe_logs_from_package() {
 
     upload_safe_logs \
         "${JOB_GCS_BUCKET_INTERNAL}" \
-        "build/elastic-stack-dump/${integration}/logs/elastic-agent-internal/*.*" \
+        "${build_directory}/elastic-stack-dump/${integration}/logs/elastic-agent-internal/*.*" \
         "${parent_folder}/${integration}/elastic-agent-logs/"
 
     # required for <8.6.0
     upload_safe_logs \
         "${JOB_GCS_BUCKET_INTERNAL}" \
-        "build/elastic-stack-dump/${integration}/logs/elastic-agent-internal/default/*" \
+        "${build_directory}/elastic-stack-dump/${integration}/logs/elastic-agent-internal/default/*" \
         "${parent_folder}/${integration}/elastic-agent-logs/default/"
 
     upload_safe_logs \
         "${JOB_GCS_BUCKET_INTERNAL}" \
-        "build/container-logs/*.log" \
+        "${build_directory}/container-logs/*.log" \
         "${parent_folder}/${integration}/container-logs/"
 }
