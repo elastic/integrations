@@ -36,8 +36,18 @@ steps:
       provider: "gcp"
     artifact_paths:
       - "build/test-results/*.xml"
-      - "build/elastic-stack-dump/*/logs/*.log"
-      - "build/elastic-stack-dump/*/logs/fleet-server-internal/**/*"
+      # - "build/elastic-stack-dump/*/logs/*.log"
+      # - "build/elastic-stack-dump/*/logs/fleet-server-internal/**/*"
     depends_on:
       - step: "check"
         allow_failure: false
+
+  - wait: ~
+    continue_on_failure: true
+
+  - label: ":junit: Junit annotate"
+    plugins:
+      - junit-annotate#v2.4.1:
+          artifacts: "build/test-results/*.xml"
+    agents:
+      provider: "gcp"  # junit plugin requires docker

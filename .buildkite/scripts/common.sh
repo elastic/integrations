@@ -6,6 +6,7 @@ WORKSPACE="$(pwd)"
 BIN_FOLDER="${WORKSPACE}/bin"
 platform_type="$(uname)"
 hw_type="$(uname -m)"
+GOOGLE_CREDENTIALS_FILENAME="google-cloud-credentials.json"
 export ELASTIC_PACKAGE_BIN=${WORKSPACE}/build/elastic-package
 
 retry() {
@@ -122,14 +123,14 @@ with_kubernetes() {
 }
 
 google_cloud_upload_auth() {
-  local secretFileLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE_BASE}.XXXXXXXXX")/google-cloud-credentials.json
+  local secretFileLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE_BASE}.XXXXXXXXX")/${GOOGLE_CREDENTIALS_FILENAME}
   echo "${PRIVATE_INFRA_GCS_CREDENTIALS_SECRET}" > ${secretFileLocation}
   gcloud auth activate-service-account --key-file ${secretFileLocation} 2> /dev/null
   export GOOGLE_APPLICATION_CREDENTIALS=${secretFileLocation}
 }
 
 google_cloud_signing_auth() {
-  local secretFileLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE_BASE}.XXXXXXXXX")/google-cloud-credentials.json
+  local secretFileLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE_BASE}.XXXXXXXXX")/${GOOGLE_CREDENTIALS_FILENAME}
   echo "${SIGNING_PACKAGES_GCS_CREDENTIALS_SECRET}" > ${secretFileLocation}
   gcloud auth activate-service-account --key-file ${secretFileLocation} 2> /dev/null
   export GOOGLE_APPLICATION_CREDENTIALS=${secretFileLocation}
@@ -424,7 +425,7 @@ teardown_serverless_test_package() {
     echo "Collect Elastic stack logs"
     ${ELASTIC_PACKAGE_BIN} stack dump -v --output ${dump_directory}
 
-    # TODO: upload insecure logs
+    upload_safe_logs_from_package ${integration}
 }
 
 teardown_test_package() {
@@ -434,28 +435,34 @@ teardown_test_package() {
     echo "Collect Elastic stack logs"
     ${ELASTIC_PACKAGE_BIN} stack dump -v --output ${dump_directory}
 
-    # TODO: upload insecure logs
+    upload_safe_logs_from_package ${integration}
 
     echo "Take down the Elastic stack"
     ${ELASTIC_PACKAGE_BIN} stack down -v
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort  #|egrep "netskope|logstash"
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort  |egrep "netskope|logstash|ti_rapid7"
 }
 
 check_package() {
     local integration=$1
     echo "Check integration: ${integration}"
-    ${ELASTIC_PACKAGE_BIN} check -v
+    if ! ${ELASTIC_PACKAGE_BIN} check -v ; then
+        return 1
+    fi
     echo ""
+    return 0
 }
 
 install_package() {
     local integration=$1
     echo "Install integration: ${integration}"
-    ${ELASTIC_PACKAGE_BIN} install -v
+    if ! ${ELASTIC_PACKAGE_BIN} install -v ; then
+        return 1
+    fi
     echo ""
+    return 0
 }
 
 test_package_in_serverless() {
@@ -510,4 +517,68 @@ create_collapsed_annotation() {
     cat ${annotation_file} | buildkite-agent annotate --style "${style}" --context "${context}"
 
     rm -f ${annotation_file}
+}
+
+google_cloud_auth_safe_logs() {
+    local gsUtilLocation=$(mktemp -d -p ${WORKSPACE} -t ${TMP_FOLDER_TEMPLATE})
+    local secretFileLocation=${gsUtilLocation}/${GOOGLE_CREDENTIALS_FILENAME}
+
+    echo "${PRIVATE_CI_GCS_CREDENTIALS_SECRET}" > ${secretFileLocation}
+
+    gcloud auth activate-service-account --key-file ${secretFileLocation} 2> /dev/null
+    export GOOGLE_APPLICATION_CREDENTIALS=${secretFileLocation}
+}
+
+upload_safe_logs() {
+    local bucket="$1"
+    local source="$2"
+    local target="$3"
+
+    if ! ls ${source} 2>&1 > /dev/null ; then
+        echo "upload_safe_logs: artifacts files not found, nothing will be archived"
+        return
+    fi
+
+    google_cloud_auth_safe_logs
+
+    gsutil cp ${source} "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${target}"
+
+    google_cloud_logout_active_account
+}
+
+buildkite_pr_branch_build_id() {
+    if [ "${BUILDKITE_PULL_REQUEST}" == "false" ]; then
+        echo "${BUILDKITE_BRANCH}-${BUILDKITE_BUILD_NUMBER}"
+        return
+    fi
+    echo "PR-${BUILDKITE_PULL_REQUEST}-${BUILDKITE_BUILD_NUMBER}"
+}
+
+upload_safe_logs_from_package() {
+    if [[ "${UPLOAD_SAFE_LOGS}" -eq 1 ]] ; then
+        return
+    fi
+
+    local integration=$1
+    local parent_folder="insecure-logs"
+    if [[ "${SERVERLESS_PROJECT}" != "" ]]; then
+        #TODO remove this if when just triggered from pipeline-serverless
+        parent_folder="insecure-serverless-${SERVERLESS_PROJECT}-logs"
+    fi
+
+    upload_safe_logs \
+        "${JOB_GCS_BUCKET_INTERNAL}" \
+        "build/elastic-stack-dump/${integration}/logs/elastic-agent-internal/*.*" \
+        "${parent_folder}/${integration}/elastic-agent-logs/"
+
+    # required for <8.6.0
+    upload_safe_logs \
+        "${JOB_GCS_BUCKET_INTERNAL}" \
+        "build/elastic-stack-dump/${integration}/logs/elastic-agent-internal/default/*" \
+        "${parent_folder}/${integration}/elastic-agent-logs/default/"
+
+    upload_safe_logs \
+        "${JOB_GCS_BUCKET_INTERNAL}" \
+        "build/container-logs/*.log" \
+        "${parent_folder}/${integration}/container-logs/"
 }

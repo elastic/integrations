@@ -12,7 +12,6 @@ export BUILD_TAG="buildkite-${BUILDKITE_PIPELINE_SLUG}-${BUILDKITE_BUILD_NUMBER}
 export REPO_BUILD_TAG="${REPO_NAME}/${BUILD_TAG}"
 
 JENKINS_TRIGGER_PATH=".buildkite/scripts/triggerJenkinsJob"
-GOOGLE_CREDENTIALS_FILENAME="google-cloud-credentials.json"
 
 # signing
 INFRA_SIGNING_BUCKET_NAME='internal-ci-artifacts'
