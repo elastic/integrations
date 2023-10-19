@@ -1,7 +1,7 @@
 # Imperva
 
-This integration is for the Imperva device's logs. It includes the
-datasets for receiving logs over syslog or reading from a file:
+This integration is for Imperva device logs. It includes the
+datasets for receiving logs over syslog or read from a file:
 - `securesphere` dataset: supports Imperva SecureSphere logs.
 
 ## Data streams
