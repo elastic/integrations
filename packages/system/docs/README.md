@@ -1969,7 +1969,7 @@ If running as less privileged user, it may not be able to read process data belo
 | system.process.cpu.total.ticks | The total CPU time spent by the process. | long |  | counter |
 | system.process.cpu.total.value | The value of CPU usage since starting the process. | long |  | counter |
 | system.process.cpu.user.ticks | The amount of CPU time the process spent in user space. | long |  | counter |
-| system.process.env | The environment variables used to start the process. The data is available on FreeBSD, Linux, and OS X. | object |  |  |
+| system.process.env | The environment variables used to start the process. The data is available on FreeBSD, Linux, and OS X. | flattened |  |  |
 | system.process.fd.limit.hard | The hard limit on the number of file descriptors opened by the process. The hard limit can only be raised by root. | long |  | gauge |
 | system.process.fd.limit.soft | The soft limit on the number of file descriptors opened by the process. The soft limit can be changed by the process at any time. | long |  | gauge |
 | system.process.fd.open | The number of file descriptors open by the process. | long |  | gauge |
