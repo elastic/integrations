@@ -200,6 +200,15 @@ processors:
       field: event.type
       value: connection
       if: "ctx?.source?.ip != null && ctx?.destination?.ip != null"
+  - grok:
+      field: user.name
+      patterns:
+        - '%{DATA:_tmp.user_leading_domain}\\%{DATA:user.name}@%{GREEDYDATA:user.domain}'
+        - '%{DATA:user.name}@%{GREEDYDATA:user.domain}'
+        - '%{DATA:user.domain}\\%{GREEDYDATA:user.name}'
+        - '%{GREEDYDATA:user.name}'
+      ignore_missing: true
+      if: ctx.user?.name != null && ctx.user?.name != ""
   - lowercase:
       field: host.name
       if: ctx.host?.name != null
@@ -255,6 +264,10 @@ processors:
           }
         }
         handleMap(ctx);
+  - remove:
+      field: _tmp
+      ignore_failure: true
+      ignore_missing: true
   - remove:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"

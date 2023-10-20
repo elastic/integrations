@@ -626,6 +626,7 @@ The fields reported are:
 | url.original.text | Multi-field of `url.original`. | match_only_text |
 | url.path | Path of the request, such as "/search". | wildcard |
 | url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 | user_agent.device.name | Name of the device. | keyword |
