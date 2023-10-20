@@ -1,0 +1,134 @@
+- name: logstash.pipeline
+  type: group
+  fields:
+    - name: name
+      type: keyword
+      dimension: true
+      description: Logstash Pipeline id/name
+    - name: elasticsearch.cluster.id
+      type: keyword
+      description: Elasticsearch clusters this Logstash pipeline is attached to
+    - name: host
+      description: Information about the host running the pipeline
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Host name of the node running logstash
+        - name: address
+          type: keyword
+          description: address hosting this instance of logstash
+          dimension: true
+    - name: total
+      type: group
+      description: Total metrics on Logstash Pipeline
+      fields:
+        - name: events.filtered
+          type: long
+          description: Number of events filtered by the pipeline
+          metric_type: counter
+        - name: events.in
+          type: long
+          metric_type: counter
+          description: Number of events received by the pipeline
+        - name: events.out
+          type: long
+          metric_type: counter
+          description: Number of events emitted by the pipeline
+        - name: time.duration.ms
+          unit: ms
+          type: long
+          metric_type: counter
+          description: Time spent processing events through the pipeline.
+        - name: time.queue_push_duration.ms
+          metric_type: counter
+          unit: ms
+          type: long
+          description: Time spent pushing events to the queue for this pipeline.
+        - name: reloads.successes
+          type: long
+          metric_type: counter
+          description: Number of successful reloads for this pipeline
+        - name: reloads.failures
+          type: long
+          metric_type: counter
+          description: Number of failed reloads for this pipeline
+        - name: flow
+          type: group
+          description: flow metrics
+          fields:
+            - name: queue_persisted_growth_events.current
+              type: scaled_float
+              metric_type: gauge
+              description: current value of the queue persisted growth events flow metric
+            - name: queue_persisted_growth_events.last_1_minute
+              type: scaled_float
+              metric_type: gauge
+              description: current value of the queue persisted growth events flow metric
+            - name: queue_persisted_growth_bytes.current
+              type: scaled_float
+              metric_type: gauge
+              description: current value of the queue persisted growth bytes flow metric
+            - name: queue_persisted_growth_bytes.last_1_minute
+              type: scaled_float
+              metric_type: gauge
+              description: current value of the queue persisted growth bytes flow metric
+            - name: worker_concurrency.current
+              type: scaled_float
+              metric_type: gauge
+              description: current value of the worker concurrency flow metric
+            - name: worker_concurrency.last_1_minute
+              metric_type: gauge
+              type: scaled_float
+              description: current value of the worker concurrency flow metric
+            - name: queue_backpressure.current
+              type: scaled_float
+              metric_type: gauge
+              description: current value of the queue backpressure flow metric
+            - name: queue_backpressure.last_1_minute
+              metric_type: gauge
+              type: scaled_float
+              description: current value of the queue backpressure flow metric
+            - name: input_throughput.current
+              type: scaled_float
+              metric_type: gauge
+              description: current value of the input throughput flow metric
+            - name: input_throughput.last_1_minute
+              metric_type: gauge
+              type: scaled_float
+              description: current value of the throughput flow metric
+            - name: filter_throughput.current
+              type: scaled_float
+              metric_type: gauge
+              description: current value of the filter throughput flow metric
+            - name: filter_throughput.last_1_minute
+              metric_type: gauge
+              type: scaled_float
+              description: current value of the filter throughput flow metric
+            - name: output_throughput.current
+              type: scaled_float
+              metric_type: gauge
+              description: current value of the output throughput flow metric
+            - name: output_throughput.last_1_minute
+              metric_type: gauge
+              type: scaled_float
+              description: current value of the output throughput flow metric
+        - name: queues
+          type: group
+          fields:
+            - name: type
+              type: keyword
+              description: Type of queue - persistent or memory
+            - name: events
+              type: long
+              description: Number of events in the PQ for this pipeline
+              metric_type: counter
+            - name: current_size.bytes
+              type: long
+              metric_type: gauge
+              unit: byte
+              description: Current size of the PQ
+            - name: max_size.bytes
+              metric_type: gauge
+              type: long
+              description: Maximum possible size of the PQ
