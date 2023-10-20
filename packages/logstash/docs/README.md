@@ -1123,11 +1123,14 @@ pipeline collection period, and setting it to an appropriate value.
 | logstash.pipeline.plugin.output.id | Id of output plugin | keyword |  |  |
 | logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.200 |  | long |  | counter |
 | logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.201 |  | long |  | counter |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.400 |  | long |  | counter |
 | logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.401 |  | long |  | counter |
 | logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.403 |  | long |  | counter |
 | logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.404 |  | long |  | counter |
 | logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.409 |  | long |  | counter |
 | logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.413 |  | long |  | counter |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.429 |  | long |  | counter |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.500 |  | long |  | counter |
 | logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.successes |  | long |  | counter |
 | logstash.pipeline.plugin.output.metrics.elasticsearch.documents.non_retryable_failures |  | long |  | counter |
 | logstash.pipeline.plugin.output.metrics.elasticsearch.documents.successes |  | long |  | counter |
