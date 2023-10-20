@@ -13,7 +13,7 @@ processors:
             message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - set:
       field: ecs.version
-      value: '8.9.0'
+      value: '8.10.0'
   #
   # Parse the syslog header
   #
@@ -389,7 +389,7 @@ processors:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         NOTCOLON: "[^:]*"
-        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?))
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106027'"
       field: "message"
@@ -445,18 +445,18 @@ processors:
       field: "message"
       description: "113004"
       patterns:
-      - "AAA user %{DATA:_temp_.cisco.aaa_type} Successful(%{SPACE})?: server =(%{SPACE}+)?%{IP:destination.address} [:,] [Uu]ser = %{CISCO_USER:source.user.name}"
+      - "AAA user %{DATA:_temp_.cisco.aaa_type} Successful(%{SPACE})?: server =(%{SPACE})?%{IP:destination.address} [:,] [Uu]ser = %{CISCO_USER:source.user.name}"
       pattern_definitions:
-        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?))
   - grok:
       if: "ctx._temp_.cisco.message_id == '113005'"
       description: "113005"
       field: "message"
       patterns: 
-      - "AAA user authentication Rejected(%{SPACE})?: reason = %{REASON}(%{SPACE})?: server = %{IP:destination.address}(%{SPACE})?: user = ?%{CISCO_USER:source.user.name}(%{SPACE})?: user IP = %{IP:source.address}"
+      - "AAA user authentication Rejected(%{SPACE})?: reason = %{REASON:_temp_.cisco.rejection_reason}(%{SPACE})?: server = %{IP:destination.address}(%{SPACE})?: user = ?%{CISCO_USER:source.user.name}(%{SPACE})?: user IP = %{IP:source.address}"
       pattern_definitions:
-        REASON: (AAA failure|Account has been disabled|Unspecified)
-        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+        REASON: (AAA failure|Account has been disabled|Invalid password|Password is expiring|Password has expired|Password malformed|Unspecified)
+        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?))
   - grok:
       if: "ctx._temp_.cisco.message_id == '113012'"
       field: "message"
@@ -464,7 +464,16 @@ processors:
       patterns:
       - "AAA user authentication Successful(%{SPACE})?: local database(%{SPACE})?: [Uu]ser = %{CISCO_USER:source.user.name}"
       pattern_definitions:
-        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?))
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '113015'"
+      field: "message"
+      description: "113015"
+      patterns:
+      - "AAA user authentication Rejected(%{SPACE})?: reason = %{REASON:_temp_.cisco.rejection_reason}(%{SPACE})?: local database(%{SPACE})?: [Uu]ser = %{CISCO_USER:source.user.name}(%{SPACE})?: [Uu]ser IP = %{IP:source.address}"
+      pattern_definitions:
+        REASON: (AAA failure|Account has been disabled|Invalid password|Password is expiring|Password has expired|Password malformed|Unspecified)
+        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?))
 
   - dissect:
       if: "ctx._temp_.cisco.message_id == '113019'"
@@ -491,7 +500,7 @@ processors:
       pattern_definitions:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
-        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?))
   - grok:
       if: '["302013", "302015"].contains(ctx._temp_.cisco.message_id)'
       field: "message"
@@ -508,7 +517,7 @@ processors:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         NOTCOLON: "[^:]*"
-        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?))
 # For messages: 302013, 302015, if outbound is specified in `network.direction`, the original control connection was initiated from the inside.
 # Hence reverse src and dst.
 # https://www.cisco.com/c/en/us/td/docs/security/asa/syslog/b_syslog/syslogs3.html#con_4770603
@@ -522,7 +531,7 @@ processors:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         NOTCOLON: "[^:]*"
-        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?))
   - dissect:
       if: "ctx._temp_.cisco.message_id == '303002'"
       field: "message"
@@ -538,7 +547,7 @@ processors:
         NOTCOLON: "[^:]*"
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
-        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?))
         DURATION: "%{INT}:%{MINUTE}:%{SECOND}"
   - set:
       if: '["302020"].contains(ctx._temp_.cisco.message_id)'
@@ -558,7 +567,7 @@ processors:
         ECSSOURCEIPORHOST: "(?:%{IP:source.address}|%{HOSTNAME:source.domain})"
         ECSDESTIPORHOST: "(?:%{IP:destination.address}|%{HOSTNAME:destination.domain})"
         MAPPEDSRC: "(?:%{DATA:_temp_.natsrcip}|%{HOSTNAME})"
-        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?))
   - dissect:
       if: "ctx._temp_.cisco.message_id == '302022'"
       field: "message"
@@ -607,6 +616,7 @@ processors:
       description: "313005"
       patterns:
         - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST} dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.ip}(/%{NUMBER:source.port})? dst %{IPORHOST:destination.ip}(/%{NUMBER:destination.port})?[.]?"
+        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST} dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: protocol %{NUMBER:_temp_.cisco.original_iana_number} src %{IPORHOST:source.ip}(/%{NUMBER:source.port})? dst %{IPORHOST:destination.ip}(/%{NUMBER:destination.port})?[.]?"
         - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST}\\(%{NOTCOLON:source.user.domain}\\\\%{NOTSPACE:source.user.group.name}\\\\%{NOTSPACE:source.user.name}\\) dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.ip}(/%{NUMBER:source.port})? dst %{IPORHOST:destination.ip}(/%{NUMBER:destination.port})?[.]?"
         - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST}\\(%{NOTCOLON:source.user.domain}\\\\%{NOTSPACE:source.user.name}\\) dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.ip}(/%{NUMBER:source.port})? dst %{IPORHOST:destination.ip}(/%{NUMBER:destination.port})?[.]?"
       pattern_definitions:
@@ -1111,7 +1121,7 @@ processors:
         ECSDESTIPORHOST: "(?:%{IP:destination.address}|%{HOSTNAME:destination.domain})"
         MAPPEDSRC: "(?:%{IPORHOST:_temp_.natsrcip}|%{HOSTNAME})"
         DURATION: "%{INT}:%{MINUTE}:%{SECOND}"
-        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?))
       on_failure:
         - append:
             field: error.message
@@ -1957,6 +1967,15 @@ processors:
             field: error.message
             value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
+      field: _temp_.cisco.original_iana_number
+      tag: "convert_original_iana_number"
+      type: integer
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
+  - convert:
       field: http.response.status_code
       tag: "convert_http_resp_status_code"
       type: integer
@@ -2340,30 +2359,27 @@ processors:
             - network
           type:
             - info
-            - change
         error:
           kind: event
           outcome: failure
           category:
             - network
           type:
-            - error
+            - info
         deleted:
           kind: event
           category:
             - network
           type:
             - info
-            - deletion
-            - user
+            - end
         creation:
           kind: event
           category:
             - network
           type:
             - info
-            - creation
-            - user
+            - access
         client-vpn-connected:
           kind: event
           category:
@@ -2378,7 +2394,6 @@ processors:
             - network
           type:
             - connection
-            - error
             - denied
         client-vpn-disconnected:
           kind: event
@@ -2490,22 +2505,22 @@ processors:
   - append:
       field: related.user
       value: "{{{user.name}}}"
-      if: ctx?.user?.name != null && ctx?.user?.name != ''
+      if: ctx?.user?.name != null && ctx.user.name != '' && ctx.user.name != '*****'
       allow_duplicates: false
   - append:
       field: related.user
       value: "{{{server.user.name}}}"
-      if: ctx?.server?.user?.name != null && ctx?.server?.user?.name != ''
+      if: ctx?.server?.user?.name != null && ctx.server.user.name != '' && ctx.server.user.name != '*****'
       allow_duplicates: false
   - append:
       field: related.user
       value: "{{{source.user.name}}}"
-      if: ctx?.source?.user?.name != null && ctx?.source?.user?.name != ''
+      if: ctx?.source?.user?.name != null && ctx.source.user.name != '' && ctx.source.user.name != '*****'
       allow_duplicates: false
   - append:
       field: related.user
       value: "{{{destination.user.name}}}"
-      if: ctx?.destination?.user?.name != null && ctx?.destination?.user?.name != ''
+      if: ctx?.destination?.user?.name != null && ctx.destination.user.name != '' && ctx.destination.user.name != '*****'
       allow_duplicates: false
   - append:
       field: related.hash
