@@ -2,7 +2,7 @@
 description: Pipelines for enriching DNS data. Ignores non-DNS data.
 processors:
   - pipeline:
-      if: ctx.type=='dns' && ctx.dns.question.type != 'PTR'
+      if: ctx.network?.protocol == 'dns' && ctx.dns?.question?.type != 'PTR'
       name: '{{ IngestPipeline "ml_dga_inference_pipeline" }}'
 version: 1
 on_failure:

@@ -111,7 +111,13 @@ The `database_audit` dataset collects Oracle Audit logs.
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.flags | related log flags |  |
 | log.offset | Log offset | long |
 | message | human-readable summary of the event | text |
@@ -161,35 +167,15 @@ An example event for `database_audit` looks as following:
 {
     "@timestamp": "2020-10-07T14:57:51.000Z",
     "agent": {
-        "ephemeral_id": "bb963eee-9be8-4811-902c-54c684a7c036",
-        "id": "ea8aab59-2fd7-4694-8024-7154f25adb03",
+        "ephemeral_id": "c8ada4ef-14e4-462f-b998-dd8c711b4ec7",
+        "id": "50560b92-4232-4158-b79d-9e6be7098c58",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.3"
+        "version": "8.10.2"
     },
     "client": {
         "user": {
             "name": "oracle"
-        }
-    },
-    "cloud": {
-        "account": {
-            "id": "elastic-obs-integrations-dev"
-        },
-        "availability_zone": "asia-south1-c",
-        "instance": {
-            "id": "3010911784348669868",
-            "name": "service-integration-dev-idc-01"
-        },
-        "machine": {
-            "type": "n1-standard-8"
-        },
-        "project": {
-            "id": "elastic-obs-integrations-dev"
-        },
-        "provider": "gcp",
-        "service": {
-            "name": "GCE"
         }
     },
     "data_stream": {
@@ -201,16 +187,16 @@ An example event for `database_audit` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "ea8aab59-2fd7-4694-8024-7154f25adb03",
+        "id": "50560b92-4232-4158-b79d-9e6be7098c58",
         "snapshot": false,
-        "version": "8.4.3"
+        "version": "8.10.2"
     },
     "event": {
         "action": "database_audit",
         "agent_id_status": "verified",
         "category": "database",
         "dataset": "oracle.database_audit",
-        "ingested": "2022-11-09T04:17:52Z",
+        "ingested": "2023-10-05T12:18:05Z",
         "kind": "event",
         "outcome": "success",
         "timezone": "-04:00",
@@ -220,22 +206,22 @@ An example event for `database_audit` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "702b305d5bf3433b8efe81033888bd28",
+        "id": "efe661d97f0c4d9883075c393da6b0d8",
         "ip": [
-            "192.168.240.7"
+            "172.28.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:f0:07"
+            "02-42-AC-1C-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.4.0-1078-gcp",
+            "kernel": "5.15.90.1-microsoft-standard-WSL2",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.5 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "input": {
@@ -243,6 +229,8 @@ An example event for `database_audit` looks as following:
     },
     "log": {
         "file": {
+            "device_id": 2080,
+            "inode": 827222,
             "path": "/tmp/service_logs/ORCLCDB_ora_13765_20201007105751904399925443.aud.log"
         },
         "flags": [
