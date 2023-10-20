@@ -92,7 +92,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "45e49275-eb7d-4b20-a8af-d084fb2551c7",
@@ -244,7 +244,7 @@ An example event for `alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "c073dde3-4d37-4b40-8161-a008a04d551f",
@@ -420,33 +420,18 @@ An example event for `endpoint_event` looks as following:
 
 ```json
 {
-    "process": {
-        "parent": {
-            "pid": 1684,
-            "entity_id": "XXXXXXXX-003d902d-00000694-00000000-1d7540221dedd62",
-            "command_line": "C:\\WindowsAzure\\GuestAgent_2.7.41491.1010_2021-05-11_233023\\GuestAgent\\WindowsAzureGuestAgent.exe",
-            "executable": "c:\\windowsazure\\guestagent_2.7.41491.1010_2021-05-11_233023\\guestagent\\windowsazureguestagent.exe",
-            "hash": {
-                "sha256": "44a1975b2197484bb22a0eb673e67e7ee9ec20265e9f6347f5e06b6447ac82c5",
-                "md5": "03dd698da2671383c9b4f868c9931879"
-            }
-        },
-        "pid": 4880,
-        "entity_id": "XXXXXXXX-003d902d-00001310-00000000-1d81e748c4adb37",
-        "command_line": "\"route.exe\" print",
-        "executable": "c:\\windows\\system32\\route.exe",
-        "hash": {
-            "sha256": "9e9c7696859b94b1c33a532fa4d5c648226cf3361121dd899e502b8949fb11a6",
-            "md5": "2498272dc48446891182747428d02a30"
-        }
-    },
-    "ecs": {
-        "version": "8.9.0"
-    },
     "carbon_black_cloud": {
         "endpoint_event": {
-            "schema": 1,
+            "backend": {
+                "timestamp": "2022-02-10 11:52:50 +0000 UTC"
+            },
+            "device": {
+                "external_ip": "67.43.156.12",
+                "os": "WINDOWS",
+                "timestamp": "2022-02-10 11:51:35.0684097 +0000 UTC"
+            },
             "event_origin": "EDR",
+            "organization_key": "XXXXXXXX",
             "process": {
                 "duration": 2,
                 "parent": {
@@ -468,46 +453,61 @@ An example event for `endpoint_event` looks as following:
                 "terminated": true,
                 "username": "NT AUTHORITY\\SYSTEM"
             },
-            "organization_key": "XXXXXXXX",
-            "backend": {
-                "timestamp": "2022-02-10 11:52:50 +0000 UTC"
-            },
+            "schema": 1,
+            "sensor_action": "ACTION_ALLOW",
             "target_cmdline": "\"route.exe\" print",
-            "type": "endpoint.event.procend",
-            "device": {
-                "os": "WINDOWS",
-                "timestamp": "2022-02-10 11:51:35.0684097 +0000 UTC",
-                "external_ip": "67.43.156.12"
-            },
-            "sensor_action": "ACTION_ALLOW"
+            "type": "endpoint.event.procend"
         }
-    },
-    "host": {
-        "hostname": "client-cb2",
-        "id": "4034605",
-        "os": {
-            "type": "windows"
-        },
-        "ip": [
-            "67.43.156.13"
-        ]
-    },
-    "event": {
-        "action": "ACTION_PROCESS_TERMINATE",
-        "orignal": "{\"type\":\"endpoint.event.procend\",\"process_guid\":\"XXXXXXXX-003d902d-00001310-00000000-1d81e748c4adb37\",\"parent_guid\":\"XXXXXXXX-003d902d-00000694-00000000-1d7540221dedd62\",\"backend_timestamp\":\"2022-02-10 11:52:50 +0000 UTC\",\"org_key\":\"XXXXXXXX\",\"device_id\":\"4034605\",\"device_name\":\"client-cb2\",\"device_external_ip\":\"67.43.156.13\",\"device_os\":\"WINDOWS\",\"device_group\":\"\",\"action\":\"ACTION_PROCESS_TERMINATE\",\"schema\":1,\"device_timestamp\":\"2022-02-10 11:51:35.0684097 +0000 UTC\",\"process_terminated\":true,\"process_duration\":2,\"process_reputation\":\"REP_RESOLVING\",\"parent_reputation\":\"REP_RESOLVING\",\"process_pid\":4880,\"parent_pid\":1684,\"process_publisher\":[{\"name\":\"Microsoft Windows\",\"state\":\"FILE_SIGNATURE_STATE_SIGNED | FILE_SIGNATURE_STATE_VERIFIED | FILE_SIGNATURE_STATE_TRUSTED | FILE_SIGNATURE_STATE_OS | FILE_SIGNATURE_STATE_CATALOG_SIGNED\"}],\"process_path\":\"c:\\\\windows\\\\system32\\\\route.exe\",\"parent_path\":\"c:\\\\windowsazure\\\\guestagent_2.7.41491.1010_2021-05-11_233023\\\\guestagent\\\\windowsazureguestagent.exe\",\"process_hash\":[\"2498272dc48446891182747428d02a30\",\"9e9c7696859b94b1c33a532fa4d5c648226cf3361121dd899e502b8949fb11a6\"],\"parent_hash\":[\"03dd698da2671383c9b4f868c9931879\",\"44a1975b2197484bb22a0eb673e67e7ee9ec20265e9f6347f5e06b6447ac82c5\"],\"process_cmdline\":\"\\\"route.exe\\\" print\",\"parent_cmdline\":\"C:\\\\WindowsAzure\\\\GuestAgent_2.7.41491.1010_2021-05-11_233023\\\\GuestAgent\\\\WindowsAzureGuestAgent.exe\",\"process_username\":\"NT AUTHORITY\\\\SYSTEM\",\"sensor_action\":\"ACTION_ALLOW\",\"event_origin\":\"EDR\",\"target_cmdline\":\"\\\"route.exe\\\" print\"}"
     },
     "data_stream": {
         "dataset": "carbon_black_cloud.endpoint_event",
         "namespace": "ep",
         "type": "logs"
     },
+    "ecs": {
+        "version": "8.10.0"
+    },
     "elastic_agent": {
         "id": "3b20ea47-9610-412d-97e3-47cd19b7e4d5",
         "snapshot": true,
         "version": "8.0.0"
     },
+    "event": {
+        "action": "ACTION_PROCESS_TERMINATE",
+        "orignal": "{\"type\":\"endpoint.event.procend\",\"process_guid\":\"XXXXXXXX-003d902d-00001310-00000000-1d81e748c4adb37\",\"parent_guid\":\"XXXXXXXX-003d902d-00000694-00000000-1d7540221dedd62\",\"backend_timestamp\":\"2022-02-10 11:52:50 +0000 UTC\",\"org_key\":\"XXXXXXXX\",\"device_id\":\"4034605\",\"device_name\":\"client-cb2\",\"device_external_ip\":\"67.43.156.13\",\"device_os\":\"WINDOWS\",\"device_group\":\"\",\"action\":\"ACTION_PROCESS_TERMINATE\",\"schema\":1,\"device_timestamp\":\"2022-02-10 11:51:35.0684097 +0000 UTC\",\"process_terminated\":true,\"process_duration\":2,\"process_reputation\":\"REP_RESOLVING\",\"parent_reputation\":\"REP_RESOLVING\",\"process_pid\":4880,\"parent_pid\":1684,\"process_publisher\":[{\"name\":\"Microsoft Windows\",\"state\":\"FILE_SIGNATURE_STATE_SIGNED | FILE_SIGNATURE_STATE_VERIFIED | FILE_SIGNATURE_STATE_TRUSTED | FILE_SIGNATURE_STATE_OS | FILE_SIGNATURE_STATE_CATALOG_SIGNED\"}],\"process_path\":\"c:\\\\windows\\\\system32\\\\route.exe\",\"parent_path\":\"c:\\\\windowsazure\\\\guestagent_2.7.41491.1010_2021-05-11_233023\\\\guestagent\\\\windowsazureguestagent.exe\",\"process_hash\":[\"2498272dc48446891182747428d02a30\",\"9e9c7696859b94b1c33a532fa4d5c648226cf3361121dd899e502b8949fb11a6\"],\"parent_hash\":[\"03dd698da2671383c9b4f868c9931879\",\"44a1975b2197484bb22a0eb673e67e7ee9ec20265e9f6347f5e06b6447ac82c5\"],\"process_cmdline\":\"\\\"route.exe\\\" print\",\"parent_cmdline\":\"C:\\\\WindowsAzure\\\\GuestAgent_2.7.41491.1010_2021-05-11_233023\\\\GuestAgent\\\\WindowsAzureGuestAgent.exe\",\"process_username\":\"NT AUTHORITY\\\\SYSTEM\",\"sensor_action\":\"ACTION_ALLOW\",\"event_origin\":\"EDR\",\"target_cmdline\":\"\\\"route.exe\\\" print\"}"
+    },
+    "host": {
+        "hostname": "client-cb2",
+        "id": "4034605",
+        "ip": [
+            "67.43.156.13"
+        ],
+        "os": {
+            "type": "windows"
+        }
+    },
     "input": {
         "type": "aws-s3"
+    },
+    "process": {
+        "command_line": "\"route.exe\" print",
+        "entity_id": "XXXXXXXX-003d902d-00001310-00000000-1d81e748c4adb37",
+        "executable": "c:\\windows\\system32\\route.exe",
+        "hash": {
+            "md5": "2498272dc48446891182747428d02a30",
+            "sha256": "9e9c7696859b94b1c33a532fa4d5c648226cf3361121dd899e502b8949fb11a6"
+        },
+        "parent": {
+            "command_line": "C:\\WindowsAzure\\GuestAgent_2.7.41491.1010_2021-05-11_233023\\GuestAgent\\WindowsAzureGuestAgent.exe",
+            "entity_id": "XXXXXXXX-003d902d-00000694-00000000-1d7540221dedd62",
+            "executable": "c:\\windowsazure\\guestagent_2.7.41491.1010_2021-05-11_233023\\guestagent\\windowsazureguestagent.exe",
+            "hash": {
+                "md5": "03dd698da2671383c9b4f868c9931879",
+                "sha256": "44a1975b2197484bb22a0eb673e67e7ee9ec20265e9f6347f5e06b6447ac82c5"
+            },
+            "pid": 1684
+        },
+        "pid": 4880
     },
     "tags": [
         "preserve_original_event",
@@ -664,50 +664,23 @@ An example event for `watchlist_hit` looks as following:
 
 ```json
 {
-    "tags": [
-        "preserve_original_event",
-        "forwarded",
-        "carbon_black_cloud-watchlist-hit"
-    ],
-    "input": {
-        "type": "aws-s3"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "logs",
-        "dataset": "carbon_black_cloud.watchlist_hit"
-    },
     "agent": {
         "id": "e0d5f508-9616-400f-b26b-bb1aa6638b80",
         "type": "filebeat",
         "version": "8.0.0"
     },
-    "ecs": {
-        "version": "8.9.0"
-    },
-    "process": {
-        "parent": {
-            "pid": 4076,
-            "entity_id": "7DESJ9GN-00442a47-00000fec-00000000-1d81ed87d4655d1",
-            "command_line": "C:\\WINDOWS\\system32\\cmd.exe /c \"sc query aella_conf | findstr RUNNING \u003e null\"",
-            "executable": "c:\\windows\\syswow64\\cmd.exe",
-            "hash": {
-                "sha256": "4d89fc34d5f0f9babd022271c585a9477bf41e834e46b991deaa0530fdb25e22",
-                "md5": "d0fce3afa6aa1d58ce9fa336cc2b675b"
-            }
-        },
-        "pid": 7516,
-        "entity_id": "7DESJ9GN-00442a47-00001d5c-00000000-1d81ed87d63d2c6",
-        "command_line": "sc  query aella_conf ",
-        "executable": "c:\\windows\\syswow64\\sc.exe",
-        "hash": {
-            "sha256": "4fe6d9eb8109fb79ff645138de7cff37906867aade589bd68afa503a9ab3cfb2",
-            "md5": "d9d7684b8431a0d10d0e76fe9f5ffec8"
-        }
-    },
     "carbon_black_cloud": {
         "watchlist_hit": {
-            "schema": 1,
+            "device": {
+                "external_ip": "67.43.156.12",
+                "internal_ip": "10.10.156.12",
+                "os": "WINDOWS"
+            },
+            "ioc": {
+                "hit": "((process_name:sc.exe -parent_name:svchost.exe) AND process_cmdline:query) -enriched:true",
+                "id": "565571-0"
+            },
+            "organization_key": "xxxxxxxx",
             "process": {
                 "parent": {
                     "publisher": [
@@ -740,10 +713,9 @@ An example event for `watchlist_hit` looks as following:
                 "reputation": "REP_WHITE",
                 "username": "NT AUTHORITY\\SYSTEM"
             },
-            "organization_key": "xxxxxxxx",
             "report": {
-                "name": "Discovery - System Service Discovery Detected",
                 "id": "CFnKBKLTv6hUkBGFobRdg-565571",
+                "name": "Discovery - System Service Discovery Detected",
                 "tags": [
                     "attack",
                     "attackframework",
@@ -755,43 +727,71 @@ An example event for `watchlist_hit` looks as following:
                     "windows"
                 ]
             },
+            "schema": 1,
+            "type": "watchlist.hit",
             "watchlists": [
                 {
-                    "name": "ATT\u0026CK Framework",
-                    "id": "P5f9AW29TGmTOvBW156Cig"
+                    "id": "P5f9AW29TGmTOvBW156Cig",
+                    "name": "ATT\u0026CK Framework"
                 }
-            ],
-            "type": "watchlist.hit",
-            "ioc": {
-                "hit": "((process_name:sc.exe -parent_name:svchost.exe) AND process_cmdline:query) -enriched:true",
-                "id": "565571-0"
-            },
-            "device": {
-                "internal_ip": "10.10.156.12",
-                "external_ip": "67.43.156.12",
-                "os": "WINDOWS"
-            }
+            ]
         }
+    },
+    "data_stream": {
+        "dataset": "carbon_black_cloud.watchlist_hit",
+        "namespace": "default",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.10.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "carbon_black_cloud.watchlist_hit",
+        "ingested": "2022-02-17T07:23:31Z",
+        "kind": "event",
+        "original": "{\"schema\":1,\"create_time\":\"2022-02-10T23:54:32.449Z\",\"device_external_ip\":\"205.234.30.196\",\"device_id\":4467271,\"device_internal_ip\":\"10.33.4.214\",\"device_name\":\"Carbonblack-win1\",\"device_os\":\"WINDOWS\",\"ioc_hit\":\"((process_name:sc.exe -parent_name:svchost.exe) AND process_cmdline:query) -enriched:true\",\"ioc_id\":\"565571-0\",\"org_key\":\"7DESJ9GN\",\"parent_cmdline\":\"C:\\\\WINDOWS\\\\system32\\\\cmd.exe /c \\\"sc query aella_conf | findstr RUNNING \\u003e null\\\"\",\"parent_guid\":\"7DESJ9GN-00442a47-00000fec-00000000-1d81ed87d4655d1\",\"parent_hash\":[\"d0fce3afa6aa1d58ce9fa336cc2b675b\",\"4d89fc34d5f0f9babd022271c585a9477bf41e834e46b991deaa0530fdb25e22\"],\"parent_path\":\"c:\\\\windows\\\\syswow64\\\\cmd.exe\",\"parent_pid\":4076,\"parent_publisher\":[{\"name\":\"Microsoft Windows\",\"state\":\"FILE_SIGNATURE_STATE_SIGNED | FILE_SIGNATURE_STATE_VERIFIED | FILE_SIGNATURE_STATE_TRUSTED | FILE_SIGNATURE_STATE_OS | FILE_SIGNATURE_STATE_CATALOG_SIGNED\"}],\"parent_reputation\":\"REP_WHITE\",\"parent_username\":\"NT AUTHORITY\\\\SYSTEM\",\"process_cmdline\":\"sc  query aella_conf \",\"process_guid\":\"7DESJ9GN-00442a47-00001d5c-00000000-1d81ed87d63d2c6\",\"process_hash\":[\"d9d7684b8431a0d10d0e76fe9f5ffec8\",\"4fe6d9eb8109fb79ff645138de7cff37906867aade589bd68afa503a9ab3cfb2\"],\"process_path\":\"c:\\\\windows\\\\syswow64\\\\sc.exe\",\"process_pid\":7516,\"process_publisher\":[{\"name\":\"Microsoft Windows\",\"state\":\"FILE_SIGNATURE_STATE_SIGNED | FILE_SIGNATURE_STATE_VERIFIED | FILE_SIGNATURE_STATE_TRUSTED | FILE_SIGNATURE_STATE_OS | FILE_SIGNATURE_STATE_CATALOG_SIGNED\"}],\"process_reputation\":\"REP_WHITE\",\"process_username\":\"NT AUTHORITY\\\\SYSTEM\",\"report_id\":\"CFnKBKLTv6hUkBGFobRdg-565571\",\"report_name\":\"Discovery - System Service Discovery Detected\",\"report_tags\":[\"attack\",\"attackframework\",\"threathunting\",\"hunting\",\"t1007\",\"recon\",\"discovery\",\"windows\"],\"severity\":3,\"type\":\"watchlist.hit\",\"watchlists\":[{\"id\":\"P5f9AW29TGmTOvBW156Cig\",\"name\":\"ATT\\u0026CK Framework\"}]}",
+        "severity": 3
     },
     "host": {
         "hostname": "Carbonblack-win1",
-        "os": {
-            "type": "windows"
-        },
+        "id": "4467271",
         "ip": [
             "10.10.156.12",
             "67.43.156.12"
         ],
-        "id": "4467271"
+        "os": {
+            "type": "windows"
+        }
     },
-    "event": {
-        "kind": "event",
-        "severity": 3,
-        "agent_id_status": "verified",
-        "ingested": "2022-02-17T07:23:31Z",
-        "original": "{\"schema\":1,\"create_time\":\"2022-02-10T23:54:32.449Z\",\"device_external_ip\":\"205.234.30.196\",\"device_id\":4467271,\"device_internal_ip\":\"10.33.4.214\",\"device_name\":\"Carbonblack-win1\",\"device_os\":\"WINDOWS\",\"ioc_hit\":\"((process_name:sc.exe -parent_name:svchost.exe) AND process_cmdline:query) -enriched:true\",\"ioc_id\":\"565571-0\",\"org_key\":\"7DESJ9GN\",\"parent_cmdline\":\"C:\\\\WINDOWS\\\\system32\\\\cmd.exe /c \\\"sc query aella_conf | findstr RUNNING \\u003e null\\\"\",\"parent_guid\":\"7DESJ9GN-00442a47-00000fec-00000000-1d81ed87d4655d1\",\"parent_hash\":[\"d0fce3afa6aa1d58ce9fa336cc2b675b\",\"4d89fc34d5f0f9babd022271c585a9477bf41e834e46b991deaa0530fdb25e22\"],\"parent_path\":\"c:\\\\windows\\\\syswow64\\\\cmd.exe\",\"parent_pid\":4076,\"parent_publisher\":[{\"name\":\"Microsoft Windows\",\"state\":\"FILE_SIGNATURE_STATE_SIGNED | FILE_SIGNATURE_STATE_VERIFIED | FILE_SIGNATURE_STATE_TRUSTED | FILE_SIGNATURE_STATE_OS | FILE_SIGNATURE_STATE_CATALOG_SIGNED\"}],\"parent_reputation\":\"REP_WHITE\",\"parent_username\":\"NT AUTHORITY\\\\SYSTEM\",\"process_cmdline\":\"sc  query aella_conf \",\"process_guid\":\"7DESJ9GN-00442a47-00001d5c-00000000-1d81ed87d63d2c6\",\"process_hash\":[\"d9d7684b8431a0d10d0e76fe9f5ffec8\",\"4fe6d9eb8109fb79ff645138de7cff37906867aade589bd68afa503a9ab3cfb2\"],\"process_path\":\"c:\\\\windows\\\\syswow64\\\\sc.exe\",\"process_pid\":7516,\"process_publisher\":[{\"name\":\"Microsoft Windows\",\"state\":\"FILE_SIGNATURE_STATE_SIGNED | FILE_SIGNATURE_STATE_VERIFIED | FILE_SIGNATURE_STATE_TRUSTED | FILE_SIGNATURE_STATE_OS | FILE_SIGNATURE_STATE_CATALOG_SIGNED\"}],\"process_reputation\":\"REP_WHITE\",\"process_username\":\"NT AUTHORITY\\\\SYSTEM\",\"report_id\":\"CFnKBKLTv6hUkBGFobRdg-565571\",\"report_name\":\"Discovery - System Service Discovery Detected\",\"report_tags\":[\"attack\",\"attackframework\",\"threathunting\",\"hunting\",\"t1007\",\"recon\",\"discovery\",\"windows\"],\"severity\":3,\"type\":\"watchlist.hit\",\"watchlists\":[{\"id\":\"P5f9AW29TGmTOvBW156Cig\",\"name\":\"ATT\\u0026CK Framework\"}]}",
-        "dataset": "carbon_black_cloud.watchlist_hit"
-    }
+    "input": {
+        "type": "aws-s3"
+    },
+    "process": {
+        "command_line": "sc  query aella_conf ",
+        "entity_id": "7DESJ9GN-00442a47-00001d5c-00000000-1d81ed87d63d2c6",
+        "executable": "c:\\windows\\syswow64\\sc.exe",
+        "hash": {
+            "md5": "d9d7684b8431a0d10d0e76fe9f5ffec8",
+            "sha256": "4fe6d9eb8109fb79ff645138de7cff37906867aade589bd68afa503a9ab3cfb2"
+        },
+        "parent": {
+            "command_line": "C:\\WINDOWS\\system32\\cmd.exe /c \"sc query aella_conf | findstr RUNNING \u003e null\"",
+            "entity_id": "7DESJ9GN-00442a47-00000fec-00000000-1d81ed87d4655d1",
+            "executable": "c:\\windows\\syswow64\\cmd.exe",
+            "hash": {
+                "md5": "d0fce3afa6aa1d58ce9fa336cc2b675b",
+                "sha256": "4d89fc34d5f0f9babd022271c585a9477bf41e834e46b991deaa0530fdb25e22"
+            },
+            "pid": 4076
+        },
+        "pid": 7516
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "carbon_black_cloud-watchlist-hit"
+    ]
 }
 ```
 
@@ -919,7 +919,7 @@ An example event for `asset_vulnerability_summary` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
         "id": "45e49275-eb7d-4b20-a8af-d084fb2551c7",
