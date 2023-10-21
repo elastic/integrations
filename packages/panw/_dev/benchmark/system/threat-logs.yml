@@ -1,0 +1,20 @@
+---
+description: Benchmark 100MiB of Threat logs ingested
+input: logfile
+vars:
+  paths:
+    - "{{SERVICE_LOGS_DIR}}/corpus-*"
+data_stream:
+  name: panos
+warmup_time_period: 10s
+corpora:
+  generator:
+    # Number of events from https://github.com/elastic/integrations/pull/8233#discussion_r1364688400
+    total_events: 115000
+    template:
+      path: ./threat-benchmark/gotext.tpl
+      type: gotext
+    config:
+      path: ./threat-benchmark/config.yml
+    fields:
+      path: ./threat-benchmark/fields.yml
