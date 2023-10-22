@@ -9,11 +9,34 @@
         "description": "Overview of AWS Fargate Metrics",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
                 "query": {
                     "language": "kuery",
                     "query": ""
-                }
+                },
+                "filter": [
+                    {
+                        "meta": {
+                            "disabled": false,
+                            "negate": false,
+                            "alias": null,
+                            "key": "data_stream.dataset",
+                            "field": "data_stream.dataset",
+                            "params": {
+                                "query": "awsfargate.task_stats"
+                            },
+                            "type": "phrase",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "awsfargate.task_stats"
+                            }
+                        },
+                        "$state": {
+                            "store": "appState"
+                        }
+                    }
+                ]
             }
         },
         "optionsJSON": {
@@ -25,19 +48,23 @@
         },
         "panelsJSON": [
             {
+                "type": "lens",
+                "gridData": {
+                    "h": 14,
+                    "i": "85f01c63-2045-4494-a33a-66e6ce39416c",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "85f01c63-2045-4494-a33a-66e6ce39416c",
                 "embeddableConfig": {
                     "attributes": {
                         "description": "",
                         "references": [
                             {
+                                "type": "index-pattern",
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-e350c9e6-e6b7-40f1-83ed-94a38ed9467a",
-                                "type": "index-pattern"
+                                "name": "indexpattern-datasource-layer-e350c9e6-e6b7-40f1-83ed-94a38ed9467a"
                             }
                         ],
                         "state": {
@@ -51,8 +78,7 @@
                                                 "b1e08425-6a1e-4db6-bb47-a65167b7e14f",
                                                 "09de0d9e-c174-46cf-bdc8-50158475b4a7",
                                                 "e0782143-0636-43b4-8fac-b857ea5282b2",
-                                                "7626706b-6efa-4fe7-b45c-6e9afa07f982",
-                                                "441ceb32-53e7-4408-9638-6dfd38202144"
+                                                "7626706b-6efa-4fe7-b45c-6e9afa07f982"
                                             ],
                                             "columns": {
                                                 "040803fd-23f9-4f4f-95da-e8be99becbc1": {
@@ -90,23 +116,6 @@
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "awsfargate.task_stats.cpu.total.norm.pct"
-                                                },
-                                                "441ceb32-53e7-4408-9638-6dfd38202144": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Memory",
-                                                    "operationType": "average",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "percent",
-                                                            "params": {
-                                                                "decimals": 3
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "awsfargate.task_stats.memory.usage.pct"
                                                 },
                                                 "7626706b-6efa-4fe7-b45c-6e9afa07f982": {
                                                     "customLabel": true,
@@ -172,9 +181,12 @@
                                                     "scale": "ordinal",
                                                     "sourceField": "container.name"
                                                 }
-                                            }
+                                            },
+                                            "indexPatternId": "metrics-*",
+                                            "incompleteColumns": {}
                                         }
-                                    }
+                                    },
+                                    "currentIndexPatternId": "metrics-*"
                                 }
                             },
                             "filters": [],
@@ -191,19 +203,20 @@
                                         "columnId": "040803fd-23f9-4f4f-95da-e8be99becbc1"
                                     },
                                     {
-                                        "columnId": "b1e08425-6a1e-4db6-bb47-a65167b7e14f"
+                                        "columnId": "b1e08425-6a1e-4db6-bb47-a65167b7e14f",
+                                        "width": 520.1666666666666
                                     },
                                     {
-                                        "columnId": "09de0d9e-c174-46cf-bdc8-50158475b4a7"
+                                        "columnId": "09de0d9e-c174-46cf-bdc8-50158475b4a7",
+                                        "alignment": "left"
                                     },
                                     {
-                                        "columnId": "e0782143-0636-43b4-8fac-b857ea5282b2"
+                                        "columnId": "e0782143-0636-43b4-8fac-b857ea5282b2",
+                                        "alignment": "left"
                                     },
                                     {
-                                        "columnId": "7626706b-6efa-4fe7-b45c-6e9afa07f982"
-                                    },
-                                    {
-                                        "columnId": "441ceb32-53e7-4408-9638-6dfd38202144"
+                                        "columnId": "7626706b-6efa-4fe7-b45c-6e9afa07f982",
+                                        "alignment": "left"
                                     }
                                 ],
                                 "layerId": "e350c9e6-e6b7-40f1-83ed-94a38ed9467a",
@@ -213,37 +226,32 @@
                             }
                         },
                         "title": "Container Table [Metrics AWSFargate]",
-                        "visualizationType": "lnsDatatable"
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
-                "gridData": {
-                    "h": 14,
-                    "i": "735a25cb-f781-4a8b-99e6-2adf582f8a37",
-                    "w": 48,
-                    "x": 0,
-                    "y": 0
-                },
-                "panelIndex": "735a25cb-f781-4a8b-99e6-2adf582f8a37",
-                "title": "Containers",
-                "type": "lens",
-                "version": "8.10.0"
+                "title": "Containers"
             },
             {
+                "type": "lens",
+                "gridData": {
+                    "h": 15,
+                    "i": "6835de0e-f1b0-425b-8af1-cb23c09d8442",
+                    "w": 24,
+                    "x": 0,
+                    "y": 14
+                },
+                "panelIndex": "6835de0e-f1b0-425b-8af1-cb23c09d8442",
                 "embeddableConfig": {
                     "attributes": {
                         "description": "",
                         "references": [
                             {
+                                "type": "index-pattern",
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-450490b7-c7f9-42bf-8e7d-227cbf960e94",
-                                "type": "index-pattern"
+                                "name": "indexpattern-datasource-layer-450490b7-c7f9-42bf-8e7d-227cbf960e94"
                             }
                         ],
                         "state": {
@@ -262,7 +270,15 @@
                                                     "label": "Unique count of container.id",
                                                     "operationType": "unique_count",
                                                     "scale": "ratio",
-                                                    "sourceField": "container.id"
+                                                    "sourceField": "container.id",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
                                                 },
                                                 "b20aebaf-7126-4b1c-acca-79cfa113b44d": {
                                                     "dataType": "date",
@@ -276,9 +292,11 @@
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
                                                 }
-                                            }
+                                            },
+                                            "indexPatternId": "metrics-*"
                                         }
-                                    }
+                                    },
+                                    "currentIndexPatternId": "metrics-*"
                                 }
                             },
                             "filters": [],
@@ -325,36 +343,36 @@
                             }
                         },
                         "title": "Total Number of Containers [Metrics AWSFargate]",
-                        "visualizationType": "lnsXY"
+                        "visualizationType": "lnsXY",
+                        "type": "lens"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
-                "gridData": {
-                    "h": 15,
-                    "i": "5d4537e8-9aee-47e6-8580-1961d8a3a38e",
-                    "w": 24,
-                    "x": 0,
-                    "y": 14
-                },
-                "panelIndex": "5d4537e8-9aee-47e6-8580-1961d8a3a38e",
-                "title": "Total Number of Containers",
-                "type": "lens",
-                "version": "8.10.0"
+                "title": "Total Number of Containers"
             },
             {
+                "type": "lens",
+                "gridData": {
+                    "h": 15,
+                    "i": "bce2cf55-fcde-499d-8a4d-d3dfdfd783dc",
+                    "w": 24,
+                    "x": 24,
+                    "y": 14
+                },
+                "panelIndex": "bce2cf55-fcde-499d-8a4d-d3dfdfd783dc",
                 "embeddableConfig": {
                     "attributes": {
                         "description": "",
                         "references": [
                             {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-current-indexpattern",
+                                "id": "metrics-*",
                                 "type": "index-pattern"
                             },
                             {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-82f43ff6-6ac1-4f73-b532-61b6b9fe15b0",
+                                "id": "metrics-*",
                                 "type": "index-pattern"
                             }
                         ],
@@ -457,27 +475,26 @@
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
-                "gridData": {
-                    "h": 15,
-                    "i": "d3c9208e-c699-4514-a091-a731d28ab9af",
-                    "w": 24,
-                    "x": 24,
-                    "y": 14
-                },
-                "panelIndex": "d3c9208e-c699-4514-a091-a731d28ab9af",
-                "title": "CPU Utilization Per Cluster",
-                "type": "lens",
-                "version": "8.10.0"
+                "title": "CPU Utilization Per Cluster"
             },
             {
+                "type": "lens",
+                "gridData": {
+                    "h": 15,
+                    "i": "7c006c9f-d175-497f-b400-356fcb70d2c7",
+                    "w": 24,
+                    "x": 0,
+                    "y": 29
+                },
+                "panelIndex": "7c006c9f-d175-497f-b400-356fcb70d2c7",
                 "embeddableConfig": {
                     "attributes": {
                         "description": "",
                         "references": [
                             {
+                                "type": "index-pattern",
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-e350c9e6-e6b7-40f1-83ed-94a38ed9467a",
-                                "type": "index-pattern"
+                                "name": "indexpattern-datasource-layer-e350c9e6-e6b7-40f1-83ed-94a38ed9467a"
                             }
                         ],
                         "state": {
@@ -512,7 +529,7 @@
                                                     "operationType": "average",
                                                     "params": {
                                                         "format": {
-                                                            "id": "percent",
+                                                            "id": "bytes",
                                                             "params": {
                                                                 "decimals": 2
                                                             }
@@ -541,9 +558,11 @@
                                                     "scale": "ordinal",
                                                     "sourceField": "awsfargate.task_stats.identifier"
                                                 }
-                                            }
+                                            },
+                                            "indexPatternId": "metrics-*"
                                         }
-                                    }
+                                    },
+                                    "currentIndexPatternId": "metrics-*"
                                 }
                             },
                             "filters": [],
@@ -598,31 +617,30 @@
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
-                "gridData": {
-                    "h": 15,
-                    "i": "9dd2b002-5170-49ea-afc2-30b0b46b0fd7",
-                    "w": 24,
-                    "x": 0,
-                    "y": 29
-                },
-                "panelIndex": "9dd2b002-5170-49ea-afc2-30b0b46b0fd7",
-                "title": "Container Memory Usage",
-                "type": "lens",
-                "version": "8.10.0"
+                "title": "Container Memory Usage"
             },
             {
+                "type": "lens",
+                "gridData": {
+                    "h": 15,
+                    "i": "ca7a4856-4c7c-4e52-bf18-763bcdb5250f",
+                    "w": 24,
+                    "x": 24,
+                    "y": 29
+                },
+                "panelIndex": "ca7a4856-4c7c-4e52-bf18-763bcdb5250f",
                 "embeddableConfig": {
                     "attributes": {
                         "description": "",
                         "references": [
                             {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-current-indexpattern",
+                                "id": "metrics-*",
                                 "type": "index-pattern"
                             },
                             {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-0749cbce-4a88-471d-9715-9f4f54510864",
+                                "id": "metrics-*",
                                 "type": "index-pattern"
                             }
                         ],
@@ -726,26 +744,25 @@
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
-                "gridData": {
-                    "h": 15,
-                    "i": "a7a6e425-98fd-4210-b3d5-005268be6274",
-                    "w": 24,
-                    "x": 24,
-                    "y": 29
-                },
-                "panelIndex": "a7a6e425-98fd-4210-b3d5-005268be6274",
-                "title": "Container CPU Total Norm Pct",
-                "type": "lens",
-                "version": "8.10.0"
+                "title": "Container CPU Total Norm Pct"
             },
             {
+                "type": "lens",
+                "gridData": {
+                    "h": 15,
+                    "i": "7fce3dee-2697-4db2-88a6-d83bbac2a56a",
+                    "w": 24,
+                    "x": 0,
+                    "y": 44
+                },
+                "panelIndex": "7fce3dee-2697-4db2-88a6-d83bbac2a56a",
                 "embeddableConfig": {
                     "attributes": {
                         "description": "",
                         "references": [
                             {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-c8d70f88-6554-41ca-ac1e-a3cf8b992972",
+                                "id": "metrics-*",
                                 "type": "index-pattern"
                             }
                         ],
@@ -865,26 +882,25 @@
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
-                "gridData": {
-                    "h": 15,
-                    "i": "d7a6623a-14cf-411c-ab73-ded3734a359b",
-                    "w": 24,
-                    "x": 0,
-                    "y": 44
-                },
-                "panelIndex": "d7a6623a-14cf-411c-ab73-ded3734a359b",
-                "title": "DiskIO Read",
-                "type": "lens",
-                "version": "8.10.0"
+                "title": "DiskIO Read"
             },
             {
+                "type": "lens",
+                "gridData": {
+                    "h": 15,
+                    "i": "22dc84c1-bb89-4b33-abcf-1589b72dacd2",
+                    "w": 24,
+                    "x": 24,
+                    "y": 44
+                },
+                "panelIndex": "22dc84c1-bb89-4b33-abcf-1589b72dacd2",
                 "embeddableConfig": {
                     "attributes": {
                         "description": "",
                         "references": [
                             {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-c8d70f88-6554-41ca-ac1e-a3cf8b992972",
+                                "id": "metrics-*",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1004,17 +1020,7 @@
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
-                "gridData": {
-                    "h": 15,
-                    "i": "89b0cd8b-13d9-4a43-8f93-3410aff125c3",
-                    "w": 24,
-                    "x": 24,
-                    "y": 44
-                },
-                "panelIndex": "89b0cd8b-13d9-4a43-8f93-3410aff125c3",
-                "title": "DiskIO Write",
-                "type": "lens",
-                "version": "8.10.0"
+                "title": "DiskIO Write"
             }
         ],
         "timeRestore": false,
@@ -1027,74 +1033,69 @@
     "managed": false,
     "references": [
         {
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern",
+            "id": "metrics-*"
+        },
+        {
+            "type": "index-pattern",
             "id": "metrics-*",
-            "name": "735a25cb-f781-4a8b-99e6-2adf582f8a37:indexpattern-datasource-current-indexpattern",
+            "name": "85f01c63-2045-4494-a33a-66e6ce39416c:indexpattern-datasource-layer-e350c9e6-e6b7-40f1-83ed-94a38ed9467a"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "6835de0e-f1b0-425b-8af1-cb23c09d8442:indexpattern-datasource-layer-450490b7-c7f9-42bf-8e7d-227cbf960e94"
+        },
+        {
+            "name": "bce2cf55-fcde-499d-8a4d-d3dfdfd783dc:indexpattern-datasource-current-indexpattern",
+            "id": "metrics-*",
             "type": "index-pattern"
         },
         {
+            "name": "bce2cf55-fcde-499d-8a4d-d3dfdfd783dc:indexpattern-datasource-layer-82f43ff6-6ac1-4f73-b532-61b6b9fe15b0",
             "id": "metrics-*",
-            "name": "735a25cb-f781-4a8b-99e6-2adf582f8a37:indexpattern-datasource-layer-e350c9e6-e6b7-40f1-83ed-94a38ed9467a",
             "type": "index-pattern"
         },
         {
+            "type": "index-pattern",
             "id": "metrics-*",
-            "name": "5d4537e8-9aee-47e6-8580-1961d8a3a38e:indexpattern-datasource-current-indexpattern",
+            "name": "7c006c9f-d175-497f-b400-356fcb70d2c7:indexpattern-datasource-layer-e350c9e6-e6b7-40f1-83ed-94a38ed9467a"
+        },
+        {
+            "name": "ca7a4856-4c7c-4e52-bf18-763bcdb5250f:indexpattern-datasource-current-indexpattern",
+            "id": "metrics-*",
             "type": "index-pattern"
         },
         {
+            "name": "ca7a4856-4c7c-4e52-bf18-763bcdb5250f:indexpattern-datasource-layer-0749cbce-4a88-471d-9715-9f4f54510864",
             "id": "metrics-*",
-            "name": "5d4537e8-9aee-47e6-8580-1961d8a3a38e:indexpattern-datasource-layer-450490b7-c7f9-42bf-8e7d-227cbf960e94",
             "type": "index-pattern"
         },
         {
+            "name": "7fce3dee-2697-4db2-88a6-d83bbac2a56a:indexpattern-datasource-layer-c8d70f88-6554-41ca-ac1e-a3cf8b992972",
             "id": "metrics-*",
-            "name": "d3c9208e-c699-4514-a091-a731d28ab9af:indexpattern-datasource-current-indexpattern",
             "type": "index-pattern"
         },
         {
+            "name": "22dc84c1-bb89-4b33-abcf-1589b72dacd2:indexpattern-datasource-layer-c8d70f88-6554-41ca-ac1e-a3cf8b992972",
             "id": "metrics-*",
-            "name": "d3c9208e-c699-4514-a091-a731d28ab9af:indexpattern-datasource-layer-82f43ff6-6ac1-4f73-b532-61b6b9fe15b0",
             "type": "index-pattern"
         },
         {
-            "id": "metrics-*",
-            "name": "9dd2b002-5170-49ea-afc2-30b0b46b0fd7:indexpattern-datasource-layer-e350c9e6-e6b7-40f1-83ed-94a38ed9467a",
-            "type": "index-pattern"
+            "name": "controlGroup_25893209-d560-4fc0-a919-ae252291aef9:optionsListDataView",
+            "type": "index-pattern",
+            "id": "metrics-*"
         },
         {
-            "id": "metrics-*",
-            "name": "a7a6e425-98fd-4210-b3d5-005268be6274:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
+            "name": "controlGroup_81233aae-4431-4346-bdef-e54a7ae216a3:optionsListDataView",
+            "type": "index-pattern",
+            "id": "metrics-*"
         },
         {
-            "id": "metrics-*",
-            "name": "a7a6e425-98fd-4210-b3d5-005268be6274:indexpattern-datasource-layer-0749cbce-4a88-471d-9715-9f4f54510864",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "d7a6623a-14cf-411c-ab73-ded3734a359b:indexpattern-datasource-layer-c8d70f88-6554-41ca-ac1e-a3cf8b992972",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "89b0cd8b-13d9-4a43-8f93-3410aff125c3:indexpattern-datasource-layer-c8d70f88-6554-41ca-ac1e-a3cf8b992972",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "controlGroup_ee100059-0e56-4e9b-ae09-ff53234bdf8c:optionsListDataView",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "controlGroup_e967cd1f-7491-4e72-8d63-23fcef40b9cc:optionsListDataView",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "controlGroup_b2adcf17-72de-46e8-87b1-94c16c399bf0:optionsListDataView",
-            "type": "index-pattern"
+            "name": "controlGroup_b0777da9-f426-44ac-8845-74252dd48455:optionsListDataView",
+            "type": "index-pattern",
+            "id": "metrics-*"
         }
     ],
     "type": "dashboard",
