@@ -520,7 +520,6 @@ An example event for `task_stats` looks as following:
                 },
                 "usage": {
                     "max": 15294464,
-                    "pct": 0.003136136404770672,
                     "total": 12349440
                 }
             },
