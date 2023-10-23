@@ -296,14 +296,18 @@ An example event for `metrics` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "database",
+        "category": [
+            "database"
+        ],
         "created": "2022-08-02T07:46:20.906Z",
         "dataset": "cassandra.metrics",
         "duration": 13448617,
         "ingested": "2022-08-02T07:46:24Z",
         "kind": "event",
         "module": "cassandra",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "host": {
         "architecture": "x86_64",
