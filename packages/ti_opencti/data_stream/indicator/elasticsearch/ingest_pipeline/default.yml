@@ -1,0 +1,852 @@
+---
+description: Pipeline for processing indicators
+processors:
+
+  ####################
+  # Event ECS fields #
+  ####################
+
+  - set:
+      field: ecs.version
+      value: '8.10.0'
+  - set:
+      field: event.kind
+      value: enrichment
+  - set:
+      field: event.category
+      value: ['threat']
+  - set:
+      field: event.type
+      value: ['indicator']
+  - rename:
+      field: created
+      target_field: event.created
+  - rename:
+      field: id
+      target_field: event.id
+
+  ######################
+  # Threat feed fields #
+  ######################
+
+  - set:
+      field: threat.feed.dashboard_id
+      value: ti_opencti-83b2bef0-591c-11ee-ba5f-49a63bb985cd
+  - set:
+      field: threat.feed.description
+      value: Indicator data from OpenCTI
+  - set:
+      field: threat.feed.name
+      value: OpenCTI
+  - set:
+      field: threat.feed.reference
+      value: https://docs.opencti.io/latest/usage/overview/
+
+  ############################
+  # Generic indicator fields #
+  ############################
+
+  - set:
+      field: threat.indicator.reference
+      value: "{{{_conf.url}}}/dashboard/observations/indicators/{{{event.id}}}"
+  - remove:
+      field: _conf
+      ignore_missing: true
+  - rename:
+      field: standard_id
+      target_field: opencti.indicator.standard_id
+  - rename:
+      field: is_inferred
+      target_field: opencti.indicator.is_inferred
+  - rename:
+      field: revoked
+      target_field: opencti.indicator.revoked
+  - set:
+      field: threat.indicator.confidence
+      value: 'Not Specified'
+  - script:
+      # based on https://stix2.readthedocs.io/en/latest/api/confidence/stix2.confidence.scales.html#stix2.confidence.scales.value_to_none_low_medium_high
+      lang: painless
+      source: |
+        if (ctx.confidence == null) {
+          ctx.threat.indicator.confidence = 'Not Specified';
+        } else if (ctx.confidence == 0) {
+          ctx.threat.indicator.confidence = 'None';
+        } else if (1 <= ctx.confidence && ctx.confidence <= 29) {
+          ctx.threat.indicator.confidence = 'Low';
+        } else if (30 <= ctx.confidence && ctx.confidence <= 69) {
+          ctx.threat.indicator.confidence = 'Medium';
+        } else if (70 <= ctx.confidence && ctx.confidence <= 100) {
+          ctx.threat.indicator.confidence = 'High';
+        } else {
+          ctx.threat.indicator.confidence = 'Not Specified';
+        }
+  - remove:
+      field: confidence
+  - rename:
+      field: lang
+      target_field: opencti.indicator.lang
+  - rename:
+      field: modified
+      target_field: threat.indicator.modified_at
+  - rename:
+      field: pattern_type
+      target_field: opencti.indicator.pattern_type
+  - rename:
+      field: pattern_version
+      target_field: opencti.indicator.pattern_version
+      if: ctx.pattern_version != null
+      ignore_missing: true
+  - remove:
+      field: pattern_version
+      ignore_missing: true
+  - rename:
+      field: pattern
+      target_field: opencti.indicator.pattern
+  - rename:
+      field: name
+      target_field: threat.indicator.name
+  - rename:
+      field: description
+      target_field: threat.indicator.description
+  - remove:
+      field: threat.indicator.description
+      if: ctx.threat.indicator.description == null || ctx.threat.indicator.description.isEmpty()
+  - rename:
+      field: valid_from
+      target_field: opencti.indicator.valid_from
+  - rename:
+      field: valid_until
+      target_field: opencti.indicator.valid_until
+  - rename:
+      field: x_opencti_score
+      target_field: opencti.indicator.score
+  - rename:
+      field: x_opencti_detection
+      target_field: opencti.indicator.detection
+  - rename:
+      field: x_opencti_main_observable_type
+      target_field: threat.indicator.type
+  - script:
+      description: Reformat indicator type
+      lang: painless
+      source: |
+        String type = ctx.threat.indicator.type;
+        type = type.toLowerCase();
+        type = type.replace('stixfile', 'file');
+        ctx.threat.indicator.type = type;
+  - rename:
+      field: createdBy.name
+      target_field: threat.indicator.provider
+  - rename:
+      field: createdBy.identity_class
+      target_field: opencti.indicator.creator_identity_class
+  - remove:
+      field: createdBy
+      ignore_missing: true
+
+  - gsub:
+      if: '!ctx.objectMarking.edges.isEmpty() && ctx.objectMarking.edges[0].node.definition_type == "TLP"'
+      field: objectMarking.edges.0.node.definition
+      pattern: '^TLP:'
+      replacement: ''
+      target_field: threat.indicator.marking.tlp
+  - remove:
+      field: objectMarking
+
+  - foreach:
+      field: objectLabel.edges
+      processor:
+        append:
+          field: tags
+          value: "{{{_ingest._value.node.value}}}"
+          allow_duplicates: false
+  - remove:
+      field: objectLabel
+
+  - foreach:
+      field: killChainPhases.edges
+      processor:
+        append:
+          field: opencti.indicator.kill_chain_phase
+          value: "[{{{_ingest._value.node.kill_chain_name}}}] {{{_ingest._value.node.phase_name}}}"
+  - remove:
+      field: killChainPhases
+
+  - foreach:
+      field: externalReferences.edges
+      processor:
+        append:
+          field: opencti.indicator.external_reference
+          value: "{{{_ingest._value.node}}}"
+  - remove:
+      field: externalReferences
+
+  #####################
+  # Observable fields #
+  #####################
+
+  - rename:
+      field: observables.pageInfo.globalCount
+      target_field: opencti.indicator.observables_count
+      ignore_missing: true
+
+  - foreach:
+      field: observables.edges
+      ignore_missing: true
+      processor:
+        remove:
+          field: _ingest._value.node.value
+          ignore_missing: true
+  - foreach:
+      field: observables.edges
+      ignore_missing: true
+      processor:
+        rename:
+          field: _ingest._value.node.observable_value
+          target_field: _ingest._value.node.value
+
+  - foreach:
+      field: observables.edges
+      ignore_missing: true
+      processor:
+        rename:
+          field: _ingest._value.node.x_opencti_description
+          target_field: _ingest._value.node.description
+          ignore_missing: true
+
+  - foreach:
+      field: observables.edges
+      ignore_missing: true
+      processor:
+        rename:
+          field: _ingest._value.node.x_opencti_additional_names
+          target_field: _ingest._value.node.additional_names
+          ignore_missing: true
+
+  - foreach:
+      field: observables.edges
+      ignore_missing: true
+      processor:
+        rename:
+          field: _ingest._value.node.obsContent
+          target_field: _ingest._value.node.content
+          ignore_missing: true
+
+  - foreach:
+      field: observables.edges
+      ignore_missing: true
+      processor:
+        foreach:
+          field: _ingest._value.node.serviceDlls.edges
+          ignore_missing: true
+          processor:
+            rename:
+              field: _ingest._value.node.x_opencti_additional_names
+              target_field: _ingest.node._value.additional_names
+
+  - foreach:
+      field: observables.edges
+      ignore_missing: true
+      processor:
+        foreach:
+          field: _ingest._value.node.serviceDlls.edges
+          ignore_missing: true
+          processor:
+            rename:
+              field: _ingest._value.node.obsContent
+              target_field: _ingest._value.node.content
+
+  - foreach:
+      field: observables.edges
+      ignore_missing: true
+      processor:
+        foreach:
+          field: _ingest._value.node.serviceDlls.edges
+          ignore_missing: true
+          processor:
+            rename:
+              field: _ingest._value.node
+              target_field: _ingest._value
+
+  - foreach:
+      field: observables.edges
+      ignore_missing: true
+      processor:
+        rename:
+          field: _ingest._value.node.serviceDlls.edges
+          target_field: _ingest._value.node.service_dlls
+          ignore_missing: true
+
+  - script:
+      description: Merge array of objects into a single object for startup_info
+      lang: painless
+      source: |
+        if (ctx.observables?.edges instanceof List) {
+          for (def edge : ctx.observables.edges) {
+            if (edge.node?.startup_info instanceof List) {
+              def result = [:];
+              for (def kv : edge.node.startup_info) {
+                result[kv.key] = kv.value;
+              }
+              edge.node.startup_info = result;
+            }
+          }
+        }
+
+  - script:
+      description: Restructure hashes to ECS format
+      lang: painless
+      source: |
+        Map hashesToECS(ArrayList hashes) {
+          Map hash = [:];
+          for (int i = 0; i < hashes.length; i++) {
+            String algorithm = hashes[i].algorithm;
+            algorithm = algorithm.toLowerCase();
+            algorithm = algorithm.replace('sha-', 'sha');
+            algorithm = algorithm.replace('sha3-', 'sha3_');
+            hash[algorithm] = hashes[i].hash;
+          }
+          return hash;
+        }
+        ArrayList observables = ctx.observables.edges;
+        for (int i = 0; i < observables.length; i++) {
+          Map observable = observables[i].node;
+          if (observable.containsKey('hashes')) {
+            def ecsHash = hashesToECS(observable.hashes);
+            if (ecsHash.size() > 0) {
+              observable.hash = ecsHash;
+            }
+            observable.remove('hashes');
+          }
+          if (observable.containsKey('service_dlls')) {
+            for (int ii = 0; ii < observable.service_dlls.length; ii++) {
+              Map serviceDll = observable.service_dlls[ii];
+              if (serviceDll.containsKey('hashes')) {
+                def ecsHash = hashesToECS(serviceDll.hashes);
+                if (ecsHash.size() > 0) {
+                  serviceDll.hash = ecsHash;
+                }
+                serviceDll.remove('hashes');
+              }
+            }
+          }
+        }
+
+  - script:
+      description: Move observable nodes to their target location
+      lang: painless
+      source: |
+        if (!ctx.containsKey('opencti')) {
+          ctx.opencti = [:];
+        }
+        if (!ctx.opencti.containsKey('observable')) {
+          ctx.opencti.observable = [:];
+        }
+        ArrayList observables = ctx.observables.edges;
+        for (int i = 0; i < observables.length; i++) {
+          String entity = observables[i]['node']['entity_type'];
+          entity = entity.replace('StixFile', 'file');
+          entity = entity.toLowerCase();
+          entity = entity.replace('-', '_');
+          if (!ctx.opencti.observable.containsKey(entity)) {
+            ctx.opencti.observable[entity] = [];
+          }
+          ctx.opencti.observable[entity].add(observables[i]['node']);
+        }
+  - remove:
+      field: observables
+      ignore_missing: true
+
+  - script:
+      description: Remove null values and empty fieldsets from observables
+      lang: painless
+      source: |
+        def dropNulls(Object obj) {
+          if (obj instanceof Map) {
+            def map = (Map) obj;
+            Map result = [:];
+            for (def key : map.keySet()) {
+              if (map[key] instanceof Map || map[key] instanceof List) {
+                result[key] = dropNulls(map[key]);
+              } else if (map[key] != null) {
+                result[key] = map[key];
+              }
+            }
+            return result;
+          } else if (obj instanceof List) {
+            def list = (List) obj;
+            List result = [];
+            for (def item : list) {
+              if (item instanceof Map || item instanceof List) {
+                result.add(dropNulls(item));
+              } else if (item != null) {
+                result.add(item);
+              }
+            }
+            return result;
+          } else {
+            return obj;
+          }
+        }
+        if (ctx.opencti?.containsKey('observable')) {
+          ctx.opencti.observable = dropNulls(ctx.opencti.observable);
+          for (def key : ctx.opencti.observable.keySet()) {
+            if (ctx.opencti.observable[key].size() == 0) {
+              ctx.opencti.observable.remove(key);
+            }
+          }
+          if (ctx.opencti.observable.size() == 0) {
+            ctx.opencti.remove('observable');
+          }
+        }
+
+  #########################################
+  # ECS indicator fields from observables #
+  #########################################
+
+  - foreach:
+      field: opencti.observable.email_addr
+      ignore_missing: true
+      processor:
+        append:
+          field: threat.indicator.email.address
+          value: "{{{_ingest._value.value}}}"
+          allow_duplicates: false
+
+  - foreach:
+      field: opencti.observable.ipv4_addr
+      ignore_missing: true
+      processor:
+        append:
+          field: threat.indicator.ip
+          value: "{{{_ingest._value.value}}}"
+          allow_duplicates: false
+
+  - foreach:
+      field: opencti.observable.ipv6_addr
+      ignore_missing: true
+      processor:
+        append:
+          field: threat.indicator.ip
+          value: "{{{_ingest._value.value}}}"
+          allow_duplicates: false
+
+  # For ECS, remove any subnet mask from IP values arriving in CIDR notation
+  - foreach:
+      field: threat.indicator.ip
+      ignore_missing: true
+      processor:
+        gsub:
+          field: _ingest._value
+          pattern: '/\d+$'
+          replacement: ""
+
+  - foreach:
+      field: opencti.observable.network_traffic
+      ignore_missing: true
+      processor:
+        append:
+          field: threat.indicator.port
+          value: "{{{_ingest._value.src_port}}}"
+          allow_duplicates: false
+  - foreach:
+      field: opencti.observable.network_traffic
+      ignore_missing: true
+      processor:
+        append:
+          field: threat.indicator.port
+          value: "{{{_ingest._value.dst_port}}}"
+          allow_duplicates: false
+
+  - foreach:
+      field: opencti.observable.autonomous_system
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "ecs_from_autonomous_system" }}'
+
+  - foreach:
+      field: opencti.observable.windows_registry_key
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "ecs_from_windows_registry_key" }}'
+
+  - foreach:
+      field: opencti.observable.windows_registry_value_type
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "ecs_from_windows_registry_value_type" }}'
+
+  - foreach:
+      field: opencti.observable.x509_certificate
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "ecs_from_x509_certificate" }}'
+
+  - foreach:
+      field: opencti.observable.url
+      ignore_missing: true
+      processor:
+        append:
+          field: _tmp_found_urls
+          value: "{{{_ingest._value.value}}}"
+          allow_duplicates: false
+  - foreach:
+      field: opencti.observable.artifact
+      ignore_missing: true
+      processor:
+        append:
+          field: _tmp_found_urls
+          value: "{{{_ingest._value.url}}}"
+          allow_duplicates: false
+  - foreach:
+      field: opencti.observable.file
+      ignore_missing: true
+      processor:
+        append:
+          field: _tmp_found_urls
+          value: "{{{_ingest._value.content?.url}}}"
+          allow_duplicates: false
+  - foreach:
+      field: opencti.observable.media_content
+      ignore_missing: true
+      processor:
+        append:
+          field: _tmp_found_urls
+          value: "{{{_ingest._value.url}}}"
+          allow_duplicates: false
+  - foreach:
+      field: opencti.observable.process
+      ignore_missing: true
+      processor:
+        foreach:
+          field: _ingest._value.service_dll
+          ignore_missing: true
+          processor:
+            append:
+              field: _tmp_found_urls
+              value: "{{{_ingest._value.content?.url}}}"
+              allow_duplicates: false
+  - script:
+      description: Remove null or empty items
+      lang: painless
+      source: |
+        if (ctx._tmp_found_urls != null) {
+          def result = [];
+          for (item in ctx._tmp_found_urls) {
+              if (item != null && item != '') {
+                  result.add(item);
+              }
+          }
+          ctx._tmp_found_urls = result;
+        }
+  - foreach:
+      field: _tmp_found_urls
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "ecs_from_url_field" }}'
+  - remove:
+      field: _tmp_found_urls
+      ignore_missing: true
+
+  - foreach:
+      field: opencti.observable.domain_name
+      ignore_missing: true
+      processor:
+        append:
+          field: _tmp_found_domain_names_and_hostnames
+          value: "{{{_ingest._value.value}}}"
+          allow_duplicates: false
+  - foreach:
+      field: opencti.observable.hostname
+      ignore_missing: true
+      processor:
+        append:
+          field: _tmp_found_domain_names_and_hostnames
+          value: "{{{_ingest._value.value}}}"
+          allow_duplicates: false
+  - foreach:
+      field: _tmp_found_domain_names_and_hostnames
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "ecs_from_domain_name_or_hostname" }}'
+  - remove:
+      field: _tmp_found_domain_names_and_hostnames
+      ignore_missing: true
+
+  - foreach:
+      field: opencti.observable.file
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "ecs_from_file" }}'
+
+  - foreach:
+      field: opencti.observable.process
+      ignore_missing: true
+      processor:
+        foreach:
+          field: _ingest._value.service_dll
+          ignore_missing: true
+          processor:
+            pipeline:
+              name: '{{ IngestPipeline "ecs_from_file" }}'
+
+  - foreach:
+      field: opencti.observable.directory
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "ecs_from_directory" }}'
+
+  - foreach:
+      field: opencti.observable.artifact
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "ecs_from_artifact" }}'
+
+  ######################
+  # ECS related fields #
+  ######################
+
+  - foreach:
+      field: opencti.observable.x509_certificate
+      ignore_missing: true
+      processor:
+        foreach:
+          field: _ingest._value.hash
+          ignore_missing: true
+          processor:
+            append:
+              field: related.hash
+              value: "{{{_ingest._value}}}"
+              allow_duplicates: false
+  - foreach:
+      field: opencti.observable.file
+      ignore_missing: true
+      processor:
+        foreach:
+          field: _ingest._value.hash
+          ignore_missing: true
+          processor:
+            append:
+              field: related.hash
+              value: "{{{_ingest._value}}}"
+              allow_duplicates: false
+  - foreach:
+      field: opencti.observable.artifact
+      ignore_missing: true
+      processor:
+        foreach:
+          field: _ingest._value.hash
+          ignore_missing: true
+          processor:
+            append:
+              field: related.hash
+              value: "{{{_ingest._value}}}"
+              allow_duplicates: false
+  - foreach:
+      field: opencti.observable.process
+      ignore_missing: true
+      processor:
+        foreach:
+          field: _ingest._value.service_dll
+          ignore_missing: true
+          processor:
+            foreach:
+              field: _ingest._value.hash
+              ignore_missing: true
+              processor:
+                append:
+                  field: related.hash
+                  value: "{{{_ingest._value}}}"
+                  allow_duplicates: false
+
+  - foreach:
+      field: opencti.observable.hostname
+      ignore_missing: true
+      processor:
+        append:
+          field: related.hosts
+          value: "{{{_ingest._value.value}}}"
+          allow_duplicates: false
+  - foreach:
+      field: threat.indicator.url
+      ignore_missing: true
+      processor:
+        append:
+          field: related.hosts
+          value: "{{{_ingest._value.domain}}}"
+          allow_duplicates: false
+
+  - set:
+      field: related.ip
+      copy_from: threat.indicator.ip
+      if: ctx.threat.indicator.ip instanceof List
+
+  - foreach:
+      field: opencti.observable.email_addr
+      ignore_missing: true
+      processor:
+        append:
+          field: related.user
+          value: "{{{_ingest._value.value}}}"
+          allow_duplicates: false
+  - foreach:
+      field: threat.indicator.url
+      ignore_missing: true
+      processor:
+        append:
+          field: related.user
+          value: "{{{_ingest._value.username}}}"
+          allow_duplicates: false
+  - foreach:
+      field: opencti.observable.user_account
+      ignore_missing: true
+      processor:
+        append:
+          field: related.user
+          value: "{{{_ingest._value.user_id}}}"
+          allow_duplicates: false
+  - foreach:
+      field: opencti.observable.user_account
+      ignore_missing: true
+      processor:
+        append:
+          field: related.user
+          value: "{{{_ingest._value.account_login}}}"
+          allow_duplicates: false
+
+  - script:
+      description: Remove null or empty items, remove list if empty
+      lang: painless
+      source: |
+        def cleanUp(Map obj, String key) {
+          if (obj.containsKey(key) && obj[key] instanceof List) {
+            def result = [];
+            for (item in obj[key]) {
+                if (item != null && item != '') {
+                    result.add(item);
+                }
+            }
+            if (result.isEmpty()) {
+              obj.remove(key);
+            } else {
+              obj[key] = result;
+            }
+          }
+          return obj;
+        }
+        if (ctx.containsKey('related') && ctx.related != null) {
+          cleanUp(ctx.related, 'hash');
+          cleanUp(ctx.related, 'hosts');
+          cleanUp(ctx.related, 'ip');
+          cleanUp(ctx.related, 'user');
+        }
+
+  ##############################################
+  # Restructure to avoid non-leaf lists, under #
+  # - opencti.observable.*                     #
+  # - threat.indicator.as                      #
+  # - threat.indicator.file                    #
+  # - threat.indicator.registry                #
+  # - threat.indicator.url                     #
+  # - threat.indicator.x509                    #
+  ##############################################
+
+  - script:
+      description: Restructure some lists of maps to avoid non-leaf lists
+      lang: painless
+      source: |
+        def mergeMaps(Map map1, Map map2) {
+          for (def key : map2.keySet()) {
+            if (map1.containsKey(key) && map1[key] != map2[key]) {
+              if (map1[key] instanceof Map && map2[key] instanceof Map) {
+                map1[key] = mergeMaps(map1[key], map2[key]);
+              } else {
+                if (!(map1[key] instanceof List)) {
+                  map1[key] = [map1[key]];
+                }
+                def combined = new HashSet(map1[key]);
+                if (map2[key] instanceof List) {
+                  combined.addAll(map2[key]);
+                } else {
+                  combined.add(map2[key]);
+                }
+                map1[key] = new ArrayList(combined);
+              }
+            } else {
+              map1[key] = map2[key];
+            }
+          }
+          return map1;
+        }
+        def mergeListOfMaps(List list) {
+          def merged = new HashMap();
+          for (def map : list) {
+            merged = mergeMaps(merged, map);
+          }
+          return merged;
+        }
+        if (ctx.opencti?.containsKey('observable')) {
+          for (def key : ctx.opencti.observable.keySet()) {
+            ctx.opencti.observable[key] = mergeListOfMaps(ctx.opencti.observable[key]);
+          }
+        }
+        if (ctx.threat.indicator.containsKey('file')) {
+          ctx.threat.indicator.file = mergeListOfMaps(ctx.threat.indicator.file);
+        }
+        if (ctx.threat.indicator.containsKey('as')) {
+          ctx.threat.indicator.as = mergeListOfMaps(ctx.threat.indicator.as);
+        }
+        if (ctx.threat.indicator.containsKey('url')) {
+          ctx.threat.indicator.url = mergeListOfMaps(ctx.threat.indicator.url);
+        }
+        if (ctx.threat.indicator.containsKey('registry')) {
+          ctx.threat.indicator.registry = mergeListOfMaps(ctx.threat.indicator.registry);
+        }
+        if (ctx.threat.indicator.containsKey('x509')) {
+          ctx.threat.indicator.x509 = mergeListOfMaps(ctx.threat.indicator.x509);
+        }
+
+  #######################################################
+  # Tag to show if ECS indicator details were populated #
+  #######################################################
+
+  - append:
+      field: tags
+      value: ecs-indicator-detail
+      if: >
+        ctx.threat.indicator.containsKey('as') ||
+        ctx.threat.indicator.containsKey('email') ||
+        ctx.threat.indicator.containsKey('file') ||
+        ctx.threat.indicator.containsKey('ip') ||
+        ctx.threat.indicator.containsKey('port') ||
+        ctx.threat.indicator.containsKey('registry') ||
+        ctx.threat.indicator.containsKey('url') ||
+        ctx.threat.indicator.containsKey('x509') ||
+        false
+      allow_duplicates: false
+
+###################
+# Failure handler #
+###################
+
+on_failure:
+  - append:
+      field: error.message
+      value: >
+        Processor "{{{ _ingest.on_failure_processor_type }}}"
+        with tag "{{{ _ingest.on_failure_processor_tag }}}"
+        in pipeline "{{{ _ingest.on_failure_pipeline }}}"
+        failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error
