@@ -7,6 +7,7 @@ processors:
       target_field: event.original
       ignore_missing: true
   - grok:
+      if: ctx.log?.syslog == null
       description: Grok the message header.
       tag: grok-message-header
       field: event.original
@@ -20,6 +21,10 @@ processors:
             +(?:-|%{POSINT:process.pid:long}) +(?:-|%{SYSLOG5424PRINTASCII:event.code}) 
             +(?:-|%{SYSLOG5424SD:syslog5424_sd})? 
             +%{GREEDYDATA:_temp.message}$'
+  - rename: 
+      field: message
+      target_field: _temp.message
+      if: ctx.log?.syslog != null && ctx.message != null
   - grok:
       description: Grok specific auth messages.
       tag: grok-specific-messages
@@ -70,7 +75,7 @@ processors:
       if: ctx.message != null && ctx.message.contains('pam_unix(')
   - kv:
       tag: "kv_syslog_structured_semicolon_colon"
-      if: ctx.syslog5424_sd != null
+      if: ctx.syslog5424_sd != null && ctx.syslog5424_sd != ''
       field: syslog5424_sd
       field_split: '(?<="); '
       value_split: '(?i)(?<=[a-z]):{1,2}(?=")'
@@ -84,12 +89,17 @@ processors:
             value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - grok:
       field: syslog5424_sd
-      if: ctx.system?.auth == null
+      tag: grok_syslog5424_sd
+      if: ctx.system?.auth == null && ctx.syslog5424_sd != null
       patterns:
         - '(?:%{NOTSPACE} +)?%{GREEDYDATA:syslog5424_sd}'
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - kv:
       tag: "kv_syslog_structured_space_equals"
-      if: ctx.system?.auth == null
+      if: ctx.system?.auth == null && ctx.syslog5424_sd != null
       field: syslog5424_sd
       field_split: '(?<=") '
       value_split: '(?i)(?<=[a-z])=(?=")'
@@ -195,7 +205,7 @@ processors:
         - remove:
             field: system.auth.ssh.dropped_ip
   - date:
-      if: ctx.event?.timezone == null
+      if: ctx.event?.timezone == null && ctx['@timestamp'] == null
       field: system.auth.timestamp
       target_field: '@timestamp'
       formats:
@@ -207,7 +217,7 @@ processors:
             field: error.message
             value: '{{{ _ingest.on_failure_message }}}'
   - date:
-      if: ctx.event?.timezone != null
+      if: ctx.event?.timezone != null && ctx['@timestamp'] == null
       field: system.auth.timestamp
       target_field: '@timestamp'
       formats:
@@ -221,6 +231,7 @@ processors:
             value: '{{{ _ingest.on_failure_message }}}'
   - remove:
       field: system.auth.timestamp
+      ignore_missing: true
   - geoip:
       field: source.ip
       target_field: source.geo
