@@ -147,9 +147,9 @@ An example event for `log` looks as following:
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | source.address| FQDN of the client who is the DHCP requestor (sender)| keyword |
-| source.mac| MAC of the client who is the DHCP requestor (sender). The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| source.ip| IP address of the client who is the DHCP requestor (sender)| ip |
 | source.domain| FQDN of the client who is the DHCP requestor (sender)| keyword |
+| source.ip| IP address of the client who is the DHCP requestor (sender)| ip |
+| source.mac| MAC of the client who is the DHCP requestor (sender). The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
