@@ -1094,6 +1094,8 @@ pipeline collection period, and setting it to an appropriate value.
 | logstash.pipeline.plugin.filter.flow.worker_utilization.current | worker utilization for this plugin | scaled_float |  | gauge |
 | logstash.pipeline.plugin.filter.flow.worker_utilization.last_1_minute | worker utilization for this plugin | scaled_float |  | gauge |
 | logstash.pipeline.plugin.filter.id | Id of filter plugin | keyword |  |  |
+| logstash.pipeline.plugin.filter.metrics.dissect.failures | number of dissect failures | long |  | counter |
+| logstash.pipeline.plugin.filter.metrics.dissect.matches | number of dissect matches | long |  | counter |
 | logstash.pipeline.plugin.filter.metrics.grok.failures | number of grok failures | long |  | counter |
 | logstash.pipeline.plugin.filter.metrics.grok.matches | number of grok matches | long |  | counter |
 | logstash.pipeline.plugin.filter.name | Name of filter plugin | keyword |  |  |
