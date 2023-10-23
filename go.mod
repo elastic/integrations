@@ -4,7 +4,7 @@ go 1.21.0
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/elastic/elastic-package v0.90.0
+	github.com/elastic/elastic-package v0.91.0
 	github.com/elastic/go-licenser v0.4.1
 	github.com/elastic/package-registry v1.21.0
 	github.com/magefile/mage v1.15.0
@@ -186,11 +186,11 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	helm.sh/helm/v3 v3.13.1 // indirect
 	howett.net/plist v1.0.0 // indirect
-	k8s.io/api v0.28.2 // indirect
+	k8s.io/api v0.28.3 // indirect
 	k8s.io/apiextensions-apiserver v0.28.2 // indirect
-	k8s.io/apimachinery v0.28.2 // indirect
-	k8s.io/cli-runtime v0.28.2 // indirect
-	k8s.io/client-go v0.28.2 // indirect
+	k8s.io/apimachinery v0.28.3 // indirect
+	k8s.io/cli-runtime v0.28.3 // indirect
+	k8s.io/client-go v0.28.3 // indirect
 	k8s.io/component-base v0.28.2 // indirect
 	k8s.io/klog/v2 v2.100.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20230717233707-2695361300d9 // indirect
