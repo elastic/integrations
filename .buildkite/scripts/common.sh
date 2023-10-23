@@ -49,6 +49,14 @@ unset_secrets () {
   done
 }
 
+repo_name() {
+    # Example of URL: git@github.com:acme-inc/my-project.git
+    local repoUrl=$1
+
+    orgAndRepo=$(echo $repoUrl | cut -d':' -f 2)
+    echo "$(basename ${orgAndRepo} .git)"
+}
+
 check_platform_architeture() {
   case "${hw_type}" in
     "x86_64")
@@ -66,6 +74,7 @@ check_platform_architeture() {
   esac
 }
 
+# Helpers to install required tools
 create_bin_folder() {
   mkdir -p ${BIN_FOLDER}
 }
@@ -129,6 +138,24 @@ with_kubernetes() {
     which kubectl
 }
 
+with_yq() {
+    check_platform_architeture
+    local platform_type_lowercase="${platform_type,,}"
+    local binary="yq_${platform_type_lowercase}_${arch_type}"
+
+    retry 5 curl -sSL -o ${BIN_FOLDER}/yq.tar.gz "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${binary}.tar.gz"
+
+    tar -C ${BIN_FOLDER} -xpf ${BIN_FOLDER}/yq.tar.gz ./yq_linux_amd64
+
+    mv ${BIN_FOLDER}/yq_linux_amd64 ${BIN_FOLDER}/yq
+    chmod +x ${BIN_FOLDER}/yq
+    yq --version
+
+    rm -rf ${BIN_FOLDER}/yq.tar.gz
+}
+
+
+## Logging and logout from Google Cloud
 google_cloud_upload_auth() {
   local secretFileLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE_BASE}.XXXXXXXXX")/${GOOGLE_CREDENTIALS_FILENAME}
   echo "${PRIVATE_INFRA_GCS_CREDENTIALS_SECRET}" > ${secretFileLocation}
@@ -141,6 +168,16 @@ google_cloud_signing_auth() {
   echo "${SIGNING_PACKAGES_GCS_CREDENTIALS_SECRET}" > ${secretFileLocation}
   gcloud auth activate-service-account --key-file ${secretFileLocation} 2> /dev/null
   export GOOGLE_APPLICATION_CREDENTIALS=${secretFileLocation}
+}
+
+google_cloud_auth_safe_logs() {
+    local gsUtilLocation=$(mktemp -d -p ${WORKSPACE} -t ${TMP_FOLDER_TEMPLATE})
+    local secretFileLocation=${gsUtilLocation}/${GOOGLE_CREDENTIALS_FILENAME}
+
+    echo "${PRIVATE_CI_GCS_CREDENTIALS_SECRET}" > ${secretFileLocation}
+
+    gcloud auth activate-service-account --key-file ${secretFileLocation} 2> /dev/null
+    export GOOGLE_APPLICATION_CREDENTIALS=${secretFileLocation}
 }
 
 google_cloud_logout_active_account() {
@@ -158,30 +195,13 @@ google_cloud_logout_active_account() {
   fi
 }
 
+## Helpers for integrations pipelines
 check_git_diff() {
     cd ${WORKSPACE}
     echo "git update-index"
     git update-index --refresh
     echo "git diff-index"
     git diff-index --exit-code HEAD --
-}
-
-with_yq() {
-    check_platform_architeture
-    local platform_type_lowercase="${platform_type,,}"
-    local binary="yq_${platform_type_lowercase}_${arch_type}"
-
-    # TODO: remove debug
-    echo curl -sSL -o ${BIN_FOLDER}/yq.tar.gz "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${binary}.tar.gz"
-    retry 5 curl -sSL -o ${BIN_FOLDER}/yq.tar.gz "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${binary}.tar.gz"
-
-    tar -C ${BIN_FOLDER} -xpf ${BIN_FOLDER}/yq.tar.gz ./yq_linux_amd64
-
-    mv ${BIN_FOLDER}/yq_linux_amd64 ${BIN_FOLDER}/yq
-    chmod +x ${BIN_FOLDER}/yq
-    yq --version
-
-    rm -rf ${BIN_FOLDER}/yq.tar.gz
 }
 
 use_elastic_package() {
@@ -200,15 +220,6 @@ is_already_published() {
     echo "- Not published ${packageZip}"
     return 1
 }
-
-repo_name() {
-    # Example of URL: git@github.com:acme-inc/my-project.git
-    local repoUrl=$1
-
-    orgAndRepo=$(echo $repoUrl | cut -d':' -f 2)
-    echo "$(basename ${orgAndRepo} .git)"
-}
-
 
 create_kind_cluster() {
     echo "--- Create kind cluster"
@@ -318,10 +329,12 @@ prepare_serverless_stack() {
     local args="-v"
     if [ -n "${STACK_VERSION}" ]; then
         args="${args} --version ${STACK_VERSION}"
-    # TODO What stack version to use (for agents) in serverless?
-    # else
     fi
 
+    # Currently, if STACK_VERSION is not defined, for serverless it will be
+    # used as Elastic stack version (for agents) the default version in elastic-package
+
+    # Creating a new profile allow to set a specific name for the serverless project
     create_elastic_package_profile "integrations-${BUILDKITE_PULL_REQUEST}-${BUILDKITE_BUILD_NUMBER}-${SERVERLESS_PROJECT}"
 
     export EC_API_KEY=${EC_API_KEY_SECRET}
@@ -527,16 +540,6 @@ create_collapsed_annotation() {
     cat ${annotation_file} | buildkite-agent annotate --style "${style}" --context "${context}"
 
     rm -f ${annotation_file}
-}
-
-google_cloud_auth_safe_logs() {
-    local gsUtilLocation=$(mktemp -d -p ${WORKSPACE} -t ${TMP_FOLDER_TEMPLATE})
-    local secretFileLocation=${gsUtilLocation}/${GOOGLE_CREDENTIALS_FILENAME}
-
-    echo "${PRIVATE_CI_GCS_CREDENTIALS_SECRET}" > ${secretFileLocation}
-
-    gcloud auth activate-service-account --key-file ${secretFileLocation} 2> /dev/null
-    export GOOGLE_APPLICATION_CREDENTIALS=${secretFileLocation}
 }
 
 upload_safe_logs() {
