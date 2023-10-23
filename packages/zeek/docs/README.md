@@ -528,7 +528,7 @@ activity.
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
-| dns.answers | An array containing an object for each answer section returned by the server. The main keys that should be present in these objects are defined by ECS. Records that have more information may contain more keys than what ECS defines. Not all DNS data sources give all details about DNS answers. At minimum, answer objects must contain the `data` key. If more information is available, map as much of it to ECS as possible, and add any additional fields to the answer objects as custom fields. | object |
+| dns.answers | An array containing an object for each answer section returned by the server. The main keys that should be present in these objects are defined by ECS. Records that have more information may contain more keys than what ECS defines. Not all DNS data sources give all details about DNS answers. At minimum, answer objects must contain the `data` key. If more information is available, map as much of it to ECS as possible, and add any additional fields to the answer objects as custom fields. | group |
 | dns.answers.class | The class of DNS data contained in this resource record. | keyword |
 | dns.answers.data | The data describing the resource. The meaning of this data depends on the type and class of the resource record. | keyword |
 | dns.answers.name | The domain name to which this resource record pertains. If a chain of CNAME is being resolved, each answer's `name` should be the one that corresponds with the answer's `data`. It should not simply be the original `question.name` repeated. | keyword |
@@ -1200,7 +1200,7 @@ intelligence data matches.
 | zeek.intel.fuid | If a file was associated with this intelligence hit, this is the uid for the file. | keyword |
 | zeek.intel.matched | Event to represent a match in the intelligence data from data that was seen. | keyword |
 | zeek.intel.seen.conn | If the data was discovered within a connection, the connection record should go here to give context to the data. | keyword |
-| zeek.intel.seen.f | If the data was discovered within a file, the file record should go here to provide context to the data. | object |
+| zeek.intel.seen.f.\* | If the data was discovered within a file, the file record should go here to provide context to the data. | object |
 | zeek.intel.seen.fuid | If the data was discovered within a file, the file uid should go here to provide context to the data. If the file record f is provided, this will be automatically filled out. | keyword |
 | zeek.intel.seen.host | If the indicator type was Intel::ADDR, then this field will be present. | keyword |
 | zeek.intel.seen.indicator | The intelligence indicator. | keyword |
