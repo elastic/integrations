@@ -17,11 +17,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2018-10-10T12:34:56.000Z",
     "agent": {
-        "ephemeral_id": "2255b7b8-46d1-432b-b228-3c20cbe56944",
-        "id": "b210c588-9f90-4fcf-93fd-153e26a41b7d",
+        "ephemeral_id": "9ff3fcbd-3ca0-4634-bbaa-604ac67b8188",
+        "id": "383c6290-eea2-4a18-8adf-2ed05723031e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.10.3"
     },
     "cisco": {
         "asa": {
@@ -44,9 +44,9 @@ An example event for `log` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "b210c588-9f90-4fcf-93fd-153e26a41b7d",
+        "id": "383c6290-eea2-4a18-8adf-2ed05723031e",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.10.3"
     },
     "event": {
         "action": "firewall-rule",
@@ -56,7 +56,7 @@ An example event for `log` looks as following:
         ],
         "code": "305011",
         "dataset": "cisco_asa.log",
-        "ingested": "2023-10-12T16:03:50Z",
+        "ingested": "2023-10-17T09:19:55Z",
         "kind": "event",
         "original": "Oct 10 2018 12:34:56 localhost CiscoASA[999]: %ASA-6-305011: Built dynamic TCP translation from inside:172.31.98.44/1772 to outside:192.168.98.44/8256",
         "severity": 6,
@@ -74,7 +74,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "informational",
         "source": {
-            "address": "172.20.0.4:44860"
+            "address": "192.168.208.4:60290"
         }
     },
     "network": {
@@ -145,6 +145,7 @@ An example event for `log` looks as following:
 | cisco.asa.dap_records | The assigned DAP records | keyword |
 | cisco.asa.destination_interface | Destination interface for the flow or event. | keyword |
 | cisco.asa.destination_user_security_group_tag | The Security Group Tag for the destination user. Security Group Tag are 16-bit identifiers used to represent logical group privilege. | long |
+| cisco.asa.destination_user_security_group_tag_name | The name of Security Group Tag for the destination user. | keyword |
 | cisco.asa.destination_username | Name of the user that is the destination for this event. | keyword |
 | cisco.asa.full_message | The Cisco log message text. | keyword |
 | cisco.asa.icmp_code | ICMP code. | short |
@@ -166,6 +167,7 @@ An example event for `log` looks as following:
 | cisco.asa.session_type | Session type (for example, IPsec or UDP). | keyword |
 | cisco.asa.source_interface | Source interface for the flow or event. | keyword |
 | cisco.asa.source_user_security_group_tag | The Security Group Tag for the source user. Security Group Tag are 16-bit identifiers used to represent logical group privilege. | long |
+| cisco.asa.source_user_security_group_tag_name | The name of Security Group Tag for the source user. | keyword |
 | cisco.asa.source_username | Name of the user that is the source for this event. | keyword |
 | cisco.asa.suffix | Optional suffix after %ASA identifier. | keyword |
 | cisco.asa.termination_initiator | Interface name of the side that initiated the teardown | keyword |
@@ -270,7 +272,7 @@ An example event for `log` looks as following:
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
-| network.inner | Network.inner fields are added in addition to network.vlan fields to describe the innermost VLAN when q-in-q VLAN tagging is present. Allowed fields include vlan.id and vlan.name. Inner vlan fields are typically used when sending traffic with multiple 802.1q encapsulations to a network sensor (e.g. Zeek, Wireshark.) | group |
+| network.inner | Network.inner fields are added in addition to network.vlan fields to describe the innermost VLAN when q-in-q VLAN tagging is present. Allowed fields include vlan.id and vlan.name. Inner vlan fields are typically used when sending traffic with multiple 802.1q encapsulations to a network sensor (e.g. Zeek, Wireshark.) | object |
 | network.inner.vlan.id | VLAN ID as reported by the observer. | keyword |
 | network.inner.vlan.name | Optional VLAN name as reported by the observer. | keyword |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
