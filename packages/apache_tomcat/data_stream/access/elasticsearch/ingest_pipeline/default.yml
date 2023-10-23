@@ -25,10 +25,11 @@ processors:
       field: event.original
       tag: 'grok_parse_log'
       patterns:
-        - '^(%{IP:source.ip}|%{DATA:source.user.name}) %{DATA:apache_tomcat.access.http.ident} %{DATA:apache_tomcat.access.http.useragent} \[%{DATA:_tmp.timestamp}\] \"%{DATA:http.request.method} %{DATA:url.original} HTTP\/%{DATA:http.version}\" %{NUMBER:http.response.status_code} %{DATA:destination.bytes} %{IP:apache_tomcat.access.ip.local} %{NOTSPACE:apache_tomcat.access.connection_status}%{SPACE}%{NUMBER:apache_tomcat.access.response_time} \"%{DATA:http.request.referrer}\" \"%{DATA:user_agent.original}\" X-Forwarded-For=\"%{DATA:_tmp.header_forwarder}(\")*$'
-        - '^(%{IP:source.ip}|%{DATA:source.user.name}) %{DATA:apache_tomcat.access.http.ident} %{DATA:apache_tomcat.access.http.useragent} \[%{DATA:_tmp.timestamp}\] \"%{DATA:http.request.method} %{DATA:url.original} HTTP\/%{DATA:http.version}\" %{NUMBER:http.response.status_code} %{DATA:destination.bytes} %{IP:apache_tomcat.access.ip.local} %{NOTSPACE:apache_tomcat.access.connection_status} \"%{DATA:http.request.referrer}\" \"%{DATA:user_agent.original}\" X-Forwarded-For=\"%{DATA:_tmp.header_forwarder}(\")*$'
+        - '^(%{IP:source.ip}|%{DATA:source.user.name}) %{DATA:apache_tomcat.access.http.ident} %{DATA:apache_tomcat.access.http.useragent} \[%{DATA:_tmp.timestamp}\] \"%{DATA:http.request.method} %{DATA:url.original} HTTP\/%{DATA:http.version}\" %{NUMBER:http.response.status_code} %{DATA:destination.bytes} (?:%{IP:apache_tomcat.access.ip.local}%{SPACE})?(?:%{CONN_STATUS:apache_tomcat.access.connection_status}%{SPACE})?(?:%{NUMBER:apache_tomcat.access.response_time}%{SPACE})?\"%{DATA:http.request.referrer}\" \"%{DATA:user_agent.original}\" X-Forwarded-For=\"%{DATA:_tmp.header_forwarder}(\")*$'
         - '^(%{IP:source.ip}|%{DATA:source.user.name}) %{DATA:apache_tomcat.access.http.ident} %{DATA:apache_tomcat.access.http.useragent} \[%{DATA:_tmp.timestamp}\] \"%{DATA:http.request.method} %{DATA:url.original} HTTP\/%{DATA:http.version}\" %{NUMBER:http.response.status_code} %{DATA:destination.bytes} \"%{DATA:http.request.referrer}\" \"%{DATA:user_agent.original}(\")*$'
         - '^(%{IP:source.ip}|%{DATA:source.user.name}) %{DATA:apache_tomcat.access.http.ident} %{DATA:apache_tomcat.access.http.useragent} \[%{DATA:_tmp.timestamp}\] \"%{DATA:http.request.method} %{DATA:url.original} HTTP\/%{DATA:http.version}\" %{NUMBER:http.response.status_code} %{DATA:destination.bytes}$'
+      pattern_definitions:
+        CONN_STATUS: "[X+-]"
       on_failure:
         - append:
             field: error.message
