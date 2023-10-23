@@ -1,0 +1,130 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  user: {{username}}
+  password: {{password}}
+  batch_size: {{batch_size}}
+  total_rows: 0
+  time_amount: {{time_amount}}
+  time_unit: {{time_unit}}
+  want_more: false
+redact:
+  fields:
+    - password
+program: |
+  (
+    state.with(has(state.want_more) && !(state.want_more)
+    ?
+      post_request(
+        state.url + "/login",
+        "application/json",
+        {"username":state.user,"password":state.password}.encode_json()
+      ).do_request().as(resp, bytes(resp.Body).decode_json().as(body, {
+          "access_token": body.token
+      }))
+    :
+      {}
+    ).as(state, state.with(
+      request("GET",
+        (has(state.want_more) && !(state.want_more)
+        ?
+          (state.url + "/v2/alert?" + "timeType=relative&timeAmount=" +
+          (has(state.cursor) && has(state.cursor.time_amount_in_hours) && state.cursor.time_amount_in_hours != null
+            ?
+              string(state.cursor.time_amount_in_hours)
+            :
+              string(state.time_amount)) +
+              "&timeUnit=" +
+              (has(state.cursor) && has(state.cursor.time_amount_in_hours) && state.cursor.time_amount_in_hours != null
+              ?
+                "hour"
+              :
+                state.time_unit) +
+                "&detailed=true" +
+                "&limit=" + string(state.batch_size))
+        :
+          (state.url + "/v2/alert?" + "timeType=relative&timeAmount=" +
+          (has(state.cursor) && has(state.cursor.time_amount_in_hours) && state.cursor.time_amount_in_hours != null
+          ?
+            string(state.cursor.time_amount_in_hours)
+          :
+            string(state.time_amount)) + "&timeUnit=" +
+            (has(state.cursor) && has(state.cursor.time_amount_in_hours) && state.cursor.time_amount_in_hours != null
+            ?
+              "hour"
+            :
+              state.time_unit) + "&detailed=true" +
+              "&limit=" + string(state.batch_size) +
+              (
+                has(state.page_token)
+                ?
+                  "&pageToken=" + state.page_token
+                :
+                  "")
+          )
+        )).with({
+          "Header":{
+            "x-redlock-auth": [state.access_token],
+          }
+        }).do_request().as(resp, bytes(resp.Body).decode_json().as(inner_body, {
+            "events": inner_body.items.map(e, {
+              "message": e.encode_json(),
+            }),
+            "url": state.url,
+            "page_token": has(inner_body.nextPageToken) ? inner_body.nextPageToken : "",
+            "cursor": {
+              "time_amount_in_hours": (
+                has(inner_body.items) && inner_body.items.size() > 0
+                ?
+                  (now() - timestamp(int(timestamp(0)+duration(string(int(inner_body.items.map(e, e.lastUpdated).max()))+"ms")))).getHours()
+                :
+                  (
+                    has(state.cursor) && has(state.cursor.time_amount_in_hours)
+                    ?
+                      state.cursor.time_amount_in_hours
+                    :
+                      null
+                  )
+              )
+            },
+            "total_rows": (int(state.total_rows) + size(inner_body.items)),
+            "want_more": ((int(state.total_rows)) < inner_body.totalRows),
+            "user": state.user,
+            "password": state.password,
+            "batch_size": string(state.batch_size),
+            "time_amount": string(state.time_amount),
+            "time_unit": state.time_unit
+          }))
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

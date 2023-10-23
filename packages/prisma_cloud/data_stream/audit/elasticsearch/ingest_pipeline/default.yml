@@ -1,0 +1,213 @@
+---
+description: Pipeline for processing audit logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.10.0
+  - set:
+      field: event.kind
+      tag: set_event_kind_1
+      value: event
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
+  - rename:
+      field: message
+      tag: rename_message
+      target_field: event.original
+      ignore_missing: true
+  - drop:
+      if: ctx.event?.original != null && ctx.event.original.isEmpty()
+  - json:
+      field: event.original
+      tag: json_message
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ipAddress
+      tag: convert_ip_address_to_ip
+      target_field: prisma_cloud.audit.ip_address
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.ipAddress != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: host.ip
+      tag: append_ip_address_to_host_ip
+      value: '{{{prisma_cloud.audit.ip_address}}}'
+      allow_duplicates: false
+      if: ctx.prisma_cloud?.audit?.ip_address != null
+  - append:
+      field: related.ip
+      tag: convert_ip_address_to_related_ip
+      value: '{{{prisma_cloud.audit.ip_address}}}'
+      allow_duplicates: false
+      if: ctx.prisma_cloud?.audit?.ip_address != null
+  - rename:
+      field: json.user
+      tag: rename_prisma_cloud_audit_user
+      target_field: prisma_cloud.audit.user
+      ignore_missing: true
+  - set:
+      field: user.email
+      tag: set_prisma_cloud_audit_user
+      copy_from: prisma_cloud.audit.user
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_prisma_cloud_audit_user_to_related_user
+      value: '{{{prisma_cloud.audit.user}}}'
+      allow_duplicates: false
+      if: ctx.prisma_cloud?.audit?.user != null
+  - rename:
+      field: json.action
+      tag: rename_prisma_cloud_audit_action
+      target_field: prisma_cloud.audit.action.value
+      ignore_missing: true
+  - rename:
+      field: json.actionType
+      tag: rename_prisma_cloud_audit_action_type
+      target_field: prisma_cloud.audit.action.type
+      ignore_missing: true
+  - lowercase:
+      field: prisma_cloud.audit.action.type
+      tag: 'lowercase_action_type'
+      ignore_missing: true
+      target_field: event.action
+      if: ctx.prisma_cloud?.audit?.action?.type != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - split:
+      field: event.action
+      tag: split_action_type
+      separator: '\s+'
+      if: ctx.event?.action != null && ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - join:
+      field: event.action
+      tag: join_action_type
+      separator: "-"
+      if: ctx.event?.action instanceof List
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: authentication
+      if: ctx.prisma_cloud?.audit?.action?.type != null && (ctx.prisma_cloud.audit.action.type.toLowerCase().contains('login') || ctx.prisma_cloud.audit.action.type.toLowerCase().contains('logout'))
+      allow_duplicates: false
+  - rename:
+      field: json.resourceName
+      tag: rename_prisma_cloud_audit_resource_name
+      target_field: prisma_cloud.audit.resource.name
+      ignore_missing: true
+  - rename:
+      field: json.resourceType
+      tag: rename_prisma_cloud_audit_resource_type
+      target_field: prisma_cloud.audit.resource.type
+      ignore_missing: true
+  - rename:
+      field: json.result
+      tag: rename_json_result
+      target_field: prisma_cloud.audit.result
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: script_to_set_result
+      description: Script to set result for different ranges.
+      if: ctx.prisma_cloud?.audit?.result != null
+      source: >-
+        if (ctx.prisma_cloud?.audit?.result != null && ctx.prisma_cloud.audit.result.toLowerCase().contains("success")){
+            ctx.event.outcome = "success";
+        } else if (ctx.prisma_cloud?.audit?.result != null && ctx.prisma_cloud.audit.result.toLowerCase().contains("fail")){
+            ctx.event.outcome = "failure";
+        } else {
+            ctx.event.outcome = "unknown";
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.timestamp
+      tag: 'date_rename_timestamp_to_custom_name'
+      formats:
+        - UNIX_MS
+      if: ctx.json?.timestamp != null && ctx.json.timestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.timestamp
+      tag: 'date_rename_timestamp_to_custom_name'
+      target_field: prisma_cloud.audit.timestamp
+      formats:
+        - UNIX_MS
+      if: ctx.json?.timestamp != null && ctx.json.timestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field:
+        - json
+      ignore_missing: true
+  - remove:
+      field:
+        - event.original
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_missing: true
+      tag: remove_preserve_duplicate_custom_fields
+      field:
+        - prisma_cloud.audit.ip_address
+        - prisma_cloud.audit.user
+        - prisma_cloud.audit.action.type
+        - prisma_cloud.audit.result
+        - prisma_cloud.audit.timestamp
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

@@ -1,0 +1,276 @@
+- name: prisma_cloud
+  type: group
+  fields:
+    - name: incident_audit
+      type: group
+      fields:
+        - name: _id
+          type: keyword
+          description: Internal ID of the incident.
+        - name: account_id
+          type: keyword
+          description: Cloud account ID.
+        - name: acknowledged
+          type: boolean
+          description: Indicates if the incident has been acknowledged (true) or not (false).
+        - name: app
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: Application Id.
+            - name: value
+              type: keyword
+              description: Application that caused the incident.
+        - name: category
+          type: keyword
+        - name: cluster
+          type: keyword
+          description: Cluster on which the incident was found.
+        - name: collections
+          type: keyword
+          description: Collections to which this incident applies.
+        - name: container
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: ID of the container that triggered the incident.
+            - name: name
+              type: keyword
+              description: Container name.
+        - name: custom_rule_name
+          type: keyword
+          description: Name of the custom runtime rule that triggered the incident.
+        - name: data
+          type: group
+          fields:
+            - name: _id
+              type: keyword
+              description: Internal ID of the incident.
+            - name: account_id
+              type: keyword
+              description: ID of the cloud account where the audit was generated.
+            - name: app
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: Application id.
+                - name: value
+                  type: keyword
+                  description: Name of the service which violated the host policy.
+            - name: attack
+              type: group
+              fields:
+                - name: techniques
+                  type: keyword
+                  description: Given list of techniques in documentation.
+                - name: type
+                  type: keyword
+                  description: Given list in documentation.RuntimeAttackType is the sub-category of the attack (e.g., malware process, process not in model, etc...).
+            - name: cluster
+              type: keyword
+              description: Cluster name.
+            - name: collections
+              type: keyword
+              description: Collections to which this audit applies.
+            - name: command
+              type: keyword
+              description: ScrubbedCommand is the command executed by the process with scrubbed PII.
+            - name: container
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: ID of the container that violates the rule.
+                - name: name
+                  type: keyword
+                  description: Container name.
+                - name: value
+                  type: boolean
+                  description: Indicates if this is a container audit (true) or host audit (false).
+            - name: count
+              type: long
+              description: Attack type audits count.
+            - name: country
+              type: keyword
+              description: Outbound country for outgoing network audits.
+            - name: domain
+              type: keyword
+              description: Domain is the requested domain.
+            - name: effect
+              type: keyword
+              description: 'Possible values: [block,prevent,alert,disable]RuleEffect is the effect that will be used in the runtime rule.'
+            - name: err
+              type: keyword
+              description: Unknown error in the audit process.
+            - name: filepath
+              type: keyword
+              description: Filepath is the path of the modified file.
+            - name: fqdn
+              type: keyword
+              description: Current full domain name used in audit alerts.
+            - name: function
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: Id of function invoked.
+                - name: value
+                  type: keyword
+                  description: Name of the serverless function that caused the audit.
+            - name: hostname
+              type: keyword
+              description: current hostname.
+            - name: image
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: Container image Id.
+                - name: name
+                  type: keyword
+                  description: Container image name.
+            - name: interactive
+              type: boolean
+              description: Indicates if the audit was triggered from a process that was spawned in interactive mode (e.g., docker exec ...) (true) or not (false).
+            - name: ip
+              type: ip
+              description: IP is the connection destination IP address.
+            - name: label
+              type: keyword
+              description: Container deployment label.
+            - name: labels
+              type: flattened
+            - name: md5
+              type: keyword
+              description: MD5 is the MD5 of the modified file (only for executables).
+            - name: msg
+              type: keyword
+              description: Blocking message text.
+            - name: namespace
+              type: keyword
+              description: K8s deployment namespace.
+            - name: os
+              type: keyword
+              description: Operating system distribution.
+            - name: pid
+              type: long
+              description: ID of the process that caused the audit event.
+            - name: port
+              type: long
+              description: Port is the connection destination port.
+            - name: process_path
+              type: keyword
+              description: Path of the process that caused the audit event.
+            - name: profile_id
+              type: keyword
+              description: Profile ID of the audit.
+            - name: provider
+              type: keyword
+              description: "Possible values: [aws,azure,gcp,alibaba,oci,others]. CloudProvider specifies the cloud provider name."
+            - name: raw_event
+              type: keyword
+              description: Unparsed function handler event input.
+            - name: region
+              type: keyword
+              description: Region of the resource where the audit was generated.
+            - name: request_id
+              type: keyword
+              description: ID of the lambda function invocation request.
+            - name: resource_id
+              type: keyword
+              description: Unique ID of the resource where the audit was generated.
+            - name: rule_name
+              type: keyword
+              description: Name of the rule that was applied, if blocked.
+            - name: runtime
+              type: keyword
+              description: '[python,python3.6,python3.7,python3.8,python3.9,nodejs12.x,nodejs14.x,dotnetcore2.1,dotnetcore3.1,dotnet6,java8,java11,ruby2.7].'
+            - name: severity
+              type: keyword
+              description: Possible value [high, low, medium].
+            - name: time
+              type: date
+              description: Time of the audit event (in UTC time).
+            - name: type
+              type: keyword
+              description: "Possible values: [processes,network,kubernetes,filesystem]\r\nRuntimeType represents the runtime protection type."
+            - name: user
+              type: keyword
+              description: Service user.
+            - name: version
+              type: keyword
+              description: Defender version.
+            - name: vm_id
+              type: keyword
+              description: Azure unique VM ID where the audit was generated.
+            - name: wild_fire_report_url
+              type: keyword
+              description: WildFireReportURL is a URL link of the report generated by wildFire.
+        - name: fqdn
+          type: keyword
+          description: Current hostname's full domain name.
+        - name: function
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: ID of the function that triggered the incident.
+            - name: value
+              type: keyword
+              description: Name of the serverless function.
+        - name: hostname
+          type: keyword
+          description: Current hostname.
+        - name: image
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: Container image id.
+            - name: name
+              type: keyword
+              description: Container image name.
+        - name: labels
+          type: flattened
+        - name: namespace
+          type: keyword
+          description: k8s deployment namespace.
+        - name: profile_id
+          type: keyword
+          description: Runtime profile ID.
+        - name: provider
+          type: keyword
+          description: 'Possible values: [aws,azure,gcp,alibaba,oci,others].'
+        - name: region
+          type: keyword
+          description: Region of the resource on which the incident was found.
+        - name: resource_id
+          type: keyword
+          description: Unique ID of the resource on which the incident was found.
+        - name: runtime
+          type: keyword
+          description: Runtime of the serverless function.
+        - name: serial_num
+          type: long
+          description: Serial number of incident.
+        - name: should_collect
+          type: boolean
+          description: Indicates if this incident should be collected (true) or not (false).
+        - name: time
+          type: date
+          description: Time of the incident (in UTC time).
+        - name: type
+          type: keyword
+          description: 'Possible values: [host,container,function,appEmbedded,fargate].'
+        - name: vm_id
+          type: keyword
+          description: Azure unique VM ID on which the incident was found.
+        - name: windows
+          type: boolean
+          description: Windows indicates if defender OS type is Windows.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.

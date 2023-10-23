@@ -1,0 +1,100 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  user: {{username}}
+  password: {{password}}
+  batch_size: {{batch_size}}
+  offset: {{offset}}
+  want_more: false
+redact:
+  fields:
+    - password
+program: |
+  (
+    state.with(has(state.want_more) && !(state.want_more)
+    ?
+      post_request(
+        state.url + "/authenticate",
+        "application/json",
+        {"username":state.user,"password":state.password}.encode_json()
+      ).do_request().as(resp, bytes(resp.Body).decode_json().as(body, {
+          "access_token": body.token,
+      }))
+    :
+      {}
+    ).as(state,
+      request("GET",
+        (
+          has(state.cursor) && has(state.cursor.new_offset) && state.cursor.new_offset != null
+        ?
+          state.url + "/profiles/host?limit=" + string(state.batch_size) + "&offset=" + string(state.cursor.new_offset)
+        :
+          state.url + "/profiles/host?limit=" + string(state.batch_size) + "&offset=" + string(state.offset)
+        )).with({
+          "Header":{
+            "Authorization": ["Bearer " + state.access_token],
+          }
+        }).do_request().as(resp, bytes(resp.Body).decode_json().as(inner_body, {
+            "events": (inner_body != null ?
+                inner_body.map(e, {
+                  "message": e.encode_json(),
+                })
+              :
+                []
+            ),
+            "url": state.url,
+            "want_more": inner_body.size() > 0,
+            "user": state.user,
+            "password": state.password,
+            "batch_size": string(state.batch_size),
+            "access_token": state.access_token,
+            "cursor":
+            {
+              "new_offset":
+              (
+                has(state.cursor) && has(state.cursor.new_offset) && state.cursor.new_offset != null
+                 ?
+                   (
+                    inner_body != null && inner_body.size() > 0
+                   ?
+                     string(int(state.cursor.new_offset) + int(inner_body.size()))
+                   :
+                     state.cursor.new_offset
+                   )
+                 :
+                  string(int(state.offset) + int(inner_body.size()))
+              )
+            },
+        }))
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
