@@ -1,0 +1,809 @@
+---
+description: Pipeline for processing incident_audit logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.10.0
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - rename:
+      field: message
+      tag: rename_message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      tag: json_message
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json._id
+      tag: rename_prisma_cloud_incident_audit_id
+      target_field: prisma_cloud.incident_audit._id
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_prisma_cloud_incident_audit_id
+      copy_from: prisma_cloud.incident_audit._id
+      ignore_empty_value: true
+  - rename:
+      field: json.accountID
+      tag: rename_prisma_cloud_incident_audit_accountID
+      target_field: prisma_cloud.incident_audit.account_id
+      ignore_missing: true
+  - append:
+      field: cloud.account.id
+      tag: append_prisma_cloud_incident_audit_account_id
+      value: '{{{prisma_cloud.incident_audit.account_id}}}'
+      allow_duplicates: false
+  - convert:
+      field: json.acknowledged
+      tag: convert_prisma_cloud_incident_audit_acknowledged
+      target_field: prisma_cloud.incident_audit.acknowledged
+      type: boolean
+      ignore_missing: true
+      if: ctx.json?.acknowledged != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.appID
+      tag: rename_prisma_cloud_incident_audit_appID
+      target_field: prisma_cloud.incident_audit.app.id
+      ignore_missing: true
+  - rename:
+      field: json.app
+      tag: rename_prisma_cloud_incident_audit_app
+      target_field: prisma_cloud.incident_audit.app.value
+      ignore_missing: true
+  - rename:
+      field: json.audits
+      tag: rename_prisma_cloud_incident_audit_audits
+      target_field: prisma_cloud.incident_audit.data
+      ignore_missing: true
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.app
+          tag: rename_prisma_cloud_incident_audit_data_app
+          target_field: _ingest._value.app.value
+          ignore_missing: true
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.appID
+          tag: rename_prisma_cloud_incident_audit_data_appID
+          target_field: _ingest._value.app.id
+          ignore_missing: true
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.accountID
+          tag: rename_prisma_cloud_incident_audit_data_accountID
+          target_field: _ingest._value.account_id
+          ignore_missing: true
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: cloud.account.id
+          tag: append_prisma_cloud_incident_audit_data_accountID_into_cloud_account_id
+          value: '{{{_ingest._value.account_id}}}'
+          allow_duplicates: false
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.attackTechniques
+          tag: rename_prisma_cloud_incident_audit_data_attackTechniques
+          target_field: _ingest._value.attack.techniques
+          ignore_missing: true
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.attack.techniques
+          ignore_failure: true
+          processor:
+            foreach:
+              field: _ingest._value
+              ignore_failure: true
+              processor:
+                append:
+                  field: threat.technique.name
+                  tag: append_prisma_cloud_incident_audit_data_attack_techniques
+                  value: '{{{_ingest._value}}}'
+                  allow_duplicates: false
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.attackType
+          tag: rename_prisma_cloud_incident_audit_data_attackType
+          target_field: _ingest._value.attack.type
+          ignore_missing: true
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: threat.technique.subtechnique.name
+          tag: append_prisma_cloud_incident_audit_data_attack_type
+          value: '{{{_ingest._value.attack.type}}}'
+          allow_duplicates: false
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.container
+          tag: rename_prisma_cloud_incident_audit_data_container
+          target_field: _ingest._value.container.value
+          ignore_missing: true
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.container.value
+          tag: convert_prisma_cloud_incident_audit_data_container_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.container.value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.containerId
+          tag: rename_prisma_cloud_incident_audit_data_containerId
+          target_field: _ingest._value.container.id
+          ignore_missing: true
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.containerName
+          tag: rename_prisma_cloud_incident_audit_data_containerName
+          target_field: _ingest._value.container.name
+          ignore_missing: true
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      tag: foreach_append_container_name
+      processor:
+        append:
+          field: container.name
+          tag: append_prisma_cloud_incident_audit_data_containerName_into_container_name_1
+          value: '{{{_ingest._value.container.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.count
+          tag: convert_prisma_cloud_incident_audit_data_count_to_long_1
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.count
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      tag: foreach_append_data_fqdn
+      processor:
+        append:
+          field: host.domain
+          tag: append_prisma_cloud_incident_audit_fqdn_to_host_domain
+          value: '{{{_ingest._value.fqdn}}}'
+          allow_duplicates: false
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      tag: foreach_append_data_fqdn
+      processor:
+        append:
+          field: related.hosts
+          tag: append_prisma_cloud_incident_audit_fqdn_to_related_hosts
+          value: '{{{_ingest._value.fqdn}}}'
+          allow_duplicates: false
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.function
+          tag: rename_prisma_cloud_incident_audit_data_function
+          target_field: _ingest._value.function.value
+          ignore_missing: true
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.functionID
+          tag: rename_prisma_cloud_incident_audit_data_functionID
+          target_field: _ingest._value.function.id
+          ignore_missing: true
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.hosts
+          tag: append_prisma_cloud_incident_audit_hostname_into_related_hosts_1
+          value: '{{{_ingest._value.hostname}}}'
+          allow_duplicates: false
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.imageId
+          tag: rename_prisma_cloud_incident_audit_data_imageId
+          target_field: _ingest._value.image.id
+          ignore_missing: true
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.imageName
+          tag: rename_prisma_cloud_incident_audit_data_imageName
+          target_field: _ingest._value.image.name
+          ignore_missing: true
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: container.image.name
+          tag: append_prisma_cloud_incident_audit_data_imageName_into_container_image_name_1
+          value: '{{{_ingest._value.image.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.interactive
+          tag: convert_prisma_cloud_incident_audit_data_interactive_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.interactive
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.ip
+          tag: convert_prisma_cloud_incident_audit_data_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.ip
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.ip
+          tag: append_prisma_cloud_incident_audit_data_ip_into_related_ip_1
+          value: '{{{_ingest._value.ip}}}'
+          allow_duplicates: false
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.pid
+          tag: convert_prisma_cloud_incident_audit_data_pid_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.pid
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.port
+          tag: convert_prisma_cloud_incident_audit_data_port_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.port
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.processPath
+          tag: rename_prisma_cloud_incident_audit_data_processPath
+          target_field: _ingest._value.process_path
+          ignore_missing: true
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.profileId
+          tag: rename_prisma_cloud_incident_audit_data_profileId
+          target_field: _ingest._value.profile_id
+          ignore_missing: true
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: cloud.provider
+          tag: append_prisma_cloud_incident_audit_data_provider_into_cloud_provider
+          value: '{{{_ingest._value.provider}}}'
+          allow_duplicates: false
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.rawEvent
+          tag: rename_prisma_cloud_incident_audit_data_rawEvent
+          target_field: _ingest._value.raw_event
+          ignore_missing: true
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.requestID
+          tag: rename_prisma_cloud_incident_audit_data_requestID
+          target_field: _ingest._value.request_id
+          ignore_missing: true
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.resourceID
+          tag: rename_prisma_cloud_incident_audit_data_audit_resourceID
+          target_field: _ingest._value.resource_id
+          ignore_missing: true
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.ruleName
+          tag: rename_prisma_cloud_incident_audit_data_ruleName
+          target_field: _ingest._value.rule_name
+          ignore_missing: true
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: rule.name
+          tag: append_prisma_cloud_incident_audit_data_ruleName_into_rule_name_1
+          value: '{{{_ingest._value.rule_name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value.time
+          target_field: _ingest._value.time
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.time
+                ignore_missing: true
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          tag: append_prisma_cloud_incident_audit_data_user_into_related_user_1
+          value: '{{{_ingest._value.user}}}'
+          allow_duplicates: false
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.vmID
+          tag: rename_prisma_cloud_incident_audit_data_vmId
+          target_field: _ingest._value.vm_id
+          ignore_missing: true
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.wildFireReportURL
+          tag: rename_prisma_cloud_incident_audit_data_wildFireReportURL
+          target_field: _ingest._value.wild_fire_report_url
+          ignore_missing: true
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
+      ignore_failure: true
+      processor:
+        remove:
+          field:
+            -  _ingest._value.attack.type
+            -  _ingest._value.attack.techniques
+            -  _ingest._value.container.name
+            -  _ingest._value.image.name
+            -  _ingest._value.rule_name
+            -  _ingest._value.provider
+            - _ingest._value.fqdn
+            - _ingest._value.account_id
+          ignore_missing: true
+          tag: remove_apps_data_fields_ecs_duplicate
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: malware
+      if: ctx.json?.category != null && ctx.json.category.toLowerCase().contains('malware')
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
+      if: ctx.event?.category != null
+  - rename:
+      field: json.category
+      tag: rename_prisma_cloud_incident_audit_category
+      target_field: prisma_cloud.incident_audit.category
+      ignore_missing: true
+  - rename:
+      field: json.cluster
+      tag: rename_prisma_cloud_incident_audit_cluster
+      target_field: prisma_cloud.incident_audit.cluster
+      ignore_missing: true
+  - rename:
+      field: json.collections
+      tag: rename_prisma_cloud_incident_audit_collections
+      target_field: prisma_cloud.incident_audit.collections
+      ignore_missing: true
+  - rename:
+      field: json.containerID
+      tag: rename_prisma_cloud_incident_audit_containerID
+      target_field: prisma_cloud.incident_audit.container.id
+      ignore_missing: true
+  - set:
+      field: container.id
+      tag: set_prisma_cloud_incident_audit_container_id
+      copy_from: prisma_cloud.incident_audit.container.id
+      ignore_empty_value: true
+  - rename:
+      field: json.containerName
+      tag: rename_prisma_cloud_incident_audit_containerName
+      target_field: prisma_cloud.incident_audit.container.name
+      ignore_missing: true
+  - append:
+      field: container.name
+      tag: append_prisma_cloud_incident_audit_container_name
+      value: '{{{prisma_cloud.incident_audit.container.name}}}'
+      allow_duplicates: false
+      if: ctx.prisma_cloud?.incident_audit?.container?.name != null
+  - rename:
+      field: json.customRuleName
+      tag: rename_prisma_cloud_incident_audit_customRuleName
+      target_field: prisma_cloud.incident_audit.custom_rule_name
+      ignore_missing: true
+  - append:
+      field: rule.name
+      tag: append_prisma_cloud_incident_audit_rule_name
+      value: '{{{prisma_cloud.incident_audit.custom_rule_name}}}'
+      allow_duplicates: false
+      if: ctx.prisma_cloud?.incident_audit?.custom_rule_name != null
+  - rename:
+      field: json.fqdn
+      tag: rename_prisma_cloud_incident_audit_fqdn
+      target_field: prisma_cloud.incident_audit.fqdn
+      ignore_missing: true
+  - append:
+      field: host.domain
+      tag: append_prisma_cloud_incident_audit_fqdn
+      value: '{{{prisma_cloud.incident_audit.fqdn}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      tag: append_prisma_cloud_incident_audit_fqdn_to_related_hosts
+      value: '{{{prisma_cloud.incident_audit.fqdn}}}'
+      allow_duplicates: false
+      if: ctx.prisma_cloud?.incident_audit?.fqdn != null
+  - rename:
+      field: json.function
+      tag: rename_prisma_cloud_incident_audit_function
+      target_field: prisma_cloud.incident_audit.function.value
+      ignore_missing: true
+  - rename:
+      field: json.functionID
+      tag: rename_prisma_cloud_incident_audit_functionID
+      target_field: prisma_cloud.incident_audit.function.id
+      ignore_missing: true
+  - rename:
+      field: json.hostname
+      tag: rename_prisma_cloud_incident_audit_hostname
+      target_field: prisma_cloud.incident_audit.hostname
+      ignore_missing: true
+  - set:
+      field: host.hostname
+      tag: set_prisma_cloud_incident_audit_hostname
+      copy_from: prisma_cloud.incident_audit.hostname
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_prisma_cloud_incident_audit_hostname
+      value: '{{{prisma_cloud.incident_audit.hostname}}}'
+      allow_duplicates: false
+      if: ctx.prisma_cloud?.incident_audit?.hostname != null
+  - rename:
+      field: json.imageID
+      tag: rename_prisma_cloud_incident_audit_imageID
+      target_field: prisma_cloud.incident_audit.image.id
+      ignore_missing: true
+  - rename:
+      field: json.imageName
+      tag: rename_prisma_cloud_incident_audit_imageName
+      target_field: prisma_cloud.incident_audit.image.name
+      ignore_missing: true
+  - append:
+      field: container.image.name
+      tag: append_prisma_cloud_incident_audit_image_name
+      value: '{{{prisma_cloud.incident_audit.image.name}}}'
+      allow_duplicates: false
+      if: ctx.prisma_cloud?.incident_audit?.image?.name != null
+  - rename:
+      field: json.labels
+      tag: rename_prisma_cloud_incident_audit_labels
+      target_field: prisma_cloud.incident_audit.labels
+      ignore_missing: true
+  - rename:
+      field: json.namespace
+      tag: rename_prisma_cloud_incident_audit_namespace
+      target_field: prisma_cloud.incident_audit.namespace
+      ignore_missing: true
+  - rename:
+      field: json.profileID
+      tag: rename_prisma_cloud_incident_audit_profileID
+      target_field: prisma_cloud.incident_audit.profile_id
+      ignore_missing: true
+  - rename:
+      field: json.provider
+      tag: rename_prisma_cloud_incident_audit_provider
+      target_field: prisma_cloud.incident_audit.provider
+      ignore_missing: true
+  - append:
+      field: cloud.provider
+      tag: append_prisma_cloud_incident_audit_provider_into_cloud_provider
+      value: '{{{prisma_cloud.incident_audit.provider}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.region
+      tag: rename_prisma_cloud_incident_audit_region
+      target_field: prisma_cloud.incident_audit.region
+      ignore_missing: true
+  - set:
+      field: cloud.region
+      tag: set_prisma_cloud_incident_audit_region
+      copy_from: prisma_cloud.incident_audit.region
+      ignore_empty_value: true
+  - rename:
+      field: json.resourceID
+      tag: rename_prisma_cloud_incident_audit_resourceID
+      target_field: prisma_cloud.incident_audit.resource_id
+      ignore_missing: true
+  - rename:
+      field: json.runtime
+      tag: rename_prisma_cloud_incident_audit_runtime
+      target_field: prisma_cloud.incident_audit.runtime
+      ignore_missing: true
+  - convert:
+      field: json.serialNum
+      tag: convert_prisma_cloud_incident_audit_serialNum
+      target_field: prisma_cloud.incident_audit.serial_num
+      type: long
+      ignore_missing: true
+      if: ctx.json?.serialNum != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.shouldCollect
+      tag: convert_prisma_cloud_incident_audit_shouldCollect
+      target_field: prisma_cloud.incident_audit.should_collect
+      type: boolean
+      ignore_missing: true
+      if: ctx.json?.shouldCollect != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.type
+      tag: rename_prisma_cloud_incident_audit_type
+      target_field: prisma_cloud.incident_audit.type
+      ignore_missing: true
+  - rename:
+      field: json.vmID
+      tag: rename_prisma_cloud_incident_audit_vmID
+      target_field: prisma_cloud.incident_audit.vm_id
+      ignore_missing: true
+  - convert:
+      field: json.windows
+      tag: convert_prisma_cloud_incident_audit_windows
+      target_field: prisma_cloud.incident_audit.windows
+      type: boolean
+      ignore_missing: true
+      if: ctx.json?.windows != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.time
+      tag: date_prisma_cloud_incident_audit_time
+      formats:
+        - ISO8601
+      if: ctx.json?.time != null && ctx.json.time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.time
+      tag: 'date_rename_time_to_custom_name'
+      target_field: prisma_cloud.incident_audit.time
+      formats:
+        - ISO8601
+      if: ctx.json?.time != null && ctx.json.time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field:
+        - json
+      ignore_missing: true
+  - remove:
+      field:
+        - event.original
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_missing: true
+      tag: remove_preserve_duplicate_custom_fields
+      field:
+        - prisma_cloud.incident_audit._id
+        - prisma_cloud.incident_audit.account_id
+        - prisma_cloud.incident_audit.container.id
+        - prisma_cloud.incident_audit.container.name
+        - prisma_cloud.incident_audit.custom_rule_name
+        - prisma_cloud.incident_audit.fqdn
+        - prisma_cloud.incident_audit.hostname
+        - prisma_cloud.incident_audit.image.name
+        - prisma_cloud.incident_audit.provider
+        - prisma_cloud.incident_audit.region
+        - prisma_cloud.incident_audit.time
+        - prisma_cloud.incident_audit.category
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
