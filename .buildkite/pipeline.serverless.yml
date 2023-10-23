@@ -17,6 +17,23 @@ env:
   ELASTIC_PACKAGE_LINKS_FILE_PATH: "links_table.yml"
 
 steps:
+  - input: "Input values for the variables"
+    key: "input-variables"
+    fields:
+    - select: "SERVERLESS_PROJECT"
+      key: "SERVERLESS_PROJECT"
+      options:
+        - label: "observability"
+          value: "observability"
+        - label: "security"
+          value: "security"
+      default: "observability"
+    if: "build.source == 'ui'"
+
+  - wait: ~
+    if: "build.source == 'ui'"
+    allow_dependency_failure: false
+
   - label: ":white_check_mark: Check go sources"
     key: "check"
     command: ".buildkite/scripts/check_sources.sh"
@@ -25,7 +42,7 @@ steps:
       cpu: "8"
       memory: "4G"
 
-  - label: "Check integrations in serverless - project ${SERVERLESS_PROJECT}"
+  - label: "Check integrations in serverless"
     key: "run-integrations-serverless-project"
     command: ".buildkite/scripts/run_integrations_sync.sh"
     timeout_in_minutes: 120

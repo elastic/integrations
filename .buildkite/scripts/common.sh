@@ -9,6 +9,13 @@ hw_type="$(uname -m)"
 GOOGLE_CREDENTIALS_FILENAME="google-cloud-credentials.json"
 export ELASTIC_PACKAGE_BIN=${WORKSPACE}/build/elastic-package
 
+running_on_buildkite() {
+    if [[ "${BUILDKITE:-"false"}" == "true" ]]; then
+        return 0
+    fi
+    return 1
+}
+
 retry() {
   local retries=$1
   shift
@@ -138,15 +145,16 @@ google_cloud_signing_auth() {
 
 google_cloud_logout_active_account() {
   local active_account=$(gcloud auth list --filter=status:ACTIVE --format="value(account)" 2>/dev/null)
-  if [ -n "$active_account" ]; then
+    if [[ -n "$active_account" && -n "${GOOGLE_APPLICATION_CREDENTIALS+x}" ]]; then
     echo "Logging out from GCP for active account"
     gcloud auth revoke $active_account > /dev/null 2>&1
-    if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
-      unset GOOGLE_APPLICATION_CREDENTIALS
-    fi
-    cleanup
   else
     echo "No active GCP accounts found."
+  fi
+
+  if [ -n "${GOOGLE_APPLICATION_CREDENTIALS+x}" ]; then
+    rm -rf ${GOOGLE_APPLICATION_CREDENTIALS}
+    unset GOOGLE_APPLICATION_CREDENTIALS
   fi
 }
 
