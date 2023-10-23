@@ -43,6 +43,11 @@ for integration in $(list_all_directories); do
     clean_safe_logs
 
     if [[ ${SERVERLESS} == "true" ]] ; then
+        if [[ "${integration}" == "fleet_server" ]]; then
+            echo "- [${integration}] not supported" >> ${SKIPPED_PACKAGES_FILE_PATH}
+            popd > /dev/null
+            continue
+        fi
         if ! is_spec_3_0_0 ]]; then
             echo "Not v3 spec version. Skipped"
             echo "- [${integration}] spec <3.0.0" >> ${SKIPPED_PACKAGES_FILE_PATH}
