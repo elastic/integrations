@@ -27,7 +27,7 @@ steps:
       cpu: "8"
       memory: "4G"
 
-  # TODO: remove comments
+  # TODO: Pending to migrate stages from https://github.com/elastic/integrations/blob/993537b80456edf2035f2a4826031841116c2019/.ci/Jenkinsfile
   # - label: "Publish packages - INCOMPLETE"
   #   key: "publish-packages"
   #   command: ".buildkite/scripts/publish_packages.sh" # TODO: missing signature and publishing loops
@@ -37,10 +37,17 @@ steps:
   #     - step: "check"
   #       allow_failure: false
 
+  # - label: "Trigger integrations"
+  #   key: "trigger-integrations"
+  #   command: ".buildkite/scripts/trigger_integrations_in_parallel.sh" # TODO: missing script
+  #   depends_on:
+  #     - step: "publish-packages"
+  #       allow_failure: false
+
   # to be moved to schedule-daily job
   - label: "Check integrations in serverless - project observability"
     key: "test-integrations-serverless-obs"
-    command: ".buildkite/scripts/run_integrations_with_serverless.sh"
+    command: ".buildkite/scripts/test_integrations_with_serverless.sh"
     timeout_in_minutes: 120
     env:
       SERVERLESS: true
@@ -59,7 +66,7 @@ steps:
 
   - label: "Check integrations in serverless - project security"
     key: "test-integrations-serverless-security"
-    command: ".buildkite/scripts/run_integrations_with_serverless.sh"
+    command: ".buildkite/scripts/test_integrations_with_serverless.sh"
     timeout_in_minutes: 120
     env:
       SERVERLESS: true

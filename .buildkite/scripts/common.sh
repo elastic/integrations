@@ -523,6 +523,8 @@ run_tests_package() {
             return 1
         fi
     fi
+
+    # TODO add if block to test packages locally as Jenkins performs
     return 0
 }
 
@@ -563,7 +565,9 @@ upload_safe_logs() {
 
 buildkite_pr_branch_build_id() {
     if [ "${BUILDKITE_PULL_REQUEST}" == "false" ]; then
-        echo "${BUILDKITE_BRANCH}-${BUILDKITE_BUILD_NUMBER}"
+        # add pipeline slug ad build_id to distinguish between integration and integrations-serverless builds
+        # when both are executed using main branch
+        echo "${BUILDKITE_BRANCH}-${BUILDKITE_PIPELINE_SLUG}-${BUILDKITE_BUILD_NUMBER}"
         return
     fi
     echo "PR-${BUILDKITE_PULL_REQUEST}-${BUILDKITE_BUILD_NUMBER}"
@@ -583,8 +587,9 @@ upload_safe_logs_from_package() {
     local build_directory=$2
 
     local parent_folder="insecure-logs"
+
+    #TODO remove this if when just triggered from integrations-serverless pipeline
     if [[ "${SERVERLESS_PROJECT}" != "" ]]; then
-        #TODO remove this if when just triggered from pipeline-serverless
         parent_folder="insecure-serverless-${SERVERLESS_PROJECT}-logs"
     fi
 
