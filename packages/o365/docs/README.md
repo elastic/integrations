@@ -1,21 +1,30 @@
 # Microsoft Office 365 Integration
 
-This integration is for Microsoft Office 365. It currently supports user, admin, system, and policy actions and events from Office 365 and Azure AD activity logs exposed by the Office 365 Management Activity API.
+This integration is for [Microsoft Office 365](https://docs.microsoft.com/en-us/previous-versions/office/office-365-api/). It currently supports user, admin, system, and policy actions and events from Office 365 and Azure AD activity logs exposed by the Office 365 Management Activity API.
 
-## Configuration
+## Setup
 
 To use this package you need to enable _Audit Log Search_ and register an application in Azure AD.
 
-Once this application is registered note the _Application (client) ID_ and the _Directory (tenant) ID._ Then configure the authentication in the _Certificates & Secrets_ section.
+Once this application is registered, note the _Application (client) ID_ and the _Directory (tenant) ID._ Then configure the authentication in the _Certificates & Secrets_ section.
 
-To use client-secret authentication, add you secret to the _Client Secret (API key)_ field.
+To use client-secret authentication, add your secret to the _Client Secret_ field.
 
-To use certificate-based authentication, set the paths to the certificate and private key files. If the key file is protected with a passphrase, set this passphrase in the _Private key passphrase_ field. Paths must be absolute and files must exist in the host where _Elastic Agent_ is running.
+**NOTE:** As Microsoft is no longer supporting Azure Active Directory Authentication Library (ADAL), the existing o365audit input is being deprecated in favor of new [CEL](https://www.elastic.co/guide/en/beats/filebeat/8.6/filebeat-input-cel.html) input in version `1.18.0`. Hence for versions `>= 1.18.0`, certificate based authentication (provided by earlier o365audit input) is no longer supported. 
 
+We request users upgrading from integration version `< 1.18.0` to `>= 1.18.0` to follow these steps:
 
-Add your tenant ID(s) to the _Directory (tenant) IDs_ field, then add the hostname that this tenant identifies to the _Directory (tenant) domains_ field. For example:
-- Directory IDs: `my-id-a` `my-id-b`
-- Directory domains: `a.onmicrosoft.com` `b.onmicrosoft.com`
+1. Upgrade the Elastic Stack version to `>= 8.7.1`.
+2. Upgrade the integration navigating via `Integrations -> Microsoft 365 -> Settings -> Upgrade`
+3. Upgrade the integration policy navigating via `Integrations -> Microsoft 365 -> integration policies -> Version (Upgrade)`. If `Upgrade` option doesn't appear under the `Version`, that means the policy is already upgraded in the previous step. Please go to the next step.
+4. Modify the integration policy:
+    
+    * Disable existing configuration (marked as `Deprecated`) and enable `Collect Office 365 audit logs via CEL` configuration.
+    * Add the required parameters such as `Directory (tenant) ID`, `Application (client) ID`, `Client Secret` based on the previous configuration.
+    * Verify/Update `Initial Interval` configuration parameter to start fetching events from. This defaults to 7 days. Even if there is overlap in times, the events are not duplicated.
+    * Update the other configuration parameters as required and hit `Save Integration`.
+
+Please refer [Upgrade an integration](https://www.elastic.co/guide/en/fleet/current/upgrade-integration.html) in case of any issues while performing integration upgrade.
 
 ## Compatibility
 
@@ -33,11 +42,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-02-07T16:43:53.000Z",
     "agent": {
-        "ephemeral_id": "14ad310a-30bb-45d4-9dd4-20f22267fbd5",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "79788e62-6885-49cb-b397-b329ddb0f349",
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.9.0"
     },
     "client": {
         "address": "213.97.47.133",
@@ -49,12 +58,12 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.9.0"
     },
     "event": {
         "action": "PageViewed",
@@ -65,9 +74,8 @@ An example event for `audit` looks as following:
         "code": "SharePoint",
         "dataset": "o365.audit",
         "id": "99d005e6-a4c6-46fd-117c-08d7abeceab5",
-        "ingested": "2022-01-02T03:51:15Z",
+        "ingested": "2023-07-27T16:10:06Z",
         "kind": "event",
-        "original": "{\"ListItemUniqueId\": \"59a8433d-9bb8-cfef-6edc-4c0fc8b86875\", \"ItemType\": \"Page\", \"Workload\": \"OneDrive\", \"OrganizationId\": \"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd\", \"UserId\": \"asr@testsiem.onmicrosoft.com\", \"CreationTime\": \"2020-02-07T16:43:53\", \"Site\": \"d5180cfc-3479-44d6-b410-8c985ac894e3\", \"ClientIP\": \"213.97.47.133\", \"WebId\": \"8c5c94bb-8396-470c-87d7-8999f440cd30\", \"UserType\": 0, \"Version\": 1, \"EventSource\": \"SharePoint\", \"UserAgent\": \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:72.0) Gecko/20100101 Firefox/72.0\", \"UserKey\": \"i:0h.f|membership|1003200096971f55@live.com\", \"CustomUniqueId\": true, \"Operation\": \"PageViewed\", \"ObjectId\": \"https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/_layouts/15/onedrive.aspx\", \"Id\": \"99d005e6-a4c6-46fd-117c-08d7abeceab5\", \"CorrelationId\": \"622b339f-4000-a000-f25f-92b3478c7a25\", \"RecordType\": 4}",
         "outcome": "success",
         "provider": "OneDrive",
         "type": [
@@ -79,7 +87,7 @@ An example event for `audit` looks as following:
         "name": "testsiem.onmicrosoft.com"
     },
     "input": {
-        "type": "o365audit"
+        "type": "cel"
     },
     "network": {
         "type": "ipv4"
@@ -117,9 +125,9 @@ An example event for `audit` looks as following:
         "ip": "213.97.47.133"
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
-        "o365-audit",
-        "preserve_original_event"
+        "o365-cel"
     ],
     "user": {
         "domain": "testsiem.onmicrosoft.com",
@@ -178,7 +186,7 @@ An example event for `audit` looks as following:
 | event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
@@ -198,7 +206,7 @@ An example event for `audit` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -222,7 +230,7 @@ An example event for `audit` looks as following:
 | o365.audit.ActorYammerUserId |  | keyword |
 | o365.audit.AlertEntityId |  | keyword |
 | o365.audit.AlertId |  | keyword |
-| o365.audit.AlertLinks |  | array |
+| o365.audit.AlertLinks |  | flattened |
 | o365.audit.AlertType |  | keyword |
 | o365.audit.AppId |  | keyword |
 | o365.audit.ApplicationDisplayName |  | keyword |
@@ -248,6 +256,7 @@ An example event for `audit` looks as following:
 | o365.audit.ExchangeMetaData.\* |  | object |
 | o365.audit.ExtendedProperties.\* |  | object |
 | o365.audit.ExternalAccess |  | boolean |
+| o365.audit.FileSizeBytes |  | long |
 | o365.audit.GroupName |  | keyword |
 | o365.audit.Id |  | keyword |
 | o365.audit.ImplicitShare |  | keyword |
@@ -259,6 +268,7 @@ An example event for `audit` looks as following:
 | o365.audit.Item.\*.\* |  | object |
 | o365.audit.ItemName |  | keyword |
 | o365.audit.ItemType |  | keyword |
+| o365.audit.ListBaseType |  | keyword |
 | o365.audit.ListId |  | keyword |
 | o365.audit.ListItemUniqueId |  | keyword |
 | o365.audit.LogonError |  | keyword |
@@ -268,17 +278,17 @@ An example event for `audit` looks as following:
 | o365.audit.MailboxOwnerMasterAccountSid |  | keyword |
 | o365.audit.MailboxOwnerSid |  | keyword |
 | o365.audit.MailboxOwnerUPN |  | keyword |
-| o365.audit.Members |  | array |
-| o365.audit.Members.\* |  | object |
+| o365.audit.Members |  | flattened |
 | o365.audit.ModifiedProperties.\*.\* |  | object |
 | o365.audit.Name |  | keyword |
+| o365.audit.NewValue |  | keyword |
 | o365.audit.ObjectId |  | keyword |
 | o365.audit.Operation |  | keyword |
 | o365.audit.OrganizationId |  | keyword |
 | o365.audit.OrganizationName |  | keyword |
 | o365.audit.OriginatingServer |  | keyword |
 | o365.audit.Parameters.\* |  | object |
-| o365.audit.PolicyDetails |  | array |
+| o365.audit.PolicyDetails |  | flattened |
 | o365.audit.PolicyId |  | keyword |
 | o365.audit.RecordType |  | keyword |
 | o365.audit.ResultStatus |  | keyword |

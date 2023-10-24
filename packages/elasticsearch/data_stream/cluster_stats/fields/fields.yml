@@ -1,6 +1,5 @@
 - name: elasticsearch.cluster.stats
   type: group
-  release: ga
   fields:
     - name: version
       type: keyword
@@ -15,6 +14,8 @@
           type: keyword
         - name: state_uuid
           type: keyword
+        - name: nodes
+          type: flattened
     - name: status
       type: keyword
       description: Cluster status (green, yellow, red).
@@ -23,37 +24,51 @@
       fields:
         - name: fs.total.bytes
           type: long
+          metric_type: gauge
         - name: fs.available.bytes
           type: long
+          metric_type: gauge
         - name: count
           type: long
+          metric_type: gauge
           description: Total number of nodes in cluster.
         - name: master
           type: long
+          metric_type: gauge
           description: Number of master-eligible nodes in cluster.
         - name: data
           type: long
+          metric_type: gauge
         - name: stats.data
           type: long
+          metric_type: gauge
           description: Number of data nodes in cluster.
         - name: jvm
           type: group
           fields:
             - name: max_uptime.ms
               type: long
+              metric_type: gauge
             - name: memory.heap.max.bytes
               type: long
+              metric_type: gauge
             - name: memory.heap.used.bytes
               type: long
+              metric_type: gauge
+        - name: versions
+          type: text
     - name: indices
       type: group
       fields:
         - name: store.size.bytes
           type: long
+          metric_type: gauge
         - name: total
           type: long
+          metric_type: gauge
         - name: docs.total
           type: long
+          metric_type: gauge
           description: |
             Total number of indices in cluster.
         - name: shards
@@ -61,24 +76,45 @@
           fields:
             - name: count
               type: long
+              metric_type: gauge
               description: |
                 Total number of shards in cluster.
             - name: primaries
               type: long
+              metric_type: gauge
               description: |
                 Total number of primary shards in cluster.
         - name: fielddata.memory.bytes
           type: long
+          metric_type: gauge
           description: |
             Memory used for fielddata.
     - name: license
       type: group
       fields:
+        - name: cluster_needs_tls
+          type: boolean
+        - name: expiry_date
+          type: date
         - name: expiry_date_in_millis
+          type: long
+        - name: issue_date
+          type: date
+        - name: issue_date_in_millis
+          type: long
+        - name: issued_to
+          type: keyword
+        - name: issuer
+          type: keyword
+        - name: max_nodes
+          type: long
+        - name: start_date_in_millis
           type: long
         - name: status
           type: keyword
         - name: type
+          type: keyword
+        - name: uid
           type: keyword
     - name: stack
       type: group

@@ -1,0 +1,38 @@
+{
+    "id": "d1f8d730-5ee2-56bb-8065-78e8c8ae668c",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Anonymous requests will be rejected.",
+            "default_value": "By default, anonymous access is enabled.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kubelet/\n2. https://kubernetes.io/docs/admin/kubelet-authentication-authorization/#kubelet-authentication",
+            "id": "d1f8d730-5ee2-56bb-8065-78e8c8ae668c",
+            "name": "Ensure that the --anonymous-auth argument is set to false",
+            "profile_applicability": "* Level 1 - Worker Node",
+            "description": "Disable anonymous requests to the Kubelet server.",
+            "rationale": "When enabled, requests that are not rejected by other configured authentication methods are treated as anonymous requests.\nThese requests are then served by the Kubelet server.\nYou should rely on authentication to authorize access and disallow anonymous requests.",
+            "audit": "If using a Kubelet configuration file, check that there is an entry for `authentication: anonymous: enabled` set to `false`.\n\n\nRun the following command on each node:\n\n```\nps -ef | grep kubelet\n```\n\nVerify that the `--anonymous-auth` argument is set to `false`.\n\n\nThis executable argument may be omitted, provided there is a corresponding entry set to `false` in the Kubelet config file.",
+            "remediation": "If using a Kubelet config file, edit the file to set `authentication: anonymous: enabled` to `false`.\n\n\nIf using executable arguments, edit the kubelet service file `/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and set the below parameter in `KUBELET_SYSTEM_PODS_ARGS` variable.\n\n```\n--anonymous-auth=false\n```\n\nBased on your system, restart the `kubelet` service.\nFor example:\n\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\n```",
+            "section": "Kubelet",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 4.2.1",
+                "Kubelet"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "4.2.1",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_4_2_1"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

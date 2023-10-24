@@ -1,0 +1,63 @@
+format_version: "3.0.0"
+name: azure_functions
+title: "Azure Functions"
+version: "0.2.0"
+source:
+  license: "Elastic-2.0"
+description: "Get metrics and logs from Azure Functions"
+type: integration
+categories:
+  - azure
+  - cloud
+conditions:
+  kibana:
+    version: "^8.8.1"
+  elastic:
+    subscription: "basic"
+vars:
+  - name: resource_manager_endpoint
+    type: text
+    title: Resource Manager Endpoint
+    multi: false
+    required: false
+    show_user: true
+icons:
+  - src: /img/azure-functions-icon.svg
+    title: Azure Functions logo
+    size: 32x32
+    type: image/svg+xml
+screenshots:
+  - src: /img/azure-functions-overview1.png
+    title: Azure Functions Overview dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/azure-functions-overview2.png
+    title: Azure Functions Overview dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/azure-functions-overview3.png
+    title: Azure Functions Overview dashboard
+    size: 600x600
+    type: image/png
+policy_templates:
+  - name: azure_functions
+    title: Azure Functions logs and metrics
+    description: Azure Functions logs and metrics with Elastic Agent.
+    data_streams:
+      - functionapplogs
+      - metrics
+    categories:
+      - azure
+      - cloud
+    inputs:
+      - type: "azure-eventhub"
+        title: "Collect Azure Functions logs from Event Hub"
+        description: "Collecting Functions logs from Azure (input: azure-eventhub)"
+        input_group: logs
+      - type: "azure/metrics"
+        title: "Collect Azure Functions metrics"
+        description: "Collecting Azure Functions metrics"
+        input_group: metrics
+owner:
+  github: elastic/obs-infraobs-integrations
+  type: elastic

@@ -5,6 +5,10 @@ ports:
   - {{p}}
 {{/each}}
 {{/if}}
+fields_under_root: true
+fields:
+  _conf:
+    geoip_enrich: {{geoip_enrich}}
 {{#if max_body_length}}
 max_body_length: {{max_body_length}}
 {{/if}}
@@ -29,10 +33,13 @@ keep_null: {{keep_null}}
 {{#if transaction_timeout}}
 transaction_timeout: {{transaction_timeout}}
 {{/if}}
-{{#if processors}}
 processors:
+{{#contains "forwarded" tags}}
+- add_observer_metadata: ~
+{{else}}
+- add_host_metadata: ~
+{{/contains}}
 {{processors}}
-{{/if}}
 {{#if tags}}
 tags:
 {{#each tags as |tag|}}
@@ -50,4 +57,8 @@ interface:
 {{else}}
   device: {{interface}}
 {{/if}}
+{{/if}}
+{{#if never_install}}
+npcap:
+  never_install: true
 {{/if}}

@@ -3,11 +3,12 @@ description: Pipeline for processing Nagios XI Hosts metrics
 processors:
 - set:
     field: ecs.version
-    value: 8.1.0
+    value: 8.5.1
 - rename:
     field: message
     target_field: event.original
     ignore_missing: true
+    if: 'ctx.event?.original == null'
 - json:
     field: event.original
     target_field: json
@@ -65,7 +66,7 @@ processors:
     field: json.last_state_change
     formats:
     - yyyy-MM-dd HH:mm:ss
-    target_field: nagios_xi.host.last_time_up
+    target_field: nagios_xi.host.last_state_change
     ignore_failure: true
 - date:
     field: json.last_hard_state_change

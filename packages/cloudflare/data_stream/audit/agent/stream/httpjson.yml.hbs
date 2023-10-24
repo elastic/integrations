@@ -1,5 +1,8 @@
 config_version: "2"
 interval: {{interval}}
+{{#if enable_request_tracer}}
+request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+{{/if}}
 request.method: "GET"
 request.url: {{api_url}}/client/v4/accounts/{{account}}/audit_logs?page=1&direction=desc
 {{#if ssl}}
@@ -18,7 +21,7 @@ request.transforms:
       value: "{{auth_email}}"
   - set:
       target: header.X-Auth-Key
-      value: "{{auth_key}}"
+      value: {{escape_string auth_key}}
   - set:
       target: url.params.since
       value: "[[.cursor.last_timestamp]]"
@@ -29,7 +32,7 @@ response.split:
 response.pagination:
 - set:
     target: url.params.page
-    value: '[[if (ne (len .last_response.body.response) 0)]][[add .last_response.page 1]][[end]]'
+    value: '[[if (ne (len .last_response.body.result) 0)]][[add .last_response.page 1]][[end]]'
     fail_on_template_error: true
           
 cursor:

@@ -16,18 +16,32 @@
                                 "4c4a2a46-6244-4e6b-8926-c1c60b6b9df4": {
                                     "customLabel": true,
                                     "dataType": "number",
+                                    "filter": {
+                                        "language": "kuery",
+                                        "query": "websphere_application_server.threadpool.total.created: *"
+                                    },
                                     "isBucketed": false,
                                     "label": "Threads Created",
-                                    "operationType": "median",
+                                    "operationType": "last_value",
+                                    "params": {
+                                        "sortField": "@timestamp"
+                                    },
                                     "scale": "ratio",
                                     "sourceField": "websphere_application_server.threadpool.total.created"
                                 },
                                 "b093e53a-a7e7-4b74-af63-b3da68cf3989": {
                                     "customLabel": true,
                                     "dataType": "number",
+                                    "filter": {
+                                        "language": "kuery",
+                                        "query": "websphere_application_server.threadpool.total.destroyed: *"
+                                    },
                                     "isBucketed": false,
                                     "label": "Threads Destroyed",
-                                    "operationType": "median",
+                                    "operationType": "last_value",
+                                    "params": {
+                                        "sortField": "@timestamp"
+                                    },
                                     "scale": "ratio",
                                     "sourceField": "websphere_application_server.threadpool.total.destroyed"
                                 },
@@ -43,7 +57,7 @@
                                             "type": "column"
                                         },
                                         "orderDirection": "desc",
-                                        "otherBucket": true,
+                                        "otherBucket": false,
                                         "parentFormat": {
                                             "id": "terms"
                                         },
@@ -58,6 +72,7 @@
                                     "label": "@timestamp",
                                     "operationType": "date_histogram",
                                     "params": {
+                                        "includeEmptyRows": true,
                                         "interval": "auto"
                                     },
                                     "scale": "interval",
@@ -72,7 +87,7 @@
             "filters": [],
             "query": {
                 "language": "kuery",
-                "query": "websphere_application_server.threadpool.total.created : * and websphere_application_server.threadpool.total.destroyed : * "
+                "query": "websphere_application_server.threadpool.total.created : * or websphere_application_server.threadpool.total.destroyed : * "
             },
             "visualization": {
                 "axisTitlesVisibilitySettings": {
@@ -108,6 +123,7 @@
                 ],
                 "legend": {
                     "isVisible": true,
+                    "legendSize": "auto",
                     "position": "right"
                 },
                 "preferredSeriesType": "area",
@@ -122,23 +138,19 @@
                 },
                 "yRightExtent": {
                     "mode": "full"
-                }
+                },
+                "yTitle": "Thread Count"
             }
         },
         "title": "Number of Threads Created and Destroyed [Metrics WebSphere Application Server]",
         "visualizationType": "lnsXY"
     },
-    "coreMigrationVersion": "8.1.0",
+    "coreMigrationVersion": "8.3.0",
     "id": "websphere_application_server-888801c0-bae3-11ec-b244-51e5cddeab04",
     "migrationVersion": {
-        "lens": "8.1.0"
+        "lens": "8.3.0"
     },
     "references": [
-        {
-            "id": "metrics-*",
-            "name": "indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
         {
             "id": "metrics-*",
             "name": "indexpattern-datasource-layer-5c2223d3-b3ba-45a2-848f-2a5e4ab9264c",

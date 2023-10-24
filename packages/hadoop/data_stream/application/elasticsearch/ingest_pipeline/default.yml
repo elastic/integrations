@@ -3,10 +3,10 @@ description: Pipeline for parsing Hadoop Application metrics
 processors:
   - set:
       field: ecs.version
-      value: '8.1.0'
+      value: '8.5.1'
   - set:
       field: event.type
-      value: info
+      value: [info]
   - set:
       field: event.kind
       value: metric
@@ -15,11 +15,12 @@ processors:
       value: httpjson
   - set:
       field: event.category
-      value: database
+      value: [database]
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: 'ctx.event?.original == null'
   - json:
       field: event.original
       target_field: json
@@ -38,13 +39,13 @@ processors:
       field: json.startedTime
       target_field: hadoop.application.time.started
       formats:
-        - "epoch_millis"
+        - UNIX_MS
       ignore_failure: true
   - date:
       field: json.finishedTime
       target_field: hadoop.application.time.finished
       formats:
-        - "epoch_millis"
+        - UNIX_MS
       ignore_failure: true
   - rename:
       field: json.elapsedTime

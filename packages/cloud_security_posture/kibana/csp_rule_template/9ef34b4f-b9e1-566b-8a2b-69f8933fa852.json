@@ -1,0 +1,38 @@
+{
+    "id": "9ef34b4f-b9e1-566b-8a2b-69f8933fa852",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "None",
+            "default_value": "By default, auditing is not enabled.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kube-apiserver/\n2. https://kubernetes.io/docs/concepts/cluster-administration/audit/\n3. https://github.com/kubernetes/features/issues/22",
+            "id": "9ef34b4f-b9e1-566b-8a2b-69f8933fa852",
+            "name": "Ensure that the --audit-log-path argument is set",
+            "profile_applicability": "* Level 1 - Master Node",
+            "description": "Enable auditing on the Kubernetes API Server and set the desired audit log path.",
+            "rationale": "Auditing the Kubernetes API Server provides a security-relevant chronological set of records documenting the sequence of activities that have affected system by individual users, administrators or other components of the system.\nEven though currently, Kubernetes provides only basic audit capabilities, it should be enabled.\nYou can enable it by setting an appropriate audit log path.",
+            "audit": "Run the following command on the Control Plane node:\n\n```\nps -ef | grep kube-apiserver\n```\n\nVerify that the `--audit-log-path` argument is set as appropriate.",
+            "remediation": "Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml` on the Control Plane node and set the `--audit-log-path` parameter to a suitable path and file where you would like audit logs to be written, for example:\n\n```\n--audit-log-path=/var/log/apiserver/audit.log\n```",
+            "section": "API Server",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 1.2.19",
+                "API Server"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "1.2.19",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_1_2_19"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

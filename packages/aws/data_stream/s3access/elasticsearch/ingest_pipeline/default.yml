@@ -41,6 +41,12 @@ processors:
         S3KEY: "[a-zA-Z0-9\\/_\\.\\-%+]+"
         S3ID: "[a-zA-Z0-9\\/_\\.\\-%+=]+"
         S3VERSION: "[a-zA-Z0-9.]+"
+  - grok:
+      field: aws.s3access.host_header
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - ^%{DATA}s3\.%{DATA:cloud.region}\.%{DATA}$        
   - script:
       description: Drops null/empty values recursively
       lang: painless
@@ -77,7 +83,7 @@ processors:
   # Parse the date included in s3 access logs
   #
   - date:
-      field: _temp_.s3access_time'
+      field: _temp_.s3access_time
       target_field: '@timestamp'
       ignore_failure: true
       formats:
@@ -97,8 +103,12 @@ processors:
       ignore_empty_value: true
   - geoip:
       field: aws.s3access.remote_ip
-      target_field: geo
+      target_field: client.geo
       if: ctx?.aws?.s3access?.remote_ip != null
+  - set:
+      field: geo
+      copy_from: client.geo
+      ignore_empty_value: true
   - set:
       field: client.user.id
       value: '{{aws.s3access.requester}}'

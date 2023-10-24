@@ -1,0 +1,38 @@
+{
+    "id": "ba545cc3-f447-5d14-8841-d3d3c05024e8",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "None",
+            "default_value": "By default, kubelet server certificate rotation is enabled.\n",
+            "references": "1. https://github.com/kubernetes/kubernetes/pull/45059\n2. https://kubernetes.io/docs/admin/kubelet-tls-bootstrapping/#kubelet-configuration",
+            "id": "ba545cc3-f447-5d14-8841-d3d3c05024e8",
+            "name": "Verify that the RotateKubeletServerCertificate argument is set to true",
+            "profile_applicability": "* Level 1 - Worker Node",
+            "description": "Enable kubelet server certificate rotation.",
+            "rationale": "`RotateKubeletServerCertificate` causes the kubelet to both request a serving certificate after bootstrapping its client credentials and rotate the certificate as its existing credentials expire.\nThis automated periodic rotation ensures that the there are no downtimes due to expired certificates and thus addressing availability in the CIA security triad.\n\nNote: This recommendation only applies if you let kubelets get their certificates from the API server.\nIn case your kubelet certificates come from an outside authority/tool (e.g.\nVault) then you need to take care of rotation yourself.",
+            "audit": "Ignore this check if serverTLSBootstrap is true in the kubelet config file or if the --rotate-server-certificates parameter is set on kubelet\n\nRun the following command on each node:\n\n```\nps -ef | grep kubelet\n```\n\nVerify that `RotateKubeletServerCertificate` argument exists and is set to `true`.",
+            "remediation": "Edit the kubelet service file `/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and set the below parameter in `KUBELET_CERTIFICATE_ARGS` variable.\n\n```\n--feature-gates=RotateKubeletServerCertificate=true\n```\n\nBased on your system, restart the `kubelet` service.\nFor example:\n\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\n```",
+            "section": "Kubelet",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 4.2.12",
+                "Kubelet"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "4.2.12",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_4_2_12"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

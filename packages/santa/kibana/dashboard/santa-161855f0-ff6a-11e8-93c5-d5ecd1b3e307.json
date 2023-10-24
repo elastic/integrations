@@ -1,25 +1,47 @@
 {
     "attributes": {
         "description": "Process executions on macOS monitored by Google Santa.",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [],
                 "query": {
                     "language": "kuery",
-                    "query": "data_stream.dataset:santa.log"
+                    "query": ""
                 }
             }
         },
         "optionsJSON": {
-            "darkTheme": false,
             "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "![Santa Icon](https://raw.githubusercontent.com/google/santa/main/Source/gui/Resources/Images.xcassets/AppIcon.appiconset/santa-hat-icon-128.png)  \nGoogle Santa is a binary whitelisting/blacklisting system for macOS that monitors process executions.",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "Description [Logs Santa]",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
                 },
                 "gridData": {
                     "h": 12,
@@ -29,12 +51,211 @@
                     "y": 0
                 },
                 "panelIndex": "1",
-                "panelRefName": "panel_0",
-                "version": "7.0.0-alpha1-SNAPSHOT"
+                "type": "visualization",
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "tsvb_ad_hoc_logs-*/@timestamp": {
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "tsvb_ad_hoc_logs-*/@timestamp",
+                                    "name": "logs-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-*"
+                                }
+                            },
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "1e5f57c7-cf23-462e-9058-3d079856a04f": {
+                                            "columnOrder": [
+                                                "8c6419ed-2287-4619-a0e3-847ad5e61175",
+                                                "29ab69b4-68bb-47ba-99a6-67a74c0cdc95",
+                                                "95603840-cd5a-4c8b-8ff7-c690bd9518e9"
+                                            ],
+                                            "columns": {
+                                                "29ab69b4-68bb-47ba-99a6-67a74c0cdc95": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "8c6419ed-2287-4619-a0e3-847ad5e61175": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of santa.decision",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderAgg": {
+                                                            "dataType": "number",
+                                                            "isBucketed": false,
+                                                            "label": "Count of records",
+                                                            "operationType": "count",
+                                                            "params": {},
+                                                            "scale": "ratio",
+                                                            "sourceField": "___records___"
+                                                        },
+                                                        "orderBy": {
+                                                            "type": "custom"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "santa.decision"
+                                                },
+                                                "95603840-cd5a-4c8b-8ff7-c690bd9518e9": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Decision",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "tsvb_ad_hoc_logs-*/@timestamp",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "santa.log"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "santa.log"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [
+                                {
+                                    "id": "tsvb_ad_hoc_logs-*/@timestamp",
+                                    "name": "indexpattern-datasource-layer-1e5f57c7-cf23-462e-9058-3d079856a04f",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fillOpacity": 0.5,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "95603840-cd5a-4c8b-8ff7-c690bd9518e9"
+                                        ],
+                                        "layerId": "1e5f57c7-cf23-462e-9058-3d079856a04f",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "area",
+                                        "splitAccessor": "8c6419ed-2287-4619-a0e3-847ad5e61175",
+                                        "xAccessor": "29ab69b4-68bb-47ba-99a6-67a74c0cdc95",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#68BC00",
+                                                "forAccessor": "95603840-cd5a-4c8b-8ff7-c690bd9518e9"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightScale": "linear"
+                            }
+                        },
+                        "title": "Decisions [Logs Santa] (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 12,
@@ -44,12 +265,141 @@
                     "y": 0
                 },
                 "panelIndex": "2",
-                "panelRefName": "panel_1",
-                "version": "7.0.0-alpha1-SNAPSHOT"
+                "title": "Decisions [Logs Santa]",
+                "type": "lens",
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-23d3243e-20de-43c3-9eb0-ff92b0137cfb",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "839e3cdf-81a6-4e53-bc36-54b1a00c2625",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "23d3243e-20de-43c3-9eb0-ff92b0137cfb": {
+                                            "columnOrder": [
+                                                "0aebdc17-d2e4-4bd0-955e-6c1b0631cc8c",
+                                                "0aebdc17-d2e4-4bd0-955e-6c1b0631cc8cX0",
+                                                "0aebdc17-d2e4-4bd0-955e-6c1b0631cc8cX1"
+                                            ],
+                                            "columns": {
+                                                "0aebdc17-d2e4-4bd0-955e-6c1b0631cc8c": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Events",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "defaults(count(), 0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "0aebdc17-d2e4-4bd0-955e-6c1b0631cc8cX1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "0aebdc17-d2e4-4bd0-955e-6c1b0631cc8cX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total Events",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "0aebdc17-d2e4-4bd0-955e-6c1b0631cc8cX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total Events",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "0aebdc17-d2e4-4bd0-955e-6c1b0631cc8cX0",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 20,
+                                                                "min": 0
+                                                            },
+                                                            "name": "defaults",
+                                                            "text": "defaults(count(), 0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "0aebdc17-d2e4-4bd0-955e-6c1b0631cc8cX0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "839e3cdf-81a6-4e53-bc36-54b1a00c2625",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "santa.log"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "santa.log"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "23d3243e-20de-43c3-9eb0-ff92b0137cfb",
+                                "layerType": "data",
+                                "metricAccessor": "0aebdc17-d2e4-4bd0-955e-6c1b0631cc8c"
+                            }
+                        },
+                        "title": "Total Events [Logs Santa] (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 10,
@@ -59,12 +409,178 @@
                     "y": 12
                 },
                 "panelIndex": "3",
-                "panelRefName": "panel_2",
-                "version": "7.0.0-alpha1-SNAPSHOT"
+                "title": "Total Events [Logs Santa]",
+                "type": "lens",
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-cbf341b6-8bf6-4938-b30a-5a44fd01c4ad",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "45404203-e58f-484c-a7cb-c6172b5fa6ea",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "cbf341b6-8bf6-4938-b30a-5a44fd01c4ad": {
+                                            "columnOrder": [
+                                                "0dfca898-8d10-424c-9702-0e6e2c873f97",
+                                                "51668f34-ef8d-4dc5-ba81-fae7143f4be3",
+                                                "51719a84-e765-46a9-999e-a951fc0bf5ee"
+                                            ],
+                                            "columns": {
+                                                "0dfca898-8d10-424c-9702-0e6e2c873f97": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Decision",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "51719a84-e765-46a9-999e-a951fc0bf5ee",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "santa.decision"
+                                                },
+                                                "51668f34-ef8d-4dc5-ba81-fae7143f4be3": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Reason",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "51719a84-e765-46a9-999e-a951fc0bf5ee",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "santa.reason"
+                                                },
+                                                "51719a84-e765-46a9-999e-a951fc0bf5ee": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "45404203-e58f-484c-a7cb-c6172b5fa6ea",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "santa.log"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "santa.log"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "hide",
+                                        "emptySizeRatio": 0.3,
+                                        "layerId": "cbf341b6-8bf6-4938-b30a-5a44fd01c4ad",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "legendMaxLines": 1,
+                                        "legendPosition": "right",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "51719a84-e765-46a9-999e-a951fc0bf5ee"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "percentDecimals": 2,
+                                        "primaryGroups": [
+                                            "0dfca898-8d10-424c-9702-0e6e2c873f97",
+                                            "51668f34-ef8d-4dc5-ba81-fae7143f4be3"
+                                        ],
+                                        "secondaryGroups": [],
+                                        "showValuesInLegend": true,
+                                        "truncateLegend": true
+                                    }
+                                ],
+                                "palette": {
+                                    "name": "default",
+                                    "type": "palette"
+                                },
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "Decision and Reason [Logs Santa] (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 10,
@@ -74,12 +590,141 @@
                     "y": 12
                 },
                 "panelIndex": "4",
-                "panelRefName": "panel_3",
-                "version": "7.0.0-alpha1-SNAPSHOT"
+                "title": "Decision and Reason [Logs Santa]",
+                "type": "lens",
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-729a2363-ab48-4f10-94dd-df1aebd6ef99",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "5ac54720-1ca9-4c91-b838-c6b4bcfc10c4",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "729a2363-ab48-4f10-94dd-df1aebd6ef99": {
+                                            "columnOrder": [
+                                                "8a7d78dd-a341-4ca4-9223-a7ff9e66f0d3",
+                                                "8a7d78dd-a341-4ca4-9223-a7ff9e66f0d3X0",
+                                                "8a7d78dd-a341-4ca4-9223-a7ff9e66f0d3X1"
+                                            ],
+                                            "columns": {
+                                                "8a7d78dd-a341-4ca4-9223-a7ff9e66f0d3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Hosts Reporting",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "defaults(unique_count(agent.name), 0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "8a7d78dd-a341-4ca4-9223-a7ff9e66f0d3X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "8a7d78dd-a341-4ca4-9223-a7ff9e66f0d3X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Hosts Reporting",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "agent.name"
+                                                },
+                                                "8a7d78dd-a341-4ca4-9223-a7ff9e66f0d3X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Hosts Reporting",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "8a7d78dd-a341-4ca4-9223-a7ff9e66f0d3X0",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 37,
+                                                                "min": 0
+                                                            },
+                                                            "name": "defaults",
+                                                            "text": "defaults(unique_count(agent.name), 0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "8a7d78dd-a341-4ca4-9223-a7ff9e66f0d3X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "5ac54720-1ca9-4c91-b838-c6b4bcfc10c4",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "santa.log"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "santa.log"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "729a2363-ab48-4f10-94dd-df1aebd6ef99",
+                                "layerType": "data",
+                                "metricAccessor": "8a7d78dd-a341-4ca4-9223-a7ff9e66f0d3"
+                            }
+                        },
+                        "title": "Num of Hosts Reporting [Logs Santa] (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 10,
@@ -89,86 +734,223 @@
                     "y": 12
                 },
                 "panelIndex": "5",
-                "panelRefName": "panel_4",
-                "version": "7.0.0-alpha1-SNAPSHOT"
+                "title": "Num of Hosts Reporting [Logs Santa]",
+                "type": "lens",
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
                     "enhancements": {}
                 },
                 "gridData": {
-                    "h": 10,
-                    "i": "6",
-                    "w": 18,
-                    "x": 18,
-                    "y": 12
-                },
-                "panelIndex": "6",
-                "panelRefName": "panel_5",
-                "version": "7.0.0-alpha1-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 10,
+                    "h": 21,
                     "i": "7",
                     "w": 48,
                     "x": 0,
                     "y": 22
                 },
                 "panelIndex": "7",
-                "panelRefName": "panel_6",
-                "version": "7.0.0-alpha1-SNAPSHOT"
+                "panelRefName": "panel_7",
+                "type": "search",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-57f0950c-196e-4ef3-b26c-7b9ca8d0e45e",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "56c82fca-000d-4812-892a-f9ccc7320545",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "57f0950c-196e-4ef3-b26c-7b9ca8d0e45e": {
+                                            "columnOrder": [
+                                                "2b52401f-bae4-4a3a-a517-a0db54befed7",
+                                                "51a63333-b5de-4d4f-a63a-d2d15d79417f"
+                                            ],
+                                            "columns": {
+                                                "2b52401f-bae4-4a3a-a517-a0db54befed7": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Certificate",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "51a63333-b5de-4d4f-a63a-d2d15d79417f",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "santa.certificate.common_name"
+                                                },
+                                                "51a63333-b5de-4d4f-a63a-d2d15d79417f": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "56c82fca-000d-4812-892a-f9ccc7320545",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "santa.log"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "santa.log"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "51a63333-b5de-4d4f-a63a-d2d15d79417f",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "2b52401f-bae4-4a3a-a517-a0db54befed7",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "57f0950c-196e-4ef3-b26c-7b9ca8d0e45e",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "736aadf9-b3e2-4ae7-8df0-cb3e3f8060d9",
+                    "w": 18,
+                    "x": 18,
+                    "y": 12
+                },
+                "panelIndex": "736aadf9-b3e2-4ae7-8df0-cb3e3f8060d9",
+                "title": "Code Signers [Logs Santa]",
+                "type": "lens",
+                "version": "8.7.1"
             }
         ],
         "timeRestore": false,
         "title": "[Logs Santa] Overview",
         "version": 1
     },
+    "coreMigrationVersion": "8.7.1",
+    "created_at": "2023-07-11T07:38:56.297Z",
     "id": "santa-161855f0-ff6a-11e8-93c5-d5ecd1b3e307",
     "migrationVersion": {
-        "dashboard": "7.11.0"
+        "dashboard": "8.7.0"
     },
-    "namespaces": [
-        "default"
-    ],
     "references": [
         {
-            "id": "santa-dad521d0-ff69-11e8-93c5-d5ecd1b3e307",
-            "name": "panel_0",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "3:indexpattern-datasource-layer-23d3243e-20de-43c3-9eb0-ff92b0137cfb",
+            "type": "index-pattern"
         },
         {
-            "id": "santa-1579d690-ff6b-11e8-93c5-d5ecd1b3e307",
-            "name": "panel_1",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "3:839e3cdf-81a6-4e53-bc36-54b1a00c2625",
+            "type": "index-pattern"
         },
         {
-            "id": "santa-51677b80-ff6b-11e8-93c5-d5ecd1b3e307",
-            "name": "panel_2",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "4:indexpattern-datasource-layer-cbf341b6-8bf6-4938-b30a-5a44fd01c4ad",
+            "type": "index-pattern"
         },
         {
-            "id": "santa-30962fe0-ff6c-11e8-93c5-d5ecd1b3e307",
-            "name": "panel_3",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "4:45404203-e58f-484c-a7cb-c6172b5fa6ea",
+            "type": "index-pattern"
         },
         {
-            "id": "santa-b06c0460-ff6c-11e8-93c5-d5ecd1b3e307",
-            "name": "panel_4",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "5:indexpattern-datasource-layer-729a2363-ab48-4f10-94dd-df1aebd6ef99",
+            "type": "index-pattern"
         },
         {
-            "id": "santa-11858000-ff6d-11e8-93c5-d5ecd1b3e307",
-            "name": "panel_5",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "5:5ac54720-1ca9-4c91-b838-c6b4bcfc10c4",
+            "type": "index-pattern"
         },
         {
             "id": "santa-6d56a010-ff6a-11e8-93c5-d5ecd1b3e307",
-            "name": "panel_6",
+            "name": "7:panel_7",
             "type": "search"
+        },
+        {
+            "id": "logs-*",
+            "name": "736aadf9-b3e2-4ae7-8df0-cb3e3f8060d9:indexpattern-datasource-layer-57f0950c-196e-4ef3-b26c-7b9ca8d0e45e",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "736aadf9-b3e2-4ae7-8df0-cb3e3f8060d9:56c82fca-000d-4812-892a-f9ccc7320545",
+            "type": "index-pattern"
         }
     ],
     "type": "dashboard"

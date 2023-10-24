@@ -1,10 +1,37 @@
 {
     "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
+            "panelsJSON": "{\"676c5e76-f94c-4f39-a6a3-f2d7e377b9bc\":{\"order\":0,\"width\":\"medium\",\"grow\":false,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"cloud.region\",\"title\":\"cloud.region\",\"id\":\"676c5e76-f94c-4f39-a6a3-f2d7e377b9bc\",\"enhancements\":{}}},\"63e722c6-1a26-478c-b028-62e9270fd8b4\":{\"order\":1,\"width\":\"medium\",\"grow\":false,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"aws.sqs.queue.name\",\"title\":\"Queue Name\",\"id\":\"63e722c6-1a26-478c-b028-62e9270fd8b4\",\"enhancements\":{}}}}"
+        },
         "description": "Overview of AWS SQS Metrics",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "aws.sqs"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "aws.sqs"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -18,39 +45,472 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "title": "SQS Messages Visible"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-51a0dde3-5630-42b3-a6dc-b0554de4b483",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "51a0dde3-5630-42b3-a6dc-b0554de4b483": {
+                                            "columnOrder": [
+                                                "55340a15-4ddf-4ca3-8fe9-f89f87196fec",
+                                                "d84e2865-3502-45f7-b05f-dca7825760bd"
+                                            ],
+                                            "columns": {
+                                                "55340a15-4ddf-4ca3-8fe9-f89f87196fec": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of aws.sqs.queue.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "d84e2865-3502-45f7-b05f-dca7825760bd",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "aws.sqs.queue.name"
+                                                },
+                                                "d84e2865-3502-45f7-b05f-dca7825760bd": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "SQS Message Visible",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number"
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "aws.sqs.messages.visible"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "fillOpacity": 0,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "d84e2865-3502-45f7-b05f-dca7825760bd"
+                                        ],
+                                        "layerId": "51a0dde3-5630-42b3-a6dc-b0554de4b483",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "bar_horizontal",
+                                        "xAccessor": "55340a15-4ddf-4ca3-8fe9-f89f87196fec",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#68BC00",
+                                                "forAccessor": "d84e2865-3502-45f7-b05f-dca7825760bd"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "valueLabels": "show"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 8,
                     "i": "1",
-                    "w": 12,
-                    "x": 12,
+                    "w": 16,
+                    "x": 0,
                     "y": 0
                 },
                 "panelIndex": "1",
-                "panelRefName": "panel_0",
                 "title": "SQS Messages Visible",
-                "version": "7.6.0"
+                "type": "lens",
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "SQS Oldest Message Age in Seconds"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-e9e53ba6-0d42-421a-b68d-2f3669c7b33b",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "e9e53ba6-0d42-421a-b68d-2f3669c7b33b": {
+                                            "columnOrder": [
+                                                "f0a40ed9-627e-47bf-871c-4f674af9b626",
+                                                "7fbbc8d2-9fb3-4780-bc1d-13597f8e4fbd"
+                                            ],
+                                            "columns": {
+                                                "7fbbc8d2-9fb3-4780-bc1d-13597f8e4fbd": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "AWS SQS Oldest Message Age in Seconds",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number"
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "aws.sqs.oldest_message_age.sec"
+                                                },
+                                                "f0a40ed9-627e-47bf-871c-4f674af9b626": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of aws.sqs.queue.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "7fbbc8d2-9fb3-4780-bc1d-13597f8e4fbd",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "aws.sqs.queue.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "fillOpacity": 0.5,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "7fbbc8d2-9fb3-4780-bc1d-13597f8e4fbd"
+                                        ],
+                                        "layerId": "e9e53ba6-0d42-421a-b68d-2f3669c7b33b",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "bar_horizontal",
+                                        "xAccessor": "f0a40ed9-627e-47bf-871c-4f674af9b626",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#68BC00",
+                                                "forAccessor": "7fbbc8d2-9fb3-4780-bc1d-13597f8e4fbd"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "valueLabels": "show"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 8,
                     "i": "2",
-                    "w": 12,
-                    "x": 36,
+                    "w": 16,
+                    "x": 32,
                     "y": 0
                 },
                 "panelIndex": "2",
-                "panelRefName": "panel_1",
                 "title": "SQS Oldest Message Age in Seconds",
-                "version": "7.6.0"
+                "type": "lens",
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "SQS Messages Received"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-b98316c4-2ed6-465c-a930-d9227a137af1",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "b98316c4-2ed6-465c-a930-d9227a137af1": {
+                                            "columnOrder": [
+                                                "daa594bb-54d0-4fd5-af04-b35188650e62",
+                                                "fe5d869c-1b13-41bd-9972-2514b20a16a8",
+                                                "04830ef7-d3c2-423d-86dc-f60d457d950f"
+                                            ],
+                                            "columns": {
+                                                "04830ef7-d3c2-423d-86dc-f60d457d950f": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Sum of aws.sqs.messages.received",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number"
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "aws.sqs.messages.received"
+                                                },
+                                                "daa594bb-54d0-4fd5-af04-b35188650e62": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "5m"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "fe5d869c-1b13-41bd-9972-2514b20a16a8": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of aws.sqs.queue.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "04830ef7-d3c2-423d-86dc-f60d457d950f",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "aws.sqs.queue.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "emphasizeFitting": false,
+                                "fillOpacity": 0,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "04830ef7-d3c2-423d-86dc-f60d457d950f"
+                                        ],
+                                        "layerId": "b98316c4-2ed6-465c-a930-d9227a137af1",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "splitAccessor": "fe5d869c-1b13-41bd-9972-2514b20a16a8",
+                                        "xAccessor": "daa594bb-54d0-4fd5-af04-b35188650e62",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#68BC00",
+                                                "forAccessor": "04830ef7-d3c2-423d-86dc-f60d457d950f"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightScale": "linear",
+                                "yTitle": ""
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 8,
@@ -60,13 +520,172 @@
                     "y": 8
                 },
                 "panelIndex": "3",
-                "panelRefName": "panel_2",
                 "title": "SQS Messages Received",
-                "version": "7.6.0"
+                "type": "lens",
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "SQS Messages Deleted"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-61a34410-246b-42c4-b254-765b99ecf524",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "61a34410-246b-42c4-b254-765b99ecf524": {
+                                            "columnOrder": [
+                                                "6189a249-d149-4bbc-a99b-d5009d0425d0",
+                                                "b04ac52a-5d8f-491e-9263-bfa53b01660f",
+                                                "204c0a9f-5f12-4c6f-8292-d6fcf8a185a1"
+                                            ],
+                                            "columns": {
+                                                "204c0a9f-5f12-4c6f-8292-d6fcf8a185a1": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Average of aws.sqs.messages.deleted",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number"
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "aws.sqs.messages.deleted"
+                                                },
+                                                "6189a249-d149-4bbc-a99b-d5009d0425d0": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "5m"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "b04ac52a-5d8f-491e-9263-bfa53b01660f": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of aws.sqs.queue.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "204c0a9f-5f12-4c6f-8292-d6fcf8a185a1",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "aws.sqs.queue.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fillOpacity": 0,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "204c0a9f-5f12-4c6f-8292-d6fcf8a185a1"
+                                        ],
+                                        "layerId": "61a34410-246b-42c4-b254-765b99ecf524",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "splitAccessor": "b04ac52a-5d8f-491e-9263-bfa53b01660f",
+                                        "xAccessor": "6189a249-d149-4bbc-a99b-d5009d0425d0",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#68BC00",
+                                                "forAccessor": "204c0a9f-5f12-4c6f-8292-d6fcf8a185a1"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightScale": "linear",
+                                "yTitle": ""
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 8,
@@ -76,13 +695,172 @@
                     "y": 8
                 },
                 "panelIndex": "4",
-                "panelRefName": "panel_3",
                 "title": "SQS Messages Deleted",
-                "version": "7.6.0"
+                "type": "lens",
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "SQS Messages Delayed"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-8e49ddb2-ae00-4c3f-b707-1f0dac98df83",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "8e49ddb2-ae00-4c3f-b707-1f0dac98df83": {
+                                            "columnOrder": [
+                                                "886a890a-9a44-4e77-908e-f465f97189b0",
+                                                "d5eecf63-7799-4e1b-b067-fe0ff46500c4",
+                                                "6fb79d9d-ead1-41c3-9be6-100f8d90a484"
+                                            ],
+                                            "columns": {
+                                                "6fb79d9d-ead1-41c3-9be6-100f8d90a484": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Average of aws.sqs.messages.delayed",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number"
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "aws.sqs.messages.delayed"
+                                                },
+                                                "886a890a-9a44-4e77-908e-f465f97189b0": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "5m"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "d5eecf63-7799-4e1b-b067-fe0ff46500c4": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of aws.sqs.queue.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "6fb79d9d-ead1-41c3-9be6-100f8d90a484",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "aws.sqs.queue.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fillOpacity": 0,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "6fb79d9d-ead1-41c3-9be6-100f8d90a484"
+                                        ],
+                                        "layerId": "8e49ddb2-ae00-4c3f-b707-1f0dac98df83",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "splitAccessor": "d5eecf63-7799-4e1b-b067-fe0ff46500c4",
+                                        "xAccessor": "886a890a-9a44-4e77-908e-f465f97189b0",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#68BC00",
+                                                "forAccessor": "6fb79d9d-ead1-41c3-9be6-100f8d90a484"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightScale": "linear",
+                                "yTitle": ""
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 8,
@@ -92,13 +870,172 @@
                     "y": 16
                 },
                 "panelIndex": "7",
-                "panelRefName": "panel_4",
                 "title": "SQS Messages Delayed",
-                "version": "7.6.0"
+                "type": "lens",
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "SQS Messages Sent"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-93552aa0-49ac-4da0-bd27-08b0ebb5ef6b",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "93552aa0-49ac-4da0-bd27-08b0ebb5ef6b": {
+                                            "columnOrder": [
+                                                "80bcbe3f-e0fa-471e-9406-d53bcf3b56eb",
+                                                "f0328c82-f38f-4548-b2db-7094ef33a8c4",
+                                                "e3dc85fe-cc58-4ed0-bc67-799622387cfe"
+                                            ],
+                                            "columns": {
+                                                "80bcbe3f-e0fa-471e-9406-d53bcf3b56eb": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "5m"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "e3dc85fe-cc58-4ed0-bc67-799622387cfe": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Average of aws.sqs.messages.sent",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number"
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "aws.sqs.messages.sent"
+                                                },
+                                                "f0328c82-f38f-4548-b2db-7094ef33a8c4": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of aws.sqs.queue.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "e3dc85fe-cc58-4ed0-bc67-799622387cfe",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "aws.sqs.queue.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fillOpacity": 0,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "e3dc85fe-cc58-4ed0-bc67-799622387cfe"
+                                        ],
+                                        "layerId": "93552aa0-49ac-4da0-bd27-08b0ebb5ef6b",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "splitAccessor": "f0328c82-f38f-4548-b2db-7094ef33a8c4",
+                                        "xAccessor": "80bcbe3f-e0fa-471e-9406-d53bcf3b56eb",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#68BC00",
+                                                "forAccessor": "e3dc85fe-cc58-4ed0-bc67-799622387cfe"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightScale": "linear",
+                                "yTitle": ""
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 8,
@@ -108,88 +1045,223 @@
                     "y": 16
                 },
                 "panelIndex": "8",
-                "panelRefName": "panel_5",
                 "title": "SQS Messages Sent",
-                "version": "7.6.0"
+                "type": "lens",
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "SQS Filters"
-                },
-                "gridData": {
-                    "h": 8,
-                    "i": "9",
-                    "w": 12,
-                    "x": 0,
-                    "y": 0
-                },
-                "panelIndex": "9",
-                "panelRefName": "panel_6",
-                "title": "SQS Filters",
-                "version": "7.6.0"
-            },
-            {
-                "embeddableConfig": {
-                    "title": "SQS Empty Receives"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-1cf17333-2343-4f2f-8483-a65b89c303a8",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "1cf17333-2343-4f2f-8483-a65b89c303a8": {
+                                            "columnOrder": [
+                                                "90140f8f-ec75-445f-a7fb-50403e04e8a5",
+                                                "0bcb7229-91db-4aa2-b3f3-4084cc9b63b9"
+                                            ],
+                                            "columns": {
+                                                "0bcb7229-91db-4aa2-b3f3-4084cc9b63b9": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "SQS Empty Receives",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number"
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "aws.sqs.empty_receives"
+                                                },
+                                                "90140f8f-ec75-445f-a7fb-50403e04e8a5": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of aws.sqs.queue.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "0bcb7229-91db-4aa2-b3f3-4084cc9b63b9",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "aws.sqs.queue.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "fillOpacity": 0,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "0bcb7229-91db-4aa2-b3f3-4084cc9b63b9"
+                                        ],
+                                        "layerId": "1cf17333-2343-4f2f-8483-a65b89c303a8",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "bar_horizontal",
+                                        "xAccessor": "90140f8f-ec75-445f-a7fb-50403e04e8a5",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#68BC00",
+                                                "forAccessor": "0bcb7229-91db-4aa2-b3f3-4084cc9b63b9"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "valueLabels": "show"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 8,
                     "i": "10",
-                    "w": 12,
-                    "x": 24,
+                    "w": 16,
+                    "x": 16,
                     "y": 0
                 },
                 "panelIndex": "10",
-                "panelRefName": "panel_7",
                 "title": "SQS Empty Receives",
-                "version": "7.6.0"
+                "type": "lens",
+                "version": "8.6.0"
             }
         ],
         "timeRestore": false,
         "title": "[Metrics AWS] SQS Overview",
         "version": 1
     },
+    "coreMigrationVersion": "8.6.0",
+    "created_at": "2023-03-22T20:09:45.765Z",
     "id": "aws-234aeda0-43b7-11e9-8697-530f39afc6eb",
+    "migrationVersion": {
+        "dashboard": "8.6.0"
+    },
     "references": [
         {
-            "id": "aws-f74eb760-41e8-11e9-b7a0-c99d9d127b61",
-            "name": "panel_0",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         },
         {
-            "id": "aws-53730d20-437e-11e9-8697-530f39afc6eb",
-            "name": "panel_1",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "1:indexpattern-datasource-layer-51a0dde3-5630-42b3-a6dc-b0554de4b483",
+            "type": "index-pattern"
         },
         {
-            "id": "aws-1235fe50-41e7-11e9-b7a0-c99d9d127b61",
-            "name": "panel_2",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "2:indexpattern-datasource-layer-e9e53ba6-0d42-421a-b68d-2f3669c7b33b",
+            "type": "index-pattern"
         },
         {
-            "id": "aws-be6c4180-41e6-11e9-b7a0-c99d9d127b61",
-            "name": "panel_3",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "3:indexpattern-datasource-layer-b98316c4-2ed6-465c-a930-d9227a137af1",
+            "type": "index-pattern"
         },
         {
-            "id": "aws-dcd31cd0-41e5-11e9-b7a0-c99d9d127b61",
-            "name": "panel_4",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "4:indexpattern-datasource-layer-61a34410-246b-42c4-b254-765b99ecf524",
+            "type": "index-pattern"
         },
         {
-            "id": "aws-dd2f2a10-41e6-11e9-b7a0-c99d9d127b61",
-            "name": "panel_5",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "7:indexpattern-datasource-layer-8e49ddb2-ae00-4c3f-b707-1f0dac98df83",
+            "type": "index-pattern"
         },
         {
-            "id": "aws-b0afd3e0-43b7-11e9-8697-530f39afc6eb",
-            "name": "panel_6",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "8:indexpattern-datasource-layer-93552aa0-49ac-4da0-bd27-08b0ebb5ef6b",
+            "type": "index-pattern"
         },
         {
-            "id": "aws-bb82c4d0-6c25-11e9-81bc-7f4cd8b3d892",
-            "name": "panel_7",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "10:indexpattern-datasource-layer-1cf17333-2343-4f2f-8483-a65b89c303a8",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_676c5e76-f94c-4f39-a6a3-f2d7e377b9bc:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_63e722c6-1a26-478c-b028-62e9270fd8b4:optionsListDataView",
+            "type": "index-pattern"
         }
     ],
     "type": "dashboard"

@@ -6,29 +6,22 @@ processors:
   #
   - set:
       field: ecs.version
-      value: "8.3.0"
-  - fingerprint:
-      fields:
-        - event.dataset
-        - json.id
-      target_field: "_id"
-      ignore_missing: true
+      value: '8.10.0'
   - set:
       field: event.kind
       value: enrichment
   - set:
       field: event.category
-      value: threat
+      value: [threat]
   - set:
       field: event.type
-      value: indicator
-
+      value: [indicator]
   #
   # Map itype field to STIX 2.0 Cyber Observable values (threat.indicator.type).
   #
   - script:
       lang: painless
-      if: "ctx.json.itype != null"
+      if: "ctx.json?.itype != null"
       description: >
         Map itype field to STIX 2.0 Cyber Observable values (threat.indicator.type).
       params:
@@ -135,31 +128,104 @@ processors:
       value: ipv6-addr
       if: 'ctx.threat?.indicator?.type == "ipv4-addr" && ctx.json?.srcip != null && ctx.json.srcip.contains(":")'
 
+# Add default deleted_at to expire all IOCs after duration: ioc_expiration_duration. If value not in d, h, or m, default to 90d.
+  - script:
+      lang: painless
+      tag: script-default-deleted_at
+      if: (ctx.json?.deleted_at == null && ctx.json?.added_at != null && ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != '')
+      description: >
+        Add default deleted_at
+      source: >
+        def dur = ctx._conf.ioc_expiration_duration;
+        String added_at = ctx.json.added_at;
+        if (dur instanceof String){
+          Character time_unit = dur.charAt(dur.length() - 1);
+          String time_value = dur.substring(0, dur.length());
+          if (time_unit == 'd') {
+            ctx.json.deleted_at = ZonedDateTime.parse(added_at, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusDays(Long.parseLong(time_value));
+          } else if (time_unit == 'h') {
+            ctx.json.deleted_at = ZonedDateTime.parse(added_at, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusHours(Long.parseLong(time_value));
+          } else if (time_unit == 'm') {
+            ctx.json.deleted_at = ZonedDateTime.parse(added_at, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusMinutes(Long.parseLong(time_value));
+          } else {
+            ctx.json.deleted_at = ZonedDateTime.parse(added_at, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusDays(90L);
+          }        
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+
+# Map added_at
+  - date:
+      field: json.added_at
+      target_field: json.added_at
+      tag: date-added_at
+      formats:
+        - ISO8601
+        - strict_date_optional_time_nanos
+      if: "ctx.json?.added_at != null"
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+# Map deleted_at
+  - date:
+      field: json.deleted_at
+      target_field: json.deleted_at
+      tag: date-deleted_at
+      formats:
+        - ISO8601
+        - strict_date_optional_time_nanos
+      if: "ctx.json?.deleted_at != null"
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
   #
   # Map first and last seen dates.
   #
   - date:
       field: json.date_first
       target_field: threat.indicator.first_seen
+      tag: date-date_first
       formats:
         - ISO8601
       if: "ctx.json?.date_first != null"
       on_failure:
         - append:
             field: error.message
-            value: 'Error parsing date_first field value "{{{ json.date_first }}}": {{{ _ingest.on_failure_message }}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - date:
       field: json.date_last
       target_field: threat.indicator.last_seen
+      tag: date-last_seen
       formats:
         - ISO8601
       if: "ctx.json?.date_last != null"
       on_failure:
         - append:
             field: error.message
-            value: 'Error parsing date_last field value "{{{ json.date_last }}}": {{{ _ingest.on_failure_message }}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
+  - set:
+      field: _temp_.timestamp
+      copy_from: json.added_at
+      if: ctx.json?.added_at != null
+  
+  - set:
+      field: _temp_.timestamp
+      copy_from: json.deleted_at
+      if: ctx.json?.deleted_at != null && ctx._temp_?.timestamp == null
+
+  - set:
+      field: "@timestamp"
+      copy_from: _temp_.timestamp
+      if: ctx._temp_?.timestamp != null
   #
   # Map IP geolocation fields.
   #
@@ -190,11 +256,11 @@ processors:
   #
   - append:
       field: threat.indicator.marking.tlp
-      value: Amber
+      value: AMBER
       if: 'ctx.json?.classification == "private"'
   - append:
       field: threat.indicator.marking.tlp
-      value: White
+      value: WHITE
       if: 'ctx.json?.classification == "public"'
 
   #
@@ -216,7 +282,7 @@ processors:
           return;
         }
         if (value >= 30.0 && value <= 69.0) {
-          ctx["threatintel_indicator_confidence"] = "Med";
+          ctx["threatintel_indicator_confidence"] = "Medium";
           return;
         }
         if (value >= 70 && value <= 100) {
@@ -407,6 +473,8 @@ processors:
       ignore_missing: true
   - remove:
       field:
+        - _temp_
+        - _conf
         - json.asn
         - json.date_first
         - json.date_last
@@ -423,6 +491,9 @@ processors:
       target_field: anomali.threatstream
 
 on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
   - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: '{{{ _ingest.on_failure_message }}}'

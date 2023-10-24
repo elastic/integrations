@@ -12,11 +12,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2016-01-29T06:09:59.000Z",
     "agent": {
-        "ephemeral_id": "1d0b19ed-8fb1-4e91-873a-19f2949ff20e",
-        "id": "4e3f135a-d5f9-40b6-ae01-2c834ecbead0",
+        "ephemeral_id": "c439baa6-c1f5-4533-bb61-3a020bd4e4f9",
+        "id": "11de7269-3d5a-4523-8b1f-e40ea1e2be97",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.4.1"
     },
     "data_stream": {
         "dataset": "juniper_netscreen.log",
@@ -24,18 +24,18 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "4e3f135a-d5f9-40b6-ae01-2c834ecbead0",
-        "snapshot": true,
-        "version": "8.0.0"
+        "id": "11de7269-3d5a-4523-8b1f-e40ea1e2be97",
+        "snapshot": false,
+        "version": "8.4.1"
     },
     "event": {
         "agent_id_status": "verified",
         "code": "00628",
         "dataset": "juniper_netscreen.log",
-        "ingested": "2022-01-25T12:47:59Z",
+        "ingested": "2022-09-28T06:19:48Z",
         "timezone": "+00:00"
     },
     "input": {
@@ -44,7 +44,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "low",
         "source": {
-            "address": "172.30.0.4:59406"
+            "address": "192.168.176.4:38747"
         }
     },
     "observer": {
@@ -151,7 +151,7 @@ An example event for `log` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |

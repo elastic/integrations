@@ -200,14 +200,13 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-17T18:24:37.000Z",
+    "@timestamp": "2023-03-17T18:24:37.000Z",
     "agent": {
-        "ephemeral_id": "76b54e2f-6051-4831-a042-28f1eabce453",
-        "hostname": "docker-fleet-agent",
-        "id": "4ab79874-377f-4d22-87e0-fc0522d5a90a",
+        "ephemeral_id": "8bbd9c9d-bc30-42ce-bf39-89d3f9b042c3",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.9.1"
     },
     "cisco_secure_email_gateway": {
         "log": {
@@ -223,12 +222,12 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "4ab79874-377f-4d22-87e0-fc0522d5a90a",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.9.1"
     },
     "email": {
         "attachments": {
@@ -243,8 +242,9 @@ An example event for `log` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "cisco_secure_email_gateway.log",
-        "ingested": "2022-04-27T07:21:12Z",
-        "kind": "event"
+        "ingested": "2023-08-29T17:41:06Z",
+        "kind": "event",
+        "timezone": "UTC"
     },
     "input": {
         "type": "udp"
@@ -252,7 +252,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "info",
         "source": {
-            "address": "172.19.0.1:52733"
+            "address": "172.21.0.4:41169"
         },
         "syslog": {
             "priority": 166
@@ -328,7 +328,7 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.details | Additional information. | text |
 | cisco_secure_email_gateway.log.device_direction |  | keyword |
 | cisco_secure_email_gateway.log.disk_io | Disk I/O Utilization. | long |
-| cisco_secure_email_gateway.log.disposition |  | keyword |
+| cisco_secure_email_gateway.log.disposition | The file reputation disposition values are: MALICIOUS CLEAN FILE UNKNOWN - When the reputation score is zero. VERDICT UNKNOWN - When the disposition is FILE UNKNOWN and score is non-zero. LOW RISK - When no dynamic content is found in a file after file analysis, the verdict is Low Risk. The file is not sent for file analysis, and the message continues through the email pipeline. | keyword |
 | cisco_secure_email_gateway.log.dns.hard_bounces | DNS Hard Bounces. | long |
 | cisco_secure_email_gateway.log.dns.requests | DNS Requests. | long |
 | cisco_secure_email_gateway.log.dropped_messages | Dropped Messages. | long |
@@ -339,20 +339,26 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.esa.attachment_details |  | text |
 | cisco_secure_email_gateway.log.esa.av_verdict |  | keyword |
 | cisco_secure_email_gateway.log.esa.content_filter_verdict |  | keyword |
+| cisco_secure_email_gateway.log.esa.dane.host |  | keyword |
+| cisco_secure_email_gateway.log.esa.dane.ip |  | ip |
+| cisco_secure_email_gateway.log.esa.dane.status |  | keyword |
 | cisco_secure_email_gateway.log.esa.delivery_connection_id |  | keyword |
-| cisco_secure_email_gateway.log.esa.dha_source |  | keyword |
+| cisco_secure_email_gateway.log.esa.dha_source |  | ip |
 | cisco_secure_email_gateway.log.esa.dkim_verdict |  | keyword |
 | cisco_secure_email_gateway.log.esa.dlp_verdict |  | keyword |
 | cisco_secure_email_gateway.log.esa.dmarc_verdict |  | keyword |
 | cisco_secure_email_gateway.log.esa.final_action_details |  | text |
 | cisco_secure_email_gateway.log.esa.friendly_from |  | keyword |
 | cisco_secure_email_gateway.log.esa.graymail_verdict |  | keyword |
+| cisco_secure_email_gateway.log.esa.helo.domain |  | keyword |
 | cisco_secure_email_gateway.log.esa.helo.ip |  | ip |
 | cisco_secure_email_gateway.log.esa.injection_connection_id |  | keyword |
 | cisco_secure_email_gateway.log.esa.mail_auto_remediation_action |  | text |
 | cisco_secure_email_gateway.log.esa.mail_flow_policy |  | keyword |
+| cisco_secure_email_gateway.log.esa.mar_action |  | keyword |
 | cisco_secure_email_gateway.log.esa.mf_verdict |  | keyword |
 | cisco_secure_email_gateway.log.esa.msg_size |  | long |
+| cisco_secure_email_gateway.log.esa.msg_too_big |  | keyword |
 | cisco_secure_email_gateway.log.esa.msg_too_big_from_sender |  | boolean |
 | cisco_secure_email_gateway.log.esa.outbreak_filter_verdict |  | keyword |
 | cisco_secure_email_gateway.log.esa.rate_limited_ip |  | keyword |
@@ -360,6 +366,13 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.esa.sdr_consolidated_domain_age |  | text |
 | cisco_secure_email_gateway.log.esa.sender_group |  | keyword |
 | cisco_secure_email_gateway.log.esa.spf_verdict |  | keyword |
+| cisco_secure_email_gateway.log.esa.tls.domain |  | keyword |
+| cisco_secure_email_gateway.log.esa.tls.in.cipher |  | keyword |
+| cisco_secure_email_gateway.log.esa.tls.in.connection_status |  | keyword |
+| cisco_secure_email_gateway.log.esa.tls.in.protocol |  | keyword |
+| cisco_secure_email_gateway.log.esa.tls.out.cipher |  | keyword |
+| cisco_secure_email_gateway.log.esa.tls.out.connection_status |  | keyword |
+| cisco_secure_email_gateway.log.esa.tls.out.protocol |  | keyword |
 | cisco_secure_email_gateway.log.esa.url_details |  | text |
 | cisco_secure_email_gateway.log.estimated.quarantine | Estimated number of messages in the Spam quarantine. | long |
 | cisco_secure_email_gateway.log.estimated.quarantine_release_queue | Estimated number of messages in the Spam quarantine release queue. | long |
@@ -436,7 +449,7 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.unattempted_recipients | Unattempted Recipients. | long |
 | cisco_secure_email_gateway.log.update.timestamp | The date and time at which the file analysis for the file is complete. | date |
 | cisco_secure_email_gateway.log.upload.action | The upload action value recommended by the file reputation server to take on the given file  0 - Need not send for upload. 1 - Send file for upload. Note 	 The email gateway uploads the file when the upload action value is ‘1.’. 2 - Do not send file for upload. 3 - Send only metadata for upload. | keyword |
-| cisco_secure_email_gateway.log.upload.priority |  | keyword |
+| cisco_secure_email_gateway.log.upload.priority | Upload priority values are: High - For all selected file types, except PDF file type. Low - For only PDF file types. | keyword |
 | cisco_secure_email_gateway.log.vendor_action |  | keyword |
 | cisco_secure_email_gateway.log.verdict | The file retrospective verdict value is malicious or clean. | keyword |
 | cisco_secure_email_gateway.log.verified |  | keyword |
@@ -474,12 +487,13 @@ An example event for `log` looks as following:
 | email.subject | A brief summary of the topic of the message. | keyword |
 | email.subject.text | Multi-field of `email.subject`. | match_only_text |
 | email.to.address | The email address of recipient | keyword |
-| event.dataset | Event dataset | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.end | `event.end` contains the date when the event ended or when the activity was last observed. | date |
 | event.id | Unique ID to describe the event. | keyword |
-| event.module | Event module | constant_keyword |
+| event.module | Event module. | constant_keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
-| filepath |  | keyword |
+| event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -500,10 +514,10 @@ An example event for `log` looks as following:
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
-| input.type |  | keyword |
+| input.type | Input type. | keyword |
 | log.file.path | File path from which the log event was read / sent from. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
-| log.offset | Log offset | long |
+| log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
@@ -515,7 +529,6 @@ An example event for `log` looks as following:
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| type | Input type. | keyword |
 | url.path | Path of the request, such as "/search". | wildcard |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |

@@ -1,0 +1,38 @@
+{
+    "id": "b78aca72-f2c1-5cc2-b481-3f056f91bf4b",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Losing access or removing the KMS key in use by the EBS volumes will result in no longer being able to access the volumes.",
+            "default_value": "",
+            "references": "1. https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html\n2. https://aws.amazon.com/blogs/aws/new-opt-in-to-default-encryption-for-new-ebs-volumes/",
+            "id": "b78aca72-f2c1-5cc2-b481-3f056f91bf4b",
+            "name": "Ensure EBS Volume Encryption is Enabled in all Regions",
+            "profile_applicability": "* Level 1",
+            "description": "Elastic Compute Cloud (EC2) supports encryption at rest when using the Elastic Block Store (EBS) service.\nWhile disabled by default, forcing encryption at EBS volume creation is supported.",
+            "rationale": "Encrypting data at rest reduces the likelihood that it is unintentionally exposed and can nullify the impact of disclosure if the encryption remains unbroken.",
+            "audit": "**From Console:**\n\n1. Login to AWS Management Console and open the Amazon EC2 console using https://console.aws.amazon.com/ec2/ \n2. Under `Account attributes`, click `EBS encryption`.\n3. Verify `Always encrypt new EBS volumes` displays `Enabled`.\n4. Review every region in-use.\n\n**Note:** EBS volume encryption is configured per region.\n\n**From Command Line:**\n\n5. Run \n```\naws --region <region> ec2 get-ebs-encryption-by-default\n```\n6. Verify that `\"EbsEncryptionByDefault\": true` is displayed.\n7. Review every region in-use.\n\n**Note:** EBS volume encryption is configured per region.",
+            "remediation": "**From Console:**\n\n1. Login to AWS Management Console and open the Amazon EC2 console using https://console.aws.amazon.com/ec2/ \n2. Under `Account attributes`, click `EBS encryption`.\n3. Click `Manage`.\n4. Click the `Enable` checkbox.\n5. Click `Update EBS encryption`\n6. Repeat for every region requiring the change.\n\n**Note:** EBS volume encryption is configured per region.\n\n**From Command Line:**\n\n7. Run \n```\naws --region <region> ec2 enable-ebs-encryption-by-default\n```\n8. Verify that `\"EbsEncryptionByDefault\": true` is displayed.\n9. Repeat every region requiring the change.\n\n**Note:** EBS volume encryption is configured per region.",
+            "section": "Elastic Compute Cloud (EC2)",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AWS",
+                "CIS 2.2.1",
+                "Elastic Compute Cloud (EC2)"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Web Services Foundations",
+                "version": "v1.5.0",
+                "id": "cis_aws",
+                "rule_number": "2.2.1",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_2_2_1"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

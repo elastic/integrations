@@ -1,0 +1,63 @@
+- name: cloudflare_logpush.audit
+  type: group
+  fields:
+    - name: action
+      type: group
+      fields:
+        - name: result
+          type: keyword
+          description: Whether the action was successful.
+        - name: type
+          type: keyword
+          description: Type of action taken.
+    - name: actor
+      type: group
+      fields:
+        - name: email
+          type: keyword
+          description: Email of the actor.
+        - name: id
+          type: keyword
+          description: Unique identifier of the actor in Cloudflare system.
+        - name: ip
+          type: ip
+          description: Physical network address of the actor.
+        - name: type
+          type: keyword
+          description: Type of user that started the audit trail.
+    - name: id
+      type: keyword
+      description: Unique identifier of an audit log.
+    - name: interface
+      type: text
+      description: Entry point or interface of the audit log.
+    - name: metadata
+      type: flattened
+      description: Additional audit log-specific information, Metadata is organized in key:value pairs, Key and Value formats can vary by ResourceType.
+    - name: new_value
+      type: flattened
+      description: Contains the new value for the audited item.
+    - name: old_value
+      type: flattened
+      description: Contains the old value for the audited item.
+    - name: owner
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: The identifier of the user that was acting or was acted on behalf of.
+    - name: resource
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: Unique identifier of the resource within Cloudflare system.
+        - name: type
+          type: keyword
+          description: The type of resource that was changed.
+    - name: timestamp
+      type: date
+      description: When the change happened.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.

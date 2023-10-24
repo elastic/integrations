@@ -1,0 +1,88 @@
+---
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: threat
+      tag: append_threat_category
+  - append:
+      field: event.type
+      value: indicator
+      tag: append_indicator_type
+  - set:
+      field: event.action
+      value: recon-notification
+      if: ctx.crowdstrike?.event?.ItemType == null
+  - set:
+      field: event.action
+      value: "recon-notification-{{{ctx.crowdstrike.event.ItemType}}}"
+      if: ctx.crowdstrike?.event?.ItemType != null
+  - rename:
+      field: crowdstrike.event.ItemId
+      target_field: event.id
+      ignore_missing: true
+      tag: rename_item_id
+  - rename:
+      field: crowdstrike.event.RuleId
+      target_field: rule.id
+      ignore_missing: true
+      tag: rename_rule_id
+  - rename:
+      field: crowdstrike.event.RuleName
+      target_field: rule.name
+      ignore_missing: true
+      tag: rename_rule_name
+  - rename:
+      field: crowdstrike.event.RuleTopic
+      target_field: rule.ruleset
+      ignore_missing: true
+      tag: rename_rule_topic
+  - rename:
+      field: crowdstrike.event.RuleTopic
+      target_field: rule.description
+      ignore_missing: true
+      tag: rename_rule_topic
+  - date:
+      field: crowdstrike.event.MatchedTimestamp
+      target_field: event.created
+      timezone: UTC
+      formats:
+        - UNIX_MS
+      tag: date_event_matched_timestamp
+      if: "ctx.crowdstrike?.event?.MatchedTimestamp != null && String.valueOf(ctx.crowdstrike.event.MatchedTimestamp).length() >= 12"
+  - date:
+      field: crowdstrike.event.MatchedTimestamp
+      target_field: event.created
+      timezone: UTC
+      formats:
+        - UNIX
+      tag: date_event_matched_timestamp
+      if: 'ctx.crowdstrike?.event?.MatchedTimestamp != null && String.valueOf(ctx.crowdstrike.event.MatchedTimestamp).length() <= 11'
+  - date:
+      field: crowdstrike.event.ItemPostedTimestamp
+      target_field: event.created
+      timezone: UTC
+      formats:
+        - UNIX_MS
+      tag: date_event_matched_timestamp
+      if: "ctx.crowdstrike?.event?.ItemPostedTimestamp != null && String.valueOf(ctx.crowdstrike.event.ItemPostedTimestamp).length() >= 12"
+  - date:
+      field: crowdstrike.event.ItemPostedTimestamp
+      target_field: event.created
+      timezone: UTC
+      formats:
+        - UNIX
+      tag: date_event_matched_timestamp
+      if: 'ctx.crowdstrike?.event?.ItemPostedTimestamp != null && String.valueOf(ctx.crowdstrike.event.ItemPostedTimestamp).length() <= 11'
+
+
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error

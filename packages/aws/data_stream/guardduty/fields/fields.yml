@@ -1,0 +1,1064 @@
+- name: aws.guardduty
+  type: group
+  fields:
+    - name: account_id
+      type: keyword
+      description: The ID of the account in which the finding was generated.
+    - name: arn
+      type: keyword
+      description: The ARN of the finding.
+    - name: confidence
+      type: double
+      description: The confidence score for the finding.
+    - name: created_at
+      type: date
+      description: The time and date when the finding was created.
+    - name: description
+      type: text
+      description: The description of the finding.
+    - name: id
+      type: keyword
+      description: The ID of the finding.
+    - name: partition
+      type: keyword
+      description: The partition associated with the finding.
+    - name: region
+      type: keyword
+      description: The Region where the finding was generated.
+    - name: resource
+      type: group
+      fields:
+        - name: access_key_details
+          type: group
+          fields:
+            - name: accesskey_id
+              type: keyword
+              description: The access key ID of the user.
+            - name: principal_id
+              type: keyword
+              description: The principal ID of the user.
+            - name: user
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: The name of the user.
+                - name: type
+                  type: keyword
+                  description: The type of the user.
+        - name: container_details
+          type: group
+          fields:
+            - name: container_runtime
+              type: keyword
+              description: The container runtime (such as, Docker or containerd) used to run the container.
+            - name: id
+              type: keyword
+              description: Container ID.
+            - name: image
+              type: group
+              fields:
+                - name: prefix
+                  type: keyword
+                  description: Part of the image name before the last slash. For example, imagePrefix for public.ecr.aws/amazonlinux/amazonlinux:latest would be public.ecr.aws/amazonlinux. If the image name is relative and does not have a slash, this field is empty.
+                - name: value
+                  type: keyword
+                  description: Container image.
+            - name: name
+              type: keyword
+              description: Container name.
+            - name: security_context
+              type: group
+              fields:
+                - name: privileged
+                  type: boolean
+                  description: Whether the container is privileged.
+            - name: volume_mounts
+              type: group
+              fields:
+                - name: mount_path
+                  type: keyword
+                  description: Volume mount path.
+                - name: name
+                  type: keyword
+                  description: Volume mount name.
+        - name: ebs_volume_details
+          type: group
+          fields:
+            - name: scanned_volume_details
+              type: group
+              fields:
+                - name: device_name
+                  type: keyword
+                  description: The device name for the EBS volume.
+                - name: encryption_type
+                  type: keyword
+                  description: EBS volume encryption type.
+                - name: kmskey_arn
+                  type: keyword
+                  description: KMS key Arn used to encrypt the EBS volume.
+                - name: snapshot_arn
+                  type: keyword
+                  description: Snapshot Arn of the EBS volume.
+                - name: volume
+                  type: group
+                  fields:
+                    - name: arn
+                      type: keyword
+                      description: EBS volume Arn information.
+                    - name: size_in_gb
+                      type: long
+                      description: EBS volume size in GB.
+                    - name: type
+                      type: keyword
+                      description: The EBS volume type.
+            - name: skipped_volume_details
+              type: group
+              fields:
+                - name: device_name
+                  type: keyword
+                  description: The device name for the EBS volume.
+                - name: encryption_type
+                  type: keyword
+                  description: EBS volume encryption type.
+                - name: kmskey_arn
+                  type: keyword
+                  description: KMS key Arn used to encrypt the EBS volume.
+                - name: snapshot_arn
+                  type: keyword
+                  description: Snapshot Arn of the EBS volume.
+                - name: volume
+                  type: group
+                  fields:
+                    - name: arn
+                      type: keyword
+                      description: EBS volume Arn information.
+                    - name: size_in_gb
+                      type: long
+                      description: EBS volume size in GB.
+                    - name: type
+                      type: keyword
+                      description: The EBS volume type.
+        - name: ecs_cluster_details
+          type: group
+          fields:
+            - name: active_services_count
+              type: long
+              description: The number of services that are running on the cluster in an ACTIVE state.
+            - name: arn
+              type: keyword
+              description: The Amazon Resource Name (ARN) that identifies the cluster.
+            - name: name
+              type: keyword
+              description: The name of the ECS Cluster.
+            - name: registered_container_instances_count
+              type: long
+              description: The number of container instances registered into the cluster.
+            - name: running_tasks_count
+              type: long
+              description: The number of tasks in the cluster that are in the RUNNING state.
+            - name: status
+              type: keyword
+              description: The status of the ECS cluster.
+            - name: tags
+              type: group
+              fields:
+                - name: key
+                  type: keyword
+                  description: The EC2 instance tag key.
+                - name: value
+                  type: keyword
+                  description: The EC2 instance tag value.
+            - name: task_details
+              type: group
+              fields:
+                - name: arn
+                  type: keyword
+                  description: The Amazon Resource Name (ARN) of the task.
+                - name: containers
+                  type: group
+                  fields:
+                    - name: container_runtime
+                      type: keyword
+                      description: The container runtime (such as, Docker or containerd) used to run the container.
+                    - name: id
+                      type: keyword
+                      description: Container ID.
+                    - name: image
+                      type: group
+                      fields:
+                        - name: prefix
+                          type: keyword
+                          description: Part of the image name before the last slash. For example, imagePrefix for public.ecr.aws/amazonlinux/amazonlinux:latest would be public.ecr.aws/amazonlinux. If the image name is relative and does not have a slash, this field is empty.
+                        - name: value
+                          type: keyword
+                          description: Container image.
+                    - name: name
+                      type: keyword
+                      description: Container name.
+                    - name: security_context
+                      type: group
+                      fields:
+                        - name: privileged
+                          type: boolean
+                          description: Whether the container is privileged.
+                    - name: volume_mounts
+                      type: group
+                      fields:
+                        - name: mount_path
+                          type: keyword
+                          description: Volume mount path.
+                        - name: name
+                          type: keyword
+                          description: Volume mount name.
+                - name: created_at
+                  type: date
+                  description: The Unix timestamp for the time when the task was created.
+                - name: definitionarn
+                  type: keyword
+                  description: The ARN of the task definition that creates the task.
+                - name: group
+                  type: keyword
+                  description: The name of the task group that's associated with the task.
+                - name: started_at
+                  type: date
+                  description: The Unix timestamp for the time when the task started.
+                - name: started_by
+                  type: keyword
+                  description: Contains the tag specified when a task is started.
+                - name: tags
+                  type: group
+                  fields:
+                    - name: key
+                      type: keyword
+                      description: The EC2 instance tag key.
+                    - name: value
+                      type: keyword
+                      description: The EC2 instance tag value.
+                - name: version
+                  type: keyword
+                  description: The version counter for the task.
+                - name: volumes
+                  type: group
+                  fields:
+                    - name: host_path
+                      type: group
+                      fields:
+                        - name: path
+                          type: keyword
+                          description: Path of the file or directory on the host that the volume maps to.
+                    - name: name
+                      type: keyword
+                      description: Volume name.
+        - name: eks_cluster_details
+          type: group
+          fields:
+            - name: arn
+              type: keyword
+              description: EKS cluster ARN.
+            - name: created_at
+              type: date
+              description: The timestamp when the EKS cluster was created.
+            - name: name
+              type: keyword
+              description: EKS cluster name.
+            - name: status
+              type: keyword
+              description: The EKS cluster status.
+            - name: tags
+              type: group
+              fields:
+                - name: key
+                  type: keyword
+                  description: The EC2 instance tag key.
+                - name: value
+                  type: keyword
+                  description: The EC2 instance tag value.
+            - name: vpcid
+              type: keyword
+              description: The VPC ID to which the EKS cluster is attached.
+        - name: instance_details
+          type: group
+          fields:
+            - name: availability_zone
+              type: keyword
+              description: The Availability Zone of the EC2 instance.
+            - name: iaminstance_profile
+              type: group
+              fields:
+                - name: arn
+                  type: keyword
+                  description: The profile ARN of the EC2 instance.
+                - name: id
+                  type: keyword
+                  description: The profile ID of the EC2 instance.
+            - name: image
+              type: group
+              fields:
+                - name: description
+                  type: keyword
+                  description: The image description of the EC2 instance.
+                - name: id
+                  type: keyword
+                  description: The image ID of the EC2 instance.
+            - name: instance
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: The ID of the EC2 instance.
+                - name: state
+                  type: keyword
+                  description: The state of the EC2 instance.
+                - name: type
+                  type: keyword
+                  description: The type of the EC2 instance.
+            - name: launch_time
+              type: date
+              description: The launch time of the EC2 instance.
+            - name: network_interfaces
+              type: group
+              fields:
+                - name: ipv6_addresses
+                  type: ip
+                  description: A list of IPv6 addresses for the EC2 instance.
+                - name: network_interface_id
+                  type: keyword
+                  description: The ID of the network interface.
+                - name: private
+                  type: group
+                  fields:
+                    - name: dns_name
+                      type: keyword
+                      description: The private DNS name of the EC2 instance.
+                    - name: ip_address
+                      type: ip
+                      description: The private IP address of the EC2 instance.
+                    - name: ip_addresses
+                      type: group
+                      fields:
+                        - name: private
+                          type: group
+                          fields:
+                            - name: dns_name
+                              type: keyword
+                              description: The private DNS name of the EC2 instance.
+                            - name: ip_address
+                              type: ip
+                              description: The private IP address of the EC2 instance.
+                - name: public
+                  type: group
+                  fields:
+                    - name: dns_name
+                      type: keyword
+                      description: The public DNS name of the EC2 instance.
+                    - name: ip
+                      type: ip
+                      description: The public IP address of the EC2 instance.
+                - name: security_groups
+                  type: group
+                  fields:
+                    - name: group
+                      type: group
+                      fields:
+                        - name: id
+                          type: keyword
+                          description: The security group ID of the EC2 instance.
+                        - name: name
+                          type: keyword
+                          description: The security group name of the EC2 instance.
+                - name: subnet_id
+                  type: keyword
+                  description: The subnet ID of the EC2 instance.
+                - name: vpc_id
+                  type: keyword
+                  description: The VPC ID of the EC2 instance.
+            - name: outpost_arn
+              type: keyword
+              description: The Amazon Resource Name (ARN) of the AWS Outpost. Only applicable to AWS Outposts instances.
+            - name: platform
+              type: keyword
+              description: The platform of the EC2 instance.
+            - name: product_codes
+              type: group
+              fields:
+                - name: product_code
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                      description: The product code information.
+                    - name: type
+                      type: keyword
+                      description: The product code type.
+            - name: tags
+              type: group
+              fields:
+                - name: key
+                  type: keyword
+                  description: The EC2 instance tag key.
+                - name: value
+                  type: keyword
+                  description: The EC2 instance tag value.
+        - name: kubernetes_details
+          type: group
+          fields:
+            - name: kubernetes_user_details
+              type: group
+              fields:
+                - name: groups
+                  type: keyword
+                  description: The groups that include the user who called the Kubernetes API.
+                - name: uid
+                  type: keyword
+                  description: The user ID of the user who called the Kubernetes API.
+                - name: user_name
+                  type: keyword
+                  description: The username of the user who called the Kubernetes API.
+            - name: kubernetes_workload_details
+              type: group
+              fields:
+                - name: containers
+                  type: group
+                  fields:
+                    - name: container_runtime
+                      type: keyword
+                      description: The container runtime (such as, Docker or containerd) used to run the container.
+                    - name: id
+                      type: keyword
+                      description: Container ID.
+                    - name: image
+                      type: group
+                      fields:
+                        - name: prefix
+                          type: keyword
+                          description: Part of the image name before the last slash. For example, imagePrefix for public.ecr.aws/amazonlinux/amazonlinux:latest would be public.ecr.aws/amazonlinux. If the image name is relative and does not have a slash, this field is empty.
+                        - name: value
+                          type: keyword
+                          description: Container image.
+                    - name: name
+                      type: keyword
+                      description: Container name.
+                    - name: security_context
+                      type: group
+                      fields:
+                        - name: privileged
+                          type: boolean
+                          description: Whether the container is privileged.
+                    - name: volume_mounts
+                      type: group
+                      fields:
+                        - name: mount_path
+                          type: keyword
+                          description: Volume mount path.
+                        - name: name
+                          type: keyword
+                          description: Volume mount name.
+                - name: host_network
+                  type: boolean
+                  description: Whether the hostNetwork flag is enabled for the pods included in the workload.
+                - name: name
+                  type: keyword
+                  description: Kubernetes workload name.
+                - name: name_space
+                  type: keyword
+                  description: Kubernetes namespace that the workload is part of.
+                - name: type
+                  type: keyword
+                  description: Kubernetes workload type (e.g. Pod, Deployment, etc.).
+                - name: uid
+                  type: keyword
+                  description: Kubernetes workload ID.
+                - name: volumes
+                  type: group
+                  fields:
+                    - name: host_path
+                      type: group
+                      fields:
+                        - name: path
+                          type: keyword
+                          description: Path of the file or directory on the host that the volume maps to.
+                    - name: name
+                      type: keyword
+                      description: Volume name.
+        - name: rdsdb_instance_details
+          type: group
+          fields:
+            - name: instance_identifier
+              type: keyword
+            - name: engine
+              type: keyword
+            - name: engine_version
+              type: keyword
+            - name: cluster_identifier
+              type: keyword
+            - name: instance_arn
+              type: keyword
+        - name: rdsdb_user_details
+          type: group
+          fields:
+            - name: user
+              type: keyword
+            - name: application
+              type: keyword
+            - name: database
+              type: keyword
+            - name: ssl
+              type: keyword
+            - name: auth_method
+              type: keyword
+        - name: s3_bucket_details
+          type: group
+          fields:
+            - name: arn
+              type: keyword
+              description: The Amazon Resource Name (ARN) of the S3 bucket.
+            - name: created_at
+              type: date
+              description: The date and time the bucket was created at.
+            - name: default_server_side_encryption
+              type: group
+              fields:
+                - name: encryption_type
+                  type: keyword
+                  description: The type of encryption used for objects within the S3 bucket.
+                - name: kms_masterkey_arn
+                  type: keyword
+                  description: The Amazon Resource Name (ARN) of the KMS encryption key. Only available if the bucket EncryptionType is aws:kms.
+            - name: name
+              type: keyword
+              description: The name of the S3 bucket.
+            - name: owner
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: The canonical user ID of the bucket owner. For information about locating your canonical user ID see Finding Your Account Canonical User ID.
+            - name: public_access
+              type: flattened
+              description: Describes the public access policies that apply to the S3 bucket.
+            - name: tags
+              type: group
+              fields:
+                - name: key
+                  type: keyword
+                  description: The EC2 instance tag key.
+                - name: value
+                  type: keyword
+                  description: The EC2 instance tag value.
+            - name: type
+              type: keyword
+              description: Describes whether the bucket is a source or destination bucket.
+        - name: type
+          type: keyword
+          description: The type of AWS resource.
+    - name: schema_version
+      type: keyword
+      description: The version of the schema used for the finding.
+    - name: service
+      type: group
+      fields:
+        - name: action
+          type: group
+          fields:
+            - name: aws_api_call_action
+              type: group
+              fields:
+                - name: affected_resources
+                  type: flattened
+                  description: The details of the AWS account that made the API call. This field identifies the resources that were affected by this API call.
+                - name: api
+                  type: keyword
+                  description: The AWS API name.
+                - name: caller_type
+                  type: keyword
+                  description: The AWS API caller type.
+                - name: domain_details
+                  type: group
+                  fields:
+                    - name: domain
+                      type: keyword
+                      description: The domain information for the AWS API call.
+                - name: error_code
+                  type: keyword
+                  description: The error code of the failed AWS API action.
+                - name: remote_account_details
+                  type: group
+                  fields:
+                    - name: account_id
+                      type: keyword
+                      description: The AWS account ID of the remote API caller.
+                    - name: affiliated
+                      type: boolean
+                      description: Details on whether the AWS account of the remote API caller is related to your GuardDuty environment. If this value is True the API caller is affiliated to your account in some way. If it is False the API caller is from outside your environment.
+                - name: remote_ip_details
+                  type: group
+                  fields:
+                    - name: city
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The city name of the remote IP address.
+                    - name: country
+                      type: group
+                      fields:
+                        - name: code
+                          type: keyword
+                          description: The country code of the remote IP address.
+                        - name: name
+                          type: keyword
+                          description: The country name of the remote IP address.
+                    - name: geo_location
+                      type: geo_point
+                      description: The location information of the remote IP address.
+                    - name: ip_address_v4
+                      type: ip
+                      description: The IPv4 remote address of the connection.
+                    - name: organization
+                      type: group
+                      fields:
+                        - name: asn
+                          type: keyword
+                          description: The Autonomous System Number (ASN) of the internet provider of the remote IP address.
+                        - name: asnorg
+                          type: keyword
+                          description: The organization that registered this ASN.
+                        - name: isp
+                          type: keyword
+                          description: The ISP information for the internet provider.
+                        - name: org
+                          type: keyword
+                          description: The name of the internet provider.
+                - name: service_name
+                  type: keyword
+                  description: The name of the AWS service (GuardDuty) that generated a finding.
+                - name: user_agent
+                  type: keyword
+                  description: The agent through which the API request was made.
+            - name: dns_request_action
+              type: group
+              fields:
+                - name: blocked
+                  type: boolean
+                  description: Indicates whether the targeted port is blocked.
+                - name: domain
+                  type: keyword
+                  description: The domain information for the API request.
+                - name: protocol
+                  type: keyword
+                  description: The network connection protocol observed in the activity that prompted GuardDuty to generate the finding.
+            - name: kubernetes_api_call_action
+              type: group
+              fields:
+                - name: parameters
+                  type: keyword
+                  description: Parameters related to the Kubernetes API call action.
+                - name: remote_ip_details
+                  type: group
+                  fields:
+                    - name: city
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The city name of the remote IP address.
+                    - name: country
+                      type: group
+                      fields:
+                        - name: code
+                          type: keyword
+                          description: The country code of the remote IP address.
+                        - name: name
+                          type: keyword
+                          description: The country name of the remote IP address.
+                    - name: geo_location
+                      type: geo_point
+                      description: The location information of the remote IP address.
+                    - name: ip_address_v4
+                      type: ip
+                      description: The IPv4 remote address of the connection.
+                    - name: organization
+                      type: group
+                      fields:
+                        - name: asn
+                          type: keyword
+                          description: The Autonomous System Number (ASN) of the internet provider of the remote IP address.
+                        - name: asnorg
+                          type: keyword
+                          description: The organization that registered this ASN.
+                        - name: isp
+                          type: keyword
+                          description: The ISP information for the internet provider.
+                        - name: org
+                          type: keyword
+                          description: The name of the internet provider.
+                - name: request_uri
+                  type: keyword
+                  description: The Kubernetes API request URI.
+                - name: source_ips
+                  type: ip
+                  description: The IP of the Kubernetes API caller and the IPs of any proxies or load balancers between the caller and the API endpoint.
+                - name: status_code
+                  type: long
+                  description: The resulting HTTP response code of the Kubernetes API call action.
+                - name: user_agent
+                  type: keyword
+                  description: The user agent of the caller of the Kubernetes API.
+                - name: verb
+                  type: keyword
+                  description: The Kubernetes API request HTTP verb.
+            - name: network_connection_action
+              type: group
+              fields:
+                - name: blocked
+                  type: boolean
+                  description: Indicates whether EC2 blocked the network connection to your instance.
+                - name: connection_direction
+                  type: keyword
+                  description: The network connection direction.
+                - name: local_ip_details
+                  type: group
+                  fields:
+                    - name: ip_address_v4
+                      type: keyword
+                      description: The IPv4 local address of the connection.
+                - name: local_port_details
+                  type: group
+                  fields:
+                    - name: port
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The port name of the local connection.
+                        - name: value
+                          type: long
+                          description: The port number of the local connection.
+                - name: remote_ip_details
+                  type: group
+                  fields:
+                    - name: city
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The city name of the remote IP address.
+                    - name: country
+                      type: group
+                      fields:
+                        - name: code
+                          type: keyword
+                          description: The country code of the remote IP address.
+                        - name: name
+                          type: keyword
+                          description: The country name of the remote IP address.
+                    - name: geo_location
+                      type: geo_point
+                      description: The location information of the remote IP address.
+                    - name: ip_address_v4
+                      type: ip
+                      description: The IPv4 remote address of the connection.
+                    - name: organization
+                      type: group
+                      fields:
+                        - name: asn
+                          type: keyword
+                          description: The Autonomous System Number (ASN) of the internet provider of the remote IP address.
+                        - name: asnorg
+                          type: keyword
+                          description: The organization that registered this ASN.
+                        - name: isp
+                          type: keyword
+                          description: The ISP information for the internet provider.
+                        - name: org
+                          type: keyword
+                          description: The name of the internet provider.
+                - name: remote_port_details
+                  type: group
+                  fields:
+                    - name: port
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The port name of the remote connection.
+                        - name: value
+                          type: long
+                          description: The port number of the remote connection.
+                - name: transport
+                  type: keyword
+                  description: The network connection protocol.
+            - name: port_probe_action
+              type: group
+              fields:
+                - name: blocked
+                  type: boolean
+                  description: Indicates whether EC2 blocked the port probe to the instance, such as with an ACL.
+                - name: port_probe_details
+                  type: group
+                  fields:
+                    - name: local_ip_details
+                      type: group
+                      fields:
+                        - name: ip_address_v4
+                          type: keyword
+                          description: The IPv4 local address of the connection.
+                    - name: local_port_details
+                      type: group
+                      fields:
+                        - name: port
+                          type: group
+                          fields:
+                            - name: name
+                              type: keyword
+                              description: The port name of the local connection.
+                            - name: value
+                              type: long
+                              description: The port number of the local connection.
+                    - name: remote_ip_details
+                      type: group
+                      fields:
+                        - name: city
+                          type: group
+                          fields:
+                            - name: name
+                              type: keyword
+                              description: The city name of the remote IP address.
+                        - name: country
+                          type: group
+                          fields:
+                            - name: code
+                              type: keyword
+                              description: The country code of the remote IP address.
+                            - name: name
+                              type: keyword
+                              description: The country name of the remote IP address.
+                        - name: geo_location
+                          type: geo_point
+                          description: The location information of the remote IP address.
+                        - name: ip_address_v4
+                          type: ip
+                          description: The IPv4 remote address of the connection.
+                        - name: organization
+                          type: group
+                          fields:
+                            - name: asn
+                              type: keyword
+                              description: The Autonomous System Number (ASN) of the internet provider of the remote IP address.
+                            - name: asnorg
+                              type: keyword
+                              description: The organization that registered this ASN.
+                            - name: isp
+                              type: keyword
+                              description: The ISP information for the internet provider.
+                            - name: org
+                              type: keyword
+                              description: The name of the internet provider.
+            - name: rds_login_attempt_action
+              type: group
+              fields:
+                - name: remote_ip_details
+                  type: group
+                  fields:
+                    - name: city
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The city name of the remote IP address.
+                    - name: country
+                      type: group
+                      fields:
+                        - name: code
+                          type: keyword
+                          description: The country code of the remote IP address.
+                        - name: name
+                          type: keyword
+                          description: The country name of the remote IP address.
+                    - name: geo_location
+                      type: geo_point
+                      description: The location information of the remote IP address.
+                    - name: ip_address_v4
+                      type: ip
+                      description: The IPv4 remote address of the connection.
+                    - name: organization
+                      type: group
+                      fields:
+                        - name: asn
+                          type: keyword
+                          description: The Autonomous System Number (ASN) of the internet provider of the remote IP address.
+                        - name: asnorg
+                          type: keyword
+                          description: The organization that registered this ASN.
+                        - name: isp
+                          type: keyword
+                          description: The ISP information for the internet provider.
+                        - name: org
+                          type: keyword
+                          description: The name of the internet provider.
+            - name: type
+              type: keyword
+              description: The GuardDuty finding activity type.
+        - name: additional_info
+          type: flattened
+          description: Contains additional information about the generated finding.
+        - name: archived
+          type: boolean
+          description: Indicates whether this finding is archived.
+        - name: count
+          type: long
+          description: The total count of the occurrences of this finding type.
+        - name: detector_id
+          type: keyword
+          description: The detector ID for the GuardDuty service.
+        - name: ebs_volume_scan_details
+          type: group
+          fields:
+            - name: scan
+              type: group
+              fields:
+                - name: completed_at
+                  type: date
+                  description: Returns the completion date and time of the malware scan.
+                - name: detections
+                  type: group
+                  fields:
+                    - name: highest_severity_threat_details
+                      type: group
+                      fields:
+                        - name: count
+                          type: long
+                          description: Total number of infected files with the highest severity threat detected.
+                        - name: severity
+                          type: keyword
+                          description: Severity level of the highest severity threat detected.
+                        - name: threat_name
+                          type: keyword
+                          description: Threat name of the highest severity threat detected as part of the malware scan.
+                    - name: scanned_item_count
+                      type: group
+                      fields:
+                        - name: files
+                          type: long
+                          description: Number of files scanned.
+                        - name: total_gb
+                          type: long
+                          description: Total GB of files scanned for malware.
+                        - name: volumes
+                          type: long
+                          description: Total number of scanned volumes.
+                    - name: threat_detected_by_name
+                      type: group
+                      fields:
+                        - name: item_count
+                          type: long
+                          description: Total number of infected files identified.
+                        - name: shortened
+                          type: boolean
+                          description: Flag to determine if the finding contains every single infected file-path and/or every threat.
+                        - name: threat_names
+                          type: group
+                          fields:
+                            - name: file_paths
+                              type: group
+                              fields:
+                                - name: file
+                                  type: group
+                                  fields:
+                                    - name: name
+                                      type: keyword
+                                      description: File name of the infected file.
+                                    - name: path
+                                      type: keyword
+                                      description: The file path of the infected file.
+                                - name: hash
+                                  type: keyword
+                                  description: The hash value of the infected file.
+                                - name: volume_arn
+                                  type: keyword
+                                  description: EBS volume Arn details of the infected file.
+                            - name: item_count
+                              type: long
+                              description: Total number of files infected with given threat.
+                            - name: name
+                              type: keyword
+                              description: The name of the identified threat.
+                            - name: severity
+                              type: keyword
+                              description: Severity of threat identified as part of the malware scan.
+                        - name: unique_threat_name_count
+                          type: long
+                          description: Total number of unique threats by name identified, as part of the malware scan.
+                    - name: threats_detected_item_count
+                      type: group
+                      fields:
+                        - name: files
+                          type: long
+                          description: Total number of infected files.
+                - name: id
+                  type: keyword
+                  description: Unique Id of the malware scan that generated the finding.
+                - name: started_at
+                  type: date
+                  description: Returns the start date and time of the malware scan.
+            - name: sources
+              type: keyword
+              description: Contains list of threat intelligence sources used to detect threats.
+            - name: trigger_finding_id
+              type: keyword
+              description: GuardDuty finding ID that triggered a malware scan.
+        - name: event
+          type: group
+          fields:
+            - name: first_seen
+              type: date
+              description: The first-seen timestamp of the activity that prompted GuardDuty to generate this finding.
+            - name: last_seen
+              type: date
+              description: The last-seen timestamp of the activity that prompted GuardDuty to generate this finding.
+        - name: evidence
+          type: group
+          fields:
+            - name: threat_intelligence_details
+              type: group
+              fields:
+                - name: threat
+                  type: group
+                  fields:
+                    - name: list_name
+                      type: keyword
+                      description: The name of the threat intelligence list that triggered the finding.
+                    - name: names
+                      type: keyword
+                      description: A list of names of the threats in the threat intelligence list that triggered the finding.
+        - name: feature_name
+          type: keyword
+          description: The name of the feature that generated a finding.
+        - name: resource_role
+          type: keyword
+          description: The resource role information for this finding.
+        - name: service_name
+          type: keyword
+          description: The AWS service name whose API was invoked.
+        - name: user_feedback
+          type: keyword
+          description: Feedback that was submitted about the finding.
+    - name: severity
+      type: group
+      fields:
+        - name: code
+          type: double
+          description: The severity of the finding in double.
+        - name: value
+          type: keyword
+          description: The severity of the finding.
+    - name: title
+      type: keyword
+      description: The title of the finding.
+    - name: type
+      type: keyword
+      description: The type of finding.
+    - name: updated_at
+      type: date
+      description: The time and date when the finding was last updated.

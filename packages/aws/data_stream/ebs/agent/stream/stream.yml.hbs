@@ -1,5 +1,11 @@
-metricsets: ["ebs"]
+metricsets: ["cloudwatch"]
 period: {{period}}
+{{#if data_granularity}}
+data_granularity: {{data_granularity}}
+{{/if}}
+{{#if include_linked_accounts}}
+include_linked_accounts: {{include_linked_accounts}}
+{{/if}}
 {{#if access_key_id}}
 access_key_id: {{access_key_id}}
 {{/if}}
@@ -18,8 +24,8 @@ shared_credential_file: {{shared_credential_file}}
 {{#if role_arn}}
 role_arn: {{role_arn}}
 {{/if}}
-{{#if endpoint}}
-endpoint: {{endpoint}}
+{{#if default_region}}
+default_region: {{default_region}}
 {{/if}}
 {{#if regions}}
 regions:
@@ -36,3 +42,12 @@ tags_filter: {{tags_filter}}
 {{#if proxy_url }}
 proxy_url: {{proxy_url}}
 {{/if}}
+metrics:
+  - namespace: AWS/EBS
+    statistic: ["Average"]
+    name: ["VolumeReadBytes", "VolumeWriteBytes", "VolumeReadOps", "VolumeWriteOps", "VolumeQueueLength", "VolumeThroughputPercentage", "VolumeConsumedReadWriteOps", "BurstBalance"]
+    resource_type: ec2
+  - namespace: AWS/EBS
+    statistic: ["Sum"]
+    name: ["VolumeTotalReadTime", "VolumeTotalWriteTime", "VolumeIdleTime"]
+    resource_type: ec2

@@ -1,0 +1,113 @@
+---
+description: Pipeline for processing Network Traffic object.
+# Network Traffic object docs: https://schema.ocsf.io/1.0.0-rc.3/objects/network_traffic
+processors:
+  - convert:
+      field: ocsf.traffic.bytes_in
+      tag: convert_traffic_bytes_in_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.traffic.bytes_in
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.bytes
+      tag: set_destination_bytes
+      copy_from: ocsf.traffic.bytes_in
+      ignore_empty_value: true
+  - convert:
+      field: ocsf.traffic.bytes_out
+      tag: convert_traffic_bytes_out_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.traffic.bytes_out
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.bytes
+      tag: set_source_bytes
+      copy_from: ocsf.traffic.bytes_out
+      ignore_empty_value: true
+  - convert:
+      field: ocsf.traffic.packets_in
+      tag: convert_traffic_packets_in_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.traffic.packets_in
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.packets
+      tag: set_destination_packets
+      copy_from: ocsf.traffic.packets_in
+      ignore_empty_value: true
+  - convert:
+      field: ocsf.traffic.packets_out
+      tag: convert_traffic_packets_out_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.traffic.packets_out
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.packets
+      tag: set_source_packets
+      copy_from: ocsf.traffic.packets_out
+      ignore_empty_value: true
+  - convert:
+      field: ocsf.traffic.bytes
+      tag: convert_traffic_bytes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.traffic.bytes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: network.bytes
+      tag: set_network_bytes
+      copy_from: ocsf.traffic.bytes
+      ignore_empty_value: true
+  - convert:
+      field: ocsf.traffic.packets
+      tag: convert_traffic_packets_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.traffic.packets
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: network.packets
+      tag: set_network_packets
+      copy_from: ocsf.traffic.packets
+      ignore_empty_value: true
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

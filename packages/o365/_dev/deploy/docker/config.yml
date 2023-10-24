@@ -1,4 +1,5 @@
 rules:
+  # O365Audit Input Rules
   - path: /tenant-id/oauth2/token
     methods: [POST]
     query_params:
@@ -238,3 +239,140 @@ rules:
             {"Workload":"Exchange","SensitiveInfoDetectionIsIncluded":false,"ObjectId":"<AM0PR05MB4803CDA6206C2F2FEB36DB5AB8EC0@AM0PR05MB4803.eurprd05.prod.outlook.com>","OrganizationId":"0e1dddce-163e-4b0b-9e33-87ba56ac4655","UserId":"DlpAgent","CreationTime":"2020-02-24T20:11:15","UserType":4,"Version":1,"PolicyDetails":[{"Rules":[{"Severity":"Low","RuleId":"8398c03a-a00d-42bb-8f80-ead0ad04e1df","RuleName":"Low volume of content detected test","Actions":["NotifyUser"],"ConditionsMatched":{"OtherConditions":[{"Name":"AccessScope","Value":"IncludeExternalUsers"}],"SensitiveInformation":[{"Count":1,"UniqueCount":1,"Confidence":75,"Location":"Message Body","SensitiveType":"419f449f-6d9d-4be1-a154-b531f7a91b41"},{"Count":1,"UniqueCount":1,"Confidence":75,"Location":"Message Body","SensitiveType":"b8fe86d1-c056-453b-bfaa-9fe698699ecc"}]},"RuleMode":"Enable"}],"PolicyName":"test","PolicyId":"88956b36-45b3-4828-bf53-78603c0e5f58"}],"ExchangeMetaData":{"From":"asr@testsiem2.onmicrosoft.com","CC":["asr@example.net"],"BCC":[],"To":["asr@example.org"],"FileSize":13310,"UniqueID":"8e103f2f-b293-4062-38b8-08d7b965b2fa","MessageID":"<AM0PR05MB4803CDA6206C2F2FEB36DB5AB8EC0@AM0PR05MB4803.eurprd05.prod.outlook.com>","RecipientCount":2,"Sent":"2020-02-24T20:11:14","Subject":"Here's the phony data"},"UserKey":"1153801116545789462","Operation":"DlpRuleMatch","IncidentId":"c1dc582b-fa61-6020-1800-08d7b966ec64","Id":"a42123a9-1c07-4dde-9be6-ac71cb9fd16b","RecordType":13},
             {"Workload":"Exchange","SensitiveInfoDetectionIsIncluded":false,"ObjectId":"<AM0PR05MB4803CDA6206C2F2FEB36DB5AB8EC0@AM0PR05MB4803.eurprd05.prod.outlook.com>","OrganizationId":"0e1dddce-163e-4b0b-9e33-87ba56ac4655","UserId":"DlpAgent","CreationTime":"2020-02-24T20:11:15","UserType":4,"Version":1,"PolicyDetails":[{"Rules":[{"Severity":"Low","RuleId":"8398c03a-a00d-42bb-8f80-ead0ad04e1df","RuleName":"Low volume of content detected test","Actions":["NotifyUser"],"ConditionsMatched":{"OtherConditions":[{"Name":"AccessScope","Value":"IncludeExternalUsers"}],"SensitiveInformation":[{"Count":1,"UniqueCount":1,"Confidence":75,"Location":"Message Body","SensitiveType":"419f449f-6d9d-4be1-a154-b531f7a91b41"},{"Count":1,"UniqueCount":1,"Confidence":75,"Location":"Message Body","SensitiveType":"b8fe86d1-c056-453b-bfaa-9fe698699ecc"}]},"RuleMode":"Enable"}],"PolicyName":"test","PolicyId":"88956b36-45b3-4828-bf53-78603c0e5f58"}],"SharePointMetaData":{"From":"alice@testsiem2.onmicrosoft.com","itemCreationTime":"2020-02-20T11:23:45","UniqueID":"8e103f2f-b293-4062-38b8-08d7b965b2fa","FileName":"Company-Internal-Financial.docx","FileOwner":"alice@testsiem2.onmicrosoft.com","FilePathUrl":"https://example.net/testsiem2.onmicrosoft.com/sharepoint","LastModifiedTime":"2020-02-24T12:13:14Z"},"UserKey":"1153801116545789462","Operation":"DlpRuleMatch","IncidentId":"c1dc582b-fa61-6020-1800-08d7b966ec64","Id":"a42123a9-1c07-4dde-9be6-ac71cb9fd16b","RecordType":13}
           ]
+  # CEL Input Rules
+  - path: /test-cel-tenant-id/oauth2/v2.0/token
+    methods: [POST]
+    query_params:
+      client_id: test-cel-client-id
+      client_secret: test-cel-client-secret
+      grant_type: client_credentials
+      scope: https://manage.office.com/.default
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"access_token": "CELtoken","token_type": "Bearer","expires_in": 3600,"ext_expires_in": 3600}
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/start
+    methods: [POST]
+    query_params:
+      contentType: "Audit.SharePoint"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer CELtoken"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"contentType": "Audit.SharePoint","status": "enabled","webhook": null}
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/start
+    methods: [POST]
+    query_params:
+      contentType: "Audit.General"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer CELtoken"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"contentType": "Audit.General","status": "enabled","webhook": null}
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content
+    methods: [GET]
+    query_params:
+      contentType: "Audit.SharePoint"
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer CELtoken"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+          NextPageUri:
+            - 'http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content?contentType=Audit.SharePoint&startTime={{ .request.vars.startTime }}&endTime={{ .request.vars.endTime }}&nextPage=2023071100R022885001761'
+        body: |-
+          [{"contentType": "Audit.Sharepoint","contentId": "celid1","contentUri": "http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/celsp1/activity/feed/audit/celid1","contentCreated": "{{ .request.vars.endTime }}","contentExpiration": "2199-05-30T17:35:00.000Z"}]
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content
+    methods: [GET]
+    query_params:
+      contentType: "Audit.SharePoint"
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+      nextPage: "2023071100R022885001761"
+    request_headers:
+      Authorization:
+        - "Bearer CELtoken"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"contentType": "Audit.Sharepoint","contentId": "celid2","contentUri": "http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/celsp1/activity/feed/audit/celid2","contentCreated": "{{ .request.vars.endTime }}","contentExpiration": "2199-05-30T17:35:00.000Z"}]
+  - path: /api/v1.0/celsp1/activity/feed/audit/celid1
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer CELtoken"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"ListItemUniqueId":"59a8433d-9bb8-cfef-6edc-4c0fc8b86875","ItemType":"Page","Workload":"OneDrive","OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"asr@testsiem.onmicrosoft.com","CreationTime":"2020-02-07T16:43:53","Site":"d5180cfc-3479-44d6-b410-8c985ac894e3","ClientIP":"213.97.47.133","WebId":"8c5c94bb-8396-470c-87d7-8999f440cd30","UserType":0,"Version":1,"EventSource":"SharePoint","UserAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:72.0) Gecko/20100101 Firefox/72.0","UserKey":"i:0h.f|membership|1003200096971f55@live.com","CustomUniqueId":true,"Operation":"PageViewed","ObjectId":"https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/_layouts/15/onedrive.aspx","Id":"99d005e6-a4c6-46fd-117c-08d7abeceab5","CorrelationId":"622b339f-4000-a000-f25f-92b3478c7a25","RecordType":4},{"UserId":"asr@testsiem.onmicrosoft.com","ListItemUniqueId":"59a8433d-9bb8-cfef-6edc-4c0fc8b86875","RecordType":4,"ObjectId":"https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/_layouts/15/onedrive.aspx","Workload":"OneDrive","OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","WebId":"8c5c94bb-8396-470c-87d7-8999f440cd30","UserType":0,"CreationTime":"2020-02-07T16:43:53","Site":"d5180cfc-3479-44d6-b410-8c985ac894e3","ClientIP":"213.97.47.133","UserAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:72.0) Gecko/20100101 Firefox/72.0","Version":1,"EventSource":"SharePoint","CustomUniqueId":true,"UserKey":"i:0h.f|membership|1003200096971f55@live.com","Operation":"PageViewed","Id":"99d005e6-a4c6-46fd-117c-08d7abeceab5","CorrelationId":"622b339f-4000-a000-f25f-92b3478c7a25","ItemType":"Page"},{"Workload":"OneDrive","Version":1,"RecordType":4,"ObjectId":"https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/_layouts/15/onedrive.aspx","OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"asr@testsiem.onmicrosoft.com","CreationTime":"2020-02-07T16:43:53","Site":"d5180cfc-3479-44d6-b410-8c985ac894e3","Id":"99d005e6-a4c6-46fd-117c-08d7abeceab5","WebId":"8c5c94bb-8396-470c-87d7-8999f440cd30","UserType":0,"ListItemUniqueId":"59a8433d-9bb8-cfef-6edc-4c0fc8b86875","EventSource":"SharePoint","UserAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:72.0) Gecko/20100101 Firefox/72.0","UserKey":"i:0h.f|membership|1003200096971f55@live.com","CustomUniqueId":true,"ClientIP":"213.97.47.133","Operation":"PageViewed","CorrelationId":"622b339f-4000-a000-f25f-92b3478c7a25","ItemType":"Page"},{"SiteUrl":"https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/","OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","CreationTime":"2020-02-07T16:44:23","ListId":"2b6ad2bd-0fd7-4556-9c89-a97847085b85","Version":1,"SourceRelativeUrl":"Documents","RecordType":6,"UserId":"asr@testsiem.onmicrosoft.com","SourceFileExtension":"png","UserType":0,"EventSource":"SharePoint","UserKey":"i:0h.f|membership|1003200096971f55@live.com","ClientIP":"213.97.47.133","CorrelationId":"692b339f-902e-a000-f25f-95def5f17903","Workload":"OneDrive","ObjectId":"https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/Documents/Screenshot.png","WebId":"8c5c94bb-8396-470c-87d7-8999f440cd30","SourceFileName":"Screenshot.png","UserAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:72.0) Gecko/20100101 Firefox/72.0","ItemType":"File","ListItemUniqueId":"7f06ab3a-bd98-41d3-a0b2-ad270d71e4d8","Site":"d5180cfc-3479-44d6-b410-8c985ac894e3","Operation":"FileModified","Id":"5b02fadb-8eac-4aff-af87-08d7abecfca3"}]
+  - path: /api/v1.0/celsp1/activity/feed/audit/celid2
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer CELtoken"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"SourceRelativeUrl":"Documents","OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","CreationTime":"2020-02-07T16:44:07","ListId":"2b6ad2bd-0fd7-4556-9c89-a97847085b85","Version":1,"RecordType":6,"UserId":"asr@testsiem.onmicrosoft.com","SourceFileExtension":"png","UserType":0,"EventSource":"SharePoint","UserAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:72.0) Gecko/20100101 Firefox/72.0","ClientIP":"213.97.47.133","CorrelationId":"652b339f-908c-a000-f25f-91423da7dd9b","Workload":"OneDrive","ObjectId":"https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/Documents/Screenshot 2020-01-27 at 11.30.48.png","WebId":"8c5c94bb-8396-470c-87d7-8999f440cd30","SiteUrl":"https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/","SourceFileName":"Screenshot 2020-01-27 at 11.30.48.png","UserKey":"i:0h.f|membership|1003200096971f55@live.com","ItemType":"File","ListItemUniqueId":"4803608a-df7d-4f63-aa73-67aa33bb576e","Site":"d5180cfc-3479-44d6-b410-8c985ac894e3","Operation":"FileDeleted","Id":"ec04aa09-0a43-4879-cdc8-08d7abecf327"},{"Site":"d5180cfc-3479-44d6-b410-8c985ac894e3","ItemType":"File","UserKey":"i:0h.f|membership|1003200096971f55@live.com","TargetUserOrGroupName":"4da1e7f54501bb99b6e0ab2ff8749842152ac02ff8c0c8017b0e40e6b67fecdd","OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","Operation":"SharingSet","EventData":"<Permissions granted>System.LimitedEdit</Permissions granted>","ListId":"2b6ad2bd-0fd7-4556-9c89-a97847085b85","RecordType":14,"Version":1,"WebId":"8c5c94bb-8396-470c-87d7-8999f440cd30","UserAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:73.0) Gecko/20100101 Firefox/73.0","CorrelationId":"fe71359f-005f-9000-7cb1-ccf5124703db","ListItemUniqueId":"7f06ab3a-bd98-41d3-a0b2-ad270d71e4d8","ObjectId":"https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/Documents/Screenshot.png","SourceFileName":"Screenshot.png","SiteUrl":"https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com","ClientIP":"79.159.10.151","SourceFileExtension":"png","Workload":"OneDrive","SourceRelativeUrl":"Documents/Screenshot.png","EventSource":"SharePoint","TargetUserOrGroupType":"SecurityGroup","UserId":"asr@testsiem.onmicrosoft.com","CreationTime":"2020-02-14T18:25:44","Id":"98633e47-3540-4e8a-bcfc-08d7b17b4e48","UserType":0}]
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content
+    methods: [GET]
+    query_params:
+      contentType: "Audit.General"
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer CELtoken"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"contentType": "Audit.General","contentId": "celid3","contentUri": "http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/celgen1/activity/feed/audit/celid3","contentCreated": "{{ .request.vars.endTime }}","contentExpiration": "2199-05-30T17:35:00.000Z"}]
+  - path: /api/v1.0/celgen1/activity/feed/audit/celid3
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer CELtoken"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"ObjectId":"Sales","Id":"2af7bbf1-d5d8-5cb0-8aca-f4ad8a087594","CreationTime":"2020-02-28T09:42:45","UserKey":"100320009d6edf94","YammerNetworkId":5846122497,"Operation":"GroupCreation","ClientIP":"79.159.10.151:12345","ActorYammerUserId":36787265537,"UserType":0,"ResultStatus":"TRUE","RecordType":22,"Workload":"Yammer","Version":1,"GroupName":"Sales","OrganizationId":"0e1dddce-163e-4b0b-9e33-87ba56ac4655","UserId":"alice@testsiem2.onmicrosoft.com","ActorUserId":"alice@testsiem2.onmicrosoft.com"},{"CreationTime":"2020-02-28T09:39:20","ActorUserId":"asr@testsiem2.onmicrosoft.com","ObjectId":"Company group","UserKey":"100320009d292e16","Id":"3f3e7f1c-84c1-55fc-9bb2-c8b8563eae06","ActorYammerUserId":36085768193,"ClientIP":"[fdfd::555]:12346","UserId":"asr@testsiem2.onmicrosoft.com","Operation":"GroupCreation","ResultStatus":"TRUE","UserType":0,"Workload":"Yammer","Version":1,"OrganizationId":"0e1dddce-163e-4b0b-9e33-87ba56ac4655","YammerNetworkId":5846122497,"RecordType":22,"GroupName":"Company group"}]

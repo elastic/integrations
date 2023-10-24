@@ -19,6 +19,7 @@ The application logs dataset parses single file format introduced in 3.7.0.
 ### Application Logs
 
 Application logs collects standard RabbitMQ logs.
+It will only support RabbitMQ default i.e RFC 3339 timestamp format.
 
 {{fields "log"}}
 

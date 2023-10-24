@@ -15,9 +15,16 @@
                                 "2b1baf93-2b7f-430d-9048-f11cb2bfb65e": {
                                     "customLabel": true,
                                     "dataType": "number",
+                                    "filter": {
+                                        "language": "kuery",
+                                        "query": "websphere_application_server.threadpool.threads.active: *"
+                                    },
                                     "isBucketed": false,
                                     "label": "Active Threads",
-                                    "operationType": "median",
+                                    "operationType": "last_value",
+                                    "params": {
+                                        "sortField": "@timestamp"
+                                    },
                                     "scale": "ratio",
                                     "sourceField": "websphere_application_server.threadpool.threads.active"
                                 },
@@ -27,6 +34,7 @@
                                     "label": "@timestamp",
                                     "operationType": "date_histogram",
                                     "params": {
+                                        "includeEmptyRows": true,
                                         "interval": "auto"
                                     },
                                     "scale": "interval",
@@ -44,7 +52,7 @@
                                             "type": "column"
                                         },
                                         "orderDirection": "desc",
-                                        "otherBucket": true,
+                                        "otherBucket": false,
                                         "parentFormat": {
                                             "id": "terms"
                                         },
@@ -97,6 +105,7 @@
                 ],
                 "legend": {
                     "isVisible": true,
+                    "legendSize": "auto",
                     "position": "right"
                 },
                 "preferredSeriesType": "line",
@@ -117,17 +126,12 @@
         "title": "Active Threads [Metrics WebSphere Application Server]",
         "visualizationType": "lnsXY"
     },
-    "coreMigrationVersion": "8.1.0",
+    "coreMigrationVersion": "8.3.0",
     "id": "websphere_application_server-86426870-baec-11ec-b244-51e5cddeab04",
     "migrationVersion": {
-        "lens": "8.1.0"
+        "lens": "8.3.0"
     },
     "references": [
-        {
-            "id": "metrics-*",
-            "name": "indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
         {
             "id": "metrics-*",
             "name": "indexpattern-datasource-layer-1decd051-dbf6-4a80-aa20-85278fedc2d4",

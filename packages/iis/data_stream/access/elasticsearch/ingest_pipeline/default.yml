@@ -4,11 +4,12 @@ description: Pipeline for parsing IIS access logs. Requires the geoip and user_a
 processors:
   - set:
       field: ecs.version
-      value: '8.2.1'
+      value: '8.5.1'
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: 'ctx.event?.original == null'
   - grok:
       field: event.original
       ignore_missing: true
@@ -77,10 +78,6 @@ processors:
       field: url.domain
       value: "{{destination.domain}}"
       if: ctx.url?.domain == null && ctx.destination?.domain != null
-  - remove:
-      field:
-        - _temp_
-      ignore_missing: true
   - rename:
       field: '@timestamp'
       target_field: event.created
@@ -97,9 +94,10 @@ processors:
       source: ctx.event.duration = Math.round(ctx._temp_.duration * params.scale)
       params:
           scale: 1000000
-      if: ctx.temp?.duration != null
+      if: ctx._temp_?.duration != null
   - remove:
-      field: _temp_.duration
+      field:
+        - _temp_
       ignore_missing: true
   - urldecode:
       field: user_agent.original
@@ -175,6 +173,48 @@ processors:
       field: event.outcome
       value: failure
       if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400"
+  - script:
+      lang: painless
+      description: |
+        This script processor handles ctx.source[field] as per grok changes in ES 8.7+.
+        Read more: https://github.com/elastic/integrations/issues/6016
+      source: |
+        for (field in params.fields) {
+            if (ctx.source[field] instanceof List) {
+                def vals = ctx.source[field];
+                vals = vals.stream().distinct().collect(Collectors.toList());
+                if (vals.size() == 1) {
+                    ctx.source[field] = vals[0]
+                } else {
+                    ctx.source[field] = vals
+                }
+            }
+        }
+      if: "ctx?.source != null"
+      params:
+        fields:
+            - "address"
+  - script:
+      lang: painless
+      description: |
+        This script processor handles ctx.destination[field] as per grok changes in ES 8.7+.
+        Read more: https://github.com/elastic/integrations/issues/6016
+      source: |
+        for (field in params.fields) {
+            if (ctx.destination[field] instanceof List) {
+                def vals = ctx.destination[field];
+                vals = vals.stream().distinct().collect(Collectors.toList());
+                if (vals.size() == 1) {
+                    ctx.destination[field] = vals[0]
+                } else {
+                    ctx.destination[field] = vals
+                }
+            }
+        }
+      if: "ctx?.destination != null"
+      params:
+        fields:
+            - "address"
   - script:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.

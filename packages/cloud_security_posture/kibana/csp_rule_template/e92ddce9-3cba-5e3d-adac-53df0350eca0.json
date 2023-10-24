@@ -1,0 +1,38 @@
+{
+    "id": "e92ddce9-3cba-5e3d-adac-53df0350eca0",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "None",
+            "default_value": "By default, `--service-account-lookup` argument is set to `true`.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kube-apiserver/\n2. https://github.com/kubernetes/kubernetes/issues/24167\n3. https://en.wikipedia.org/wiki/Time_of_check_to_time_of_use",
+            "id": "e92ddce9-3cba-5e3d-adac-53df0350eca0",
+            "name": "Ensure that the --service-account-lookup argument is set to true",
+            "profile_applicability": "* Level 1 - Master Node",
+            "description": "Validate service account before validating token.",
+            "rationale": "If `--service-account-lookup` is not enabled, the apiserver only verifies that the authentication token is valid, and does not validate that the service account token mentioned in the request is actually present in etcd.\nThis allows using a service account token even after the corresponding service account is deleted.\nThis is an example of time of check to time of use security issue.",
+            "audit": "Run the following command on the Control Plane node:\n\n```\nps -ef | grep kube-apiserver\n```\n\nVerify that if the `--service-account-lookup` argument exists it is set to `true`.",
+            "remediation": "Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml` on the Control Plane node and set the below parameter.\n\n\n```\n--service-account-lookup=true\n```\n\nAlternatively, you can delete the `--service-account-lookup` parameter from this file so that the default takes effect.",
+            "section": "API Server",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 1.2.24",
+                "API Server"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "1.2.24",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_1_2_24"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

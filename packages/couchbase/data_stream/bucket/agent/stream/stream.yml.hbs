@@ -1,11 +1,12 @@
 metricsets: ["json"]
 namespace: "bucket"
 hosts:
-{{#each hosts}}
+{{#each host_couchbase}}
   - "{{this}}/pools/default/buckets"
 {{/each}}
-{{#if ssl}}
-{{ssl}}
+{{#if ssl_couchbase}}
+ssl:
+  {{ssl_couchbase}}
 {{/if}}
 period: {{period}}
 json.is_array: true
@@ -13,9 +14,6 @@ tags:
 {{#each tags as |tag|}}
   - {{tag}}
 {{/each}}
-{{#contains "forwarded" tags}}
-publisher_pipeline.disable_host: true
-{{/contains}}
 {{#if processors}}
 processors:
 {{processors}}

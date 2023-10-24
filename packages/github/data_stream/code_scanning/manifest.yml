@@ -1,6 +1,5 @@
 type: logs
 title: GHAS Code Scanning
-release: beta
 streams:
   - input: httpjson
     vars:
@@ -14,20 +13,21 @@ streams:
       - name: owner
         type: text
         title: Repository owner
-        description: The owner of GitHub Repository
+        description: The owner of GitHub Repository. If repository belongs to an organization, owner is name of the organization
         multi: false
         required: true
         show_user: true
       - name: repo
         type: text
         title: Repository
-        description: The GitHub Repository
+        description: The GitHub Repository. If not provided, alerts for all the repositories of the owner will be ingested
         multi: false
-        required: true
+        required: false
         show_user: true
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
         multi: false
         required: false
         show_user: true
@@ -38,7 +38,7 @@ streams:
         multi: false
         required: true
         show_user: true
-        description: Interval at which the alerts will be pulled. The value must be between 2m and 1h.
+        description: Interval at which the alerts will be pulled. The value must be between 2m and 1h. Supported units for this parameter are h/m/s.
         default: 10m
       - name: api_url
         type: text

@@ -1,6 +1,9 @@
 config_version: "2"
 interval: {{interval}}
 request.method: "GET"
+{{#if enable_request_tracer}}
+request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+{{/if}}
 {{#if atlassian_cloud}}
 request.url: {{api_url}}/rest/api/3/auditing/record
 {{else}}
@@ -41,11 +44,21 @@ request.transforms:
       value: '0'
 response.split:
   target: body.records
+  ignore_empty_value: true
 response.pagination:
   - set:
-      target: url.value
-      value: '[[sprintf "%s/rest/api/3/auditing/record?from=%s&to=%s&offset=%d&limit=%s" "{{api_url}}" (.last_response.url.params.Get "from") (.last_response.url.params.Get "to") (add (toInt .last_response.body.offset) (toInt "{{ limit }}")) "{{ limit }}"]]'
+      target: url.params.from
+      value: '[[.last_response.url.params.Get "from"]]'
+  - set:
+      target: url.params.to
+      value: '[[.last_response.url.params.Get "to"]]'
+  - set:
+      target: url.params.offset
+      value: '[[if lt (add (toInt .last_response.body.offset) (toInt "{{ limit }}")) (toInt .last_response.body.total)]][[add (toInt .last_response.body.offset) (toInt "{{ limit }}")]][[else]][[/*Stop condition for pagination*/]][[end]]'
       fail_on_template_error: true
+  - set:
+      target: url.params.limit
+      value: '{{limit}}'
 cursor:
   last_timestamp:
     value: "[[.first_event.created]]"

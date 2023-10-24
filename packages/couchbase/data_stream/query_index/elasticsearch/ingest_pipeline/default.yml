@@ -1,0 +1,114 @@
+---
+description: Pipeline for parsing Couchbase Query Index metrics.
+processors:
+- set:
+    field: ecs.version
+    value: 8.5.1
+    ignore_failure: true
+    ignore_empty_value: true
+- set:
+    field: event.type
+    value: [info]
+    ignore_failure: true
+    ignore_empty_value: true
+- set:
+    field: event.kind
+    value: metric
+    ignore_failure: true
+    ignore_empty_value: true
+- set:
+    field: event.category
+    value: [database]
+    ignore_failure: true
+    ignore_empty_value: true
+- set:
+    field: event.module
+    value: couchbase
+    override: true
+    ignore_failure: true
+    ignore_empty_value: true
+- script:
+    lang: painless
+    source: |-
+        def getLastElement(def arr) {
+          def last_index = arr.length - 1;
+          return arr[last_index];
+        }
+        if (ctx.http?.query_index?.op?.samples != null) {
+          if (ctx.http.query_index.op.samples.index_remaining_ram != null) {
+            ctx.index_remaining_ram = getLastElement(ctx.http.query_index.op.samples.index_remaining_ram);
+          }
+          if (ctx.http.query_index.op.samples.index_ram_percent != null) {
+            ctx.index_ram_percent = getLastElement(ctx.http.query_index.op.samples.index_ram_percent);
+          }
+          if (ctx.http.query_index.op.samples.query_avg_req_time != null) {
+            ctx.query_avg_req_time = getLastElement(ctx.http.query_index.op.samples.query_avg_req_time);
+          }
+          if (ctx.http.query_index.op.samples.query_requests != null) {
+            ctx.query_requests = getLastElement(ctx.http.query_index.op.samples.query_requests);
+          }
+          if (ctx.http.query_index.op.samples.query_result_count != null) {
+            ctx.query_result_count = getLastElement(ctx.http.query_index.op.samples.query_result_count);
+          }
+          if (ctx.http.query_index.op.samples['eventing/failed_count'] != null) {
+            ctx.eventing_failed_count = getLastElement(ctx.http.query_index.op.samples['eventing/failed_count']);
+          }
+        }
+    ignore_failure: true        
+    description: Get the last value from an array response.
+- rename:
+    field: index_remaining_ram
+    target_field: couchbase.query_index.ram.remaining
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: index_ram_percent
+    target_field: couchbase.query_index.ram.pct
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: query_avg_req_time
+    target_field: couchbase.query_index.query.request_time.avg
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: query_requests
+    target_field: couchbase.query_index.query.requests
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: query_result_count
+    target_field: couchbase.query_index.query.result.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: eventing_failed_count
+    target_field: couchbase.query_index.eventing.failed.count
+    ignore_missing: true
+    ignore_failure: true
+- script:
+    description: Drops null/empty values recursively.
+    lang: painless
+    source: |
+      boolean drop(Object o) {
+        if (o == null || o == "") {
+          return true;
+        } else if (o instanceof Map) {
+          ((Map) o).values().removeIf(v -> drop(v));
+          return (((Map) o).size() == 0);
+        } else if (o instanceof List) {
+          ((List) o).removeIf(v -> drop(v));
+          return (((List) o).length == 0);
+        }
+        return false;
+      }
+      drop(ctx);
+- remove:
+    field:
+    - http
+    ignore_missing: true
+    ignore_failure: true
+on_failure:
+- set:
+    field: error.message
+    value: "{{{_ingest.on_failure_message}}}"

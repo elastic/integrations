@@ -1,0 +1,20 @@
+metricsets: ["json"]
+namespace: "cluster"
+hosts:
+{{#each host_couchbase}}
+  - "{{this}}/pools/default"
+{{/each}}
+{{#if ssl_couchbase}}
+ssl:
+  {{ssl_couchbase}}
+{{/if}}
+period: {{period}}
+json.is_array: false
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

@@ -1,6 +1,9 @@
 config_version: "2"
 interval: {{interval}}
 request.method: "GET"
+{{#if enable_request_tracer}}
+request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+{{/if}}
 
 {{#if url}}
 request.url: {{url}}
@@ -35,6 +38,7 @@ request.transforms:
 
 response.split:
   target: body.results
+  keep_parent: true
 
 response.pagination:
 - set:

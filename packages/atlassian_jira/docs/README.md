@@ -2,6 +2,12 @@
 
 The Jira integration collects audit logs from the audit log files or the [audit API](https://confluence.atlassian.com/jiracore/audit-log-improvements-for-developers-1019401815.html).
 
+## Authentication Set-Up
+
+When setting up the Atlassian Jira Integration for Atlassian Cloud you will need to use the "Jira User Identifier" and "Jira API Token" fields in the integration configuration. These will allow connection to the [Atlassian Cloud REST API](https://developer.atlassian.com/cloud/jira/platform/basic-auth-for-rest-apis/) via [Basic Authentication](https://developer.atlassian.com/server/jira/platform/basic-authentication/).
+
+If you are using a self-hosted instance, you will be able to use either the "Jira User Identifier" and "Jira API Token" fields above, *or* use the "Personal Access Token" field to [authenticate with a PAT](https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html). If the "Personal Access Token" field is set in the configuration, it will take precedence over the User ID/API Token fields. 
+
 ## Logs
 
 ### Audit
@@ -33,10 +39,10 @@ The Jira integration collects audit logs from the audit log files or the audit A
 | error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
@@ -115,13 +121,13 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-22T00:31:52.991Z",
+    "@timestamp": "2021-11-22T00:05:08.514Z",
     "agent": {
-        "ephemeral_id": "970494dc-6fd0-4e64-bd87-6d1fc7deba3f",
-        "id": "82d0dfd8-3946-4ac0-a092-a9146a71e3f7",
+        "ephemeral_id": "4a05fc27-d72e-43ab-aa6e-e19105807ecd",
+        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.8.0"
     },
     "data_stream": {
         "dataset": "atlassian_jira.audit",
@@ -129,57 +135,80 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "82d0dfd8-3946-4ac0-a092-a9146a71e3f7",
-        "snapshot": false,
-        "version": "8.0.0-beta1"
+        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
+        "snapshot": true,
+        "version": "8.8.0"
     },
     "event": {
-        "action": "atlassian.audit.event.action.audit.search",
+        "action": "jira.auditing.group.created",
         "agent_id_status": "verified",
-        "created": "2021-12-24T00:59:55.629Z",
+        "category": [
+            "iam"
+        ],
         "dataset": "atlassian_jira.audit",
-        "ingested": "2021-12-24T00:59:56Z",
+        "ingested": "2023-05-09T21:23:48Z",
         "kind": "event",
-        "original": "{\"affectedObjects\":[],\"author\":{\"avatarUri\":\"\",\"id\":\"10000\",\"name\":\"test.user\",\"type\":\"ApplicationUser\",\"uri\":\"http://jira.internal:8088/secure/ViewProfile.jspa?name=test.user\"},\"changedValues\":[],\"extraAttributes\":[{\"name\":\"ID Range\",\"nameI18nKey\":\"atlassian.audit.event.attribute.id\",\"value\":\"41 - 90\"},{\"name\":\"Query\",\"nameI18nKey\":\"atlassian.audit.event.attribute.query\",\"value\":\"\"},{\"name\":\"Results returned\",\"nameI18nKey\":\"atlassian.audit.event.attribute.results\",\"value\":\"50\"},{\"name\":\"Timestamp Range\",\"nameI18nKey\":\"atlassian.audit.event.attribute.timestamp\",\"value\":\"2021-11-22T00:08:33.887Z - 2021-11-22T00:31:37.412Z\"}],\"method\":\"Browser\",\"source\":\"10.50.33.72\",\"system\":\"http://jira.internal:8088\",\"timestamp\":\"2021-11-22T00:31:52.991Z\",\"type\":{\"action\":\"Audit Log search performed\",\"actionI18nKey\":\"atlassian.audit.event.action.audit.search\",\"category\":\"Auditing\",\"categoryI18nKey\":\"atlassian.audit.event.category.audit\"}}",
-        "type": "info"
+        "original": "{\"affectedObjects\":[{\"name\":\"jira-software-users\",\"type\":\"GROUP\"}],\"auditType\":{\"action\":\"Group created\",\"actionI18nKey\":\"jira.auditing.group.created\",\"area\":\"USER_MANAGEMENT\",\"category\":\"group management\",\"categoryI18nKey\":\"jira.auditing.category.groupmanagement\",\"level\":\"BASE\"},\"author\":{\"id\":\"-2\",\"name\":\"Anonymous\",\"type\":\"user\"},\"changedValues\":[],\"extraAttributes\":[],\"method\":\"Browser\",\"source\":\"10.50.33.72\",\"system\":\"http://jira.internal:8088\",\"timestamp\":{\"epochSecond\":1637539508,\"nano\":514000000},\"version\":\"1.0\"}",
+        "type": [
+            "group",
+            "creation"
+        ]
+    },
+    "group": {
+        "name": "jira-software-users"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "cff3d165179d4aef9596ddbb263e3adb",
+        "ip": [
+            "172.23.0.7"
+        ],
+        "mac": [
+            "02-42-AC-17-00-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.5 LTS (Focal Fossa)"
+        }
     },
     "input": {
-        "type": "httpjson"
+        "type": "log"
     },
     "jira": {
         "audit": {
-            "extra_attributes": [
+            "affected_objects": [
                 {
-                    "name": "ID Range",
-                    "nameI18nKey": "atlassian.audit.event.attribute.id",
-                    "value": "41 - 90"
-                },
-                {
-                    "name": "Query",
-                    "nameI18nKey": "atlassian.audit.event.attribute.query"
-                },
-                {
-                    "name": "Results returned",
-                    "nameI18nKey": "atlassian.audit.event.attribute.results",
-                    "value": "50"
-                },
-                {
-                    "name": "Timestamp Range",
-                    "nameI18nKey": "atlassian.audit.event.attribute.timestamp",
-                    "value": "2021-11-22T00:08:33.887Z - 2021-11-22T00:31:37.412Z"
+                    "name": "jira-software-users",
+                    "type": "GROUP"
                 }
             ],
             "method": "Browser",
             "type": {
-                "action": "Audit Log search performed",
-                "actionI18nKey": "atlassian.audit.event.action.audit.search",
-                "category": "Auditing",
-                "categoryI18nKey": "atlassian.audit.event.category.audit"
+                "action": "Group created",
+                "actionI18nKey": "jira.auditing.group.created",
+                "area": "USER_MANAGEMENT",
+                "category": "group management",
+                "categoryI18nKey": "jira.auditing.category.groupmanagement",
+                "level": "BASE"
             }
         }
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/test-audit.log"
+        },
+        "offset": 0
     },
     "related": {
         "hosts": [
@@ -189,7 +218,7 @@ An example event for `audit` looks as following:
             "10.50.33.72"
         ],
         "user": [
-            "test.user"
+            "Anonymous"
         ]
     },
     "service": {
@@ -201,12 +230,11 @@ An example event for `audit` looks as following:
     },
     "tags": [
         "preserve_original_event",
-        "forwarded",
         "jira-audit"
     ],
     "user": {
-        "id": "10000",
-        "name": "test.user"
+        "id": "-2",
+        "name": "Anonymous"
     }
 }
 ```

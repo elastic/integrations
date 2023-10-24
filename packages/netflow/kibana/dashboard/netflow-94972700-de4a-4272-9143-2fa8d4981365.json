@@ -1,88 +1,349 @@
 {
     "attributes": {
         "description": "Netflow flow records",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [
-                    {
-                        "$state": {
-                            "store": "globalState"
-                        },
-                        "meta": {
-                            "alias": null,
-                            "disabled": false,
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "data_stream.dataset",
-                            "negate": false,
-                            "params": {
-                                "query": "netflow.log"
-                            },
-                            "type": "phrase",
-                            "value": "netflow.log"
-                        },
-                        "query": {
-                            "match": {
-                                "data_stream.dataset": {
-                                    "query": "netflow.log",
-                                    "type": "phrase"
-                                }
-                            }
-                        }
-                    }
-                ],
-                "highlightAll": true,
+                "filter": [],
                 "query": {
                     "language": "kuery",
                     "query": ""
-                },
-                "version": true
+                }
             }
         },
         "optionsJSON": {
-            "darkTheme": false
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
         },
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-5a9727c2-9290-4b96-8433-1c935f940183",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "8ec4ab51-fcfb-456f-a7a1-827294007e94",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "5a9727c2-9290-4b96-8433-1c935f940183": {
+                                            "columnOrder": [
+                                                "407ecb91-70e2-402d-9093-841b8d95524e",
+                                                "c0330834-0cc5-46b2-a614-eefd1b15b5fa",
+                                                "63e601c0-acf8-48e6-a3a8-c64d68bfe7c5"
+                                            ],
+                                            "columns": {
+                                                "407ecb91-70e2-402d-9093-841b8d95524e": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "Timeline",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "ignoreTimeRange": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "30s"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "event.end"
+                                                },
+                                                "63e601c0-acf8-48e6-a3a8-c64d68bfe7c5": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Flow Records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "c0330834-0cc5-46b2-a614-eefd1b15b5fa": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": true,
+                                                    "label": "Version",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "63e601c0-acf8-48e6-a3a8-c64d68bfe7c5",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "netflow.exporter.version"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "8ec4ab51-fcfb-456f-a7a1-827294007e94",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "netflow.log"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "netflow.log"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": -90
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "63e601c0-acf8-48e6-a3a8-c64d68bfe7c5"
+                                        ],
+                                        "isHistogram": true,
+                                        "layerId": "5a9727c2-9290-4b96-8433-1c935f940183",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "bar_stacked",
+                                        "simpleView": false,
+                                        "splitAccessor": "c0330834-0cc5-46b2-a614-eefd1b15b5fa",
+                                        "xAccessor": "407ecb91-70e2-402d-9093-841b8d95524e",
+                                        "xScaleType": "time",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "63e601c0-acf8-48e6-a3a8-c64d68bfe7c5"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": false,
+                                "yLeftExtent": {
+                                    "enforce": true,
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightScale": "linear",
+                                "yTitle": "Count"
+                            }
+                        },
+                        "title": "Flow Records [Logs Netflow] (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 8,
+                    "h": 11,
                     "i": "2",
                     "w": 36,
                     "x": 12,
                     "y": 4
                 },
                 "panelIndex": "2",
-                "panelRefName": "panel_2",
-                "type": "visualization",
-                "version": "7.3.0"
+                "title": "[Logs Netflow] Flow Records",
+                "type": "lens",
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "vis": {
-                        "defaultColors": {
-                            "0 - 100": "rgb(0,104,55)"
-                        }
-                    }
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-e3838936-fa5d-4f5c-8089-b49b27dc0deb",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "0c428bc6-3a9e-4dec-a228-ec97fd8dc5dd",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "e3838936-fa5d-4f5c-8089-b49b27dc0deb": {
+                                            "columnOrder": [
+                                                "85c25222-c999-4948-8bf6-9bdf6af9903b"
+                                            ],
+                                            "columns": {
+                                                "85c25222-c999-4948-8bf6-9bdf6af9903b": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Flow Records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "0c428bc6-3a9e-4dec-a228-ec97fd8dc5dd",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "netflow.log"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "netflow.log"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "e3838936-fa5d-4f5c-8089-b49b27dc0deb",
+                                "layerType": "data",
+                                "metricAccessor": "85c25222-c999-4948-8bf6-9bdf6af9903b"
+                            }
+                        },
+                        "title": "Flow Records [Logs Netflow] (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {}
                 },
                 "gridData": {
-                    "h": 8,
+                    "h": 11,
                     "i": "3",
                     "w": 12,
                     "x": 0,
                     "y": 4
                 },
                 "panelIndex": "3",
-                "panelRefName": "panel_3",
-                "type": "visualization",
-                "version": "7.3.0"
+                "type": "lens",
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "markdown": "[Overview](#/dashboard/netflow-34e26884-161a-4448-9556-43b5bf2f62a2) | [Conversation Partners](#/dashboard/netflow-acd7a630-0c71-4840-bc9e-4a3801374a32) | [Traffic Analysis](#/dashboard/netflow-38012abe-c611-4124-8497-381fcd85acc8) | [Top-N](#/dashboard/netflow-14387a13-53bc-43a4-b9cd-63977aa8d87c) | [Geo Location](#/dashboard/netflow-77326664-23be-4bf1-a126-6d7e60cfc024) | [Autonomous Systems](#/dashboard/netflow-c64665f9-d222-421e-90b0-c7310d944b8a) | [Flow Exporters](#/dashboard/netflow-feebb4e6-b13e-4e4e-b9fc-d3a178276425) | [Raw Flow Records](#/dashboard/netflow-94972700-de4a-4272-9143-2fa8d4981365)\n***"
+                        },
+                        "title": "Dashboard Navigation [Logs Netflow]",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
                 },
                 "gridData": {
                     "h": 4,
@@ -92,9 +353,8 @@
                     "y": 0
                 },
                 "panelIndex": "4",
-                "panelRefName": "panel_4",
                 "type": "visualization",
-                "version": "7.3.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -114,47 +374,48 @@
                     ]
                 },
                 "gridData": {
-                    "h": 16,
+                    "h": 23,
                     "i": "5",
                     "w": 48,
                     "x": 0,
-                    "y": 12
+                    "y": 15
                 },
                 "panelIndex": "5",
                 "panelRefName": "panel_5",
                 "type": "search",
-                "version": "7.3.0"
+                "version": "8.7.1"
             }
         ],
         "timeRestore": false,
         "title": "[Logs Netflow] Flow records",
         "version": 1
     },
-    "coreMigrationVersion": "8.0.0",
+    "coreMigrationVersion": "8.7.1",
+    "created_at": "2023-07-19T09:38:28.784Z",
     "id": "netflow-94972700-de4a-4272-9143-2fa8d4981365",
     "migrationVersion": {
-        "dashboard": "8.0.0"
+        "dashboard": "8.7.0"
     },
     "references": [
         {
             "id": "logs-*",
-            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "name": "2:indexpattern-datasource-layer-5a9727c2-9290-4b96-8433-1c935f940183",
             "type": "index-pattern"
         },
         {
-            "id": "netflow-4bb0255e-18ed-45e4-bfb9-de8e35b12094",
-            "name": "2:panel_2",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "2:8ec4ab51-fcfb-456f-a7a1-827294007e94",
+            "type": "index-pattern"
         },
         {
-            "id": "netflow-c27c6a3b-93ee-44d5-8d0c-9b097e575f52",
-            "name": "3:panel_3",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "3:indexpattern-datasource-layer-e3838936-fa5d-4f5c-8089-b49b27dc0deb",
+            "type": "index-pattern"
         },
         {
-            "id": "netflow-d4e6520a-9ced-47c9-a8f2-7246e8cbd2d3",
-            "name": "4:panel_4",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "3:0c428bc6-3a9e-4dec-a228-ec97fd8dc5dd",
+            "type": "index-pattern"
         },
         {
             "id": "netflow-a34c6611-79d8-4b50-ae3f-8b328d28e24a",

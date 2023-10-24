@@ -1,0 +1,38 @@
+{
+    "id": "9482a2bf-7e11-59eb-9d09-1e0c06cc1d8e",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "None",
+            "default_value": "See the Amazon EKS documentation for the default value.\n",
+            "references": "1. https://github.com/kubernetes/kubernetes/pull/41912\n2. https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet-tls-bootstrapping/#kubelet-configuration\n3. https://kubernetes.io/docs/imported/release/notes/\n4. https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/\n5. https://kubernetes.io/docs/tasks/administer-cluster/reconfigure-kubelet/",
+            "id": "9482a2bf-7e11-59eb-9d09-1e0c06cc1d8e",
+            "name": "Ensure that the --rotate-certificates argument is not set to false",
+            "profile_applicability": "* Level 2",
+            "description": "Enable kubelet client certificate rotation.",
+            "rationale": "The `--rotate-certificates` setting causes the kubelet to rotate its client certificates by creating new CSRs as its existing credentials expire.\nThis automated periodic rotation ensures that the there is no downtime due to expired certificates and thus addressing availability in the CIA security triad.\n\n**Note:** This recommendation only applies if you let kubelets get their certificates from the API server.\nIn case your kubelet certificates come from an outside authority/tool (e.g.\nVault) then you need to take care of rotation yourself.\n\n**Note:** This feature also require the `RotateKubeletClientCertificate` feature gate to be enabled (which is the default since Kubernetes v1.7)",
+            "audit": "**Audit Method 1:**\n\nIf using a Kubelet configuration file, check that there is an entry for `--rotate-certificates` set to `false`.\n\nFirst, SSH to the relevant node:\n\nRun the following command on each node to find the appropriate Kubelet config file:\n\n```\nps -ef | grep kubelet\n```\nThe output of the above command should return something similar to `--config /etc/kubernetes/kubelet/kubelet-config.json` which is the location of the Kubelet config file.\n\nOpen the Kubelet config file:\n```\ncat /etc/kubernetes/kubelet/kubelet-config.json\n```\n\nVerify that the `RotateCertificate` argument is not present, or is set to `true`.\n\nIf the `--rotate-certificates` argument is not present, verify that if there is a Kubelet config file specified by `--config`, that file does not contain `rotateCertificates: false`.",
+            "remediation": "**Remediation Method 1:**\n\nIf modifying the Kubelet config file, edit the kubelet-config.json file `/etc/kubernetes/kubelet/kubelet-config.json` and set the below parameter to false\n\n```\n\"RotateCertificate\":true\n```\n\n**Remediation Method 2:**\n\nIf using executable arguments, edit the kubelet service file `/etc/systemd/system/kubelet.service.d/10-kubelet-args.conf` on each worker node and add the below parameter at the end of the `KUBELET_ARGS` variable string.\n\n```\n--RotateCertificate=true\n```",
+            "section": "Kubelet",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "EKS",
+                "CIS 3.2.10",
+                "Kubelet"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Elastic Kubernetes Service (EKS)",
+                "version": "v1.0.1",
+                "id": "cis_eks",
+                "rule_number": "3.2.10",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_3_2_10"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

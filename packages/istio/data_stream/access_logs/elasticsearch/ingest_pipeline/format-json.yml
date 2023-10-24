@@ -1,0 +1,134 @@
+---
+description: Pipeline for processing Istio access logs in JSON format
+processors:
+  - json:
+      field: event.original
+      target_field: json
+  - rename:
+      field: json.start_time
+      target_field: istio.access.start_time
+      ignore_missing: true
+  - rename:
+      field: json.method
+      target_field: http.request.method
+      ignore_missing: true
+  - rename:
+      field: json.path
+      target_field: url.original
+      ignore_missing: true
+  - rename:
+      field: json.protocol
+      target_field: istio.access.protocol
+      ignore_missing: true
+  - rename:
+      field: json.response_code
+      target_field: http.response.status_code
+      ignore_missing: true
+  - rename:
+      field: json.response_flags
+      target_field: istio.access.response.flags
+      ignore_missing: true
+  - rename:
+      field: json.response_code_details
+      target_field: istio.access.response.code_details
+      ignore_missing: true
+  - rename:
+      field: json.connection_termination_details
+      target_field: istio.access.connection_termination_details
+      ignore_missing: true
+  - rename:
+      field: json.upstream_transport_failure_reason
+      target_field: istio.access.upstream.transport_failure_reason
+      ignore_missing: true
+  - rename:
+      field: json.bytes_received
+      target_field: istio.access.bytes.received
+      ignore_missing: true
+  - rename:
+      field: json.bytes_sent
+      target_field: istio.access.bytes.sent
+      ignore_missing: true
+  - rename:
+      field: json.duration
+      target_field: istio.access.duration
+      ignore_missing: true
+  - rename:
+      field: json.upstream_service_time
+      target_field: istio.access.upstream.service_time
+      ignore_missing: true
+  - rename:
+      field: json.x_forwarded_for
+      target_field: istio.access.x_forwarded_for
+      ignore_missing: true
+  - rename:
+      field: json.user_agent
+      target_field: user_agent.original
+      ignore_missing: true
+  - rename:
+      field: json.request_id
+      target_field: http.request.id
+      ignore_missing: true
+  - rename:
+      field: json.authority
+      target_field: istio.access.authority
+      ignore_missing: true
+  - rename:
+      field: json.upstream_host
+      target_field: istio.access.upstream.host
+      ignore_missing: true
+  - rename:
+      field: json.upstream_cluster
+      target_field: istio.access.upstream.cluster
+      ignore_missing: true
+  - rename:
+      field: json.upstream_local_address
+      target_field: istio.access.upstream.local_address
+      ignore_missing: true
+  - rename:
+      field: json.downstream_local_address
+      target_field: istio.access.downstream.local_address
+      ignore_missing: true
+  - rename:
+      field: json.downstream_remote_address
+      target_field: istio.access.downstream.remote_address
+      ignore_missing: true
+  - rename:
+      field: json.requested_server_name
+      target_field: istio.access.requested_server_name
+      ignore_missing: true
+  - rename:
+      field: json.route_name
+      target_field: istio.access.route_name
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values or with string "-".
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+          }
+          map.values().removeIf(v -> v == null);
+          map.values().removeIf(v -> v == "-");
+        }
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+        }
+        handleMap(ctx);
+  - remove:
+      field: json
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

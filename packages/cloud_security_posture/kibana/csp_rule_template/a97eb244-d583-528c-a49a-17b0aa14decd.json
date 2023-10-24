@@ -1,0 +1,38 @@
+{
+    "id": "a97eb244-d583-528c-a49a-17b0aa14decd",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "All workloads which require access to the Kubernetes API will require an explicit service account to be created.",
+            "default_value": "By default the `default` service account allows for its service account token\nto be mounted\nin pods in its namespace.\n",
+            "references": "1. https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/",
+            "id": "a97eb244-d583-528c-a49a-17b0aa14decd",
+            "name": "Ensure that default service accounts are not actively used.",
+            "profile_applicability": "* Level 1 - Master Node",
+            "description": "The `default` service account should not be used to ensure that rights granted to applications can be more easily audited and reviewed.",
+            "rationale": "Kubernetes provides a `default` service account which is used by cluster workloads where no specific service account is assigned to the pod.\n\nWhere access to the Kubernetes API from a pod is required, a specific service account should be created for that pod, and rights granted to that service account.\n\nThe default service account should be configured such that it does not provide a service account token and does not have any explicit rights assignments.",
+            "audit": "For each namespace in the cluster, review the rights assigned to the default service account and ensure that it has no roles or cluster roles bound to it apart from the defaults.\n\nAdditionally ensure that the `automountServiceAccountToken: false` setting is in place for each default service account.",
+            "remediation": "Create explicit service accounts wherever a Kubernetes workload requires specific access to the Kubernetes API server.\n\nModify the configuration of each default service account to include this value \n\n```\nautomountServiceAccountToken: false\n```",
+            "section": "RBAC and Service Accounts",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 5.1.5",
+                "RBAC and Service Accounts"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "5.1.5",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_5_1_5"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

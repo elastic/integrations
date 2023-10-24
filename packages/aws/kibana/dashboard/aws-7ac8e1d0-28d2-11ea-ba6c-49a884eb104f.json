@@ -1,10 +1,45 @@
 {
+    "id": "aws-7ac8e1d0-28d2-11ea-ba6c-49a884eb104f",
+    "type": "dashboard",
+    "namespaces": [
+        "default"
+    ],
+    "updated_at": "2022-08-01T13:47:45.463Z",
+    "version": "Wzg1NiwxXQ==",
     "attributes": {
         "description": "Overview of AWS Lambda Metrics",
         "hits": 0,
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
+            "panelsJSON": "{\"c731a3c0-f448-4d8d-a738-db67205b407e\":{\"order\":0,\"width\":\"medium\",\"grow\":false,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"cloud.account.name\",\"title\":\"Account Name\",\"id\":\"c731a3c0-f448-4d8d-a738-db67205b407e\",\"selectedOptions\":[],\"enhancements\":{}}},\"72493ab1-3196-4b90-bfc2-dc9dd3566344\":{\"order\":1,\"width\":\"medium\",\"grow\":false,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"cloud.region\",\"title\":\"Region\",\"id\":\"72493ab1-3196-4b90-bfc2-dc9dd3566344\",\"enhancements\":{}}}}"
+        },
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "aws.lambda"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "aws.lambda"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -18,55 +53,262 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "title": "AWS Account Filter"
-                },
-                "gridData": {
-                    "h": 5,
-                    "i": "8f2d1b8f-fef3-4a9a-9cc8-7f0e2c65e35a",
-                    "w": 14,
-                    "x": 0,
-                    "y": 0
-                },
-                "panelIndex": "8f2d1b8f-fef3-4a9a-9cc8-7f0e2c65e35a",
-                "panelRefName": "panel_0",
-                "title": "AWS Account Filter",
-                "version": "7.3.0"
-            },
-            {
-                "embeddableConfig": {
-                    "title": "Top Errors"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-fe69eb38-dbf3-43b3-ada7-1f24e3ee7e82",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "description": "",
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "fe69eb38-dbf3-43b3-ada7-1f24e3ee7e82": {
+                                            "columnOrder": [
+                                                "14b37d18-7dc2-414d-9551-ab6e10810a81",
+                                                "97cfb9d4-558f-46be-81aa-e1db488ab1e7",
+                                                "816510e6-95de-4223-a7b4-a29078b9d888"
+                                            ],
+                                            "columns": {
+                                                "14b37d18-7dc2-414d-9551-ab6e10810a81": {
+                                                    "customLabel": false,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of aws.dimensions.FunctionName",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "816510e6-95de-4223-a7b4-a29078b9d888",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "aws.dimensions.FunctionName"
+                                                },
+                                                "816510e6-95de-4223-a7b4-a29078b9d888": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Maximum of aws.lambda.metrics.Errors.avg",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "aws.lambda.metrics.Errors.avg"
+                                                },
+                                                "97cfb9d4-558f-46be-81aa-e1db488ab1e7": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "5m"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "816510e6-95de-4223-a7b4-a29078b9d888"
+                                        ],
+                                        "layerId": "fe69eb38-dbf3-43b3-ada7-1f24e3ee7e82",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "14b37d18-7dc2-414d-9551-ab6e10810a81",
+                                        "xAccessor": "97cfb9d4-558f-46be-81aa-e1db488ab1e7"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "yTitle": ""
+                            }
+                        },
+                        "title": "Top Errors",
+                        "visualizationType": "lnsXY",
+                        "type": "lens"
+                    }
                 },
                 "gridData": {
                     "h": 10,
                     "i": "443a9699-3451-44f7-8415-99a16c3f45b3",
-                    "w": 34,
-                    "x": 14,
+                    "w": 48,
+                    "x": 0,
                     "y": 0
                 },
                 "panelIndex": "443a9699-3451-44f7-8415-99a16c3f45b3",
-                "panelRefName": "panel_1",
                 "title": "Top Errors",
-                "version": "7.3.0"
+                "version": "8.5.0",
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
-                    "title": "AWS Region Filter"
-                },
-                "gridData": {
-                    "h": 5,
-                    "i": "60a16bf0-2979-467a-b30e-05ea29547b41",
-                    "w": 14,
-                    "x": 0,
-                    "y": 5
-                },
-                "panelIndex": "60a16bf0-2979-467a-b30e-05ea29547b41",
-                "panelRefName": "panel_2",
-                "title": "AWS Region Filter",
-                "version": "7.3.0"
-            },
-            {
-                "embeddableConfig": {
-                    "title": "Lambda Function Duration in Milliseconds"
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-20849fb7-b18c-4d95-8b16-e528b21db687",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "20849fb7-b18c-4d95-8b16-e528b21db687": {
+                                            "columnOrder": [
+                                                "02e138d6-9ac1-4e46-be0a-f8b553d36ae0",
+                                                "724a72aa-1283-443e-94ae-f84d41b92d71",
+                                                "dbb9c762-ed8f-4748-8b34-28934eef22bd"
+                                            ],
+                                            "columns": {
+                                                "02e138d6-9ac1-4e46-be0a-f8b553d36ae0": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of aws.dimensions.FunctionName",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "dbb9c762-ed8f-4748-8b34-28934eef22bd",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "aws.dimensions.FunctionName"
+                                                },
+                                                "724a72aa-1283-443e-94ae-f84d41b92d71": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "5m"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "dbb9c762-ed8f-4748-8b34-28934eef22bd": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Average of aws.lambda.metrics.Duration.avg",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "aws.lambda.metrics.Duration.avg"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "dbb9c762-ed8f-4748-8b34-28934eef22bd"
+                                        ],
+                                        "layerId": "20849fb7-b18c-4d95-8b16-e528b21db687",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "02e138d6-9ac1-4e46-be0a-f8b553d36ae0",
+                                        "xAccessor": "724a72aa-1283-443e-94ae-f84d41b92d71"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "yTitle": ""
+                            }
+                        },
+                        "title": "Lambda function duration in ms",
+                        "visualizationType": "lnsXY",
+                        "type": "lens"
+                    }
                 },
                 "gridData": {
                     "h": 14,
@@ -76,13 +318,141 @@
                     "y": 10
                 },
                 "panelIndex": "349ef0d1-fea1-4b91-b95d-7a668914e10b",
-                "panelRefName": "panel_3",
                 "title": "Lambda Function Duration in Milliseconds",
-                "version": "7.3.0"
+                "version": "8.5.0",
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
-                    "title": "Top Invoked Lambda Functions"
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-000815fe-ece2-4a7c-a19d-4b6c1c4980dd",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "000815fe-ece2-4a7c-a19d-4b6c1c4980dd": {
+                                            "columnOrder": [
+                                                "88ea1130-2f49-4595-8aef-c4102a2c7c35",
+                                                "dd394e42-4f85-4c30-891d-ad1b0e127a8e"
+                                            ],
+                                            "columns": {
+                                                "88ea1130-2f49-4595-8aef-c4102a2c7c35": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of aws.dimensions.FunctionName",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "accuracyMode": false,
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "dd394e42-4f85-4c30-891d-ad1b0e127a8e",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "aws.dimensions.FunctionName"
+                                                },
+                                                "dd394e42-4f85-4c30-891d-ad1b0e127a8e": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Maximum of aws.lambda.metrics.Invocations.avg",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "aws.lambda.metrics.Invocations.avg"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "dd394e42-4f85-4c30-891d-ad1b0e127a8e"
+                                        ],
+                                        "collapseFn": "",
+                                        "layerId": "000815fe-ece2-4a7c-a19d-4b6c1c4980dd",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_horizontal_stacked",
+                                        "showGridlines": false,
+                                        "xAccessor": "88ea1130-2f49-4595-8aef-c4102a2c7c35",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "auto",
+                                                "forAccessor": "dd394e42-4f85-4c30-891d-ad1b0e127a8e"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_horizontal_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "xTitle": "",
+                                "yTitle": ""
+                            }
+                        },
+                        "title": "Top invoked",
+                        "visualizationType": "lnsXY",
+                        "type": "lens"
+                    }
                 },
                 "gridData": {
                     "h": 9,
@@ -92,13 +462,118 @@
                     "y": 24
                 },
                 "panelIndex": "048b1577-5aed-48e5-8f90-147aa3d56c1a",
-                "panelRefName": "panel_4",
                 "title": "Top Invoked Lambda Functions",
-                "version": "7.3.0"
+                "version": "8.5.0",
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
-                    "title": "Top Throttled Lambda Functions"
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-9f0dfc51-acc0-42b9-9f0e-af4e0cbcabb3",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "9f0dfc51-acc0-42b9-9f0e-af4e0cbcabb3": {
+                                            "columnOrder": [
+                                                "73bbe6a3-5bba-4556-b5aa-1f6eb37fd27a",
+                                                "3f7b4022-9ddb-4333-adb8-28a46c36f105"
+                                            ],
+                                            "columns": {
+                                                "3f7b4022-9ddb-4333-adb8-28a46c36f105": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Maximum of aws.lambda.metrics.Duration.avg",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "aws.lambda.metrics.Duration.avg"
+                                                },
+                                                "73bbe6a3-5bba-4556-b5aa-1f6eb37fd27a": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of aws.dimensions.FunctionName",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "3f7b4022-9ddb-4333-adb8-28a46c36f105",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "aws.dimensions.FunctionName"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "3f7b4022-9ddb-4333-adb8-28a46c36f105"
+                                        ],
+                                        "layerId": "9f0dfc51-acc0-42b9-9f0e-af4e0cbcabb3",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_horizontal_stacked",
+                                        "showGridlines": false,
+                                        "xAccessor": "73bbe6a3-5bba-4556-b5aa-1f6eb37fd27a"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_horizontal_stacked",
+                                "title": "Empty XY chart",
+                                "valueLabels": "show",
+                                "xTitle": "",
+                                "yTitle": ""
+                            }
+                        },
+                        "title": "Top throttled",
+                        "visualizationType": "lnsXY",
+                        "type": "lens"
+                    }
                 },
                 "gridData": {
                     "h": 9,
@@ -108,47 +583,54 @@
                     "y": 24
                 },
                 "panelIndex": "4c8e471c-45da-47be-a866-c5bfc6d28a05",
-                "panelRefName": "panel_5",
                 "title": "Top Throttled Lambda Functions",
-                "version": "7.3.0"
+                "version": "8.5.0",
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Metrics AWS] Lambda Overview",
         "version": 1
     },
-    "id": "aws-7ac8e1d0-28d2-11ea-ba6c-49a884eb104f",
     "references": [
         {
-            "id": "aws-deab0260-2981-11e9-86eb-a3a07a77f530",
-            "name": "panel_0",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         },
         {
-            "id": "aws-4bf0a740-28d1-11ea-ba6c-49a884eb104f",
-            "name": "panel_1",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "controlGroup_c731a3c0-f448-4d8d-a738-db67205b407e:optionsListDataView",
+            "type": "index-pattern"
         },
         {
-            "id": "aws-b5308940-7347-11e9-816b-07687310a99a",
-            "name": "panel_2",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "controlGroup_72493ab1-3196-4b90-bfc2-dc9dd3566344:optionsListDataView",
+            "type": "index-pattern"
         },
         {
-            "id": "aws-39dfc8d0-28cf-11ea-ba6c-49a884eb104f",
-            "name": "panel_3",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "443a9699-3451-44f7-8415-99a16c3f45b3:indexpattern-datasource-layer-fe69eb38-dbf3-43b3-ada7-1f24e3ee7e82",
+            "type": "index-pattern"
         },
         {
-            "id": "aws-1f3f00c0-28d1-11ea-ba6c-49a884eb104f",
-            "name": "panel_4",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "349ef0d1-fea1-4b91-b95d-7a668914e10b:indexpattern-datasource-layer-20849fb7-b18c-4d95-8b16-e528b21db687",
+            "type": "index-pattern"
         },
         {
-            "id": "aws-915bcd50-28d1-11ea-ba6c-49a884eb104f",
-            "name": "panel_5",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "048b1577-5aed-48e5-8f90-147aa3d56c1a:indexpattern-datasource-layer-000815fe-ece2-4a7c-a19d-4b6c1c4980dd",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "4c8e471c-45da-47be-a866-c5bfc6d28a05:indexpattern-datasource-layer-9f0dfc51-acc0-42b9-9f0e-af4e0cbcabb3",
+            "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "migrationVersion": {
+        "dashboard": "8.5.0"
+    },
+    "coreMigrationVersion": "8.5.0"
 }

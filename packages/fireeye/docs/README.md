@@ -104,7 +104,6 @@ The `nx` integration ingests network security logs from FireEye NX through TCP/U
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
 | input.type | Input type | keyword |
-| interface.name | Interface name as reported by the system. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Logs Source Raw address. | keyword |
@@ -112,6 +111,7 @@ The `nx` integration ingests network security logs from FireEye NX through TCP/U
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | observer.product | The product name of the observer. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
@@ -132,7 +132,7 @@ The `nx` integration ingests network security logs from FireEye NX through TCP/U
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| tls.client.ciphersuites | TLS cipher suites by client. | array |
+| tls.client.ciphersuites | TLS cipher suites by client. | long |
 | tls.client.fingerprint | TLS fingerprint. | keyword |
 | tls.client.issuer | Distinguished name of subject of the issuer of the x.509 certificate presented by the client. | keyword |
 | tls.client.ja3 | A hash that identifies clients based on how they perform an SSL/TLS handshake. | keyword |
@@ -141,12 +141,12 @@ The `nx` integration ingests network security logs from FireEye NX through TCP/U
 | tls.client.not_before | Date/Time indicating when client certificate is first considered valid. | date |
 | tls.client.server_name | Also called an SNI, this tells the server which hostname to which the client is attempting to connect to. When this value is available, it should get copied to `destination.domain`. | keyword |
 | tls.client.subject | Distinguished name of subject of the x.509 certificate presented by the client. | keyword |
-| tls.client.tls_exts | TLS extensions set by client. | array |
+| tls.client.tls_exts | TLS extensions set by client. | long |
 | tls.public_keylength | TLS public key length. | long |
-| tls.server.ciphersuite | TLS cipher suites by server. | array |
+| tls.server.ciphersuite | TLS cipher suites by server. | long |
 | tls.server.ja3s | A hash that identifies servers based on how they perform an SSL/TLS handshake. | keyword |
 | tls.server.ja3s_string | A hash that identifies servers based on how they perform an SSL/TLS handshake. | keyword |
-| tls.server.tls_exts | TLS extensions set by server. | array |
+| tls.server.tls_exts | TLS extensions set by server. | long |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
@@ -175,11 +175,11 @@ An example event for `nx` looks as following:
 {
     "@timestamp": "2020-09-22T08:34:44.991Z",
     "agent": {
-        "ephemeral_id": "9c10aabf-b5f2-46d4-af8d-eccd5dfe3597",
-        "id": "2411eb51-1c57-41d1-962f-cd06ac57198b",
+        "ephemeral_id": "dff6c436-37c3-4536-bdf9-08aed3ed94bd",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.0"
+        "version": "8.10.1"
     },
     "data_stream": {
         "dataset": "fireeye.nx",
@@ -194,12 +194,12 @@ An example event for `nx` looks as following:
         "port": 10001
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "2411eb51-1c57-41d1-962f-cd06ac57198b",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.10.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -207,7 +207,7 @@ An example event for `nx` looks as following:
             "network"
         ],
         "dataset": "fireeye.nx",
-        "ingested": "2022-05-12T06:20:01Z",
+        "ingested": "2023-09-25T20:05:32Z",
         "original": "{\"rawmsg\":\"{\\\"timestamp\\\":\\\"2020-09-22T08:34:44.991339+0000\\\",\\\"flow_id\\\":721570461162990,\\\"event_type\\\":\\\"flow\\\",\\\"src_ip\\\":\\\"fe80:0000:0000:0000:feec:daff:fe31:b706\\\",\\\"src_port\\\":45944,\\\"dest_ip\\\":\\\"ff02:0000:0000:0000:0000:0000:0000:0001\\\",\\\"dest_port\\\":10001,\\\"proto\\\":\\\"UDP\\\",\\\"proto_number\\\":17,\\\"ip_tc\\\":0,\\\"app_proto\\\":\\\"failed\\\",\\\"flow\\\":{\\\"pkts_toserver\\\":8,\\\"pkts_toclient\\\":0,\\\"bytes_toserver\\\":1680,\\\"bytes_toclient\\\":0,\\\"start\\\":\\\"2020-09-22T08:34:12.761326+0000\\\",\\\"end\\\":\\\"2020-09-22T08:34:12.761348+0000\\\",\\\"age\\\":0,\\\"state\\\":\\\"new\\\",\\\"reason\\\":\\\"timeout\\\",\\\"alerted\\\":false}}\\n\",\"meta_sip4\":\"192.168.1.99\",\"meta_oml\":520,\"deviceid\":\"860665216674\",\"meta_cbname\":\"fireeye-7e0de1\"}",
         "timezone": "+00:00",
         "type": [
@@ -231,11 +231,12 @@ An example event for `nx` looks as following:
         "architecture": "x86_64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
+        "id": "28da52b32df94b50aff67dfb8f1be3d6",
         "ip": [
-            "192.168.16.7"
+            "192.168.80.5"
         ],
         "mac": [
-            "02:42:c0:a8:10:07"
+            "02-42-C0-A8-50-05"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -245,7 +246,7 @@ An example event for `nx` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "input": {

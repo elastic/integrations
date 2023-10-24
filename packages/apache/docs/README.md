@@ -19,8 +19,10 @@ Access logs collects the Apache access logs.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| apache.access.ssl.cipher | SSL cipher name. | keyword |
+| apache.access.remote_addresses | An array of remote addresses. It is a list because it is common to include, besides the client IP address, IP addresses from headers like `X-Forwarded-For`. | keyword |
+| apache.access.ssl.cipher | SSL cipher name. - name: nginx.access | keyword |
 | apache.access.ssl.protocol | SSL protocol version. | keyword |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -37,7 +39,7 @@ Access logs collects the Apache access logs.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| destination.domain | Destination domain. | keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
@@ -65,7 +67,7 @@ Access logs collects the Apache access logs.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
@@ -75,13 +77,14 @@ Access logs collects the Apache access logs.
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Log offset | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
 | process.pid | Process id. | long |
 | process.thread.id | Thread ID. | long |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -113,6 +116,24 @@ Access logs collects the Apache access logs.
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
 
+
+Supported format for the access logs are:
+
+- [Common Log Format](https://en.wikipedia.org/wiki/Common_Log_Format)
+  - Defined in apache `LogFormat` by : 
+    >```%h %l %u %t \"%r\" %>s %b```
+  - Example:
+    > `127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326`
+- Combined Log Format
+  - Defined in apache `LogFormat` by:
+    >```%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"```
+  - Example:
+    >```127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 "http://datawarehouse.us.oracle.com/datamining/contents.htm" "Mozilla/4.7 [en] (WinNT; I)"```
+- Combined Log Format + X-Forwarded-For header
+  - Defined in apache `LogFormat` by:
+    >```%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" X-Forwarded-For=\"%{X-Forwarded-For}i\"```
+  - Example:
+    >```127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 "http://datawarehouse.us.oracle.com/datamining/contents.htm" "Mozilla/4.7 [en] (WinNT; I)" X-Forwarded-For="10.225.192.17, 10.2.2.121"```
 
 ### Error Logs
 
@@ -168,7 +189,7 @@ Error logs collects the Apache error logs.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
@@ -221,104 +242,114 @@ An example event for `status` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-12-03T16:31:04.445Z",
+    "@timestamp": "2022-12-09T03:56:04.531Z",
+    "agent": {
+        "ephemeral_id": "de9a4641-fef3-4e54-b95a-cd2c722fb9d3",
+        "id": "46343e0c-0d8c-464b-a216-cacf63027d6f",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.5.0"
+    },
+    "apache": {
+        "status": {
+            "bytes_per_request": 0,
+            "bytes_per_sec": 0,
+            "connections": {
+                "async": {
+                    "closing": 0,
+                    "keep_alive": 0,
+                    "writing": 0
+                },
+                "total": 0
+            },
+            "cpu": {
+                "children_system": 0,
+                "children_user": 0,
+                "load": 0.133333,
+                "system": 0.01,
+                "user": 0.01
+            },
+            "load": {
+                "1": 1.79,
+                "15": 1.04,
+                "5": 1.5
+            },
+            "requests_per_sec": 0.933333,
+            "scoreboard": {
+                "closing_connection": 0,
+                "dns_lookup": 0,
+                "gracefully_finishing": 0,
+                "idle_cleanup": 0,
+                "keepalive": 0,
+                "logging": 0,
+                "open_slot": 325,
+                "reading_request": 0,
+                "sending_reply": 1,
+                "starting_up": 0,
+                "total": 400,
+                "waiting_for_connection": 74
+            },
+            "total_accesses": 14,
+            "total_bytes": 0,
+            "uptime": {
+                "server_uptime": 15,
+                "uptime": 15
+            },
+            "workers": {
+                "busy": 1,
+                "idle": 74
+            }
+        }
+    },
     "data_stream": {
-        "type": "metrics",
         "dataset": "apache.status",
-        "namespace": "ep"
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "version": "7.11.0",
-        "id": "6c69e2bc-7bb3-4bac-b7e9-41f22558321c",
-        "snapshot": true
+        "id": "46343e0c-0d8c-464b-a216-cacf63027d6f",
+        "snapshot": false,
+        "version": "8.5.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "apache.status",
+        "duration": 6186792,
+        "ingested": "2022-12-09T03:56:04Z",
+        "module": "apache"
     },
     "host": {
-        "os": {
-            "platform": "centos",
-            "version": "7 (Core)",
-            "family": "redhat",
-            "name": "CentOS Linux",
-            "kernel": "4.9.184-linuxkit",
-            "codename": "Core"
-        },
-        "id": "06c26569966fd125c15acac5d7feffb6",
-        "name": "4942ef7a8cfc",
-        "containerized": true,
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "66392b0697b84641af8006d87aeb89f1",
         "ip": [
-            "192.168.0.4"
+            "172.18.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:00:04"
+            "02-42-AC-12-00-07"
         ],
-        "hostname": "4942ef7a8cfc",
-        "architecture": "x86_64"
-    },
-    "agent": {
-        "hostname": "4942ef7a8cfc",
-        "ephemeral_id": "8371d3a3-5321-4436-9fd5-cafcabfe4c57",
-        "id": "af6f66ef-d7d0-4784-b9bb-3fddbcc151b5",
-        "name": "4942ef7a8cfc",
-        "type": "metricbeat",
-        "version": "7.11.0"
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.15.49-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.5 LTS (Focal Fossa)"
+        }
     },
     "metricset": {
         "name": "status",
         "period": 30000
     },
     "service": {
-        "address": "http://elastic-package-service_apache_1:80/server-status?auto=",
+        "address": "http://elastic-package-service-apache-1:80/server-status?auto=",
         "type": "apache"
-    },
-    "apache": {
-        "status": {
-            "load": {
-                "5": 1.89,
-                "15": 1.07,
-                "1": 1.53
-            },
-            "total_accesses": 11,
-            "connections": {
-                "total": 0,
-                "async": {
-                    "closing": 0,
-                    "writing": 0,
-                    "keep_alive": 0
-                }
-            },
-            "requests_per_sec": 0.916667,
-            "scoreboard": {
-                "starting_up": 0,
-                "keepalive": 0,
-                "sending_reply": 1,
-                "logging": 0,
-                "gracefully_finishing": 0,
-                "dns_lookup": 0,
-                "closing_connection": 0,
-                "open_slot": 325,
-                "total": 400,
-                "idle_cleanup": 0,
-                "waiting_for_connection": 74,
-                "reading_request": 0
-            },
-            "bytes_per_sec": 0,
-            "bytes_per_request": 0,
-            "uptime": {
-                "server_uptime": 12,
-                "uptime": 12
-            },
-            "total_bytes": 0,
-            "workers": {
-                "busy": 1,
-                "idle": 74
-            },
-            "cpu": {
-                "load": 0.583333,
-                "user": 0.03,
-                "system": 0.04,
-                "children_user": 0,
-                "children_system": 0
-            }
-        }
     }
 }
 ```
@@ -328,6 +359,7 @@ An example event for `status` looks as following:
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id |  | keyword |  |  |
 | apache.status.bytes_per_request | Bytes per request. | scaled_float |  | gauge |
 | apache.status.bytes_per_sec | Bytes per second. | scaled_float |  | gauge |
 | apache.status.connections.async.closing | Async closed connections. | long |  | gauge |

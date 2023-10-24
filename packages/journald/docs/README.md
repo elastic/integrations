@@ -5,6 +5,131 @@ The journald input reads the log data and the metadata associated with it.
 
 The journald input is available on Linux systems with `systemd` installed.
 
+An example event looks as follows:
+
+```json
+{
+    "@timestamp": "2020-07-22T13:17:10.012Z",
+    "agent": {
+        "ephemeral_id": "f7858fe6-ce04-46d6-83c3-f45a4e019395",
+        "id": "26693255-8a33-48c9-87cc-3d5f846c4bcd",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.11.0"
+    },
+    "data_stream": {
+        "dataset": "journald.logs",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "26693255-8a33-48c9-87cc-3d5f846c4bcd",
+        "snapshot": true,
+        "version": "8.11.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "code": "ec387f577b844b8fa948f33cad9a75e6",
+        "created": "2023-10-02T18:19:38.048Z",
+        "dataset": "journald.logs",
+        "ingested": "2023-10-02T18:19:41Z",
+        "kind": "event"
+    },
+    "host": {
+        "hostname": "sleipnir",
+        "id": "505afdafda3b4f33a63749ae39284742"
+    },
+    "input": {
+        "type": "journald"
+    },
+    "journald": {
+        "custom": {
+            "available": "0",
+            "available_pretty": "0B",
+            "current_use": "1023455232",
+            "current_use_pretty": "976.0M",
+            "disk_available": "6866636800",
+            "disk_available_pretty": "6.3G",
+            "disk_keep_free": "1466253312",
+            "disk_keep_free_pretty": "1.3G",
+            "journal_name": "System journal",
+            "journal_path": "/var/log/journal/505afdafda3b4f33a63749ae39284742",
+            "limit": "977502208",
+            "limit_pretty": "932.2M",
+            "max_use": "977502208",
+            "max_use_pretty": "932.2M"
+        },
+        "gid": 0,
+        "host": {
+            "boot_id": "fa3c2e3080dc4cd5be5cb5a43e140d51"
+        },
+        "pid": 19317,
+        "process": {
+            "capabilities": "25402800cf",
+            "command_line": "/lib/systemd/systemd-journald",
+            "executable": "/lib/systemd/systemd-journald",
+            "name": "systemd-journal"
+        },
+        "uid": 0
+    },
+    "log": {
+        "syslog": {
+            "appname": "systemd-journald",
+            "facility": {
+                "code": 3
+            },
+            "priority": 6
+        }
+    },
+    "message": "System journal (/var/log/journal/505afdafda3b4f33a63749ae39284742) is 976.0M, max 932.2M, 0B free.",
+    "process": {
+        "args": [
+            "/lib/systemd/systemd-journald"
+        ],
+        "args_count": 1,
+        "command_line": "/lib/systemd/systemd-journald",
+        "pid": 19317,
+        "thread": {
+            "capabilities": {
+                "effective": [
+                    "CAP_CHOWN",
+                    "CAP_DAC_OVERRIDE",
+                    "CAP_DAC_READ_SEARCH",
+                    "CAP_FOWNER",
+                    "CAP_SETGID",
+                    "CAP_SETUID",
+                    "CAP_SYS_PTRACE",
+                    "CAP_SYS_ADMIN",
+                    "CAP_AUDIT_CONTROL",
+                    "CAP_MAC_OVERRIDE",
+                    "CAP_SYSLOG",
+                    "CAP_AUDIT_READ"
+                ]
+            }
+        }
+    },
+    "systemd": {
+        "cgroup": "/system.slice/systemd-journald.service",
+        "invocation_id": "7c11cda63635437bafe21c92851618a8",
+        "slice": "system.slice",
+        "transport": "driver",
+        "unit": "systemd-journald.service"
+    },
+    "tags": [
+        "forwarded"
+    ],
+    "user": {
+        "group": {
+            "id": "0"
+        },
+        "id": "0"
+    }
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -16,6 +141,7 @@ The journald input is available on Linux systems with `systemd` installed.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | input.type |  | keyword |
@@ -56,12 +182,13 @@ The journald input is available on Linux systems with `systemd` installed.
 | log.syslog.identifier | Identifier (usually process) contained in the syslog header. | keyword |
 | log.syslog.pid | PID contained in the syslog header. | long |
 | log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
-| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | keyword |
-| process.command_line.text | Multi-field of `process.command_line`. | text |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
+| process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
 | process.pid | Process id. | long |
+| process.thread.capabilities.effective | This is the set of capabilities used by the kernel to perform permission checks for the thread. | keyword |
 | systemd.cgroup | The control group path in the systemd hierarchy. | keyword |
 | systemd.invocation_id | The invocation ID for the runtime cycle of the unit the message was generated in, as available to processes of the unit in $INVOCATION_ID. | keyword |
 | systemd.owner_uid | The owner UID of the systemd user unit or systemd session (if any) of the process the journal entry originates from. | long |
@@ -74,4 +201,3 @@ The journald input is available on Linux systems with `systemd` installed.
 | tags | List of keywords used to tag each event. | keyword |
 | user.group.id | Unique identifier for the group on the system/platform. | keyword |
 | user.id | Unique identifier of the user. | keyword |
-

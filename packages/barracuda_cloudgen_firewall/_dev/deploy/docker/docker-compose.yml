@@ -1,0 +1,17 @@
+version: '2.3'
+services:
+  barracuda-cloudgen-lumberjack:
+    image: docker.elastic.co/observability/stream:v0.8.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=lumberjack
+      - STREAM_LUMBERJACK_PARSE_JSON=true
+      - STREAM_ADDR=tcp://elastic-agent:5044
+      - STREAM_DELAY=5s
+      - STREAM_START_SIGNAL=SIGHUP
+    # The ndjson files contain data that simulates the format of the Logstash
+    # output from the embedded Filebeat instance in Barracuda CloudGen.
+    # It contains a JSON string in the 'message' field and some additional
+    # firewall metadata (like serial number) stored in root level fields.
+    command: log /sample_logs/*.ndjson

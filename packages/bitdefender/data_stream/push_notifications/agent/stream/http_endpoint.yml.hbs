@@ -1,0 +1,55 @@
+type: http_endpoint
+enabled: true
+prefix: json
+
+{{#if listen_address}}
+listen_address: {{listen_address}}
+{{/if}}
+{{#if listen_port}}
+listen_port: {{listen_port}}
+{{/if}}
+{{#if url}}
+url: {{url}}
+{{/if}}
+
+{{#if authorization_value}}
+secret.header: Authorization
+secret.value: "{{authorization_value}}"
+{{/if}}
+
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
+
+{{#if preserve_original_event}}
+preserve_original_event: true
+{{/if}}
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- add_locale: ~
+- add_fields:
+    target: _tmp
+    fields:
+      bitdefender_id: "{{push_notification_configuration_id}}"
+      {{#if tenants}}
+      tenants:
+        {{#each tenants}}
+          {{this}}
+        {{/each}}
+      {{/if}}
+{{#if processors}}
+{{processors}}
+{{/if}}

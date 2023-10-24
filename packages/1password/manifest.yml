@@ -1,15 +1,15 @@
-format_version: 1.0.0
+format_version: "3.0.0"
 name: 1password
 title: "1Password"
-version: 1.6.0
-license: basic
+version: "1.23.1"
 description: Collect logs from 1Password with Elastic Agent.
 type: integration
 categories:
   - security
-release: ga
+  - credential_management
 conditions:
-  kibana.version: "^7.16.0 || ^8.0.0"
+  kibana:
+    version: ^8.7.1
 screenshots:
   - src: /img/1password-signinattempts-screenshot.png
     title: Sign-in attempts
@@ -31,7 +31,7 @@ policy_templates:
     inputs:
       - type: httpjson
         title: Collect events from 1Password Events API
-        description: Collect sign-in attempt and item usages from 1Password via the 1Password Events API
+        description: Collect sign-in attempt, item usages, and audit events from 1Password via the 1Password Events API
         vars:
           - name: url
             type: text
@@ -41,6 +41,13 @@ policy_templates:
             show_user: true
             required: true
             default: https://events.1password.com
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            multi: false
+            required: false
+            show_user: false
+            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
           - name: token
             type: password
             title: 1Password Authorization Token
@@ -51,6 +58,7 @@ policy_templates:
           - name: http_client_timeout
             type: text
             title: HTTP Client Timeout
+            description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
             multi: false
             required: false
             show_user: true
@@ -68,5 +76,14 @@ policy_templates:
             multi: false
             required: false
             show_user: false
+          - name: disable_keep_alive
+            required: true
+            show_user: false
+            title: Disable HTTP Keep-Alives
+            description: Controls whether HTTP keep-alives are disabled.
+            type: bool
+            multi: false
+            default: false
 owner:
   github: elastic/security-external-integrations
+  type: partner

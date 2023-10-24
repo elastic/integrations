@@ -11,21 +11,21 @@ ECS fields where applicable and the remaining fields are written under
 1. Configure this integration with the TCP input in Kibana.
 2. For all Netskope Cloud Exchange configurations refer to the [Log Shipper](https://docs.netskope.com/en/cloud-exchange-feature-lists.html#UUID-e7c43f4b-8aad-679e-eea0-59ce19f16e29_section-idm4547044691454432680066508785).
 3. In Netskope Cloud Exchange please enable Log Shipper, add your Netskope Tenant.
-4. Configure input connectors:  
+4. Configure input connectors:
     1. First with all Event types, and
-    2. Second with all Alerts type. 
+    2. Second with all Alerts type.
     For detailed steps refer to [Configure the Netskope Plugin for Log Shipper](https://docs.netskope.com/en/configure-the-netskope-plugin-for-log-shipper.html).
 5. Configure output connectors:
     1. Navigate to Settings -> Plugins.
-    2. Adding output connector **Elastic CLS**, select mapping **"Elastic Default Mappings (Recommended)"**.
-6. Create business rules: 
+    2. Add separate output connector **Elastic CLS** for both Alerts and Events and select mapping **"Elastic Default Mappings (Recommended)"** for both.
+6. Create business rules:
     1. Navigate to Home Page > Log Shipper > Business Rules.
     2. Create business rules with Netskope Alerts.
     3. Create business rules with Netskope Events.
     For detailed steps refer to [Manage Log Shipper Business Rules](https://docs.netskope.com/en/manage-log-shipper-business-rules.html).
 7. Adding SIEM mappings:
     1. Navigate to Home Page > Log Shipper > SIEM Mappings
-    2. Add SIEM mapping for events: 
+    2. Add SIEM mapping for events:
         * Add **Rule** put rule created in step 6.
         * Add **Source Configuration** put input created for Events in step 4.
         * Add **Destination Configuration**, put output created for Events in step 5.
@@ -35,7 +35,7 @@ Please make sure to use the given response formats.
 
 ## Compatibility
 
-This package has been tested against `Netskope version 95.1.0.645` and `Netskope Cloud Exchange version 3.3.1`.
+This package has been tested against `Netskope version 95.1.0.645` and `Netskope Cloud Exchange version 3.4.0`.
 
 ## Documentation and configuration
 
@@ -67,7 +67,7 @@ Default port: _9021_
 | cloud.machine.type | Machine type of the host machine. | keyword |
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |
 | cloud.service.name | The cloud service name is intended to distinguish services running on different platforms within a provider, eg AWS EC2 vs Lambda, GCP GCE vs App Engine, Azure VM vs App Server. Examples: app engine, app service, cloud run, fargate, lambda. | keyword |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
@@ -127,7 +127,7 @@ Default port: _9021_
 | netskope.alerts.acked | Whether user acknowledged the alert or not. | boolean |
 | netskope.alerts.acting.role | N/A | keyword |
 | netskope.alerts.action | Action taken on the event for the policy. | keyword |
-| netskope.alerts.activities | N/A | array |
+| netskope.alerts.activities | N/A | keyword |
 | netskope.alerts.activity.name | Description of the user performed activity. | keyword |
 | netskope.alerts.activity.status | Displayed when the user is denied access while performing some activity. | keyword |
 | netskope.alerts.activity.type | Displayed when only admins can perform the activity in question. | keyword |
@@ -225,7 +225,7 @@ Default port: _9021_
 | netskope.alerts.encryption.service.key | N/A | keyword |
 | netskope.alerts.enterprise.id | EnterpriseID in case of Slack for Enterprise. | keyword |
 | netskope.alerts.enterprise.name | Enterprise name in case of Slack for Enterprise. | keyword |
-| netskope.alerts.entity.list | N/A | array |
+| netskope.alerts.entity.list | N/A | keyword |
 | netskope.alerts.entity.type | N/A | keyword |
 | netskope.alerts.entity.value | N/A | keyword |
 | netskope.alerts.event.detail | N/A | keyword |
@@ -353,7 +353,7 @@ Default port: _9021_
 | netskope.alerts.modified.timestamp | Timestamp corresponding to the modification time of the entity (file, etc.). | long |
 | netskope.alerts.netskope_pop | N/A | keyword |
 | netskope.alerts.network.name | N/A | keyword |
-| netskope.alerts.network.security.group | N/A | array |
+| netskope.alerts.network.security.group | N/A | keyword |
 | netskope.alerts.new.value | New value for a given file for salesforce.com. | keyword |
 | netskope.alerts.nonzero.entries | N/A | long |
 | netskope.alerts.nonzero.percentage | N/A | double |
@@ -583,11 +583,11 @@ An example event for `alerts` looks as following:
 {
     "@timestamp": "2021-12-23T16:27:09.000Z",
     "agent": {
-        "ephemeral_id": "453d198d-3361-4dec-a234-45d74545d4a8",
-        "id": "900d4a66-139e-4b27-bb30-f978d742a95f",
+        "ephemeral_id": "f351413b-f36f-45a3-aa1f-1334e718f39a",
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.3.0"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "netskope.alerts",
@@ -611,17 +611,17 @@ An example event for `alerts` looks as following:
         "ip": "81.2.69.143"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "900d4a66-139e-4b27-bb30-f978d742a95f",
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
         "snapshot": false,
-        "version": "8.3.0"
+        "version": "8.9.0"
     },
     "event": {
         "agent_id_status": "verified",
         "id": "f621f259f5fbde850ad5593a",
-        "ingested": "2022-07-07T10:52:15Z"
+        "ingested": "2023-07-27T15:55:05Z"
     },
     "file": {
         "hash": {
@@ -638,7 +638,7 @@ An example event for `alerts` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.19.0.5:38528"
+            "address": "172.18.0.4:33326"
         }
     },
     "netskope": {
@@ -809,7 +809,7 @@ An example event for `alerts` looks as following:
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.hash.md5 | MD5 hash. | keyword |
@@ -1029,8 +1029,6 @@ An example event for `alerts` looks as following:
 | netskope.events.referer.query |  | keyword |
 | netskope.events.referer.scheme |  | keyword |
 | netskope.events.referer.username |  | keyword |
-| netskope.events.region | N/A | keyword |
-| netskope.events.region.id | Region ID (as provided by the cloud provider). | keyword |
 | netskope.events.repo | N/A | keyword |
 | netskope.events.request.count | Total number of HTTP requests (equal to number of transaction events for this page event) sent from client to server over one underlying TCP connection. | long |
 | netskope.events.request.id | Unique request ID for the event. | keyword |
@@ -1182,11 +1180,11 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2021-12-24T00:29:56.000Z",
     "agent": {
-        "ephemeral_id": "29426ac1-9b26-4395-82a4-fb14534ef65d",
-        "id": "900d4a66-139e-4b27-bb30-f978d742a95f",
+        "ephemeral_id": "169a2d34-f013-46a1-8cfa-0688afe7cb78",
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.3.0"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "netskope.events",
@@ -1194,17 +1192,17 @@ An example event for `events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "900d4a66-139e-4b27-bb30-f978d742a95f",
+        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
         "snapshot": false,
-        "version": "8.3.0"
+        "version": "8.9.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "netskope.events",
-        "ingested": "2022-07-07T10:53:10Z"
+        "ingested": "2023-07-27T15:55:55Z"
     },
     "event.id": "613ee55ec9d868fc47654a73",
     "input": {
@@ -1212,7 +1210,7 @@ An example event for `events` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.19.0.5:47988"
+            "address": "172.18.0.4:53214"
         }
     },
     "netskope": {

@@ -1,0 +1,38 @@
+{
+    "id": "c28e606d-f6a7-58b2-820f-e2fb702bf956",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "When implementing Endpoint Private Access, be careful to ensure all desired networks are on the allowlist (whitelist) to prevent inadvertently blocking external access to your cluster's control plane.",
+            "default_value": "By default, Endpoint Private Access is disabled.\n",
+            "references": "1. https://docs.aws.amazon.com/eks/latest/userguide/cluster-endpoint.html",
+            "id": "c28e606d-f6a7-58b2-820f-e2fb702bf956",
+            "name": "Restrict Access to the Control Plane Endpoint",
+            "profile_applicability": "* Level 1",
+            "description": "Enable Endpoint Private Access to restrict access to the cluster's control plane to only an allowlist of authorized IPs.",
+            "rationale": "Authorized networks are a way of specifying a restricted range of IP addresses that are permitted to access your cluster's control plane.\nKubernetes Engine uses both Transport Layer Security (TLS) and authentication to provide secure access to your cluster's control plane from the public internet.\nThis provides you the flexibility to administer your cluster from anywhere; however, you might want to further restrict access to a set of IP addresses that you control.\nYou can set this restriction by specifying an authorized network.\n\nRestricting access to an authorized network can provide additional security benefits for your container cluster, including:\n\n- Better protection from outsider attacks: Authorized networks provide an additional layer of security by limiting external access to a specific set of addresses you designate, such as those that originate from your premises.\nThis helps protect access to your cluster in the case of a vulnerability in the cluster's authentication or authorization mechanism.\n- Better protection from insider attacks: Authorized networks help protect your cluster from accidental leaks of master certificates from your company's premises.\nLeaked certificates used from outside Amazon EC2 and outside the authorized IP ranges (for example, from addresses outside your company) are still denied access.",
+            "audit": "Input:\n\n```\naws eks describe-cluster \\\n --region <region> \\\n --name <clustername>\n```\nOutput:\n\n```\n ...\n \"endpointPublicAccess\": false,\n \"endpointPrivateAccess\": true,\n \"publicAccessCidrs\": [\n \"203.0.113.5/32\"\n ]\n ...\n```",
+            "remediation": "Complete the following steps using the AWS CLI version 1.18.10 or later.\nYou can check your current version with aws --version.\nTo install or upgrade the AWS CLI, see Installing the AWS CLI.\n\nUpdate your cluster API server endpoint access with the following AWS CLI command.\nSubstitute your cluster name and desired endpoint access values.\nIf you set endpointPublicAccess=true, then you can (optionally) enter single CIDR block, or a comma-separated list of CIDR blocks for publicAccessCidrs.\nThe blocks cannot include reserved addresses.\nIf you specify CIDR blocks, then the public API server endpoint will only receive requests from the listed blocks.\nThere is a maximum number of CIDR blocks that you can specify.\nFor more information, see Amazon EKS Service Quotas.\nIf you restrict access to your public endpoint using CIDR blocks, it is recommended that you also enable private endpoint access so that worker nodes and Fargate pods (if you use them) can communicate with the cluster.\nWithout the private endpoint enabled, your public access endpoint CIDR sources must include the egress sources from your VPC.\nFor example, if you have a worker node in a private subnet that communicates to the internet through a NAT Gateway, you will need to add the outbound IP address of the NAT gateway as part of a whitelisted CIDR block on your public endpoint.\nIf you specify no CIDR blocks, then the public API server endpoint receives requests from all (0.0.0.0/0) IP addresses.\nNote\nThe following command enables private access and public access from a single IP address for the API server endpoint.\nReplace 203.0.113.5/32 with a single CIDR block, or a comma-separated list of CIDR blocks that you want to restrict network access to.\n\nExample command:\n```\naws eks update-cluster-config \\\n --region region-code \\\n --name dev \\\n --resources-vpc-config \\\n endpointPublicAccess=true, \\\n publicAccessCidrs=\"203.0.113.5/32\",\\\n endpointPrivateAccess=true\n```\n\nOutput:\n\n```\n{\n \"update\": {\n \"id\": \"e6f0905f-a5d4-4a2a-8c49-EXAMPLE00000\",\n \"status\": \"InProgress\",\n \"type\": \"EndpointAccessUpdate\",\n \"params\": [\n {\n \"type\": \"EndpointPublicAccess\",\n \"value\": \"true\"\n },\n {\n \"type\": \"EndpointPrivateAccess\",\n \"value\": \"true\"\n },\n {\n \"type\": \"publicAccessCidrs\",\n \"value\": \"[\\203.0.113.5/32\\\"]\"\n }\n ],\n \"createdAt\": 1576874258.137,\n \"errors\": []\n }\n```",
+            "section": "Cluster Networking",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "EKS",
+                "CIS 5.4.1",
+                "Cluster Networking"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Elastic Kubernetes Service (EKS)",
+                "version": "v1.0.1",
+                "id": "cis_eks",
+                "rule_number": "5.4.1",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_5_4_1"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

@@ -12,7 +12,7 @@ processors:
         - panw.panos.destination.nat.ip
         - panw.panos.ruleset
         - _temp_.srcuser
-        - panw.panos.destination.user
+        - _temp_.dstuser
         - panw.panos.network.application
         - panw.panos.virtual_sys
         - panw.panos.source.zone
@@ -92,6 +92,17 @@ processors:
       value:
         - network
 
+# Set event.outcome from panw.panos.action: allowable values:
+#  allow, deny, drop, drop ICMP, reset both, reset client, and reset server
+  - set:
+      if: ctx.panw?.panos?.action == "allow"
+      field: event.outcome
+      value: success
+  - set:
+      if: ctx.event?.outcome == null || ctx.event.outcome == ""
+      field: event.outcome
+      value: failure
+
 # Set custom fields to ECS fields
   - set:
       field: destination.bytes
@@ -120,10 +131,6 @@ processors:
   - set:
       field: destination.port
       copy_from: panw.panos.destination.port
-      ignore_failure: true
-  - set:
-      field: destination.user.name
-      copy_from: panw.panos.destination.user
       ignore_failure: true
   - set:
       field: event.duration
@@ -209,12 +216,11 @@ processors:
       field: source.packets
       copy_from: panw.panos.packets_sent
       ignore_failure: true
-  - set:
-      field: panw.panos.source.user
-      copy_from: _temp_.srcuser
-      ignore_failure: true
 
 on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
   - append:
       field: error.message
       value: >-

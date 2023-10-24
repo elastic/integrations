@@ -1,0 +1,20 @@
+---
+description: Pipeline for processing Istio access logs in text format
+processors:
+  - drop:
+      if: ctx.first_char != '['
+  - dissect:
+      field: event.original
+      pattern: '[%{istio.access.start_time}] %{istio.access.message}'
+  - grok:
+      field: istio.access.message
+      patterns:
+        - '"(-|%{DATA:http.request.method}) (-|%{DATA:url.original}) (-|%{DATA:istio.access.protocol})" (-|%{NUMBER:http.response.status_code}) (-|%{DATA:istio.access.response.flags}) (-|%{DATA:istio.access.response.code_details}) (-|%{DATA:istio.access.connection_termination_details}) "(-|%{DATA:istio.access.upstream.transport_failure_reason})" %{NUMBER:istio.access.bytes.received} %{NUMBER:istio.access.bytes.sent} (-|%{NUMBER:istio.access.duration}) (-|%{NUMBER:istio.access.upstream.service_time}) "(-|%{DATA:istio.access.x_forwarded_for})" "(-|%{DATA:user_agent.original})" "(-|%{DATA:http.request.id})" "(-|%{DATA:istio.access.authority})" "(-|%{DATA:istio.access.upstream.host})" (-|%{DATA:istio.access.upstream.cluster}) (-|%{DATA:istio.access.upstream.local_address}) (-|%{DATA:istio.access.downstream.local_address}) (-|%{DATA:istio.access.downstream.remote_address}) (-|%{DATA:istio.access.requested_server_name}) (-|%{GREEDYDATA:istio.access.route_name})'
+      ignore_missing: true
+  - remove:
+      field: istio.access.message
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'    

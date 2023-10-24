@@ -1,0 +1,71 @@
+---
+description: Pipeline for processing Arista NG Firewall admin login events
+processors:
+  ########################
+  ## Admin Login Events ##
+  ########################
+  - rename:
+      field: arista.reason
+      target_field: event.reason
+      ignore_missing: true
+  - rename:
+      field: arista.login
+      target_field: user.name
+      ignore_missing: true
+  - rename:
+      field: arista.clientAddress
+      target_field: source.ip
+      ignore_missing: true
+  - script:
+      lang: painless
+      params:
+        "false":
+          category:
+            - network
+            - authentication
+            - iam
+          kind: event
+          outcome: failure
+          type:
+            - denied
+          provider: admin_login
+        "true":
+          category:
+            - network
+            - authentication
+            - iam
+          kind: event
+          outcome: success
+          type:
+            - allowed
+          provider: admin_login
+      source: >-
+        if (ctx?.event == null) {
+          Map map = new HashMap();
+          ctx.put('event', map);
+        }
+        if (ctx.arista?.succeeded == null || !params.containsKey((ctx.arista.succeeded).toString())) {
+          return;
+        }
+        ctx.event.category = params.get((ctx.arista.succeeded).toString()).get('category').clone();
+        ctx.event.kind = params.get((ctx.arista.succeeded).toString()).get('kind');
+        ctx.event.outcome = params.get((ctx.arista.succeeded).toString()).get('outcome');
+        ctx.event.type = params.get((ctx.arista.succeeded).toString()).get('type').clone();
+        ctx.event.provider = params.get((ctx.arista.succeeded).toString()).get('provider');
+        ctx.arista.remove('succeeded');
+  
+  ##############
+  ## Clean Up ##
+  ##############
+  - remove:
+      description: Remove Arista fields that are not necessary after parsing to ECS
+      field:
+        - arista.local
+      ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

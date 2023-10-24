@@ -1,6 +1,5 @@
 type: synthetics
 title: synthetic monitor check
-release: experimental
 dataset: http
 ilm_policy: synthetics-synthetics.http-default_policy
 elasticsearch:
@@ -13,6 +12,7 @@ elasticsearch:
         sort.field:
           - "monitor.id"
           - "url.full.keyword"
+  privileges.indices: [auto_configure, create_doc, read]
 streams:
   - input: synthetics/http
     title: Synthetic monitor check
@@ -84,6 +84,12 @@ streams:
         multi: false
         required: false
         show_user: true
+      - name: proxy_headers
+        type: yaml
+        title: Proxy headers
+        multi: false
+        required: false
+        show_user: true
       - name: tags
         type: yaml
         title: Tags
@@ -111,6 +117,12 @@ streams:
       - name: response.include_body
         type: text
         title: Index response headers
+        multi: false
+        required: false
+        show_user: true
+      - name: response.include_body_max_bytes
+        type: text
+        title: Max bytes to include in response body when indexed
         multi: false
         required: false
         show_user: true
@@ -153,6 +165,12 @@ streams:
       - name: check.response.body.negative
         type: yaml
         title: Check response body does not include
+        multi: false
+        required: false
+        show_user: true
+      - name: check.response.json
+        type: yaml
+        title: A list of expressions executed against the body when parsed as JSON.
         multi: false
         required: false
         show_user: true
@@ -199,22 +217,57 @@ streams:
         required: false
         show_user: true
         default: "Fleet managed"
-      - name: config_id
+      - name: location_id
         type: text
-        title: Config Id
-        multi: false
-        required: false
-        show_user: false
-      - name: run_once
-        type: bool
-        title: Whether the monitor is run once
+        title: Location id
         multi: false
         required: false
         show_user: true
-        default: false
+        default: "fleet_managed"
+      - name: id
+        type: text
+        title: id
+        multi: false
+        required: false
+        show_user: false
       - name: origin
         type: text
         title: Origin of the monitor, ui or project
         multi: false
         required: false
         show_user: false
+      - name: mode
+        type: text
+        title: Heartbeat mode
+        multi: false
+        required: false
+        show_user: true   
+      - name: ipv4
+        type: bool
+        title: Use the ipv4 protocol
+        multi: false
+        required: false
+        show_user: true
+        default: true
+      - name: ipv6
+        type: bool
+        title: Use the ipv6 protocol
+        multi: false
+        required: false
+        show_user: true
+        default: true
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.
+      - name: max_attempts
+        type: integer
+        title: Max attempts
+        multi: false
+        required: false
+        show_user: true
+        default: 2

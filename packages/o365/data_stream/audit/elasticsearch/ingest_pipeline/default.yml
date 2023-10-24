@@ -2,9 +2,13 @@
 description: Pipeline for Office 365 Audit logs
 
 processors:
+  - rename:
+      field: message
+      target_field: event.original
+      if: ctx.message != null && ctx.event?.original == null
   - set:
       field: ecs.version
-      value: '8.4.0'
+      value: '8.10.0'
   - set:
       field: event.kind
       value: event
@@ -14,15 +18,31 @@ processors:
   - append:
       field: event.category
       value: web
+  - fingerprint:
+      fields:
+        - o365audit.Id
+      target_field: "_id"
+      ignore_missing: true
   # General Schema
   - date:
       field: o365audit.CreationTime
       formats:
         - ISO8601
+      if: ctx.o365audit?.CreationTime != null
   - rename:
       field: o365audit.Id
       target_field: event.id
       ignore_missing: true
+  - convert:
+      field: o365audit.ListBaseType
+      type: string
+      tag: convert-listbasetype-to-string
+      if: ctx.o365audit?.ListBaseType != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
   - rename:
       field: o365audit.ClientIPAddress
       target_field: client._temp
@@ -395,27 +415,27 @@ processors:
       field: event.type
       value: access
       if: 'ctx.event?.code == "AzureActiveDirectoryStsLogon"'
-  # SharePointFileOperation Schema
+  # SharePointFileOperation and SharePointSharingOperation Schemas
   - rename:
       field: o365audit.ObjectId
       target_field: url.original
       ignore_missing: true
-      if: ctx.event?.code == "SharePointFileOperation"
+      if: ctx.event?.code != null && ["SharePointFileOperation", "SharePointSharingOperation"].contains(ctx.event.code)
   - rename:
       field: o365audit.SourceRelativeUrl
       target_field: file.directory
       ignore_missing: true
-      if: ctx.event?.code == "SharePointFileOperation"
+      if: ctx.event?.code != null && ["SharePointFileOperation", "SharePointSharingOperation"].contains(ctx.event.code)
   - rename:
       field: o365audit.SourceFileName
       target_field: file.name
       ignore_missing: true
-      if: ctx.event?.code == "SharePointFileOperation"
+      if: ctx.event?.code != null && ["SharePointFileOperation", "SharePointSharingOperation"].contains(ctx.event.code)
   - rename:
       field: o365audit.SourceFileExtension
       target_field: file.extension
       ignore_missing: true
-      if: ctx.event?.code == "SharePointFileOperation"
+      if: ctx.event?.code != null && ["SharePointFileOperation", "SharePointSharingOperation"].contains(ctx.event.code)
   - append: 
       field: event.category
       value: file
@@ -1104,5 +1124,8 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: '{{{ _ingest.on_failure_message }}}'

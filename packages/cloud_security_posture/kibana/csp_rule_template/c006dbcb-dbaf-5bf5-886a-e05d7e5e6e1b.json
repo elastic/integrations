@@ -1,0 +1,38 @@
+{
+    "id": "c006dbcb-dbaf-5bf5-886a-e05d7e5e6e1b",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Only authorized requests will be served.",
+            "default_value": "By default, `AlwaysAllow` is not enabled.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kube-apiserver/\n2. https://kubernetes.io/docs/admin/authorization/",
+            "id": "c006dbcb-dbaf-5bf5-886a-e05d7e5e6e1b",
+            "name": "Ensure that the --authorization-mode argument is not set to AlwaysAllow",
+            "profile_applicability": "* Level 1 - Master Node",
+            "description": "Do not always authorize all requests.",
+            "rationale": "The API Server, can be configured to allow all requests.\nThis mode should not be used on any production cluster.",
+            "audit": "Run the following command on the Control Plane node:\n\n```\nps -ef | grep kube-apiserver\n```\n\nVerify that the `--authorization-mode` argument exists and is not set to `AlwaysAllow`.",
+            "remediation": "Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml` on the Control Plane node and set the `--authorization-mode` parameter to values other than `AlwaysAllow`.\nOne such example could be as below.\n\n```\n--authorization-mode=RBAC\n```",
+            "section": "API Server",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 1.2.7",
+                "API Server"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "1.2.7",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_1_2_7"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

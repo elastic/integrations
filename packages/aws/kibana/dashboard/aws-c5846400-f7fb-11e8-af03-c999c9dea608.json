@@ -1,10 +1,37 @@
 {
     "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
+            "panelsJSON": "{\"b6e54e8b-ba78-4764-ae13-20a39a167859\":{\"order\":0,\"width\":\"medium\",\"grow\":false,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"cloud.account.name\",\"title\":\"cloud.account.name\",\"id\":\"b6e54e8b-ba78-4764-ae13-20a39a167859\",\"selectedOptions\":[\"mesquiterat\"],\"enhancements\":{}}}}"
+        },
         "description": "Overview of AWS EC2 Metrics",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "aws.ec2_metrics"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "aws.ec2_metrics"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -18,7 +45,169 @@
         },
         "panelsJSON": [
             {
-                "embeddableConfig": {},
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-81045c11-0280-4a85-b142-3a7efb658183",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "81045c11-0280-4a85-b142-3a7efb658183": {
+                                            "columnOrder": [
+                                                "3dfeeaad-8bd0-4ee2-b947-af7fb6c9d14f",
+                                                "b6949db6-7a69-4d93-8e78-4db5ab3b142d",
+                                                "9bc14a51-eefa-4be1-8ba1-a851a9273ced"
+                                            ],
+                                            "columns": {
+                                                "3dfeeaad-8bd0-4ee2-b947-af7fb6c9d14f": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "9bc14a51-eefa-4be1-8ba1-a851a9273ced": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": "",
+                                                    "isBucketed": false,
+                                                    "label": "AWS EC2 DiskIO Write Bytes",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number"
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "host.disk.write.bytes"
+                                                },
+                                                "b6949db6-7a69-4d93-8e78-4db5ab3b142d": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of cloud.instance.id",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "9bc14a51-eefa-4be1-8ba1-a851a9273ced",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "cloud.instance.id"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fillOpacity": 0,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "9bc14a51-eefa-4be1-8ba1-a851a9273ced"
+                                        ],
+                                        "layerId": "81045c11-0280-4a85-b142-3a7efb658183",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "splitAccessor": "b6949db6-7a69-4d93-8e78-4db5ab3b142d",
+                                        "xAccessor": "3dfeeaad-8bd0-4ee2-b947-af7fb6c9d14f",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "rgba(104,188,0,1)",
+                                                "forAccessor": "9bc14a51-eefa-4be1-8ba1-a851a9273ced"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightScale": "linear"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
                 "gridData": {
                     "h": 15,
                     "i": "3",
@@ -27,24 +216,249 @@
                     "y": 27
                 },
                 "panelIndex": "3",
-                "panelRefName": "panel_0",
-                "version": "7.3.0"
+                "title": "EC2 DiskIO Write Bytes",
+                "type": "lens",
+                "version": "8.6.2"
             },
             {
-                "embeddableConfig": {},
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-9c4853fc-7664-4b48-97c4-856bc94b6889",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "9c4853fc-7664-4b48-97c4-856bc94b6889": {
+                                            "columnOrder": [
+                                                "ec85ba57-c17c-417d-9d1d-2b84ad163643"
+                                            ],
+                                            "columns": {
+                                                "ec85ba57-c17c-417d-9d1d-2b84ad163643": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "EC2 Status Check Failed",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number"
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "aws.ec2.metrics.StatusCheckFailed.avg"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "9c4853fc-7664-4b48-97c4-856bc94b6889",
+                                "layerType": "data",
+                                "metricAccessor": "ec85ba57-c17c-417d-9d1d-2b84ad163643"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
                 "gridData": {
                     "h": 12,
                     "i": "5",
-                    "w": 12,
-                    "x": 36,
+                    "w": 7,
+                    "x": 0,
                     "y": 0
                 },
                 "panelIndex": "5",
-                "panelRefName": "panel_1",
-                "version": "7.3.0"
+                "title": "EC2 Status Check Failed",
+                "type": "lens",
+                "version": "8.6.2"
             },
             {
-                "embeddableConfig": {},
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-8faa93b7-c9f6-4275-a193-03e59e1b7276",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "8faa93b7-c9f6-4275-a193-03e59e1b7276": {
+                                            "columnOrder": [
+                                                "65eba627-6b48-4ee1-94ca-4ff553944945",
+                                                "39551f21-9a92-4722-8d9c-14bf0d1065b8",
+                                                "f2d2a6ff-4452-4a03-89a3-e367b30b7b54"
+                                            ],
+                                            "columns": {
+                                                "39551f21-9a92-4722-8d9c-14bf0d1065b8": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of cloud.instance.id",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "f2d2a6ff-4452-4a03-89a3-e367b30b7b54",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "cloud.instance.id"
+                                                },
+                                                "65eba627-6b48-4ee1-94ca-4ff553944945": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "f2d2a6ff-4452-4a03-89a3-e367b30b7b54": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": "",
+                                                    "isBucketed": false,
+                                                    "label": "AWS EC2 Network In Bytes",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "bytes"
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "host.network.ingress.bytes"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fillOpacity": 0,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "f2d2a6ff-4452-4a03-89a3-e367b30b7b54"
+                                        ],
+                                        "layerId": "8faa93b7-c9f6-4275-a193-03e59e1b7276",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "splitAccessor": "39551f21-9a92-4722-8d9c-14bf0d1065b8",
+                                        "xAccessor": "65eba627-6b48-4ee1-94ca-4ff553944945",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "rgba(104,188,0,1)",
+                                                "forAccessor": "f2d2a6ff-4452-4a03-89a3-e367b30b7b54"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightScale": "linear"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
                 "gridData": {
                     "h": 15,
                     "i": "11",
@@ -53,11 +467,174 @@
                     "y": 42
                 },
                 "panelIndex": "11",
-                "panelRefName": "panel_2",
-                "version": "7.3.0"
+                "title": "EC2 Network In Bytes",
+                "type": "lens",
+                "version": "8.6.2"
             },
             {
-                "embeddableConfig": {},
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-70c23481-b7fc-42ea-977e-cd60863001ec",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "70c23481-b7fc-42ea-977e-cd60863001ec": {
+                                            "columnOrder": [
+                                                "c60f7d4a-31f1-45a4-8aed-d1241de78bec",
+                                                "5176de7f-13d4-4579-9d52-5d69ae36f5e7",
+                                                "dcc2d0f6-6789-4908-bc6c-e0d8aecb2cff"
+                                            ],
+                                            "columns": {
+                                                "5176de7f-13d4-4579-9d52-5d69ae36f5e7": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of cloud.instance.id",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "dcc2d0f6-6789-4908-bc6c-e0d8aecb2cff",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "cloud.instance.id"
+                                                },
+                                                "c60f7d4a-31f1-45a4-8aed-d1241de78bec": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "dcc2d0f6-6789-4908-bc6c-e0d8aecb2cff": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": "",
+                                                    "isBucketed": false,
+                                                    "label": "AWS EC2 Network Out Bytes",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "bytes"
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "host.network.egress.bytes"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fillOpacity": 0,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "dcc2d0f6-6789-4908-bc6c-e0d8aecb2cff"
+                                        ],
+                                        "layerId": "70c23481-b7fc-42ea-977e-cd60863001ec",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "splitAccessor": "5176de7f-13d4-4579-9d52-5d69ae36f5e7",
+                                        "xAccessor": "c60f7d4a-31f1-45a4-8aed-d1241de78bec",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "rgba(104,188,0,1)",
+                                                "forAccessor": "dcc2d0f6-6789-4908-bc6c-e0d8aecb2cff"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightScale": "linear"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
                 "gridData": {
                     "h": 15,
                     "i": "12",
@@ -66,11 +643,177 @@
                     "y": 42
                 },
                 "panelIndex": "12",
-                "panelRefName": "panel_3",
-                "version": "7.3.0"
+                "title": "EC2 Network Out Bytes",
+                "type": "lens",
+                "version": "8.6.2"
             },
             {
-                "embeddableConfig": {},
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-43e6ee7c-8faa-4c5b-b138-106294d0c31b",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "43e6ee7c-8faa-4c5b-b138-106294d0c31b": {
+                                            "columnOrder": [
+                                                "18ebdbc2-bba1-4639-833f-d45bd2cae9f8",
+                                                "09cf0166-2764-42aa-b4c2-5d9fda5e00be",
+                                                "770f4725-3efb-40e5-9179-e9823c10c3a1"
+                                            ],
+                                            "columns": {
+                                                "09cf0166-2764-42aa-b4c2-5d9fda5e00be": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of cloud.instance.id",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "770f4725-3efb-40e5-9179-e9823c10c3a1",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "cloud.instance.id"
+                                                },
+                                                "18ebdbc2-bba1-4639-833f-d45bd2cae9f8": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "770f4725-3efb-40e5-9179-e9823c10c3a1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": ""
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "AWS EC2 DiskIO Read Bytes",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number"
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "host.disk.read.bytes"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fillOpacity": 0,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "770f4725-3efb-40e5-9179-e9823c10c3a1"
+                                        ],
+                                        "layerId": "43e6ee7c-8faa-4c5b-b138-106294d0c31b",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "splitAccessor": "09cf0166-2764-42aa-b4c2-5d9fda5e00be",
+                                        "xAccessor": "18ebdbc2-bba1-4639-833f-d45bd2cae9f8",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "rgba(104,188,0,1)",
+                                                "forAccessor": "770f4725-3efb-40e5-9179-e9823c10c3a1"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightScale": "linear"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
                 "gridData": {
                     "h": 15,
                     "i": "15",
@@ -79,11 +822,174 @@
                     "y": 27
                 },
                 "panelIndex": "15",
-                "panelRefName": "panel_4",
-                "version": "7.3.0"
+                "title": "EC2 DiskIO Read Bytes",
+                "type": "lens",
+                "version": "8.6.2"
             },
             {
-                "embeddableConfig": {},
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-0cbe0390-0276-4a94-a783-270ed0b82221",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "0cbe0390-0276-4a94-a783-270ed0b82221": {
+                                            "columnOrder": [
+                                                "7bdfc646-d9b3-4ec1-9ffe-5d4d009b9e83",
+                                                "c86ad764-a028-4a98-aed6-16f67918bab7",
+                                                "d0e169f6-ab9c-4f39-aab8-eb89057bac8c"
+                                            ],
+                                            "columns": {
+                                                "7bdfc646-d9b3-4ec1-9ffe-5d4d009b9e83": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "c86ad764-a028-4a98-aed6-16f67918bab7": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of cloud.instance.id",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "d0e169f6-ab9c-4f39-aab8-eb89057bac8c",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "cloud.instance.id"
+                                                },
+                                                "d0e169f6-ab9c-4f39-aab8-eb89057bac8c": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": "",
+                                                    "isBucketed": false,
+                                                    "label": "AWS EC2 CPU Utilization",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number"
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "host.cpu.usage"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fillOpacity": 0,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "d0e169f6-ab9c-4f39-aab8-eb89057bac8c"
+                                        ],
+                                        "layerId": "0cbe0390-0276-4a94-a783-270ed0b82221",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "splitAccessor": "c86ad764-a028-4a98-aed6-16f67918bab7",
+                                        "xAccessor": "7bdfc646-d9b3-4ec1-9ffe-5d4d009b9e83",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "rgba(104,188,0,1)",
+                                                "forAccessor": "d0e169f6-ab9c-4f39-aab8-eb89057bac8c"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightScale": "linear"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
                 "gridData": {
                     "h": 15,
                     "i": "17",
@@ -92,81 +998,173 @@
                     "y": 12
                 },
                 "panelIndex": "17",
-                "panelRefName": "panel_5",
-                "version": "7.3.0"
+                "title": "EC2 CPU Utilization",
+                "type": "lens",
+                "version": "8.6.2"
             },
             {
-                "embeddableConfig": {},
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-2fbc0bea-19fc-4758-8de7-3eaf39f8956f",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "2fbc0bea-19fc-4758-8de7-3eaf39f8956f": {
+                                            "columnOrder": [
+                                                "c6667378-2e58-498b-9919-bd46a3cbc9fc",
+                                                "c3086a17-9258-466b-a672-d1b0f0cf419b"
+                                            ],
+                                            "columns": {
+                                                "c3086a17-9258-466b-a672-d1b0f0cf419b": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "c6667378-2e58-498b-9919-bd46a3cbc9fc": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of aws.ec2.instance.state.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "c3086a17-9258-466b-a672-d1b0f0cf419b",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "aws.ec2.instance.state.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "layerId": "2fbc0bea-19fc-4758-8de7-3eaf39f8956f",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "c3086a17-9258-466b-a672-d1b0f0cf419b"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "c6667378-2e58-498b-9919-bd46a3cbc9fc"
+                                        ]
+                                    }
+                                ],
+                                "shape": "treemap"
+                            }
+                        },
+                        "title": "EC2 Instance State",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
                 "gridData": {
                     "h": 12,
-                    "i": "18",
-                    "w": 17,
-                    "x": 0,
+                    "i": "d36f4d31-b36b-44df-8b0d-141211ad0e0a",
+                    "w": 41,
+                    "x": 7,
                     "y": 0
                 },
-                "panelIndex": "18",
-                "panelRefName": "panel_6",
-                "version": "7.3.0"
-            },
-            {
-                "embeddableConfig": {},
-                "gridData": {
-                    "h": 12,
-                    "i": "19",
-                    "w": 19,
-                    "x": 17,
-                    "y": 0
-                },
-                "panelIndex": "19",
-                "panelRefName": "panel_7",
-                "version": "7.3.0"
+                "panelIndex": "d36f4d31-b36b-44df-8b0d-141211ad0e0a",
+                "title": "EC2 Instance State",
+                "type": "lens",
+                "version": "8.6.2"
             }
         ],
         "timeRestore": false,
         "title": "[Metrics AWS] EC2 Overview",
         "version": 1
     },
+    "coreMigrationVersion": "8.6.2",
+    "created_at": "2023-05-29T12:01:28.917Z",
     "id": "aws-c5846400-f7fb-11e8-af03-c999c9dea608",
+    "migrationVersion": {
+        "dashboard": "8.6.0"
+    },
     "references": [
         {
-            "id": "aws-fed59380-f7f8-11e8-af03-c999c9dea608",
-            "name": "panel_0",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "3:indexpattern-datasource-layer-81045c11-0280-4a85-b142-3a7efb658183",
+            "type": "index-pattern"
         },
         {
-            "id": "aws-9e8c6030-f7f8-11e8-af03-c999c9dea608",
-            "name": "panel_1",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "5:indexpattern-datasource-layer-9c4853fc-7664-4b48-97c4-856bc94b6889",
+            "type": "index-pattern"
         },
         {
-            "id": "aws-15818fd0-f7f9-11e8-af03-c999c9dea608",
-            "name": "panel_2",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "11:indexpattern-datasource-layer-8faa93b7-c9f6-4275-a193-03e59e1b7276",
+            "type": "index-pattern"
         },
         {
-            "id": "aws-233b3400-f7f9-11e8-af03-c999c9dea608",
-            "name": "panel_3",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "12:indexpattern-datasource-layer-70c23481-b7fc-42ea-977e-cd60863001ec",
+            "type": "index-pattern"
         },
         {
-            "id": "aws-f1db6ec0-f7f8-11e8-af03-c999c9dea608",
-            "name": "panel_4",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "15:indexpattern-datasource-layer-43e6ee7c-8faa-4c5b-b138-106294d0c31b",
+            "type": "index-pattern"
         },
         {
-            "id": "aws-be8828d0-f7f6-11e8-af03-c999c9dea608",
-            "name": "panel_5",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "17:indexpattern-datasource-layer-0cbe0390-0276-4a94-a783-270ed0b82221",
+            "type": "index-pattern"
         },
         {
-            "id": "aws-deab0260-2981-11e9-86eb-a3a07a77f530",
-            "name": "panel_6",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "d36f4d31-b36b-44df-8b0d-141211ad0e0a:indexpattern-datasource-layer-2fbc0bea-19fc-4758-8de7-3eaf39f8956f",
+            "type": "index-pattern"
         },
         {
-            "id": "aws-09db13f0-2bdd-11e9-9fe1-cde861544141",
-            "name": "panel_7",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "controlGroup_b6e54e8b-ba78-4764-ae13-20a39a167859:optionsListDataView",
+            "type": "index-pattern"
         }
     ],
     "type": "dashboard"

@@ -1,6 +1,7 @@
 title: Prometheus query metrics
-release: experimental
 type: metrics
+elasticsearch:
+  index_mode: "time_series"
 streams:
   - input: prometheus/metrics
     vars:
@@ -28,7 +29,7 @@ streams:
         default: |
           - name: instant_vector
             params:
-              query: sum(rate(prometheus_http_requests_total[1m]))
+              query: sum(rate(prometheus_http_requests_total[2m]))
             path: /api/v1/query
           - name: range_vector
             params:
@@ -48,10 +49,28 @@ streams:
       - name: leaderelection
         type: bool
         title: Leader Election
+        description: Enable leaderelection between a set of Elastic Agents running on Kubernetes
         multi: false
         required: true
+        show_user: true
+        default: false
+      - name: data_stream.dataset
+        type: text
+        title: 'Datasream Dataset name'
+        description: Name of Datastream dataset
+        multi: false
+        default: prometheus.query
+        required: true
+        show_user: true
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
         show_user: false
-        default: true
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
     title: Prometheus query metrics
     enabled: false
     description: Collect Prometheus query metrics

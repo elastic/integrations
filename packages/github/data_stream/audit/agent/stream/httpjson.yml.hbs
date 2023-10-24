@@ -1,5 +1,8 @@
 config_version: "2"
 interval: {{interval}}
+{{#if enable_request_tracer}}
+request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+{{/if}}
 request.method: "GET"
 request.url: {{api_url}}/orgs/{{organization}}/audit-log
 {{#if ssl}}
@@ -22,7 +25,7 @@ request.transforms:
       value: "application/vnd.github.v3+json"
   - set:
       target: url.params.phrase
-      value: '[[sprintf "created:>=%s" (formatDate .cursor.last_timestamp "2006-01-02T15:04:05-07:00")]]'
+      value: '[[sprintf "created:>=%s" (formatDate (parseTimestampMilli (toInt .cursor.last_timestamp)) "2006-01-02T15:04:05-07:00")]]'
       default: '[[sprintf "created:>=%s" (formatDate (now (parseDuration "-{{initial_interval}}")) "2006-01-02T15:04:05-07:00")]]'
   - set:
       target: url.params.per_page

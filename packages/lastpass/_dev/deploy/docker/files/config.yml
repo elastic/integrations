@@ -1,0 +1,22 @@
+rules:
+  - path: /
+    methods: ['POST']
+    request_body: /^\{"cid":"[0-9]+","cmd":"getdetailedsfdata","data":"all","provhash":"[a-zA-Z]+"\}/
+    responses:
+      - status_code: 200
+        body: |
+          {"101":{"sharedfoldername":"ThisSFName","score":99,"users":[{"username":"joe.user@lastpass.com","readonly":true,"give":false,"can_administer":true,"sites":["aaa.com","bbb.com"]},{"username":"jane.user@lastpass.com","readonly":true,"give":false,"can_administer":false,"sites":["zzz.com"]}]}}
+  - path: /
+    methods: ['POST']
+    request_body: /^\{"cid":"[0-9]+","cmd":"reporting","data":\{[^}]*\},"provhash":"[a-zA-Z]+","user":"allusers"\}/
+    responses:
+      - status_code: 200
+        body: |
+          {"status":"OK","next":null,"data":{"Event1":{"Time":"2015-07-17 09:51:51","Username":"j.user@example.com","IP_Address":"10.16.21.21","Action":"Failed Login Attempt","Data":""},"Event2":{"Time":"2015-07-17 09:51:56","Username":"j.user@example.com","IP_Address":"10.16.21.21","Action":"Failed Login Attempt","Data":""}}}
+  - path: /
+    methods: ['POST']
+    request_body: /^\{"cid":"[0-9]+","cmd":"getuserdata","data":\{[^}]*\},"provhash":"[a-zA-Z]+"\}/
+    responses:
+      - status_code: 200
+        body: |
+          {"total":1,"count":1,"Users":{"101":{"username":"user1@lastpass.com","fullname":"Ned Flanders","mpstrength":"100","created":"2014-03-12 10:02:56","last_pw_change":"2015-05-19 10:58:33","last_login":"2015-05-29 11:45:05","neverloggedin":false,"disabled":false,"admin":false,"linked":"personal.account@mydomain.com","sites":72,"notes":19,"formfills":2,"applications":0,"attachments":1,"password_reset_required":false,"groups":["Domain Admins","Dev Team","Support Team"]}},"Groups":{"Domain Admins":["user1@lastpass.com"],"Dev Team":["user1@lastpass.com"],"Support Team":["user1@lastpass.com"]}}

@@ -4,11 +4,12 @@ description: Pipeline for Google Cloud audit logs
 processors:
   - set:
       field: ecs.version
-      value: '8.4.0'
+      value: '8.8.0'
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: 'ctx.event?.original == null'
   - json:
       field: event.original
       target_field: json
@@ -178,7 +179,7 @@ processors:
 # https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog#requestmetadata
 ##
   - convert:
-      if: ctx.json?.protoPayload?.requestMetadata?.callerIp != null && ctx.json?.protoPayload?.requestMetadata?.callerIp != "gce-internal-ip" 
+      if: ctx.json?.protoPayload?.requestMetadata?.callerIp != null && ctx.json?.protoPayload?.requestMetadata?.callerIp != "gce-internal-ip"  && ctx.json?.protoPayload?.requestMetadata?.callerIp != "private"
       type: ip
       field: json.protoPayload.requestMetadata.callerIp
       target_field: source.ip
@@ -239,6 +240,15 @@ processors:
       field: gcp.audit.request
       copy_from: json.protoPayload.request
       if: ctx.json?.protoPayload?.request != null
+  - remove:
+      field: gcp.audit.request.policy
+      ignore_missing: true
+      if: ctx.json?.protoPayload?.request?.policy != null && !(ctx.json?.protoPayload?.request.policy instanceof Map)
+  - rename:
+      field: json.protoPayload.request.policy
+      target_field: gcp.audit.request.policy_value
+      ignore_missing: true
+      if: ctx.json?.protoPayload?.request?.policy != null && !(ctx.json?.protoPayload?.request.policy instanceof Map)
   - set:
       field: gcp.audit.response
       copy_from: json.protoPayload.response
@@ -296,15 +306,15 @@ processors:
   - set:
       field: event.outcome
       value: success
-      if: ctx?.gcp?.audit?.status?.code == null && ctx?.gcp?.audit?.authorization_info != null && ctx?.gcp?.audit?.authorization_info instanceof List && ctx?.gcp?.audit?.authorization_info.size() == 1 && ctx?.gcp?.audit?.authorization_info[0].granted
+      if: ctx?.gcp?.audit?.status?.code == null && ctx?.gcp?.audit?.authorization_info != null && ctx?.gcp?.audit?.authorization_info instanceof List && ctx?.gcp?.audit?.authorization_info.size() == 1 && ctx?.gcp?.audit?.authorization_info[0]?.granted == true
   - set:
       field: event.outcome
       value: failure
-      if: ctx?.gcp?.audit?.status?.code == null && ctx?.gcp?.audit?.authorization_info != null && ctx?.gcp?.audit?.authorization_info instanceof List && ctx?.gcp?.audit?.authorization_info.size() == 1 && !ctx?.gcp?.audit?.authorization_info[0].granted
+      if: ctx?.gcp?.audit?.status?.code == null && ctx?.gcp?.audit?.authorization_info != null && ctx?.gcp?.audit?.authorization_info instanceof List && ctx?.gcp?.audit?.authorization_info.size() == 1 && ctx?.gcp?.audit?.authorization_info[0]?.granted == false
   - set:
       field: event.outcome
       value: unknown
-      if: ctx?.event?.outcome == null
+      override: false
 
 ##
 # if gcp.audit.authorization_info.[0].granted is true then
@@ -393,5 +403,8 @@ processors:
         drop(ctx);
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: '{{{ _ingest.on_failure_message }}}'

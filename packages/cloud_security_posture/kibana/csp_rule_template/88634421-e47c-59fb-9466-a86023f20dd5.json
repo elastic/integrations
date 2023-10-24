@@ -1,0 +1,38 @@
+{
+    "id": "88634421-e47c-59fb-9466-a86023f20dd5",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "You require TLS to be configured on apiserver as well as kubelets.",
+            "default_value": "By default, kubelet connections are over https.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kube-apiserver/\n2. https://kubernetes.io/docs/admin/kubelet-authentication-authorization/",
+            "id": "88634421-e47c-59fb-9466-a86023f20dd5",
+            "name": "Ensure that the --kubelet-https argument is set to true",
+            "profile_applicability": "* Level 1 - Master Node",
+            "description": "Use https for kubelet connections.",
+            "rationale": "Connections from apiserver to kubelets could potentially carry sensitive data such as secrets and keys.\nIt is thus important to use in-transit encryption for any communication between the apiserver and kubelets.",
+            "audit": "Run the following command on the Control Plane node:\n\n```\nps -ef | grep kube-apiserver\n```\n\nVerify that the `--kubelet-https` argument either does not exist or is set to `true`.",
+            "remediation": "Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml` on the Control Plane node and remove the `--kubelet-https` parameter.",
+            "section": "API Server",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 1.2.4",
+                "API Server"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "1.2.4",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_1_2_4"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

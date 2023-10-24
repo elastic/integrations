@@ -1,12 +1,18 @@
 # Azure Firewall Logs
 
-The Azure Logs integration retrieves different types of log data from Azure.
+Azure Firewall Logs are records of events such as network and application rules that occur within your Azure Firewalls. They provide visibility and can be used to troubleshoot issues related to access, conectivity or performance.
 
-There are several requirements before using the integration since the logs will actually be read from azure event hubs.
+Supported log categories:
 
-- The logs have to be [exported first to the event hub](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-create-kafka-enabled).
-- To export activity logs to event hubs users can follow the steps [here](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/activity-log-export).
-- To export audit and sign-in logs to event hubs users can follow the steps [here](https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/tutorial-azure-monitor-stream-logs-to-event-hub).
+| Log Category                 | Description                                                                                                                          |
+|:----------------------------:|:------------------------------------------------------------------------------------------------------------------------------------:|
+| AzureFirewallApplicationRule | These logs capture information about the traffic that is allowed or denied by application rules configured in Azure Firewall.        |
+| AzureFirewallNetworkRule     | These logs capture information about the traffic that is allowed or denied by network rules configured in Azure Firewall.            |
+| AzureFirewallDnsProxy        | These logs capture information about DNS requests and responses that are processed by Azure Firewall's DNS proxy.                    |
+
+## Requirements and setup
+
+Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information about setting up and using this integration.
 
 ## Settings
 
@@ -33,6 +39,10 @@ The name of the storage account where the state/offsets will be stored and updat
 `storage_account_key` :
 _string_
 The storage account key, this key will be used to authorize access to data in your storage account.
+
+`storage_account_container` :
+_string_
+The storage account container where the integration stores the checkpoint data for the consumer group. It is an advanced option to use with extreme care. You MUST use a dedicated storage account container for each Azure log type (activity, sign-in, audit logs, and others). DO NOT REUSE the same container name for more than one Azure log type. See [Container Names](https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names) for details on naming rules from Microsoft. The integration generates a default container name if not specified.
 
 `resource_manager_endpoint` :
 _string_

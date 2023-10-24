@@ -68,10 +68,12 @@ func (m mapStr) delete(key string) error {
 // flatten flattens the given MapStr and returns a flat MapStr.
 //
 // Example:
-//   "hello": MapStr{"world": "test" }
+//
+//	"hello": MapStr{"world": "test" }
 //
 // This is converted to:
-//   "hello.world": "test"
+//
+//	"hello.world": "test"
 //
 // This can be useful for testing or logging.
 func (m mapStr) flatten() mapStr {

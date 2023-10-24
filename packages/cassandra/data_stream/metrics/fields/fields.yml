@@ -1,111 +1,36 @@
 - name: cassandra.metrics
   type: group
-  release: beta
   fields:
-    - name: system
+    - name: cache
       type: group
       fields:
-        - name: version
-          type: keyword
-        - name: cluster
-          type: keyword
-        - name: live_nodes
-          type: keyword
-        - name: unreachable_nodes
-          type: keyword
-        - name: leaving_nodes
-          type: keyword
-        - name: joining_nodes
-          type: keyword
-        - name: moving_nodes
-          type: keyword
-        - name: data_center
-          type: keyword
-        - name: rack
-          type: keyword
-    - name: storage
-      type: group
-      fields:
-        - name: mbean
-          type: keyword
-          description: Mbean that this event is related to
-        - name: total_hint_in_progress
-          type: long
-          description: The number of the total hits in progress
-        - name: total_hints
-          type: long
-          description: The number of the total hits
-        - name: exceptions
-          type: long
-          description: The number of the total exceptions
-        - name: load
-          type: long
-          description: Storage used for Cassandra data in bytes
-    - name: gc
-      type: group
-      fields:
-        - name: mbean
-          type: keyword
-          description: Mbean that this event is related to
-        - name: concurrent_mark_sweep
+        - name: key_cache
           type: group
           fields:
-            - name: collection_time
+            - name: capacity
               type: long
-              description: Approximate accumulated CMS collection elapsed time in milliseconds.
-            - name: collection_count
+              metric_type: gauge
+            - name: one_minute_hit_rate
               type: long
-              description: Total number of CMS collections that have occurred.
-        - name: par_new
+              metric_type: gauge
+            - name: requests.one_minute_rate
+              type: long
+              metric_type: gauge
+        - name: row_cache
           type: group
           fields:
-            - name: collection_time
+            - name: capacity
               type: long
-              description: Approximate accumulated ParNew collection elapsed time in milliseconds.
-            - name: collection_count
+              metric_type: gauge
+            - name: one_minute_hit_rate
               type: long
-              description: Total number of ParNew collections that have occurred.
-    - name: memory
-      type: group
-      fields:
-        - name: mbean
-          type: keyword
-          description: Mbean that this event is related to
-        - name: heap_usage
-          type: group
-          fields:
-            - name: committed
-              description: Committed heap memory usage
+              metric_type: gauge
+            - name: requests.one_minute_rate
               type: long
-            - name: max
-              description: Max heap memory usage
-              type: long
-            - name: used
-              description: Used heap memory usage
-              type: long
-            - name: init
-              description: Initial heap memory usage
-              type: long
-        - name: other_usage
-          type: group
-          fields:
-            - name: committed
-              description: Committed non-heap memory usage
-              type: long
-            - name: max
-              description: Max non-heap memory usage
-              type: long
-            - name: used
-              description: Used non-heap memory usage
-              type: long
-            - name: init
-              description: Initial non-heap memory usage
-              type: long
-    - name: client
-      type: group
-      fields:
-        - name: connected_native_clients
-          type: long
+              metric_type: gauge
+    - name: client.connected_native_clients
+      type: long
+      metric_type: gauge
     - name: client_request
       type: group
       fields:
@@ -114,197 +39,297 @@
           fields:
             - name: count
               type: long
-            - name: total_latency
-              type: double
-            - name: timeouts
-              type: double
-            - name: timeoutsms
-              type: double
-            - name: unavailables
-              type: double
-            - name: unavailablesms
-              type: double
+              metric_type: counter
             - name: one_minute_rate
               type: double
+              metric_type: gauge
+            - name: timeoutsms
+              type: double
+              metric_type: gauge
+            - name: total_latency
+              type: double
+              metric_type: counter
+            - name: timeouts
+              type: double
+              metric_type: counter
+            - name: unavailables
+              type: double
+              metric_type: counter
+            - name: unavailablesms
+              type: double
+              metric_type: gauge
         - name: read
           type: group
           fields:
             - name: count
               type: long
-            - name: total_latency
-              type: double
-            - name: timeouts
-              description: Number of read timeouts encountered
-              type: double
-            - name: timeoutsms
-              type: double
-            - name: unavailables
-              description: Number of read unavailables encountered
-              type: double
-            - name: unavailablesms
-              type: double
+              metric_type: counter
             - name: one_minute_rate
               type: double
+              metric_type: gauge
+            - name: timeouts
+              description: Number of read timeouts encountered.
+              type: double
+              metric_type: counter
+            - name: total_latency
+              type: double
+              metric_type: counter
+            - name: timeoutsms
+              type: double
+              metric_type: gauge
+            - name: unavailables
+              description: Number of read unavailables encountered.
+              type: double
+              metric_type: counter
+            - name: unavailablesms
+              type: double
+              metric_type: gauge
         - name: range_slice
           type: group
           fields:
             - name: one_minute_rate
               type: double
+              metric_type: gauge
             - name: total_latency
               type: double
-        - name: caswrite
-          type: group
-          fields:
-            - name: one_minute_rate
-              type: double
-        - name: casread
-          type: group
-          fields:
-            - name: one_minute_rate
-              type: double
+              metric_type: counter
+        - name: casread.one_minute_rate
+          type: double
+          metric_type: gauge
+        - name: caswrite.one_minute_rate
+          type: double
+          metric_type: gauge
+    - name: column_family.total_disk_space_used
+      type: long
+      metric_type: gauge
+    - name: compaction
+      type: group
+      fields:
+        - name: completed
+          description: compaction completed tasks.
+          type: long
+          metric_type: gauge
+        - name: pending
+          description: compaction pending tasks.
+          type: long
+          metric_type: gauge
     - name: dropped_message
       type: group
       fields:
         - name: batch_remove
           type: long
+          metric_type: counter
         - name: batch_store
           type: long
+          metric_type: counter
         - name: counter_mutation
           type: long
+          metric_type: counter
         - name: hint
           type: long
+          metric_type: counter
         - name: mutation
           type: long
+          metric_type: counter
         - name: paged_range
           type: long
+          metric_type: counter
         - name: range_slice
           type: long
+          metric_type: counter
         - name: read
           type: long
+          metric_type: counter
         - name: read_repair
           type: long
+          metric_type: counter
         - name: request_response
           type: long
+          metric_type: counter
         - name: trace
           type: long
+          metric_type: counter
+    - name: gc
+      type: group
+      fields:
+        - name: concurrent_mark_sweep
+          type: group
+          fields:
+            - name: collection_count
+              type: long
+              metric_type: gauge
+              description: Total number of CMS collections that have occurred.
+            - name: collection_time
+              type: long
+              metric_type: gauge
+              description: Approximate accumulated CMS collection elapsed time in milliseconds.
+        - name: par_new
+          type: group
+          fields:
+            - name: collection_count
+              type: long
+              metric_type: gauge
+              description: Total number of ParNew collections that have occurred.
+            - name: collection_time
+              type: long
+              metric_type: gauge
+              description: Approximate accumulated ParNew collection elapsed time in milliseconds.
+    - name: memory
+      type: group
+      fields:
+        - name: heap_usage
+          type: group
+          fields:
+            - name: committed
+              description: Committed heap memory usage.
+              type: long
+              metric_type: gauge
+            - name: init
+              description: Initial heap memory usage.
+              type: long
+              metric_type: gauge
+            - name: max
+              description: Max heap memory usage.
+              type: long
+              metric_type: gauge
+            - name: used
+              description: Used heap memory usage.
+              type: long
+              metric_type: gauge
+        - name: other_usage
+          type: group
+          fields:
+            - name: committed
+              description: Committed non-heap memory usage.
+              type: long
+              metric_type: gauge
+            - name: init
+              description: Initial non-heap memory usage.
+              type: long
+              metric_type: gauge
+            - name: max
+              description: Max non-heap memory usage.
+              type: long
+              metric_type: gauge
+            - name: used
+              description: Used non-heap memory usage.
+              type: long
+              metric_type: gauge
+    - name: storage
+      type: group
+      fields:
+        - name: exceptions
+          type: long
+          metric_type: counter
+          description: The number of the total exceptions.
+        - name: load
+          type: long
+          metric_type: counter
+          description: Storage used for Cassandra data in bytes.
+        - name: total_hints
+          type: long
+          metric_type: counter
+          description: The number of the total hits.
+        - name: total_hint_in_progress
+          type: long
+          metric_type: counter
+          description: The number of the total hits in progress.
+    - name: system
+      type: group
+      fields:
+        - name: cluster
+          type: keyword
+        - name: data_center
+          type: keyword
+        - name: joining_nodes
+          type: keyword
+        - name: leaving_nodes
+          type: keyword
+        - name: live_nodes
+          type: keyword
+        - name: moving_nodes
+          type: keyword
+        - name: rack
+          type: keyword
+        - name: unreachable_nodes
+          type: keyword
+        - name: version
+          type: keyword
+    - name: table
+      type: group
+      fields:
+        - name: all_memtables_heap_size
+          type: long
+          metric_type: gauge
+        - name: all_memtables_off_heap_size
+          type: long
+          metric_type: gauge
+        - name: live_disk_space_used
+          type: long
+          metric_type: counter
+        - name: live_ss_table_count
+          type: long
+          metric_type: gauge
     - name: task
       type: group
       fields:
         - name: complete
-          description: completed tasks
+          description: completed tasks.
           type: long
+          metric_type: gauge
         - name: pending
-          description: pending tasks
+          description: pending tasks.
           type: long
+          metric_type: gauge
         - name: total_commitlog_size
-          description: total commitlog size of tasks
+          description: total commitlog size of tasks.
           type: long
-    - name: compaction
-      type: group
-      fields:
-        - name: completed
-          description: compaction completed tasks
-          type: long
-        - name: pending
-          description: compaction pending tasks
-          type: long
-    - name: table
-      type: group
-      fields:
-        - name: live_ss_table_count
-          type: long
-        - name: all_memtables_heap_size
-          type: long
-        - name: all_memtables_off_heap_size
-          type: long
-        - name: live_disk_space_used
-          type: long
-    - name: cache
-      type: group
-      fields:
-        - name: key_cache
-          type: group
-          fields:
-            - name: requests.one_minute_rate
-              type: long
-            - name: capacity
-              type: long
-            - name: one_minute_hit_rate
-              type: long
-        - name: row_cache
-          type: group
-          fields:
-            - name: requests.one_minute_rate
-              type: long
-            - name: capacity
-              type: long
-            - name: one_minute_hit_rate
-              type: long
+          metric_type: gauge
     - name: thread_pools
       type: group
       fields:
-        - name: counter_mutation_stage
+        - name: counter_mutation_stage.request
           type: group
           fields:
-            - name: request
-              type: group
-              fields:
-                - name: pending
-                  type: long
-                - name: active
-                  type: long
-        - name: mutation_stage
+            - name: active
+              type: long
+              metric_type: gauge
+            - name: pending
+              type: long
+              metric_type: gauge
+        - name: mutation_stage.request
           type: group
           fields:
-            - name: request
-              type: group
-              fields:
-                - name: pending
-                  type: long
-                - name: active
-                  type: long
-        - name: read_repair_stage
+            - name: active
+              type: long
+              metric_type: gauge
+            - name: pending
+              type: long
+              metric_type: gauge
+        - name: read_repair_stage.request
           type: group
           fields:
-            - name: request
-              type: group
-              fields:
-                - name: pending
-                  type: long
-                - name: active
-                  type: long
-        - name: request_response_stage
+            - name: active
+              type: long
+              metric_type: gauge
+            - name: pending
+              type: long
+              metric_type: gauge
+        - name: read_stage.request
           type: group
           fields:
-            - name: request
-              type: group
-              fields:
-                - name: pending
-                  type: long
-                - name: active
-                  type: long
-        - name: request_response_stage
+            - name: active
+              type: long
+              metric_type: gauge
+            - name: pending
+              type: long
+              metric_type: gauge
+        - name: request_response_stage.request
           type: group
           fields:
-            - name: request
-              type: group
-              fields:
-                - name: pending
-                  type: long
-                - name: active
-                  type: long
-        - name: read_stage
-          type: group
-          fields:
-            - name: request
-              type: group
-              fields:
-                - name: pending
-                  type: long
-                - name: active
-                  type: long
-    - name: column_family
-      type: group
-      fields:
-        - name: total_disk_space_used
-          type: long
+            - name: active
+              type: long
+              metric_type: gauge
+            - name: pending
+              type: long
+              metric_type: gauge

@@ -66,7 +66,7 @@ Once this monitoring feature is enabled in the Diagnostic Settings area (Perform
 
 ## Additional notes about metrics and costs
 
-Costs: Metric queries are charged based on the number of standard API calls. More information on pricing here https://azure.microsoft.com/id-id/pricing/details/monitor/.
+Costs: Metric queries are charged based on the number of standard API calls. More information on pricing here https://azure.microsoft.com/en-us/pricing/details/monitor/.
 
 Authentication: Dedicated authentication token will be created and updated regularly, it is advised to not share the credentials entered.
 

@@ -5,8 +5,16 @@ processors:
       field: json.arguments.fd
       target_field: jamf_compliance_reporter.log.arguments.fd
       type: string
+      ignore_missing: true
       ignore_failure: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_exec_chain_child_object" }}'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_identity_object" }}'
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

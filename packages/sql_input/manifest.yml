@@ -1,0 +1,75 @@
+format_version: 2.0.0
+name: sql
+title: "SQL Input"
+version: "0.4.0"
+description: "Collects Metrics by Quering on SQL Databases"
+type: input
+categories:
+  - custom
+conditions:
+  kibana.version: "^8.8.0"
+  elastic.subscription: "basic"
+icons:
+  - src: /img/sql-server-icon.svg
+    title: SQL logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: sql
+    type: metrics
+    title: SQL Metrics
+    description: Collects Metrics by Quering on SQL Databases
+    input: sql/metrics
+    template_path: input.yml.hbs
+    vars:
+      - name: hosts
+        type: text
+        title: Hosts
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - root:test@tcp(127.0.0.1:3306)/
+      - name: period
+        type: text
+        title: Period
+        default: 10s
+      - name: driver
+        type: text
+        title: Driver
+        multi: false
+        required: true
+        show_user: true
+        default: "mysql"
+      - name: sql_queries
+        type: yaml
+        title: SQL Queries
+        multi: false
+        required: true
+        show_user: true
+        default: "- query: SHOW GLOBAL STATUS LIKE 'Innodb_system%'\n  response_format: variables\n        \n"
+      - name: merge_results
+        type: bool
+        title: Merge Results
+        multi: false
+        required: false
+        show_user: false
+        default: false
+        description: Merge results from multiple queries to a single event (restrictions apply)
+      - name: condition
+        title: Condition
+        description: Condition to filter when to apply this datastream. Refer to [Conditions](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html#conditions) on how to use the available keys in conditions.
+        type: text
+        multi: false
+        required: false
+        show_user: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the events are shipped. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.
+owner:
+  github: elastic/obs-infraobs-integrations

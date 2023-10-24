@@ -1,5 +1,11 @@
 metricsets: ["cloudwatch"]
 period: {{period}}
+{{#if data_granularity}}
+data_granularity: {{data_granularity}}
+{{/if}}
+{{#if include_linked_accounts}}
+include_linked_accounts: {{include_linked_accounts}}
+{{/if}}
 {{#if access_key_id}}
 access_key_id: {{access_key_id}}
 {{/if}}
@@ -18,8 +24,8 @@ shared_credential_file: {{shared_credential_file}}
 {{#if role_arn}}
 role_arn: {{role_arn}}
 {{/if}}
-{{#if endpoint}}
-endpoint: {{endpoint}}
+{{#if default_region}}
+default_region: {{default_region}}
 {{/if}}
 {{#if regions}}
 regions:
@@ -37,6 +43,17 @@ metrics:
 - namespace: AWS/S3
   statistic: ["Average"]
   name:
+  - SelectScannedBytes
+  - SelectReturnedBytes
+  - BytesDownloaded
+  - BytesUploaded
+  - 4xxErrors
+  - 5xxErrors
+  - FirstByteLatency
+  - TotalRequestLatency
+- namespace: AWS/S3
+  statistic: ["Sum"]
+  name:
   - AllRequests
   - GetRequests
   - PutRequests
@@ -44,12 +61,6 @@ metrics:
   - HeadRequests
   - PostRequests
   - SelectRequests
-  - SelectScannedBytes
-  - SelectReturnedBytes
   - ListRequests
   - BytesDownloaded
   - BytesUploaded
-  - 4xxErrors
-  - 5xxErrors
-  - FirstByteLatency
-  - TotalRequestLatency

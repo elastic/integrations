@@ -23,6 +23,8 @@ For the more information on generating TAP credentials please follow the steps m
 
 This is the `clicks_blocked` dataset.
 
+NOTE: For the `clicks_blocked` dataset, `source.ip` corresponds to the Proofpoint `senderIP` — the IP of the email sender — and `destination.ip` corresponds to `clickIP` — the IP of the click destination.
+
 {{event "clicks_blocked"}}
 
 {{fields "clicks_blocked"}}
@@ -30,6 +32,8 @@ This is the `clicks_blocked` dataset.
 ### Clicks Permitted
 
 This is the `clicks_permitted` dataset.
+
+NOTE: For the `clicks_permitted` dataset, `source.ip` corresponds to the Proofpoint `senderIP` — the IP of the email sender — and `destination.ip` corresponds to `clickIP` — the IP of the click destination.
 
 {{event "clicks_permitted"}}
 

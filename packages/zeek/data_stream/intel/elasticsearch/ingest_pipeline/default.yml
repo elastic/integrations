@@ -26,7 +26,7 @@ processors:
       value: enrichment
   - set:
       field: ecs.version
-      value: '8.4.0'
+      value: '8.10.0'
   - append:
       field: event.category
       value: threat
@@ -76,11 +76,11 @@ processors:
   - set:
       field: source.ip
       copy_from: source.address
-      if: ctx?.source?.address != null
+      if: ctx.source?.address != null
   - set:
       field: destination.ip
       copy_from: destination.address
-      if: ctx?.destination?.address != null
+      if: ctx.destination?.address != null
   - dot_expander:
       path: zeek.intel
       field: seen.indicator
@@ -187,13 +187,13 @@ processors:
       ignore_missing: true
   - append:
       field: "related.ip"
-      value: "{{source.ip}}"
-      if: "ctx?.source?.ip != null"
+      value: "{{{source.ip}}}"
+      if: "ctx.source?.ip != null"
       allow_duplicates: false
   - append:
       field: "related.ip"
-      value: "{{destination.ip}}"
-      if: "ctx?.destination?.ip != null"
+      value: "{{{destination.ip}}}"
+      if: "ctx.destination?.ip != null"
       allow_duplicates: false
   - community_id:
       target_field: network.community_id
@@ -201,17 +201,103 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
-      if: ctx?.event?.original == null
+      if: ctx.event?.original == null
+
+  # Add threat indicators.
+  - convert:
+      target_field: threat.indicator.ip
+      field: zeek.intel.seen.indicator
+      type: ip
+      if: ctx.zeek?.intel?.seen?.indicator_type == "Intel::ADDR"
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: threat.indicator.type
+      value: ipv4-addr
+      if: ctx.zeek?.intel?.seen?.indicator_type == "Intel::ADDR"
+  - set:
+      field: threat.indicator.type
+      value: ipv6-addr
+      if: ctx.threat?.indicator?.ip != null && ctx.threat.indicator.ip.contains(':')
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: threat.indicator.ip
+      target_field: threat.indicator.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true  
+  - rename:
+      field: threat.indicator.as.asn
+      target_field: threat.indicator.as.number
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: threat.indicator.as.organization_name
+      target_field: threat.indicator.as.organization.name
+      ignore_missing: true
+      ignore_failure: true
+  - geoip:
+      field: threat.indicator.ip
+      target_field: threat.indicator.geo
+      ignore_missing: true
+      properties:
+        - city_name
+        - continent_name
+        - country_iso_code
+        - country_name
+        - location
+        - region_iso_code
+        - region_name
+        - timezone
+  - set:
+      field: threat.indicator._url
+      copy_from: zeek.intel.seen.indicator
+      if: ctx.zeek?.intel?.seen?.indicator_type == "Intel::URL"
+      ignore_failure: true
+  - set:
+      field: threat.indicator.type
+      value: url
+      if: ctx.zeek?.intel?.seen?.indicator_type == "Intel::URL"
+  - uri_parts:
+      field: threat.indicator._url
+      target_field: threat.indicator.url
+      ignore_failure: true
+      keep_original: false
+      remove_if_successful: true
+      if: ctx.threat?.indicator?._url != null
+  - set:
+      field: threat.indicator.email.address
+      copy_from: zeek.intel.seen.indicator
+      if: ctx.zeek?.intel?.seen?.indicator_type == "Intel::EMAIL"
+      ignore_failure: true
+  - set:
+      field: threat.indicator.type
+      value: email-addr
+      if: ctx.zeek?.intel?.seen?.indicator_type == "Intel::EMAIL"
+  - set:
+      field: threat.indicator.file.name
+      copy_from: zeek.intel.seen.indicator
+      if: ctx.zeek?.intel?.seen?.indicator_type == "Intel::FILE_NAME"
+      ignore_failure: true
+  - set:
+      field: threat.indicator.type
+      value: file
+      if: ctx.zeek?.intel?.seen?.indicator_type == "Intel::FILE_NAME"
+
   - remove:
       field:
         - zeek.intel.id
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: '{{{ _ingest.on_failure_message }}}'

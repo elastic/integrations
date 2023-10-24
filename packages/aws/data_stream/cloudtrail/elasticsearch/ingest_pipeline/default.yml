@@ -128,10 +128,10 @@ processors:
       field: json.eventCategory
       target_field: aws.cloudtrail.event_category
       ignore_failure: true
-  - rename:
-      field: json.awsRegion
-      target_field: cloud.region
-      ignore_failure: true
+  - set:
+      field: cloud.region
+      copy_from: json.awsRegion
+      ignore_empty_value: true
   - rename:
       field: json.sourceIPAddress
       target_field: source.address
@@ -211,7 +211,7 @@ processors:
         }
       ignore_failure: true
   - rename:
-      field: json.requestId
+      field: json.requestID
       target_field: aws.cloudtrail.request_id
       ignore_failure: true
   - rename:
@@ -612,7 +612,7 @@ processors:
             - change
       source: >-
         ctx.event.kind = 'event';
-        ctx.event.type = 'info';
+        ctx.event.type = ['info'];
 
         if (ctx?.aws?.cloudtrail?.error_code != null || ctx?.aws?.cloudtrail?.error_message != null) {
             ctx.event.outcome = 'failure'
@@ -640,7 +640,7 @@ processors:
       target_field: cloud.account.id
       ignore_failure: true
   - rename:
-      field: json.previousDigestS3Object
+      field: json.digestS3Object
       target_field: file.path
       ignore_failure: true
   - rename:
@@ -742,6 +742,21 @@ processors:
   - rename:
       field: aws.cloudtrail.insight_details
       target_field: aws.cloudtrail.flattened.insight_details
+      ignore_missing: true
+  - dissect:
+      field: json.tlsDetails.tlsVersion
+      pattern: "%{tls.version_protocol}v%{tls.version}"
+      ignore_missing: true
+  - lowercase:
+      field: tls.version_protocol
+      ignore_missing: true
+  - rename:
+      field: json.tlsDetails.cipherSuite
+      target_field: tls.cipher
+      ignore_missing: true
+  - rename:
+      field: json.tlsDetails.clientProvidedHostHeader
+      target_field: tls.client.server_name
       ignore_missing: true
   - remove:
       field: json

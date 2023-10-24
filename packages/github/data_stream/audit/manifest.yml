@@ -1,13 +1,12 @@
 type: logs
 title: GitHub Audit Logs
-release: experimental
 streams:
   - input: httpjson
     vars:
       - name: access_token
         type: text
         title: Personal Access Token
-        description: the GitHub Personal Access Token.  Requires the 'admin:org' scope
+        description: the GitHub Personal Access Token. Requires `read:audit_log` scope
         multi: false
         required: true
         show_user: true
@@ -21,6 +20,7 @@ streams:
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
         multi: false
         required: false
         show_user: true
@@ -31,7 +31,7 @@ streams:
         multi: false
         required: true
         show_user: true
-        description: Interval at which the logs will be pulled. The value must be between 2m and 1h.
+        description: Interval at which the logs will be pulled. The value must be between 2m and 1h. Supported units for this parameter are h/m/s.
         default: 1h
       - name: initial_interval
         type: text
@@ -40,7 +40,7 @@ streams:
         required: true
         show_user: true
         default: 730h # 30 days
-        description: Initial interval to poll for events.  Default is 730 hours (30 days).
+        description: Initial interval to poll for events. Default is 730 hours (30 days). Supported units for this parameter are h/m/s.
       - name: api_url
         type: text
         title: API URL.
@@ -88,4 +88,5 @@ streams:
         description: "Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. \nThis executes in the agent before the logs are parsed. \nSee [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.\n"
     template_path: httpjson.yml.hbs
     title: GitHub audit logs
+    enabled: false
     description: Collect GitHub audit logs via the API

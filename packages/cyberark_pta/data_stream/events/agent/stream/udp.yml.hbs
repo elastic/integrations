@@ -1,0 +1,25 @@
+udp:
+host: "{{syslog_host}}:{{syslog_port}}"
+{{#if udp_options}}
+{{udp_options}}
+{{/if}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- add_locale: ~
+- rename:
+    fields:
+      - {from: "message", to: "event.original"}
+- decode_cef:
+    field: event.original
+{{#if processors}}
+{{processors}}
+{{/if}}

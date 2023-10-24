@@ -2,6 +2,9 @@
 description: Pipeline for parsing MongoDB logs
 processors:
 - set:
+    field: ecs.version
+    value: '8.5.1'
+- set:
     field: event.ingested
     value: '{{_ingest.timestamp}}'
 - rename:
@@ -25,9 +28,34 @@ processors:
 - append:
     field: event.category
     value: database
+- append:
+    field: related.user
+    value: "{{{ user.name }}}"
+    allow_duplicates: false
+    if: ctx.user?.name != null && ctx.user?.name != ''
+- append:
+    field: related.user
+    value: "{{{ user.effective.name }}}"
+    allow_duplicates: false
+    if: ctx.user?.effective?.name != null && ctx.user?.effective?.name != ''
+- append:
+    field: related.ip
+    value: "{{{ source.ip }}}"
+    allow_duplicates: false
+    if: ctx.source?.ip != null && ctx.source?.ip != ''
+- append:
+    field: related.hosts
+    value: "{{{ host.hostname }}}"
+    allow_duplicates: false
+    if: ctx.host?.hostname != null && ctx.host?.hostname != ''
 - remove:
     field:
     - first_char
+- remove:
+    field: event.original
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
 on_failure:
 - set:
     field: error.message

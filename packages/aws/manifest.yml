@@ -1,16 +1,16 @@
-format_version: 1.0.0
+format_version: 3.0.0
 name: aws
 title: AWS
-version: 1.19.4
-license: basic
-description: Collect logs and metrics from Amazon Web Services with Elastic Agent.
+version: 2.8.3
+description: Collect logs and metrics from Amazon Web Services (AWS) with Elastic Agent.
 type: integration
 categories:
   - aws
-  - cloud
-release: ga
 conditions:
-  kibana.version: "^7.15.0 || ^8.0.0"
+  elastic:
+    subscription: basic
+  kibana:
+    version: "^8.9.0"
 screenshots:
   - src: /img/metricbeat-aws-overview.png
     title: metricbeat aws overview
@@ -59,14 +59,14 @@ vars:
     multi: false
     required: false
     show_user: false
-  - name: endpoint
+  - name: default_region
     type: text
-    title: Endpoint
+    title: Default AWS Region
     multi: false
     required: false
     show_user: false
-    default: "amazonaws.com"
-    description: URL of the entry point for an AWS web service
+    default: ""
+    description: Default region to use prior to connecting to region specific services/endpoints if no AWS region is set from environment variable, credentials or instance profile. If none of the above are set and no default region is set as well, `us-east-1` is used. A region, either from environment variable, credentials or instance profile or from this default region setting, needs to be set when using regions in non-regular AWS environments such as AWS China or US Government Isolated.
   - name: proxy_url
     type: text
     title: Proxy URL
@@ -80,6 +80,8 @@ policy_templates:
     description: Collect billing metrics with Elastic Agent
     data_streams:
       - billing
+    categories:
+      - observability
     inputs:
       - type: aws/metrics
         title: Collect billing metrics
@@ -131,11 +133,10 @@ policy_templates:
     data_streams:
       - cloudwatch_logs
       - cloudwatch_metrics
+    categories:
+      - observability
+      - monitoring
     inputs:
-      - type: aws-s3
-        title: Collect logs from S3 (Deprecated)
-        description: Collecting logs using aws-s3 input
-        input_group: logs
       - type: aws-cloudwatch
         title: Collect logs from CloudWatch
         description: Collecting logs using aws-cloudwatch input
@@ -155,6 +156,7 @@ policy_templates:
     data_streams:
       - dynamodb
     categories:
+      - observability
       - datastore
     inputs:
       - type: aws/metrics
@@ -177,6 +179,7 @@ policy_templates:
     data_streams:
       - ebs
     categories:
+      - observability
       - datastore
     inputs:
       - type: aws/metrics
@@ -199,6 +202,8 @@ policy_templates:
     data_streams:
       - ec2_logs
       - ec2_metrics
+    categories:
+      - observability
     inputs:
       - type: aws-s3
         title: Collect EC2 logs from S3
@@ -227,6 +232,9 @@ policy_templates:
     description: Collect metrics for Amazon Elastic Container Service with Elastic Agent
     data_streams:
       - ecs_metrics
+    categories:
+      - observability
+      - containers
     inputs:
       - type: aws/metrics
         title: Collect ECS metrics
@@ -244,7 +252,8 @@ policy_templates:
       - elb_logs
       - elb_metrics
     categories:
-      - network
+      - observability
+      - load_balancer
     inputs:
       - type: aws-s3
         title: Collect ELB logs from S3
@@ -277,6 +286,8 @@ policy_templates:
     description: Collect Lambda metrics with Elastic Agent
     data_streams:
       - lambda
+    categories:
+      - observability
     inputs:
       - type: aws/metrics
         title: Collect Lambda metrics
@@ -298,6 +309,7 @@ policy_templates:
     data_streams:
       - natgateway
     categories:
+      - observability
       - network
     inputs:
       - type: aws/metrics
@@ -314,6 +326,7 @@ policy_templates:
     description: Collect AWS Network Firewall logs and metrics with Elastic Agent
     categories:
       - security
+      - firewall_security
     data_streams:
       - firewall_logs
       - firewall_metrics
@@ -358,6 +371,7 @@ policy_templates:
     data_streams:
       - rds
     categories:
+      - observability
       - datastore
     inputs:
       - type: aws/metrics
@@ -382,8 +396,8 @@ policy_templates:
       - s3_request
       - s3access
     categories:
+      - observability
       - datastore
-      - security
     inputs:
       - type: aws-s3
         title: Collect S3 access logs from S3
@@ -413,7 +427,7 @@ policy_templates:
     data_streams:
       - s3_storage_lens
     categories:
-      - datastore
+      - observability
     inputs:
       - type: aws/metrics
         title: Collect S3 Storage Lens metrics
@@ -434,6 +448,9 @@ policy_templates:
     description: Collect Amazon SNS metrics with Elastic Agent
     data_streams:
       - sns
+    categories:
+      - observability
+      - notification
     inputs:
       - type: aws/metrics
         title: Collect SNS metrics
@@ -454,6 +471,8 @@ policy_templates:
     description: Collect Amazon SQS metrics with Elastic Agent
     data_streams:
       - sqs
+    categories:
+      - observability
     inputs:
       - type: aws/metrics
         title: Collect SQS metrics
@@ -475,7 +494,7 @@ policy_templates:
     data_streams:
       - transitgateway
     categories:
-      - network
+      - security
     inputs:
       - type: aws/metrics
         title: Collect Transit Gateway metrics
@@ -491,6 +510,8 @@ policy_templates:
     description: Collect AWS usage metrics with Elastic Agent
     data_streams:
       - usage
+    categories:
+      - observability
     inputs:
       - type: aws/metrics
         title: Collect Usage metrics
@@ -507,8 +528,8 @@ policy_templates:
     data_streams:
       - vpcflow
     categories:
+      - observability
       - network
-      - security
     inputs:
       - type: aws-s3
         title: Collect VPC flow logs from S3
@@ -529,6 +550,7 @@ policy_templates:
     data_streams:
       - vpn
     categories:
+      - observability
       - network
     inputs:
       - type: aws/metrics
@@ -546,8 +568,8 @@ policy_templates:
     data_streams:
       - waf
     categories:
-      - network
       - security
+      - web_application_firewall
     inputs:
       - type: aws-s3
         title: Collect WAF logs from S3
@@ -568,6 +590,9 @@ policy_templates:
     data_streams:
       - route53_public_logs
       - route53_resolver_logs
+    categories:
+      - security
+      - dns_security
     inputs:
       - type: aws-cloudwatch
         title: Collect Route53 logs
@@ -583,6 +608,9 @@ policy_templates:
     description: Collect Amazon CloudFront logs with Elastic Agent
     data_streams:
       - cloudfront_logs
+    categories:
+      - monitoring
+      - observability
     inputs:
       - type: aws-s3
         title: Collect CloudFront logs
@@ -598,6 +626,9 @@ policy_templates:
     description: Collect Amazon Redshift metrics with Elastic Agent
     data_streams:
       - redshift
+    categories:
+      - observability
+      - datastore
     inputs:
       - type: aws/metrics
         title: Collect Amazon Redshift metrics
@@ -614,19 +645,163 @@ policy_templates:
         size: 2640x2240
         type: image/png
   - name: kinesis
-    title: Amazon Kinesis
-    description: Collect Amazon Kinesis metrics with Elastic Agent
+    title: Amazon Kinesis Data Stream
+    description: Collect Amazon Kinesis Data Stream metrics with Elastic Agent
     data_streams:
       - kinesis
+    categories:
+      - observability
+      - stream_processing
     inputs:
       - type: aws/metrics
-        title: Collect Amazon Kinesis metrics
-        description: Collect Amazon Kinesis metrics using AWS CloudWatch
+        title: Collect Amazon Kinesis Data Stream metrics
+        description: Collect Amazon Kinesis Data Stream metrics using AWS CloudWatch
         input_group: metrics
     icons:
       - src: /img/logo_kinesis.svg
         title: Amazon Kinesis logo
         size: 33x39
         type: image/svg+xml
+    screenshots:
+      - src: /img/metricbeat-aws-kinesis-overview.png
+        title: metricbeat aws kinesis overview
+        size: 1366x1351
+        type: image/png
+  - name: securityhub
+    title: AWS Security Hub
+    description: Collect AWS Security Hub Logs with Elastic Agent.
+    data_streams:
+      - securityhub_findings
+      - securityhub_insights
+    categories:
+      - security
+    inputs:
+      - type: httpjson
+        title: Collect AWS Security Hub logs via API
+        description: Collecting AWS Security Hub logs via API.
+    screenshots:
+      - src: /img/securityhub-screenshot.png
+        title: Security Hub dashboard screenshot
+        size: 600x600
+        type: image/png
+      - src: /img/securityhub_summary_dashboard.png
+        title: Security Hub dashboard screenshot
+        size: 600x600
+        type: image/png
+    icons:
+      - src: /img/logo_securityhub.svg
+        title: AWS Security Hub logo
+        size: 33x39
+        type: image/svg+xml
+  - name: inspector
+    title: AWS Inspector
+    description: Collect AWS Inspector Logs with Elastic Agent.
+    data_streams:
+      - inspector
+    categories:
+      - security
+    inputs:
+      - type: httpjson
+        title: Collect AWS Inspector logs via API
+        description: Collecting AWS Inspector logs via API.
+    screenshots:
+      - src: /img/inspector-screenshot.png
+        title: Inspector dashboard screenshot
+        size: 600x600
+        type: image/png
+    icons:
+      - src: /img/logo_inspector.svg
+        title: AWS Inspector logo
+        size: 33x39
+        type: image/svg+xml
+  - name: guardduty
+    title: Amazon GuardDuty
+    description: Collect Amazon GuardDuty logs with Elastic Agent.
+    data_streams:
+      - guardduty
+    inputs:
+      - type: httpjson
+        title: Collect Amazon GuardDuty logs via API
+        description: Collecting Amazon GuardDuty logs via API.
+      - type: aws-s3
+        title: Collect Amazon GuardDuty logs via AWS S3 or SQS
+        description: Collecting Amazon GuardDuty logs via AWS S3 or SQS input.
+    screenshots:
+      - src: /img/guardduty-screenshot.png
+        title: GuardDuty dashboard screenshot
+        size: 600x600
+        type: image/png
+    icons:
+      - src: /img/logo_guardduty.svg
+        title: Amazon GuardDuty logo
+        size: 33x39
+        type: image/svg+xml
+  - name: apigateway
+    title: AWS API Gateway
+    description: Collect logs and metrics for AWS API Gateway with Elastic Agent.
+    data_streams:
+      - apigateway_metrics
+      - apigateway_logs
+    categories:
+      - observability
+    inputs:
+      - type: aws/metrics
+        title: Collect API Gateway metrics
+        description: Collect API Gateway metrics using AWS CloudWatch.
+        input_group: metrics
+      - type: aws-s3
+        title: Collect API Gateway logs from S3
+        description: Collecting API Gateway logs using aws-s3 input
+        input_group: logs
+      - type: aws-cloudwatch
+        title: Collect API Gateway logs from CloudWatch
+        description: Collecting API Gateway logs using aws-cloudwatch input
+        input_group: logs
+    screenshots:
+      - src: /img/filebeat-aws-apigateway-overview.png
+        title: filebeat aws api gateway overview
+        size: 2048x1522
+        type: image/png
+      - src: /img/metricbeat-aws-apigateway-overview.png
+        title: metricbeat aws api gateway overview
+        size: 1280x1052
+        type: image/png
+    icons:
+      - src: /img/logo_apigateway.svg
+        title: AWS API Gateway logo
+        size: 32x32
+        type: image/svg+xml
+  - name: emr
+    title: Amazon EMR
+    description: Collect logs and metrics for Amazon EMR service with Elastic Agent
+    data_streams:
+      - emr_metrics
+      - emr_logs
+    categories:
+      - observability
+    inputs:
+      - type: aws/metrics
+        title: Collect EMR metrics
+        description: Collect EMR metrics using AWS CloudWatch
+        input_group: metrics
+      - type: aws-s3
+        title: Collect EMR logs from S3
+        description: Collecting logs from EMR using aws-s3 input
+        input_group: logs
+      - type: aws-cloudwatch
+        title: Collect EMR logs from CloudWatch
+        description: Collecting logs from EMR using aws-cloudwatch input
+        input_group: logs
+    screenshots:
+      - src: /img/filebeat-aws-emr-overview.png
+        title: filebeat aws emr overview
+        size: 1714x893
+        type: image/png
+    icons:
+      - src: /img/logo_emr.svg
+        title: AWS EMR logo
+        size: 32x32
+        type: image/svg+xml
 owner:
   github: elastic/obs-cloud-monitoring
+  type: elastic

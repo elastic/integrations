@@ -1,0 +1,38 @@
+{
+    "id": "fd42f0d0-6e1d-53e5-b322-9a0eaa56948b",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "You need to set the API Server up with the right TLS certificates.",
+            "default_value": "By default, port 6443 is used as the secure port.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kube-apiserver/",
+            "id": "fd42f0d0-6e1d-53e5-b322-9a0eaa56948b",
+            "name": "Ensure that the --secure-port argument is not set to 0",
+            "profile_applicability": "* Level 1 - Master Node",
+            "description": "Do not disable the secure port.",
+            "rationale": "The secure port is used to serve https with authentication and authorization.\nIf you disable it, no https traffic is served and all traffic is served unencrypted.",
+            "audit": "Run the following command on the Control Plane node:\n\n```\nps -ef | grep kube-apiserver\n```\n\nVerify that the `--secure-port` argument is either not set or is set to an integer value between 1 and 65535.",
+            "remediation": "Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml` on the Control Plane node and either remove the `--secure-port` parameter or set it to a different (non-zero) desired port.",
+            "section": "API Server",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 1.2.17",
+                "API Server"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "1.2.17",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_1_2_17"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

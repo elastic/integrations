@@ -1,27 +1,20 @@
 version: '2.3'
 services:
-  kubernetes_is_ready:
+  containerd_is_ready:
     image: tianon/true
     depends_on:
-      kubernetes:
+      containerd:
         condition: service_healthy
-  kubernetes:
+  containerd:
     image: nginx:alpine
     ports:
       - 1338
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
-    depends_on:
-      - containerd
+      - ./containerdv1.5.2.txt:/www/data/v1/metrics
     healthcheck:
       interval: 1s
       retries: 120
       timeout: 120s
       test: |-
-        curl -f -s http://localhost:1338/v1/metrics -o /dev/null
-  containerd:
-    image: chanjarster/prometheus-mock-data:latest
-    ports:
-      - 8080
-    volumes:
-      - ./containerdv1.5.2.txt:/home/java-app/etc/scrape-data.txt
+        curl -f -s http://localhost:1338/v1/ -o /dev/null

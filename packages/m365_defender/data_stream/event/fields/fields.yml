@@ -1,0 +1,845 @@
+- name: m365_defender.event
+  type: group
+  fields:
+    - name: aad_device_id
+      type: keyword
+      description: Unique identifier for the device in Azure AD.
+    - name: account
+      type: group
+      fields:
+        - name: display_name
+          type: keyword
+          description: Name of the account user displayed in the address book. Typically a combination of a given or first name, a middle initiation, and a last name or surname.
+        - name: domain
+          type: keyword
+          description: Domain of the account.
+        - name: id
+          type: keyword
+          description: An identifier for the account as found by Microsoft Defender for Cloud Apps. Could be Azure Active Directory ID, user principal name, or other identifiers.
+        - name: name
+          type: keyword
+          description: User name of the account.
+        - name: object_id
+          type: keyword
+          description: Unique identifier for the account in Azure Active Directory.
+        - name: sid
+          type: keyword
+          description: Security Identifier (SID) of the account.
+        - name: type
+          type: keyword
+          description: Type of user account, indicating its general role and access levels, such as Regular, System, Admin, DcAdmin, System, Application.
+        - name: upn
+          type: keyword
+          description: User principal name (UPN) of the account.
+    - name: action
+      type: group
+      fields:
+        - name: result
+          type: keyword
+          description: Result of the action.
+        - name: trigger
+          type: keyword
+          description: Indicates whether an action was triggered by an administrator (manually or through approval of a pending automated action), or by some special mechanism, such as a ZAP or Dynamic Delivery.
+        - name: type
+          type: keyword
+          description: Type of activity that triggered the event. See the [in-portal schema reference](https://learn.microsoft.com/en-us/microsoft-365/security/defender/advanced-hunting-schema-tables?view=o365-worldwide#get-schema-information-in-the-security-center) for details.
+        - name: value
+          type: keyword
+          description: Action taken on the entity.
+    - name: activity
+      type: group
+      fields:
+        - name: objects
+          type: flattened
+          description: List of objects, such as files or folders, that were involved in the recorded activity.
+        - name: type
+          type: keyword
+          description: Type of activity that triggered the event.
+    - name: additional_fields
+      type: flattened
+      description: Additional information about the entity or event in JSON array format.
+    - name: alert
+      type: group
+      fields:
+        - name: categories
+          type: keyword
+        - name: category
+          type: keyword
+          description: Type of threat indicator or breach activity identified by the alert.
+        - name: id
+          type: keyword
+          description: Unique identifier for the alert.
+    - name: app_guard_container_id
+      type: keyword
+      description: Identifier for the virtualized container used by Application Guard to isolate browser activity.
+    - name: app_instance_id
+      type: long
+    - name: application
+      type: keyword
+      description: Application that performed the recorded action.
+    - name: application_id
+      type: keyword
+      description: Unique identifier for the application.
+    - name: attachment_count
+      type: long
+      description: Number of attachments in the email.
+    - name: attack_techniques
+      type: keyword
+      description: MITRE ATT&CK techniques associated with the activity that triggered the alert.
+    - name: authentication_details
+      type: keyword
+      description: List of pass or fail verdicts by email authentication protocols like DMARC, DKIM, SPF or a combination of multiple authentication types (CompAuth).
+    - name: bulk_complaint_level
+      type: long
+      description: Threshold assigned to email from bulk mailers, a high bulk complaint level (BCL) means the email is more likely to generate complaints, and thus more likely to be spam.
+    - name: category
+      type: keyword
+    - name: certificate
+      type: group
+      fields:
+        - name: countersignature_time
+          type: date
+          description: Date and time the certificate was countersigned.
+        - name: creation_time
+          type: date
+          description: Date and time the certificate was created.
+        - name: expiration_time
+          type: date
+          description: Date and time the certificate is set to expire.
+        - name: serial_number
+          type: keyword
+          description: Identifier for the certificate that is unique to the issuing certificate authority (CA).
+    - name: city
+      type: keyword
+      description: City where the client IP address is geolocated.
+    - name: client_version
+      type: keyword
+      description: Version of the endpoint agent or sensor running on the machine.
+    - name: confidence_level
+      type: flattened
+      description: List of confidence levels of any spam or phishing verdicts. For spam, this column shows the spam confidence level (SCL), indicating if the email was skipped (-1), found to be not spam (0,1), found to be spam with moderate confidence (5,6), or found to be spam with high confidence (9). For phishing, this column displays whether the confidence level is "High" or "Low".
+    - name: connected_networks
+      type: flattened
+      description: Networks that the adapter is connected to. Each JSON array contains the network name, category (public, private or domain), a description, and a flag indicating if it's connected publicly to the internet.
+    - name: connectors
+      type: keyword
+      description: Custom instructions that define organizational mail flow and how the email was routed.
+    - name: country_code
+      type: keyword
+      description: Two-letter code indicating the country where the client IP address is geolocated.
+    - name: crl_distribution_point_urls
+      type: keyword
+      description: JSON array listing the URLs of network shares that contain certificates and certificate revocation lists (CRLs).
+    - name: default_gateways
+      type: keyword
+      description: Default gateway addresses in JSON array format.
+    - name: delivery
+      type: group
+      fields:
+        - name: action
+          type: keyword
+          description: "Delivery action of the email: Delivered, Junked, Blocked, or Replaced."
+        - name: location
+          type: keyword
+          description: "Location where the email was delivered: Inbox/Folder, On-premises/External, Junk, Quarantine, Failed, Dropped, Deleted items."
+    - name: destination
+      type: group
+      fields:
+        - name: device_name
+          type: keyword
+          description: Name of the device running the server application that processed the recorded action.
+        - name: ip_address
+          type: ip
+          description: IP address of the device running the server application that processed the recorded action.
+        - name: port
+          type: long
+          description: Destination port of related network communications or activity.
+    - name: detection
+      type: group
+      fields:
+        - name: methods
+          type: flattened
+          description: Methods used to detect malware, phishing, or other threats found in the email or at the time of click.
+        - name: source
+          type: keyword
+          description: Detection technology or sensor that identified the notable component or activity.
+    - name: device
+      type: group
+      fields:
+        - name: category
+          type: keyword
+          description: "Broader classification that groups certain device types under the following categories: Endpoint, Network device, IoT, Unknown."
+        - name: id
+          type: keyword
+          description: Unique identifier for the device or machine in the service.
+        - name: name
+          type: keyword
+          description: Fully qualified domain name (FQDN) of the device, machine or endpoint.
+        - name: sub_type
+          type: keyword
+          description: Additional modifier for certain types of devices, for example, a mobile device can be a tablet or a smartphone; only available if device discovery finds enough information about this attribute.
+        - name: type
+          type: keyword
+          description: Type of device based on purpose and functionality, such as network device, workstation, server, mobile, gaming console, or printer.
+    - name: dns_addresses
+      type: keyword
+      description: DNS server addresses in JSON array format.
+    - name: email
+      type: group
+      fields:
+        - name: action
+          type: keyword
+          description: "Final action taken on the email based on filter verdict, policies, and user actions: Move message to junk mail folder, Add X-header, Modify subject, Redirect message, Delete message, send to quarantine, No action taken, Bcc message."
+        - name: action_policy
+          type: keyword
+          description: "Action policy that took effect: Antispam high-confidence, Antispam, Antispam bulk mail, Antispam phishing, Anti-phishing domain impersonation, Anti-phishing user impersonation, Anti-phishing spoof, Anti-phishing graph impersonation, Antimalware, Safe Attachments, Enterprise Transport Rules (ETR)."
+        - name: action_policy_guid
+          type: keyword
+          description: Unique identifier for the policy that determined the final mail action.
+        - name: cluster_id
+          type: keyword
+          description: Identifier for the group of similar emails clustered based on heuristic analysis of their contents.
+        - name: direction
+          type: keyword
+          description: "Direction of the email relative to your network: Inbound, Outbound, Intra-org."
+        - name: language
+          type: keyword
+          description: Detected language of the email content.
+        - name: subject
+          type: keyword
+          description: Subject of the email.
+    - name: entity_type
+      type: keyword
+      description: Type of object, such as a file, a process, a device, or a user.
+    - name: evidence
+      type: group
+      fields:
+        - name: direction
+          type: keyword
+          description: Indicates whether the entity is the source or the destination of a network connection.
+        - name: role
+          type: keyword
+          description: How the entity is involved in an alert, indicating whether it is impacted or is merely related.
+    - name: failure_reason
+      type: keyword
+      description: Information explaining why the recorded action failed.
+    - name: file
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Name of the file that the recorded action was applied to.
+        - name: origin_ip
+          type: ip
+          description: IP address where the file was downloaded from.
+        - name: origin_referrer_url
+          type: keyword
+          description: URL of the web page that links to the downloaded file.
+        - name: origin_url
+          type: keyword
+          description: URL where the file was downloaded from.
+        - name: size
+          type: long
+          description: Size of the file in bytes.
+        - name: type
+          type: keyword
+          description: File extension type.
+    - name: folder_path
+      type: keyword
+      description: Folder containing the file that the recorded action was applied to.
+    - name: initiating_process
+      type: group
+      fields:
+        - name: account_domain
+          type: keyword
+          description: Domain of the account that ran the process responsible for the event.
+        - name: account_name
+          type: keyword
+          description: User name of the account that ran the process responsible for the event.
+        - name: account_object_id
+          type: keyword
+          description: Azure AD object ID of the user account that ran the process responsible for the event.
+        - name: account_sid
+          type: keyword
+          description: Security Identifier (SID) of the account that ran the process responsible for the event.
+        - name: account_upn
+          type: keyword
+          description: User principal name (UPN) of the account that ran the process responsible for the event.
+        - name: command_line
+          type: keyword
+          description: Command line used to run the process that initiated the event.
+        - name: creation_time
+          type: date
+          description: Date and time when the process that initiated the event was started.
+        - name: file_name
+          type: keyword
+          description: Name of the process that initiated the event.
+        - name: file_size
+          type: long
+          description: Size of the file that ran the process responsible for the event.
+        - name: folder_path
+          type: keyword
+          description: Folder containing the process (image file) that initiated the event.
+        - name: id
+          type: long
+          description: Process ID (PID) of the process that initiated the event.
+        - name: integrity_level
+          type: keyword
+          description: Integrity level of the process that initiated the event. Windows assigns integrity levels to processes based on certain characteristics, such as if they were launched from an internet download. These integrity levels influence permissions to resources.
+        - name: logon_id
+          type: keyword
+          description: Identifier for a logon session of the process that initiated the event. This identifier is unique on the same machine only between restarts.
+        - name: md5
+          type: keyword
+          description: MD5 hash of the process (image file) that initiated the event.
+        - name: parent_creation_time
+          type: date
+          description: Date and time when the parent of the process responsible for the event was started.
+        - name: parent_file_name
+          type: keyword
+          description: Name of the parent process that spawned the process responsible for the event.
+        - name: parent_id
+          type: long
+          description: Process ID (PID) of the parent process that spawned the process responsible for the event.
+        - name: sha1
+          type: keyword
+          description: SHA-1 of the process (image file) that initiated the event.
+        - name: sha256
+          type: keyword
+          description: SHA-256 of the process (image file) that initiated the event. This field is usually not populated—use the SHA1 column when available.
+        - name: signature_status
+          type: keyword
+          description: Information about the signature status of the process (image file) that initiated the event.
+        - name: signer_type
+          type: keyword
+          description: Type of file signer of the process (image file) that initiated the event.
+        - name: token_elevation
+          type: keyword
+          description: Token type indicating the presence or absence of User Access Control (UAC) privilege elevation applied to the process that initiated the event.
+        - name: version_info_company_name
+          type: keyword
+          description: Company name from the version information of the process (image file) responsible for the event.
+        - name: version_info_file_description
+          type: keyword
+          description: Description from the version information of the process (image file) responsible for the event.
+        - name: version_info_internal_file_name
+          type: keyword
+          description: Internal file name from the version information of the process (image file) responsible for the event.
+        - name: version_info_original_file_name
+          type: keyword
+          description: Original file name from the version information of the process (image file) responsible for the event.
+        - name: version_info_product_name
+          type: keyword
+          description: Product name from the version information of the process (image file) responsible for the event.
+        - name: version_info_product_version
+          type: keyword
+          description: Product version from the version information of the process (image file) responsible for the event.
+    - name: internet_message_id
+      type: keyword
+      description: Public-facing identifier for the email that is set by the sending email system.
+    - name: ip_address
+      type: ip
+      description: Public IP address of the device from which the user clicked on the link or IP address assigned to the endpoint and used during related network communications.
+    - name: ip_addresses
+      type: flattened
+      description: JSON array containing all the IP addresses assigned to the adapter, along with their respective subnet prefix and IP address space, such as public, private, or link-local.
+    - name: ip_category
+      type: keyword
+      description: Additional information about the IP address.
+    - name: ip_tags
+      type: keyword
+      description: Customer-defined information applied to specific IP addresses and IP address ranges.
+    - name: ipv4_dhcp
+      type: ip
+      description: IPv4 address of DHCP server.
+    - name: ipv6_dhcp
+      type: ip
+      description: IPv6 address of DHCP server.
+    - name: is_admin_operation
+      type: boolean
+      description: Indicates whether the activity was performed by an administrator.
+    - name: is_anonymous_proxy
+      type: boolean
+      description: Indicates whether the IP address belongs to a known anonymous proxy.
+    - name: is_azure_ad_joined
+      type: boolean
+      description: Boolean indicator of whether machine is joined to the Azure Active Directory.
+    - name: is_azure_info_protection_applied
+      type: boolean
+      description: Indicates whether the file is encrypted by Azure Information Protection.
+    - name: is_clicked_through
+      type: boolean
+      description: Indicates whether the user was able to click through to the original URL or was not allowed.
+    - name: is_external_user
+      type: boolean
+      description: Indicates whether a user inside the network doesn't belong to the organization's domain.
+    - name: is_impersonated
+      type: boolean
+      description: Indicates whether the activity was performed by one user for another (impersonated) user.
+    - name: is_local_admin
+      type: boolean
+      description: Boolean indicator of whether the user is a local administrator on the machine.
+    - name: is_root_signer_microsoft
+      type: boolean
+      description: Indicates whether the signer of the root certificate is Microsoft and if the file is included in Windows operating system.
+    - name: is_signed
+      type: boolean
+      description: Indicates whether the file is signed.
+    - name: is_trusted
+      type: boolean
+      description: Indicates whether the file is trusted based on the results of the WinVerifyTrust function, which checks for unknown root certificate information, invalid signatures, revoked certificates, and other questionable attributes.
+    - name: isp
+      type: keyword
+      description: Internet service provider (ISP) associated with the endpoint IP address.
+    - name: issuer
+      type: keyword
+      description: Information about the issuing certificate authority (CA).
+    - name: issuer_hash
+      type: keyword
+      description: Unique hash value identifying issuing certificate authority (CA).
+    - name: join_type
+      type: keyword
+    - name: local
+      type: group
+      fields:
+        - name: ip
+          type: ip
+          description: IP address assigned to the local device or machine used during communication.
+        - name: ip_type
+          type: keyword
+          description: Type of IP address, for example Public, Private, Reserved, Loopback, Teredo, FourToSixMapping, and Broadcast.
+        - name: port
+          type: long
+          description: TCP port on the local machine used during communication.
+    - name: location
+      type: keyword
+      description: City, country, or other geographic location associated with the event.
+    - name: active_users
+      type: keyword
+      description: An array of all users that are logged on the machine at the time of the event.
+    - name: logon
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: Identifier for a logon session. This identifier is unique on the same machine only between restarts.
+        - name: type
+          type: keyword
+          description: "Type of logon session, specifically: Interactive, Remote interactive (RDP) logons, Network, Batch, Service."
+    - name: mac_address
+      type: keyword
+      description: MAC address of the network adapter.
+    - name: machine_group
+      type: keyword
+      description: Machine group of the machine. This group is used by role-based access control to determine access to the machine.
+    - name: md5
+      type: keyword
+      description: MD5 hash of the file that the recorded action was applied to.
+    - name: sensor_health_state
+      type: keyword
+      description: Indicates health of the device's EDR sensor, if onboarded to Microsoft Defender For Endpoint.
+    - name: is_excluded
+      type: boolean
+      description: Determines if the device is currently excluded from Microsoft Defender for Vulnerability Management experiences.
+    - name: exclusion_reason
+      type: keyword
+      description: Indicates the reason for device exclusion.
+    - name: asset_value
+      type: keyword
+      description: Indicates the value of a device as assigned by the user.
+    - name: exposure_level
+      type: keyword
+      description: Indicates the exposure level of a device.
+    - name: is_internet_facing
+      type: boolean
+      description: Indicates whether the device is internet-facing.
+    - name: device_manual_tags
+      type: keyword
+      description: Device tags created manually using the portal UI or public API.
+    - name: device_dynamic_tags
+      type: keyword
+      description: Device tags assigned automatically using dynamic tagging rules.
+    - name: merged_device_ids
+      type: keyword
+      description: Previous device IDs that have been assigned to the same device.
+    - name: merged_to_device_id
+      type: keyword
+      description: The most recent device ID assigned to a device.
+    - name: model
+      type: keyword
+      description: Model name or number of the product from the vendor or manufacturer, only available if device discovery finds enough information about this attribute.
+    - name: network
+      type: group
+      fields:
+        - name: adapter_name
+          type: keyword
+          description: Name of the network adapter.
+        - name: adapter_status
+          type: keyword
+          description: Operational status of the network adapter. For the possible values, refer to this enumeration.
+        - name: adapter_type
+          type: keyword
+          description: Network adapter type. For the possible values, refer to this enumeration.
+        - name: adapter_vendor
+          type: keyword
+        - name: message_id
+          type: keyword
+          description: Unique identifier for the email, generated by Microsoft 365.
+    - name: network_direction
+      type: keyword
+      description: The network direction used in DeviceNetworkEvents.
+    - name: object
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: Unique identifier of the object that the recorded action was applied to.
+        - name: name
+          type: keyword
+          description: Name of the object that the recorded action was applied to.
+        - name: type
+          type: keyword
+          description: Type of object, such as a file or a folder, that the recorded action was applied to.
+    - name: onboarding_status
+      type: keyword
+      description: Indicates whether the device is currently onboarded or not to Microsoft Defender for Endpoint or if the device is not supported.
+    - name: operation_name
+      type: keyword
+    - name: org_level
+      type: group
+      fields:
+        - name: action
+          type: keyword
+          description: Action taken on the email in response to matches to a policy defined at the organizational level.
+        - name: policy
+          type: keyword
+          description: Organizational policy that triggered the action taken on the email.
+    - name: os
+      type: group
+      fields:
+        - name: architecture
+          type: keyword
+          description: Architecture of the operating system running on the machine.
+        - name: build
+          type: keyword
+          description: Build version of the operating system running on the machine.
+        - name: distribution
+          type: keyword
+          description: Distribution of the OS platform, such as Ubuntu or RedHat for Linux platforms.
+        - name: platform
+          type: keyword
+          description: Platform of the operating system running on the machine. This indicates specific operating systems, including variations within the same family, such as Windows 11, Windows 10 and Windows 7.
+        - name: version
+          type: keyword
+          description: Version of the operating system running on the machine.
+        - name: version_info
+          type: keyword
+          description: Additional information about the OS version, such as the popular name, code name, or version number.
+    - name: oauth_application_id
+      type: keyword
+    - name: port
+      type: long
+      description: TCP port used during communication.
+    - name: previous
+      type: group
+      fields:
+        - name: file_name
+          type: keyword
+          description: Original name of the file that was renamed as a result of the action.
+        - name: folder_path
+          type: keyword
+          description: Original folder containing the file before the recorded action was applied.
+        - name: registry_key
+          type: keyword
+          description: Original registry key of the registry value before it was modified.
+        - name: registry_value_data
+          type: keyword
+          description: Original data of the registry value before it was modified.
+        - name: registry_value_name
+          type: keyword
+          description: Original name of the registry value before it was modified.
+    - name: process
+      type: group
+      fields:
+        - name: command_line
+          type: keyword
+          description: Command line used to create the new process.
+        - name: creation_time
+          type: date
+          description: Date and time the process was created.
+        - name: id
+          type: long
+          description: Process ID (PID) of the newly created process.
+        - name: integrity_level
+          type: keyword
+          description: Integrity level of the newly created process. Windows assigns integrity levels to processes based on certain characteristics, such as if they were launched from an internet downloaded. These integrity levels influence permissions to resources.
+        - name: token_elevation
+          type: keyword
+          description: Token type indicating the presence or absence of User Access Control (UAC) privilege elevation applied to the newly created process.
+        - name: version_info_company_name
+          type: keyword
+          description: Company name from the version information of the newly created process.
+        - name: version_info_file_description
+          type: keyword
+          description: Description from the version information of the newly created process.
+        - name: version_info_internal_file_name
+          type: keyword
+          description: Internal file name from the version information of the newly created process.
+        - name: version_info_original_file_name
+          type: keyword
+          description: Original file name from the version information of the newly created process.
+        - name: version_info_product_name
+          type: keyword
+          description: Product name from the version information of the newly created process.
+        - name: version_info_product_version
+          type: keyword
+          description: Product version from the version information of the newly created process.
+    - name: protocol
+      type: keyword
+      description: Protocol used during the communication.
+    - name: public_ip
+      type: group
+      fields:
+        - name: geo
+          type: group
+          fields:
+            - name: city_name
+              type: keyword
+            - name: continent_name
+              type: keyword
+            - name: country_iso_code
+              type: keyword
+            - name: country_name
+              type: keyword
+            - name: location
+              type: geo_point
+            - name: region_iso_code
+              type: keyword
+            - name: region_name
+              type: keyword
+        - name: value
+          type: ip
+          description: Public IP address used by the onboarded machine to connect to the Microsoft Defender for Endpoint service. This could be the IP address of the machine itself, a NAT device, or a proxy.
+    - name: query
+      type: group
+      fields:
+        - name: value
+          type: keyword
+          description: String used to run the query.
+        - name: target
+          type: keyword
+          description: Name of user, group, device, domain, or any other entity type being queried.
+        - name: type
+          type: keyword
+          description: Type of query, such as QueryGroup, QueryUser, or EnumerateUsers.
+    - name: raw_event_data
+      type: flattened
+      description: Raw event information from the source application or service in JSON format.
+    - name: recipient
+      type: group
+      fields:
+        - name: email_address
+          type: keyword
+          description: Email address of the recipient, or email address of the recipient after distribution list expansion.
+        - name: object_id
+          type: keyword
+          description: Unique identifier for the email recipient in Azure AD.
+    - name: registry
+      type: group
+      fields:
+        - name: device_tag
+          type: keyword
+          description: Machine tag added through the registry.
+        - name: key
+          type: keyword
+          description: Registry key that the recorded action was applied to.
+        - name: value_data
+          type: keyword
+          description: Data of the registry value that the recorded action was applied to.
+        - name: value_name
+          type: keyword
+          description: Name of the registry value that the recorded action was applied to.
+        - name: value_type
+          type: keyword
+          description: Data type, such as binary or string, of the registry value that the recorded action was applied to.
+    - name: remote
+      type: group
+      fields:
+        - name: device_name
+          type: keyword
+          description: Name of the machine that performed a remote operation on the affected machine. Depending on the event being reported, this name could be a fully-qualified domain name (FQDN), a NetBIOS name, or a host name without domain information.
+        - name: ip
+          type: ip
+          description: IP address that was being connected to.
+        - name: ip_type
+          type: keyword
+          description: Type of IP address, for example Public, Private, Reserved, Loopback, Teredo, FourToSixMapping, and Broadcast.
+        - name: port
+          type: long
+          description: TCP port on the remote device that was being connected to.
+        - name: url
+          type: keyword
+          description: URL or fully qualified domain name (FQDN) that was being connected to.
+    - name: report_id
+      type: keyword
+      description: Event identifier based on a repeating counter. To identify unique events, this column must be used in conjunction with the DeviceName and Timestamp columns.
+    - name: request
+      type: group
+      fields:
+        - name: account_domain
+          type: keyword
+          description: Domain of the account used to remotely initiate the activity.
+        - name: account_name
+          type: keyword
+          description: User name of account used to remotely initiate the activity.
+        - name: account_sid
+          type: keyword
+          description: Security Identifier (SID) of the account used to remotely initiate the activity.
+        - name: protocol
+          type: keyword
+          description: "Network protocol, if applicable, used to initiate the activity: Unknown, Local, SMB, or NFS."
+        - name: source_ip
+          type: ip
+          description: IPv4 or IPv6 address of the remote device that initiated the activity.
+        - name: source_port
+          type: long
+          description: Source port on the remote device that initiated the activity.
+    - name: sender
+      type: group
+      fields:
+        - name: display_name
+          type: keyword
+          description: Name of the sender displayed in the address book, typically a combination of a given or first name, a middle initial, and a last name or surname.
+        - name: from_address
+          type: keyword
+          description: Sender email address in the FROM header, which is visible to email recipients on their email clients.
+        - name: from_domain
+          type: keyword
+          description: Sender domain in the FROM header, which is visible to email recipients on their email clients.
+        - name: ipv4
+          type: ip
+          description: IPv4 address of the last detected mail server that relayed the message.
+        - name: ipv6
+          type: ip
+          description: IPv6 address of the last detected mail server that relayed the message.
+        - name: mail_from_address
+          type: keyword
+          description: Sender email address in the MAIL FROM header, also known as the envelope sender or the Return-Path address.
+        - name: mail_from_domain
+          type: keyword
+          description: Sender domain in the MAIL FROM header, also known as the envelope sender or the Return-Path address.
+        - name: object_id
+          type: keyword
+          description: Unique identifier for the sender's account in Azure AD.
+    - name: sensitivity
+      type: group
+      fields:
+        - name: label
+          type: keyword
+          description: Label applied to an email, file, or other content to classify it for information protection.
+        - name: sub_label
+          type: keyword
+          description: Sublabel applied to an email, file, or other content to classify it for information protection; sensitivity sublabels are grouped under sensitivity labels but are treated independently.
+    - name: service_source
+      type: keyword
+      description: Product or service that provided the alert information.
+    - name: severity
+      type: keyword
+      description: Indicates the potential impact (high, medium, or low) of the threat indicator or breach activity identified by the alert.
+    - name: sha1
+      type: keyword
+      description: SHA-1 of the file that the recorded action was applied to.
+    - name: sha256
+      type: keyword
+      description: SHA-256 of the file that the recorded action was applied to. This field is usually not populated—use the SHA1 column when available.
+    - name: share_name
+      type: keyword
+      description: Name of shared folder containing the file.
+    - name: signature_type
+      type: keyword
+      description: Indicates whether signature information was read as embedded content in the file itself or read from an external catalog file.
+    - name: signer
+      type: keyword
+      description: Information about the signer of the file.
+    - name: signer_hash
+      type: keyword
+      description: Unique hash value identifying the signer.
+    - name: subject
+      type: keyword
+      description: Subject of the email.
+    - name: target
+      type: group
+      fields:
+        - name: account_display_name
+          type: keyword
+          description: Display name of the account that the recorded action was applied to.
+        - name: account_upn
+          type: keyword
+          description: User principal name (UPN) of the account that the recorded action was applied to.
+        - name: device_name
+          type: keyword
+          description: Fully qualified domain name (FQDN) of the device that the recorded action was applied to.
+    - name: tenant
+      type: group
+      fields:
+        - name: id
+          type: keyword
+        - name: name
+          type: keyword
+    - name: threat
+      type: group
+      fields:
+        - name: family
+          type: keyword
+          description: Malware family that the suspicious or malicious file or process has been classified under.
+        - name: names
+          type: keyword
+          description: Detection name for malware or other threats found.
+        - name: types
+          type: keyword
+          description: Verdict from the email filtering stack on whether the email contains malware, phishing, or other threats.
+    - name: time
+      type: date
+    - name: timestamp
+      type: date
+      description: Date and time when the event was recorded.
+    - name: title
+      type: keyword
+      description: Title of the alert.
+    - name: tunnel_type
+      type: keyword
+      description: Tunneling protocol, if the interface is used for this purpose, for example 6to4, Teredo, ISATAP, PPTP, SSTP, and SSH.
+    - name: url
+      type: keyword
+      description: Full URL in the email subject, body, or attachment.
+    - name: url_chain
+      type: keyword
+      description: For scenarios involving redirections, it includes URLs present in the redirection chain.
+    - name: url_count
+      type: long
+      description: Number of embedded URLs in the email.
+    - name: url_domain
+      type: keyword
+      description: Domain name or host name of the URL.
+    - name: url_location
+      type: keyword
+    - name: user_agent
+      type: keyword
+      description: User agent information from the web browser or other client application.
+    - name: user_agent_tags
+      type: keyword
+      description: "More information provided by Microsoft Defender for Cloud Apps in a tag in the user agent field. Can have any of the following values: Native client, Outdated browser, Outdated operating system, Robot."
+    - name: user_level_action
+      type: keyword
+      description: Action taken on the email in response to matches to a mailbox policy defined by the recipient.
+    - name: user_level_policy
+      type: keyword
+      description: End-user mailbox policy that triggered the action taken on the email.
+    - name: vendor
+      type: keyword
+      description: Name of the product vendor or manufacturer, only available if device discovery finds enough information about this attribute.
+    - name: workload
+      type: keyword
+      description: The application from which the user clicked on the link, with the values being Email, Office and Teams.
+- name: url.user_info
+  type: keyword

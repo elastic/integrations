@@ -3,7 +3,7 @@ description: Pipeline for parsing Linux auditd logs
 processors:
   - set:
       field: ecs.version
-      value: '8.4.0'
+      value: '8.10.0'
   - rename:
       field: message
       target_field: event.original
@@ -26,8 +26,8 @@ processors:
       - "%{AUDIT_TYPE} %{AUDIT_KEY_VALUES:auditd.log.kv}"
   - kv:
       field: auditd.log.kv
-      field_split: "\\s+"
-      value_split: "="
+      field_split: '\s(?![\w\"]+?(\s+|$))'
+      value_split: '(?<!\\)='
       target_field: auditd.log
   - kv:
       field: auditd.log.sub_kv
@@ -2239,5 +2239,8 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: '{{{ _ingest.on_failure_message }}}'

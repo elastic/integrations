@@ -1,28 +1,43 @@
-# CIS Kubernetes Benchmark
+# Security Posture Management
 
-This integration compares [Kubernetes](https://kubernetes.io/) configuration against CIS benchmark checks. It computes a score that ranges between 0 - 100. This integration requires access to node files, node processes, and the Kubernetes api-server therefore it assumes the agent will be installed as a [DaemonSet](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/) with the proper [Roles](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#role-and-clusterrole) and [RoleBindings](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#rolebinding-and-clusterrolebinding) attached.
+Use the Security Posture Management integration to maintain the **confidentiality, integrity, and availability** of your data in the cloud by continuously identifying configuration risks and vulnerabilities in your cloud infrastructure, like publicly exposed storage buckets, overly permissive networking objects and Log4j vulnerability in workloads. Read below to learn more about the components that make up security posture management; CSPM, KSPM and CNVM. 
 
-## Leader election
+## Cloud Security Posture Management (CSPM)
 
-To collect cluster level data (compared to node level information) the integration makes use of the [leader election](https://www.elastic.co/guide/en/fleet/master/kubernetes_leaderelection-provider.html) mechanism.
-This mechanism assures that the cluster level data is collected by only one of the agents running as a part of the DaemonSet and not by all of them.
+CSPM discovers and evaluates the services in your cloud environment, like storage, compute, IAM, and more, against hardening guidelines defined by the Center for Internet Security (CIS) to help you identify and remediate configurations risks like:
 
-Cluster level data example: List of the running pods.
-Node level data example: kubelet configuration.
+- Publicly exposed storage buckets 
+- IAM Users without MFA enabled 
+- Networking objects that allow ingress to remote server administration ports (22, 3389, etc.)
 
-## Compatibility
+And much more! For a complete overview of CSPM, including step-by-step getting started guidance, check out [CSPM's documentation](https://ela.st/cspm).
 
-The Kubernetes package is tested with Kubernetes 1.21.x
+## Kubernetes Security Posture Management (KSPM)
 
-## Dashboard
+KSPM discovers and evaluates the components that make up your Kubernetes cluster against hardening guidelines defined by the [Center for Internet Security](https://www.cisecurity.org/) (CIS) to help you identify and remediate configurations risks like:
 
-CIS Kubernetes Benchmark integration is shipped including default dashboards and screens to manage the benchmark rules and inspect the compliance score and findings.
+- Kubelete servers that allow anonymous auth
+- Unencrypted traffic to load balancers
+- Admission of containers with `allowPrivilegeEscalation` permissions 
 
-## Deployment
+And much more! Check out the [KSPM getting started guide](https://ela.st/kspm-get-started) for step-by-step guidance on how to get started with KSPM. 
 
-#### Deploy the Elastic agent
+## Cloud Native Vulnerability Management (CNVM)
 
-Just like every other integration, the KSPM integration requires an Elastic agent to be deployed.
+Cloud Native Vulnerability Management (CNVM) - an efficient and comprehensive solution designed to discover and scan workloads to identify vulnerabilities in your cloud environment. With CNVM, you can effortlessly identify vulnerabilities in your cloud workloads like OS package vulnerabilities, and language-specific packages, among others. Our user-friendly interface also simplifies the process of triaging vulnerabilities and provides detailed vulnerability scan results in a concise and informative manner.
 
-See agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/running-on-kubernetes-managed-by-fleet.html).
-Note, this integration can only be added to Elastic agents with versions 8.3 or higher.
+Check out the [CNVM getting started guide](https://ela.st/cnvm-get-started) for step-by-step guidance on how to get started with CNVM.
+
+## Using C/KSPM & CNVM
+
+To use CSPM, KSPM and CNVM, you'll have to deploy each integration separately. After deploying integrations, the pages described below will begin to get populated with security posture data. Please read the respective use cases section for [CSPM](https://ela.st/cspm-use-cases) and [KSPM](https://ela.st/kspm-use-cases) for step-by-step instructions on how to use these pages to get insight into and improve your cloud security posture.
+
+| Page             | Description                                                                                                                                         |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Posture Dashboard | The posture dashboard provides an overview of the security posture of both Cloud accounts and Kubernetes clusters monitored. You can access the posture dashboard via the dashboards section of the security solution. Please read the [posture dashboard documentation](https://ela.st/posture-dashboard) to learn more.                                                |
+| Findings          | Findings communicate the configuration risks and vulnerabilities discovered in your environments. The findings page will always display the most up-to-date configuration risks and vulnerabilities found. You can access the findings page in the main navigation pane of the security solution. Please read the [findings documentation](https://ela.st/findings) to learn more. |
+| Benchmark Rules   | Benchmarks hold the configuration rules that are used to assess your specific environments for secure configuration. You can access benchmark rules in the `Manage` section of the security solution under `CLOUD SECURITY POSTURE.` To learn more, please read the [benchmark rules documentation](https://ela.st/configuration-rules)                                                                                                                                                            |
+
+&nbsp;
+
+As questions come up, check out the [KSPM FAQ](https://ela.st/kspm-faq), [CSPM FAQ](https://ela.st/cspm-faq), [CNVM FAQ](https://ela.st/cnvm-faq) or reach out to use directly in our [community slack workspace](https://elasticstack.slack.com/) in the `#security` or `#cloud-security` channels. 

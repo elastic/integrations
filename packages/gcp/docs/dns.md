@@ -27,7 +27,7 @@ The `dns` dataset collects queries that name servers resolve for your Virtual Pr
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
-| dns.answers | An array containing an object for each answer section returned by the server. The main keys that should be present in these objects are defined by ECS. Records that have more information may contain more keys than what ECS defines. Not all DNS data sources give all details about DNS answers. At minimum, answer objects must contain the `data` key. If more information is available, map as much of it to ECS as possible, and add any additional fields to the answer objects as custom fields. | object |
+| dns.answers | An array containing an object for each answer section returned by the server. The main keys that should be present in these objects are defined by ECS. Records that have more information may contain more keys than what ECS defines. Not all DNS data sources give all details about DNS answers. At minimum, answer objects must contain the `data` key. If more information is available, map as much of it to ECS as possible, and add any additional fields to the answer objects as custom fields. | group |
 | dns.answers.class | The class of DNS data contained in this resource record. | keyword |
 | dns.answers.data | The data describing the resource. The meaning of this data depends on the type and class of the resource record. | keyword |
 | dns.answers.name | The domain name to which this resource record pertains. If a chain of CNAME is being resolved, each answer's `name` should be the one that corresponds with the answer's `data`. It should not simply be the original `question.name` repeated. | keyword |
@@ -101,98 +101,104 @@ An example event for `dns` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-23T09:16:05.341Z",
+    "@timestamp": "2021-12-12T15:59:40.446Z",
     "agent": {
-        "ephemeral_id": "0b86920e-9dac-4b22-91c8-e594b22a00b4",
-        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
+        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
+        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.3"
+        "version": "8.6.0"
     },
     "cloud": {
-        "availability_zone": "europe-west2-a",
-        "instance": {
-            "id": "8340998530665147",
-            "name": "instance"
-        },
         "project": {
-            "id": "project"
+            "id": "key-reference-123456"
         },
         "provider": "gcp",
-        "region": "europe-west2"
+        "region": "global"
     },
     "data_stream": {
         "dataset": "gcp.dns",
         "namespace": "ep",
         "type": "logs"
     },
+    "destination": {
+        "address": "216.239.32.106",
+        "ip": "216.239.32.106"
+    },
     "dns": {
         "answers": [
             {
                 "class": "IN",
-                "data": "127.0.0.1",
-                "name": "elastic.co",
-                "ttl": "300",
+                "data": "67.43.156.13",
+                "name": "asdf.gcp.example.com.",
+                "ttl": 300,
                 "type": "A"
             }
         ],
         "question": {
-            "name": "elastic.co",
-            "registered_domain": "elastic.co",
-            "top_level_domain": "co",
+            "name": "asdf.gcp.example.com",
+            "registered_domain": "example.com",
+            "subdomain": "asdf.gcp",
+            "top_level_domain": "com",
             "type": "A"
         },
         "resolved_ip": [
-            "127.0.0.1"
+            "67.43.156.13"
         ],
         "response_code": "NOERROR"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
-        "snapshot": false,
-        "version": "8.2.3"
+        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
+        "action": "dns-query",
         "agent_id_status": "verified",
-        "created": "2022-06-28T02:46:41.230Z",
+        "category": "network",
+        "created": "2023-01-13T15:00:28.406Z",
         "dataset": "gcp.dns",
-        "id": "vwroyze8pg7y",
-        "ingested": "2022-06-28T02:46:42Z",
+        "id": "zir4wud11tm",
+        "ingested": "2023-01-13T15:00:29Z",
         "kind": "event",
         "outcome": "success"
     },
     "gcp": {
         "dns": {
             "auth_answer": true,
+            "destination_ip": "216.239.32.106",
             "protocol": "UDP",
-            "query_name": "elastic.co.",
+            "query_name": "asdf.gcp.example.com.",
             "query_type": "A",
-            "rdata": "elastic.co.\t300\tIN\ta\t127.0.0.1",
             "response_code": "NOERROR",
-            "server_latency": 14,
-            "source_ip": "10.154.0.3",
-            "source_network": "default",
-            "vm_instance_id": "8340998530665147",
-            "vm_instance_name": "694119234537.instance",
-            "vm_project_id": "project",
-            "vm_zone_name": "europe-west2-a"
+            "server_latency": 0,
+            "source_type": "internet",
+            "target_type": "public-zone"
         }
     },
     "input": {
         "type": "gcp-pubsub"
     },
     "log": {
-        "logger": "projects/project/logs/dns.googleapis.com%2Fdns_queries"
+        "level": "INFO",
+        "logger": "projects/key-reference-123456/logs/dns.googleapis.com%2Fdns_queries"
     },
     "network": {
+        "iana_number": "17",
+        "protocol": "dns",
         "transport": "udp"
     },
-    "source": {
-        "address": "10.154.0.3",
-        "ip": "10.154.0.3"
+    "related": {
+        "hosts": [
+            "asdf.gcp.example.com"
+        ],
+        "ip": [
+            "67.43.156.13",
+            "216.239.32.106"
+        ]
     },
     "tags": [
         "forwarded",

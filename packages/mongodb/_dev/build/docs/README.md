@@ -43,6 +43,10 @@ db.grantRolesToUser("user", ["clusterMonitor"])
 
 The `log` dataset collects the MongoDB logs.
 
+{{event "log"}}
+
+The fields reported are:
+
 {{fields "log"}}
 
 ## Metrics
@@ -110,6 +114,8 @@ The fields reported are:
 {{fields "replstatus"}}
 
 ### status
+
+The `status` returns a document that provides an overview of the database's state.
 
 It requires the following privileges, which is covered by the [clusterMonitor](https://docs.mongodb.com/manual/reference/built-in-roles/#clusterMonitor) role:
 

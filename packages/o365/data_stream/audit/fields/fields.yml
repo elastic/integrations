@@ -2,7 +2,7 @@
   type: group
   fields:
     - name: Actor
-      type: array
+      type: group
       fields:
         - name: ID
           type: keyword
@@ -21,7 +21,7 @@
     - name: AlertId
       type: keyword
     - name: AlertLinks
-      type: array
+      type: flattened
     - name: AlertType
       type: keyword
     - name: AppId
@@ -34,6 +34,9 @@
       type: keyword
     - name: ExchangeMetaData.*
       type: object
+      # This object can also contain date fields, but we cannot express multiple dynamic mapping types here.
+      object_type: long
+      object_type_mapping_type: long
     - name: Category
       type: keyword
     - name: ClientAppId
@@ -68,10 +71,18 @@
       type: keyword
     - name: ExceptionInfo.*
       type: object
+      # This should be boolean→boolean falling back to *→keyword, but this is
+      # not expressible here; object_type_mapping_type cannot be 'boolean'.
+      object_type: keyword
+      object_type_mapping_type: '*'
     - name: ExtendedProperties.*
       type: object
+      object_type: keyword
+      object_type_mapping_type: '*'
     - name: ExternalAccess
       type: boolean
+    - name: FileSizeBytes
+      type: long
     - name: GroupName
       type: keyword
     - name: Id
@@ -88,11 +99,17 @@
       type: keyword
     - name: Item.*
       type: object
+      object_type: keyword
+      object_type_mapping_type: '*'
     - name: Item.*.*
       type: object
+      object_type: keyword
+      object_type_mapping_type: '*'
     - name: ItemName
       type: keyword
     - name: ItemType
+      type: keyword
+    - name: ListBaseType
       type: keyword
     - name: ListId
       type: keyword
@@ -113,12 +130,14 @@
     - name: MailboxOwnerUPN
       type: keyword
     - name: Members
-      type: array
-    - name: Members.*
-      type: object
+      type: flattened
     - name: ModifiedProperties.*.*
       type: object
+      object_type: keyword
+      object_type_mapping_type: '*'
     - name: Name
+      type: keyword
+    - name: NewValue
       type: keyword
     - name: ObjectId
       type: keyword
@@ -132,8 +151,10 @@
       type: keyword
     - name: Parameters.*
       type: object
+      object_type: keyword
+      object_type_mapping_type: '*'
     - name: PolicyDetails
-      type: array
+      type: flattened
     - name: PolicyId
       type: keyword
     - name: RecordType
@@ -144,6 +165,9 @@
       type: boolean
     - name: SharePointMetaData.*
       type: object
+      # This object may contain date formatted fields, but we do not ensure validity, so leave as keyword.
+      object_type: keyword
+      object_type_mapping_type: '*'
     - name: SessionId
       type: keyword
     - name: Severity
@@ -165,7 +189,7 @@
     - name: SupportTicketId
       type: keyword
     - name: Target
-      type: array
+      type: group
       fields:
         - name: ID
           type: keyword

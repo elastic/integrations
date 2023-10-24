@@ -1,0 +1,92 @@
+config_version: "2"
+interval: {{interval}}
+{{#if enable_request_tracer}}
+request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+{{/if}}
+auth.oauth2.provider: google
+auth.oauth2.google.jwt_file: {{jwt_file}}
+auth.oauth2.google.jwt_json: {{jwt_json}}
+auth.oauth2.google.delegated_account: {{delegated_account}}
+auth.oauth2.scopes:
+  - https://www.googleapis.com/auth/admin.reports.audit.readonly
+request.url: {{api_host}}/admin/reports/v1/activity/users/{{user_key}}/applications/mobile
+{{#if proxy_url}}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+request.transforms:
+  - set:
+      target: url.params.startTime
+      # If last pagination cycle was finished successfully
+      # we move the startDate pointer forward
+      # else we reprocess the last interval from the beginning.
+      # If none of the values are in the cursor it means is a fresh start
+      # and we pick the default value.
+      value: >-
+        [[- if eq .cursor.pagination_finished "true" -]]
+          [[- .cursor.next_start_date -]]
+        [[- else -]]
+          [[- .cursor.last_response_date -]]
+        [[- end -]]
+      default: '[[formatDate (now (parseDuration "-{{initial_interval}}"))]]'
+response.split:
+  target: body.items
+  split:
+    target: body.events
+    keep_parent: true
+response.pagination:
+  - set:
+      target: url.params.pageToken
+      value: >-
+        [[- if index .last_response.body "nextPageToken" -]]
+          [[- .last_response.body.nextPageToken -]]
+        [[- end -]]
+      fail_on_template_error: true
+cursor:
+  pagination_finished:
+    # Use this flag to identify if an execution was interrupted in the middle
+    # of a pagination cycle.
+    value: '[[not (index .last_response.body "nextPageToken")]]'
+  last_response_date:
+    # Use this value to be able to resume from an interrupted pagination cycle.
+    value: '[[.last_response.url.params.Get "startTime"]]'
+  next_start_date:
+    # The API returns records sorted from newest to oldest,
+    # in order to pick the next startDate we keep the first event (newest) time.
+    value: >-
+      [[- $time := .first_event.id.time -]]
+      [[- if not (parseDate $time "RFC3339").IsZero -]]
+        [[- $time -]]
+      [[- else if not (parseDate $time "2006-01-02T15:04:05").IsZero -]]
+        [[- formatDate (parseDate $time "2006-01-02T15:04:05") -]]
+      [[- else if not (parseDate $time "2006-01-02T15:04:05Z").IsZero -]]
+        [[- formatDate (parseDate $time "2006-01-02T15:04:05Z") -]]
+      [[- else if not (parseDate $time "2006-01-02T15:04:05.999Z").IsZero -]]
+        [[- formatDate (parseDate $time "2006-01-02T15:04:05.999Z") -]]
+      [[- else if not (parseDate $time "2006-01-02T15:04:05 MST").IsZero -]]
+        [[- formatDate (parseDate $time "2006-01-02T15:04:05 MST") -]]
+      [[- else -]]
+        [[- formatDate now -]]
+      [[- end -]]
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

@@ -1,0 +1,38 @@
+{
+    "id": "49fe9df5-e86f-5981-ac24-dcaadadc2790",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "None",
+            "default_value": "By default, `kubelet.conf` file ownership is set to `root:root`.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kubelet/",
+            "id": "49fe9df5-e86f-5981-ac24-dcaadadc2790",
+            "name": "Ensure that the --kubeconfig kubelet.conf file ownership is set to root:root",
+            "profile_applicability": "* Level 1 - Worker Node",
+            "description": "Ensure that the `kubelet.conf` file ownership is set to `root:root`.",
+            "rationale": "The `kubelet.conf` file is the kubeconfig file for the node, and controls various parameters that set the behavior and identity of the worker node.\nYou should set its file ownership to maintain the integrity of the file.\nThe file should be owned by `root:root`.",
+            "audit": "Automated AAC auditing has been modified to allow CIS-CAT to input a variable for the <PATH>/<FILENAME> of the kubelet config file.\n\nPlease set $kubelet_config=<PATH><filename> based on the file location on your system \n\nfor example:\n```\nexport kubelet_config=/etc/kubernetes/kubelet.conf\n```\n\nTo perform the audit manually:\nRun the below command (based on the file location on your system) on the each worker node.\nFor example,\n\n```\nstat -c %U %G /etc/kubernetes/kubelet.conf\n```\n\nVerify that the ownership is set to `root:root`.",
+            "remediation": "Run the below command (based on the file location on your system) on the each worker node.\nFor example,\n\n```\nchown root:root /etc/kubernetes/kubelet.conf\n```",
+            "section": "Worker Node Configuration Files",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 4.1.6",
+                "Worker Node Configuration Files"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "4.1.6",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_4_1_6"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

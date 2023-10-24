@@ -3,7 +3,7 @@ description: Pipeline for Cisco Meraki syslog
 processors:
 - set:
     field: ecs.version
-    value: 8.3.0
+    value: '8.10.0'
 - rename:
     field: message
     target_field: event.original
@@ -16,9 +16,23 @@ processors:
     formats:
       - UNIX
     timezone: '{{{_conf.tz_offset}}}'
+    if: 'ctx._conf?.tz_offset != null && ctx._conf?.tz_offset != "local"'
+    on_failure:
+      - append:
+          field: error.message
+          value: 'failed to parse time field ({{{ _temp.ts_nano }}}): {{{ _ingest.on_failure_message }}}'
+- date:
+    field: _temp.ts_nano
+    formats:
+      - UNIX
+    if: 'ctx._conf?.tz_offset == null || ctx._conf?.tz_offset == "local"' 
+    on_failure:
+      - append:
+          field: error.message
+          value: 'failed to parse time field ({{{ _temp.ts_nano }}}): {{{ _ingest.on_failure_message }}}'
 - pipeline:
     name: '{{ IngestPipeline "flows" }}'
-    if: ctx.cisco_meraki.event_type == 'flows'
+    if: "['flows', 'firewall', 'vpn_firewall', 'cellular_firewall', 'bridge_anyconnect_client_vpn_firewall'].contains(ctx.cisco_meraki.event_type)"
 - pipeline:
     name: '{{ IngestPipeline "ipflows" }}'
     if: ctx.cisco_meraki.event_type == 'ip_flow_start' || ctx.cisco_meraki.event_type == 'ip_flow_end'
@@ -199,6 +213,8 @@ processors:
         "multiple_dhcp_servers_detected":
           type:
             - protocol
+          action: 
+            - multiple_dhcp_servers_detected
         "dfs_event":
           action: dynamic-frequency-selection-detected
         "aps_association_reject":
@@ -350,7 +366,15 @@ processors:
         list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
       }
       handleMap(ctx);
+- remove:
+    field: event.original
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
 on_failure:
 - set:
+    field: event.kind
+    value: pipeline_error
+- append:
     field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+    value: '{{{ _ingest.on_failure_message }}}'

@@ -1,15 +1,15 @@
-format_version: 1.0.0
+format_version: "3.0.0"
 name: carbon_black_cloud
 title: VMware Carbon Black Cloud
-version: "1.2.0"
-license: basic
+version: "1.16.0"
 description: Collect logs from VMWare Carbon Black Cloud with Elastic Agent.
 type: integration
 categories:
   - security
-release: ga
+  - edr_xdr
 conditions:
-  kibana.version: ^7.17.0 || ^8.0.0
+  kibana:
+    version: ^8.7.1
 screenshots:
   - src: /img/carbon_black_cloud-screenshot.png
     title: Carbon Black Cloud alert dashboard screenshot
@@ -23,17 +23,24 @@ icons:
 policy_templates:
   - name: carbon_black_cloud
     title: Carbon Black Cloud
-    description: Collect Logs from Carbon Black Cloud
+    description: Collect Logs from Carbon Black Cloud.
     inputs:
       - type: httpjson
         title: Collect Carbon Black Cloud logs via API
-        description: Collect Carbon Black Cloud logs via API
+        description: Collect Carbon Black Cloud logs via API.
         vars:
           - name: hostname
             type: text
             title: Hostname
             description: Carbon Black Cloud console Hostname. Find hostname in the console dashboard at the beginning of the web address (Add https:// before the hostname).
             required: true
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            multi: false
+            required: false
+            show_user: false
+            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
           - name: org_key
             type: text
             title: Organization Key
@@ -47,7 +54,7 @@ policy_templates:
           - name: custom_api_secret_key
             type: password
             title: Custom API Secret Key
-            description: API Secret Key with Custom Access Level type
+            description: API Secret Key with Custom Access Level type.
             required: true
           - name: api_id
             type: text
@@ -57,7 +64,7 @@ policy_templates:
           - name: api_secret_key
             type: password
             title: API Secret Key
-            description: API Secret Key with API Access Level type
+            description: API Secret Key with API Access Level type.
             required: true
           - name: proxy_url
             type: text
@@ -96,41 +103,96 @@ policy_templates:
               #    sxSmbIUfc2SGJGCJD4I=
               #    -----END CERTIFICATE-----
       - type: aws-s3
-        title: Collect Carbon Black Cloud logs via AWS S3
-        description: Collect Carbon Black Cloud logs via AWS S3
+        title: Collect Carbon Black Cloud logs via AWS S3 or AWS SQS
+        description: Collect Carbon Black Cloud logs via AWS S3 or AWS SQS.
         vars:
-          - name: bucket_arn
-            type: text
-            title: Bucket ARN
-            multi: false
+          - name: collect_s3_logs
             required: true
             show_user: true
+            title: Collect logs via S3 Bucket
+            description: To Collect logs via S3 bucket enable the toggle switch. By default, it will collect logs via SQS Queue.
+            type: bool
+            multi: false
+            default: false
+          - name: bucket_arn
+            type: text
+            title: "[S3] Bucket ARN"
+            multi: false
+            required: false
+            show_user: true
+            description: It is a required parameter for collecting logs via the AWS S3 Bucket.
+          - name: queue_url
+            type: text
+            title: "[SQS] Queue URL"
+            multi: false
+            required: false
+            show_user: true
+            description: URL of the AWS SQS queue that messages will be received from. It is a required parameter for collecting logs via the AWS SQS.
           - name: access_key_id
             type: password
             title: Access Key ID
             multi: false
-            required: true
+            required: false
             show_user: true
+            description: First part of access key.
           - name: secret_access_key
             type: password
             title: Secret Access Key
             multi: false
-            required: true
+            required: false
             show_user: true
-          - name: number_of_workers
-            type: integer
-            title: Number of Workers
+            description: Second part of access key.
+          - name: session_token
+            type: text
+            title: Session Token
+            multi: false
+            required: false
+            show_user: true
+            description: Required when using temporary security credentials.
+          - name: shared_credential_file
+            type: text
+            title: Shared Credential File
             multi: false
             required: false
             show_user: false
-            default: 5
-            description: Number of workers that will process the S3 objects listed.
+            description: Directory of the shared credentials file.
+          - name: credential_profile_name
+            type: text
+            title: Credential Profile Name
+            multi: false
+            required: false
+            show_user: false
+            description: Profile name in shared credentials file.
+          - name: role_arn
+            type: text
+            title: Role ARN
+            multi: false
+            required: false
+            show_user: false
+            description: AWS IAM Role to assume.
+          - name: endpoint
+            type: text
+            title: Endpoint
+            multi: false
+            required: false
+            show_user: false
+            default: ""
+            description: URL of the entry point for an AWS web service.
+          - name: fips_enabled
+            type: bool
+            title: Enable S3 FIPS
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option changes the service name from `s3` to `s3-fips` for connecting to the correct service endpoint.
           - name: proxy_url
             type: text
             title: Proxy URL
             multi: false
             required: false
             show_user: false
-            description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
 owner:
   github: elastic/security-external-integrations
+  type: elastic

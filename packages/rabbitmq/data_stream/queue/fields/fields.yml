@@ -3,6 +3,8 @@
   fields:
     - name: name
       type: keyword
+      # Reason for adding as dimension field : There can be same queue names for multiple vhosts.
+      dimension: true
       description: |
         The name of the queue with non-ASCII characters escaped as in C.
     - name: durable
@@ -23,55 +25,68 @@
         The state of the queue. Normally 'running', but may be `"{syncing, MsgCount}"` if the queue is synchronising. Queues which are located on cluster nodes that are currently down will be shown with a status of 'down'.
     - name: arguments.max_priority
       type: long
+      metric_type: gauge
       description: |
         Maximum number of priority levels for the queue to support.
     - name: consumers.count
       type: long
+      metric_type: gauge
       description: |
         Number of consumers.
     - name: consumers.utilisation.pct
       type: long
       format: percent
+      metric_type: gauge
       description: |
         Fraction of the time (between 0.0 and 1.0) that the queue is able to immediately deliver messages to consumers. This can be less than 1.0 if consumers are limited by network congestion or prefetch count.
     - name: messages.total.count
       type: long
+      metric_type: gauge
       description: |
         Sum of ready and unacknowledged messages (queue depth).
     - name: messages.total.details.rate
       type: float
+      metric_type: gauge
       description: |
         How much the queue depth has changed per second in the most recent sampling interval.
     - name: messages.ready.count
       type: long
+      metric_type: gauge
       description: |
         Number of messages ready to be delivered to clients.
     - name: messages.ready.details.rate
       type: float
+      metric_type: gauge
       description: |
         How much the count of messages ready has changed per second in the most recent sampling interval.
     - name: messages.unacknowledged.count
       type: long
+      metric_type: gauge
       description: |
         Number of messages delivered to clients but not yet acknowledged.
     - name: messages.unacknowledged.details.rate
       type: float
+      metric_type: gauge
       description: |
         How much the count of unacknowledged messages has changed per second in the most recent sampling interval.
     - name: messages.persistent.count
       type: long
+      metric_type: gauge
       description: |
         Total number of persistent messages in the queue (will always be 0 for transient queues).
     - name: memory.bytes
       type: long
       format: bytes
+      metric_type: gauge
       description: |
         Bytes of memory consumed by the Erlang process associated with the queue, including stack, heap and internal structures.
     - name: disk.reads.count
       type: long
+      metric_type: counter
       description: |
         Total number of times messages have been read from disk by this queue since it started.
     - name: disk.writes.count
       type: long
+      metric_type: counter
       description: |
         Total number of times messages have been written to disk by this queue since it started.

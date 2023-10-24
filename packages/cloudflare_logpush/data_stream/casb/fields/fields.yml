@@ -1,0 +1,55 @@
+- name: cloudflare_logpush.casb
+  type: group
+  description: Integration for parsing Cloudflare CASB Findings logs.
+  fields:
+    - name: timestamp
+      type: date
+      description: Date and time the finding was first identified.
+    - name: asset
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Asset display name.
+        - name: id
+          type: keyword
+          description: Unique identifier for an asset of this type. Format will vary by policy vendor.
+        - name: url
+          type: keyword
+          description: URL to the asset. This may not be available for some policy vendors and asset types.
+        - name: metadata
+          type: flattened
+          description: Metadata associated with the asset. Structure will vary by policy vendor.
+    - name: finding
+      type: group
+      fields:
+        - name: type
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: Human-readable name of the finding type.
+            - name: id
+              type: keyword
+              description: UUID of the finding type in Cloudflare´s system.
+            - name: severity
+              type: keyword
+              description: Severity of the finding type.
+        - name: id
+          type: keyword
+          description: UUID of the finding in Cloudflare´s system.
+    - name: integration
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Human-readable name of the integration.
+        - name: id
+          type: keyword
+          description: UUID of the integration in Cloudflare´s system.
+        - name: policy_vendor
+          type: keyword
+          description: Human-readable vendor name of the integration´s policy.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.

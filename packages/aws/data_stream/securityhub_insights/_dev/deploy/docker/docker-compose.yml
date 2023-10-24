@@ -1,0 +1,17 @@
+version: '2.3'
+services:
+  securityhub:
+    image: docker.elastic.co/observability/stream:v0.7.0
+    hostname: securityhub.xxxx.amazonaws.com
+    ports:
+      - 443
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: "443"
+    command:
+      - http-server
+      - --addr=:443
+      - --config=/files/config.yml
+      - --tls-cert=/files/certificate.crt
+      - --tls-key=/files/private.key

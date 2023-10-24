@@ -1,0 +1,38 @@
+{
+    "id": "1d6ff20d-4803-574b-80d2-e47031d9baa2",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://aws.amazon.com/premiumsupport/knowledge-center/s3-bucket-policy-for-config-rule/\n2. https://aws.amazon.com/blogs/security/how-to-use-bucket-policies-and-apply-defense-in-depth-to-help-secure-your-amazon-s3-data/\n3. https://awscli.amazonaws.com/v2/documentation/api/latest/reference/s3api/get-bucket-policy.html",
+            "id": "1d6ff20d-4803-574b-80d2-e47031d9baa2",
+            "name": "Ensure S3 Bucket Policy is set to deny HTTP requests",
+            "profile_applicability": "* Level 2",
+            "description": "At the Amazon S3 bucket level, you can configure permissions through a bucket policy making the objects accessible only through HTTPS.",
+            "rationale": "By default, Amazon S3 allows both HTTP and HTTPS requests.\nTo achieve only allowing access to Amazon S3 objects through HTTPS you also have to explicitly deny access to HTTP requests.\nBucket policies that allow HTTPS requests without explicitly denying HTTP requests will not comply with this recommendation.",
+            "audit": "To allow access to HTTPS you can use a condition that checks for the key `\"aws:SecureTransport: true\"`.\nThis means that the request is sent through HTTPS but that HTTP can still be used.\nSo to make sure you do not allow HTTP access confirm that there is a bucket policy that explicitly denies access for HTTP requests and that it contains the key \"aws:SecureTransport\": \"false\".\n\n**From Console:**\n\n1. Login to AWS Management Console and open the Amazon S3 console using https://console.aws.amazon.com/s3/\n2. Select the Check box next to the Bucket.\n3. Click on 'Permissions', then Click on `Bucket Policy`.\n4. Ensure that a policy is listed that matches:\n```\n'{\n \"Sid\": <optional>,\n \"Effect\": \"Deny\",\n \"Principal\": \"*\",\n \"Action\": \"s3:*\",\n \"Resource\": \"arn:aws:s3:::<bucket_name>/*\",\n \"Condition\": {\n \"Bool\": {\n \"aws:SecureTransport\": \"false\"\n }'\n```\n`<optional>` and `<bucket_name>` will be specific to your account\n\n5. Repeat for all the buckets in your AWS account.\n\n**From Command Line:**\n\n6. List all of the S3 Buckets \n```\naws s3 ls\n```\n7. Using the list of buckets run this command on each of them:\n```\naws s3api get-bucket-policy --bucket <bucket_name> | grep aws:SecureTransport\n```\n8. Confirm that `aws:SecureTransport` is set to false `aws:SecureTransport:false`\n9. Confirm that the policy line has Effect set to Deny 'Effect:Deny'",
+            "remediation": "**From Console:**\n\n1. Login to AWS Management Console and open the Amazon S3 console using https://console.aws.amazon.com/s3/\n2. Select the Check box next to the Bucket.\n3. Click on 'Permissions'.\n4. Click 'Bucket Policy'\n5. Add this to the existing policy filling in the required information\n```\n{\n \"Sid\": <optional>\",\n \"Effect\": \"Deny\",\n \"Principal\": \"*\",\n \"Action\": \"s3:*\",\n \"Resource\": \"arn:aws:s3:::<bucket_name>/*\",\n \"Condition\": {\n \"Bool\": {\n \"aws:SecureTransport\": \"false\"\n }\n }\n }\n```\n6. Save\n7. Repeat for all the buckets in your AWS account that contain sensitive data.\n\n**From Console** \n\nusing AWS Policy Generator:\n\n8. Repeat steps 1-4 above.\n9. Click on `Policy Generator` at the bottom of the Bucket Policy Editor\n10. Select Policy Type\n`S3 Bucket Policy`\n11. Add Statements\n- `Effect` = Deny\n- `Principal` = *\n- `AWS Service` = Amazon S3\n- `Actions` = *\n- `Amazon Resource Name` = <ARN of the S3 Bucket>\n12. Generate Policy\n13. Copy the text and add it to the Bucket Policy.\n\n**From Command Line:**\n\n14. Export the bucket policy to a json file.\n```\naws s3api get-bucket-policy --bucket <bucket_name> --query Policy --output text > policy.json\n```\n\n15. Modify the policy.json file by adding in this statement:\n```\n{\n \"Sid\": <optional>\",\n \"Effect\": \"Deny\",\n \"Principal\": \"*\",\n \"Action\": \"s3:*\",\n \"Resource\": \"arn:aws:s3:::<bucket_name>/*\",\n \"Condition\": {\n \"Bool\": {\n \"aws:SecureTransport\": \"false\"\n }\n }\n }\n```\n16. Apply this modified policy back to the S3 bucket:\n```\naws s3api put-bucket-policy --bucket <bucket_name> --policy file://policy.json\n```",
+            "section": "Simple Storage Service (S3)",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AWS",
+                "CIS 2.1.2",
+                "Simple Storage Service (S3)"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Web Services Foundations",
+                "version": "v1.5.0",
+                "id": "cis_aws",
+                "rule_number": "2.1.2",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_2_1_2"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

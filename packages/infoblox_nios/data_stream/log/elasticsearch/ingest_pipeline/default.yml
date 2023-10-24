@@ -7,47 +7,93 @@ processors:
       ignore_missing: true
   - set:
       field: ecs.version
-      value: '8.4.0'
+      value: '8.10.0'
   - grok:
       field: event.original
       patterns:
-        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\\s+%{NOTSPACE:host.domain}\\s+%{IP:host.ip}\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
-        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\\s+(%{IP:host.ip}|%{NOTSPACE:host.domain})\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
+        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\\s+%{NOTSPACE:host.domain}\\s+%{IP:_tmp.host.ip}\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
+        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\\s+(%{IP:_tmp.host.ip}|%{NOTSPACE:host.domain})\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
         - "^%{GREEDYDATA:message}$"
+  - rename:
+      field: _conf.tz_offset
+      target_field: event.timezone
+      if: ctx._conf?.tz_offset != null && ctx._conf.tz_offset != 'local'
+      ignore_missing: true
+      ignore_failure: true
   - date:
       field: event.created
+      timezone: '{{{event.timezone}}}'
+      if: ctx.event?.timezone != null
       target_field: event.created
       formats:
         - MMM  d HH:mm:ss
         - MMM dd HH:mm:ss
         - MMM d HH:mm:ss
         - dd-MMM-yyyy HH:mm:ss.SSS
-      ignore_failure: true
+      on_failure:
+        - remove:
+            field: event.created
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: event.created
+      if: ctx.event?.timezone == null
+      target_field: event.created
+      formats:
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+        - dd-MMM-yyyy HH:mm:ss.SSS
+      on_failure:
+        - remove:
+            field: event.created
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: infoblox_nios.log.type
       value: 'DHCP'
-      if: ctx.infoblox_nios?.log?.service_name == "dhcpd"
+      if: ctx.infoblox_nios?.log?.service_name == 'dhcpd' || ctx.infoblox_nios?.log?.service_name == 'dhcpdv6'
   - set:
       field: infoblox_nios.log.type
       value: 'DNS'
-      if: ctx.infoblox_nios?.log?.service_name == "named"
+      if: ctx.infoblox_nios?.log?.service_name == 'named'
   - set:
       field: infoblox_nios.log.type
       value: 'AUDIT'
-      if: ctx.infoblox_nios?.log?.service_name == "httpd"
+      if: ctx.infoblox_nios?.log?.service_name == 'httpd'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_audit" }}'
-      if: ctx.infoblox_nios?.log?.type == "AUDIT"
+      if: ctx.infoblox_nios?.log?.type == 'AUDIT'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_dhcp" }}'
-      if: ctx.infoblox_nios?.log?.type == "DHCP"
+      if: ctx.infoblox_nios?.log?.type == 'DHCP'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_dns" }}'
-      if: ctx.infoblox_nios?.log?.type == "DNS"
+      if: ctx.infoblox_nios?.log?.type == 'DNS'
+  - set:
+      field: '@timestamp'
+      value: '{{{event.created}}}'
+      if: "ctx['@timestamp'] == null && ctx.event?.created != null"
+  - convert:
+      field: _tmp.host.ip
+      if: ctx._tmp?.host?.ip != null && ctx._tmp.host.ip != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: _tmp.host.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      value: '{{{host.ip}}}'
-      if: ctx.host?.ip != null
+      value: '{{{_tmp.host.ip}}}'
+      if: ctx._tmp?.host?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
@@ -58,20 +104,43 @@ processors:
       ignore_failure: true
   - append:
       field: host.ip
-      value: '{{{host.ip}}}'
-      if: ctx.host?.ip != null
-      allow_duplicates: false
+      value: '{{{_tmp.host.ip}}}'
+      if: ctx._tmp?.host?.ip != null
       ignore_failure: true
   - lowercase:
       field: event.action
       if: ctx.event?.action != null
       ignore_failure: true
+  - geoip:
+      field: "client.ip"
+      target_field: "client.geo"
+      if: ctx.client?.geo == null && ctx.client?.ip != null
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: client.ip
+      target_field: client.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+      if: ctx.client?.ip != null
+  - rename:
+      field: client.as.asn
+      target_field: client.as.number
+      ignore_missing: true
+      if: ctx.client?.as?.asn != null
+  - rename:
+      field: client.as.organization_name
+      target_field: client.as.organization.name
+      ignore_missing: true
+      if: ctx.client?.as?.organization_name != null
   - script:
       description: Drops null/empty values recursively.
       lang: painless
       source: |
         boolean drop(Object o) {
-          if (o == null || o == "") {
+          if (o == null || o == '') {
             return true;
           } else if (o instanceof Map) {
             ((Map) o).values().removeIf(v -> drop(v));
@@ -85,10 +154,19 @@ processors:
         drop(ctx);
   - remove:
       field: event.original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field:
+        - _conf
+        - _tmp
       ignore_failure: true
       ignore_missing: true
 on_failure:
-  - set:
+  - append:
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
+  - set: 
+      field: event.kind
+      value: pipeline_error

@@ -17,6 +17,7 @@
                                     "label": "@timestamp",
                                     "operationType": "date_histogram",
                                     "params": {
+                                        "includeEmptyRows": true,
                                         "interval": "auto"
                                     },
                                     "scale": "interval",
@@ -25,9 +26,16 @@
                                 "a2c8801f-9e82-4502-a4db-8290bf4b4b7e": {
                                     "customLabel": true,
                                     "dataType": "number",
+                                    "filter": {
+                                        "language": "kuery",
+                                        "query": "websphere_application_server.jdbc.connection.free: *"
+                                    },
                                     "isBucketed": false,
                                     "label": "Free Connections",
-                                    "operationType": "median",
+                                    "operationType": "last_value",
+                                    "params": {
+                                        "sortField": "@timestamp"
+                                    },
                                     "scale": "ratio",
                                     "sourceField": "websphere_application_server.jdbc.connection.free"
                                 },
@@ -43,7 +51,7 @@
                                             "type": "column"
                                         },
                                         "orderDirection": "desc",
-                                        "otherBucket": true,
+                                        "otherBucket": false,
                                         "parentFormat": {
                                             "id": "terms"
                                         },
@@ -96,6 +104,7 @@
                 ],
                 "legend": {
                     "isVisible": true,
+                    "legendSize": "auto",
                     "position": "right"
                 },
                 "preferredSeriesType": "line",
@@ -113,20 +122,15 @@
                 }
             }
         },
-        "title": "Number of Free and Timed Out Connections [Metrics WebSphere Application Server]",
+        "title": "Number of Free Connections [Metrics WebSphere Application Server]",
         "visualizationType": "lnsXY"
     },
-    "coreMigrationVersion": "8.1.0",
+    "coreMigrationVersion": "8.3.0",
     "id": "websphere_application_server-3fe9e100-b49d-11ec-9a7c-ef3101c300f1",
     "migrationVersion": {
-        "lens": "8.1.0"
+        "lens": "8.3.0"
     },
     "references": [
-        {
-            "id": "metrics-*",
-            "name": "indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
         {
             "id": "metrics-*",
             "name": "indexpattern-datasource-layer-093d1982-684a-40db-bed9-9426559b90ee",

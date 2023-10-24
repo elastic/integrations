@@ -1,0 +1,38 @@
+{
+    "id": "f9dfc7e7-d067-5be5-8fc1-5d9043a4cd06",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "When updating an existing environment, ensure that administrators have access to remote server administration ports through another mechanism before removing access by deleting the ::/0 inbound rule.",
+            "default_value": "",
+            "references": "1. https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-security-groups.html#deleting-security-group-rule",
+            "id": "f9dfc7e7-d067-5be5-8fc1-5d9043a4cd06",
+            "name": "Ensure no security groups allow ingress from ::/0 to remote server administration ports",
+            "profile_applicability": "* Level 1",
+            "description": "Security groups provide stateful filtering of ingress and egress network traffic to AWS resources.\nIt is recommended that no security group allows unrestricted ingress access to remote server administration ports, such as SSH to port `22` and RDP to port `3389`.",
+            "rationale": "Public access to remote server administration ports, such as 22 and 3389, increases resource attack surface and unnecessarily raises the risk of resource compromise.",
+            "audit": "Perform the following to determine if the account is configured as prescribed:\n\n1. Login to the AWS Management Console at [https://console.aws.amazon.com/vpc/home](https://console.aws.amazon.com/vpc/home)\n2. In the left pane, click `Security Groups` \n3. For each security group, perform the following:\n4. Select the security group\n5. Click the `Inbound Rules` tab\n6. Ensure no rule exists that has a port range that includes port `22`, `3389`, or other remote server administration ports for your environment and has a `Source` of `::/0` \n\n**Note:** A Port value of `ALL` or a port range such as `0-1024` are inclusive of port `22`, `3389`, and other remote server administration ports.",
+            "remediation": "Perform the following to implement the prescribed state:\n\n1. Login to the AWS Management Console at [https://console.aws.amazon.com/vpc/home](https://console.aws.amazon.com/vpc/home)\n2. In the left pane, click `Security Groups` \n3. For each security group, perform the following:\n4. Select the security group\n5. Click the `Inbound Rules` tab\n6. Click the `Edit inbound rules` button\n7. Identify the rules to be edited or removed\n8. Either A) update the Source field to a range other than ::/0, or, B) Click `Delete` to remove the offending inbound rule\n9. Click `Save rules`",
+            "section": "Networking",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AWS",
+                "CIS 5.3",
+                "Networking"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Web Services Foundations",
+                "version": "v1.5.0",
+                "id": "cis_aws",
+                "rule_number": "5.3",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_5_3"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

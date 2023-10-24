@@ -62,7 +62,7 @@ The `firewall` dataset collects logs from Firewall Rules in your Virtual Private
 | gcp.firewall.rule_details.action | Action that the rule performs on match. | keyword |
 | gcp.firewall.rule_details.destination_range | List of destination ranges that the firewall applies to. | keyword |
 | gcp.firewall.rule_details.direction | Direction of traffic that matches this rule. | keyword |
-| gcp.firewall.rule_details.ip_port_info | List of ip protocols and applicable port ranges for rules. | array |
+| gcp.firewall.rule_details.ip_port_info | List of ip protocols and applicable port ranges for rules. | nested |
 | gcp.firewall.rule_details.priority | The priority for the firewall rule. | long |
 | gcp.firewall.rule_details.reference | Reference to the firewall rule. | keyword |
 | gcp.firewall.rule_details.source_range | List of source ranges that the firewall rule applies to. | keyword |
@@ -133,11 +133,11 @@ An example event for `firewall` looks as following:
 {
     "@timestamp": "2019-10-30T13:52:42.191Z",
     "agent": {
-        "ephemeral_id": "da5a2e43-d26c-4ee3-bbf3-ad9d9ab853ec",
-        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
+        "ephemeral_id": "cf009128-e43c-42e4-9158-9b088bd6f3f5",
+        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.3"
+        "version": "8.7.1"
     },
     "cloud": {
         "availability_zone": "us-east1-b",
@@ -159,23 +159,28 @@ An example event for `firewall` looks as following:
         "port": 3389
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
+        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
         "snapshot": false,
-        "version": "8.2.3"
+        "version": "8.7.1"
     },
     "event": {
         "action": "firewall-rule",
         "agent_id_status": "verified",
-        "category": "network",
-        "created": "2022-06-28T02:47:26.097Z",
+        "category": [
+            "network"
+        ],
+        "created": "2023-07-19T18:55:10.718Z",
         "dataset": "gcp.firewall",
         "id": "1f21ciqfpfssuo",
-        "ingested": "2022-06-28T02:47:27Z",
+        "ingested": "2023-07-19T18:55:14Z",
         "kind": "event",
-        "type": "connection"
+        "type": [
+            "allowed",
+            "connection"
+        ]
     },
     "gcp": {
         "destination": {

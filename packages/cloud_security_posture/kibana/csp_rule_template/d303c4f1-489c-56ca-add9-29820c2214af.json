@@ -1,0 +1,38 @@
+{
+    "id": "d303c4f1-489c-56ca-add9-29820c2214af",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "You need to setup and maintain root certificate authority file.",
+            "default_value": "By default, `--root-ca-file` is not set.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kube-controller-manager/\n2. https://github.com/kubernetes/kubernetes/issues/11000",
+            "id": "d303c4f1-489c-56ca-add9-29820c2214af",
+            "name": "Ensure that the --root-ca-file argument is set as appropriate",
+            "profile_applicability": "* Level 1 - Master Node",
+            "description": "Allow pods to verify the API server's serving certificate before establishing connections.",
+            "rationale": "Processes running within pods that need to contact the API server must verify the API server's serving certificate.\nFailing to do so could be a subject to man-in-the-middle attacks.\n\nProviding the root certificate for the API server's serving certificate to the controller manager with the `--root-ca-file` argument allows the controller manager to inject the trusted bundle into pods so that they can verify TLS connections to the API server.",
+            "audit": "Run the following command on the Control Plane node:\n\n```\nps -ef | grep kube-controller-manager\n```\n\nVerify that the `--root-ca-file` argument exists and is set to a certificate bundle file containing the root certificate for the API server's serving certificate.",
+            "remediation": "Edit the Controller Manager pod specification file `/etc/kubernetes/manifests/kube-controller-manager.yaml` on the Control Plane node and set the `--root-ca-file` parameter to the certificate bundle file`.\n\n```\n--root-ca-file=<path/to/file>\n```",
+            "section": "Controller Manager",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 1.3.5",
+                "Controller Manager"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "1.3.5",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_1_3_5"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

@@ -1,15 +1,16 @@
-format_version: 1.0.0
+format_version: "3.0.0"
 name: infoblox_nios
 title: Infoblox NIOS
-version: "1.0.0"
-license: basic
+version: "1.17.0"
 description: Collect logs from Infoblox NIOS with Elastic Agent.
 type: integration
 categories:
   - security
-release: ga
+  - network
+  - dns_security
 conditions:
-  kibana.version: ^7.17.0 || ^8.0.0
+  kibana:
+    version: ^8.7.1
 screenshots:
   - src: /img/infoblox-nios-screenshot.png
     title: Infoblox NIOS dashboard screenshot
@@ -25,6 +26,16 @@ policy_templates:
     title: Infoblox NIOS logs
     description: Collect Infoblox NIOS logs.
     inputs:
+      - type: logfile
+        vars:
+          - name: paths
+            type: text
+            title: Paths
+            multi: true
+            required: true
+            show_user: true
+        title: Collect logs from Infoblox NIOS via File input
+        description: Collecting syslog from Infoblox NIOS via File input.
       - type: tcp
         vars:
           - name: listen_address
@@ -96,3 +107,4 @@ policy_templates:
         description: Collecting syslog from Infoblox NIOS via UDP input.
 owner:
   github: elastic/security-external-integrations
+  type: elastic

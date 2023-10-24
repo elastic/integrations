@@ -3,7 +3,7 @@ description: Pipeline for Palo Alto XDR API.
 processors:
   - set:
       field: ecs.version
-      value: '8.4.0'
+      value: '8.10.0'
   - set:
       field: event.kind
       value: alert
@@ -19,6 +19,8 @@ processors:
   - json:
       field: event.original
       target_field: panw_cortex.xdr
+  - drop:
+      if: ctx.panw_cortex?.xdr?.reply?.result_count != null && ctx.panw_cortex?.xdr?.reply?.result_count == 0
   - fingerprint:
       fields:
         - panw_cortex.xdr.events.event_timestamp
@@ -49,6 +51,12 @@ processors:
       formats:
         - UNIX_MS
       if: ctx.panw_cortex?.xdr?.events?.event_timestamp != null
+  - date:
+      field: panw_cortex.xdr.events.agent_host_boot_time
+      target_field: panw_cortex.xdr.events.agent_host_boot_time
+      formats:
+        - UNIX_MS
+      if: ctx.panw_cortex?.xdr?.events?.agent_host_boot_time != null
   - date:
       field: panw_cortex.xdr.detection_timestamp
       target_field: event.created
@@ -126,9 +134,9 @@ processors:
       target_field: host.hostname
       ignore_missing: true
       if: ctx.host?.hostname == null
-  - set:
-      field: host.name
-      copy_from: host.hostname
+  - lowercase:
+      target_field: host.name
+      field: host.hostname
       if: ctx.host?.hostname != null
   - rename:
       field: panw_cortex.xdr.agent_os_type
@@ -161,10 +169,79 @@ processors:
         - panw_cortex.xdr.mac
       ignore_missing: true
       if: ctx.host?.mac != null
+  - gsub:
+      field: host.mac
+      ignore_missing: true
+      pattern: '[:.]'
+      replacement: '-'
+  - uppercase:
+      field: host.mac
+      ignore_missing: true
   - rename:
       field: panw_cortex.xdr.events.dns_query_name
       target_field: dns.question.name
       ignore_missing: true
+  - script:
+      if: ctx.panw_cortex?.xdr?.mitre_technique_id_and_name != null
+      lang: painless
+      description: "Extract Mitre Techniques and append it to Threat ECS fields"
+      source: |-
+        void addTechnique(def ctx, def x, def y) {
+          if (ctx?.threat == null) {
+            ctx.threat = new HashMap();
+          }
+          if (ctx?.threat.technique == null) {
+            ctx.threat.technique = new HashMap();
+          }
+          if (ctx?.threat.technique.id == null) {
+            ctx.threat.technique.id = new ArrayList();
+          }
+          if (ctx?.threat.technique.name == null) {
+            ctx.threat.technique.name = new ArrayList();
+          }
+          if (!ctx.threat?.technique?.id.contains(x)) {
+            ctx.threat.technique.id.add(x);
+          }
+          if (!ctx.threat?.technique?.name.contains(y)) {
+            ctx.threat.technique.name.add(y);
+          }
+        }
+        for (mitre_technique in ctx.panw_cortex?.xdr?.mitre_technique_id_and_name) {
+          addTechnique(ctx, mitre_technique.splitOnToken(' - ')[0], mitre_technique.splitOnToken(' - ')[1]);
+        }
+  - script:
+      if: ctx.panw_cortex?.xdr?.mitre_tactic_id_and_name != null
+      lang: painless
+      description: "Extract Mitre Tactics and append it to Threat ECS fields"
+      source: |-
+        void addTactic(def ctx, def x, def y) {
+          if (ctx?.threat == null) {
+          ctx.threat = new HashMap();
+          }
+          if (ctx?.threat.tactic == null) {
+          ctx.threat.tactic = new HashMap();
+          }
+          if (ctx?.threat.tactic.id == null) {
+          ctx.threat.tactic.id = new ArrayList();
+          }
+          if (ctx?.threat.tactic.name == null) {
+          ctx.threat.tactic.name = new ArrayList();
+          }
+          if (!ctx.threat?.tactic?.id.contains(x)) {
+          ctx.threat.tactic.id.add(x);
+          }
+          if (!ctx.threat?.tactic?.name.contains(y)) {
+          ctx.threat.tactic.name.add(y);
+          }
+        }
+        for (mitre_tactic in ctx.panw_cortex?.xdr?.mitre_tactic_id_and_name) {
+            addTactic(ctx, mitre_tactic.splitOnToken(' - ')[0], mitre_tactic.splitOnToken(' - ')[1]);
+        }
+  - set:
+      field: threat.framework
+      value: "MITRE ATT&CK"
+      if: "ctx.threat?.technique != null || ctx.threat?.tactic != null"
+
   #The Action actor is an an activity that took place and was recorded by the agent.
   - convert:
       field: panw_cortex.xdr.events.action_remote_ip
@@ -212,11 +289,6 @@ processors:
       target_field: process.entity_id
       ignore_missing: true
   - rename:
-      field: panw_cortex.xdr.events.actor_process_command_line
-      target_field: process.command_line
-      ignore_missing: true
-      if: ctx.process?.command_line == null
-  - rename:
       field: panw_cortex.xdr.events.action_file_path
       target_field: file.path
       ignore_missing: true
@@ -248,6 +320,10 @@ processors:
       field: panw_cortex.xdr.events.action_registry_data
       target_field: registry.data.strings
       ignore_missing: true
+  - set:
+      field: registry.data.strings
+      value: ['{{{registry.data.strings}}}']
+      if: ctx.registry?.data?.strings instanceof String
   #The Actor actor is the process that performed the action.
   - rename:
       field: panw_cortex.xdr.events.actor_process_os_pid
@@ -257,6 +333,7 @@ processors:
       field: panw_cortex.xdr.events.actor_process_instance_id
       target_field: process.entity_id
       ignore_missing: true
+      if: ctx.process?.entity_id == null
   - rename:
       field: panw_cortex.xdr.events.actor_process_image_path
       target_field: process.executable
@@ -265,10 +342,12 @@ processors:
       field: panw_cortex.xdr.events.actor_process_command_line
       target_field: process.command_line
       ignore_missing: true
+      if: ctx.process?.command_line == null
   - rename:
       field: panw_cortex.xdr.events.actor_process_image_name
       target_field: process.name
       ignore_missing: true
+      if: ctx.process?.name == null
   - rename:
       field: panw_cortex.xdr.events.actor_process_signature_vendor
       target_field: process.code_signature.subject_name
@@ -278,6 +357,7 @@ processors:
       field: panw_cortex.xdr.events.actor_process_image_sha256
       target_field: process.hash.sha256
       ignore_missing: true
+      if: ctx.process?.hash?.sha256 == null
   - rename:
       field: panw_cortex.xdr.events.actor_process_image_md5
       target_field: process.hash.md5
@@ -323,9 +403,27 @@ processors:
       field: panw_cortex.xdr.events.causality_actor_process_execution_time
       target_field: process.parent.uptime
       ignore_missing: true
-  - rename:
+
+# Parse user.domain from user.name
+  - grok:
       field: panw_cortex.xdr.events.user_name
-      target_field: user.name
+      ignore_missing: true
+      patterns:
+        - '^%{DATA:user.domain}\\\\%{DATA:user.name}$'
+        - '^%{DATA:user.domain}\\%{DATA:user.name}$'
+        - '^%{DATA:user.name}@%{DATA:user.domain}$'
+        - '^%{DATA:user.name}$'
+      if: ctx.panw_cortex?.xdr?.events?.user_name != null
+  - set:
+      field: user.email
+      copy_from: panw_cortex.xdr.events.user_name
+      if: "ctx.panw_cortex?.xdr?.events?.user_name != null && (ctx.panw_cortex?.xdr?.events?.user_name instanceof String) && (ctx.panw_cortex?.xdr?.events?.user_name.contains('@')) && (ctx.panw_cortex?.xdr?.events?.user_name.contains('.'))"
+  - set:
+      field: user.id
+      copy_from: panw_cortex.xdr.events.user_name
+      if: "ctx.panw_cortex?.xdr?.events?.user_name != null && (ctx.panw_cortex?.xdr?.events?.user_name instanceof String) && (ctx.panw_cortex?.xdr?.events?.user_name.contains('@')) && (ctx.panw_cortex?.xdr?.events?.user_name.contains('.'))"
+  - remove:
+      field: panw_cortex.xdr.events.user_name
       ignore_missing: true
   - rename:
       field: panw_cortex.xdr.events.fw_rule
@@ -434,6 +532,15 @@ processors:
       value: "{{{user.name}}}"
       allow_duplicates: false
       if: ctx.user?.name != null
+  - foreach:
+      field: panw_cortex.xdr.tags
+      if: ctx.panw_cortex?.xdr?.tags != null
+      processor: 
+        append:
+          field: tags
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+      
   - remove:
       field:
         - panw_cortex.xdr.host_name
@@ -446,6 +553,9 @@ processors:
         - panw_cortex.xdr.events.action_local_port
         - panw_cortex.xdr.events.action_country
         - panw_cortex.xdr.bioc_indicator
+        - panw_cortex.xdr.tags
+        - panw_cortex.xdr.mitre_technique_id_and_name
+        - panw_cortex.xdr.mitre_tactic_id_and_name
       ignore_missing: true
   - remove:
       field: event.original
@@ -454,5 +564,8 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: '{{{ _ingest.on_failure_message }}}'

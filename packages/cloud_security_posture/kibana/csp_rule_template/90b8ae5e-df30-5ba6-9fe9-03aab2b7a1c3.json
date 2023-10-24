@@ -1,0 +1,38 @@
+{
+    "id": "90b8ae5e-df30-5ba6-9fe9-03aab2b7a1c3",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "None.",
+            "default_value": "See the AWS EKS documentation for the default value.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kube-proxy/",
+            "id": "90b8ae5e-df30-5ba6-9fe9-03aab2b7a1c3",
+            "name": "Ensure that the kubeconfig file permissions are set to 644 or more restrictive",
+            "profile_applicability": "* Level 1",
+            "description": "If `kubelet` is running, and if it is using a file-based kubeconfig file, ensure that the proxy kubeconfig file has permissions of `644` or more restrictive.",
+            "rationale": "The `kubelet` kubeconfig file controls various parameters of the `kubelet` service in the worker node.\nYou should restrict its file permissions to maintain the integrity of the file.\nThe file should be writable by only the administrators on the system.\n\nIt is possible to run `kubelet` with the kubeconfig parameters configured as a Kubernetes ConfigMap instead of a file.\nIn this case, there is no proxy kubeconfig file.",
+            "audit": "SSH to the worker nodes\n\nTo check to see if the Kubelet Service is running:\n```\nsudo systemctl status kubelet\n```\nThe output should return `Active: active (running) since..`\n\nRun the following command on each node to find the appropriate kubeconfig file:\n\n```\nps -ef | grep kubelet\n```\nThe output of the above command should return something similar to `--kubeconfig /var/lib/kubelet/kubeconfig` which is the location of the kubeconfig file.\n\nRun this command to obtain the kubeconfig file permissions:\n\n```\nstat -c %a /var/lib/kubelet/kubeconfig\n```\nThe output of the above command gives you the kubeconfig file's permissions.\n\nVerify that if a file is specified and it exists, the permissions are `644` or more restrictive.",
+            "remediation": "Run the below command (based on the file location on your system) on the each worker\nnode.\nFor example,\n```\nchmod 644 <kubeconfig file>\n```",
+            "section": "Worker Node Configuration Files",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "EKS",
+                "CIS 3.1.1",
+                "Worker Node Configuration Files"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Elastic Kubernetes Service (EKS)",
+                "version": "v1.0.1",
+                "id": "cis_eks",
+                "rule_number": "3.1.1",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_3_1_1"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

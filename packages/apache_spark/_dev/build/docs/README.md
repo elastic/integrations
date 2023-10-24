@@ -4,11 +4,13 @@ The Apache Spark integration collects and parses data using the Jolokia Input.
 
 ## Compatibility
 
-This integration has been tested against `Apache Spark version 3.2.0`
+This integration has been tested against `Apache Spark version 3.5.0`
 
 ## Requirements
 
 In order to ingest data from Apache Spark, you must know the full hosts for the Main and Worker nodes.
+
+To proceed with the Jolokia setup, Apache Spark should be installed as a standalone setup. Make sure that the spark folder is installed in the `/usr/local` path. If not, then specify the path of spark folder in the further steps. You can install the standalone setup from the official download page of [Apache Spark](https://spark.apache.org/downloads.html).
 
 In order to gather Spark statistics, we need to download and enable Jolokia JVM Agent.
 
@@ -60,6 +62,10 @@ stats: http://127.0.0.1:7777/jolokia/read
 Restart Spark master.
 
 Follow the same set of steps for Spark Worker, Driver and Executor.
+
+### Troubleshooting
+
+If host.ip is shown conflicted under ``metrics-*`` data view, then this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the ``Application``, ``Driver``, ``Executor`` and ``Node`` data stream's indices.
 
 ## Metrics
 

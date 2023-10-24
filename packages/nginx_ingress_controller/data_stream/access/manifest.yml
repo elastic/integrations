@@ -1,7 +1,7 @@
 title: Nginx Ingress Controller access logs
 type: logs
 streams:
-  - input: logfile
+  - input: filestream
     vars:
       - name: paths
         type: text
@@ -10,7 +10,7 @@ streams:
         required: true
         show_user: true
         default:
-          - /var/log/nginx/ingress.log*
+          - /var/log/containers/*${kubernetes.container.id}.log
       - name: tags
         type: text
         title: Tags
@@ -36,5 +36,21 @@ streams:
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
+      - name: symlinks
+        required: true
+        show_user: true
+        title: Symlinks
+        description: Parse Symlinks
+        type: bool
+        multi: false
+        default: true
+      - name: condition
+        title: Condition
+        description: Condition to filter when to apply this datastream
+        type: text
+        multi: false
+        required: true
+        show_user: true
+        default: ${kubernetes.labels.app.kubernetes.io/name} == 'ingress-nginx'
     title: Nginx Ingress Controller access logs
     description: Collect Nginx Ingress Controller access logs

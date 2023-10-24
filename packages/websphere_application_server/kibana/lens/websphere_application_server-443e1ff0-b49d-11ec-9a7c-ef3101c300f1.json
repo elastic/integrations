@@ -23,7 +23,7 @@
                                             "type": "column"
                                         },
                                         "orderDirection": "desc",
-                                        "otherBucket": true,
+                                        "otherBucket": false,
                                         "parentFormat": {
                                             "id": "terms"
                                         },
@@ -38,6 +38,7 @@
                                     "label": "@timestamp",
                                     "operationType": "date_histogram",
                                     "params": {
+                                        "includeEmptyRows": true,
                                         "interval": "auto"
                                     },
                                     "scale": "interval",
@@ -46,9 +47,16 @@
                                 "fe52b8cf-86bc-4b20-a7c0-d3398ccdc4ea": {
                                     "customLabel": true,
                                     "dataType": "number",
+                                    "filter": {
+                                        "language": "kuery",
+                                        "query": "websphere_application_server.jdbc.connection.total.in_use: *"
+                                    },
                                     "isBucketed": false,
                                     "label": "Total Connections In Use",
-                                    "operationType": "median",
+                                    "operationType": "last_value",
+                                    "params": {
+                                        "sortField": "@timestamp"
+                                    },
                                     "scale": "ratio",
                                     "sourceField": "websphere_application_server.jdbc.connection.total.in_use"
                                 }
@@ -96,6 +104,7 @@
                 ],
                 "legend": {
                     "isVisible": true,
+                    "legendSize": "auto",
                     "position": "right"
                 },
                 "preferredSeriesType": "line",
@@ -116,17 +125,12 @@
         "title": "Total Connections In Use [Metrics WebSphere Application Server]",
         "visualizationType": "lnsXY"
     },
-    "coreMigrationVersion": "8.1.0",
+    "coreMigrationVersion": "8.3.0",
     "id": "websphere_application_server-443e1ff0-b49d-11ec-9a7c-ef3101c300f1",
     "migrationVersion": {
-        "lens": "8.1.0"
+        "lens": "8.3.0"
     },
     "references": [
-        {
-            "id": "metrics-*",
-            "name": "indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
         {
             "id": "metrics-*",
             "name": "indexpattern-datasource-layer-f73c674c-32f9-437c-9556-c02eef1a0871",

@@ -1,6 +1,6 @@
 # Memcahed integration
 Memcached is an in-memory key-value store for small chunks of arbitrary data (strings, objects) from results of database calls, API calls, or page rendering. 
-As a result of its speed, scalability, simple design, efficient memory management and API support for most popular languages; Memcached is a popular choice for high-performance, large-scale caching use cases.
+As a result of its speed, scalability, simple design, efficient memory management and API support for most popular languages. Memcached is a popular choice for high-performance, large-scale caching use cases.
 # Compatibility
  The Memcached Integration has been tested with 1.5 and 1.6 versions of Memcached. It is expected to work with all versions >= 1.5
 ## Metrics
@@ -11,6 +11,13 @@ The below metrics are fetched from memcached:
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
@@ -19,6 +26,7 @@ The below metrics are fetched from memcached:
 | event.kind | Event kind | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
 | event.type | Event type | constant_keyword |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | memcached.stats.cmd.get | Number of "get" commands received since server startup not counting if they were successful or not. | long |  | counter |
 | memcached.stats.cmd.set | Number of "set" commands serviced since server startup. | long |  | counter |
 | memcached.stats.connections.current | Number of open connections to this Memcached server, should be the same value on all servers during normal operation. | long |  | counter |
@@ -58,7 +66,7 @@ An example event for `stats` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "a6434521-6e0b-4509-be07-c1591bcfe768",

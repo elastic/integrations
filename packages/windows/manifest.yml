@@ -1,6 +1,6 @@
 name: windows
 title: Windows
-version: 1.14.0
+version: 1.40.0
 description: Collect logs and metrics from Windows OS and services with Elastic Agent.
 type: integration
 categories:
@@ -15,11 +15,16 @@ format_version: 1.0.0
 license: basic
 release: ga
 conditions:
-  kibana.version: "^7.16.0 || ^8.0.0"
+  kibana:
+    version: "^8.8.0"
 screenshots:
   - src: /img/metricbeat-windows-service.png
     title: metricbeat windows service
     size: 3142x1834
+    type: image/png
+  - src: /img/applocker-windows-audit-and-blocked.png
+    title: applocker audited and blocked events
+    size: 3040x2960
     type: image/png
 policy_templates:
   - name: windows
@@ -43,6 +48,13 @@ policy_templates:
             show_user: true
             required: true
             default: https://server.example.com:8089
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            multi: false
+            required: false
+            show_user: false
+            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. The logs are part of agent's diagnostics dump under `logs/httpjson/http-request-trace-<InputInstanceId>.ndjson`. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
           - name: username
             type: text
             title: Splunk REST API Username

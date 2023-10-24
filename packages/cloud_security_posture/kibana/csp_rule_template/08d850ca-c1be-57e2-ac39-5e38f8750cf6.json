@@ -1,0 +1,38 @@
+{
+    "id": "08d850ca-c1be-57e2-ac39-5e38f8750cf6",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "TLS and client certificate authentication must be configured for etcd.",
+            "default_value": "By default, `--etcd-cafile` is not set.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kube-apiserver/\n2. https://coreos.com/etcd/docs/latest/op-guide/security.html",
+            "id": "08d850ca-c1be-57e2-ac39-5e38f8750cf6",
+            "name": "Ensure that the --etcd-cafile argument is set as appropriate",
+            "profile_applicability": "* Level 1 - Master Node",
+            "description": "etcd should be configured to make use of TLS encryption for client connections.",
+            "rationale": "etcd is a highly-available key value store used by Kubernetes deployments for persistent storage of all of its REST API objects.\nThese objects are sensitive in nature and should be protected by client authentication.\nThis requires the API server to identify itself to the etcd server using a SSL Certificate Authority file.",
+            "audit": "Run the following command on the Control Plane node:\n\n```\nps -ef | grep kube-apiserver\n```\n\nVerify that the `--etcd-cafile` argument exists and it is set as appropriate.",
+            "remediation": "Follow the Kubernetes documentation and set up the TLS connection between the apiserver and etcd.\nThen, edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml` on the master node and set the etcd certificate authority file parameter.\n\n```\n--etcd-cafile=<path/to/ca-file>\n```",
+            "section": "API Server",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 1.2.29",
+                "API Server"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "1.2.29",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_1_2_29"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

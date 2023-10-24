@@ -1,0 +1,38 @@
+{
+    "id": "f78dad83-1fe2-5aba-8507-64ea9efb53d6",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "",
+            "id": "f78dad83-1fe2-5aba-8507-64ea9efb53d6",
+            "name": "Ensure that the --tls-cert-file and --tls-private-key-file arguments are set as appropriate",
+            "profile_applicability": "* Level 1 - Worker Node",
+            "description": "Setup TLS connection on the Kubelets.",
+            "rationale": "The connections from the apiserver to the kubelet are used for fetching logs for pods, attaching (through kubectl) to running pods, and using the kubelet\u2019s port-forwarding functionality.\nThese connections terminate at the kubelet\u2019s HTTPS endpoint.\nBy default, the apiserver does not verify the kubelet\u2019s serving certificate, which makes the connection subject to man-in-the-middle attacks, and unsafe to run over untrusted and/or public networks.",
+            "audit": "Run the following command on each node:\n\n```\nps -ef | grep kubelet\n```\n\nVerify that the --tls-cert-file and --tls-private-key-file arguments exist and they are set as appropriate.\n\nIf these arguments are not present, check that there is a Kubelet config specified by --config and that it contains appropriate settings for tlsCertFile and tlsPrivateKeyFile.",
+            "remediation": "If using a Kubelet config file, edit the file to set tlsCertFile to the location of the certificate file to use to identify this Kubelet, and tlsPrivateKeyFile to the location of the corresponding private key file.\n\nIf using command line arguments, edit the kubelet service file /etc/systemd/system/kubelet.service.d/10-kubeadm.conf on each worker node and set the below parameters in KUBELET_CERTIFICATE_ARGS variable.\n\n--tls-cert-file=<path/to/tls-certificate-file> --tls-private-key-file=<path/to/tls-key-file>\nBased on your system, restart the kubelet service.\nFor example:\n\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\n```",
+            "section": "Kubelet",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 4.2.10",
+                "Kubelet"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "4.2.10",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_4_2_10"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

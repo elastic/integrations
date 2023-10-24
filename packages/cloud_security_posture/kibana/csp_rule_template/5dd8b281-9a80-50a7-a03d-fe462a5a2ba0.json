@@ -1,0 +1,38 @@
+{
+    "id": "5dd8b281-9a80-50a7-a03d-fe462a5a2ba0",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "None",
+            "default_value": "By default, auditing is not enabled.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kube-apiserver/\n2. https://kubernetes.io/docs/concepts/cluster-administration/audit/\n3. https://github.com/kubernetes/features/issues/22",
+            "id": "5dd8b281-9a80-50a7-a03d-fe462a5a2ba0",
+            "name": "Ensure that the --audit-log-maxbackup argument is set to 10 or as appropriate",
+            "profile_applicability": "* Level 1 - Master Node",
+            "description": "Retain 10 or an appropriate number of old log files.",
+            "rationale": "Kubernetes automatically rotates the log files.\nRetaining old log files ensures that you would have sufficient log data available for carrying out any investigation or correlation.\nFor example, if you have set file size of 100 MB and the number of old log files to keep as 10, you would approximate have 1 GB of log data that you could potentially use for your analysis.",
+            "audit": "Run the following command on the Control Plane node:\n\n```\nps -ef | grep kube-apiserver\n```\n\nVerify that the `--audit-log-maxbackup` argument is set to `10` or as appropriate.",
+            "remediation": "Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml` on the Control Plane node and set the `--audit-log-maxbackup` parameter to 10 or to an appropriate value.\n\n```\n--audit-log-maxbackup=10\n```",
+            "section": "API Server",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 1.2.21",
+                "API Server"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "1.2.21",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_1_2_21"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

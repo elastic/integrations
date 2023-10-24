@@ -1,0 +1,765 @@
+{
+    "attributes": {
+        "description": "This Citrix ADC dashboard visualizes Interface metrics.",
+        "hits": 0,
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-e58ee30c-a1df-4a0a-bd4e-ffc6980efe6c",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "a2a48bef-1ec7-4cd5-b0f4-9f4873b4f0f2",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "e58ee30c-a1df-4a0a-bd4e-ffc6980efe6c": {
+                                            "columnOrder": [
+                                                "08f89ca6-98c1-4318-b19f-516ecad9b2a6",
+                                                "7f154dee-12aa-46c1-b4f8-20f184274e83",
+                                                "8b8b6704-895d-402f-8e22-eb11f1ef74f5"
+                                            ],
+                                            "columns": {
+                                                "08f89ca6-98c1-4318-b19f-516ecad9b2a6": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of Interface ID",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "accuracyMode": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "8b8b6704-895d-402f-8e22-eb11f1ef74f5",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "interface.id"
+                                                },
+                                                "7f154dee-12aa-46c1-b4f8-20f184274e83": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "8b8b6704-895d-402f-8e22-eb11f1ef74f5": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "citrix_adc.interface.packets.outbound.dropped_by_hardware.count: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Outbound packets dropped by hardware",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "citrix_adc.interface.packets.outbound.dropped_by_hardware.count"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "a2a48bef-1ec7-4cd5-b0f4-9f4873b4f0f2",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "citrix_adc.interface"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "citrix_adc.interface"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "8b8b6704-895d-402f-8e22-eb11f1ef74f5"
+                                        ],
+                                        "layerId": "e58ee30c-a1df-4a0a-bd4e-ffc6980efe6c",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "08f89ca6-98c1-4318-b19f-516ecad9b2a6",
+                                        "xAccessor": "7f154dee-12aa-46c1-b4f8-20f184274e83",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "auto",
+                                                "forAccessor": "8b8b6704-895d-402f-8e22-eb11f1ef74f5"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 16,
+                    "i": "6dd13615-8a4c-4d4f-b565-26fb49690bb0",
+                    "w": 24,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "6dd13615-8a4c-4d4f-b565-26fb49690bb0",
+                "title": "Outbound packets dropped by hardware over time [Metrics Citrix ADC]",
+                "type": "lens",
+                "version": "8.4.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-2149bf41-4cea-4cb8-9a09-01af70f4246b",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "d6100fc5-b7ab-4df2-9abf-1b6c9d52972b",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "2149bf41-4cea-4cb8-9a09-01af70f4246b": {
+                                            "columnOrder": [
+                                                "5165d0a0-b0eb-4fa9-ab00-ba0c89348b18",
+                                                "f2547132-7da3-4adb-9344-b59aa0a58986",
+                                                "c6a043eb-acab-4aa7-9683-30e268921648"
+                                            ],
+                                            "columns": {
+                                                "5165d0a0-b0eb-4fa9-ab00-ba0c89348b18": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of Interface ID",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "c6a043eb-acab-4aa7-9683-30e268921648",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "interface.id"
+                                                },
+                                                "c6a043eb-acab-4aa7-9683-30e268921648": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "citrix_adc.interface.packets.inbound.dropped.count: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Inbound packets dropped",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "citrix_adc.interface.packets.inbound.dropped.count"
+                                                },
+                                                "f2547132-7da3-4adb-9344-b59aa0a58986": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "d6100fc5-b7ab-4df2-9abf-1b6c9d52972b",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "citrix_adc.interface"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "citrix_adc.interface"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "c6a043eb-acab-4aa7-9683-30e268921648"
+                                        ],
+                                        "layerId": "2149bf41-4cea-4cb8-9a09-01af70f4246b",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "5165d0a0-b0eb-4fa9-ab00-ba0c89348b18",
+                                        "xAccessor": "f2547132-7da3-4adb-9344-b59aa0a58986"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 16,
+                    "i": "ef042c51-a09d-4927-a834-774f25189669",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "ef042c51-a09d-4927-a834-774f25189669",
+                "title": "Inbound packets dropped over time [Metrics Citrix ADC]",
+                "type": "lens",
+                "version": "8.4.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-186d3b37-e7d7-48ef-ac4f-29a36706d901",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "e39b1225-bec5-4116-bf3c-d0308b042f83",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "186d3b37-e7d7-48ef-ac4f-29a36706d901": {
+                                            "columnOrder": [
+                                                "60e0f50c-00ba-4d07-92c4-e8e0280f15e8",
+                                                "f3554b05-434c-4975-970b-72612a2cbe37",
+                                                "0d51ace6-bfbd-4c54-9d9c-e25048852cd0"
+                                            ],
+                                            "columns": {
+                                                "0d51ace6-bfbd-4c54-9d9c-e25048852cd0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "citrix_adc.interface.transmitted.bytes.value: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Transmitted bytes",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "citrix_adc.interface.transmitted.bytes.value"
+                                                },
+                                                "60e0f50c-00ba-4d07-92c4-e8e0280f15e8": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of Interface ID",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "0d51ace6-bfbd-4c54-9d9c-e25048852cd0",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "interface.id"
+                                                },
+                                                "f3554b05-434c-4975-970b-72612a2cbe37": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "e39b1225-bec5-4116-bf3c-d0308b042f83",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "citrix_adc.interface"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "citrix_adc.interface"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "0d51ace6-bfbd-4c54-9d9c-e25048852cd0"
+                                        ],
+                                        "layerId": "186d3b37-e7d7-48ef-ac4f-29a36706d901",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "60e0f50c-00ba-4d07-92c4-e8e0280f15e8",
+                                        "xAccessor": "f3554b05-434c-4975-970b-72612a2cbe37"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "cb848b9e-64d3-4d2c-ada0-49225499c9b7",
+                    "w": 24,
+                    "x": 0,
+                    "y": 16
+                },
+                "panelIndex": "cb848b9e-64d3-4d2c-ada0-49225499c9b7",
+                "title": "Transmitted bytes over time [Metrics Citrix ADC]",
+                "type": "lens",
+                "version": "8.4.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-14ae75d6-40e0-4b65-ba31-3c80bb6f5b76",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "eed7f61d-baf7-490c-80bb-d6e088dba657",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "14ae75d6-40e0-4b65-ba31-3c80bb6f5b76": {
+                                            "columnOrder": [
+                                                "543ead80-c7cb-45db-b363-db43125f1d0b",
+                                                "b9e97f4f-179c-43e7-a650-6abb2650124b",
+                                                "d07cf52a-1165-46bc-abd6-ee945cde0534"
+                                            ],
+                                            "columns": {
+                                                "543ead80-c7cb-45db-b363-db43125f1d0b": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of Interface ID",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "d07cf52a-1165-46bc-abd6-ee945cde0534",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "interface.id"
+                                                },
+                                                "b9e97f4f-179c-43e7-a650-6abb2650124b": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "d07cf52a-1165-46bc-abd6-ee945cde0534": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "citrix_adc.interface.received.bytes.value: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Received bytes",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "citrix_adc.interface.received.bytes.value"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "eed7f61d-baf7-490c-80bb-d6e088dba657",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "citrix_adc.interface"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "citrix_adc.interface"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "d07cf52a-1165-46bc-abd6-ee945cde0534"
+                                        ],
+                                        "layerId": "14ae75d6-40e0-4b65-ba31-3c80bb6f5b76",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "543ead80-c7cb-45db-b363-db43125f1d0b",
+                                        "xAccessor": "b9e97f4f-179c-43e7-a650-6abb2650124b"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "f63522ca-8b1e-426e-ac65-52d98adb4dbc",
+                    "w": 24,
+                    "x": 24,
+                    "y": 16
+                },
+                "panelIndex": "f63522ca-8b1e-426e-ac65-52d98adb4dbc",
+                "title": "Received bytes over time [Metrics Citrix ADC]",
+                "type": "lens",
+                "version": "8.4.1"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Metrics Citrix ADC] Interface",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.4.1",
+    "id": "citrix_adc-b475f280-4eb1-11ed-9db6-73aea65de09b",
+    "migrationVersion": {
+        "dashboard": "8.4.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "6dd13615-8a4c-4d4f-b565-26fb49690bb0:indexpattern-datasource-layer-e58ee30c-a1df-4a0a-bd4e-ffc6980efe6c",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "6dd13615-8a4c-4d4f-b565-26fb49690bb0:a2a48bef-1ec7-4cd5-b0f4-9f4873b4f0f2",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "ef042c51-a09d-4927-a834-774f25189669:indexpattern-datasource-layer-2149bf41-4cea-4cb8-9a09-01af70f4246b",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "ef042c51-a09d-4927-a834-774f25189669:d6100fc5-b7ab-4df2-9abf-1b6c9d52972b",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "cb848b9e-64d3-4d2c-ada0-49225499c9b7:indexpattern-datasource-layer-186d3b37-e7d7-48ef-ac4f-29a36706d901",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "cb848b9e-64d3-4d2c-ada0-49225499c9b7:e39b1225-bec5-4116-bf3c-d0308b042f83",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "f63522ca-8b1e-426e-ac65-52d98adb4dbc:indexpattern-datasource-layer-14ae75d6-40e0-4b65-ba31-3c80bb6f5b76",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "f63522ca-8b1e-426e-ac65-52d98adb4dbc:eed7f61d-baf7-490c-80bb-d6e088dba657",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard"
+}

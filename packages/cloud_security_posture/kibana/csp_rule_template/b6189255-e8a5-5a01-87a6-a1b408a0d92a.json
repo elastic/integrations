@@ -1,0 +1,38 @@
+{
+    "id": "b6189255-e8a5-5a01-87a6-a1b408a0d92a",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Pods mounted without service account tokens will not be able to communicate with the API server, except where the resource is available to unauthenticated principals.",
+            "default_value": "By default, all pods get a service account token mounted in them.\n",
+            "references": "1. https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/",
+            "id": "b6189255-e8a5-5a01-87a6-a1b408a0d92a",
+            "name": "Ensure that Service Account Tokens are only mounted where necessary",
+            "profile_applicability": "* Level 1 - Master Node",
+            "description": "Service accounts tokens should not be mounted in pods except where the workload running in the pod explicitly needs to communicate with the API server",
+            "rationale": "Mounting service account tokens inside pods can provide an avenue for privilege escalation attacks where an attacker is able to compromise a single pod in the cluster.\n\nAvoiding mounting these tokens removes this attack avenue.",
+            "audit": "Review pod and service account objects in the cluster and ensure that the option below is set, unless the resource explicitly requires this access.\n\n```\nautomountServiceAccountToken: false\n```",
+            "remediation": "Modify the definition of pods and service accounts which do not need to mount service account tokens to disable it.",
+            "section": "RBAC and Service Accounts",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 5.1.6",
+                "RBAC and Service Accounts"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "5.1.6",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_5_1_6"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

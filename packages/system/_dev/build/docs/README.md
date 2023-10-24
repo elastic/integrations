@@ -41,7 +41,7 @@ Details on the permissions needed for each data stream are available in the [Met
 ## Setup
 
 For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+{{ url "getting-started-observability" "Getting started" }} guide.
 
 ## Troubleshooting
 
@@ -52,6 +52,35 @@ permissions can be blocked by
 
 In addition, when running inside a container the proc filesystem directory of the host
 should be set using `system.hostfs` setting to `/hostfs`.
+
+### Windows Event ID clause limit
+
+If you specify more than 22 query conditions (event IDs or event ID ranges), some
+versions of Windows will prevent the integration from reading the event log due to
+limits in the query system. If this occurs, a similar warning as shown below:
+
+```
+The specified query is invalid.
+```
+
+In some cases, the limit may be lower than 22 conditions. For instance, using a
+mixture of ranges and single event IDs, along with an additional parameter such
+as `ignore older`, results in a limit of 21 conditions.
+
+If you have more than 22 conditions, you can work around this Windows limitation
+by using a drop_event processor to do the filtering after filebeat has received
+the events from Windows. The filter shown below is equivalent to
+`event_id: 903, 1024, 2000-2004, 4624` but can be expanded beyond 22 event IDs.
+
+```yaml
+- drop_event.when.not.or:
+  - equals.winlog.event_id: "903"
+  - equals.winlog.event_id: "1024"
+  - equals.winlog.event_id: "4624"
+  - range:
+      winlog.event_id.gte: 2000
+      winlog.event_id.lte: 2004
+```
 
 ## Logs reference
 
@@ -156,6 +185,8 @@ This data should be available without elevated permissions.
 The System `diskio` data stream provides disk IO metrics collected from the
 operating system. One event is created for each disk mounted on the system.
 
+> Note: For retrieving Linux-specific disk I/O metrics, use the [Linux](https://docs.elastic.co/integrations/linux) integration.
+
 #### Supported operating systems
 
 - Linux
@@ -226,6 +257,7 @@ This data should be available without elevated permissions.
 ### Memory
 
 The System `memory` data stream provides memory statistics.
+> Note: For retrieving Linux-specific memory metrics, use the [Linux](https://docs.elastic.co/integrations/linux) integration.
 
 #### Supported operating systems
 

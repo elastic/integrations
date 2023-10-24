@@ -1,0 +1,70 @@
+name: profiler_collector
+title: Universal Profiling Collector
+version: 8.10.0
+categories: ["elastic_stack", "monitoring"]
+description: Fleet-wide, whole-system, continuous profiling with zero instrumentation.
+conditions:
+  kibana.version: ^8.10.2
+  elastic.subscription: basic
+format_version: 2.8.0
+icons:
+  - size: 48x46
+    src: /img/profiler-logo-color-48px.svg
+    type: image/svg+xml
+    title: Universal Profiling Logo
+policy_templates:
+  - name: universal_profiling_collector
+    title: Universal Profiling Collection Service
+    description: Interact with Universal Profiling.
+    inputs:
+      - title: universal_profiling_collector
+        description: Collect traces from Universal Profiling Agents
+        type: pf-elastic-collector
+        template_path: input.yml.hbs
+        vars:
+          - name: host
+            type: text
+            default: localhost:8260
+            description: Network address used to receive incoming traffic from Universal Profiling agents
+          - name: verbose
+            type: bool
+            default: false
+            description: Enable debug logging
+          - name: telemetry
+            type: bool
+            default: true
+            description: Enable metrics
+          - name: memory_limit
+            type: text
+            default: ""
+            description: |
+              Specify a maximum memory allowance for the program. Memory units like 'MB' (Megabytes) or 'MiB' (Mebibytes) are supported.
+              The default value ("") applies a memory limit of 25% of the available memory.
+          - name: secret_token
+            type: text
+            required: true
+            description: |
+              A sequence of characters used to authenticate the Universal Profiling agents' requests to this component
+          - name: tls_enabled
+            type: bool
+            default: false
+          - name: tls_certificate_path
+            type: text
+          - name: tls_key_path
+            type: text
+          - name: tls_key_passphrase
+            type: text
+          - name: tls_supported_protocols
+            type: text
+            multi: true
+            default: ["TLSv1.2", "TLSv1.3"]
+          - name: tls_cipher_suites
+            type: text
+            multi: true
+          - name: tls_curve_types
+            type: text
+            multi: true
+    multiple: false
+type: integration
+owner:
+  github: elastic/profiling

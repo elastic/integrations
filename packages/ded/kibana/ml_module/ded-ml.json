@@ -1,0 +1,637 @@
+{
+    "attributes": {
+        "id": "ded-ml",
+        "title": "Data Exfiltration Detection",
+        "description": "Detects data exfiltration activity in your network and file data.",
+        "type": "ded",
+        "logo": {
+            "icon": "machineLearningApp"
+        },
+        "query": {
+            "bool": {
+                "should": [
+                    {
+                        "term": {
+                            "event.category": "file"
+                        }
+                    },
+                    {
+                    "bool":{
+                        "filter":[
+                              {
+                                "term":{
+                                  "event.category":"network"
+                                }
+                              },
+                             {
+                                "exists": {
+                                    "field": "source.bytes"
+                                }
+                             },
+                             {
+                                "exists": {
+                                    "field": "destination"
+                                }
+                            }
+                        ]
+                      }
+                   }
+                ]
+            }
+      },
+        "jobs": [
+            {
+                "id": "ded_high_sent_bytes_destination_geo_country_iso_code",
+                "config": {
+                    "groups": [
+                        "security",
+                        "data_exfiltration"
+                    ],
+                    "description": "Detects data exfiltration to an unusual geo-location (by country iso code).",
+                    "analysis_config": {
+                        "bucket_span": "3h",
+                        "detectors": [
+                            {
+                                "detector_description": "High bytes sent to an unusual country iso code",
+                                "function": "high_sum",
+                                "field_name": "source.bytes",
+                                "over_field_name": "destination.geo.country_iso_code",
+                                "detector_index": 0
+                            }
+                        ],
+                        "influencers": [
+                            "host.name",
+                            "user.name",
+                            "process.name",
+                            "source.ip",
+                            "destination.ip",
+                            "destination.geo.continent_name",
+                            "destination.geo.country_name",
+                            "destination.geo.country_iso_code"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-ded"
+                    }
+                }
+            },
+            {
+                "id": "ded_high_sent_bytes_destination_ip",
+                "config": {
+                    "groups": [
+                        "security",
+                        "data_exfiltration"
+                    ],
+                    "description": "Detects data exfiltration to an unusual geo-location (by IP address).",
+                    "analysis_config": {
+                        "bucket_span": "3h",
+                        "detectors": [
+                            {
+                                "detector_description": "High bytes sent to an unusual IP address",
+                                "function": "high_sum",
+                                "field_name": "source.bytes",
+                                "over_field_name": "destination.ip",
+                                "detector_index": 0
+                            }
+                        ],
+                        "influencers": [
+                            "host.name",
+                            "user.name",
+                            "process.name",
+                            "source.ip",
+                            "destination.ip"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-ded"
+                    }
+                }
+            },
+            {
+                "id": "ded_high_sent_bytes_destination_port",
+                "config": {
+                    "groups": [
+                        "security",
+                        "data_exfiltration"
+                    ],
+                    "description": "Detects data exfiltration to an unusual destination port.",
+                    "analysis_config": {
+                        "bucket_span": "3h",
+                        "detectors": [
+                            {
+                                "detector_description": "High bytes sent to an unusual destination port",
+                                "function": "high_sum",
+                                "field_name": "source.bytes",
+                                "over_field_name": "destination.port",
+                                "detector_index": 0
+                            }
+                        ],
+                        "influencers": [
+                            "host.name",
+                            "user.name",
+                            "process.name",
+                            "source.ip",
+                            "destination.ip",
+                            "destination.port"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-ded"
+                    }
+                }
+            },
+            {
+                "id": "ded_high_sent_bytes_destination_region_name",
+                "config": {
+                    "groups": [
+                        "security",
+                        "data_exfiltration"
+                    ],
+                    "description": "Detects data exfiltration to an unusual geo-location (by region name).",
+                    "analysis_config": {
+                        "bucket_span": "3h",
+                        "detectors": [
+                            {
+                                "detector_description": "High bytes sent to an unusual region",
+                                "function": "high_sum",
+                                "field_name": "source.bytes",
+                                "over_field_name": "destination.geo.region_name",
+                                "detector_index": 0
+                            }
+                        ],
+                        "influencers": [
+                            "host.name",
+                            "user.name",
+                            "process.name",
+                            "source.ip",
+                            "destination.ip",
+                            "destination.geo.city_name",
+                            "destination.geo.region_name"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-ded"
+                    }
+                }
+            },
+            {
+                "id": "ded_high_bytes_written_to_external_device",
+                "config": {
+                    "groups": [
+                        "security",
+                        "data_exfiltration"
+                    ],
+                    "description": "Detects data exfiltration activity by identifying high bytes written to an external device.",
+                    "analysis_config": {
+                        "bucket_span": "1h",
+                        "detectors": [
+                            {
+                                "detector_description": "High bytes written to an external device",
+                                "function": "high_sum",
+                                "field_name": "file.size",
+                                "partition_field_name": "host.name",
+                                "detector_index": 0
+                            }
+                        ],
+                        "influencers": [
+                              "host.name",
+                              "user.name",
+                              "file.name",
+                              "file.path",
+                              "file.Ext.device.bus_type",
+                              "process.name"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-ded"
+                    }
+                }
+            },
+            {
+                "id": "ded_rare_process_writing_to_external_device",
+                "config": {
+                    "groups": [
+                        "security",
+                        "data_exfiltration"
+                    ],
+                    "description": "Detects data exfiltration activity by identifying a file write started by a rare process to an external device.",
+                    "analysis_config": {
+                        "bucket_span": "1h",
+                        "detectors": [
+                            {
+                                "detector_description": "Rare process writing to an external device",
+                                "function": "rare",
+                                "by_field_name": "process.name",
+                                "partition_field_name": "host.name",
+                                "detector_index": 0
+                            }
+                        ],
+                        "influencers": [
+                              "host.name",
+                              "user.name",
+                              "file.name",
+                              "file.path",
+                              "file.Ext.device.bus_type",
+                              "process.name"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-ded"
+                    }
+                }
+            },
+          {
+                "id": "ded_high_bytes_written_to_external_device_airdrop",
+                "config": {
+                    "groups": [
+                        "security",
+                        "data_exfiltration"
+                    ],
+                    "description": "Detects data exfiltration activity by identifying high bytes written to an external device via Airdrop.",
+                    "analysis_config": {
+                        "bucket_span": "1h",
+                        "detectors": [
+                            {
+                                "detector_description": "High bytes written to an external device using Airdrop",
+                                "function": "high_sum",
+                                "field_name": "file.size",
+                                "partition_field_name": "host.name",
+                                "detector_index": 0
+                            }
+                        ],
+                        "influencers": [
+                              "host.name",
+                              "user.name",
+                              "file.name",
+                              "file.path",
+                              "process.name"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-ded"
+                    }
+                }
+            }
+        ],
+        "datafeeds": [
+            {
+                "id": "datafeed-ded_high_sent_bytes_destination_geo_country_iso_code",
+                "job_id": "ded_high_sent_bytes_destination_geo_country_iso_code",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "ded_high_sent_bytes_destination_geo_country_iso_code",
+                    "query": {
+                            "bool": {
+                                "must_not": [
+                                    {
+                            "terms": {
+                              "network.direction": ["internal","inbound"]
+                            }
+                          },
+                          {
+                            "term": {
+                              "source.bytes": 0
+                            }
+                          },
+                                 {
+                        "terms": {
+                            "destination.ip" : ["0.0.0.0/8","10.0.0.0/8","100.64.0.0/10","127.0.0.0/8","169.254.0.0/16","172.16.0.0/12","192.0.0.0/24",
+                            "192.0.2.0/24","192.88.99.0/24","192.168.0.0/16","198.18.0.0/15","198.51.100.0/24","203.0.113.0/24","224.0.0.0/4","233.252.0.0/24",
+                            "240.0.0.0/4","255.255.255.255/32"]
+                        }
+                    }],
+                        "filter": [
+                    {
+                        "term": {
+                            "event.category": "network"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "source.bytes"
+                        }
+                    },
+                            {
+                        "exists": {
+                            "field": "destination.port"
+                        }
+                    },
+                    {
+                        "terms": {
+                            "source.ip" : ["192.168.0.0/16","10.0.0.0/8","172.16.0.0/12"]
+                        }
+                    }
+
+                ]
+              }
+            }
+                }
+            },
+            {
+                "id": "datafeed-ded_high_sent_bytes_destination_ip",
+                "job_id": "ded_high_sent_bytes_destination_ip",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "ded_high_sent_bytes_destination_ip",
+                   "query": {
+                            "bool": {
+                                "must_not": [
+                                    {
+                            "terms": {
+                              "network.direction": ["internal","inbound"]
+                            }
+                          },
+                          {
+                            "term": {
+                              "source.bytes": 0
+                            }
+                          },
+                                 {
+                        "terms": {
+                            "destination.ip" : ["0.0.0.0/8","10.0.0.0/8","100.64.0.0/10","127.0.0.0/8","169.254.0.0/16","172.16.0.0/12","192.0.0.0/24",
+                            "192.0.2.0/24","192.88.99.0/24","192.168.0.0/16","198.18.0.0/15","198.51.100.0/24","203.0.113.0/24","224.0.0.0/4","233.252.0.0/24",
+                            "240.0.0.0/4","255.255.255.255/32"]
+                        }
+                    }],
+                        "filter": [
+                    {
+                        "term": {
+                            "event.category": "network"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "source.bytes"
+                        }
+                    },
+                            {
+                        "exists": {
+                            "field": "destination.port"
+                        }
+                    },
+                    {
+                        "terms": {
+                            "source.ip" : ["192.168.0.0/16","10.0.0.0/8","172.16.0.0/12"]
+                        }
+                    }
+
+                ]
+              }
+            }
+                }
+            },
+            {
+                "id": "datafeed-ded_high_sent_bytes_destination_port",
+                "job_id": "ded_high_sent_bytes_destination_port",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "ded_high_sent_bytes_destination_port",
+                    "query": {
+                            "bool": {
+                                "must_not": [
+                                    {
+                            "terms": {
+                              "network.direction": ["internal","inbound"]
+                            }
+                          },
+                          {
+                            "term": {
+                              "source.bytes": 0
+                            }
+                          },
+                                 {
+                        "terms": {
+                            "destination.ip" : ["0.0.0.0/8","10.0.0.0/8","100.64.0.0/10","127.0.0.0/8","169.254.0.0/16","172.16.0.0/12","192.0.0.0/24",
+                            "192.0.2.0/24","192.88.99.0/24","192.168.0.0/16","198.18.0.0/15","198.51.100.0/24","203.0.113.0/24","224.0.0.0/4","233.252.0.0/24",
+                            "240.0.0.0/4","255.255.255.255/32"]
+                        }
+                    }],
+                        "filter": [
+                    {
+                        "term": {
+                            "event.category": "network"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "source.bytes"
+                        }
+                    },
+                            {
+                        "exists": {
+                            "field": "destination.port"
+                        }
+                    },
+                    {
+                        "terms": {
+                            "source.ip" : ["192.168.0.0/16","10.0.0.0/8","172.16.0.0/12"]
+                        }
+                    }
+
+                ]
+              }
+            }
+                }
+            },
+            {
+                "id": "datafeed-ded_high_sent_bytes_destination_region_name",
+                "job_id": "ded_high_sent_bytes_destination_region_name",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "ded_high_sent_bytes_destination_region_name",
+                      "query": {
+                            "bool": {
+                                "must_not": [
+                                    {
+                            "terms": {
+                              "network.direction": ["internal","inbound"]
+                            }
+                          },
+                          {
+                            "term": {
+                              "source.bytes": 0
+                            }
+                          },
+                                 {
+                        "terms": {
+                            "destination.ip" : ["0.0.0.0/8","10.0.0.0/8","100.64.0.0/10","127.0.0.0/8","169.254.0.0/16","172.16.0.0/12","192.0.0.0/24",
+                            "192.0.2.0/24","192.88.99.0/24","192.168.0.0/16","198.18.0.0/15","198.51.100.0/24","203.0.113.0/24","224.0.0.0/4","233.252.0.0/24",
+                            "240.0.0.0/4","255.255.255.255/32"]
+                        }
+                    }],
+                        "filter": [
+                    {
+                        "term": {
+                            "event.category": "network"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "source.bytes"
+                        }
+                    },
+                            {
+                        "exists": {
+                            "field": "destination.port"
+                        }
+                    },
+                    {
+                        "terms": {
+                            "source.ip" : ["192.168.0.0/16","10.0.0.0/8","172.16.0.0/12"]
+                        }
+                    }
+
+                ]
+              }
+            }
+                }
+            },
+            {
+                "id": "datafeed-ded_high_bytes_written_to_external_device",
+                "job_id": "ded_high_bytes_written_to_external_device",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "ded_high_bytes_written_to_external_device",
+                    "query": {
+                      "bool": {
+                        "filter": [
+                          {
+                            "term": {
+                              "event.category": "file"
+                            }
+                          },
+                          {
+                            "exists": {
+                              "field": "file.Ext.device.bus_type"
+                            }
+                          },
+                          {
+                            "terms": {
+                              "event.action": [
+                                "creation",
+                                "overwrite",
+                                "modification"
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                }
+            },
+            {
+                "id": "datafeed-ded_rare_process_writing_to_external_device",
+                "job_id": "ded_rare_process_writing_to_external_device",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "ded_rare_process_writing_to_external_device",
+                    "query": {
+                      "bool": {
+                        "filter": [
+                          {
+                            "term": {
+                              "event.category": "file"
+                            }
+                          },
+                          {
+                            "exists": {
+                              "field": "file.Ext.device.bus_type"
+                            }
+                          },
+                          {
+                            "terms": {
+                              "event.action": [
+                                "creation",
+                                "overwrite",
+                                "modification"
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                }
+            },
+          {
+                "id": "datafeed-ded_high_bytes_written_to_external_device_airdrop",
+                "job_id": "ded_high_bytes_written_to_external_device_airdrop",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "ded_high_bytes_written_to_external_device_airdrop",
+                    "query": {
+                      "bool": {
+                        "filter": [
+                          {
+                            "term": {
+                              "event.category": "file"
+                            }
+                          },
+                          {
+                            "term": {
+                              "process.name": "sharingd"
+                            }
+                          },
+                          {
+                            "terms": {
+                              "event.action": [
+                                "creation",
+                                "overwrite",
+                                "modification"
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                }
+            }
+            ]},
+    "id": "ded-ml",
+    "migrationVersion": {
+        "search": "7.16.0"
+    },
+    "references": [],
+    "type": "ml-module"
+}

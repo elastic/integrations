@@ -1,0 +1,33 @@
+---
+description: Pipeline for processing system logs
+processors:
+  - dissect:
+      field: _temp.remMessage
+      pattern: "%{barracuda.waf.module.name} %{barracuda.waf.severity_level} %{_temp.eventid} %{barracuda.waf.module.event_message}"
+  - convert:
+      field: "_temp.eventid"
+      target_field: "barracuda.waf.module.event_id"
+      type: long
+      ignore_missing: true
+  - set:
+      field: event.category
+      value: [configuration]
+  - set:
+      field: event.kind
+      value: alert
+      if: ctx.barracuda.waf?.severity_level != null && ["ALER", "EMER", "CRIT", "ALERT", "CRITICAL","EMERGENCY"].contains(ctx.barracuda.waf.severity_level)
+  - set:
+      field: event.kind
+      value: event
+      if: ctx.event?.kind == null
+  - set:
+      field: event.type
+      value: [info]
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"

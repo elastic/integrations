@@ -1,23 +1,23 @@
 # Infoblox NIOS
 
-The Infoblox NIOS integration collects and parses DNS, DHCP, and Audit data collected from [Infoblox NIOS](https://www.infoblox.com/products/nios8/) via TCP/UDP.
+The Infoblox NIOS integration collects and parses DNS, DHCP, and Audit data collected from [Infoblox NIOS](https://www.infoblox.com/products/nios8/) via TCP/UDP or logfile.
 
 ## Setup steps
 1. Enable the integration with TCP/UDP input.
-2. Log in to the NIOS appliance. 
+2. Log in to the NIOS appliance.
 3. Configure the NIOS appliance to send messages to a Syslog server using the following steps. For further information, refer to [Using a Syslog Server](https://docs.infoblox.com/display/NAG8/Using+a+Syslog+Server#UsingaSyslogServer-SpecifyingSyslogServers).
-    1. From the Grid tab, select the Grid Manager tab -> Members tab, and then navigate to Grid Properties -> Edit -> Monitoring from the Toolbar.
-    2. Select **Log to External Syslog Servers** to send messages to a specified Syslog server.
-    3. Click the **Add** icon to define a new Syslog server.
-    4. Enter the IP **Address** of the Elastic Agent that is running the integration.
-    5. Select **Transport** to connect to the external Syslog server.
+    1. From the Grid tab, select the Grid Manager tab -> Members tab, and then navigate to Grid Properties -> Edit -> Monitoring from the Toolbar.
+    2. Select **Log to External Syslog Servers** to send messages to a specified Syslog server.
+    3. Click the **Add** icon to define a new Syslog server.
+    4. Enter the IP **Address** of the Elastic Agent that is running the integration.
+    5. Select **Transport** to connect to the external Syslog server.
     6. If you are using Secure TCP transport, upload a self-signed or a CA-signed **Server Certificate**.
-    7. From the drop-down list select the **Interface** through which the appliance sends Syslog messages to the Syslog server.
-    8. Select **Source** as **Any** so that the appliance sends both internal and external Syslog messages.
-    9. From the drop-down list, select **Node ID** i.e. the host or node identification string that identifies the appliance from which Syslog messages are originated.
-    10. Enter the **Port** of the Elastic Agent that is running the integration.
+    7. From the drop-down list select the **Interface** through which the appliance sends Syslog messages to the Syslog server.
+    8. Select **Source** as **Any** so that the appliance sends both internal and external Syslog messages.
+    9. From the drop-down list, select **Node ID** i.e. the host or node identification string that identifies the appliance from which Syslog messages are originated.
+    10. Enter the **Port** of the Elastic Agent that is running the integration.
     11. Select **Debug** **Severity** so that the appliance sends all Syslog messages to the server.
-    12. Select the following **Logging categories** : 
+    12. Select the following **Logging categories**:
         - Common Authentication
         - DHCP Process
         - DNS Client
@@ -34,13 +34,13 @@ The Infoblox NIOS integration collects and parses DNS, DHCP, and Audit data coll
         - Zone Transfer In
         - Zone Transfer Out
     13. Enable **Copy Audit Log Message to Syslog** to include audit log messages it sends to the Syslog server.
-    14. Select **Syslog Facility** that determines the processes from which the log messages are generated. 
+    14. Select **Syslog Facility** that determines the processes from which the log messages are generated.
 
 ## Compatibility
 
 This module has been tested against `Infoblox NIOS version 8.6.1` with the below-given logs pattern.
 
-## Log samples 
+## Log samples
 Below are the samples logs of the respective category:
 
 ## Audit Logs:
@@ -71,8 +71,8 @@ Below are the samples logs of the respective category:
 <30>Mar 11 23:51:31 infoblox.localdomain named[17742]: 07-Apr-2022 08:08:10.043 client 192.168.0.1#57398 UDP: query: a2.foo.com IN A response: NOERROR +AED a2.foo.com 28800 IN A 192.168.0.3;
 <30>Mar 11 23:51:31 infoblox.localdomain named[17742]: 07-Apr-2022 08:08:10.043 client 192.168.0.1#57398 UDP: query: non-exist.foo.com IN A response: NXDOMAIN +ED
 <45>Mar 11 23:51:31 infoblox.localdomain named[17742]: 07-Apr-2022 08:08:10.043 client 192.168.0.1#57398 UDP: query: a1.foo.com IN A response: NOERROR +ED a1.foo.com 28800 IN A 192.168.0.2; a1.foo.com 28800 IN A 192.168.0.3;
-<30>Mar  9 23:59:59 infoblox.localdomain named[17742]: client @0x7f1dd4114af0 192.168.0.1#59735 (config.nos-avg.cz): query failed (REFUSED) for config.nos-avg.cz/IN/TXT at query.c:10288
-<30>Mar  9 23:59:59 infoblox.localdomain named[17742]: client @0x7f1dd4114af0 192.168.0.1#59735 (config.nos-avg.cz): query: config.nos-avg.cz IN TXT + (192.168.0.1)
+<30>Mar  9 23:59:59 infoblox.localdomain named[17742]: client @0x7f1dd4114af0 192.168.0.1#59735 (config.nos-avg.cz): query failed (REFUSED) for config.nos-avg.cz/IN/TXT at query.c:10288
+<30>Mar  9 23:59:59 infoblox.localdomain named[17742]: client @0x7f1dd4114af0 192.168.0.1#59735 (config.nos-avg.cz): query: config.nos-avg.cz IN TXT + (192.168.0.1)
 <30>Mar 11 23:51:31 infoblox.localdomain named[27014]: rpz: rpz1.com: reload start
 <30>Mar 11 23:51:31 infoblox.localdomain named[29914]: client @0x7ff42c168b50 192.168.0.1#50460 (test.com): rewriting query name 'test.com' to 'query123-10-120-20-93.test.com', type A
 <30>Mar 11 23:51:31 infoblox.localdomain named[19204]: client @0x7fec7c11dab0 192.168.0.1#36483: updating zone 'test1.com/IN': adding an RR at 'a6.test1.com' A 192.168.0.2
@@ -130,6 +130,19 @@ Below are the samples logs of the respective category:
 <30>Mar 7 08:32:59 infoblox.localdomain dhcpd[20397]: DHCPDECLINE of 192.168.0.4 from 00:c0:dd:07:18:e2 via 192.168.0.2: abandoned\n
 <30>Mar 27 08:32:59 infoblox.localdomain dhcpd[20397]: DHCPNAK on 192.168.0.4 to f4:30:b9:17:ab:0e via 192.168.0.2
 <30>Mar 27 08:32:59 infoblox.localdomain dhcpd[6939]: DHCPLEASEQUERY from 192.168.0.4: LEASEQUERY not allowed, query ignored
+<30>Jul 12 15:07:57 67.43.156.0 dhcpd[8061]: DHCPOFFER on 67.43.156.0 to 9a:df:6e:f6:1f:23 via eth2 relay 67.43.156.0 lease-duration 40977 offered-duration 43200 uid 01:9a:df:6e:f6:1f:23
+<30>Jul 12 15:10:48 67.43.156.0 dhcpd[13468]: DHCPACK on 67.43.156.0 to 9a:df:6e:f6:1f:23 via eth2 relay 67.43.156.0 lease-duration 7257600 (RENEW)
+<30>Jul 12 15:55:55 67.43.156.0 dhcpdv6[12271]: Encapsulated Solicit message from 2a02:cf40:: port 547 from client DUID 01:9a:df:6e:f6:1f:23:01:9a:df:6e:f6:1f:23, transaction ID 0x698AD400
+<30>Jul 12 15:55:55 67.43.156.0 dhcpdv6[12271]: Advertise NA: address 2a02:cf40:: to client with duid 01:9a:df:6e:f6:1f:23:01:9a:df:6e:f6:1f:23 iaid = -1620146908 valid for 43200 seconds
+<30>Jul 12 15:55:55 67.43.156.0 dhcpdv6[12271]: Relay-forward message from 2a02:cf40:: port 547, link address 2a02:cf40::1, peer address 2a02:cf40::2
+<30>Jul 12 15:55:55 67.43.156.0 dhcpdv6[12271]: Encapsulating Advertise message to send to 2a02:cf40:: port 547
+<30>Jul 12 15:55:55 67.43.156.0 dhcpdv6[12271]: Sending Relay-reply message to 2a02:cf40:: port 547
+<30>Sep 28 09:25:49 infoblox.localdomain 10.0.0.1 dhcpd[25691]: DHCPACK on 192.168.0.4 to 00:50:56:83:96:03 via eth2 relay 192.168.0.4 lease-duration 3600 uid 01:9a:df:6e:f6:1f:23
+<30>Sep 30 11:27:26 anudhcp.anu.edu.au 10.0.0.1 dhcpd[11411]: RELEASE on 192.168.0.4 to ce:93:30:8e:db:ac
+<30>Sep 30 11:30:55 anudhcp.anu.edu.au 10.0.0.1 dhcpd[11411]: DHCPACK to 192.168.0.4 (9c:ad:97:7a:fd:33) via eth2
+<30>Sep 30 11:33:03 anudhcp.anu.edu.au 10.0.0.1 dhcpd[11411]: DHCPACK on 192.168.0.4 to 4a:34:bf:d2:78:24 (my-iPhone) via eth2 relay 67.43.156.0 lease-duration 900 offered-duration 3600 (RENEW) uid 01:4a:34:bf:d2:78:24
+<30>Sep 30 11:33:03 anudhcp.anu.edu.au 10.0.0.1 dhcpd[11411]: DHCPACK on 192.168.0.4 to 4a:34:bf:d2:78:24 via eth2 relay 67.43.156.0 lease-duration 900 offered-duration 3600 (RENEW) uid 01:4a:34:bf:d2:78:24
+<30>Sep 30 11:33:03 anudhcp.anu.edu.au 10.0.0.1 dhcpd[11411]: DHCPACK on 192.168.0.4 to 4a:34:bf:d2:78:24 (my-iPhone) via eth2 relay 67.43.156.0 lease-duration 900 offered-duration 3600 (RENEW)
 ```
 
 ## Logs
@@ -142,12 +155,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2011-10-19T12:43:47.375Z",
     "agent": {
-        "ephemeral_id": "e93a1351-1215-4615-87ff-a33eaa5c111f",
-        "hostname": "docker-fleet-agent",
-        "id": "0c7b29c0-78ea-4dd2-bbad-4092eeb1ee30",
+        "ephemeral_id": "efe7a458-adf8-47ea-bfc1-ad839cc9aa39",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.10.1"
     },
     "data_stream": {
         "dataset": "infoblox_nios.log",
@@ -155,22 +167,26 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "0c7b29c0-78ea-4dd2-bbad-4092eeb1ee30",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.10.1"
     },
     "event": {
         "action": "first_login",
         "agent_id_status": "verified",
-        "created": "2022-03-22T14:26:54.000Z",
+        "created": "2023-03-22T14:26:54.000+05:00",
         "dataset": "infoblox_nios.log",
-        "ingested": "2022-04-18T07:40:58Z"
+        "ingested": "2023-09-26T13:59:18Z",
+        "original": "\u003c29\u003eMar 22 14:26:54 10.0.0.1 httpd: 2011-10-19 12:43:47.375Z [user]: First_Login - - to=AdminConnector ip=10.0.0.2 auth=LOCAL group=admin-group apparently_via=GUI\\040first\\040login",
+        "timezone": "+0500"
     },
     "host": {
-        "ip": "10.0.0.1"
+        "ip": [
+            "10.0.0.1"
+        ]
     },
     "infoblox_nios": {
         "log": {
@@ -190,12 +206,13 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.80.6:43913"
+            "address": "192.168.80.7:39304"
         },
         "syslog": {
             "priority": 29
         }
     },
+    "message": "2011-10-19 12:43:47.375Z [user]: First_Login - - to=AdminConnector ip=10.0.0.2 auth=LOCAL group=admin-group apparently_via=GUI\\040first\\040login",
     "related": {
         "ip": [
             "10.0.0.2",
@@ -206,6 +223,7 @@ An example event for `log` looks as following:
         ]
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "infoblox_nios-log"
     ],
@@ -220,7 +238,17 @@ An example event for `log` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| client.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| client.as.organization.name | Organization name. | keyword |
+| client.as.organization.name.text | Multi-field of `client.as.organization.name`. | match_only_text |
 | client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| client.geo.city_name | City name. | keyword |
+| client.geo.continent_name | Name of the continent. | keyword |
+| client.geo.country_iso_code | Country ISO code. | keyword |
+| client.geo.country_name | Country name. | keyword |
+| client.geo.location | Longitude and latitude. | geo_point |
+| client.geo.region_iso_code | Region ISO code. | keyword |
+| client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.mac | MAC address of the client. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | client.port | Port of the client. | long |
@@ -248,11 +276,14 @@ An example event for `log` looks as following:
 | dns.header_flags | Array of 2 letter DNS header flags. | keyword |
 | dns.question.class | The class of records being queried. | keyword |
 | dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
+| dns.question.registered_domain | The highest registered domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
+| dns.question.subdomain | The subdomain is all of the labels under the registered_domain. If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
+| dns.question.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | dns.question.type | The type of record being queried. | keyword |
 | dns.response_code | The DNS response code. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
@@ -287,14 +318,18 @@ An example event for `log` looks as following:
 | infoblox_nios.log.dhcp.client_hostname |  | keyword |
 | infoblox_nios.log.dhcp.decline.message |  | keyword |
 | infoblox_nios.log.dhcp.discover.message |  | keyword |
+| infoblox_nios.log.dhcp.duid |  | keyword |
+| infoblox_nios.log.dhcp.iaid |  | keyword |
 | infoblox_nios.log.dhcp.inform.message |  | keyword |
 | infoblox_nios.log.dhcp.interface.ip |  | ip |
 | infoblox_nios.log.dhcp.lease.duration |  | long |
 | infoblox_nios.log.dhcp.lease.message |  | keyword |
 | infoblox_nios.log.dhcp.lease_query.message |  | keyword |
+| infoblox_nios.log.dhcp.link_address |  | keyword |
 | infoblox_nios.log.dhcp.message |  | text |
 | infoblox_nios.log.dhcp.network |  | keyword |
-| infoblox_nios.log.dhcp.offered_duration |  | long |
+| infoblox_nios.log.dhcp.offered.duration |  | long |
+| infoblox_nios.log.dhcp.peer_address |  | keyword |
 | infoblox_nios.log.dhcp.relay.interface.ip |  | ip |
 | infoblox_nios.log.dhcp.relay.interface.name |  | keyword |
 | infoblox_nios.log.dhcp.release.info |  | keyword |
@@ -302,6 +337,7 @@ An example event for `log` looks as following:
 | infoblox_nios.log.dhcp.router.ip |  | ip |
 | infoblox_nios.log.dhcp.trans_id |  | keyword |
 | infoblox_nios.log.dhcp.uid |  | keyword |
+| infoblox_nios.log.dhcp.validation_second |  | long |
 | infoblox_nios.log.dns.after_query |  | text |
 | infoblox_nios.log.dns.answers_policy |  | text |
 | infoblox_nios.log.dns.before_query |  | text |
@@ -314,12 +350,13 @@ An example event for `log` looks as following:
 | infoblox_nios.log.service_name |  | keyword |
 | infoblox_nios.log.type |  | keyword |
 | input.type | Input type | keyword |
-| interface.name | Interface name as reported by the system. | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Log source address | keyword |
 | log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | process.pid | Process id. | long |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |

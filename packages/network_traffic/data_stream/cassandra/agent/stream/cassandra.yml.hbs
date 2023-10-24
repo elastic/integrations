@@ -5,6 +5,10 @@ ports:
   - {{p}}
 {{/each}}
 {{/if}}
+fields_under_root: true
+fields:
+  _conf:
+    geoip_enrich: {{geoip_enrich}}
 {{#if send_request}}
 send_request: {{send_request}}
 {{/if}}
@@ -29,10 +33,13 @@ ignored_ops:
   - {{ignored_op}}
 {{/each}}
 {{/if}}
-{{#if processors}}
 processors:
+{{#contains "forwarded" tags}}
+- add_observer_metadata: ~
+{{else}}
+- add_host_metadata: ~
+{{/contains}}
 {{processors}}
-{{/if}}
 {{#if tags}}
 tags:
 {{#each tags as |tag|}}
@@ -50,4 +57,8 @@ interface:
 {{else}}
   device: {{interface}}
 {{/if}}
+{{/if}}
+{{#if never_install}}
+npcap:
+  never_install: true
 {{/if}}
