@@ -1,752 +1,750 @@
 ---
 description: Pipeline for processing Zero Networks Audit logs
 processors:
-- rename:
-    field: message
-    target_field: event.original
-- json:
-    field: event.original
-    target_field: json
-- date:
-    field: json.isoTimestamp
-    formats:
-    - date_optional_time
-    target_field: '@timestamp'
-- convert:
-    field: json.auditType
-    type: string
-    ignore_missing: true
-- rename:
-    field: json.auditType
-    target_field: event.code
-    ignore_missing: true
-- rename:
-    field: json.performedBy.id
-    target_field: user.id
-    ignore_missing: true
-- rename:
-    field: json.performedBy.name
-    target_field: user.full_name
-    ignore_missing: true
-- rename:
-    field: json.enforcementSource
-    target_field: zeronetworks.audit.enforcementSource
-    if: 'ctx.json?.enforcementSource != null'
-- rename:
-    field: json.userRole
-    target_field: zeronetworks.audit.userRole
-    if: 'ctx.json?.userRole != null'
-- rename:
-    field: json.reportedObjectId
-    target_field: zeronetworks.audit.reportedObjectId
-    if: 'ctx.json?.reportedObjectId != null'
-- rename:
-    field: json.reportedObjectGeneration
-    target_field: zeronetworks.audit.reportedObjectGeneration
-    if: 'ctx.json?.reportedObjectGeneration != null'
-- rename:
-    field: json.parentObjectId
-    target_field: zeronetworks.audit.parentObjectId
-    ignore_missing: true
-    if: 'ctx.json?.parentObjectId != null'
-- foreach:
-    field: json.destinationEntitiesList
-    ignore_missing: true
-    processor:
-      set:
-        field: zeronetworks.audit.destinationEntitiesList.name
-        value: '{{{_ingest._value.name}}}'
-- foreach:
-    field: json.destinationEntitiesList
-    ignore_missing: true
-    processor:
-      set:
-        field: zeronetworks.audit.destinationEntitiesList.id
-        value: '{{{_ingest._value.id}}}'
-- json:
-    field: json.details
-    target_field: zeronetworks.audit.details
-- append:
-    field: related.user
-    value: '{{user.id}}'
-    allow_duplicates: false
-    if: ctx.user?.id != null
-- append:
-    field: related.user
-    value: '{{user.full_name}}'
-    allow_duplicates: false
-    if: ctx.user?.id != null
-- fingerprint:
-    fields:
-      - json.timestamp
-      - event.code
-      - user.full_name
-    target_field: event.id
-- set:
-    field: _id
-    copy_from: event.id
-- script:
-    lang: painless
-    tag: Add ECS categorization
-    params:
-      ## Audit Types
-      "1":
-        action: 'Asset is being added to protection'
-        outcome: success
-        type:
-          - start
-          - change
-        category:
-          - host
-          - configuration
-      "2":
-        action: 'Asset added to protection'
-        outcome: success
-        type:
-          - end
-          - change
-        category:
-          - host
-          - configuration
-      "3":
-        action: 'Failed to add asset to protection'
-        outcome: failure
-        type:
-          - info
-          - change
-        category:
-          - host
-          - configuration
-      "4":
-        action: 'Asset is being removed from protection'
-        outcome: success
-        type:
-          - start
-          - change
-        category:
-          - host
-          - configuration
-      "5":
-        action: 'Removed asset from protection'
-        outcome: success
-        type:
-          - end
-          - change
-        category:
-          - host
-          - configuration
-      "6":
-        action: 'Failed to remove asset from protection'
-        outcome: failure
-        type:
-          - info
-          - change
-        category:
-          - host
-          - configuration
-      "7":
-        action: 'Asset added to learning'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - host
-          - configuration
-      "8":
-        action: 'Asset removed from learning'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - host
-          - configuration
-      "9":
-        action: 'Inbound allow rule created'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "10":
-        action: 'Inbound allow rule deleted'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "11":
-        action: 'Inbound allow rule expired'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "12":
-        action: 'Inbound allow rule edited'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "17":
-        action: 'Inbound MFA policy created'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "18":
-        action: 'Inbound MFA policy deleted'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "19":
-        action: 'Inbound MFA policy edited'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "20":
-        action: 'Inbound JIT rule created'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "21":
-        action: 'Inbound JIT rule deleted'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "22":
-        action: 'Inbound JIT rule expired'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "23":
-        action: 'Inbound JIT rule revived'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "24":
-        action: 'Inbound JIT rule edited'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "25":
-        action: 'API Token created'
-        outcome: success
-        type:
-          - info
-          - access
-          - creation
-        category:
-          - configuration
-          - api
-      "26":
-        action: 'API Token deleted'
-        outcome: success
-        type:
-          - info
-          - access
-          - deletion
-        category:
-          - configuration
-          - api
-      "27":
-        action: 'API Token regenerated'
-        outcome: success
-        type:
-          - info
-          - access
-          - change
-        category:
-          - api
-          - configuration
-      "28":
-        action: 'Asset protection date postponed'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - host
-          - configuration
-      "29":
-        action: 'Outbound block rule created'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "30":
-        action: 'Outbound block rule deleted'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "31":
-        action: 'Outbound block rule expired'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "32":
-        action: 'Outbound block rule edited'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "33":
-        action: 'Inbound block rule created'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "34":
-        action: 'Inbound block rule deleted'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "35":
-        action: 'Inbound block rule expired'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "36":
-        action: 'Inbound block rule edited'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "39":
-        action: 'Removed asset from protection (overriding policy)'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - host
-          - configuration
-      "40":
-        action: 'Asset is being removed from protection (overriding policy)'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - host
-          - configuration
-      "41":
-        action: 'Asset removed from learning (overriding policy)'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - host
-          - configuration
-      "42":
-        action: 'Asset is being added to protection (policy)'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - host
-          - configuration
-      "43":
-        action: 'Asset added to protection (policy)'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - host
-          - configuration
-      "44":
-        action: 'Asset added to learning (policy)'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - host
-          - configuration
-      "45":
-        action: 'Protection policy created'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "46":
-        action: 'Protection policy deleted'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "47":
-        action: 'Protection policy edited'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "48":
-        action: 'Inbound JIT access rejected'
-        outcome: failure
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "49":
-        action: 'Inbound JIT fallback rule created'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "50":
-        action: 'Inbound JIT fallback rule deleted'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "51":
-        action: 'Inbound JIT fallback rule expired'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "53":
-        action: 'Outbound allow rule created'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "54":
-        action: 'Outbound allow rule deleted'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "55":
-        action: 'Outbound allow rule expired'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "56":
-        action: 'Outbound allow rule edited'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "58":
-        action: 'Admin portal role changed to admin'
-        outcome: success
-        type:
-          - info
-          - access
-          - change
-        category:
-          - configuration
-      "59":
-        action: 'Admin portal role changed to viewer'
-        outcome: success
-        type:
-          - info
-          - access
-          - change
-        category:
-          - configuration
-      "60":
-        action: 'Admin portal role revoked'
-        outcome: success
-        type:
-          - info
-          - access
-          - change
-        category:
-          - configuration
-      "61":
-        action: 'Outbound JIT rule created'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "62":
-        action: 'Outbound JIT rule deleted'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "63":
-        action: 'Outbound JIT rule expired'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "64":
-        action: 'Outbound MFA policy created'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "65":
-        action: 'Outbound MFA policy deleted'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "66":
-        action: 'Outbound MFA policy edited'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "67":
-        action: 'Outbound JIT access rejected'
-        outcome: failure
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "68":
-        action: 'Asset learning is done'
-        outcome: success
-        type:
-          - info
-        category:
-          - host
-          - configuration
-      "69":
-        action: 'Asset learning (policy) is done'
-        outcome: success
-        type:
-          - info
-        category:
-          - host
-          - configuration
-      "70":
-        action: 'Manual Linux asset created'
-        outcome: success
-        type:
-          - info
-        category:
-          - host
-          - configuration
-      "71":
-        action: 'Manual OT/IoT asset created'
-        outcome: success
-        type:
-          - info
-        category:
-          - host
-          - configuration
-      "72":
-        action: 'Asset learning extended'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - host
-          - configuration
-      "73":
-        action: 'Admin portal logon'
-        outcome: success
-        type:
-          - info
-        category:
-          - authentication
-      "74":
-        action: 'Asset manager added'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "75":
-        action: 'Asset manager removed'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-      "76":
-        action: 'Asset is directly monitored'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - host
-          - configuration
-      "77":
-        action: 'Asset is no longer directly monitored'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - host
-          - configuration
-      "78":
-        action: 'Asset is remotely monitored'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - host
-          - configuration
-      "79":
-        action: 'Asset is back to learning'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - host
-          - configuration
-      "80":
-        action: 'Manual OT/IoT asset edited'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - host
-          - configuration
-      "81":
-        action: 'Admin portal role changed to operator'
-        outcome: success
-        type:
-          - info
-          - change
-        category:
-          - configuration
-    source: >-
-      ctx.event.kind = 'event';
-      if (ctx?.event?.code == null) {
-          return;
-      }
-      if (params.get(ctx.event.code) == null) {
-          return;
-      }
-      def hm = new HashMap(params.get(ctx.event.code));
-      hm.forEach((k, v) -> ctx.event[k] = v);
-- remove:
-    field:
-      - json
-    ignore_missing: true
-- remove:
-    field: event.original
-    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-    ignore_failure: true
-    ignore_missing: true
-- script:
-    lang: painless
-    description: This script processor iterates over the whole document to remove fields with null values.
-    source: |
-      void handleMap(Map map) {
-        for (def x : map.values()) {
-          if (x instanceof Map) {
-              handleMap(x);
-          } else if (x instanceof List) {
-              handleList(x);
-          }
-        }
-        map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
-      }
-      void handleList(List list) {
-        for (def x : list) {
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - json:
+      field: event.original
+      target_field: json
+  - date:
+      field: json.isoTimestamp
+      formats:
+        - date_optional_time
+      target_field: '@timestamp'
+  - convert:
+      field: json.auditType
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.auditType
+      target_field: event.code
+      ignore_missing: true
+  - rename:
+      field: json.performedBy.id
+      target_field: user.id
+      ignore_missing: true
+  - rename:
+      field: json.performedBy.name
+      target_field: user.full_name
+      ignore_missing: true
+  - rename:
+      field: json.enforcementSource
+      target_field: zeronetworks.audit.enforcementSource
+      if: 'ctx.json?.enforcementSource != null'
+  - rename:
+      field: json.userRole
+      target_field: zeronetworks.audit.userRole
+      if: 'ctx.json?.userRole != null'
+  - rename:
+      field: json.reportedObjectId
+      target_field: zeronetworks.audit.reportedObjectId
+      if: 'ctx.json?.reportedObjectId != null'
+  - rename:
+      field: json.reportedObjectGeneration
+      target_field: zeronetworks.audit.reportedObjectGeneration
+      if: 'ctx.json?.reportedObjectGeneration != null'
+  - rename:
+      field: json.parentObjectId
+      target_field: zeronetworks.audit.parentObjectId
+      ignore_missing: true
+      if: 'ctx.json?.parentObjectId != null'
+  - foreach:
+      field: json.destinationEntitiesList
+      ignore_missing: true
+      processor:
+        set:
+          field: zeronetworks.audit.destinationEntitiesList.name
+          value: '{{{_ingest._value.name}}}'
+  - foreach:
+      field: json.destinationEntitiesList
+      ignore_missing: true
+      processor:
+        set:
+          field: zeronetworks.audit.destinationEntitiesList.id
+          value: '{{{_ingest._value.id}}}'
+  - json:
+      field: json.details
+      target_field: zeronetworks.audit.details
+  - append:
+      field: related.user
+      value: '{{user.id}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null
+  - append:
+      field: related.user
+      value: '{{user.full_name}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null
+  - fingerprint:
+      fields:
+        - json.timestamp
+        - event.code
+        - user.full_name
+      target_field: event.id
+  - set:
+      field: _id
+      copy_from: event.id
+  - script:
+      lang: painless
+      tag: Add ECS categorization
+      params:
+        ## Audit Types
+        "1":
+          action: 'Asset is being added to protection'
+          outcome: success
+          type:
+            - start
+            - change
+          category:
+            - host
+            - configuration
+        "2":
+          action: 'Asset added to protection'
+          outcome: success
+          type:
+            - end
+            - change
+          category:
+            - host
+            - configuration
+        "3":
+          action: 'Failed to add asset to protection'
+          outcome: failure
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "4":
+          action: 'Asset is being removed from protection'
+          outcome: success
+          type:
+            - start
+            - change
+          category:
+            - host
+            - configuration
+        "5":
+          action: 'Removed asset from protection'
+          outcome: success
+          type:
+            - end
+            - change
+          category:
+            - host
+            - configuration
+        "6":
+          action: 'Failed to remove asset from protection'
+          outcome: failure
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "7":
+          action: 'Asset added to learning'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "8":
+          action: 'Asset removed from learning'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "9":
+          action: 'Inbound allow rule created'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "10":
+          action: 'Inbound allow rule deleted'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "11":
+          action: 'Inbound allow rule expired'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "12":
+          action: 'Inbound allow rule edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "17":
+          action: 'Inbound MFA policy created'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "18":
+          action: 'Inbound MFA policy deleted'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "19":
+          action: 'Inbound MFA policy edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "20":
+          action: 'Inbound JIT rule created'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "21":
+          action: 'Inbound JIT rule deleted'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "22":
+          action: 'Inbound JIT rule expired'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "23":
+          action: 'Inbound JIT rule revived'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "24":
+          action: 'Inbound JIT rule edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "25":
+          action: 'API Token created'
+          outcome: success
+          type:
+            - info
+            - access
+            - creation
+          category:
+            - configuration
+            - api
+        "26":
+          action: 'API Token deleted'
+          outcome: success
+          type:
+            - info
+            - access
+            - deletion
+          category:
+            - configuration
+            - api
+        "27":
+          action: 'API Token regenerated'
+          outcome: success
+          type:
+            - info
+            - access
+            - change
+          category:
+            - api
+            - configuration
+        "28":
+          action: 'Asset protection date postponed'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "29":
+          action: 'Outbound block rule created'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "30":
+          action: 'Outbound block rule deleted'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "31":
+          action: 'Outbound block rule expired'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "32":
+          action: 'Outbound block rule edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "33":
+          action: 'Inbound block rule created'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "34":
+          action: 'Inbound block rule deleted'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "35":
+          action: 'Inbound block rule expired'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "36":
+          action: 'Inbound block rule edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "39":
+          action: 'Removed asset from protection (overriding policy)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "40":
+          action: 'Asset is being removed from protection (overriding policy)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "41":
+          action: 'Asset removed from learning (overriding policy)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "42":
+          action: 'Asset is being added to protection (policy)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "43":
+          action: 'Asset added to protection (policy)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "44":
+          action: 'Asset added to learning (policy)'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "45":
+          action: 'Protection policy created'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "46":
+          action: 'Protection policy deleted'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "47":
+          action: 'Protection policy edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "48":
+          action: 'Inbound JIT access rejected'
+          outcome: failure
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "49":
+          action: 'Inbound JIT fallback rule created'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "50":
+          action: 'Inbound JIT fallback rule deleted'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "51":
+          action: 'Inbound JIT fallback rule expired'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "53":
+          action: 'Outbound allow rule created'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "54":
+          action: 'Outbound allow rule deleted'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "55":
+          action: 'Outbound allow rule expired'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "56":
+          action: 'Outbound allow rule edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "58":
+          action: 'Admin portal role changed to admin'
+          outcome: success
+          type:
+            - info
+            - access
+            - change
+          category:
+            - configuration
+        "59":
+          action: 'Admin portal role changed to viewer'
+          outcome: success
+          type:
+            - info
+            - access
+            - change
+          category:
+            - configuration
+        "60":
+          action: 'Admin portal role revoked'
+          outcome: success
+          type:
+            - info
+            - access
+            - change
+          category:
+            - configuration
+        "61":
+          action: 'Outbound JIT rule created'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "62":
+          action: 'Outbound JIT rule deleted'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "63":
+          action: 'Outbound JIT rule expired'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "64":
+          action: 'Outbound MFA policy created'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "65":
+          action: 'Outbound MFA policy deleted'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "66":
+          action: 'Outbound MFA policy edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "67":
+          action: 'Outbound JIT access rejected'
+          outcome: failure
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "68":
+          action: 'Asset learning is done'
+          outcome: success
+          type:
+            - info
+          category:
+            - host
+            - configuration
+        "69":
+          action: 'Asset learning (policy) is done'
+          outcome: success
+          type:
+            - info
+          category:
+            - host
+            - configuration
+        "70":
+          action: 'Manual Linux asset created'
+          outcome: success
+          type:
+            - info
+          category:
+            - host
+            - configuration
+        "71":
+          action: 'Manual OT/IoT asset created'
+          outcome: success
+          type:
+            - info
+          category:
+            - host
+            - configuration
+        "72":
+          action: 'Asset learning extended'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "73":
+          action: 'Admin portal logon'
+          outcome: success
+          type:
+            - info
+          category:
+            - authentication
+        "74":
+          action: 'Asset manager added'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "75":
+          action: 'Asset manager removed'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+        "76":
+          action: 'Asset is directly monitored'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "77":
+          action: 'Asset is no longer directly monitored'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "78":
+          action: 'Asset is remotely monitored'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "79":
+          action: 'Asset is back to learning'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "80":
+          action: 'Manual OT/IoT asset edited'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - host
+            - configuration
+        "81":
+          action: 'Admin portal role changed to operator'
+          outcome: success
+          type:
+            - info
+            - change
+          category:
+            - configuration
+      source: >-
+        ctx.event.kind = 'event'; if (ctx?.event?.code == null) {
+            return;
+        } if (params.get(ctx.event.code) == null) {
+            return;
+        } def hm = new HashMap(params.get(ctx.event.code)); hm.forEach((k, v) -> ctx.event[k] = v);
+  - remove:
+      field:
+        - json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
             if (x instanceof Map) {
                 handleMap(x);
             } else if (x instanceof List) {
                 handleList(x);
             }
+          }
+          map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
         }
-        list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
-      }
-      handleMap(ctx);
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+          list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        handleMap(ctx);
 on_failure:
   - set:
       field: event.kind
