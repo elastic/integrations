@@ -10,6 +10,7 @@ processors:
       target_field: event.original
       ignore_missing: true
       tag: rename_event_original
+      if: ctx.event?.original == null
   - set:
       field: event.category
       value: [network]
@@ -22,7 +23,6 @@ processors:
       field: event.kind
       value: event
       tag: set_event_kind
-
   # Parse the event header: populates the timestamp, hostname, and process info
   # from the header and stores the message in _tmp.raw_data
   - grok:
@@ -68,7 +68,6 @@ processors:
         - set:
             field: event.kind
             value: pipeline_error
-
   # Choose the pipeline based on the log source
   - set:
       field: event.provider
@@ -106,7 +105,6 @@ processors:
       name: '{{ IngestPipeline "packetfilter" }}'
       if: ctx.event?.provider == 'packetfilter'
       tag: pipeline_packetfilter
-
   # Set observer fields
   - set:
       field: observer.vendor
@@ -120,7 +118,6 @@ processors:
       field: observer.type
       value: firewall
       tag: set_observer_type
-
   # Fill related fields
   - append:
       field: related.hosts
@@ -128,7 +125,6 @@ processors:
       allow_duplicates: false
       if: ctx.host?.hostname != null && ctx.host.hostname != ''
       tag: append_related_hosts
-
   # Clean event
   - remove:
       field: _tmp
@@ -145,7 +141,7 @@ processors:
       description: Drops null/empty values recursively.
       tag: script_drop_empty_fields
       lang: painless
-      source:
+      source: |
         boolean dropEmptyFields(Object object) {
           if (object == null || object == "") {
             return true;
