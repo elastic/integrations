@@ -42,37 +42,30 @@ with_mage
 with_docker_compose
 with_kubernetes
 
+check_package_in_serverless() {
+    local package="$1"
 
-use_elastic_package
-
-prepare_serverless_stack
-
-pushd packages > /dev/null
-
-any_package_failing=0
-
-for integration in $(list_all_directories); do
-    echo "--- Package ${integration}: check"
-    pushd ${integration} > /dev/null
+    echo "--- Package ${package}: check"
+    pushd ${package} > /dev/null
 
     clean_safe_logs
 
     if [[ ${SERVERLESS} == "true" ]] ; then
-        if [[ "${integration}" == "fleet_server" ]]; then
+        if [[ "${package}" == "fleet_server" ]]; then
             echo "fleet_server not supported. Skipped"
-            echo "- [${integration}] not supported" >> ${SKIPPED_PACKAGES_FILE_PATH}
+            echo "- [${package}] not supported" >> ${SKIPPED_PACKAGES_FILE_PATH}
             popd > /dev/null
             continue
         fi
         if ! is_spec_3_0_0 ; then
             echo "Not v3 spec version. Skipped"
-            echo "- [${integration}] spec <3.0.0" >> ${SKIPPED_PACKAGES_FILE_PATH}
+            echo "- [${package}] spec <3.0.0" >> ${SKIPPED_PACKAGES_FILE_PATH}
             popd > /dev/null
             continue
         fi
     fi
 
-    if ! reason=$(is_pr_affected ${integration}) ; then
+    if ! reason=$(is_pr_affected ${package}) ; then
         echo "${reason}"
         echo "- ${reason}" >> ${SKIPPED_PACKAGES_FILE_PATH}
         popd > /dev/null
@@ -86,9 +79,9 @@ for integration in $(list_all_directories); do
         create_kind_cluster
     fi
 
-    if ! run_tests_package ${integration} ; then
-        echo "[${integration}] run_tests_package failed"
-        echo "- ${integration}" >> ${FAILED_PACKAGES_FILE_PATH}
+    if ! run_tests_package ${package} ; then
+        echo "[${package}] run_tests_package failed"
+        echo "- ${package}" >> ${FAILED_PACKAGES_FILE_PATH}
         any_package_failing=1
     fi
 
@@ -99,9 +92,20 @@ for integration in $(list_all_directories); do
         delete_kind_cluster
     fi
 
-    teardown_serverless_test_package ${integration}
+    teardown_serverless_test_package ${package}
 
     popd > /dev/null
+}
+
+use_elastic_package
+
+prepare_serverless_stack
+
+any_package_failing=0
+
+pushd packages > /dev/null
+for package in $(list_all_directories); do
+    check_package_in_serverless ${package}
 done
 popd > /dev/null
 
