@@ -5,12 +5,14 @@ processors:
       field: message
       target_field: event.original
       tag: "rename_message"
-      on_failure: 
+      on_failure:
         - append:
             field: error.message
             value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
         - fail:
             message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+      ignore_missing: true
+      if: ctx.event?.original == null
   - set:
       field: ecs.version
       value: '8.10.0'
