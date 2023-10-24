@@ -13,6 +13,8 @@ processors:
   - rename:
       field: message
       target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
   - set:
       field: event.kind
       value: event
@@ -48,9 +50,9 @@ processors:
       field: _tmp.timestamp
       target_field: '@timestamp'
       formats:
-      - MMM  d HH:mm:ss
-      - MMM d HH:mm:ss
-      - MMM dd HH:mm:ss
+        - MMM  d HH:mm:ss
+        - MMM d HH:mm:ss
+        - MMM dd HH:mm:ss
       timezone: '{{ event.timezone }}'
   - grok:
       description: Set Event Provider
@@ -123,15 +125,15 @@ processors:
       field: source.ip
       target_field: source.as
       properties:
-      - asn
-      - organization_name
+        - asn
+        - organization_name
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
       properties:
-      - asn
-      - organization_name
+        - asn
+        - organization_name
       ignore_missing: true
   - rename:
       field: source.as.asn
@@ -155,7 +157,7 @@ processors:
   - grok:
       field: observer.ingress.interface.name
       patterns:
-      - "%{DATA}.%{NONNEGINT:observer.ingress.vlan.id}"
+        - "%{DATA}.%{NONNEGINT:observer.ingress.vlan.id}"
       ignore_missing: true
       ignore_failure: true
   - set:

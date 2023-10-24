@@ -8,6 +8,7 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: json
@@ -370,9 +371,7 @@ processors:
       field: json.type
       target_field: carbon_black_cloud.endpoint_event.type
       ignore_missing: true
-
-# Mapping for endpoint.event.crossproc event type
-
+      # Mapping for endpoint.event.crossproc event type
   - rename:
       field: json.crossproc_action
       target_field: carbon_black_cloud.endpoint_event.crossproc.action
@@ -437,9 +436,7 @@ processors:
       if: ctx.carbon_black_cloud?.endpoint_event?.crossproc?.hash?.sha256 != null
       allow_duplicates: false
       ignore_failure: true
-
-# Mapping for endpoint.event.filemod event type
-
+      # Mapping for endpoint.event.filemod event type
   - rename:
       field: json.filemod_hash_md5
       target_field: file.hash.md5
@@ -460,12 +457,11 @@ processors:
       if: ctx.file?.hash?.sha256 != null
       allow_duplicates: false
       ignore_failure: true
-# Mapping for endpoint.event.fileless_scriptload event type
-
   - rename:
       field: json.fileless_scriptload_cmdline
       target_field: carbon_black_cloud.endpoint_event.fileless_scriptload.cmdline
       ignore_missing: true
+      # Mapping for endpoint.event.fileless_scriptload event type
   - rename:
       field: json.fileless_scriptload_cmdline_length
       target_field: carbon_black_cloud.endpoint_event.fileless_scriptload.cmdline_length
@@ -490,9 +486,7 @@ processors:
       if: ctx.carbon_black_cloud?.endpoint_event?.fileless_scriptload?.hash?.sha256 != null
       allow_duplicates: false
       ignore_failure: true
-
-# Mapping for endpoint.event.moduleload event type
-
+      # Mapping for endpoint.event.moduleload event type
   - rename:
       field: json.modload_md5
       target_field: dll.hash.md5
@@ -541,9 +535,7 @@ processors:
       field: json.modload_publisher
       target_field: carbon_black_cloud.endpoint_event.modload.publisher
       ignore_missing: true
-
-# Mapping for endpoint.event.netconn_proxy event type
-
+      # Mapping for endpoint.event.netconn_proxy event type
   - rename:
       field: json.netconn_proxy_domain
       target_field: carbon_black_cloud.endpoint_event.netconn.proxy.domain
@@ -569,9 +561,7 @@ processors:
       if: ctx.carbon_black_cloud?.endpoint_event?.netconn?.proxy?.ip != null
       allow_duplicates: false
       ignore_failure: true
-
-# Mapping for endpoint.event.procstart event type
-
+      # Mapping for endpoint.event.procstart event type
   - rename:
       field: json.childproc_guid
       target_field: carbon_black_cloud.endpoint_event.childproc.guid
@@ -638,12 +628,11 @@ processors:
       if: ctx.carbon_black_cloud?.endpoint_event?.childproc?.hash?.sha256 != null
       allow_duplicates: false
       ignore_failure: true
-# Mapping for NGAV endpoint.event.scriptload event type
-
   - rename:
       field: json.scriptload_name
       target_field: carbon_black_cloud.endpoint_event.scriptload.name
       ignore_missing: true
+      # Mapping for NGAV endpoint.event.scriptload event type
   - foreach:
       field: json.scriptload_publisher
       processor:

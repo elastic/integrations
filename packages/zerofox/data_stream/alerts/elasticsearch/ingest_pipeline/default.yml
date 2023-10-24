@@ -5,18 +5,18 @@ processors:
   - set:
       field: ecs.version
       value: '8.10.0'
-
   ## Event JSON decoding.
   - rename:
       field: message
       target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: zerofox
   - json:
       field: zerofox.metadata
       ignore_failure: true
-
   ## Parse event dates.
   - date:
       field: zerofox.content_created_at
@@ -37,7 +37,6 @@ processors:
         - ISO8601
       ignore_failure: true
       if: ctx?.zerofox?.timestamp != null && ctx.zerofox.timestamp != ""
-
   ## Event categorization.
   - convert:
       field: zerofox.id
@@ -59,7 +58,6 @@ processors:
       ignore_missing: true
       ignore_failure: true
       if: ctx?.zerofox?.offending_content_url != null && ctx.zerofox.offending_content_url != ""
-
   ## Rule fields.
   - convert:
       field: zerofox.rule_id
@@ -85,7 +83,6 @@ processors:
       ignore_missing: true
       ignore_failure: true
       if: ctx?.zerofox?.alert_type != null && ctx.zerofox.alert_type != ""
-
   ## User fields.
   - rename:
       field: zerofox.assignee
@@ -98,7 +95,6 @@ processors:
       value: assignee
       allow_duplicates: false
       if: ctx?.zerofox?.assignee != null && ctx.zerofox.assignee != ""
-
   ## Network fields.
   - rename:
       field: zerofox.network
@@ -106,7 +102,6 @@ processors:
       ignore_missing: true
       ignore_failure: true
       if: ctx?.zerofox?.network != null && ctx.zerofox.network != ""
-
   ## Type conversions.
   - convert:
       field: zerofox.entity.id
@@ -148,8 +143,7 @@ processors:
         convert:
           field: _ingest._value.id
           type: string
-      if: ctx?.zerofox?.entity?.labels != null && ctx.zerofox.entity.labels.size() > 0 
-
+      if: ctx?.zerofox?.entity?.labels != null && ctx.zerofox.entity.labels.size() > 0
   ## Cleanup.
   - remove:
       field:
@@ -187,7 +181,6 @@ processors:
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
-
 on_failure:
   - set:
       field: event.kind

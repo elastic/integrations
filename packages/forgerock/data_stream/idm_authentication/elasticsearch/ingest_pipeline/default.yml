@@ -1,6 +1,6 @@
 ---
 description: Pipeline for ForgeRock idm-authentication audit logs
-processors: 
+processors:
   - set:
       field: ecs.version
       value: '8.10.0'
@@ -11,22 +11,21 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: json
   - rename:
       field: json.payload
       target_field: forgerock
-
   - set:
       field: event.id
       copy_from: forgerock._id
       ignore_failure: true
-  - set: 
+  - set:
       field: transaction.id
       copy_from: forgerock.transactionId
       ignore_failure: true
-
   - date:
       field: forgerock.timestamp
       formats:
@@ -37,7 +36,6 @@ processors:
         - append:
             field: error.message
             value: '{{ _ingest.on_failure_message }}'
-
   # idm-authentication processing
   - set:
       field: event.category
@@ -56,14 +54,12 @@ processors:
       field: event.outcome
       value: "failure"
       ignore_failure: true
-
   # cleaning up
   - remove:
       field:
         - json.timestamp
         - json.type
       ignore_failure: true
-
   - remove:
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
@@ -87,13 +83,11 @@ processors:
         - forgerock.status
       ignore_failure: true
       ignore_missing: true
-
   - remove:
       field: event.original
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
       ignore_missing: true
-
   - script:
       description: Drops null/empty values recursively
       lang: painless
@@ -112,7 +106,6 @@ processors:
           return false;
         }
         drop(ctx);
-
 on_failure:
   - append:
       field: error.message

@@ -17,6 +17,7 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: json
@@ -59,9 +60,9 @@ processors:
       formats:
         - ISO8601
       on_failure:
-      - append:
-          field: error.message
-          value: '{{{_ingest.on_failure_message}}}'
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: event.end
       copy_from: infoblox_bloxone_ddi.dhcp_lease.ends
@@ -135,9 +136,9 @@ processors:
       formats:
         - ISO8601
       on_failure:
-      - append:
-          field: error.message
-          value: '{{{_ingest.on_failure_message}}}'
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
       copy_from: infoblox_bloxone_ddi.dhcp_lease.last_updated
@@ -153,9 +154,9 @@ processors:
       formats:
         - ISO8601
       on_failure:
-      - append:
-          field: error.message
-          value: '{{{_ingest.on_failure_message}}}'
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: json.protocol
       value: ipv4
@@ -188,9 +189,9 @@ processors:
       formats:
         - ISO8601
       on_failure:
-      - append:
-          field: error.message
-          value: '{{{_ingest.on_failure_message}}}'
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: event.start
       copy_from: infoblox_bloxone_ddi.dhcp_lease.starts
@@ -208,12 +209,12 @@ processors:
       target_field: infoblox_bloxone_ddi.dhcp_lease.options
       if: ctx.infoblox_bloxone_ddi?.dhcp_lease?.options instanceof String
       on_failure:
-      - remove:
-          field: infoblox_bloxone_ddi.dhcp_lease.options
-          ignore_failure: true
-      - append:
-          field: error.message
-          value: '{{{_ingest.on_failure_message}}}'
+        - remove:
+            field: infoblox_bloxone_ddi.dhcp_lease.options
+            ignore_failure: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - remove:
       field: json
       ignore_missing: true

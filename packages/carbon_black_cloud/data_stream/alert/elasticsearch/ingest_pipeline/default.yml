@@ -8,6 +8,7 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: json
@@ -31,17 +32,17 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
-     field: json.last_update_time
-     target_field: carbon_black_cloud.alert.last_update_time
-     if: ctx.json?.last_update_time != null && ctx.json.last_update_time != ''
-     formats:
-       - ISO8601
-     on_failure:
-       - remove:
-           field: json.last_update_time
-       - append:
-           field: error.message
-           value: '{{{_ingest.on_failure_message}}}'
+      field: json.last_update_time
+      target_field: carbon_black_cloud.alert.last_update_time
+      if: ctx.json?.last_update_time != null && ctx.json.last_update_time != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: json.last_update_time
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
       value: alert
@@ -50,29 +51,29 @@ processors:
       target_field: event.id
       ignore_missing: true
   - date:
-     field: json.first_event_time
-     target_field: event.start
-     if: ctx.json?.first_event_time != null && ctx.json.first_event_time != ''
-     formats:
-       - ISO8601
-     on_failure:
-       - remove:
-           field: json.first_event_time
-       - append:
-           field: error.message
-           value: '{{{_ingest.on_failure_message}}}'
+      field: json.first_event_time
+      target_field: event.start
+      if: ctx.json?.first_event_time != null && ctx.json.first_event_time != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: json.first_event_time
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
-     field: json.last_event_time
-     target_field: event.end
-     if: ctx.json?.last_event_time != null && ctx.json.last_event_time != ''
-     formats:
-       - ISO8601
-     on_failure:
-       - remove:
+      field: json.last_event_time
+      target_field: event.end
+      if: ctx.json?.last_event_time != null && ctx.json.last_event_time != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
             field: json.last_event_time
-       - append:
-           field: error.message
-           value: '{{{_ingest.on_failure_message}}}'
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.severity
       target_field: event.severity
@@ -315,17 +316,17 @@ processors:
       target_field: carbon_black_cloud.alert.workflow
       ignore_missing: true
   - date:
-     field: carbon_black_cloud.alert.workflow.last_update_time
-     target_field: carbon_black_cloud.alert.workflow.last_update_time
-     if: ctx.carbon_black_cloud?.alert?.workflow?.last_update_time != null && ctx.carbon_black_cloud.alert.workflow.last_update_time != ''
-     formats:
-       - ISO8601
-     on_failure:
-       - remove:
-           field: carbon_black_cloud.alert.workflow.last_update_time
-       - append:
-           field: error.message
-           value: '{{{_ingest.on_failure_message}}}'
+      field: carbon_black_cloud.alert.workflow.last_update_time
+      target_field: carbon_black_cloud.alert.workflow.last_update_time
+      if: ctx.carbon_black_cloud?.alert?.workflow?.last_update_time != null && ctx.carbon_black_cloud.alert.workflow.last_update_time != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: carbon_black_cloud.alert.workflow.last_update_time
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - remove:
       field: event.original
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))

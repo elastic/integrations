@@ -8,6 +8,7 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: json
@@ -121,7 +122,7 @@ processors:
   - script:
         description: Drops null/empty values recursively.
         lang: painless
-        source:
+        source: |
           boolean dropEmptyFields(Object object) {
             if (object == null || object == '') {
               return true;

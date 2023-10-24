@@ -11,6 +11,7 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: json
@@ -42,7 +43,7 @@ processors:
       field: json.threatInfo.updatedAt
       if: ctx.json?.threatInfo?.updatedAt != null
       formats:
-          - ISO8601
+        - ISO8601
       on_failure:
         - append:
             field: error.message
@@ -148,7 +149,7 @@ processors:
       if: ctx.json?.agentDetectionInfo?.agentRegisteredAt != null
       target_field: sentinel_one.threat.detection.agent.registered_at
       formats:
-          - ISO8601
+        - ISO8601
       on_failure:
         - append:
             field: error.message
@@ -455,7 +456,7 @@ processors:
       if: ctx.json?.agentRealtimeInfo?.scanAbortedAt != null
       target_field: sentinel_one.threat.agent.scan.aborted_at
       formats:
-          - ISO8601
+        - ISO8601
       on_failure:
         - append:
             field: error.message
@@ -465,7 +466,7 @@ processors:
       if: ctx.json?.agentRealtimeInfo?.scanFinishedAt != null
       target_field: sentinel_one.threat.agent.scan.finished_at
       formats:
-          - ISO8601
+        - ISO8601
       on_failure:
         - append:
             field: error.message
@@ -475,7 +476,7 @@ processors:
       if: ctx.json?.agentRealtimeInfo?.scanStartedAt != null
       target_field: sentinel_one.threat.agent.scan.started_at
       formats:
-          - ISO8601
+        - ISO8601
       on_failure:
         - append:
             field: error.message
@@ -881,7 +882,7 @@ processors:
       if: ctx.json?.threatInfo?.createdAt != null
       target_field: sentinel_one.threat.created_at
       formats:
-          - ISO8601
+        - ISO8601
       on_failure:
         - append:
             field: error.message
@@ -959,7 +960,7 @@ processors:
       if: ctx.json?.threatInfo?.identifiedAt != null
       target_field: sentinel_one.threat.file.identified_at
       formats:
-          - ISO8601
+        - ISO8601
       on_failure:
         - append:
             field: error.message
@@ -1147,7 +1148,7 @@ processors:
   - script:
       description: Drops null/empty values recursively.
       lang: painless
-      source:
+      source: |
         boolean dropEmptyFields(Object object) {
           if (object == null || object == '') {
             return true;

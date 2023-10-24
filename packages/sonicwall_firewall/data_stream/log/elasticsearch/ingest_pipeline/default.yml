@@ -4,29 +4,24 @@ processors:
   - set:
       field: ecs.version
       value: '8.10.0'
-
   - set:
       field: observer.vendor
       value: SonicWall
-
   - set:
       field: observer.product
       value: SonicOS
-
   - set:
       field: observer.type
       value: firewall
-
   - set:
       field: event.timezone
       value: "{{{_conf.tz_offset}}}"
       if: ctx?._conf?.tz_offset != null && ctx?._conf?.tz_offset != 'local'
-
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
-
+      if: ctx.event?.original == null
   - grok:
       field: event.original
       description: Extracts key-value pairs from original message

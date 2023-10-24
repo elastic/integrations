@@ -1,234 +1,235 @@
 ---
 description: Pipeline for parsing GitHub audit logs
 processors:
-- set:
-    field: ecs.version
-    value: '8.10.0'
-- set:
-    field: event.action
-    value: "secret_scanning"
-- rename:
-    field: message
-    target_field: event.original
-    ignore_missing: true
-- json:
-    field: event.original
-    target_field: github.secret_scanning
-- fingerprint:
-    fields: 
+  - set:
+      field: ecs.version
+      value: '8.10.0'
+  - set:
+      field: event.action
+      value: "secret_scanning"
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - json:
+      field: event.original
+      target_field: github.secret_scanning
+  - fingerprint:
+      fields:
         - github.secret_scanning.number
         - github.secret_scanning.updated_at
         - github.secret_scanning.resolved_at
-    target_field: "_id"
-    ignore_missing: true
-- set:
-    copy_from: github.secret_scanning.created_at
-    field: event.created
-    if: ctx.github.secret_scanning?.created_at != null
-- date:
-    field: github.secret_scanning.created_at
-    formats:
-    - ISO8601
-    timezone: UTC
-    target_field: "@timestamp"
-    if: ctx.github.secret_scanning?.created_at != null && ctx.github.secret_scanning?.updated_at == null && ctx.github.secret_scanning?.resolved_at == null
-- date:
-    field: github.secret_scanning.updated_at
-    formats:
-    - ISO8601
-    timezone: UTC
-    target_field: "@timestamp"
-    if: ctx.github.secret_scanning?.updated_at != null && ctx.github.secret_scanning?.resolved_at == null
-- date:
-    field: github.secret_scanning.resolved_at
-    formats:
-    - ISO8601
-    timezone: UTC
-    target_field: "@timestamp"
-    if: ctx.github.secret_scanning?.resolved_at != null
-- rename:
-    target_field: _temp.repository
-    field: github.secret_scanning.repository
-    ignore_missing: true
-- rename:
-    field: _temp.repository.id
-    target_field: github.repository.id
-    ignore_missing: true
-- rename:
-    field: _temp.repository.name
-    target_field: github.repository.name
-    ignore_missing: true
-- rename:
-    field: _temp.repository.full_name
-    target_field: github.repository.full_name
-    ignore_missing: true
-- rename:
-    field: _temp.repository.private
-    target_field: github.repository.private
-    ignore_missing: true
-- rename:
-    field: _temp.repository.html_url
-    target_field: github.repository.html_url
-    ignore_missing: true
-- rename:
-    field: _temp.repository.url
-    target_field: github.repository.url
-    ignore_missing: true
-- rename:
-    field: _temp.repository.description
-    target_field: github.repository.description
-    ignore_missing: true
-- rename:
-    field: _temp.repository.fork
-    target_field: github.repository.fork
-    ignore_missing: true
-- rename:
-    field: _temp.repository.owner.login
-    target_field: github.repository.owner.login
-    ignore_missing: true
-- rename:
-    field: _temp.repository.owner.id
-    target_field: github.repository.owner.id
-    ignore_missing: true
-- rename:
-    field: _temp.repository.owner.url
-    target_field: github.repository.owner.url
-    ignore_missing: true
-- rename:
-    field: _temp.repository.owner.html_url
-    target_field: github.repository.owner.html_url
-    ignore_missing: true
-- rename:
-    field: _temp.repository.owner.type
-    target_field: github.repository.owner.type
-    ignore_missing: true
-- rename:
-    field: _temp.repository.owner.site_admin
-    target_field: github.repository.owner.site_admin
-    ignore_missing: true
-- rename: 
-    target_field: _temp.resolved_by
-    field: github.secret_scanning.resolved_by
-    ignore_missing: true
-- rename:
-    field: _temp.resolved_by.name
-    target_field: github.secret_scanning.resolved_by.name
-    ignore_missing: true
-- rename:
-    field: _temp.resolved_by.email
-    target_field: github.secret_scanning.resolved_by.email
-    ignore_missing: true
-- rename:
-    field: _temp.resolved_by.login
-    target_field: github.secret_scanning.resolved_by.login
-    ignore_missing: true
-- rename:
-    field: _temp.resolved_by.id
-    target_field: github.secret_scanning.resolved_by.id
-    ignore_missing: true
-- rename:
-    field: _temp.resolved_by.node_id
-    target_field: github.secret_scanning.resolved_by.node_id
-    ignore_missing: true
-- rename:
-    field: _temp.resolved_by.url
-    target_field: github.secret_scanning.resolved_by.url
-    ignore_missing: true
-- rename:
-    field: _temp.resolved_by.html_url
-    target_field: github.secret_scanning.resolved_by.html_url
-    ignore_missing: true
-- rename:
-    field: _temp.resolved_by.type
-    target_field: github.secret_scanning.resolved_by.type
-    ignore_missing: true
-- rename:
-    field: _temp.resolved_by.site_admin
-    target_field: github.secret_scanning.resolved_by.site_admin
-    ignore_missing: true
-- dissect:
-    field: github.secret_scanning.url
-    pattern: "https://api.github.com/repos/%{_temp.owner}/%{_temp.repository}/secret-scanning/alerts/%{_temp.number}"
-    ignore_missing: true
-- set:
-    field: github.repository.html_url
-    value: "https://github.com/{{_temp.owner}}/{{_temp.repository}}"
-    if: "ctx.github.repository?.html_url == null && ctx._temp?.owner != null && ctx._temp?.repository != null"
-- set:
-    field: github.repository.url
-    value: "https://api.github.com/repos/{{_temp.owner}}/{{_temp.repository}}"
-    if: "ctx.github.repository?.url == null && ctx._temp?.owner != null && ctx._temp?.repository != null"
-- rename:
-    field: _temp.repository
-    target_field: github.repository.name
-    if: ctx.github.repository?.name == null
-    ignore_missing: true
-- rename:
-    field: _temp.owner
-    target_field: github.repository.owner.login
-    if: ctx.github.repository?.owner?.login == null
-    ignore_missing: true
-- rename:
-    field: _temp.number
-    target_field: github.secret_scanning.number
-    if: ctx.github.secret_scanning?.number == null
-    ignore_missing: true
-- lowercase:
-    field: github.secret_scanning.state
-    ignore_missing: true
-- set: 
-    field: github.state
-    value: "{{github.secret_scanning.state}}"
-    if: ctx.github.secret_scanning?.state != null
-- set:
-    field: github.severity
-    value: "undefined"
-    if: ctx.github.severity == null
-- rename: 
-    target_field: _temp.push_protection_bypassed_by
-    field: github.secret_scanning.push_protection_bypassed_by
-    ignore_missing: true
-- rename:
-    field: _temp.push_protection_bypassed_by.name
-    target_field: github.secret_scanning.push_protection_bypassed_by.name
-    ignore_missing: true
-- rename:
-    field: _temp.push_protection_bypassed_by.email
-    target_field: github.secret_scanning.push_protection_bypassed_by.email
-    ignore_missing: true
-- rename:
-    field: _temp.push_protection_bypassed_by.login
-    target_field: github.secret_scanning.push_protection_bypassed_by.login
-    ignore_missing: true
-- rename:
-    field: _temp.push_protection_bypassed_by.id
-    target_field: github.secret_scanning.push_protection_bypassed_by.id
-    ignore_missing: true
-- rename:
-    field: _temp.push_protection_bypassed_by.node_id
-    target_field: github.secret_scanning.push_protection_bypassed_by.node_id
-    ignore_missing: true
-- rename:
-    field: _temp.push_protection_bypassed_by.url
-    target_field: github.secret_scanning.push_protection_bypassed_by.url
-    ignore_missing: true
-- rename:
-    field: _temp.push_protection_bypassed_by.html_url
-    target_field: github.secret_scanning.push_protection_bypassed_by.html_url
-    ignore_missing: true
-- rename:
-    field: _temp.push_protection_bypassed_by.type
-    target_field: github.secret_scanning.push_protection_bypassed_by.type
-    ignore_missing: true
-- rename:
-    field: _temp.push_protection_bypassed_by.site_admin
-    target_field: github.secret_scanning.push_protection_bypassed_by.site_admin
-    ignore_missing: true
-- script:
-    lang: painless
-    description: Mask the secret if hide_secret is true
-    if: ctx.tags != null && ctx.tags.contains('hide_secret') && ctx.github?.secret_scanning?.secret != null
-    source: |
+      target_field: "_id"
+      ignore_missing: true
+  - set:
+      copy_from: github.secret_scanning.created_at
+      field: event.created
+      if: ctx.github.secret_scanning?.created_at != null
+  - date:
+      field: github.secret_scanning.created_at
+      formats:
+        - ISO8601
+      timezone: UTC
+      target_field: "@timestamp"
+      if: ctx.github.secret_scanning?.created_at != null && ctx.github.secret_scanning?.updated_at == null && ctx.github.secret_scanning?.resolved_at == null
+  - date:
+      field: github.secret_scanning.updated_at
+      formats:
+        - ISO8601
+      timezone: UTC
+      target_field: "@timestamp"
+      if: ctx.github.secret_scanning?.updated_at != null && ctx.github.secret_scanning?.resolved_at == null
+  - date:
+      field: github.secret_scanning.resolved_at
+      formats:
+        - ISO8601
+      timezone: UTC
+      target_field: "@timestamp"
+      if: ctx.github.secret_scanning?.resolved_at != null
+  - rename:
+      target_field: _temp.repository
+      field: github.secret_scanning.repository
+      ignore_missing: true
+  - rename:
+      field: _temp.repository.id
+      target_field: github.repository.id
+      ignore_missing: true
+  - rename:
+      field: _temp.repository.name
+      target_field: github.repository.name
+      ignore_missing: true
+  - rename:
+      field: _temp.repository.full_name
+      target_field: github.repository.full_name
+      ignore_missing: true
+  - rename:
+      field: _temp.repository.private
+      target_field: github.repository.private
+      ignore_missing: true
+  - rename:
+      field: _temp.repository.html_url
+      target_field: github.repository.html_url
+      ignore_missing: true
+  - rename:
+      field: _temp.repository.url
+      target_field: github.repository.url
+      ignore_missing: true
+  - rename:
+      field: _temp.repository.description
+      target_field: github.repository.description
+      ignore_missing: true
+  - rename:
+      field: _temp.repository.fork
+      target_field: github.repository.fork
+      ignore_missing: true
+  - rename:
+      field: _temp.repository.owner.login
+      target_field: github.repository.owner.login
+      ignore_missing: true
+  - rename:
+      field: _temp.repository.owner.id
+      target_field: github.repository.owner.id
+      ignore_missing: true
+  - rename:
+      field: _temp.repository.owner.url
+      target_field: github.repository.owner.url
+      ignore_missing: true
+  - rename:
+      field: _temp.repository.owner.html_url
+      target_field: github.repository.owner.html_url
+      ignore_missing: true
+  - rename:
+      field: _temp.repository.owner.type
+      target_field: github.repository.owner.type
+      ignore_missing: true
+  - rename:
+      field: _temp.repository.owner.site_admin
+      target_field: github.repository.owner.site_admin
+      ignore_missing: true
+  - rename:
+      target_field: _temp.resolved_by
+      field: github.secret_scanning.resolved_by
+      ignore_missing: true
+  - rename:
+      field: _temp.resolved_by.name
+      target_field: github.secret_scanning.resolved_by.name
+      ignore_missing: true
+  - rename:
+      field: _temp.resolved_by.email
+      target_field: github.secret_scanning.resolved_by.email
+      ignore_missing: true
+  - rename:
+      field: _temp.resolved_by.login
+      target_field: github.secret_scanning.resolved_by.login
+      ignore_missing: true
+  - rename:
+      field: _temp.resolved_by.id
+      target_field: github.secret_scanning.resolved_by.id
+      ignore_missing: true
+  - rename:
+      field: _temp.resolved_by.node_id
+      target_field: github.secret_scanning.resolved_by.node_id
+      ignore_missing: true
+  - rename:
+      field: _temp.resolved_by.url
+      target_field: github.secret_scanning.resolved_by.url
+      ignore_missing: true
+  - rename:
+      field: _temp.resolved_by.html_url
+      target_field: github.secret_scanning.resolved_by.html_url
+      ignore_missing: true
+  - rename:
+      field: _temp.resolved_by.type
+      target_field: github.secret_scanning.resolved_by.type
+      ignore_missing: true
+  - rename:
+      field: _temp.resolved_by.site_admin
+      target_field: github.secret_scanning.resolved_by.site_admin
+      ignore_missing: true
+  - dissect:
+      field: github.secret_scanning.url
+      pattern: "https://api.github.com/repos/%{_temp.owner}/%{_temp.repository}/secret-scanning/alerts/%{_temp.number}"
+      ignore_missing: true
+  - set:
+      field: github.repository.html_url
+      value: "https://github.com/{{_temp.owner}}/{{_temp.repository}}"
+      if: "ctx.github.repository?.html_url == null && ctx._temp?.owner != null && ctx._temp?.repository != null"
+  - set:
+      field: github.repository.url
+      value: "https://api.github.com/repos/{{_temp.owner}}/{{_temp.repository}}"
+      if: "ctx.github.repository?.url == null && ctx._temp?.owner != null && ctx._temp?.repository != null"
+  - rename:
+      field: _temp.repository
+      target_field: github.repository.name
+      if: ctx.github.repository?.name == null
+      ignore_missing: true
+  - rename:
+      field: _temp.owner
+      target_field: github.repository.owner.login
+      if: ctx.github.repository?.owner?.login == null
+      ignore_missing: true
+  - rename:
+      field: _temp.number
+      target_field: github.secret_scanning.number
+      if: ctx.github.secret_scanning?.number == null
+      ignore_missing: true
+  - lowercase:
+      field: github.secret_scanning.state
+      ignore_missing: true
+  - set:
+      field: github.state
+      value: "{{github.secret_scanning.state}}"
+      if: ctx.github.secret_scanning?.state != null
+  - set:
+      field: github.severity
+      value: "undefined"
+      if: ctx.github.severity == null
+  - rename:
+      target_field: _temp.push_protection_bypassed_by
+      field: github.secret_scanning.push_protection_bypassed_by
+      ignore_missing: true
+  - rename:
+      field: _temp.push_protection_bypassed_by.name
+      target_field: github.secret_scanning.push_protection_bypassed_by.name
+      ignore_missing: true
+  - rename:
+      field: _temp.push_protection_bypassed_by.email
+      target_field: github.secret_scanning.push_protection_bypassed_by.email
+      ignore_missing: true
+  - rename:
+      field: _temp.push_protection_bypassed_by.login
+      target_field: github.secret_scanning.push_protection_bypassed_by.login
+      ignore_missing: true
+  - rename:
+      field: _temp.push_protection_bypassed_by.id
+      target_field: github.secret_scanning.push_protection_bypassed_by.id
+      ignore_missing: true
+  - rename:
+      field: _temp.push_protection_bypassed_by.node_id
+      target_field: github.secret_scanning.push_protection_bypassed_by.node_id
+      ignore_missing: true
+  - rename:
+      field: _temp.push_protection_bypassed_by.url
+      target_field: github.secret_scanning.push_protection_bypassed_by.url
+      ignore_missing: true
+  - rename:
+      field: _temp.push_protection_bypassed_by.html_url
+      target_field: github.secret_scanning.push_protection_bypassed_by.html_url
+      ignore_missing: true
+  - rename:
+      field: _temp.push_protection_bypassed_by.type
+      target_field: github.secret_scanning.push_protection_bypassed_by.type
+      ignore_missing: true
+  - rename:
+      field: _temp.push_protection_bypassed_by.site_admin
+      target_field: github.secret_scanning.push_protection_bypassed_by.site_admin
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: Mask the secret if hide_secret is true
+      if: ctx.tags != null && ctx.tags.contains('hide_secret') && ctx.github?.secret_scanning?.secret != null
+      source: |
         def secret = ctx.github.secret_scanning.secret.toString();
         def masked_secret = secret;
         int num_start = 2;
@@ -236,12 +237,11 @@ processors:
         def masked_value = String.join("", Collections.nCopies(secret.length()-(num_start+num_end), "X"));
         masked_secret = secret.substring(0,num_start) + masked_value + secret.substring(secret.length()-num_end);
         ctx.github.secret_scanning.secret = masked_secret;
-
-- script:
-    lang: painless
-    description: Calculate time taken to resolve the secrets
-    if: ctx.github.secret_scanning?.resolved_at != null
-    source: |
+  - script:
+      lang: painless
+      description: Calculate time taken to resolve the secrets
+      if: ctx.github.secret_scanning?.resolved_at != null
+      source: |
         def time_to_resolution = new HashMap();
         def resolvedAtDt = ctx.github.secret_scanning.resolved_at;
         def createdAtDt = ctx.github.secret_scanning.created_at;
@@ -251,49 +251,47 @@ processors:
         long resolvedAtEpoch = zdt.toEpochSecond();
         time_to_resolution.put("sec", resolvedAtEpoch - createdAtEpoch);
         ctx.github.secret_scanning.time_to_resolution = time_to_resolution;
-
-
-  ###########
-  # Cleanup #
-  ###########
-- remove:
-    field:
-      - _temp
-    ignore_missing: true
-- remove:
-    field: event.original
-    if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-    ignore_failure: true
-    ignore_missing: true
-- script:
-    lang: painless
-    description: This script processor iterates over the whole document to remove fields with null values.
-    source: |
-      void handleMap(Map map) {
-        for (def x : map.values()) {
-          if (x instanceof Map) {
-              handleMap(x);
-          } else if (x instanceof List) {
-              handleList(x);
-          }
-        }
-        map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
-      }
-      void handleList(List list) {
-        for (def x : list) {
+      ###########
+      # Cleanup #
+      ###########
+  - remove:
+      field:
+        - _temp
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
             if (x instanceof Map) {
                 handleMap(x);
             } else if (x instanceof List) {
                 handleList(x);
             }
+          }
+          map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
         }
-        list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
-      }
-      handleMap(ctx);
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+          list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        handleMap(ctx);
 on_failure:
-- set:
-    field: event.kind
-    value: pipeline_error
-- append:
-    field: error.message
-    value: '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

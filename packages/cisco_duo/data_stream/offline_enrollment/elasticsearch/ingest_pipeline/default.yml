@@ -8,6 +8,7 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: json
@@ -79,8 +80,8 @@ processors:
   - remove:
       field: json
   - remove:
-        field: json_description
-        if: ctx.json_description != null
+      field: json_description
+      if: ctx.json_description != null
   - remove:
       field: event.original
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))

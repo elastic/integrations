@@ -1,6 +1,5 @@
 ---
 description: Pipeline for Cisco Umbrella
-
 processors:
   - set:
       field: ecs.version
@@ -14,6 +13,8 @@ processors:
   - rename:
       field: message
       target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
   ############
   # DNS Logs #
   ############
@@ -58,12 +59,10 @@ processors:
         - destination.port
         - cisco.umbrella.categories
       if: ctx.log?.file?.path != null && ctx.log.file.path.contains('iplogs')
-
   - set:
       field: observer.type
       value: firewall
       if: ctx.log?.file?.path != null && ctx.log.file.path.contains('iplogs')
-
   ##############
   # Proxy Logs #
   ##############
@@ -106,12 +105,10 @@ processors:
         - cisco.umbrella.file_action
         - cisco.umbrella.warn_status
       if: ctx.log?.file?.path != null && ctx.log.file.path.contains('proxylogs')
-
   - set:
       field: observer.type
       value: proxy
       if: ctx.log?.file?.path != null && ctx.log.file.path.contains('proxylogs')
-
   #######################
   # Firewall logs and Cloud Firewall Logs #
   #######################
@@ -135,12 +132,10 @@ processors:
         - cisco.umbrella.fqdns
         - cisco.umbrella.destination_lists_id
       if: ctx.log?.file?.path != null && (ctx.log.file.path.contains('cloudfirewalllogs') || ctx.log.file.path.contains('firewalllogs'))
-
   - set:
       field: observer.type
       value: firewall
       if: ctx.log?.file?.path != null && (ctx.log.file.path.contains('cloudfirewalllogs') || ctx.log.file.path.contains('firewalllogs'))
-
   #######################
   # Intrusion Logs #
   #######################
@@ -165,12 +160,10 @@ processors:
         - destination.port
         - cisco.umbrella.action
       if: ctx.log?.file?.path != null && ctx.log.file.path.contains('intrusionlogs')
-
   - set:
       field: observer.type
       value: idps
       if: ctx.log?.file?.path != null && ctx.log.file.path.contains('intrusionlogs')
-
   #######################
   # DLP Logs #
   #######################
@@ -195,12 +188,10 @@ processors:
         - file.hash.sha256
         - cisco.umbrella.file_label
       if: ctx.log?.file?.path != null && ctx.log.file.path.contains('dlplogs')
-
   - set:
       field: observer.type
       value: dlp
       if: ctx.log?.file?.path != null && ctx.log.file.path.contains('dlplogs')
-
   #######################
   # Audit Logs #
   #######################
@@ -260,7 +251,6 @@ processors:
       field: cisco.umbrella.identities
       copy_from: cisco.umbrella._tmp.identities
       if: "ctx.cisco?.umbrella?._tmp?.identities != null"
-
   - split:
       field: cisco.umbrella.identities
       separator: ",\\s*"
@@ -366,7 +356,6 @@ processors:
         - user
       if: ctx.user instanceof Map && ctx.user.size() == 0
       ignore_missing: true
-
   ######################
   # General ECS Fields #
   ######################
@@ -436,11 +425,10 @@ processors:
       field: http.response.status_code
       type: long
       if: ctx.http?.response?.status_code != null
-
   ####################
   # Event ECS Fields #
   ####################
-  - gsub: 
+  - gsub:
       field: cisco.umbrella.action
       pattern: "\\s"
       replacement: "-"
@@ -532,7 +520,6 @@ processors:
             copy_from: source.address
             field: source.domain
             override: true
-
   - convert:
       field: destination.address
       target_field: destination.ip
@@ -543,7 +530,6 @@ processors:
             field: destination.domain
             copy_from: destination.address
             override: true
-
   # For nat, there's no address or domain subfield.
   # If the value is not a valid IP, it must be removed
   # or ingestion will fail. Probably just an empty value.
@@ -554,7 +540,6 @@ processors:
       on_failure:
         - remove:
             field: source.nat.ip
-
   - community_id:
       ignore_missing: true
   - geoip:
@@ -677,7 +662,6 @@ processors:
       value: "{{file.hash.sha256}}"
       allow_duplicates: false
       if: ctx.file?.hash?.sha256 != null
-
   ###########
   # Cleanup #
   ###########

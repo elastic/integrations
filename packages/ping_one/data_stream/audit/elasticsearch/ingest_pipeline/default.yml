@@ -11,6 +11,7 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: json
@@ -81,7 +82,7 @@ processors:
       target_field: ping_one.audit.created_at
       if: ctx.json?.createdAt != null && ctx.json?.createdAt != ''
       formats:
-          - ISO8601
+        - ISO8601
       on_failure:
         - append:
             field: error.message
@@ -117,7 +118,7 @@ processors:
       target_field: ping_one.audit.recorded_at
       if: ctx.json?.recordedAt != null && ctx.json?.recordedAt != ''
       formats:
-          - ISO8601
+        - ISO8601
       on_failure:
         - append:
             field: error.message
@@ -267,7 +268,7 @@ processors:
       field:
         - json
       ignore_missing: true
-# Remove ping_one.audit fields that are copied into an ECS field.
+      # Remove ping_one.audit fields that are copied into an ECS field.
   - foreach:
       field: ping_one.audit.resources
       processor:
@@ -299,7 +300,7 @@ processors:
   - script:
       description: Drops null/empty values recursively.
       lang: painless
-      source:
+      source: |
         boolean dropEmptyFields(Object object) {
           if (object == null || object == '') {
             return true;

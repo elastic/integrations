@@ -6,6 +6,7 @@ processors:
       target_field: event.original
       ignore_missing: true
       ignore_failure: true
+      if: ctx.event?.original == null
   - set:
       field: ecs.version
       value: '8.10.0'
@@ -97,7 +98,6 @@ processors:
       formats:
         - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSZ"
         - "ISO8601"
-
   # IP Geolocation Lookup
   - geoip:
       field: source.ip
@@ -140,7 +140,6 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
-
   # Extraction of domain
   - grok:
       field: _temp_.email.from.address
@@ -193,7 +192,6 @@ processors:
       value: '{{{_temp_.email.from.address}}}'
       allow_duplicates: false
       if: ctx._temp_?.email?.from?.address != null && ctx._temp_.email.from.address != ""
-
   - dissect:
       field: _temp_.email.to.address
       pattern: '%{_temp_.to_user_name}@%{_temp_.to_user_domain}'
@@ -203,7 +201,6 @@ processors:
       value: '{{{_temp_.to_user_name}}}'
       allow_duplicates: false
       if: ctx._temp_?.to_user_name != null && ctx._temp_.to_user_name != ""
-
   - dissect:
       field: _temp_.email.from.address
       pattern: '%{_temp_.from_user_name}@%{_temp_.from_user_domain}'
@@ -213,7 +210,6 @@ processors:
       value: '{{{_temp_.from_user_name}}}'
       allow_duplicates: false
       if: ctx._temp_?.from_user_name != null && ctx._temp_.from_user_name != ""
-
   - append:
       field: user.name
       value: '{{{_temp_.to_user_name}}}'
@@ -257,7 +253,6 @@ processors:
         if (ctx.user?.id != null && ctx.user.id.length == 1) {
           ctx.user.id = ctx.user.id[0];
         }
-
   - set:
       field: destination.user.name
       copy_from: _temp_.to_user_name
@@ -274,7 +269,6 @@ processors:
       field: source.user.domain
       copy_from: _temp_.from_user_domain
       if: ctx._temp_?.from_user_domain != null && ctx._temp_.from_user_domain != ""
-
   # Add unique fingerprint for deduplication
   - fingerprint:
       fields:
@@ -304,7 +298,7 @@ processors:
   - script:
       description: Drops null/empty values recursively.
       lang: painless
-      source:
+      source: |
         boolean dropEmptyFields(Object object) {
           if (object == null || object == "") {
             return true;

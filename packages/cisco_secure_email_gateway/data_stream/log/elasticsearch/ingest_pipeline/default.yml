@@ -17,6 +17,7 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - grok:
       field: event.original
       patterns:
@@ -30,7 +31,6 @@ processors:
   - lowercase:
       field: log.level
       ignore_failure: true
-
   # Time zone can come from two sources, choose in order: config, locale, default to UTC.
   - set:
       field: _tmp.tz
@@ -48,7 +48,6 @@ processors:
   - set:
       field: event.timezone
       copy_from: _tmp.tz
-
   - date:
       field: _tmp.timestamp
       timezone: "{{{ event.timezone }}}"
@@ -75,7 +74,6 @@ processors:
               - MMM  d HH:mm:ss
               - MMM dd HH:mm:ss
               - MMM d HH:mm:ss
-
   - pipeline:
       name: '{{ IngestPipeline "pipeline_authentication" }}'
       if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'authentication'

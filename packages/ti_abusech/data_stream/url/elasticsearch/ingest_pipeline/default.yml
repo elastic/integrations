@@ -16,7 +16,6 @@ processors:
   - set:
       field: event.type
       value: [indicator]
-
   ######################
   # General ECS fields #
   ######################
@@ -24,6 +23,7 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: abusech.url
@@ -31,7 +31,6 @@ processors:
       fields:
         - abusech.url.id
       target_field: "_id"
-
   #####################
   # Threat ECS Fields #
   #####################
@@ -58,7 +57,6 @@ processors:
       field: abusech.url.urlhaus_reference
       target_field: threat.indicator.reference
       ignore_missing: true
-
   # Host can be both IP addresses and domain names
   - grok:
       field: abusech.url.host
@@ -69,7 +67,6 @@ processors:
       field: abusech.url.reporter
       target_field: threat.indicator.provider
       ignore_missing: true
-
   ######################
   # Cleanup processors #
   ######################

@@ -8,6 +8,8 @@ processors:
   - rename:
       field: message
       target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       description: Parse 'message' JSON contents into a 'mimecast' object.
       field: event.original
@@ -20,7 +22,6 @@ processors:
         - mimecast.eventTime
       target_field: "_id"
       ignore_missing: true
-
   - date:
       description: Use 'mimecast.eventTime' as the '@timestamp'
       field: mimecast.eventTime
@@ -76,23 +77,22 @@ processors:
       allow_duplicates: false
       if: 'ctx?.source?.ip != null'
   - dissect:
-       field: email.from.address
-       pattern: "<%{email.from.address}>"
-       ignore_missing: true
-       ignore_failure: true
+      field: email.from.address
+      pattern: "<%{email.from.address}>"
+      ignore_missing: true
+      ignore_failure: true
   - dissect:
-       field: email.to.address
-       pattern: "<%{email.to.address}>"
-       ignore_missing: true
-       ignore_failure: true  
+      field: email.to.address
+      pattern: "<%{email.to.address}>"
+      ignore_missing: true
+      ignore_failure: true
   - lowercase:
       field: email.direction
       ignore_missing: true
-      
   ### Cleanup
   - remove:
       description: Cleanup of repeated/unwanted/temporary fields.
-      field: 
+      field:
         - mimecast.eventTime
         - mimecast.senderAddress
         - mimecast.recipientAddress
@@ -102,7 +102,6 @@ processors:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
-      
 # Error handling
 on_failure:
   - set:

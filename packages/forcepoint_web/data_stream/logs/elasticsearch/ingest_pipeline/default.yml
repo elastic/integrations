@@ -1,18 +1,15 @@
 ---
 description: Pipeline to process Forcepoint Web logs
 processors:
-
   # Validate that the input document conforms to the expected format
   # to avoid repetitive checks.
   - fail:
       description: 'Validates input document format'
       message: 'forcepoint_web object is missing from event'
       if: 'ctx.forcepoint_web == null'
-
   ######################################################################
   ## Cleanup garbage from Forcepoints chumpy garbage logging nonsense ##
   ######################################################################
-
   - script:
       lang: painless
       description: This script processor iterates over the forcepoint_web fields to remove fields with null values, "None' or 'Not available' strings.
@@ -38,112 +35,92 @@ processors:
           list.removeIf(v -> v == null || v == '' || v == 'None' || v == 'Not available' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
         }
         handleMap(ctx.forcepoint_web);
-
   #######################
   ## ECS event fields ##
   #######################
-
   - set:
       field: ecs.version
       value: '8.10.0'
-
   - rename:
-      if: "ctx?.tags != null && ctx.tags.contains('preserve_original_event')"
+      if: "ctx.event?.original == null"
       field: message
       target_field: event.original
       ignore_missing: true
-
   - set:
       field: event.kind
       value: event
       description: "Set default event kind"
-
   - set:
       field: event.type
       value:
         - info
       description: "Set default event type"
-
   - append:
       field: event.category
       value:
         - web
       description: "Set default event category"
-
   - set:
       field: event.timezone
       copy_from: _config.tz_offset
       description: "Timezone as configured in integration"
       ignore_empty_value: true
-
   #######################
   ## Forcepoint Fields ##
   #######################
-
   - set:
       field: _tmp.timestamp
       value: "{{forcepoint_web.date}} {{forcepoint_web.time}}"
       if: ctx.forcepoint_web?.date != null && ctx.forcepoint_web?.date != "" && ctx.forcepoint_web?.time != null && ctx.forcepoint_web?.time != ""
-
   - date:
       if: ctx._tmp?.timestamp != null && ctx.event.timezone == null
       field: _tmp.timestamp
       target_field: "@timestamp"
       formats: ["dd/MM/yyyy HH:mm:ss"]
-
   - date:
       if: ctx._tmp?.timestamp != null && ctx.event.timezone != null
       field: _tmp.timestamp
       target_field: "@timestamp"
       timezone: "{{{ event.timezone }}}"
       formats: ["dd/MM/yyyy HH:mm:ss"]
-
   - lowercase:
       field: forcepoint_web.action
       target_field: event.action
       ignore_missing: true
-
   - convert:
       field: forcepoint_web.destination_ip
       target_field: destination.ip
       type: ip
       ignore_missing: true
-
   - append:
       field: related.ip
       value:
         - '{{destination.ip}}'
       if: ctx.destination?.ip != null && ctx.destination?.ip != ""
-
   - convert:
       field: forcepoint_web.source_ip
       target_field: source.ip
       type: ip
       ignore_missing: true
-
   - append:
       field: related.ip
       value:
         - '{{source.ip}}'
       if: ctx.source?.ip != null && ctx.source?.ip != ""
-
   - convert:
       field: forcepoint_web.connection_ip
       target_field: source.nat.ip
       type: ip
       ignore_missing: true
-
   - append:
       field: related.ip
       value:
         - '{{source.nat.ip}}'
       if: ctx.source?.nat?.ip != null && ctx.source?.nat?.ip != ""
-
   - uppercase:
       field: forcepoint_web.http_request_method
       target_field: http.request.method
       ignore_missing: true
-
   - gsub:
       if: ctx.forcepoint_web?.url != null && ctx.forcepoint_web?.url =~ /^(?![a-zA-Z0-9]+:\/\/)/ && ctx.http?.request?.method == "CONNECT"
       field: forcepoint_web.url
@@ -151,7 +128,6 @@ processors:
       replacement: https://
       ignore_missing: true
       description: Fix leading protocol reference to https if method is CONNECT
-
   - gsub:
       field: forcepoint_web.url
       pattern: "^"
@@ -159,54 +135,44 @@ processors:
       ignore_missing: true
       if: ctx.forcepoint_web?.url != null && ctx.forcepoint_web?.url =~ /^(?![a-zA-Z0-9]+:\/\/)/
       description: Set leading protocol reference to unknown if no existing reference exists
-
   - gsub:
       field: forcepoint_web.url
       pattern: "^HTTP:"
       replacement: 'http:'
       ignore_missing: true
-
   - gsub:
       field: forcepoint_web.url
       pattern: "^HTTPS:"
       replacement: 'https:'
       ignore_missing: true
-
   - uri_parts:
       field: forcepoint_web.url
       target_field: url
       remove_if_successful: true
-
   - registered_domain:
       field: url.domain
       target_field: url
-
   - convert:
       field: forcepoint_web.http_status_code
       target_field: http.response.status_code
       type: long
       ignore_missing: true
-
   - set:
       field: host.name
       ignore_empty_value: true
       copy_from: forcepoint_web.workstation
-
   - append:
       field: related.hosts
       value:
         - '{{{host.name}}}'
       if: ctx.host?.name != null && ctx.host?.name != ""
-
   - user_agent:
       field: forcepoint_web.user_agent_string
       ignore_missing: true
-
   - set:
       field: user.id
       ignore_empty_value: true
       copy_from: forcepoint_web.user
-
   - grok:
       field: forcepoint_web.user
       patterns:
@@ -216,37 +182,30 @@ processors:
         - '%{GREEDYDATA:user.name}'
       ignore_missing: true
       if: ctx.forcepoint_web?.user != null && ctx.forcepoint_web?.user != ""
-
   - append:
       field: related.user
       value:
         - '{{{user.name}}}'
       if: ctx.user?.name != null && ctx.user?.name != ""
-
   - set:
       field: rule.name
       ignore_empty_value: true
       copy_from: forcepoint_web.policy_name
-
   - split:
       field: forcepoint_web.risk_class
       separator: ","
       ignore_missing: true
-
   - split:
       field: forcepoint_web.category
       separator: ","
       ignore_missing: true
-
   #####################################
   ## Standard ECS Field Enrichments  ##
   #####################################
-
   - geoip:
       field: source.ip
       target_field: source.geo
       ignore_missing: true
-
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
@@ -255,22 +214,18 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
-
   - rename:
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
-
   - rename:
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
-
   - geoip:
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
-
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
@@ -279,28 +234,23 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
-
   - rename:
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
-
   - rename:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
-
   ####################
   ## Cleanup Fields ##
   ####################
-
   - remove:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
       description: "Remove event.original unless tags indicate we shold not"
-
   - remove:
       field:
         - cef
@@ -308,7 +258,6 @@ processors:
       ignore_failure: true
       ignore_missing: true
       description: "Remove cef.* unless tags indicate we shold not"
-
   - remove:
       field:
         - log
@@ -316,14 +265,12 @@ processors:
       ignore_failure: true
       ignore_missing: true
       description: "Remove log.* fields unless tags indicate we shold not"
-
   - remove:
       field:
         - _tmp
         - _config
       ignore_missing: true
       description: "Remove temporary fields"
-
   - script:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values. This should be the last non-on_failure processor.
@@ -349,7 +296,6 @@ processors:
           list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
         }
         handleMap(ctx);
-
 on_failure:
   - set:
       field: event.kind

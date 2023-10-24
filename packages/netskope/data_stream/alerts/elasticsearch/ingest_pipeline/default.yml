@@ -4,7 +4,7 @@ processors:
   - set:
       field: ecs.version
       value: '8.10.0'
-  - json: 
+  - json:
       field: message
       add_to_root: true
       add_to_root_conflict_strategy: replace
@@ -12,6 +12,7 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: netskope.alerts.policy.actions
       ignore_failure: true
@@ -1290,8 +1291,9 @@ processors:
       if: ctx.file?.mime_type != null
       lang: painless
       source: >-
-        def parts = ctx.file.mime_type;
-        if (parts != null && parts.size() > 0) {
+        def parts = ctx.file.mime_type; if (parts != null && parts.size() > 0) {
+
+
           List l = new ArrayList();
           for (entry in parts.entrySet()) {
             l.add(entry.getValue());
@@ -1303,8 +1305,9 @@ processors:
       if: ctx.user?.email != null
       lang: painless
       source: >-
-        def parts = ctx.user.email;
-        if (parts != null && parts.size() > 0) {
+        def parts = ctx.user.email; if (parts != null && parts.size() > 0) {
+
+
           List l = new ArrayList();
           for (entry in parts.entrySet()) {
             l.add(entry.getValue());
@@ -1316,8 +1319,9 @@ processors:
       if: ctx.netskope?.alerts?.quarantine?.app != null
       lang: painless
       source: >-
-        def parts = ctx.netskope.alerts.quarantine.app;
-        if (parts != null && parts.size() > 0) {
+        def parts = ctx.netskope.alerts.quarantine.app; if (parts != null && parts.size() > 0) {
+
+
           List l = new ArrayList();
           for (entry in parts.entrySet()) {
             l.add(entry.getValue());

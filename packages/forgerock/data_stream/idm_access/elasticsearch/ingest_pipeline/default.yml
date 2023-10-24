@@ -1,6 +1,6 @@
 ---
 description: Pipeline for ForgeRock idm-access audit logs
-processors: 
+processors:
   - set:
       field: ecs.version
       value: '8.10.0'
@@ -11,22 +11,21 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: json
   - rename:
       field: json.payload
       target_field: forgerock
-
   - set:
       field: event.id
       copy_from: forgerock._id
       ignore_failure: true
-  - set: 
+  - set:
       field: transaction.id
       copy_from: forgerock.transactionId
       ignore_failure: true
-
   - date:
       field: forgerock.timestamp
       formats:
@@ -37,7 +36,6 @@ processors:
         - append:
             field: error.message
             value: '{{ _ingest.on_failure_message }}'
-
   # idm-access processing
   - set:
       field: event.type
@@ -47,11 +45,11 @@ processors:
       target_field: client.ip
       type: ip
       ignore_missing: true
-  - set: 
+  - set:
       field: client.port
       copy_from: forgerock.client.port
       ignore_failure: true
-  - set: 
+  - set:
       field: server.domain
       copy_from: forgerock.server.host
       ignore_failure: true
@@ -60,21 +58,21 @@ processors:
       target_field: server.ip
       type: ip
       ignore_missing: true
-  - set: 
+  - set:
       field: user.id
       copy_from: forgerock.userId
       ignore_failure: true
-  - set: 
+  - set:
       field: http.request.method
       copy_from: forgerock.http.request.method
       ignore_failure: true
-  - set: 
+  - set:
       field: http.request.Path
       copy_from: forgerock.http.request.path
       ignore_failure: true
   - convert:
       target_field: http.response.status_code
-      field: forgerock.response.statusCode 
+      field: forgerock.response.statusCode
       type: integer
       ignore_failure: true
   - set:
@@ -99,14 +97,12 @@ processors:
         MS_TO_NS: 1000000
       source: >-
         ctx.event.duration *= params.MS_TO_NS;
-
   # cleaning up
   - remove:
       field:
         - json.timestamp
         - json.type
       ignore_failure: true
-
   - remove:
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
@@ -124,13 +120,11 @@ processors:
         - forgerock.timestamp
       ignore_failure: true
       ignore_missing: true
-
   - remove:
       field: event.original
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
       ignore_missing: true
-
   - script:
       description: Drops null/empty values recursively
       lang: painless
@@ -149,7 +143,6 @@ processors:
           return false;
         }
         drop(ctx);
-
 on_failure:
   - append:
       field: error.message

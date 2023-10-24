@@ -8,6 +8,7 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - set:
       field: ecs.version
       value: '8.10.0'
@@ -77,7 +78,6 @@ processors:
           return;
         }
         ctx.log.syslog.severity.name = params[(ctx.log.syslog.severity.code).toString()];
-
   # Remove port number from syslog source, and put to ECS log.syslog.hostname
   - gsub:
       if: ctx.log?.source?.address != null && ctx.log.source.address != ''
@@ -85,13 +85,11 @@ processors:
       pattern: :.*
       replacement: ''
       target_field: log.syslog.hostname
-        
   # Parse the JSON message to arista.*
   - json:
       field: _temp_.full_message
       target_field: arista
       ignore_failure: true
-
   # Drop messages we cannot yet parse
   - drop:
       description: Drop events that are not yet supported
@@ -114,7 +112,6 @@ processors:
           }
         }
         return true;
-
   ##############################
   ## Event Specific Pipelines ##
   ##############################
@@ -153,7 +150,6 @@ processors:
       if: ctx.arista?.class == 'class com.untangle.uvm.app.SessionStatsEvent'
       name: '{{ IngestPipeline "session_stats" }}'
       ignore_missing_pipeline: true
-
   ############################
   ## ECS @timestamp Mapping ##
   ############################
@@ -227,7 +223,6 @@ processors:
               - append:
                   field: error.message
                   value: "Error parsing date from syslog timestamp. Value of field: {{{ _temp_.raw_date }}}{{{ _ingest.on_failure_message }}}"
-
   ##############################################
   ## Move SessionEvent Data Before Processing ##
   ##############################################
@@ -238,7 +233,7 @@ processors:
   - foreach:
       if: ctx.arista?.sessionEvent != null
       field: arista.sessionEvent
-      processor: 
+      processor:
         rename:
           field: _ingest._value
           target_field: arista.{{{_ingest._key}}}
@@ -249,7 +244,6 @@ processors:
                 field: error.message
                 value: "{{{ _ingest.on_failure_message }}}"
       ignore_failure: true
-
   ########################
   ## ECS Source Mapping ##
   ########################
@@ -307,7 +301,6 @@ processors:
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
-
   #############################
   ## ECS Destination Mapping ##
   #############################
@@ -365,7 +358,6 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
-
   #######################
   ## ECS Event Mapping ##
   #######################
@@ -594,7 +586,6 @@ processors:
             }
           }
         }
-
   #########################
   ## ECS Network Mapping ##
   #########################
@@ -645,8 +636,7 @@ processors:
   - script:
       description: Calculate network.direction if zones are not configured
       lang: painless
-      if: "ctx?.source?.ip != null &&
-           ctx?.destination?.ip != null"
+      if: "ctx?.source?.ip != null && ctx?.destination?.ip != null"
       source: |
         boolean isPrivateCIDR(def ip) {
           CIDR class_a_network = new CIDR('10.0.0.0/8');
@@ -683,7 +673,6 @@ processors:
   - community_id:
       ignore_missing: true
       ignore_failure: true
-
   ##########################
   ## ECS Observer Mapping ##
   ##########################
@@ -747,7 +736,6 @@ processors:
             ctx.observer.ingress.interface.name = ctx._conf.interface_id_2_name;
           }
         }
-
   ######################
   ## ECS Rule Mapping ##
   ######################
@@ -772,7 +760,6 @@ processors:
       field: rule.id
       type: string
       ignore_missing: true
-
   ########################
   ## ECS Source Mapping ##
   ########################
@@ -818,7 +805,6 @@ processors:
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
-
   ######################
   ## ECS Tags Mapping ##
   ######################
@@ -828,7 +814,6 @@ processors:
       if: ctx.arista?.tagsString != null && ctx.arista.tagsString != ''
       allow_duplicates: false
       ignore_failure: true
-
   ######################
   ## ECS User Mapping ##
   ######################
@@ -836,7 +821,6 @@ processors:
       field: arista.username
       target_field: user.name
       ignore_missing: true
-
   ######################
   ## ECS Host Mapping ##
   ######################
@@ -844,7 +828,6 @@ processors:
       field: arista.hostname
       target_field: host.name
       ignore_missing: true
-
   #########################
   ## ECS Related Mapping ##
   #########################
@@ -896,7 +879,6 @@ processors:
       field: related.user
       value: '{{{user.name}}}'
       allow_duplicates: false
-
   #################################
   ## ECS Arista-Specific Mapping ##
   #################################
@@ -908,7 +890,6 @@ processors:
       field: arista.policyRuleId
       target_field: arista.policy.rule_id
       ignore_missing: true
-  
   ##############
   ## Clean Up ##
   ##############

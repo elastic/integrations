@@ -8,6 +8,8 @@ processors:
       field: message
       target_field: event.original
       ignore_failure: true
+      ignore_missing: true
+      if: ctx.event?.original == null
   - grok:
       field: event.original
       pattern_definitions:
@@ -17,13 +19,11 @@ processors:
         AUDIT_KEY_VALUES: "%{WORD}=%{GREEDYDATA}"
         ANY: ".*"
       patterns:
-      - "%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} old auid=%{NUMBER:auditd.log.old_auid}
-        new auid=%{NUMBER:auditd.log.new_auid} old ses=%{NUMBER:auditd.log.old_ses}
-        new ses=%{NUMBER:auditd.log.new_ses}"
-      - "%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} msg=['\"]([^=]*\\s)?%{ANY:auditd.log.sub_kv}['\"]"
-      - "%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv}"
-      - "%{AUDIT_PREFIX}"
-      - "%{AUDIT_TYPE} %{AUDIT_KEY_VALUES:auditd.log.kv}"
+        - "%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} old auid=%{NUMBER:auditd.log.old_auid} new auid=%{NUMBER:auditd.log.new_auid} old ses=%{NUMBER:auditd.log.old_ses} new ses=%{NUMBER:auditd.log.new_ses}"
+        - "%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} msg=['\"]([^=]*\\s)?%{ANY:auditd.log.sub_kv}['\"]"
+        - "%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv}"
+        - "%{AUDIT_PREFIX}"
+        - "%{AUDIT_TYPE} %{AUDIT_KEY_VALUES:auditd.log.kv}"
   - kv:
       field: auditd.log.kv
       field_split: '\s(?![\w\"]+?(\s+|$))'
@@ -39,7 +39,7 @@ processors:
       field: auditd.log.epoch
       target_field: "@timestamp"
       formats:
-      - UNIX
+        - UNIX
       ignore_failure: true
   - rename:
       ignore_failure: true
@@ -52,96 +52,96 @@ processors:
   - script:
       lang: painless
       source: |
-          String trimQuotes(def singleQuote, def doubleQuote, def v) {
-              if (v.startsWith(singleQuote) || v.startsWith(doubleQuote)) {
-                  v = v.substring(1, v.length());
-              }
-              if (v.endsWith(singleQuote) || v.endsWith(doubleQuote)) {
-                  v = v.substring(0, v.length()-1);
-              }
-              return v;
-          }
+        String trimQuotes(def singleQuote, def doubleQuote, def v) {
+            if (v.startsWith(singleQuote) || v.startsWith(doubleQuote)) {
+                v = v.substring(1, v.length());
+            }
+            if (v.endsWith(singleQuote) || v.endsWith(doubleQuote)) {
+                v = v.substring(0, v.length()-1);
+            }
+            return v;
+        }
 
-          boolean isHexAscii(String v) {
-              def len = v.length();
+        boolean isHexAscii(String v) {
+            def len = v.length();
 
-              if (len == 0 || len % 2 != 0) {
-                  return false;
-              }
+            if (len == 0 || len % 2 != 0) {
+                return false;
+            }
 
-              for (int i = 0 ; i < len ; i++) {
-                  if (Character.digit(v.charAt(i), 16) == -1) {
-                      return false;
-                  }
-              }
-              return true;
-          }
+            for (int i = 0 ; i < len ; i++) {
+                if (Character.digit(v.charAt(i), 16) == -1) {
+                    return false;
+                }
+            }
+            return true;
+        }
 
-          String convertHexToString(String hex) {
-              StringBuilder sb = new StringBuilder();
-              boolean needed_encoding = false;
+        String convertHexToString(String hex) {
+            StringBuilder sb = new StringBuilder();
+            boolean needed_encoding = false;
 
-              for (int i=0; i < hex.length() - 1; i+=2) {
-                  int cp = Integer.parseInt(hex.substring(i, (i +2)), 16);
-                  if (cp < 33 || cp == 34 || cp == 127) {
-                      needed_encoding = true;
-                  }
-                  if (cp < 32 || cp == 127) {
-                      sb.append('^');
-                      cp ^= 64;
-                  }
-                  sb.append((char)cp);
-              }
-              if (needed_encoding) {
-                  return sb.toString();
-              }
-              return hex;
-          }
+            for (int i=0; i < hex.length() - 1; i+=2) {
+                int cp = Integer.parseInt(hex.substring(i, (i +2)), 16);
+                if (cp < 33 || cp == 34 || cp == 127) {
+                    needed_encoding = true;
+                }
+                if (cp < 32 || cp == 127) {
+                    sb.append('^');
+                    cp ^= 64;
+                }
+                sb.append((char)cp);
+            }
+            if (needed_encoding) {
+                return sb.toString();
+            }
+            return hex;
+        }
 
-          Boolean convertStringToBoolean(String value) {
-              value = value.toLowerCase();
-              return value == "yes" || value == "true" || value == "1";
-          }
+        Boolean convertStringToBoolean(String value) {
+            value = value.toLowerCase();
+            return value == "yes" || value == "true" || value == "1";
+        }
 
-          def possibleHexKeys = ["exe", "cmd", "data", "path", "comm", "file", "name", "watch", "cwd", "acct", "dir", "vm", "old-chardev", "new-chardev", "old-disk", "new-disk", "old-fs", "new-fs", "old-net", "new-net", "device", "cgroup", "apparmor", "operation", "denied_mask", "info", "profile", "requested_mask", "old-rng", "new-rng", "ocomm", "grp", "new_group", "invalid_context", "sw", "root_dir", "proctitle"];
-          def possibleBooleanKeys = ["success", "key_enforce"];
-          def audit = ctx.auditd.get("log");
-          Iterator entries = audit.entrySet().iterator();
+        def possibleHexKeys = ["exe", "cmd", "data", "path", "comm", "file", "name", "watch", "cwd", "acct", "dir", "vm", "old-chardev", "new-chardev", "old-disk", "new-disk", "old-fs", "new-fs", "old-net", "new-net", "device", "cgroup", "apparmor", "operation", "denied_mask", "info", "profile", "requested_mask", "old-rng", "new-rng", "ocomm", "grp", "new_group", "invalid_context", "sw", "root_dir", "proctitle"];
+        def possibleBooleanKeys = ["success", "key_enforce"];
+        def audit = ctx.auditd.get("log");
+        Iterator entries = audit.entrySet().iterator();
 
-          while (entries.hasNext()) {
-              def e = entries.next();
-              def k = e.getKey();
-              def v = e.getValue();
+        while (entries.hasNext()) {
+            def e = entries.next();
+            def k = e.getKey();
+            def v = e.getValue();
 
-              // Remove entries whose value is ?
-              if (v == "?" || v == "(null)" || v == "") {
-                  entries.remove();
-                  continue;
-              }
+            // Remove entries whose value is ?
+            if (v == "?" || v == "(null)" || v == "") {
+                entries.remove();
+                continue;
+            }
 
-              // Convert hex values to ASCII.
-              if (possibleHexKeys.contains(k) && isHexAscii(v)) {
-                  v = convertHexToString(v);
-                  audit.put(k, v);
-              }
+            // Convert hex values to ASCII.
+            if (possibleHexKeys.contains(k) && isHexAscii(v)) {
+                v = convertHexToString(v);
+                audit.put(k, v);
+            }
 
-              // Convert string values to boolean.
-              if (possibleBooleanKeys.contains(k) && v instanceof String) {
-                  v = convertStringToBoolean(v);
-                  audit.put(k, v);
-              }
+            // Convert string values to boolean.
+            if (possibleBooleanKeys.contains(k) && v instanceof String) {
+                v = convertStringToBoolean(v);
+                audit.put(k, v);
+            }
 
-              // Trim quotes.
-              if (v instanceof String) {
-                  v = trimQuotes(params.single_quote, params.double_quote, v);
-                  audit.put(k, v);
-              }
+            // Trim quotes.
+            if (v instanceof String) {
+                v = trimQuotes(params.single_quote, params.double_quote, v);
+                audit.put(k, v);
+            }
 
-              // Convert arch.
-              if (k == "arch" && v == "c000003e") {
-                  audit.put(k, "x86_64");
-              }
-          }
+            // Convert arch.
+            if (k == "arch" && v == "c000003e") {
+                audit.put(k, "x86_64");
+            }
+        }
       params:
         single_quote: "'"
         double_quote: "\""
@@ -2174,9 +2174,9 @@ processors:
            ctx.process.args.add(0, "[... " + firstIndex + " truncated arguments ...]");
          }
       on_failure:
-      - append:
-          field: error.message
-          value: "failed extracting process arguments: {{{ _ingest.on_failure_message }}}"
+        - append:
+            field: error.message
+            value: "failed extracting process arguments: {{{ _ingest.on_failure_message }}}"
   - rename:
       ignore_failure: true
       field: auditd.log.record_type
@@ -2200,7 +2200,7 @@ processors:
   - grok:
       field: source.address
       patterns:
-      - "^%{IP:source.ip}$"
+        - "^%{IP:source.ip}$"
       ignore_failure: true
   - geoip:
       field: source.ip
@@ -2211,8 +2211,8 @@ processors:
       field: source.ip
       target_field: source.as
       properties:
-      - asn
-      - organization_name
+        - asn
+        - organization_name
       ignore_missing: true
   - rename:
       field: source.as.asn

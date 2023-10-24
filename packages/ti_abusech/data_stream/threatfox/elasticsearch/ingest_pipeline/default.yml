@@ -16,7 +16,6 @@ processors:
   - set:
       field: event.type
       value: [indicator]
-
   ######################
   # General ECS fields #
   ######################
@@ -24,6 +23,7 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: abusech.threatfox
@@ -36,7 +36,6 @@ processors:
       field: abusech.threatfox.id
       target_field: event.id
       ignore_missing: true
-
   #####################
   # Threat ECS Fields #
   #####################
@@ -114,7 +113,6 @@ processors:
       keep_original: true
       remove_if_successful: true
       if: ctx.abusech?.threatfox?.ioc_type == 'url'
-
   ## IP/Port indicator operations
   - set:
       field: threat.indicator.type
@@ -139,7 +137,6 @@ processors:
       field: threat.indicator.type
       value: ipv6-addr
       if: ctx.threat?.indicator?.ip != null && ctx.threat.indicator.ip.contains(':')
-
   ## File/Hash indicator operations
   - set:
       field: threat.indicator.type
@@ -155,7 +152,6 @@ processors:
       field: abusech.threatfox.ioc
       target_field: threat.indicator.file.hash.{{_tmp.hashtype}}
       if: "ctx.abusech?.threatfox?.ioc_type != null && ctx.abusech.threatfox.ioc_type.endsWith('_hash') && ctx._tmp.hashtype != null"
-
   ######################
   # Cleanup processors #
   ######################

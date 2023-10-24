@@ -7,6 +7,8 @@ processors:
   - rename:
       field: message
       target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
   - set:
       field: observer.vendor
       value: QNAP
@@ -34,24 +36,24 @@ processors:
       target_field: '@timestamp'
       timezone: "{{ event.timezone }}"
       formats:
-      - MMM  d HH:mm:ss
-      - MMM dd HH:mm:ss
-      if: ctx.event?.timezone != null   
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+      if: ctx.event?.timezone != null
   - date:
       field: _tmp.timestamp
       target_field: '@timestamp'
       formats:
-      - MMM  d HH:mm:ss
-      - MMM dd HH:mm:ss
-      if: ctx.event?.timezone == null      
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+      if: ctx.event?.timezone == null
   - set:
       field: event.created
       copy_from: '@timestamp'
   - grok:
       field: _tmp.message
       patterns:
-        - '^%{SHARED}, Application: %{DATA:qnap.nas.application}, Category: %{DATA:qnap.nas.category}, Content: %{DATA:message}$' 
-        - '^%{SHARED}, Connection type: %{DATA:qnap.nas.connection_type}, Accessed resources: %{RESOURCE}, Action: %{DATA:event.action}$'     
+        - '^%{SHARED}, Application: %{DATA:qnap.nas.application}, Category: %{DATA:qnap.nas.category}, Content: %{DATA:message}$'
+        - '^%{SHARED}, Connection type: %{DATA:qnap.nas.connection_type}, Accessed resources: %{RESOURCE}, Action: %{DATA:event.action}$'
       pattern_definitions:
         SHARED: 'Users: %{USER:user.name}, Source IP: (127.0.0.1|%{IP:source.address}), Computer name: (---|%{HOSTNAME:source.domain})'
         RESOURCE: '(\[%{DATA:qnap.nas.application}\] )?(---|%{FILE_PATH:qnap.nas.file.path}|%{DATA:qnap.nas.application})'
@@ -83,8 +85,8 @@ processors:
       field: source.ip
       target_field: source.as
       properties:
-          - asn
-          - organization_name
+        - asn
+        - organization_name
       ignore_missing: true
   - rename:
       field: source.as.asn
@@ -127,7 +129,6 @@ processors:
       pattern: \s
       replacement: '-'
       ignore_missing: true
-
   - script:
       lang: painless
       description: Add ECS categorization
@@ -249,12 +250,12 @@ processors:
       if: ctx.source?.domain != null
       field: related.hosts
       value: '{{source.domain}}'
-      allow_duplicates: false    
+      allow_duplicates: false
   - append:
       if: ctx.user?.name != null
       field: related.user
       value: '{{user.name}}'
-      allow_duplicates: false    
+      allow_duplicates: false
   - remove:
       field:
         - _tmp

@@ -8,6 +8,7 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: json
@@ -69,7 +70,7 @@ processors:
   - set:
       field: event.type
       if: ctx.event?.action?.contains('create group') || ctx.event?.action?.contains('adding user to group')
-      value: [group,creation]
+      value: [group, creation]
   - set:
       field: event.type
       if: ctx.event?.action?.contains('login verification email sent') || ctx.event?.action?.contains('get shared folder data') || ctx.event?.action?.contains('get user data') || ctx.event?.action?.contains('employee invited') || ctx.event?.action?.contains('reporting') || ctx.event?.action?.contains('require password change') || ctx.event?.action?.contains('multifactor enabled')
@@ -156,7 +157,7 @@ processors:
   - script:
         description: Separate Shared Folder Name and User Email with comma(',') in Limit Shared Folder Event Type.
         lang: painless
-        source:
+        source: |
           if (ctx.event?.action?.contains('limit shared folder')) {
             int indx = ctx.lastpass.event_report.data.original.lastIndexOf(' ');
             String str = ctx.lastpass.event_report.data.original.substring(0,indx)+ ',' + ctx.lastpass.event_report.data.original.substring(indx+1);
@@ -349,7 +350,7 @@ processors:
   - script:
         description: Drops null/empty values recursively.
         lang: painless
-        source:
+        source: |
           boolean dropEmptyFields(Object object) {
             if (object == null || object == "") {
               return true;
