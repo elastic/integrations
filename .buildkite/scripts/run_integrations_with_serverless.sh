@@ -44,7 +44,6 @@ with_kubernetes
 
 check_package_in_serverless() {
     local package="$1"
-    echo "Current directory: $(pwd)"
 
     echo "--- Package ${package}: check"
     pushd ${package} > /dev/null
@@ -56,13 +55,13 @@ check_package_in_serverless() {
             echo "fleet_server not supported. Skipped"
             echo "- [${package}] not supported" >> ${SKIPPED_PACKAGES_FILE_PATH}
             popd > /dev/null
-            continue
+            return
         fi
         if ! is_spec_3_0_0 ; then
             echo "Not v3 spec version. Skipped"
             echo "- [${package}] spec <3.0.0" >> ${SKIPPED_PACKAGES_FILE_PATH}
             popd > /dev/null
-            continue
+            return
         fi
     fi
 
@@ -70,7 +69,7 @@ check_package_in_serverless() {
         echo "${reason}"
         echo "- ${reason}" >> ${SKIPPED_PACKAGES_FILE_PATH}
         popd > /dev/null
-        continue
+        return
     fi
 
     use_kind=0
