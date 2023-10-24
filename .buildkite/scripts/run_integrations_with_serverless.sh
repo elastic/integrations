@@ -5,12 +5,13 @@ source .buildkite/scripts/common.sh
 set -euo pipefail
 
 # default values
+SERVERLESS=${SERVERLESS:-"false"}
 STACK_VERSION=${STACK_VERSION:-""}
 FORCE_CHECK_ALL=${FORCE_CHECK_ALL:-"false"}
 SKIP_PUBLISHING=${SKIP_PUBLISHING:-"false"}
+
 SKIPPED_PACKAGES_FILE_PATH="${WORKSPACE}/skipped_packages.txt"
 FAILED_PACKAGES_FILE_PATH="${WORKSPACE}/failed_packages.txt"
-SERVERLESS=${SERVERLESS:-"false"}
 
 if running_on_buildkite; then
     # just get the value from meta-data if it is running on Buildkite
@@ -22,7 +23,7 @@ fi
 SERVERLESS_PROJECT=${SERVERLESS_PROJECT:-"observability"}
 echo "Running packages on Serverles project type: ${SERVERLESS_PROJECT}"
 if running_on_buildkite; then
-    buildkite-agent annotate "Serverless Project: ${SERVERLESS_PROJECT}" --style "info"
+    buildkite-agent annotate "Serverless Project: ${SERVERLESS_PROJECT}" --context "ctx-info-${SERVERLESS_PROJECT}" --style "info"
 fi
 
 
