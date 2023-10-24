@@ -379,20 +379,20 @@ get_to_changeset() {
 # TODO: it is required to have GIT_PREVIOUS_COMMIT and GIT_PREVIOUS_SUCCESSFUL_COMMIT
 # as in Jenkins to set the right from (changesets)
 is_pr_affected() {
-    local integration="${1}"
+    local package="${1}"
 
     if ! is_supported_stack ; then
-        echo "[${integration}] PR is not affected: unsupported stack (${STACK_VERSION})"
+        echo "[${package}] PR is not affected: unsupported stack (${STACK_VERSION})"
         return 1
     fi
 
     if ! is_supported_capability ; then
-        echo "[${integration}] PR is not affected: capabilities not mached with the project (${SERVERLESS_PROJECT})"
+        echo "[${package}] PR is not affected: capabilities not mached with the project (${SERVERLESS_PROJECT})"
         return 1
     fi
 
     if [[ ${FORCE_CHECK_ALL} == "true" ]];then
-        echo "[${integration}] PR is affected: \"force_check_all\" parameter enabled"
+        echo "[${package}] PR is affected: \"force_check_all\" parameter enabled"
         return 0
     fi
 
@@ -406,24 +406,24 @@ is_pr_affected() {
     # GIT_PREVIOUS_SUCCESSFUL_COMMIT to check if the branch is still healthy.
     # If this value is not available, check with last commit.
     if [[ ${BUILDKITE_BRANCH} == "main" || ${BUILDKITE_BRANCH} =~ ^backport- ]]; then
-        echo "[${integration}] PR is affected: running on ${BUILDKITE_BRANCH} branch"
+        echo "[${package}] PR is affected: running on ${BUILDKITE_BRANCH} branch"
         # TODO: get previous successful commit as in Jenkins (groovy)
         # from = env.GIT_PREVIOUS_SUCCESSFUL_COMMIT?.trim() ? env.GIT_PREVIOUS_SUCCESSFUL_COMMIT : "origin/${env.BRANCH_NAME}^"
         from="origin/${BUILDKITE_BRANCH}^"
         to="origin/${BUILDKITE_BRANCH}"
     fi
 
-    echo "[${integration}] git-diff: check non-package files"
+    echo "[${package}] git-diff: check non-package files"
     if git diff --name-only $(git merge-base ${from} ${to}) ${to} | egrep '^(packages/|.github/CODEOWNERS)' ; then
-        echo "[${integration}] PR is affected: found non-package files"
+        echo "[${package}] PR is affected: found non-package files"
         return 0
     fi
-    echo "[${integration}] git-diff: check package files"
-    if git diff --name-only $(git merge-base ${from} ${to}) ${to} | egrep '^packages/${integration}/' ; then
-        echo "[${integration}] PR is affected: found package files"
+    echo "[${package}] git-diff: check package files"
+    if git diff --name-only $(git merge-base ${from} ${to}) ${to} | egrep '^packages/${package}/' ; then
+        echo "[${package}] PR is affected: found package files"
         return 0
     fi
-    echo "[${integration}] PR is not affected"
+    echo "[${package}] PR is not affected"
     return 1
 }
 
@@ -439,25 +439,25 @@ kubernetes_service_deployer_used() {
 }
 
 teardown_serverless_test_package() {
-    local integration=$1
+    local package=$1
     local build_directory="${WORKSPACE}/build"
-    local dump_directory="${build_directory}/elastic-stack-dump/${integration}"
+    local dump_directory="${build_directory}/elastic-stack-dump/${package}"
 
     echo "Collect Elastic stack logs"
     ${ELASTIC_PACKAGE_BIN} stack dump -v --output ${dump_directory}
 
-    upload_safe_logs_from_package ${integration} ${build_directory}
+    upload_safe_logs_from_package ${package} ${build_directory}
 }
 
 teardown_test_package() {
-    local integration=$1
+    local package=$1
     local build_directory="${WORKSPACE}/build"
-    local dump_directory="${build_directory}/elastic-stack-dump/${integration}"
+    local dump_directory="${build_directory}/elastic-stack-dump/${package}"
 
     echo "Collect Elastic stack logs"
     ${ELASTIC_PACKAGE_BIN} stack dump -v --output ${dump_directory}
 
-    upload_safe_logs_from_package ${integration} ${build_directory}
+    upload_safe_logs_from_package ${package} ${build_directory}
 
     echo "Take down the Elastic stack"
     ${ELASTIC_PACKAGE_BIN} stack down -v
@@ -468,8 +468,8 @@ list_all_directories() {
 }
 
 check_package() {
-    local integration=$1
-    echo "Check integration: ${integration}"
+    local package=$1
+    echo "Check package: ${package}"
     if ! ${ELASTIC_PACKAGE_BIN} check -v ; then
         return 1
     fi
@@ -478,8 +478,8 @@ check_package() {
 }
 
 install_package() {
-    local integration=$1
-    echo "Install integration: ${integration}"
+    local package=$1
+    echo "Install package: ${package}"
     if ! ${ELASTIC_PACKAGE_BIN} install -v ; then
         return 1
     fi
@@ -491,10 +491,10 @@ install_package() {
 # too much time, since all packages are run in the same step one by one.
 # Packages are tested one by one to avoid creating more than 100 projects for one build.
 test_package_in_serverless() {
-    local integration=$1
+    local package=$1
     TEST_OPTIONS="-v --report-format xUnit --report-output file"
 
-    echo "Test integration: ${integration}"
+    echo "Test package: ${package}"
     if ! ${ELASTIC_PACKAGE_BIN} test asset ${TEST_OPTIONS} --test-coverage ; then
         return 1
     fi
@@ -511,15 +511,15 @@ test_package_in_serverless() {
 }
 
 run_tests_package() {
-    local integration=$1
-    if ! check_package ${integration} ; then
+    local package=$1
+    if ! check_package ${package} ; then
         return 1
     fi
-    if ! install_package ${integration} ; then
+    if ! install_package ${package} ; then
         return 1
     fi
     if [[ $SERVERLESS == "true" ]]; then
-        if ! test_package_in_serverless ${integration} ; then
+        if ! test_package_in_serverless ${package} ; then
             return 1
         fi
     fi
@@ -579,7 +579,7 @@ upload_safe_logs_from_package() {
         return
     fi
 
-    local integration=$1
+    local package=$1
     local build_directory=$2
 
     local parent_folder="insecure-logs"
@@ -590,17 +590,17 @@ upload_safe_logs_from_package() {
 
     upload_safe_logs \
         "${JOB_GCS_BUCKET_INTERNAL}" \
-        "${build_directory}/elastic-stack-dump/${integration}/logs/elastic-agent-internal/*.*" \
-        "${parent_folder}/${integration}/elastic-agent-logs/"
+        "${build_directory}/elastic-stack-dump/${package}/logs/elastic-agent-internal/*.*" \
+        "${parent_folder}/${package}/elastic-agent-logs/"
 
     # required for <8.6.0
     upload_safe_logs \
         "${JOB_GCS_BUCKET_INTERNAL}" \
-        "${build_directory}/elastic-stack-dump/${integration}/logs/elastic-agent-internal/default/*" \
-        "${parent_folder}/${integration}/elastic-agent-logs/default/"
+        "${build_directory}/elastic-stack-dump/${package}/logs/elastic-agent-internal/default/*" \
+        "${parent_folder}/${package}/elastic-agent-logs/default/"
 
     upload_safe_logs \
         "${JOB_GCS_BUCKET_INTERNAL}" \
         "${build_directory}/container-logs/*.log" \
-        "${parent_folder}/${integration}/container-logs/"
+        "${parent_folder}/${package}/container-logs/"
 }
