@@ -4,7 +4,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: 8.9.0
+      value: 8.10.0
   - rename:
       field: message
       target_field: event.original
@@ -33,32 +33,68 @@ processors:
       field: event.category
       tag: append_malware_into_event_category
       value: malware
-      if: ctx.symantec_edr_cloud?.incident?.conclusion != null && ['targeted malware','suspicious activity','malicious activity','malicious file','dual use tool','malware','hacktool'].contains(ctx.symantec_edr_cloud.incident.conclusion.toLowerCase())
+      if: >-
+        ctx.symantec_edr_cloud?.incident?.conclusion != null && [
+          'targeted malware',
+          'suspicious activity',
+          'malicious activity',
+          'malicious file',
+          'dual use tool',
+          'malware',
+          'hacktool'
+        ].contains(ctx.symantec_edr_cloud.incident.conclusion.toLowerCase())
   - append:
       field: event.category
       tag: append_threat_into_event_category
       value: threat
-      if: ctx.symantec_edr_cloud?.incident?.conclusion != null && ['network threat','potential threat','targeted attack'].contains(ctx.symantec_edr_cloud.incident.conclusion.toLowerCase())
+      if: >-
+        ctx.symantec_edr_cloud?.incident?.conclusion != null && [
+          'network threat',
+          'potential threat',
+          'targeted attack'
+        ].contains(ctx.symantec_edr_cloud.incident.conclusion.toLowerCase())
   - append:
       field: event.category
       tag: append_intrusion_detection_into_event_category
       value: intrusion_detection
-      if: ctx.symantec_edr_cloud?.incident?.conclusion != null && ['breach'].contains(ctx.symantec_edr_cloud.incident.conclusion.toLowerCase())
+      if: >-
+        ctx.symantec_edr_cloud?.incident?.conclusion != null && [
+          'breach'
+        ].contains(ctx.symantec_edr_cloud.incident.conclusion.toLowerCase())
   - append:
       field: event.category
       tag: append_network_into_event_category
       value: network
-      if: ctx.symantec_edr_cloud?.incident?.conclusion != null && ['network threat'].contains(ctx.symantec_edr_cloud.incident.conclusion.toLowerCase())
+      if: >-
+        ctx.symantec_edr_cloud?.incident?.conclusion != null && [
+          'network threat'
+        ].contains(ctx.symantec_edr_cloud.incident.conclusion.toLowerCase())
   - append:
       field: event.type
       tag: append_info_into_event_type
       value: info
-      if: ctx.symantec_edr_cloud?.incident?.conclusion != null && ['targeted malware','suspicious activity','malicious activity','malicious file','dual use tool','malware','hacktool','breach','network threat'].contains(ctx.symantec_edr_cloud.incident.conclusion.toLowerCase())
+      if: >-
+        ctx.symantec_edr_cloud?.incident?.conclusion != null && [
+          'targeted malware',
+          'suspicious activity',
+          'malicious activity',
+          'malicious file',
+          'dual use tool',
+          'malware',
+          'hacktool',
+          'breach',
+          'network threat'
+        ].contains(ctx.symantec_edr_cloud.incident.conclusion.toLowerCase())
   - append:
       field: event.type
       tag: append_indicator_into_event_type
       value: indicator
-      if: ctx.symantec_edr_cloud?.incident?.conclusion != null && ['network threat','potential threat','targeted attack'].contains(ctx.symantec_edr_cloud.incident.conclusion.toLowerCase())
+      if: >-
+        ctx.symantec_edr_cloud?.incident?.conclusion != null && [
+          'network threat',
+          'potential threat',
+          'targeted attack'
+        ].contains(ctx.symantec_edr_cloud.incident.conclusion.toLowerCase())
   - date:
       field: symantec_edr_cloud.incident.device_time
       tag: date_device_time
