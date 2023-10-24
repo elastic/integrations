@@ -1,6 +1,5 @@
 ---
 description: Pipeline for CyberArk PAS
-
 processors:
   #
   # Set ECS version.
@@ -8,7 +7,6 @@ processors:
   - set:
       field: ecs.version
       value: '8.10.0'
-
   #
   # Set event.original from message, unless reindexing.
   #
@@ -16,7 +14,7 @@ processors:
       field: message
       target_field: event.original
       if: 'ctx.event?.original == null'
-
+      ignore_missing: true
   #
   # Parse syslog headers (if any) and extract JSON payload.
   #
