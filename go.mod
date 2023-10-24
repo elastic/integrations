@@ -4,7 +4,7 @@ go 1.21.0
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/elastic/elastic-package v0.91.0
+	github.com/elastic/elastic-package v0.91.1
 	github.com/elastic/go-licenser v0.4.1
 	github.com/elastic/package-registry v1.21.0
 	github.com/magefile/mage v1.15.0
