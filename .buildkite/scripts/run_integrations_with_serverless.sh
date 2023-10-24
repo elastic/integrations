@@ -44,6 +44,7 @@ with_kubernetes
 
 check_package_in_serverless() {
     local package="$1"
+    echo "Current directory: $(pwd)"
 
     echo "--- Package ${package}: check"
     pushd ${package} > /dev/null
