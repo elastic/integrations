@@ -209,6 +209,70 @@ An example event for `log` looks as following:
 | cisco.ftd.privilege.old | When a users privilege is changed this is the old value | keyword |
 | cisco.ftd.rule_name | Name of the Access Control List rule that matched this event. | keyword |
 | cisco.ftd.security | Cisco FTD security event fields. | flattened |
+| cisco.ftd.security_event.ac_policy |  | keyword |
+| cisco.ftd.security_event.access_control_rule_action |  | keyword |
+| cisco.ftd.security_event.access_control_rule_name |  | keyword |
+| cisco.ftd.security_event.access_control_rule_reason |  | keyword |
+| cisco.ftd.security_event.application_protocol |  | keyword |
+| cisco.ftd.security_event.client |  | keyword |
+| cisco.ftd.security_event.client_version |  | keyword |
+| cisco.ftd.security_event.connection_duration |  | keyword |
+| cisco.ftd.security_event.dns_query |  | keyword |
+| cisco.ftd.security_event.dns_record_type |  | keyword |
+| cisco.ftd.security_event.dns_response_type |  | keyword |
+| cisco.ftd.security_event.dns_ttl |  | keyword |
+| cisco.ftd.security_event.dst_ip |  | keyword |
+| cisco.ftd.security_event.dst_port |  | keyword |
+| cisco.ftd.security_event.egress_interface |  | keyword |
+| cisco.ftd.security_event.egress_zone |  | keyword |
+| cisco.ftd.security_event.file_action |  | keyword |
+| cisco.ftd.security_event.file_count |  | keyword |
+| cisco.ftd.security_event.file_direction |  | keyword |
+| cisco.ftd.security_event.file_name |  | keyword |
+| cisco.ftd.security_event.file_policy |  | keyword |
+| cisco.ftd.security_event.file_sandbox_status |  | keyword |
+| cisco.ftd.security_event.file_sha256 |  | keyword |
+| cisco.ftd.security_event.file_size |  | keyword |
+| cisco.ftd.security_event.file_type |  | keyword |
+| cisco.ftd.security_event.first_packet_second |  | keyword |
+| cisco.ftd.security_event.http_referer |  | keyword |
+| cisco.ftd.security_event.http_response |  | keyword |
+| cisco.ftd.security_event.icmp_code |  | keyword |
+| cisco.ftd.security_event.icmp_type |  | keyword |
+| cisco.ftd.security_event.ingress_interface |  | keyword |
+| cisco.ftd.security_event.ingress_zone |  | keyword |
+| cisco.ftd.security_event.initiator_bytes |  | keyword |
+| cisco.ftd.security_event.initiator_packets |  | keyword |
+| cisco.ftd.security_event.nap_policy |  | keyword |
+| cisco.ftd.security_event.prefilter_policy |  | keyword |
+| cisco.ftd.security_event.protocol |  | keyword |
+| cisco.ftd.security_event.referenced_host |  | keyword |
+| cisco.ftd.security_event.responder_bytes |  | keyword |
+| cisco.ftd.security_event.responder_packets |  | keyword |
+| cisco.ftd.security_event.sha_disposition |  | keyword |
+| cisco.ftd.security_event.spero_disposition |  | keyword |
+| cisco.ftd.security_event.src_ip |  | keyword |
+| cisco.ftd.security_event.src_port |  | keyword |
+| cisco.ftd.security_event.ssl_actual_action |  | keyword |
+| cisco.ftd.security_event.ssl_certificate |  | keyword |
+| cisco.ftd.security_event.ssl_expected_action |  | keyword |
+| cisco.ftd.security_event.ssl_flow_status |  | keyword |
+| cisco.ftd.security_event.ssl_policy |  | keyword |
+| cisco.ftd.security_event.ssl_rule_name |  | keyword |
+| cisco.ftd.security_event.ssl_server_cert_status |  | keyword |
+| cisco.ftd.security_event.ssl_server_name |  | keyword |
+| cisco.ftd.security_event.ssl_session_id |  | keyword |
+| cisco.ftd.security_event.ssl_ticket_id |  | keyword |
+| cisco.ftd.security_event.ssl_version |  | keyword |
+| cisco.ftd.security_event.sslurl_category |  | keyword |
+| cisco.ftd.security_event.tunnel_or_prefilter_rule |  | keyword |
+| cisco.ftd.security_event.uri |  | keyword |
+| cisco.ftd.security_event.url |  | keyword |
+| cisco.ftd.security_event.url_category |  | keyword |
+| cisco.ftd.security_event.url_reputation |  | keyword |
+| cisco.ftd.security_event.user |  | keyword |
+| cisco.ftd.security_event.user_agent |  | keyword |
+| cisco.ftd.security_event.web_application |  | keyword |
 | cisco.ftd.session_type | Session type (for example, IPsec or UDP). | keyword |
 | cisco.ftd.source_interface | Source interface for the flow or event. | keyword |
 | cisco.ftd.source_username | Name of the user that is the source for this event. | keyword |
