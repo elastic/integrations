@@ -3,6 +3,7 @@ name: integrations-schedule-daily
 
 env:
   SETUP_GVM_VERSION: "v0.5.1"
+  LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
 
 # The pipeline is triggered by the scheduler every day
 steps:
@@ -21,7 +22,7 @@ steps:
       env:
         SERVERLESS_PROJECT: observability
     depends_on:
-      - step: "check-sources"
+      - step: "check"
         allow_failure: false
 
   - label: "Check integrations in serverless - project: Security"
@@ -31,5 +32,5 @@ steps:
       env:
         SERVERLESS_PROJECT: security
     depends_on:
-      - step: "check-sources"
+      - step: "check"
         allow_failure: false

@@ -6,6 +6,8 @@ WORKSPACE="$(pwd)"
 BIN_FOLDER="${WORKSPACE}/bin"
 platform_type="$(uname)"
 hw_type="$(uname -m)"
+platform_type_lowercase="${platform_type,,}"
+
 GOOGLE_CREDENTIALS_FILENAME="google-cloud-credentials.json"
 export ELASTIC_PACKAGE_BIN=${WORKSPACE}/build/elastic-package
 
@@ -57,7 +59,7 @@ repo_name() {
     echo "$(basename ${orgAndRepo} .git)"
 }
 
-check_platform_architeture() {
+check_platform_architecture() {
   case "${hw_type}" in
     "x86_64")
       arch_type="amd64"
@@ -88,8 +90,7 @@ add_bin_path() {
 with_go() {
   create_bin_folder
   echo "--- Setting up the Go environment..."
-  check_platform_architeture
-  local platform_type_lowercase="${platform_type,,}"
+  check_platform_architecture
   echo " GVM ${SETUP_GVM_VERSION} (platform ${platform_type_lowercase} arch ${arch_type}"
   retry 5 curl -sL -o ${BIN_FOLDER}/gvm "https://github.com/andrewkroh/gvm/releases/download/${SETUP_GVM_VERSION}/gvm-${platform_type_lowercase}-${arch_type}"
   chmod +x ${BIN_FOLDER}/gvm
@@ -118,29 +119,33 @@ with_mage() {
 
 with_docker_compose() {
     create_bin_folder
-    retry 5 curl -sSL -o ${BIN_FOLDER}/docker-compose "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64"
+    check_platform_architecture
+
+    echo "--- Setting up the Docker-compose environment..."
+    retry 5 curl -sSL -o ${WORKSPACE}/docker-compose "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${platform_type_lowercase}-${hw_type}"
     chmod +x ${BIN_FOLDER}/docker-compose
     docker-compose version
 }
 
 with_kubernetes() {
     create_bin_folder
+    check_platform_architecture
+
     echo "--- Install kind"
-    retry 5 curl -sSLo ${BIN_FOLDER}/kind "https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-linux-amd64"
+    retry 5 curl -sSLo ${BIN_FOLDER}/kind "https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-${platform_type_lowercase}-${arch_type}"
     chmod +x ${BIN_FOLDER}/kind
     kind version
     which kind
 
     echo "--- Install kubectl"
-    retry 5 curl -sSLo ${BIN_FOLDER}/kubectl "https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl"
+    retry 5 curl -sSLo ${BIN_FOLDER}/kubectl "https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/${platform_type_lowercase}/${arch_type}/kubectl"
     chmod +x ${BIN_FOLDER}/kubectl
     kubectl version --client
     which kubectl
 }
 
 with_yq() {
-    check_platform_architeture
-    local platform_type_lowercase="${platform_type,,}"
+    check_platform_architecture
     local binary="yq_${platform_type_lowercase}_${arch_type}"
 
     retry 5 curl -sSL -o ${BIN_FOLDER}/yq.tar.gz "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${binary}.tar.gz"
@@ -153,7 +158,6 @@ with_yq() {
 
     rm -rf ${BIN_FOLDER}/yq.tar.gz
 }
-
 
 ## Logging and logout from Google Cloud
 google_cloud_upload_auth() {
@@ -428,7 +432,7 @@ is_pr_affected() {
 }
 
 is_pr() {
-    if [ "${BUILDKITE_PULL_REQUEST}" == "false" ]; then
+    if [[ "${BUILDKITE_PULL_REQUEST}" == "false" || "${BUILDKITE_TAG}" == "" ]]; then
         return 0
     fi
     return 1

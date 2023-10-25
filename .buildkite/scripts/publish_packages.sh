@@ -21,7 +21,7 @@ INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_PATH="gs://${INFRA_SIGNING_BUCKET_NAME}/${
 
 
 skipPublishing() {
-    if [[ "${BUILDKITE_PULL_REQUEST}" == "true" ]]; then
+    if [[ "${BUILDKITE_PULL_REQUEST}" != "false" ]]; then
         return 0
     fi
 
