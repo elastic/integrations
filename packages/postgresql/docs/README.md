@@ -65,7 +65,7 @@ persistent connections, so enable with care.
 | error.code | Error code describing the error. | keyword |
 | error.id | Unique identifier for the error. | keyword |
 | error.message | Error message. | match_only_text |
-| event.category | Event category (e.g. database) | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
