@@ -4,7 +4,6 @@ processors:
   - set:
       field: ecs.version
       value: '8.10.0'
-
   # Metadata about the origin of the event captured from the Lumberjack connection.
   - rename:
       field: source.address
@@ -19,7 +18,6 @@ processors:
         - source
         - tls
       ignore_missing: true
-
   - set:
       field: observer.vendor
       value: Barracuda
@@ -53,6 +51,7 @@ processors:
       field: message
       target_field: event.original
       if: ctx.event?.original == null
+      ignore_missing: true
   - remove:
       field: message
       ignore_missing: true
@@ -68,7 +67,6 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "threat" }}'
       if: ctx.lumberjack?.type == 'ngfw-threat'
-
   # Overwrite the @timestamp. Never enter a state where the event does not
   # have a '@timestamp' because it is required for indexing.
   - set:
@@ -76,7 +74,6 @@ processors:
       field: '@timestamp'
       copy_from: '_tmp.timestamp'
       ignore_empty_value: true
-
   - set:
       field: network.type
       value: ipv4
@@ -88,7 +85,6 @@ processors:
   - community_id:
       target_field: network.community_id
       ignore_failure: true
-
   # IP Geolocation Lookup
   - geoip:
       field: source.ip
@@ -98,7 +94,6 @@ processors:
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
-
   # IP Autonomous System (AS) Lookup
   - geoip:
       database_file: GeoLite2-ASN.mmdb
