@@ -107,6 +107,9 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline_consolidated_event" }}'
       if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'consolidated_event'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_antivirus" }}'
+      if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'antivirus'
   - set:
       field: email.from.address
       value: ['{{{email.from.address}}}']
@@ -115,6 +118,10 @@ processors:
       field: email.to.address
       value: ['{{{email.to.address}}}']
       if: ctx.email?.to?.address instanceof String
+  - set:
+      field: event.category
+      value: vulnerability
+      if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'antivirus'
   - remove:
       field:
         - _tmp
