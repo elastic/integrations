@@ -16,7 +16,6 @@ processors:
   - set:
       field: event.type
       value: [indicator]
-
   ######################
   # General ECS fields #
   ######################
@@ -24,6 +23,7 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: otx
@@ -43,7 +43,6 @@ processors:
       fields:
         - otx.id
       target_field: "_id"
-
   #####################
   # Threat ECS Fields #
   #####################
@@ -77,7 +76,6 @@ processors:
       target_field: threat.indicator.file.hash.imphash
       ignore_missing: true
       if: "ctx.otx?.type == 'FileHash-IMPHASH'"
-
   ## IP indicator operations
   - set:
       field: threat.indicator.type
@@ -92,7 +90,6 @@ processors:
       target_field: threat.indicator.ip
       ignore_missing: true
       if: "ctx.threat?.indicator?.type != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type)"
-
   ## URL indicator operations
   - set:
       field: threat.indicator.type
@@ -109,7 +106,6 @@ processors:
       value: "{{{threat.indicator.url.original}}}"
       ignore_empty_value: true
       if: "ctx.otx?.type == 'URL'"
-
   ## Email indicator operations
   - set:
       field: threat.indicator.type
@@ -120,7 +116,6 @@ processors:
       target_field: threat.indicator.email.address
       ignore_missing: true
       if: "ctx.threat?.indicator?.type == 'email-addr'"
-
   ## Domain indicator operations
   - set:
       field: threat.indicator.type
@@ -131,7 +126,6 @@ processors:
       target_field: threat.indicator.url.domain
       ignore_missing: true
       if: "ctx.threat?.indicator?.type == 'domain-name' && ctx.threat?.indicator?.url?.domain == null"
-
   ######################
   # Cleanup processors #
   ######################
