@@ -4,7 +4,7 @@ Symantec Endpoint Security is the fully cloud-managed version of the on-premises
 
 ## Data streams
 
-The Symantec EDR Cloud integration collects one type of data: Incident.
+This integration supports ingestion of incidents from Symantec EDR Cloud, via the [Incidents API](https://apidocs.securitycloud.symantec.com/#/doc?id=edr_incidents).
 
 **Incident** is used to retrieve EDR incidents. See more details in the API documentation [here](https://apidocs.securitycloud.symantec.com/#/doc?id=edr_incidents).
 
@@ -30,7 +30,7 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **kibana.version** required is **8.10.1**.  
+The minimum **Kibana version** required is **8.10.1**.  
 This module has been tested against the **Symantec EDR Cloud API Version v1**.
 
 ## Setup

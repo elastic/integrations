@@ -57,19 +57,19 @@ program: |
         "message": e.encode_json(),
       }),
       "next": (
-        has(body.next) && (int(body.next) != int(body.total))
+        has(body.next) && (body.next != body.total)
         ?
-          int(body.next)
+          body.next
         :
           0
       ),
-      "want_more": has(body.next) && ((body.next) != (body.total)),
+      "want_more": has(body.next) && (body.next != body.total),
       "limit": state.limit,
       "start_date": string(state.start_date),
       "end_date": string(state.end_date),
       "cursor": {
         "last_timestamp": (
-          (has(body.next) && (int(body.next) == int(body.total))) || !has(body.next)
+          (has(body.next) ? (body.next == body.total) : true)
           ?
             state.end_date
           :

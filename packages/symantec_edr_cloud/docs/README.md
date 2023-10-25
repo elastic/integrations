@@ -4,7 +4,7 @@ Symantec Endpoint Security is the fully cloud-managed version of the on-premises
 
 ## Data streams
 
-The Symantec EDR Cloud integration collects one type of data: Incident.
+This integration supports ingestion of incidents from Symantec EDR Cloud, via the [Incidents API](https://apidocs.securitycloud.symantec.com/#/doc?id=edr_incidents).
 
 **Incident** is used to retrieve EDR incidents. See more details in the API documentation [here](https://apidocs.securitycloud.symantec.com/#/doc?id=edr_incidents).
 
@@ -30,7 +30,7 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **kibana.version** required is **8.10.1**.  
+The minimum **Kibana version** required is **8.10.1**.  
 This module has been tested against the **Symantec EDR Cloud API Version v1**.
 
 ## Setup
@@ -76,8 +76,8 @@ An example event for `incident` looks as following:
 {
     "@timestamp": "2023-04-26T21:46:10.400Z",
     "agent": {
-        "ephemeral_id": "bc6e89c4-f0ee-48a8-9e1c-22af82955d9b",
-        "id": "00a9d8c8-390e-4eb4-a303-56f2cf80fa75",
+        "ephemeral_id": "e84ef800-cd51-4dd1-b1f4-c33951281380",
+        "id": "94a22d9c-6d6d-444a-9f96-6383ca581cef",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.10.1"
@@ -91,7 +91,7 @@ An example event for `incident` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "00a9d8c8-390e-4eb4-a303-56f2cf80fa75",
+        "id": "94a22d9c-6d6d-444a-9f96-6383ca581cef",
         "snapshot": false,
         "version": "8.10.1"
     },
@@ -103,7 +103,7 @@ An example event for `incident` looks as following:
         "created": "2023-04-26T21:46:10.400Z",
         "dataset": "symantec_edr_cloud.incident",
         "id": "8e7edfb1-27d2-4837-98ca-e7d794119c3b",
-        "ingested": "2023-10-24T08:01:04Z",
+        "ingested": "2023-10-25T06:42:49Z",
         "kind": "alert",
         "original": "{\"category_id\":1,\"conclusion\":\"Suspicious Activity\",\"created\":\"2023-04-26T21:46:10.400+00:00\",\"customer_uid\":\"TEST-JvOsaJktSS-eyL-dXhxOvA\",\"detection_type\":\"Advanced Analytics\",\"device_time\":1682545570400,\"domain_uid\":\"TEST-ZBg_IqnyTAijNjP2BOOcuw\",\"event_id\":8075004,\"id\":4,\"incident_uid\":\"8e7edfb1-27d2-4837-98ca-e7d794119c3b\",\"incident_url\":\"https://sep.securitycloud.symantec.com/v2/incidents/incidentListing/8e7edfb1-27d2-4837-98ca-e7d794119c3b/details\",\"message\":\"Victim-2:Signed Binary Proxy Execution, Deobfuscate/Decode Files or Information, Command and Scripting Interpreter: PowerShell, System Services: Service Execution\",\"modified\":\"2023-04-26T22:01:58.648+00:00\",\"priority_id\":4,\"product_name\":\"Symantec Integrated Cyber Defense Manager\",\"product_uid\":\"31B0C880-0229-49E8-94C5-48D56B1BD7B9\",\"ref_incident_uid\":102110,\"remediation\":\"Investigate further activity at the endpoint by downloading a full dump of the endpoint's recorded data. Give particular attention to activities performed by cmd.exe.\",\"resolution_id\":1,\"rule_name\":\"Advanced Attack Technique\",\"severity_id\":4,\"state_id\":1,\"suspected_breach\":\"Yes\",\"time\":1682545570400,\"type\":\"INCIDENT_CREATION\",\"type_id\":8075,\"version\":\"1.0\"}",
         "provider": "Symantec Integrated Cyber Defense Manager",
