@@ -1,0 +1,467 @@
+---
+description: Pipeline for processing Incident logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.10.0
+  - rename:
+      field: message
+      target_field: event.original
+      tag: rename_message
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - json:
+      field: event.original
+      tag: json_decoding
+      target_field: symantec_edr_cloud.incident
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      fields:
+        - symantec_edr_cloud.incident.incident_uid
+        - symantec_edr_cloud.incident.time
+      tag: fingerprint_processor
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: alert
+  - append:
+      field: event.category
+      tag: append_malware_into_event_category
+      value: malware
+      if: >-
+        ctx.symantec_edr_cloud?.incident?.conclusion != null && [
+          'targeted malware',
+          'suspicious activity',
+          'malicious activity',
+          'malicious file',
+          'dual use tool',
+          'malware',
+          'hacktool'
+        ].contains(ctx.symantec_edr_cloud.incident.conclusion.toLowerCase())
+  - append:
+      field: event.category
+      tag: append_threat_into_event_category
+      value: threat
+      if: >-
+        ctx.symantec_edr_cloud?.incident?.conclusion != null && [
+          'network threat',
+          'potential threat',
+          'targeted attack'
+        ].contains(ctx.symantec_edr_cloud.incident.conclusion.toLowerCase())
+  - append:
+      field: event.category
+      tag: append_intrusion_detection_into_event_category
+      value: intrusion_detection
+      if: >-
+        ctx.symantec_edr_cloud?.incident?.conclusion != null && [
+          'breach'
+        ].contains(ctx.symantec_edr_cloud.incident.conclusion.toLowerCase())
+  - append:
+      field: event.category
+      tag: append_network_into_event_category
+      value: network
+      if: >-
+        ctx.symantec_edr_cloud?.incident?.conclusion != null && [
+          'network threat'
+        ].contains(ctx.symantec_edr_cloud.incident.conclusion.toLowerCase())
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+      if: >-
+        ctx.symantec_edr_cloud?.incident?.conclusion != null && [
+          'targeted malware',
+          'suspicious activity',
+          'malicious activity',
+          'malicious file',
+          'dual use tool',
+          'malware',
+          'hacktool',
+          'breach',
+          'network threat'
+        ].contains(ctx.symantec_edr_cloud.incident.conclusion.toLowerCase())
+  - append:
+      field: event.type
+      tag: append_indicator_into_event_type
+      value: indicator
+      if: >-
+        ctx.symantec_edr_cloud?.incident?.conclusion != null && [
+          'network threat',
+          'potential threat',
+          'targeted attack'
+        ].contains(ctx.symantec_edr_cloud.incident.conclusion.toLowerCase())
+  - date:
+      field: symantec_edr_cloud.incident.device_time
+      tag: date_device_time
+      target_field: symantec_edr_cloud.incident.device_time
+      formats:
+        - UNIX_MS
+      if: ctx.symantec_edr_cloud?.incident?.device_time != null && ctx.symantec_edr_cloud.incident.device_time != ''
+      on_failure:
+        - remove:
+            field: symantec_edr_cloud.incident.device_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: symantec_edr_cloud.incident.time
+      tag: date_timestamp_from_time
+      formats:
+        - UNIX_MS
+      if: ctx.symantec_edr_cloud?.incident?.time != null && ctx.symantec_edr_cloud.incident.time != ''
+      on_failure:
+        - remove:
+            field: symantec_edr_cloud.incident.time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: symantec_edr_cloud.incident.time
+      tag: date_time
+      target_field: symantec_edr_cloud.incident.time
+      formats:
+        - UNIX_MS
+      if: ctx.symantec_edr_cloud?.incident?.time != null && ctx.symantec_edr_cloud.incident.time != ''
+      on_failure:
+        - remove:
+            field: symantec_edr_cloud.incident.time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: symantec_edr_cloud.incident.log_time
+      tag: date_log_time
+      target_field: symantec_edr_cloud.incident.log_time
+      formats:
+        - ISO8601
+      if: ctx.symantec_edr_cloud?.incident?.log_time != null && ctx.symantec_edr_cloud.incident.log_time != ''
+      on_failure:
+        - remove:
+            field: symantec_edr_cloud.incident.log_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: symantec_edr_cloud.incident.created
+      tag: date_created
+      target_field: symantec_edr_cloud.incident.created
+      formats:
+        - ISO8601
+      if: ctx.symantec_edr_cloud?.incident?.created != null && ctx.symantec_edr_cloud.incident.created != ''
+      on_failure:
+        - remove:
+            field: symantec_edr_cloud.incident.created
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created
+      copy_from: symantec_edr_cloud.incident.created
+      ignore_empty_value: true
+  - date:
+      field: symantec_edr_cloud.incident.modified
+      tag: date_modified
+      target_field: symantec_edr_cloud.incident.modified
+      formats:
+        - ISO8601
+      if: ctx.symantec_edr_cloud?.incident?.modified != null && ctx.symantec_edr_cloud.incident.modified != ''
+      on_failure:
+        - remove:
+            field: symantec_edr_cloud.incident.modified
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: symantec_edr_cloud.incident.category_id
+      tag: convert_category_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: symantec_edr_cloud.incident.event_id
+      tag: convert_event_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: symantec_edr_cloud.incident.ref_incident_uid
+      tag: convert_ref_incident_uid_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: symantec_edr_cloud.incident.id
+      tag: convert_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: symantec_edr_cloud.incident.priority_id
+      tag: convert_priority_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: symantec_edr_cloud.incident.resolution_id
+      tag: convert_resolution_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: symantec_edr_cloud.incident.state_id
+      tag: convert_state_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: symantec_edr_cloud.incident.type_id
+      tag: convert_type_id_to_string
+      type: string
+      ignore_missing: true
+  - lowercase:
+      field: symantec_edr_cloud.incident.suspected_breach
+      tag: lowercase_suspected_breach
+      ignore_missing: true
+  - set:
+      field: symantec_edr_cloud.incident.suspected_breach
+      tag: set_suspected_breach_to_true
+      value: true
+      if: ctx.symantec_edr_cloud?.incident?.suspected_breach == 'yes'
+  - set:
+      field: symantec_edr_cloud.incident.suspected_breach
+      tag: set_suspected_breach_to_false
+      value: false
+      if: ctx.symantec_edr_cloud?.incident?.suspected_breach == 'no'
+  - set:
+      field: event.reason
+      tag: set_event_reason
+      copy_from: symantec_edr_cloud.incident.conclusion
+      ignore_empty_value: true
+  - set:
+      field: event.id
+      tag: set_event_id
+      copy_from: symantec_edr_cloud.incident.incident_uid
+      ignore_empty_value: true
+  - set:
+      field: event.url
+      tag: set_event_url
+      copy_from: symantec_edr_cloud.incident.incident_url
+      ignore_empty_value: true
+  - uri_parts:
+      field: event.url
+      tag: uri_parts_event_url
+      if: ctx.event?.url != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: message
+      tag: set_message
+      copy_from: symantec_edr_cloud.incident.message
+      ignore_empty_value: true
+  - set:
+      field: event.provider
+      tag: set_event_provider
+      copy_from: symantec_edr_cloud.incident.product_name
+      ignore_empty_value: true
+  - set:
+      field: rule.name
+      tag: set_rule_name
+      copy_from: symantec_edr_cloud.incident.rule_name
+      ignore_empty_value: true
+  - set:
+      field: http.version
+      tag: set_http_version
+      copy_from: symantec_edr_cloud.incident.version
+      ignore_empty_value: true
+  - convert:
+      field: symantec_edr_cloud.incident.severity_id
+      tag: convert_severity_id_to_string
+      type: string
+      ignore_missing: true
+  - script:
+      lang: painless
+      if: ctx.symantec_edr_cloud?.incident?.severity_id != null
+      description: Set Severity.
+      tag: painless_set_severity
+      params:
+        "3": "Minor"
+        "4": "Major"
+        "5": "Critical"
+      source: |-
+        ctx.symantec_edr_cloud.incident.put("severity",params[ctx.symantec_edr_cloud.incident.severity_id])
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: symantec_edr_cloud.incident.severity_id
+      tag: convert_severity_id_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: symantec_edr_cloud.incident.severity_id
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.severity
+      tag: set_event_severity
+      copy_from: symantec_edr_cloud.incident.severity_id
+      ignore_empty_value: true
+  - set:
+      field: symantec_edr_cloud.incident.outcome
+      tag: set_outcome_to_unknown
+      value: Unknown
+      if: ctx.symantec_edr_cloud?.incident?.id == '0'
+  - set:
+      field: symantec_edr_cloud.incident.outcome
+      tag: set_outcome_to_logged
+      value: Logged
+      if: ctx.symantec_edr_cloud?.incident?.id == '4'
+  - set:
+      field: symantec_edr_cloud.incident.category
+      tag: set_category_to_security
+      value: Security
+  - script:
+      lang: painless
+      if: ctx.symantec_edr_cloud?.incident?.state_id != null
+      description: Set State Types.
+      tag: painless_set_state
+      params:
+        State:
+          - Unknown
+          - New
+          - In Progress
+          - On Hold
+          - Resolved
+          - Closed
+      source: |-
+        def StateID = Integer.parseInt(ctx.symantec_edr_cloud.incident.state_id);
+        if (StateID >= 0 && StateID < params.State.length) {
+          ctx.symantec_edr_cloud.incident.put('state', params['State'][StateID]);
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      if: ctx.symantec_edr_cloud?.incident?.priority_id != null
+      description: Set Priority Types.
+      tag: painless_set_priority
+      params:
+        Priority:
+          - Unknown
+          - Informational
+          - Normal
+          - High
+          - Critical
+      source: |-
+        def PriorityID = Integer.parseInt(ctx.symantec_edr_cloud.incident.priority_id);
+        if (PriorityID >= 0 && PriorityID < params.Priority.length) {
+          ctx.symantec_edr_cloud.incident.put('priority', params['Priority'][PriorityID]);
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      if: ctx.symantec_edr_cloud?.incident?.resolution_id != null
+      description: Set Resolution Types.
+      tag: painless_set_resolution
+      params:
+        Resolution:
+          - Insufficient data
+          - Security risk
+          - False positive
+          - Managed externally
+          - Benign
+          - Test
+      source: |-
+        def ResolutionID = Integer.parseInt(ctx.symantec_edr_cloud.incident.resolution_id)-1;
+        if (ResolutionID >= 0 && ResolutionID < params.Resolution.length) {
+          ctx.symantec_edr_cloud.incident.put('resolution', params['Resolution'][ResolutionID]);
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      if: ctx.symantec_edr_cloud?.incident?.event_id != null
+      description: Set event name.
+      tag: painless_set_event
+      params:
+        "8075004": "Incident Creation: Logged"
+        "8075000": "Incident Creation: Unknown"
+        "8076004": "Incident Update: Logged"
+        "8076000": "Incident Update: Unknown"
+        "8077004": "Incident Closure: Logged"
+        "8077000": "Incident Closure: Unknown"
+      source: |-
+        ctx.symantec_edr_cloud.incident.put("event",params[ctx.symantec_edr_cloud.incident.event_id])
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field:
+        - symantec_edr_cloud.incident.conclusion
+        - symantec_edr_cloud.incident.created
+        - symantec_edr_cloud.incident.incident_uid
+        - symantec_edr_cloud.incident.incident_url
+        - symantec_edr_cloud.incident.message
+        - symantec_edr_cloud.incident.time
+        - symantec_edr_cloud.incident.product_name
+        - symantec_edr_cloud.incident.rule_name
+        - symantec_edr_cloud.incident.severity_id
+        - symantec_edr_cloud.incident.version
+      tag: remove_duplicate_custom_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
