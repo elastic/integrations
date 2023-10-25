@@ -122,7 +122,7 @@ with_docker_compose() {
     check_platform_architecture
 
     echo "--- Setting up the Docker-compose environment..."
-    retry 5 curl -sSL -o ${WORKSPACE}/docker-compose "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${platform_type_lowercase}-${hw_type}"
+    retry 5 curl -sSL -o ${BIN_FOLDER}/docker-compose "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${platform_type_lowercase}-${hw_type}"
     chmod +x ${BIN_FOLDER}/docker-compose
     docker-compose version
 }
