@@ -194,13 +194,17 @@ An example event for `database_audit` looks as following:
     "event": {
         "action": "database_audit",
         "agent_id_status": "verified",
-        "category": "database",
+        "category": [
+            "database"
+        ],
         "dataset": "oracle.database_audit",
         "ingested": "2023-10-05T12:18:05Z",
         "kind": "event",
         "outcome": "success",
         "timezone": "-04:00",
-        "type": "access"
+        "type": [
+            "access"
+        ]
     },
     "host": {
         "architecture": "x86_64",
@@ -273,7 +277,9 @@ An example event for `database_audit` looks as following:
         "oracle-database_audit"
     ],
     "user": {
-        "roles": "SYSDBA"
+        "roles": [
+            "SYSDBA"
+        ]
     }
 }
 ```
