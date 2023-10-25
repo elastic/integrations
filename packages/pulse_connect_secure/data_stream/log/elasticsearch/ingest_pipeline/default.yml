@@ -7,6 +7,8 @@ processors:
   - rename:
       field: message
       target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
   - set:
       field: observer.vendor
       value: Pulse Secure
@@ -28,14 +30,14 @@ processors:
       target_field: '@timestamp'
       timezone: "{{ event.timezone }}"
       formats:
-      - ISO8601
-      if: ctx.event?.timezone != null   
+        - ISO8601
+      if: ctx.event?.timezone != null
   - date:
       field: _tmp.timestamp
       target_field: '@timestamp'
       formats:
-      - ISO8601
-      if: ctx.event?.timezone == null      
+        - ISO8601
+      if: ctx.event?.timezone == null
   - set:
       field: event.created
       copy_from: '@timestamp'
@@ -43,7 +45,7 @@ processors:
       field: client.address
       target_field: client.ip
       type: ip
-      ignore_missing: true 
+      ignore_missing: true
   - set:
       field: event.kind
       value: event
@@ -102,8 +104,8 @@ processors:
       field: client.ip
       target_field: client.as
       properties:
-          - asn
-          - organization_name
+        - asn
+        - organization_name
       ignore_missing: true
   - rename:
       field: client.as.asn
@@ -120,7 +122,6 @@ processors:
       field: observer.ip
       value: ['{{{observer.ip}}}']
       if: ctx.observer?.ip instanceof String
-
   - remove:
       field:
         - _tmp
