@@ -148,6 +148,19 @@ streams:
         show_user: false
         default: 200ms
         description: This is used to sleep between AWS FilterLogEvents API calls inside the same collection period. `FilterLogEvents` API has a quota of 5 transactions per second (TPS)/account/Region. This value should only be adjusted when there are multiple Filebeats or multiple Filebeat inputs collecting logs from the same region and AWS account.
+      - name: latency
+        type: text
+        title: Latency
+        multi: false
+        required: false
+        show_user: false
+        description: "The amount of time required for the logs to be available to CloudWatch Logs. Sample values, `1m` or `5m` — see Golang [time.ParseDuration](https://pkg.go.dev/time#ParseDuration) for more details. Latency translates the query's time range to consider the CloudWatch Logs latency. Example: `5m` means that the integration will query CloudWatch to search for logs available 5 minutes ago."
+      - name: number_of_workers
+        type: integer
+        title: Number of workers
+        required: false
+        show_user: false
+        description: The number of workers assigned to reading from log groups. Each worker will read log events from one of the log groups matching `log_group_name_prefix`. For example, if `log_group_name_prefix` matches five log groups, then `number_of_workers` should be set to `5`. The default value is `1`.
       - name: tags
         type: text
         title: Tags

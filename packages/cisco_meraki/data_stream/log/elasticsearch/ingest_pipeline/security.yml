@@ -149,3 +149,10 @@ processors:
     type: long
     if: ctx?.dport != "0" && ctx?.cisco_meraki?.event_subtype != 'security_filtering_disposition_change'
     ignore_failure: true
+on_failure:
+- set:
+    field: event.kind
+    value: pipeline_error
+- append:
+    field: error.message
+    value: '{{{ _ingest.on_failure_message }}}'

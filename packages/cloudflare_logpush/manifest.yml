@@ -1,9 +1,7 @@
-format_version: 1.0.0
+format_version: "3.0.0"
 name: cloudflare_logpush
 title: Cloudflare Logpush
-version: "1.1.0"
-release: ga
-license: basic
+version: "1.14.1"
 description: Collect and parse logs from Cloudflare API with Elastic Agent.
 type: integration
 categories:
@@ -11,11 +9,28 @@ categories:
   - network
   - cdn_security
 conditions:
-  kibana.version: ^8.0.0
+  kibana:
+    version: ^8.7.1
 screenshots:
-  - src: /img/cloudflare-screenshot.png
-    title: Cloudflare Logpush DNS dashboard screenshot
+  - src: /img/cloudflare_logpush-overview1.png
+    title: Cloudflare Logpush - Zero Trust Overview
     size: 1847x950
+    type: image/png
+  - src: /img/cloudflare_logpush-audit1.png
+    title: Cloudflare Logpush - Audit
+    size: 1850x948
+    type: image/png
+  - src: /img/cloudflare_logpush-gateway_http1.png
+    title: Cloudflare - Gateway HTTP
+    size: 1850x948
+    type: image/png
+  - src: /img/cloudflare_logpush-network_sessions1.png
+    title: Cloudflare - Network Sessions
+    size: 1850x948
+    type: image/png
+  - src: /img/cloudflare_logpush-workers_trace1.png
+    title: Cloudflare - Workers Trace
+    size: 1850x948
     type: image/png
 icons:
   - src: /img/cloudflare-logo.svg
@@ -101,11 +116,11 @@ policy_templates:
             description: It is a required parameter for collecting logs via the AWS S3 Bucket.
           - name: queue_url
             type: text
-            title: "[SQS] Queue URL"
+            title: "[Global][SQS] Queue URL"
             multi: false
             required: false
             show_user: true
-            description: URL of the AWS SQS queue that messages will be received from. It is a required parameter for collecting logs via the AWS SQS.
+            description: "URL of the AWS SQS queue that messages will be received from. \nThis is only required if you want to collect logs via AWS SQS.\nThis is a global queue URL, i.e this can be overriden by specific local queue URLs for each data stream if required."
           - name: access_key_id
             type: password
             title: Access Key ID
@@ -207,3 +222,4 @@ policy_templates:
             show_user: false
 owner:
   github: elastic/security-external-integrations
+  type: elastic

@@ -13,16 +13,15 @@ pipeline {
     BASE_DIR = "src/github.com/elastic/${REPO}"
     AWS_ACCOUNT_SECRET = "secret/observability-team/ci/elastic-observability-aws-account-auth"
     HOME = "${env.WORKSPACE}"
-    KIND_VERSION = "v0.17.0"
-    K8S_VERSION = "v1.26.0"
+    DOCKER_COMPOSE_VERSION = "v2.17.2"
+    KIND_VERSION = "v0.20.0"
+    K8S_VERSION = "v1.27.3"
     JOB_GCS_BUCKET = 'fleet-ci-temp'
     JOB_GCS_BUCKET_INTERNAL = 'fleet-ci-temp-internal'
     JOB_GCS_CREDENTIALS = 'fleet-ci-gcs-plugin'
     JOB_GCS_EXT_CREDENTIALS = 'fleet-ci-gcs-plugin-file-credentials'
     STACK_VERSION = "${params.stackVersion}"
     BENCHMARK_THRESHOLD = '15'
-    // Elastic package links definitions
-    ELASTIC_PACKAGE_LINKS_FILE_PATH = "${env.HOME}/${env.BASE_DIR}/links_table.yml"
 
     // Signing
     JOB_SIGNING_CREDENTIALS = 'sign-artifacts-with-gpg-job'
@@ -39,9 +38,20 @@ pipeline {
 
     INTEGRATIONS_TESTED = "0"
     FORCE_CHECK_ALL = "${params.force_check_all}"
+    SKIP_PUBLISHING = "${params.skip_publishing}"
+
+    // Elastic package settings
+    // Manage docker output/logs
+    ELASTIC_PACKAGE_COMPOSE_DISABLE_ANSI = 'true'
+    ELASTIC_PACKAGE_COMPOSE_DISABLE_PULL_PROGRESS_INFORMATION = 'true'
+    // links definitions
+    ELASTIC_PACKAGE_LINKS_FILE_PATH = "${env.HOME}/${env.BASE_DIR}/links_table.yml"
+
+    // Default license to use by `elastic-package build`
+    ELASTIC_PACKAGE_REPOSITORY_LICENSE = "licenses/Elastic-2.0.txt"
   }
   options {
-    timeout(time: 4, unit: 'HOURS')
+    timeout(time: 6, unit: 'HOURS')
     buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '20', daysToKeepStr: '30'))
     timestamps()
     ansiColor('xterm')
@@ -56,6 +66,7 @@ pipeline {
   parameters {
     string(name: 'stackVersion', defaultValue: '', description: 'Version of the stack to use for testing.')
     booleanParam(name: 'force_check_all', defaultValue: false, description: 'Force checking all integrations.')
+    booleanParam(name: 'skip_publishing', defaultValue: false, description: 'Skip package storage publishing.')
   }
   stages {
     stage('Prepare workspace') {
@@ -105,31 +116,37 @@ pipeline {
                             INTEGRATIONS_TESTED = '1'
                           }
                           sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
-                          prepareStack()
                           withKubernetes() {
                             withSecretVault(secret: "${AWS_ACCOUNT_SECRET}", data: ['access_key': 'AWS_ACCESS_KEY_ID', 'secret_key': 'AWS_SECRET_ACCESS_KEY']) {
+
+                              prepareStack()
+
                               sh(label: "Test integration: ${it}", script: '''
                                 eval "$(../../build/elastic-package stack shellinit)"
                                 ../../build/elastic-package test -v --report-format xUnit --report-output file --test-coverage
                                 ''')
                               sh(label: "Benchmark integration: ${it}", script: '''
                                 eval "$(../../build/elastic-package stack shellinit)"
-                                ../../build/elastic-package benchmark -v --report-format json --report-output file
+                                ../../build/elastic-package benchmark pipeline -v --report-format json --report-output file
                                 ''')
                             }
                           }
                         }
                       } finally {
                         dir("${BASE_DIR}") {
-                          archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
-                          junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
-                          stashBenchmarkResults()
-                          sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${it}")
-                          archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log, build/elastic-stack-dump/${it}/logs/fleet-server-internal/*")
-                          archiveArtifactsSafe("insecure-logs/${it}", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/*")
-                          archiveArtifactsSafe("insecure-logs/${it}/container-logs", "build/container-logs/*.log")
-                          sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
-                          stashCoverageReport()
+                          // use docker-compose version installed in prepareStack
+                          withEnv(["PATH=${env.WORKSPACE}/bin:${env.PATH}"]) {
+                            archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
+                            junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
+                            stashBenchmarkResults()
+                            sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${it}")
+                            archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log, build/elastic-stack-dump/${it}/logs/fleet-server-internal/**/*")
+                            archiveArtifactsSafe("insecure-logs/${it}/elastic-agent-logs/", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/*.*")
+                            archiveArtifactsSafe("insecure-logs/${it}/elastic-agent-logs/default/", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/default/*")
+                            archiveArtifactsSafe("insecure-logs/${it}/container-logs", "build/container-logs/*.log")
+                            sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
+                            stashCoverageReport()
+                          }
                         }
                       }
                     }
@@ -234,6 +251,19 @@ def useElasticPackage() {
   dir("${BASE_DIR}") {
     withGoEnv() {
       sh(label: 'Install elastic-package', script: 'go build -o build/elastic-package github.com/elastic/elastic-package')
+    }
+  }
+}
+
+def useDockerComposeV2() {
+  dir("${BASE_DIR}") {
+    retryWithSleep(retries: 3) {
+      sh(label: "Install docker-compose ${env.DOCKER_COMPOSE_VERSION}", script: """
+      mkdir -p ${env.WORKSPACE}/bin
+      curl -SL -o ${env.WORKSPACE}/bin/docker-compose "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64"
+      chmod u+x ${env.WORKSPACE}/bin/docker-compose
+      ${env.WORKSPACE}/bin/docker-compose version
+      """)
     }
   }
 }
@@ -358,6 +388,11 @@ def prepareStack() {
     }
   }
 
+  // withKubernetes already adds the ${env.WORKSPACE}/bin path to the env. var PATH
+  useDockerComposeV2()
+
+  sh(label: "Show docker-compose version", script: 'docker-compose version')
+
   sh(label: "Update the Elastic stack", script: "../../build/elastic-package stack update ${stackArgs}")
   sh(label: "Boot up the Elastic stack", script: "../../build/elastic-package stack up -d ${stackArgs}")
 }
@@ -428,6 +463,10 @@ def archiveArtifactsSafe(remotePath, artifacts) {
 }
 
 def packageStoragePublish() {
+  if (env.SKIP_PUBLISHING == "true") {
+    echo "packageStoragePublish: skipping because skip_publishing param is ${env.SKIP_PUBLISHING}"
+    return
+  }
   if (env.BRANCH_NAME != 'main' && !env.BRANCH_NAME.startsWith('backport-')) {
     echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
     return

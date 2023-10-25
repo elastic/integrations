@@ -3,7 +3,7 @@ description: Pipeline for processing Trend Micro Vision One Alert logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.7.0'
+      value: '8.10.0'
   - rename:
       field: message
       target_field: event.original
@@ -28,6 +28,8 @@ processors:
         - json.eventTime
         - json.rt_utc
         - json.uuid
+        - json.request
+        - json.requests
       target_field: _id
       ignore_missing: true
   - date:
@@ -257,10 +259,10 @@ processors:
       field: json.deviceMacAddress
       target_field: trend_micro_vision_one.detection.device.mac
       ignore_missing: true
-  - set:
+  - append:
       field: observer.mac
-      copy_from: trend_micro_vision_one.detection.device.mac
-      ignore_failure: true
+      value: '{{{trend_micro_vision_one.detection.device.mac}}}'
+      if: ctx.trend_micro_vision_one?.detection?.device?.mac != null
   - rename:
       field: json.processCmd
       target_field: trend_micro_vision_one.detection.process.cmd
@@ -585,8 +587,21 @@ processors:
       field: json.request
       target_field: trend_micro_vision_one.detection.request
       ignore_missing: true
+  - rename:
+      field: json.requests
+      target_field: trend_micro_vision_one.detection.request
+      ignore_missing: true
+      on_failure:
+        - rename:
+            field: json.requests
+            target_field: trend_micro_vision_one.detection.requests
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'request string and requests array both present in same document'
   - uri_parts:
       field: trend_micro_vision_one.detection.request
+      if: ctx.trend_micro_vision_one?.detection?.request != null
       on_failure:
         - append:
             field: error.message
@@ -714,7 +729,7 @@ processors:
       target_field: trend_micro_vision_one.detection.os.name
       ignore_missing: true
   - set:
-      field: os.name
+      field: host.os.name
       copy_from: trend_micro_vision_one.detection.os.name
       ignore_failure: true
   - rename:
@@ -974,6 +989,9 @@ processors:
         }
         dropEmptyFields(ctx);
 on_failure:
-- append:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

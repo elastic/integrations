@@ -23,7 +23,7 @@ processors:
       copy_from: "@timestamp"
   - set:
       field: ecs.version
-      value: '8.7.0'
+      value: '8.10.0'
   - date:
       field: zeek.capture_loss.ts
       formats:
@@ -34,7 +34,7 @@ processors:
       value: metric
   - set:
       field: event.type
-      value: info
+      value: [info]
   - convert:
       field: zeek.percent_lost
       type: long
@@ -45,10 +45,13 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: '{{{ _ingest.on_failure_message }}}'

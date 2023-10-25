@@ -63,7 +63,7 @@ Audit logs summarize the history of changes made within the Slack Enterprise.
 | event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
@@ -93,7 +93,12 @@ Audit logs summarize the history of changes made within the Slack Enterprise.
 | slack.audit.context.domain | The domain of the Workspace or Enterprise | keyword |
 | slack.audit.context.id | The ID of the workspace or enterprise | keyword |
 | slack.audit.context.name | The name of the workspace or enterprise | keyword |
+| slack.audit.context.session_id | The identifier that is unique to each authenticated session. | keyword |
 | slack.audit.context.type | The type of account.  Either `Workspace` or `Enterprise` | keyword |
+| slack.audit.details.location | The location the activity occured in when event.action is anomaly | keyword |
+| slack.audit.details.previous_ip_address | The IP address previously observed for the entity in the event when event.action is anomaly | ip |
+| slack.audit.details.previous_user_agent | The User-Agent string previously observed for the entity in the event when event.action is anomaly | keyword |
+| slack.audit.details.reason | The anomaly rule triggered to generate the event when event.action is anomaly: asn, excessive_downloads, ip_address, session_fingerprint, tor, user_agent | keyword |
 | slack.audit.entity.barriered_from_usergroup | The user group barrier when entity_type is barrier | keyword |
 | slack.audit.entity.channel | The channel the entity is within when entity_type is message | keyword |
 | slack.audit.entity.domain | Domain of the entity when entity_type is Workspace or Enterprise | keyword |
@@ -149,13 +154,13 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2018-03-16T15:32:23.000Z",
+    "@timestamp": "2023-01-13T17:40:21.862Z",
     "agent": {
-        "ephemeral_id": "f1750a2f-f033-40a6-a77b-c70e9750ccb0",
-        "id": "592bbba2-ceea-4a3a-8ccb-0c8c92d1eed3",
+        "ephemeral_id": "a3daca3b-553f-45eb-8bfb-8a95e6e5631e",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.1.0"
+        "version": "8.10.1"
     },
     "data_stream": {
         "dataset": "slack.audit",
@@ -163,23 +168,25 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "592bbba2-ceea-4a3a-8ccb-0c8c92d1eed3",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.10.1"
     },
     "event": {
-        "action": "user_login",
+        "action": "anomaly",
         "agent_id_status": "verified",
-        "created": "2022-05-04T16:10:05.054Z",
+        "created": "2023-09-22T17:50:16.870Z",
         "dataset": "slack.audit",
-        "id": "0123a45b-6c7d-8900-e12f-3456789gh0i1",
-        "ingested": "2022-05-04T16:10:06Z",
+        "id": "1665fc41-c67c-4cf5-a5c4-d90cb58dd5f9",
+        "ingested": "2023-09-22T17:50:17Z",
         "kind": "event",
-        "original": "{\"action\":\"user_login\",\"actor\":{\"type\":\"user\",\"user\":{\"email\":\"bird@slack.com\",\"id\":\"W123AB456\",\"name\":\"Charlie Parker\"}},\"context\":{\"ip_address\":\"81.2.69.143\",\"location\":{\"domain\":\"birdland\",\"id\":\"E1701NCCA\",\"name\":\"Birdland\",\"type\":\"enterprise\"},\"ua\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36\"},\"date_create\":1521214343,\"entity\":{\"type\":\"user\",\"user\":{\"email\":\"bird@slack.com\",\"id\":\"W123AB456\",\"name\":\"Charlie Parker\"}},\"id\":\"0123a45b-6c7d-8900-e12f-3456789gh0i1\"}",
-        "type": "info"
+        "original": "{\"action\":\"anomaly\",\"actor\":{\"type\":\"user\",\"user\":{\"email\":\"aaron@demo.com\",\"id\":\"e65b0f5c\",\"name\":\"roy\"}},\"context\":{\"ip_address\":\"81.2.69.143\",\"location\":{\"domain\":\"Docker\",\"id\":\"e65b11aa\",\"name\":\"Docker\",\"type\":\"workspace\"},\"ua\":\"Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:23.0) Gecko/20131011 Firefox/23.0\"},\"date_create\":1683836291,\"details\":{\"action_timestamp\":1673631621862,\"location\":\"England, GB\",\"previous_ip_address\":\"175.16.199.64\",\"previous_ua\":\"\",\"reason\":[\"asn\",\"ip_address\"]},\"entity\":{\"type\":\"user\",\"user\":{\"email\":\"jbob@example.com\",\"id\":\"asdfasdf\",\"name\":\"Joe Bob\",\"team\":\"T234SAH2\"}},\"id\":\"1665fc41-c67c-4cf5-a5c4-d90cb58dd5f9\"}",
+        "type": [
+            "info"
+        ]
     },
     "input": {
         "type": "httpjson"
@@ -189,23 +196,32 @@ An example event for `audit` looks as following:
             "81.2.69.143"
         ],
         "user": [
-            "W123AB456",
-            "bird@slack.com"
+            "e65b0f5c",
+            "aaron@demo.com"
         ]
     },
     "slack": {
         "audit": {
             "context": {
-                "domain": "birdland",
-                "id": "E1701NCCA",
-                "name": "Birdland",
-                "type": "enterprise"
+                "domain": "Docker",
+                "id": "e65b11aa",
+                "name": "Docker",
+                "type": "workspace"
+            },
+            "details": {
+                "location": "England, GB",
+                "previous_ip_address": "175.16.199.64",
+                "reason": [
+                    "asn",
+                    "ip_address"
+                ]
             },
             "entity": {
-                "email": "bird@slack.com",
+                "email": "jbob@example.com",
                 "entity_type": "user",
-                "id": "W123AB456",
-                "name": "Charlie Parker"
+                "id": "asdfasdf",
+                "name": "Joe Bob",
+                "team": "T234SAH2"
             }
         }
     },
@@ -231,22 +247,22 @@ An example event for `audit` looks as following:
         "preserve_original_event"
     ],
     "user": {
-        "email": "bird@slack.com",
-        "full_name": "Charlie Parker",
-        "id": "W123AB456"
+        "email": "aaron@demo.com",
+        "full_name": "roy",
+        "id": "e65b0f5c"
     },
     "user_agent": {
         "device": {
-            "name": "Mac"
+            "name": "Other"
         },
-        "name": "Chrome",
-        "original": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36",
+        "name": "Firefox",
+        "original": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:23.0) Gecko/20131011 Firefox/23.0",
         "os": {
-            "full": "Mac OS X 10.12.6",
-            "name": "Mac OS X",
-            "version": "10.12.6"
+            "full": "Windows 7",
+            "name": "Windows",
+            "version": "7"
         },
-        "version": "64.0.3282.186"
+        "version": "23.0."
     }
 }
 ```

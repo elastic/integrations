@@ -1,16 +1,21 @@
-format_version: 2.3.0
+format_version: 3.0.0
 name: cloud_defend
 title: "Defend for Containers"
-version: 1.0.2
+version: 1.2.2
 source:
   license: "Elastic-2.0"
-description: "Elastic Defend for Containers provides cloud-native runtime protections for containerized environments."
+description: "Elastic Defend for Containers (BETA) provides cloud-native runtime protections for containerized environments."
 type: integration
 categories:
   - containers
+  - kubernetes
   - security
 conditions:
-  kibana.version: "^8.8.0"
+  kibana:
+    version: ^8.11.0
+  elastic:
+    capabilities:
+      - security
 screenshots:
   - src: /img/control-policy-general-view-screenshot.png
     title: Control policy general view screenshot
@@ -45,14 +50,9 @@ policy_templates:
                 selectors:
                   - name: allProcesses
                     operation: [fork, exec]
-                  - name: interactiveProcesses
-                    operation: [fork, exec]
-                    sessionLeaderInteractive: true
                 responses:
                   - match: [allProcesses]
                     actions: [log]
-                  - match: [interactiveProcesses]
-                    actions: [alert]
               file:
                 selectors:
                   - name: executableChanges
@@ -61,4 +61,5 @@ policy_templates:
                   - match: [executableChanges]
                     actions: [alert]
 owner:
-  github: elastic/sec-cloudnative-integrations
+  type: elastic
+  github: elastic/sec-linux-platform

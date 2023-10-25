@@ -111,11 +111,11 @@ An example event for `ai_analyst_alert` looks as following:
 {
     "@timestamp": "2021-08-03T14:48:09.240Z",
     "agent": {
-        "ephemeral_id": "82482032-e103-4c45-a00e-103ac604f4ae",
-        "id": "95d2bc73-8bc8-47d9-b36e-a21b58255eec",
+        "ephemeral_id": "315a1a3f-bc7a-4a11-9540-c316f1ec95ee",
+        "id": "85270a54-b915-4d11-9305-d004346cb8cf",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.1"
+        "version": "8.9.0"
     },
     "darktrace": {
         "ai_analyst_alert": {
@@ -254,12 +254,12 @@ An example event for `ai_analyst_alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "95d2bc73-8bc8-47d9-b36e-a21b58255eec",
-        "snapshot": false,
-        "version": "8.2.1"
+        "id": "85270a54-b915-4d11-9305-d004346cb8cf",
+        "snapshot": true,
+        "version": "8.9.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -274,7 +274,7 @@ An example event for `ai_analyst_alert` looks as following:
             "2021-08-03T14:15:41.220Z"
         ],
         "id": "eabc0011-1234-1234-1234-cabcdefg0011",
-        "ingested": "2022-09-30T11:36:06Z",
+        "ingested": "2023-06-14T17:00:35Z",
         "kind": "alert",
         "original": "{\"summariser\":\"AdminConnSummary\",\"acknowledged\":false,\"pinned\":true,\"createdAt\":1628002089240,\"attackPhases\":[5],\"title\":\"Extensive Unusual SSH Connections\",\"id\":\"eabc0011-1234-1234-1234-cabcdefg0011\",\"children\":[\"eabcdef0-1234-1234-1234-cabcdefghij9\"],\"category\":\"critical\",\"currentGroup\":\"eabc1234-1234-1234-1234-cabcdefg0011\",\"groupCategory\":\"critical\",\"groupScore\":\"72.9174234\",\"groupPreviousGroups\":null,\"activityId\":\"abcd1234\",\"groupingIds\":[\"abcdef12\"],\"groupByActivity\":false,\"userTriggered\":false,\"externalTriggered\":false,\"aiaScore\":98,\"summary\":\"The device 175.16.199.1 was observed making unusual internal SSH connections to a wide range of devices.\\n\\nThough this behaviour could be the result of legitimate remote access or administration, it could also be a sign of attempted lateral movement by a compromised machine.\\n\\nConsequently, if this activity was not expected, the security team may wish to investigate further.\",\"periods\":[{\"start\":1627985298683,\"end\":1628000141220}],\"breachDevices\":[{\"identifier\":null,\"hostname\":null,\"ip\":\"81.2.69.144\",\"mac\":null,\"subnet\":\"VPN\",\"did\":10,\"sid\":12}],\"relatedBreaches\":[{\"modelName\":\"Unusual Activity / Unusual Activity from Re-Activated Device\",\"pbid\":1234,\"threatScore\":37,\"timestamp\":1627997157000}],\"details\":[[{\"header\":\"Breaching Device\",\"contents\":[{\"key\":null,\"type\":\"device\",\"values\":[{\"identifier\":null,\"hostname\":null,\"ip\":\"175.16.199.1\",\"mac\":null,\"subnet\":\"VPN\",\"did\":10,\"sid\":12}]}]}],[{\"header\":\"SSH Activity\",\"contents\":[{\"key\":\"Time\",\"type\":\"timestampRange\",\"values\":[{\"start\":1627985298683,\"end\":1628000141220}]},{\"key\":\"Number of unique IPs\",\"type\":\"integer\",\"values\":[16]},{\"key\":\"Targeted IP ranges include\",\"type\":\"device\",\"values\":[{\"identifier\":null,\"hostname\":null,\"ip\":\"81.2.69.192\",\"mac\":null,\"subnet\":null,\"did\":null,\"sid\":null},{\"identifier\":null,\"hostname\":null,\"ip\":\"175.16.199.1\",\"mac\":null,\"subnet\":null,\"did\":null,\"sid\":null},{\"identifier\":null,\"hostname\":null,\"ip\":\"175.16.199.3\",\"mac\":null,\"subnet\":null,\"did\":null,\"sid\":null}]},{\"key\":\"Destination port\",\"type\":\"integer\",\"values\":[22]},{\"key\":\"Connection count\",\"type\":\"integer\",\"values\":[40]},{\"key\":\"Percentage successful\",\"type\":\"percentage\",\"values\":[100]}]}]]}",
         "reason": "Extensive Unusual SSH Connections",
@@ -284,7 +284,7 @@ An example event for `ai_analyst_alert` looks as following:
             "2021-08-03T10:08:18.683Z"
         ],
         "type": [
-            "info"
+            "indicator"
         ]
     },
     "host": {
@@ -296,11 +296,11 @@ An example event for `ai_analyst_alert` looks as following:
         ]
     },
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "192.168.128.5:49066"
+            "address": "172.31.0.4:53890"
         },
         "syslog": {
             "facility": {
@@ -419,17 +419,17 @@ An example event for `ai_analyst_alert` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
-| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
+| event.end | `event.end` contains the date when the event ended or when the activity was last observed. | date |
 | event.id | Unique ID to describe the event. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
 | event.risk_score | Risk score or priority of the event (e.g. security solutions). Use your system's original value here. | float |
 | event.risk_score_norm | Normalized risk score or priority of the event, on a scale of 0 to 100. This is mainly useful if you use more than one system that assigns risk scores, and you want to see a normalized value across all systems. | float |
-| event.start | event.start contains the date when the event started or when the activity was first observed. | date |
+| event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | event.url | URL linking to an external system to continue investigation of this event. This URL links to another system where in-depth investigation of the specific occurrence of this event can take place. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -481,11 +481,11 @@ An example event for `model_breach_alert` looks as following:
 {
     "@timestamp": "2022-07-11T13:04:08.000Z",
     "agent": {
-        "ephemeral_id": "572d7663-c480-491f-b06f-96f0330cf942",
-        "id": "95d2bc73-8bc8-47d9-b36e-a21b58255eec",
+        "ephemeral_id": "4d6d9ea0-9819-41c2-92ea-85ae0db8f2e7",
+        "id": "85270a54-b915-4d11-9305-d004346cb8cf",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.1"
+        "version": "8.9.0"
     },
     "darktrace": {
         "model_breach_alert": {
@@ -979,12 +979,12 @@ An example event for `model_breach_alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "95d2bc73-8bc8-47d9-b36e-a21b58255eec",
-        "snapshot": false,
-        "version": "8.2.1"
+        "id": "85270a54-b915-4d11-9305-d004346cb8cf",
+        "snapshot": true,
+        "version": "8.9.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -993,7 +993,7 @@ An example event for `model_breach_alert` looks as following:
         ],
         "created": "2022-07-11T13:04:19.000Z",
         "dataset": "darktrace.model_breach_alert",
-        "ingested": "2022-09-30T11:39:13Z",
+        "ingested": "2023-06-14T17:03:48Z",
         "kind": "event",
         "original": "{\"commentCount\":0,\"pbid\":1,\"time\":1657544648000,\"creationTime\":1657544659000,\"aianalystData\":[{\"uuid\":\"1234abcd-1234-1234-1234-123456abcdef\",\"related\":[1],\"summariser\":\"BeaconSummary\"}],\"model\":{\"name\":\"Compromise::Beaconing Activity To External Rare\",\"pid\":156,\"phid\":1072,\"uuid\":\"1234abcd-1234-1234-1234-123456abcdef\",\"logic\":{\"data\":[{\"cid\":2026,\"weight\":1},{\"cid\":2024,\"weight\":1},{\"cid\":2025,\"weight\":-100}],\"targetScore\":1,\"type\":\"weightedComponentList\",\"version\":1},\"throttle\":10800,\"sharedEndpoints\":false,\"actions\":{\"alert\":true,\"antigena\":{},\"breach\":true,\"model\":true,\"setPriority\":false,\"setTag\":false,\"setType\":false},\"tags\":[\"AP: C2 Comms\"],\"interval\":10800,\"delay\":0,\"sequenced\":false,\"active\":true,\"modified\":\"2022-07-11 11:47:37\",\"activeTimes\":{\"devices\":{},\"tags\":{},\"type\":\"exclusions\",\"version\":2},\"autoUpdatable\":true,\"autoUpdate\":true,\"autoSuppress\":true,\"description\":\"A device has been repeatedly connecting to a rare external location with a beacon score. A beacon score is added when Darktrace identifies that a device is regularly communicating with an endpoint, for example, if a device connects to a rare external endpoint every 12 minutes this would get a beacon score. This model is designed to identify beaconing at a lower threshold and be protocol agnostic.\\\\n\\\\nAction: Review the external domains and IPs being connected to to see if they are legitimate and would be expected for business purposes.\",\"behaviour\":\"incdec1\",\"created\":{\"by\":\"System\"},\"edited\":{\"by\":\"System\"},\"version\":23,\"priority\":2,\"category\":\"Informational\",\"compliance\":false},\"triggeredComponents\":[{\"time\":1657544648000,\"cbid\":1,\"cid\":2026,\"chid\":2113,\"size\":11,\"threshold\":10,\"interval\":3600,\"logic\":{\"data\":{\"left\":{\"left\":\"A\",\"operator\":\"AND\",\"right\":{\"left\":\"AA\",\"operator\":\"AND\",\"right\":{\"left\":\"AC\",\"operator\":\"AND\",\"right\":{\"left\":\"AD\",\"operator\":\"AND\",\"right\":{\"left\":\"AF\",\"operator\":\"AND\",\"right\":{\"left\":\"AG\",\"operator\":\"AND\",\"right\":{\"left\":\"AH\",\"operator\":\"AND\",\"right\":{\"left\":\"B\",\"operator\":\"AND\",\"right\":{\"left\":\"C\",\"operator\":\"AND\",\"right\":{\"left\":\"D\",\"operator\":\"AND\",\"right\":{\"left\":\"E\",\"operator\":\"AND\",\"right\":{\"left\":\"H\",\"operator\":\"AND\",\"right\":{\"left\":\"I\",\"operator\":\"AND\",\"right\":{\"left\":\"J\",\"operator\":\"AND\",\"right\":{\"left\":\"K\",\"operator\":\"AND\",\"right\":{\"left\":\"L\",\"operator\":\"AND\",\"right\":{\"left\":\"M\",\"operator\":\"AND\",\"right\":{\"left\":\"N\",\"operator\":\"AND\",\"right\":{\"left\":\"O\",\"operator\":\"AND\",\"right\":{\"left\":\"P\",\"operator\":\"AND\",\"right\":{\"left\":\"S\",\"operator\":\"AND\",\"right\":{\"left\":\"U\",\"operator\":\"AND\",\"right\":{\"left\":\"V\",\"operator\":\"AND\",\"right\":{\"left\":\"X\",\"operator\":\"AND\",\"right\":{\"left\":\"Y\",\"operator\":\"AND\",\"right\":\"Z\"}}}}}}}}}}}}}}}}}}}}}}}}},\"operator\":\"OR\",\"right\":{\"left\":\"A\",\"operator\":\"AND\",\"right\":{\"left\":\"AA\",\"operator\":\"AND\",\"right\":{\"left\":\"AB\",\"operator\":\"AND\",\"right\":{\"left\":\"AE\",\"operator\":\"AND\",\"right\":{\"left\":\"AF\",\"operator\":\"AND\",\"right\":{\"left\":\"AG\",\"operator\":\"AND\",\"right\":{\"left\":\"AH\",\"operator\":\"AND\",\"right\":{\"left\":\"C\",\"operator\":\"AND\",\"right\":{\"left\":\"D\",\"operator\":\"AND\",\"right\":{\"left\":\"E\",\"operator\":\"AND\",\"right\":{\"left\":\"H\",\"operator\":\"AND\",\"right\":{\"left\":\"I\",\"operator\":\"AND\",\"right\":{\"left\":\"J\",\"operator\":\"AND\",\"right\":{\"left\":\"K\",\"operator\":\"AND\",\"right\":{\"left\":\"L\",\"operator\":\"AND\",\"right\":{\"left\":\"M\",\"operator\":\"AND\",\"right\":{\"left\":\"N\",\"operator\":\"AND\",\"right\":{\"left\":\"O\",\"operator\":\"AND\",\"right\":{\"left\":\"P\",\"operator\":\"AND\",\"right\":{\"left\":\"S\",\"operator\":\"AND\",\"right\":{\"left\":\"U\",\"operator\":\"AND\",\"right\":{\"left\":\"V\",\"operator\":\"AND\",\"right\":{\"left\":\"X\",\"operator\":\"AND\",\"right\":{\"left\":\"Y\",\"operator\":\"AND\",\"right\":\"Z\"}}}}}}}}}}}}}}}}}}}}}}}}},\"version\":\"v0.1\"},\"metric\":{\"mlid\":1,\"name\":\"externalconnections\",\"label\":\"External Connections\"},\"triggeredFilters\":[{\"cfid\":23426,\"id\":\"A\",\"filterType\":\"Beaconing score\",\"arguments\":{\"value\":60},\"comparatorType\":\"\u003e\",\"trigger\":{\"value\":\"100\"}},{\"cfid\":23427,\"id\":\"AA\",\"filterType\":\"Individual size up\",\"arguments\":{\"value\":0},\"comparatorType\":\"\u003e\",\"trigger\":{\"value\":\"4382\"}},{\"cfid\":23428,\"id\":\"AB\",\"filterType\":\"Rare domain\",\"arguments\":{\"value\":95},\"comparatorType\":\"\u003e\",\"trigger\":{\"value\":\"100\"}},{\"cfid\":23430,\"id\":\"AD\",\"filterType\":\"Age of destination\",\"arguments\":{\"value\":1209600},\"comparatorType\":\"\u003c\",\"trigger\":{\"value\":\"558\"}},{\"cfid\":23431,\"id\":\"AE\",\"filterType\":\"Age of external hostname\",\"arguments\":{\"value\":1209600},\"comparatorType\":\"\u003c\",\"trigger\":{\"value\":\"558\"}},{\"cfid\":23432,\"id\":\"AF\",\"filterType\":\"Connection hostname\",\"arguments\":{\"value\":\"examples\"},\"comparatorType\":\"does not match regular expression\",\"trigger\":{\"value\":\"example.com\"}},{\"cfid\":23433,\"id\":\"AG\",\"filterType\":\"ASN\",\"arguments\":{\"value\":\"examples\"},\"comparatorType\":\"does not match regular expression\",\"trigger\":{\"value\":\"AS12345 LOCAL-02\"}},{\"cfid\":23434,\"id\":\"AH\",\"filterType\":\"JA3 hash\",\"arguments\":{\"value\":\"5d41402abc4b2a76b9719d911017c592\"},\"comparatorType\":\"does not match\",\"trigger\":{\"value\":\"5d41402abc4b2a76b9719d911017c592\"}},{\"cfid\":23435,\"id\":\"B\",\"filterType\":\"Rare external IP\",\"arguments\":{\"value\":95},\"comparatorType\":\"\u003e\",\"trigger\":{\"value\":\"100\"}},{\"cfid\":23436,\"id\":\"C\",\"filterType\":\"Application protocol\",\"arguments\":{\"value\":\"1003\"},\"comparatorType\":\"is not\",\"trigger\":{\"value\":\"1004\"}},{\"cfid\":23437,\"id\":\"D\",\"filterType\":\"Destination port\",\"arguments\":{\"value\":53},\"comparatorType\":\"!=\",\"trigger\":{\"value\":\"443\"}},{\"cfid\":23438,\"id\":\"E\",\"filterType\":\"Direction\",\"arguments\":{\"value\":\"out\"},\"comparatorType\":\"is\",\"trigger\":{\"value\":\"out\"}},{\"cfid\":23439,\"id\":\"H\",\"filterType\":\"Destination port\",\"arguments\":{\"value\":137},\"comparatorType\":\"!=\",\"trigger\":{\"value\":\"443\"}},{\"cfid\":23440,\"id\":\"I\",\"filterType\":\"Destination port\",\"arguments\":{\"value\":161},\"comparatorType\":\"!=\",\"trigger\":{\"value\":\"443\"}},{\"cfid\":23441,\"id\":\"J\",\"filterType\":\"Protocol\",\"arguments\":{\"value\":\"6\"},\"comparatorType\":\"is\",\"trigger\":{\"value\":\"6\"}},{\"cfid\":23442,\"id\":\"K\",\"filterType\":\"ASN\",\"arguments\":{\"value\":\"Company\"},\"comparatorType\":\"does not contain\",\"trigger\":{\"value\":\"AS12345 LOCAL-02\"}},{\"cfid\":23443,\"id\":\"L\",\"filterType\":\"ASN\",\"arguments\":{\"value\":\"Company\"},\"comparatorType\":\"does not contain\",\"trigger\":{\"value\":\"AS12345 LOCAL-02\"}},{\"cfid\":23444,\"id\":\"M\",\"filterType\":\"Internal source device type\",\"arguments\":{\"value\":\"13\"},\"comparatorType\":\"is not\",\"trigger\":{\"value\":\"6\"}},{\"cfid\":23445,\"id\":\"N\",\"filterType\":\"Internal source device type\",\"arguments\":{\"value\":\"5\"},\"comparatorType\":\"is not\",\"trigger\":{\"value\":\"6\"}},{\"cfid\":23446,\"id\":\"O\",\"filterType\":\"Internal source device type\",\"arguments\":{\"value\":\"9\"},\"comparatorType\":\"is not\",\"trigger\":{\"value\":\"6\"}},{\"cfid\":23447,\"id\":\"P\",\"filterType\":\"Internal source device type\",\"arguments\":{\"value\":\"12\"},\"comparatorType\":\"is not\",\"trigger\":{\"value\":\"6\"}},{\"cfid\":23448,\"id\":\"S\",\"filterType\":\"Internal source device type\",\"arguments\":{\"value\":\"30\"},\"comparatorType\":\"is not\",\"trigger\":{\"value\":\"6\"}},{\"cfid\":23449,\"id\":\"U\",\"filterType\":\"Internal source device type\",\"arguments\":{\"value\":\"4\"},\"comparatorType\":\"is not\",\"trigger\":{\"value\":\"6\"}},{\"cfid\":23450,\"id\":\"V\",\"filterType\":\"Internal source device type\",\"arguments\":{\"value\":\"3\"},\"comparatorType\":\"is not\",\"trigger\":{\"value\":\"6\"}},{\"cfid\":23451,\"id\":\"X\",\"filterType\":\"Trusted hostname\",\"arguments\":{\"value\":\"false\"},\"comparatorType\":\"is\",\"trigger\":{\"value\":\"false\"}},{\"cfid\":23452,\"id\":\"Y\",\"filterType\":\"Tagged internal source\",\"arguments\":{\"value\":26},\"comparatorType\":\"does not have tag\",\"trigger\":{\"value\":\"26\",\"tag\":{\"tid\":26,\"expiry\":0,\"thid\":26,\"name\":\"No Device Tracking\",\"restricted\":false,\"data\":{\"auto\":false,\"color\":5,\"description\":\"\",\"visibility\":\"Public\"},\"isReferenced\":true}}},{\"cfid\":23453,\"id\":\"Z\",\"filterType\":\"Individual size down\",\"arguments\":{\"value\":0},\"comparatorType\":\"\u003e\",\"trigger\":{\"value\":\"5862\"}},{\"cfid\":23454,\"id\":\"d1\",\"filterType\":\"JA3 hash\",\"arguments\":{},\"comparatorType\":\"display\",\"trigger\":{\"value\":\"5d41402abc4b2a76b9719d911017c592\"}},{\"cfid\":23455,\"id\":\"d2\",\"filterType\":\"ASN\",\"arguments\":{},\"comparatorType\":\"display\",\"trigger\":{\"value\":\"AS12345 LOCAL-02\"}},{\"cfid\":23456,\"id\":\"d3\",\"filterType\":\"Destination IP\",\"arguments\":{},\"comparatorType\":\"display\",\"trigger\":{\"value\":\"81.2.69.192\"}},{\"cfid\":23457,\"id\":\"d4\",\"filterType\":\"Connection hostname\",\"arguments\":{},\"comparatorType\":\"display\",\"trigger\":{\"value\":\"example.com\"}}]}],\"score\":0.674,\"device\":{\"did\":3,\"ip\":\"81.2.69.142\",\"sid\":1,\"firstSeen\":1657544089000,\"lastSeen\":1657544418000,\"typename\":\"desktop\",\"typelabel\":\"Desktop\"}}",
         "risk_score": 0.674,
@@ -1015,11 +1015,11 @@ An example event for `model_breach_alert` looks as following:
         "type": "desktop"
     },
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "192.168.128.5:60206"
+            "address": "172.31.0.4:60610"
         },
         "syslog": {
             "facility": {
@@ -1044,7 +1044,9 @@ An example event for `model_breach_alert` looks as following:
         ]
     },
     "rule": {
-        "author": "System",
+        "author": [
+            "System"
+        ],
         "category": "Informational",
         "description": "A device has been repeatedly connecting to a rare external location with a beacon score. A beacon score is added when Darktrace identifies that a device is regularly communicating with an endpoint, for example, if a device connects to a rare external endpoint every 12 minutes this would get a beacon score. This model is designed to identify beaconing at a lower threshold and be protocol agnostic.\\n\\nAction: Review the external domains and IPs being connected to to see if they are legitimate and would be expected for business purposes.",
         "name": "Compromise::Beaconing Activity To External Rare",
@@ -1213,15 +1215,15 @@ An example event for `model_breach_alert` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.risk_score | Risk score or priority of the event (e.g. security solutions). Use your system's original value here. | float |
 | event.risk_score_norm | Normalized risk score or priority of the event, on a scale of 0 to 100. This is mainly useful if you use more than one system that assigns risk scores, and you want to see a normalized value across all systems. | float |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
-| event.start | event.start contains the date when the event started or when the activity was first observed. | date |
+| event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | event.url | URL linking to an external system to continue investigation of this event. This URL links to another system where in-depth investigation of the specific occurrence of this event can take place. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -1280,11 +1282,11 @@ An example event for `system_status_alert` looks as following:
 {
     "@timestamp": "2021-04-18T15:44:11.000Z",
     "agent": {
-        "ephemeral_id": "5b042cea-01fa-47a2-ab0f-ac1f7baa6bd2",
-        "id": "95d2bc73-8bc8-47d9-b36e-a21b58255eec",
+        "ephemeral_id": "b16aba4d-b447-49c7-ac87-7785481b8e51",
+        "id": "85270a54-b915-4d11-9305-d004346cb8cf",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.1"
+        "version": "8.9.0"
     },
     "darktrace": {
         "system_status_alert": {
@@ -1308,18 +1310,18 @@ An example event for `system_status_alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "95d2bc73-8bc8-47d9-b36e-a21b58255eec",
-        "snapshot": false,
-        "version": "8.2.1"
+        "id": "85270a54-b915-4d11-9305-d004346cb8cf",
+        "snapshot": true,
+        "version": "8.9.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "darktrace.system_status_alert",
         "id": "abcdabcd-1234-1234-1234-3abababcdcd3",
-        "ingested": "2022-09-30T11:41:35Z",
+        "ingested": "2023-06-14T17:06:15Z",
         "kind": "alert",
         "original": "{\"last_updated\":1618760651,\"uuid\":\"abcdabcd-1234-1234-1234-3abababcdcd3\",\"priority\":43,\"priority_level\":\"medium\",\"hostname\":\"example-vsensor\",\"ip_address\":\"175.16.199.1\",\"message\":\"There have been no Advanced Search hits for this instance seen since Sun 18 April 2021 13:20:23 (UTC). If this is not expected behaviour, please open a ticket using the following link or get in touch with your Cyber Technology Specialist. https://example.com/test\",\"name\":\"advanced_search\",\"acknowledge_timeout\":null,\"alert_name\":\"Advanced Search\",\"child_id\":1,\"last_updated_status\":1618760651,\"status\":\"active\"}",
         "reason": "There have been no Advanced Search hits for this instance seen since Sun 18 April 2021 13:20:23 (UTC). If this is not expected behaviour, please open a ticket using the following link or get in touch with your Cyber Technology Specialist. https://example.com/test",
@@ -1331,14 +1333,16 @@ An example event for `system_status_alert` looks as following:
     },
     "host": {
         "hostname": "example-vsensor",
-        "ip": "175.16.199.1"
+        "ip": [
+            "175.16.199.1"
+        ]
     },
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "192.168.128.5:36197"
+            "address": "172.31.0.4:43852"
         },
         "syslog": {
             "facility": {
@@ -1418,10 +1422,10 @@ An example event for `system_status_alert` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |

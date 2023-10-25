@@ -106,12 +106,9 @@ processors:
       processor:
         append:
           field: event.type
-          value: '{{{_ingest._value.messageType}}}'
+          value: 'info'
           allow_duplicates: false
           ignore_failure: true
-  - lowercase:
-      field: event.type
-      ignore_failure: true
   - foreach:
       field: json.event_attributes
       if: ctx.json?.event_attributes instanceof List
@@ -281,3 +278,10 @@ processors:
       type: string
       ignore_missing: true
       ignore_failure: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

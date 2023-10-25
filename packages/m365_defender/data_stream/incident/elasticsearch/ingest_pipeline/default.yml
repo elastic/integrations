@@ -3,11 +3,18 @@ description: Pipeline for processing Incident logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.7.0'
+      value: '8.10.0'
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: 'ctx.event?.original == null'
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
       target_field: json
@@ -28,7 +35,7 @@ processors:
       ignore_missing: true
   - set:
       field: event.kind
-      value: event
+      value: alert
   - append:
       field: event.category
       value: malware
@@ -977,6 +984,16 @@ processors:
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
       processor:
+        append:
+          field: host.name
+          value: '{{{_ingest._value.device_dns_name}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.alerts.evidence
+      if: ctx.json?.alerts?.evidence instanceof List
+      ignore_failure: true
+      processor:
         date:
           field: _ingest._value.firstSeenDateTime
           target_field: _ingest._value.first_seen_datetime
@@ -1006,6 +1023,21 @@ processors:
               field: _ingest._value.accountName
               target_field: _ingest._value.account_name
               ignore_missing: true
+  - foreach:
+      field: json.alerts.evidence
+      if: ctx.json?.alerts?.evidence instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.loggedOnUsers
+          ignore_failure: true
+          ignore_missing: true
+          processor:
+            append:
+              field: user.name
+              value: '{{{_ingest._value.account_name}}}'
+              allow_duplicates: false
+              ignore_failure: true
   - foreach:
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
@@ -1388,7 +1420,7 @@ processors:
       ignore_failure: true
       processor:
         append:
-          field: host.ip
+          field: source.ip
           value: '{{{_ingest._value.ip_address}}}'
           allow_duplicates: false
           ignore_failure: true
@@ -2073,9 +2105,8 @@ processors:
           ctx.user = new HashMap();
         }
         def userDomain = new HashSet();
-        def userId = new HashSet();
         def userName = new HashSet();
-        def userEmail = new HashSet();
+        def userId = new HashSet();
         if (!(ctx.process instanceof HashMap)) {
           ctx.process = new HashMap();
         }
@@ -2098,11 +2129,8 @@ processors:
               if (evidence?.user_account?.domain_name != null) {
                 userDomain.add(evidence.user_account.domain_name);
               }
-              if (evidence?.user_account?.azure_ad_user_id != null) {
-                userId.add(evidence.user_account.azure_ad_user_id);
-              }
               if (evidence?.user_account?.user_principal_name != null) {
-                userEmail.add(evidence.user_account.user_principal_name);
+                userId.add(evidence.user_account.user_principal_name);
               }
               if (evidence?.user_account?.account_name != null) {
                 userName.add(evidence.user_account.account_name);
@@ -2133,14 +2161,11 @@ processors:
         if (!userDomain.isEmpty()) {
           ctx.user.domain = convertToOrderedArray(userDomain);
         }
-        if (!userId.isEmpty()) {
-          ctx.user.id = convertToOrderedArray(userId);
-        }
         if (!userName.isEmpty()) {
           ctx.user.name = convertToOrderedArray(userName);
         }
-        if (!userEmail.isEmpty()) {
-          ctx.user.email = convertToOrderedArray(userEmail);
+        if (!userId.isEmpty()) {
+          ctx.user.id = convertToOrderedArray(userId);
         }
         if (!processUserId.isEmpty()) {
           ctx.process.user.id = convertToOrderedArray(processUserId);
@@ -2226,6 +2251,9 @@ processors:
             - _ingest._value.imageFile.fileSize
             - _ingest._value.parentProcessImageFile.fileSize
           ignore_missing: true
+  - lowercase:
+      field: host.name
+      if: ctx.host?.name != null
   - rename:
       field: json.alerts.evidence
       target_field: m365_defender.incident.alert.evidence
@@ -2247,6 +2275,19 @@ processors:
         - m365_defender.incident.alert.category
         - m365_defender.incident.alert.mitre_techniques
       ignore_missing: true
+  - foreach:
+      field: m365_defender.incident.alert.evidence
+      if: ctx.m365_defender?.incident?.alert?.evidence instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.logged_on_users
+          ignore_failure: true
+          processor:
+            remove:
+              field:
+                - _ingest._value.account_name
+              ignore_missing: true
   - foreach:
       field: m365_defender.incident.alert.evidence
       if: ctx.m365_defender?.incident?.alert?.evidence instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
@@ -2307,6 +2348,9 @@ processors:
         }
         dropEmptyFields(ctx);
 on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

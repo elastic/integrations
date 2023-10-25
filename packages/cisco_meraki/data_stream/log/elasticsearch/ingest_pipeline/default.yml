@@ -3,7 +3,7 @@ description: Pipeline for Cisco Meraki syslog
 processors:
 - set:
     field: ecs.version
-    value: '8.7.0'
+    value: '8.10.0'
 - rename:
     field: message
     target_field: event.original
@@ -32,7 +32,7 @@ processors:
           value: 'failed to parse time field ({{{ _temp.ts_nano }}}): {{{ _ingest.on_failure_message }}}'
 - pipeline:
     name: '{{ IngestPipeline "flows" }}'
-    if: ctx.cisco_meraki.event_type == 'flows'
+    if: "['flows', 'firewall', 'vpn_firewall', 'cellular_firewall', 'bridge_anyconnect_client_vpn_firewall'].contains(ctx.cisco_meraki.event_type)"
 - pipeline:
     name: '{{ IngestPipeline "ipflows" }}'
     if: ctx.cisco_meraki.event_type == 'ip_flow_start' || ctx.cisco_meraki.event_type == 'ip_flow_end'
@@ -213,6 +213,8 @@ processors:
         "multiple_dhcp_servers_detected":
           type:
             - protocol
+          action: 
+            - multiple_dhcp_servers_detected
         "dfs_event":
           action: dynamic-frequency-selection-detected
         "aps_association_reject":
@@ -371,5 +373,8 @@ processors:
     ignore_missing: true
 on_failure:
 - set:
+    field: event.kind
+    value: pipeline_error
+- append:
     field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+    value: '{{{ _ingest.on_failure_message }}}'

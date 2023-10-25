@@ -1,7 +1,7 @@
 # Kubernetes integration
 
 This integration is used to collect logs and metrics from 
-[Kubernetes clusters](https://kubernetes.io/).
+[Kubernetes clusters](https://kubernetes.io/). Time series [index mode](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds.html) enabled for metrics data streams.
 
 | |
 | ------------- | 
@@ -84,6 +84,14 @@ the masters won't be visible. In these cases it won't be possible to use `schedu
 The container-logs dataset requires access to the log files in each Kubernetes node where the container logs are stored.
 This defaults to `/var/log/containers/*${kubernetes.container.id}.log`.
 
+#### Routing
+
+The container-logs data stream allows routing logs to a different *dataset* or *namespace* using pod annotations. 
+
+For example, suppose you are running Nginx on your Kubernetes cluster, and you want to drive the Nginx container logs into a dedicated dataset or namespace. By annotating the pod with `elastic.co/namespace: nginx`, the integration will send all the container logs to the `nginx` namespace.
+
+To learn more about routing container-logs, see https://docs.elastic.co/integrations/kubernetes/container-logs.
+
 ### audit-logs
 
 The audit-logs dataset requires access to the log files on each Kubernetes node where the audit logs are stored.
@@ -91,7 +99,7 @@ This defaults to `/var/log/kubernetes/kube-apiserver-audit.log`.
 
 ## Compatibility
 
-The Kubernetes package is tested with Kubernetes [1.23.x - 1.26.x] versions
+The Kubernetes package is tested with Kubernetes [1.25.x - 1.27.x] versions
 
 ## Dashboard
 

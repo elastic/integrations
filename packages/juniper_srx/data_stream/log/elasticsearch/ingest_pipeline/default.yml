@@ -5,7 +5,7 @@ description: Pipeline for parsing junipersrx firewall logs
 processors:
   - set:
       field: ecs.version
-      value: '8.7.0'
+      value: '8.10.0'
   - rename:
       field: message
       target_field: event.original
@@ -13,21 +13,45 @@ processors:
   - grok:
       field: event.original
       patterns:
-      - '^<%{POSINT:syslog_pri}>(\d{1,3}\s)?(?:%{TIMESTAMP_ISO8601:_temp_.raw_date})\s%{SYSLOGHOST:syslog_hostname}\s%{PROG:syslog_program}\s(?:%{POSINT:syslog_pid}|-)?\s%{WORD:log_type}\s\[([^=]+?\s)?%{GREEDYDATA:_temp_.original}\]$'
+      # 1. SRX Traffic structured log pattern
+      - '^%{SYSLOG_PREFIX}?%{TIMESTAMP_ISO8601:_temp_.raw_date}\s%{SYSLOGHOST:syslog_hostname}\s%{JUNIPER_TRAFFIC_PROCESS:syslog_program}\s(?:%{POSINT:syslog_pid}|-)?\s%{WORD:tag}\s\[([^=]+?\s)?%{GREEDYDATA:_temp_.traffic_structured}\]\s?$'
+      # 2. SRX System structured log pattern (captures all structured logs when syslog_program not in JUNIPER_TRAFFIC_PROCESS)
+      - '^%{SYSLOG_PREFIX}?%{CUSTOM_DATE:_temp_.raw_date}\s%{SYSLOGHOST:syslog_hostname}\s%{PROG:syslog_program}\s(?:%{POSINT:syslog_pid}|-)?\s%{WORD:tag}\s\[([^=]+?\s)?%{GREEDYDATA:_temp_.system_structured}\](?!=)\s?%{DATA:_temp_.unparsed.message}\s?$'
+      # 3. SRX System structured-brief and unstructured log patterns (further parsing done in system.yml)
+      - '^%{SYSLOG_PREFIX}?%{CUSTOM_DATE:_temp_.raw_date}\s%{SYSLOGHOST:syslog_hostname}\s%{GREEDYDATA:_temp_.unparsed.message}$'
+      pattern_definitions:
+        SYSLOG_PREFIX: '<%{POSINT:syslog_pri}>(?:\d{1,3}\s)'
+        CUSTOM_DATE: "%{TIMESTAMP_ISO8601}|(%{MONTH}%{SPACE}%{MONTHDAY}%{SPACE}%{TIME})"
+        JUNIPER_TRAFFIC_PROCESS: "RT_FLOW|RT_UTM|RT_IDP|RT_IDS|RT_AAMW|RT_SECINTEL"
 
 # split Juniper-SRX fields
   - kv:
-      field: _temp_.original
-      field_split: " (?=[a-z0-9\\_\\-]+=)"
+      field: _temp_.traffic_structured
+      field_split: ' (?=[a-z0-9\_\-]+=)'
       value_split: "="
       prefix: "juniper.srx."
       ignore_missing: true
       ignore_failure: false
-      trim_value: "\""
+      trim_value: '"'
+# split Juniper-SRX fields
+  - kv:
+      field: _temp_.system_structured
+      field_split: ' (?=[a-z0-9\_\-]+=)'
+      value_split: "="
+      prefix: "juniper.srx."
+      ignore_missing: true
+      ignore_failure: false
+      trim_value: '"'
+
+  - rename:
+      field: syslog_program
+      target_field: juniper.srx.process
+      ignore_missing: true
 
 # Converts all kebab-case key names to snake_case
   - script:
       lang: painless
+      if: ctx.juniper?.srx != null
       source: >-
         ctx.juniper.srx = ctx?.juniper?.srx.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().replace('-', '_'), e -> e.getValue()));
 
@@ -43,6 +67,7 @@ processors:
       - yyyy-MM-dd HH:mm:ss z
       - yyyy-MM-dd HH:mm:ss Z
       - ISO8601
+      - MMM d HH:mm:ss
   - date:
       if: "ctx?.event?.timezone != null"
       timezone: "{{ event.timezone }}"
@@ -53,6 +78,7 @@ processors:
       - yyyy-MM-dd HH:mm:ss z
       - yyyy-MM-dd HH:mm:ss Z
       - ISO8601
+      - MMM d HH:mm:ss
 
 # Can possibly be omitted if there is a solution for the equal signs and the calculation of the start time.
 # -> juniper.srx.elapsed_time
@@ -74,6 +100,7 @@ processors:
 # Removes all empty fields
   - script:
       lang: painless
+      if: ctx.juniper?.srx != null
       params:
         values:
           - "None"
@@ -90,7 +117,11 @@ processors:
       field: syslog_pri
       type: long
       target_field: event.severity
-      ignore_failure: true
+      tag: convert_syslog_pri_to_long
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
 #####################
 ## ECS Log Mapping ##
@@ -178,28 +209,14 @@ processors:
       target_field: observer.egress.zone
       ignore_missing: true
   - rename:
-      field: syslog_program
-      target_field: juniper.srx.process
-      ignore_missing: true
-  - rename:
-      field: log_type
+      field: tag
       target_field: juniper.srx.tag
       ignore_missing: true
 
-
-#############
-## Cleanup ##
-#############
+# Remove message as it is used inside sub-pipelines.
   - remove:
       field:
         - message
-        - _temp_
-        - juniper.srx.duration
-        - juniper.srx.dir_disp
-        - juniper.srx.srczone
-        - juniper.srx.dstzone
-        - juniper.srx.duration
-        - syslog_pri
       ignore_missing: true
 
 ################################
@@ -223,6 +240,9 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "secintel" }}'
       if: "ctx.juniper?.srx?.process == 'RT_SECINTEL'"
+  - pipeline:
+      name: '{{ IngestPipeline "system" }}'
+      if: "ctx.juniper?.srx?.process == null || !['RT_FLOW', 'RT_UTM', 'RT_IDP', 'RT_IDS', 'RT_AAMW', 'RT_SECINTEL'].contains(ctx.juniper.srx.process)"
   - script:
       lang: painless
       ignore_failure: true
@@ -315,7 +335,48 @@ processors:
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
-on_failure:
+
+#########################
+## ECS Process Mapping ##
+#########################
   - set:
+      field: process.name
+      value: "{{{juniper.srx.process}}}"
+      if: ctx.juniper?.srx?.process != null
+  - convert:
+      field: syslog_pid
+      type: long
+      tag: convert_syslog_pid_to_long
+      ignore_missing: true
+      if: "ctx.syslog_pid != null"
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: syslog_pid
+      target_field: process.pid
+      ignore_missing: true
+
+
+#############
+## Cleanup ##
+#############
+  - remove:
+      field:
+        # Could be parsed when more use cases appear
+        - _temp_
+        - juniper.srx.duration
+        - juniper.srx.dir_disp
+        - juniper.srx.srczone
+        - juniper.srx.dstzone
+        - syslog_pri
+      ignore_missing: true
+on_failure:
+  - append:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error

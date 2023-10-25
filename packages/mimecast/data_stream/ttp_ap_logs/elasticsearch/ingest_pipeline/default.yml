@@ -4,7 +4,7 @@ processors:
   # Generic event/ecs fields we always want to populate.
   - set:
       field: ecs.version
-      value: '8.7.0'
+      value: '8.10.0'
   - rename:
       field: message
       target_field: event.original
@@ -137,6 +137,9 @@ processors:
       
 # Error handling
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

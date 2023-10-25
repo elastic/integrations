@@ -3,7 +3,7 @@ description: Pipeline for parsing Proofpoint TAP blocked message logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.7.0'
+      value: '8.10.0'
   - rename:
       field: message
       target_field: event.original
@@ -32,8 +32,12 @@ processors:
       value: email
       ignore_failure: true
   - append:
-      field: event.type
+      field: event.action
       value: denied
+      ignore_failure: true
+  - append:
+      field: event.type
+      value: info
       ignore_failure: true
   - set:
       field: event.kind
@@ -110,6 +114,10 @@ processors:
       target_field: email.cc.address
       ignore_missing: true
   - set:
+      field: email.cc.address
+      value: ['{{{email.cc.address}}}']
+      if: ctx.email?.cc?.address instanceof String
+  - set:
       field: email.delivery_timestamp
       copy_from: '@timestamp'
       ignore_failure: true
@@ -117,6 +125,10 @@ processors:
       field: json.fromAddress
       target_field: email.from.address
       ignore_missing: true
+  - set:
+      field: email.from.address
+      value: ['{{{email.from.address}}}']
+      if: ctx.email?.from?.address instanceof String
   - rename:
       field: json.messageID
       target_field: email.message_id
@@ -142,6 +154,10 @@ processors:
       field: email.to.address
       copy_from: json.toAddresses
       ignore_failure: true
+  - set:
+      field: email.to.address
+      value: ['{{{email.to.address}}}']
+      if: ctx.email?.to?.address instanceof String
   - foreach:
       field: json.recipient
       processor:
@@ -490,6 +506,9 @@ processors:
         }
         dropEmptyFields(ctx);
 on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
   - append:
       field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
+      value: '{{{ _ingest.on_failure_message }}}'

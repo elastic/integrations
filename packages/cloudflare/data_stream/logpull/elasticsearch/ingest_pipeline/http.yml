@@ -2,24 +2,51 @@
 description: Pipeline for parsing cloudflare http logs
 processors:
 # Event Time Fields
-- convert:
-    field: json.EdgeStartTimestamp
-    type: string
-- convert:
-    field: json.EdgeEndTimestamp
-    type: string
-- gsub:
-    field: json.EdgeStartTimestamp
-    pattern: "\\d{6}$"
-    replacement: ""
-    if: "ctx?.json?.EdgeStartTimestamp != null && (ctx?.json?.EdgeStartTimestamp).length() > 18"
-- gsub:
-    field: json.EdgeEndTimestamp
-    pattern: "\\d{6}$"
-    replacement: ""
-    if: "ctx?.json?.EdgeEndTimestamp != null && (ctx?.json?.EdgeEndTimestamp).length() > 18"
+- script:
+    lang: painless
+    tag: painless_edge_start_timestamp_to_milli
+    if: ctx.json?.EdgeStartTimestamp != null
+    source: |
+      try {
+        long t;
+        if (ctx.json.EdgeStartTimestamp instanceof String) {
+          t = Long.parseLong(ctx.json.EdgeStartTimestamp);
+        } else if (ctx.json.EdgeStartTimestamp instanceof Number) {
+          t = (long)(ctx.json.EdgeStartTimestamp);
+        } else {
+          return;
+        }
+        if (t > (long)(1e18)) {
+          ctx.json.EdgeStartTimestamp = t/(long)(1e6)
+        } else if (t < (long)(1e10))  {
+          ctx.json.EdgeStartTimestamp = t*(long)(1e3)
+        }
+      }
+      catch (Exception e) {}
+- script:
+    lang: painless
+    tag: painless_edge_end_timestamp_to_milli
+    if: ctx.json?.EdgeEndTimestamp != null
+    source: |
+      try {
+        long t;
+        if (ctx.json.EdgeEndTimestamp instanceof String) {
+          t = Long.parseLong(ctx.json.EdgeEndTimestamp);
+        } else if (ctx.json.EdgeEndTimestamp instanceof Number) {
+          t = (long)(ctx.json.EdgeEndTimestamp);
+        } else {
+          return;
+        }
+        if (t > (long)(1e18)) {
+          ctx.json.EdgeEndTimestamp = t/(long)(1e6)
+        } else if (t < (long)(1e10))  {
+          ctx.json.EdgeEndTimestamp = t*(long)(1e3)
+        }
+      }
+      catch (Exception e) {}
 - date:
     field: json.EdgeStartTimestamp
+    tag: date_edge_start_timestamp
     formats:
     - ISO8601
     - uuuu-MM-dd'T'HH:mm:ssX
@@ -29,18 +56,13 @@ processors:
     - UNIX_MS
     timezone: UTC
     target_field: "@timestamp"
-- date:
-    field: json.EdgeStartTimestamp
-    formats:
-    - uuuu-MM-dd'T'HH:mm:ssX
-    - uuuu-MM-dd'T'HH:mm:ss.SSSX
-    - yyyy-MM-dd'T'HH:mm:ssZ
-    - yyyy-MM-dd'T'HH:mm:ss.SSSZ
-    - UNIX_MS
-    timezone: UTC
-    target_field: "event.start"
+- set:
+    field: event.start
+    copy_from: "@timestamp"
+    ignore_empty_value: true
 - date:
     field: json.EdgeEndTimestamp
+    tag: date_edge_end_timestamp
     formats:
     - uuuu-MM-dd'T'HH:mm:ssX
     - uuuu-MM-dd'T'HH:mm:ss.SSSX
@@ -51,6 +73,7 @@ processors:
     target_field: "event.end"
 - script:
     lang: painless
+    tag: painless_event_duration
     if: ctx?.event?.start != null && ctx?.event?.end != null
     source: >-
       ZonedDateTime start = ZonedDateTime.parse(ctx.event.start);
@@ -69,6 +92,7 @@ processors:
     if: ctx?.json?.ClientSSLCipher.toLowerCase() != 'none'
 - dissect:
     field: cloudflare.client.ssl.protocol
+    tag: dissect_tls_version
     pattern: "%{tls.version_protocol}v%{tls.version}"
     ignore_failure: true
     ignore_missing: true
@@ -78,6 +102,7 @@ processors:
 # URL Fields
 - uri_parts:
     field: json.ClientRequestURI
+    tag: uri_parts_client_request_uri
     ignore_failure: true
     if: ctx?.json?.ClientRequestURI != null
 - set:
@@ -107,6 +132,7 @@ processors:
     if: ctx?.url?.scheme == null
 - script:
     lang: painless
+    tag: painless_build_url
     description: This script builds the `url.full` field out of the available `url.*` parts.
     source: |
         def full = "";
@@ -131,14 +157,31 @@ processors:
     target_field: user_agent
     ignore_missing: true
 # Observer Fields
-- rename:
-    field: json.EdgeServerIP
-    target_field: observer.ip
-    ignore_missing: true
+- append:
+    field: observer.ip
+    value: '{{{json.EdgeServerIP}}}'
     if: ctx?.json?.EdgeServerIP != ''
 - geoip:
     field: observer.ip
+    tag: geoip_observer_ip
     target_field: observer.geo
+    ignore_missing: true
+# Cloudflare Bot Fields
+- convert:
+    field: json.BotScore
+    target_field: cloudflare.bot.score.value
+    if: ctx.json?.BotScore != ''
+    tag: convert_bot_score_value
+    type: long
+    ignore_missing: true
+    on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+- rename:
+    field: json.BotScoreSrc
+    target_field: cloudflare.bot.score.src
+    tag: rename_bot_score_src
     ignore_missing: true
 # Cloudflare Cache Fields
 - rename:
@@ -151,12 +194,14 @@ processors:
     ignore_missing: true
 - convert:
     field: json.CacheResponseBytes
+    tag: convert_cache_response_bytes
     target_field: cloudflare.cache.bytes
     type: long
     ignore_missing: true
     if: ctx?.json?.CacheResponseBytes != 0
 - convert:
     field: json.CacheResponseStatus
+    tag: convert_cache_response_status
     target_field: cloudflare.cache.status_code
     type: long
     ignore_missing: true
@@ -196,6 +241,7 @@ processors:
     ignore_missing: true
 - convert:
     field: json.EdgeResponseBytes
+    tag: convert_edge_response_bytes
     target_field: cloudflare.edge.response.bytes
     type: long
     ignore_missing: true
@@ -213,6 +259,7 @@ processors:
     ignore_missing: true
 - convert:
     field: json.EdgeResponseBodyBytes
+    tag: convert_edge_response_body_bytes
     target_field: cloudflare.edge.response.body.bytes
     type: long
     ignore_missing: true
@@ -280,6 +327,7 @@ processors:
     ignore_missing: true
 - date:
     field: json.OriginResponseHTTPExpires
+    tag: date_origin_response_http_expires
     formats:
     - EEE, dd MMM yyyy HH:mm:ss z
     timezone: UTC
@@ -288,6 +336,7 @@ processors:
     ignore_failure: true
 - date:
     field: json.OriginResponseHTTPLastModified
+    tag: date_origin_response_http_last_modified
     formats:
     - EEE, dd MMM yyyy HH:mm:ss z
     timezone: UTC
@@ -300,6 +349,7 @@ processors:
     ignore_missing: true
 - convert:
     field: json.OriginResponseTime
+    tag: convert_origin_response_time
     target_field: cloudflare.origin.response.time
     type: long
     ignore_missing: true
@@ -336,6 +386,7 @@ processors:
 # HTTP Fields
 - dissect:
     field: json.ClientRequestProtocol
+    tag: dissect_http_protocol
     pattern: "%{network.protocol}/%{http.version}"
     ignore_failure: true
 - set:
@@ -348,6 +399,7 @@ processors:
     ignore_empty_value: true
 - convert:
     field: json.ClientRequestBytes
+    tag: convert_http_request_bytes
     target_field: http.request.bytes
     type: long
     ignore_missing: true
@@ -375,12 +427,14 @@ processors:
     ignore_missing: true
 - convert:
     field: source.address
+    tag: convert_source_address
     target_field: source.ip
     type: ip
     ignore_missing: true
     ignore_failure: true
 - geoip:
     field: source.ip
+    tag: geoip_source_ip
     target_field: source.geo
     ignore_missing: true
 - rename:
@@ -390,6 +444,7 @@ processors:
     if: ctx?.source?.geo?.country_iso_code == null
 - geoip:
     database_file: GeoLite2-ASN.mmdb
+    tag: geoip_source_asn
     field: source.ip
     target_field: source.as
     properties:
@@ -415,6 +470,7 @@ processors:
     ignore_empty_value: true
 - convert:
     field: json.ClientSrcPort
+    tag: convert_source_port
     target_field: source.port
     type: long
     ignore_missing: true
@@ -433,6 +489,7 @@ processors:
     ignore_missing: true
 - convert:
     field: destination.address
+    tag: convert_destination_address
     target_field: destination.ip
     type: ip
     ignore_missing: true
@@ -445,7 +502,7 @@ processors:
 - set:
     field: server
     copy_from: destination
-- set:
+- append:
     field: event.category
     value: network
 - set:
@@ -455,7 +512,16 @@ processors:
     field: event.type
     value: denied
     allow_duplicates: false
-    if: ctx?.cloudflare?.firewall?.actions.contains('block')
+    if: ctx.cloudflare?.firewall?.actions != null && ctx.cloudflare?.firewall?.actions.contains('block')
+- append:
+    field: event.type
+    value: denied
+    allow_duplicates: false
+    if: ctx.cloudflare?.firewall?.actions != null && ctx.cloudflare?.firewall?.actions.contains('allow')
+- set:
+    field: event.action
+    copy_from: cloudflare.firewall.actions
+    if: ctx.cloudflare?.firewall?.actions != null
 # Network Fields
 - lowercase:
     field: network.protocol
@@ -466,10 +532,19 @@ processors:
     if: ctx?.network?.protocol != null && ctx?.network?.protocol == 'http'
 - script:
     lang: painless
+    tag: painless_network_bytes
     source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
     if: "ctx?.source?.bytes != null && ctx?.destination?.bytes != null"
     ignore_failure: true
+- remove:
+    field:
+      - json.EdgeServerIP
+    ignore_missing: true
 on_failure:
-- set:
+- append:
     field: error.message
-    value: "{{ _ingest.on_failure_message }}"
+    value: |-
+      Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+- set:
+    field: event.kind
+    value: pipeline_error

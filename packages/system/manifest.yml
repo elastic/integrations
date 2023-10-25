@@ -1,23 +1,22 @@
-format_version: 1.0.0
+format_version: 3.0.0
 name: system
 title: System
-version: 1.25.2
-license: basic
+version: 1.46.0
 description: Collect system logs and metrics from your servers with Elastic Agent.
 type: integration
 categories:
   - os_system
-release: ga
 conditions:
-  kibana.version: '^8.6.0'
+  kibana:
+    version: '^8.10.2'
 screenshots:
-  - src: /img/kibana-system.png
-    title: kibana system
-    size: 1220x852
+  - src: /img/system-overview.png
+    title: system overview
+    size: 3226x1956
     type: image/png
-  - src: /img/metricbeat_system_dashboard.png
-    title: metricbeat system dashboard
-    size: 2097x1933
+  - src: /img/host-overview.png
+    title: host overview
+    size: 3258x5698
     type: image/png
 icons:
   - src: /img/system.svg
@@ -33,8 +32,8 @@ policy_templates:
         title: Collect logs from System instances
         description: Collecting System auth and syslog logs
       - type: winlog
-        title: 'Collect events from the Windows event log'
-        description: 'Collecting events from Windows event log'
+        title: "Collect events from the Windows event log"
+        description: "Collecting events from Windows event log"
       - type: system/metrics
         title: Collect metrics from System instances
         description: Collecting System core, CPU, diskio, entropy, filesystem, fsstat, load, memory, network, Network Summary, process, Process Summary, raid, service, socket, Socket Summary, uptime and users metrics
@@ -57,6 +56,13 @@ policy_templates:
             show_user: true
             required: true
             default: https://server.example.com:8089
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            multi: false
+            required: false
+            show_user: false
+            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. The logs are part of agent's diagnostics dump under `logs/httpjson/http-request-trace-<InputInstanceId>.ndjson`. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
           - name: username
             type: text
             title: Splunk REST API Username
@@ -114,4 +120,5 @@ policy_templates:
               #    sxSmbIUfc2SGJGCJD4I=
               #    -----END CERTIFICATE-----
 owner:
-  github: elastic/elastic-agent-data-plane
+  github: elastic/obs-infraobs-integrations
+  type: elastic

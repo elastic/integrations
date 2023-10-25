@@ -4,7 +4,7 @@ streams:
   - input: http_endpoint
     template_path: http_endpoint.yml.hbs
     title: DNS logs
-    description: Collect DNS logs from Cloudflare.
+    description: Collect DNS logs from Cloudflare via HTTP endpoint.
     vars:
       - name: listen_port
         type: integer
@@ -13,15 +13,15 @@ streams:
         multi: false
         required: true
         show_user: true
-        default: 9561
+        default: 9560
       - name: url
         type: text
         title: URL
-        description: This option specifies which URL path to accept requests on. Defaults to /.
+        description: This option specifies which URL path to accept requests on. Defaults to /cloudflare_logpush/dns.
         multi: false
         required: false
         show_user: false
-        default: /
+        default: /cloudflare_logpush/dns
       - name: tags
         type: text
         title: Tags
@@ -30,7 +30,7 @@ streams:
         show_user: false
         default:
           - forwarded
-          - cloudflare_logpush_dns
+          - cloudflare_logpush-dns
       - name: preserve_original_event
         required: true
         show_user: true
@@ -56,10 +56,17 @@ streams:
         description: >-
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
   - input: aws-s3
-    title: DNS logs via S3 or SQS
-    description: Collect DNS logs from Cloudflare.
+    title: DNS logs
+    description: Collect DNS logs from Cloudflare via S3 or SQS.
     template_path: aws-s3.yml.hbs
     vars:
+      - name: queue_url_dns
+        type: text
+        title: "[DNS][SQS] Queue URL"
+        multi: false
+        required: false
+        show_user: true
+        description: "URL of the AWS SQS queue that messages will be received from. \nThis is only required if you want to collect logs via AWS SQS.\nThis is a dns data stream specific queue URL. This will override the global queue URL if provided."
       - name: bucket_list_prefix
         type: text
         title: '[S3] Bucket Prefix'
@@ -75,7 +82,7 @@ streams:
         required: false
         show_user: true
         default: 1m
-        description: Time interval for polling listing of the S3 bucket. NOTE:- Supported units for this parameter are h/m/s.
+        description: Time interval for polling listing of the S3 bucket. Supported units for this parameter are h/m/s.
       - name: number_of_workers
         type: integer
         title: '[S3] Number of Workers'
@@ -91,7 +98,7 @@ streams:
         required: false
         show_user: true
         default: 300s
-        description: The duration that the received messages are hidden from subsequent retrieve requests after being retrieved by a ReceiveMessage request. The maximum is 12 hours.
+        description: The duration that the received messages are hidden from subsequent retrieve requests after being retrieved by a ReceiveMessage request. The maximum is 12 hours. Valid time units are h, m, s.
       - name: api_timeout
         type: text
         title: '[SQS] API Timeout'
@@ -99,7 +106,7 @@ streams:
         required: false
         show_user: true
         default: 120s
-        description: The maximum duration of AWS API can take. The maximum is half of the visibility timeout value.
+        description: The maximum duration of AWS API can take. The maximum is half of the visibility timeout value. Valid time units are h, m, s.
       - name: max_number_of_messages
         type: integer
         title: '[SQS] Maximum Concurrent SQS Messages'
@@ -124,7 +131,7 @@ streams:
         show_user: false
         default:
           - forwarded
-          - cloudflare_logpush_dns
+          - cloudflare_logpush-dns
       - name: preserve_original_event
         required: true
         show_user: true
@@ -150,11 +157,11 @@ streams:
         description: >-
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
   - input: gcs
-    title: DNS logs via GCS
-    description: Collect DNS logs from Cloudflare.
+    title: DNS logs
+    description: Collect DNS logs from Cloudflare via GCS.
     template_path: gcs.yml.hbs
     vars:
-      - name: max_workers
+      - name: number_of_workers
         type: integer
         title: 'Maximum number of workers'
         multi: false
@@ -185,16 +192,11 @@ streams:
         required: false
         show_user: true
         default: 120s
-        description: Defines the maximum time that the sdk will wait for a bucket api response before timing out.
+        description: Defines the maximum time that the sdk will wait for a bucket api response before timing out. Valid time units are ns, us, ms, s, m, h.
       - name: buckets
         type: yaml
         title: Buckets
-        description: "This attribute contains the details about a specific bucket like, name, max_workers, poll, 
-        poll_interval and bucket_timeout. The attribute 'name' is specific to a bucket as it describes the bucket name, 
-        while the fields max_workers, poll, poll_interval and bucket_timeout can exist both at the bucket level and at the global level. 
-        If you have already defined the attributes globally, then you can only specify the name in this yaml config. If you want to override any specific 
-        attribute for a specific bucket, then, you can define it here. Any attribute defined in the yaml will override the global definitions.
-        Please see the relevant [Documentation](https://www.elastic.co/guide/en/beats/filebeat/8.5/filebeat-input-gcs.html#attrib-buckets) for further information.\n"
+        description: "This attribute contains the details about a specific bucket like, name, number_of_workers, poll, poll_interval and bucket_timeout. The attribute 'name' is specific to a bucket as it describes the bucket name, while the fields number_of_workers, poll, poll_interval and bucket_timeout can exist both at the bucket level and at the global level. If you have already defined the attributes globally, then you can only specify the name in this yaml config. If you want to override any specific attribute for a specific bucket, then, you can define it here. Any attribute defined in the yaml will override the global definitions. Please see the relevant [Documentation](https://www.elastic.co/guide/en/beats/filebeat/8.5/filebeat-input-gcs.html#attrib-buckets) for further information.\n"
         required: true
         show_user: true
         default: |
@@ -206,7 +208,7 @@ streams:
           # The config below is an example of how to override the global config.
 
           #- name: dns_logs_3
-          #  max_workers: 3
+          #  number_of_workers: 3
           #  poll: true
           #  poll_interval: 10s
           #  bucket_timeout: 30s
@@ -226,4 +228,4 @@ streams:
         show_user: false
         default:
           - forwarded
-          - cloudflare_logpush_audit
+          - cloudflare_logpush-dns

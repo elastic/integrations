@@ -1,12 +1,17 @@
 version: '2.3'
 services:
   mysql:
-    build: .
+    build:
+      context: .
+      args:
+        IMAGE: ${IMAGE:-mysql:8.0.13}
     ports:
       - 3306
     volumes:
       - ${SERVICE_LOGS_DIR}/mysql:/var/log/mysql
       - mysqldata:/var/lib/mysql
+    environment:
+      - IMAGE=${IMAGE:-mysql:8.0.13}
   mysql_is_ready:
     image: tianon/true
     depends_on:

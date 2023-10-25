@@ -33,6 +33,30 @@
       }
     },
     {
+      "script": {
+        "lang": "painless",
+        "if": "ctx?.mysql != null",
+        "source": "for (field in params.fields) { if (ctx.mysql[field] instanceof List) { def vals = ctx.mysql[field]; vals = vals.stream().distinct().collect(Collectors.toList()); if (vals.size() == 1) { ctx.mysql[field] = vals[0] } else { ctx.mysql[field] = vals } } }",
+        "params": {
+          "fields": [
+            "thread_id"
+          ]
+        }
+      }
+    },
+    {
+      "script": {
+        "lang": "painless",
+        "if": "ctx?.mysql?.slowlog != null",
+        "source": "for (field in params.fields) { if (ctx.mysql.slowlog[field] instanceof List) { def vals = ctx.mysql.slowlog[field]; vals = vals.stream().distinct().collect(Collectors.toList()); if (vals.size() == 1) { ctx.mysql.slowlog[field] = vals[0] } else { ctx.mysql.slowlog[field] = vals } } }",
+        "params": {
+          "fields": [
+            "schema"
+          ]
+        }
+      }
+    },
+    {
       "remove": {
         "field": "message"
       }

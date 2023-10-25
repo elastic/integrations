@@ -261,7 +261,7 @@ processors:
         field: param3
       source: |-
         def parseRawDetail(String raw) {
-            Pattern detailRegex = /^([^:(]+)\((.+)\)\:\s*(.+)?$/;
+            Pattern detailRegex = /^([^:(]+)\(([^)]+)\)\:\s*(.+)?$/;
             Pattern parameterBindingRegex = /name\=(.+);\s*value\=(.+)$/;
 
             def matcher = detailRegex.matcher(raw);
@@ -462,4 +462,4 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: "{{{ _ingest.on_failure_message }}}"

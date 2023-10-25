@@ -14,6 +14,13 @@ streams:
         show_user: true
         default: 8
         description: "Minimum confidence (0-10) to return indicator in feed"
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        multi: false
+        required: false
+        show_user: false
+        description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
       - name: cif_tags
         type: text
         title: Filter on indicator tags
@@ -51,7 +58,7 @@ streams:
         required: true
         show_user: true
         default: 60m
-        description: How frequently to pull the feed.
+        description: How frequently to pull the feed. Supported units for this parameter are h/m/s.
       # this doesn't currently work
       #- name: filters
       #  type: yaml
@@ -74,6 +81,7 @@ streams:
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
         multi: false
         required: false
         show_user: false

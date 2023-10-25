@@ -1,17 +1,19 @@
 name: google_workspace
 title: Google Workspace
-version: "2.5.0"
+version: "2.16.1"
 source:
   license: Elastic-2.0
 description: Collect logs from Google Workspace with Elastic Agent.
 type: integration
-format_version: 2.3.0
+format_version: "3.0.0"
 categories:
   - security
   - productivity_security
 conditions:
-  kibana.version: ^8.4.0
-  elastic.subscription: basic
+  kibana:
+    version: ^8.7.1
+  elastic:
+    subscription: basic
 screenshots:
   - src: /img/google-workspace-rules-screenshot.png
     title: Google Workspace Rules Screenshot
@@ -62,6 +64,13 @@ policy_templates:
             multi: false
             required: false
             show_user: true
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            multi: false
+            required: false
+            show_user: false
+            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
           - name: jwt_json
             type: text
             title: Jwt JSON
@@ -89,7 +98,7 @@ policy_templates:
           - name: http_client_timeout
             type: text
             title: Http Client Timeout
-            description: 'Duration of the time limit on HTTP requests. NOTE: Valid time units are ns, us, ms, s, m, h.'
+            description: 'Duration of the time limit on HTTP requests. Valid time units are ns, us, ms, s, m, h.'
             multi: false
             required: true
             show_user: true
@@ -114,3 +123,4 @@ policy_templates:
         description: "Collecting access_transparency, admin, alert, context_aware_access, device, drive, gcp, groups, group_enterprise, login, rules, saml, token and user accounts logs (input: httpjson)"
 owner:
   github: elastic/security-external-integrations
+  type: elastic

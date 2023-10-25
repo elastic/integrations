@@ -1,7 +1,12 @@
 {
     "attributes": {
-        "description": "This dashboard provides expanded alerts overview for Azure cloud",
-        "hits": 0,
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
+            "panelsJSON": "{\"676fd632-a9c1-46ed-829b-ca5b55817379\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"azure.subscription_id\",\"title\":\"Subscription\",\"id\":\"676fd632-a9c1-46ed-829b-ca5b55817379\",\"enhancements\":{}}}}"
+        },
+        "description": "This dashboard provides expanded alerts overview for Azure cloud.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [],
@@ -13,76 +18,357 @@
         },
         "optionsJSON": {
             "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "title": "Navigation Alerts"
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "fontSize": 10,
+                            "markdown": "### Azure Monitoring\n\n[Overview](#/dashboard/azure-41e84340-ec20-11e9-90ec-112a988266d5) | [Users](#/dashboard/azure-87095750-f05a-11e9-90ec-112a988266d5) | [**Alerts**](#/dashboard/azure-0f559cc0-f0d5-11e9-90ec-112a988266d5) ",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "Navigation Alerts [Logs Azure]",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
                 },
                 "gridData": {
                     "h": 4,
                     "i": "9d1a26e6-2ff0-4d3e-bab3-7bb3c50cd060",
-                    "w": 7,
+                    "w": 21,
                     "x": 0,
                     "y": 0
                 },
                 "panelIndex": "9d1a26e6-2ff0-4d3e-bab3-7bb3c50cd060",
-                "panelRefName": "panel_0",
                 "title": "Navigation Alerts",
-                "version": "7.4.0"
+                "type": "visualization",
+                "version": "8.6.2"
             },
             {
                 "embeddableConfig": {
-                    "title": "Subscriptions Filter"
-                },
-                "gridData": {
-                    "h": 4,
-                    "i": "676fd632-a9c1-46ed-829b-ca5b55817379",
-                    "w": 14,
-                    "x": 7,
-                    "y": 0
-                },
-                "panelIndex": "676fd632-a9c1-46ed-829b-ca5b55817379",
-                "panelRefName": "panel_1",
-                "title": "Subscriptions Filter",
-                "version": "7.4.0"
-            },
-            {
-                "embeddableConfig": {
-                    "title": "Alerts Overview"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-c0e8cd55-a662-40d4-87f4-a889776f3a75",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "c0e8cd55-a662-40d4-87f4-a889776f3a75": {
+                                            "columnOrder": [
+                                                "b72d2ce7-da41-406b-9a5a-ff07a74d439a",
+                                                "5e01096c-ce58-478d-856a-31852542c710",
+                                                "87204ef0-75a9-4d9b-9f9b-7442b1234b2a"
+                                            ],
+                                            "columns": {
+                                                "5e01096c-ce58-478d-856a-31852542c710": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "azure.activitylogs.result_type: \"Activated\""
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Activated",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "87204ef0-75a9-4d9b-9f9b-7442b1234b2a": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "azure.activitylogs.result_type: \"Resolved\" or azure.activitylogs.result_type: \"Succeeded\""
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Resolved/Succeeded",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "b72d2ce7-da41-406b-9a5a-ff07a74d439a": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": " ",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "data_stream.dataset :\"azure.activitylogs\" and (azure.activitylogs.category : \"Alert\" or azure.activitylogs.event_category: \"Alert\")"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "5e01096c-ce58-478d-856a-31852542c710",
+                                            "87204ef0-75a9-4d9b-9f9b-7442b1234b2a"
+                                        ],
+                                        "layerId": "c0e8cd55-a662-40d4-87f4-a889776f3a75",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "area",
+                                        "showGridlines": false,
+                                        "xAccessor": "b72d2ce7-da41-406b-9a5a-ff07a74d439a",
+                                        "yConfig": [
+                                            {
+                                                "color": "#54b399",
+                                                "forAccessor": "87204ef0-75a9-4d9b-9f9b-7442b1234b2a"
+                                            },
+                                            {
+                                                "color": "#d6bf57",
+                                                "forAccessor": "5e01096c-ce58-478d-856a-31852542c710"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "position": "right",
+                                    "showSingleSeries": false
+                                },
+                                "preferredSeriesType": "area",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "096b4eaa-072e-455f-befa-3076f71be12d",
+                    "i": "e5e45365-c81a-4f7f-b58b-8d2d781329a5",
                     "w": 27,
                     "x": 21,
                     "y": 0
                 },
-                "panelIndex": "096b4eaa-072e-455f-befa-3076f71be12d",
-                "panelRefName": "panel_2",
+                "panelIndex": "e5e45365-c81a-4f7f-b58b-8d2d781329a5",
                 "title": "Alerts Overview",
-                "version": "7.4.0"
+                "type": "lens",
+                "version": "8.6.2"
             },
             {
                 "embeddableConfig": {
-                    "title": "Alerts Count"
-                },
-                "gridData": {
-                    "h": 9,
-                    "i": "162fb43e-fff3-4f50-aa9b-a713418bd651",
-                    "w": 27,
-                    "x": 21,
-                    "y": 15
-                },
-                "panelIndex": "162fb43e-fff3-4f50-aa9b-a713418bd651",
-                "panelRefName": "panel_3",
-                "title": "Alerts Count",
-                "version": "7.4.0"
-            },
-            {
-                "embeddableConfig": {
-                    "title": "Alerts Heatmap"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-edee18c5-648c-4f00-8293-cd72ff805e62",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "edee18c5-648c-4f00-8293-cd72ff805e62": {
+                                            "columnOrder": [
+                                                "5aaf5c65-ba9f-4c98-a049-23758ac0943b",
+                                                "12b20199-3021-4ffc-8010-10cd8688ee21",
+                                                "03722365-3d88-43ad-bae5-922daf2a7a7d"
+                                            ],
+                                            "columns": {
+                                                "03722365-3d88-43ad-bae5-922daf2a7a7d": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "12b20199-3021-4ffc-8010-10cd8688ee21": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Resource Group",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "03722365-3d88-43ad-bae5-922daf2a7a7d",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.resource.group"
+                                                },
+                                                "5aaf5c65-ba9f-4c98-a049-23758ac0943b": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Provider",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "03722365-3d88-43ad-bae5-922daf2a7a7d",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.resource.provider"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "data_stream.dataset :\"azure.activitylogs\" and (azure.activitylogs.event_category : \"Alert\" or azure.activitylogs.category : \"Alert\" )"
+                            },
+                            "visualization": {
+                                "gridConfig": {
+                                    "isCellLabelVisible": false,
+                                    "isXAxisLabelVisible": true,
+                                    "isXAxisTitleVisible": true,
+                                    "isYAxisLabelVisible": true,
+                                    "isYAxisTitleVisible": true,
+                                    "type": "heatmap_grid"
+                                },
+                                "layerId": "edee18c5-648c-4f00-8293-cd72ff805e62",
+                                "layerType": "data",
+                                "legend": {
+                                    "position": "right",
+                                    "type": "heatmap_legend"
+                                },
+                                "palette": {
+                                    "accessor": "03722365-3d88-43ad-bae5-922daf2a7a7d",
+                                    "name": "status",
+                                    "params": {
+                                        "continuity": "above",
+                                        "maxSteps": 5,
+                                        "name": "status",
+                                        "progression": "fixed",
+                                        "rangeMax": null,
+                                        "rangeMin": 0,
+                                        "rangeType": "percent",
+                                        "reverse": false,
+                                        "stops": [
+                                            {
+                                                "color": "#209280",
+                                                "stop": 0
+                                            },
+                                            {
+                                                "color": "#54b399",
+                                                "stop": 20
+                                            },
+                                            {
+                                                "color": "#d6bf57",
+                                                "stop": 40
+                                            },
+                                            {
+                                                "color": "#e7664c",
+                                                "stop": 60
+                                            },
+                                            {
+                                                "color": "#cc5642",
+                                                "stop": 80
+                                            }
+                                        ]
+                                    },
+                                    "type": "palette"
+                                },
+                                "shape": "heatmap",
+                                "valueAccessor": "03722365-3d88-43ad-bae5-922daf2a7a7d",
+                                "xAccessor": "5aaf5c65-ba9f-4c98-a049-23758ac0943b",
+                                "yAccessor": "12b20199-3021-4ffc-8010-10cd8688ee21"
+                            }
+                        },
+                        "title": "Alerts Heatmap [Logs Azure]",
+                        "type": "lens",
+                        "visualizationType": "lnsHeatmap"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 20,
@@ -92,46 +378,147 @@
                     "y": 4
                 },
                 "panelIndex": "36fb5c08-80d9-4a1c-8fde-9c063381fdd8",
-                "panelRefName": "panel_4",
-                "version": "7.4.0"
+                "title": "Alerts Heatmap",
+                "type": "lens",
+                "version": "8.6.2"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-814d0ae5-ed18-49ad-942d-8cd942a901e9",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "814d0ae5-ed18-49ad-942d-8cd942a901e9": {
+                                            "columnOrder": [
+                                                "6674f0d1-fc76-4845-80fa-3797c6fcdcbc",
+                                                "36d81bee-ff41-4d97-aed5-80a4e06cebd9"
+                                            ],
+                                            "columns": {
+                                                "36d81bee-ff41-4d97-aed5-80a4e06cebd9": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Alerts",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "6674f0d1-fc76-4845-80fa-3797c6fcdcbc": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Filters",
+                                                    "operationType": "filters",
+                                                    "params": {
+                                                        "filters": [
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "azure.activitylogs.result_type : \"Activated\""
+                                                                },
+                                                                "label": "Activated"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "azure.activitylogs.result_type : \"Resolved\""
+                                                                },
+                                                                "label": "Resolved"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "azure.activitylogs.result_type : \"Succeeded\""
+                                                                },
+                                                                "label": "Succeeded"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "scale": "ordinal"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "data_stream.dataset :\"azure.activitylogs\" and (azure.activitylogs.event_category : \"Alert\" or azure.activitylogs.category : \"Alert\")"
+                            },
+                            "visualization": {
+                                "breakdownByAccessor": "6674f0d1-fc76-4845-80fa-3797c6fcdcbc",
+                                "layerId": "814d0ae5-ed18-49ad-942d-8cd942a901e9",
+                                "layerType": "data",
+                                "metricAccessor": "36d81bee-ff41-4d97-aed5-80a4e06cebd9"
+                            }
+                        },
+                        "title": "Alerts Count [Logs Azure]",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "162fb43e-fff3-4f50-aa9b-a713418bd651",
+                    "w": 27,
+                    "x": 21,
+                    "y": 15
+                },
+                "panelIndex": "162fb43e-fff3-4f50-aa9b-a713418bd651",
+                "title": "Alerts Count",
+                "type": "lens",
+                "version": "8.6.2"
             }
         ],
         "timeRestore": false,
         "title": "[Logs Azure] Alerts Overview",
         "version": 1
     },
+    "coreMigrationVersion": "8.6.2",
+    "created_at": "2023-06-08T07:33:56.370Z",
     "id": "azure-0f559cc0-f0d5-11e9-90ec-112a988266d5",
     "migrationVersion": {
-        "dashboard": "7.3.0"
+        "dashboard": "8.6.0"
     },
-    "namespaces": [
-        "default"
-    ],
     "references": [
         {
-            "id": "azure-46544960-f0d5-11e9-90ec-112a988266d5",
-            "name": "panel_0",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "e5e45365-c81a-4f7f-b58b-8d2d781329a5:indexpattern-datasource-layer-c0e8cd55-a662-40d4-87f4-a889776f3a75",
+            "type": "index-pattern"
         },
         {
-            "id": "azure-097d74d0-f044-11e9-90ec-112a988266d5",
-            "name": "panel_1",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "36fb5c08-80d9-4a1c-8fde-9c063381fdd8:indexpattern-datasource-layer-edee18c5-648c-4f00-8293-cd72ff805e62",
+            "type": "index-pattern"
         },
         {
-            "id": "azure-52c2a4e0-ec1f-11e9-90ec-112a988266d5",
-            "name": "panel_2",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "162fb43e-fff3-4f50-aa9b-a713418bd651:indexpattern-datasource-layer-814d0ae5-ed18-49ad-942d-8cd942a901e9",
+            "type": "index-pattern"
         },
         {
-            "id": "azure-f684a750-ec23-11e9-90ec-112a988266d5",
-            "name": "panel_3",
-            "type": "visualization"
-        },
-        {
-            "id": "azure-c704b050-f0de-11e9-90ec-112a988266d5",
-            "name": "panel_4",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "controlGroup_676fd632-a9c1-46ed-829b-ca5b55817379:optionsListDataView",
+            "type": "index-pattern"
         }
     ],
     "type": "dashboard"

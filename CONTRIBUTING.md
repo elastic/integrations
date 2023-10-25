@@ -12,3 +12,4 @@ This page is intended for contributors to the [Package Registry](https://github.
 * [Fine-tune integration](./docs/fine_tune_integration.md) - fill missing items, correct structure, review manifests
 * [Testing and validation](./docs/testing_and_validation.md) - run the Elastic stack, use test runners, review test coverage
 * [Tips for building integrations](./docs/tips_for_building_integrations.md) - see your local changes in Kibana, follow best practices
+* [Documentation Guidelines](./docs/documentation_guidelines.md) - guidelines for contributing to the docs, the Generic guidelines also has lots of docs tips

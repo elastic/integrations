@@ -81,3 +81,25 @@ Expects any number of columns. This mode generates a single event for each row.
 
 For more examples of response format pelase refer [here](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-sql.html)
 
+
+### Merge Results
+Merge multiple queries into a single event.
+
+Multiple queries will create multiple events, one for each query.  It may be preferable to create a single event by combining the metrics together in a single event.
+
+This feature can be enabled using the `merge_results` config.
+
+`merge_results` can merge queries having response format as "variable". 
+However, for queries with a response format as "table", a merge is possible only if each table query produces a single row.
+
+For example, if we have 2 queries as below for PostgreSQL:
+
+sql_queries:
+  - query: "SELECT blks_hit,blks_read FROM pg_stat_database LIMIT 1;"
+    response_format: table
+
+  - query: "SELECT checkpoints_timed,checkpoints_req FROM pg_stat_bgwriter;"
+    response_format: table
+
+The `merge_results` feature will create a combined event, where `blks_hit`, `blks_read`, `checkpoints_timed` and `checkpoints_req` are part of the same event.
+

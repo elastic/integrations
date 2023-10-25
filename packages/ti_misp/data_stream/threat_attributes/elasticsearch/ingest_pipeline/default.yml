@@ -6,16 +6,16 @@ processors:
   ####################
   - set:
       field: ecs.version
-      value: '8.4.0'
+      value: '8.10.0'
   - set:
       field: event.kind
       value: enrichment
   - set:
       field: event.category
-      value: threat
+      value: [threat]
   - set:
       field: event.type
-      value: indicator
+      value: [indicator]
 
   ######################
   # General ECS fields #
@@ -24,13 +24,20 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: 'ctx.event?.original == null'
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
       target_field: misp.attribute
   - fingerprint:
       fields:
-        - misp.attribute.Attribute.uuid
-        - misp.attribute.Attribute.Event.uuid
+        - misp.attribute.uuid
+        - misp.attribute.Event.uuid
       target_field: "_id"
       ignore_missing: true
   - set:
@@ -313,8 +320,16 @@ processors:
            .map(t -> t.replace('tlp:', '').toUpperCase())
            .collect(Collectors.toList());
 
-        ctx.tags = tags;
+        ctx.temp_tags = tags;
         ctx.threat.indicator.marking = [ 'tlp': tlpTags ];
+  - foreach:
+      field: temp_tags
+      processor:
+        append:
+          field: tags
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+      if: ctx.temp_tags != null
 
   #####################
   # Organization ECS Fields #
@@ -329,6 +344,10 @@ processors:
   #################
   - convert:
       field: misp.attribute.distribution
+      type: long
+      ignore_missing: true
+  - convert:
+      field: misp.object.distribution
       type: long
       ignore_missing: true
   - convert:
@@ -347,6 +366,27 @@ processors:
       field: misp.event.threat_level_id
       type: long
       ignore_missing: true
+
+  - foreach:
+      if: ctx.misp?.object?.attribute != null
+      field: misp.object.attribute
+      processor:
+        append:
+          field: debug_timestamp
+          value: '{{{_ingest._value.timestamp}}}'
+          if: ctx._ingest?._value != null
+
+  - foreach:
+      if: ctx.misp?.object?.attribute != null
+      field: misp.object.attribute
+      processor:
+        date:
+          field: _ingest._value.timestamp
+          target_field: _ingest._value.timestamp
+          tag: date_object_attribute_timestamp
+          formats:
+            - UNIX
+          ignore_failure: true
 
   ######################
   # Cleanup processors #
@@ -377,12 +417,20 @@ processors:
         handleMap(ctx);
   # Removing fields not needed anymore, either because its copied somewhere else, or is not relevant to this event
   - remove:
+      field: event.original
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
       field:
         - misp.attribute.value
       ignore_missing: true
-      if: ctx.threat?.indicator?.type != null
+      # Special-case email subject as it is potentially useful, but cannot yet be
+      # put in threat.indicator.email.subject as it is not an ECS field.
+      if: ctx.threat?.indicator?.type != null && ctx.misp?.attribute?.type != "email-subject"
   - remove:
       field:
+        - temp_tags
         - misp.attribute.timestamp
         - misp.tag
         - misp.event.analysis
@@ -391,6 +439,9 @@ processors:
       ignore_missing: true
 
 on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
   - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: '{{{ _ingest.on_failure_message }}}'

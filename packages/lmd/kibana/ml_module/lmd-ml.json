@@ -2,46 +2,32 @@
     "attributes": {
         "id": "lmd-ml",
         "title": "Lateral Movement Detection",
-        "description": "Detects lateral movement activity by identifying malicious file transfers in an environment.",
+        "description": "Detects lateral movement activity by identifying malicious file transfers and suspicious RDP sessions in an environment.",
         "type": "lmd",
         "logo": {
             "icon": "machineLearningApp"
         },
         "query": {
-            "bool": {
-            "filter": [
-              {
-                "term": {
-                  "event.category": "file"
-                }
-              },
-              {
-                "term": {
-                  "event.action": "creation"
-                }
-              },
-              {
-                "exists": {
-                  "field": "process.name"
-                }
-              },
-              {
-                "exists": {
-                  "field": "file.name"
-                }
-              }
-            ]
-          }
+          "bool": {"should": [
+            {"term": {
+              "event.category": "file"
+            }},
+            {
+              "bool": {"filter": [
+                {"exists": {"field": "session.start_time"}}
+              ]}
+            }
+          ]}
         },
         "jobs": [
             {
-                "id": "high-count-remote-file-transfer",
+                "id": "lmd_high_count_remote_file_transfer",
                 "config": {
                     "groups": [
                         "security",
                         "lateral_movement"
                     ],
-                    "description": "A machine learning job to detect unusually high file transfers to a remote host in the network.",
+                    "description": "Detects unusually high file transfers to a remote host in the network.",
                     "analysis_config": {
                         "bucket_span": "1h",
                         "detectors": [
@@ -69,13 +55,13 @@
                 }
             },
             {
-                "id": "high-file-size-remote-file-transfer",
+                "id": "lmd_high_file_size_remote_file_transfer",
                 "config": {
                     "groups": [
                         "security",
                         "lateral_movement"
                     ],
-                    "description": "A machine learning job to detect unusually high size of files shared with a remote host in the network.",
+                    "description": "Detects unusually high size of files shared with a remote host in the network.",
                     "analysis_config": {
                         "bucket_span": "1h",
                         "detectors": [
@@ -103,13 +89,13 @@
                 }
             },
             {
-                "id": "rare-file-extension-remote-transfer",
+                "id": "lmd_rare_file_extension_remote_transfer",
                 "config": {
                     "groups": [
                         "security",
                         "lateral_movement"
                     ],
-                    "description": "A machine learning job to detect rare file extensions shared with a remote host in the network.",
+                    "description": "Detects rare file extensions shared with a remote host in the network.",
                     "analysis_config": {
                         "bucket_span": "15m",
                         "detectors": [
@@ -137,13 +123,13 @@
                 }
             },
             {
-                "id": "rare-file-path-remote-transfer",
+                "id": "lmd_rare_file_path_remote_transfer",
                 "config": {
                     "groups": [
                         "security",
                         "lateral_movement"
                     ],
-                    "description": "A machine learning job to detect unusual folders and directories on which a file is transferred.",
+                    "description": "Detects unusual folders and directories on which a file is transferred.",
                     "analysis_config": {
                         "bucket_span": "15m",
                         "detectors": [
@@ -169,17 +155,293 @@
                         "created_by": "ml-module-lmd"
                     }
                 }
+            },
+          {
+                "id": "lmd_high_mean_rdp_session_duration",
+                "config": {
+                    "groups": [
+                        "security",
+                        "lateral_movement"
+                    ],
+                    "description": "Detects unusually high mean of RDP session duration.",
+                    "analysis_config": {
+                        "bucket_span": "6h",
+                        "detectors": [
+                              {
+                                "detector_description": "high_mean(session.duration) partitionfield=\"source.ip\"",
+                                "function": "high_mean",
+                                "field_name": "session.duration",
+                                "partition_field_name": "source.ip",
+                                "detector_index": 0
+                              },
+                              {
+                                "detector_description": "high_mean(session.duration) partitionfield=\"destination.ip\"",
+                                "function": "high_mean",
+                                "field_name": "session.duration",
+                                "partition_field_name": "destination.ip",
+                                "detector_index": 1
+                              }
+                            ],
+                        "influencers": [
+                            "host.name",
+                            "user.name",
+                            "source.ip",
+                            "destination.ip"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "session.start_time",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-lmd"
+                    }
+                }
+            },
+          {
+                "id": "lmd_high_var_rdp_session_duration",
+                "config": {
+                    "groups": [
+                        "security",
+                        "lateral_movement"
+                    ],
+                    "description": "Detects unusually high variance in RDP session duration.",
+                    "analysis_config": {
+                        "bucket_span": "6h",
+                        "detectors": [
+                             {
+                                "detector_description": "high_varp(session.duration) partitionfield=\"source.ip\"",
+                                "function": "high_varp",
+                                "field_name": "session.duration",
+                                "partition_field_name": "source.ip",
+                                "detector_index": 0
+                              },
+                              {
+                                "detector_description": "high_varp(session.duration) partitionfield=\"destination.ip\"",
+                                "function": "high_varp",
+                                "field_name": "session.duration",
+                                "partition_field_name": "destination.ip",
+                                "detector_index": 1
+                              }
+                            ],
+                        "influencers": [
+                            "host.name",
+                            "user.name",
+                            "source.ip",
+                            "destination.ip"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "session.start_time",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-lmd"
+                    }
+                }
+            },
+          {
+                "id": "lmd_high_sum_rdp_number_of_processes",
+                "config": {
+                    "groups": [
+                        "security",
+                        "lateral_movement"
+                    ],
+                    "description": "Detects unusually high number of processes started in a single RDP session.",
+                    "analysis_config": {
+                        "bucket_span": "6h",
+                        "detectors": [
+                              {
+                                "detector_description": "high_sum(number_processes_per_session) partitionfield=\"source.ip\"",
+                                "function": "high_sum",
+                                "field_name": "number_processes_per_session",
+                                "partition_field_name": "source.ip",
+                                "detector_index": 0
+                              },
+                              {
+                                "detector_description": "high_sum(number_processes_per_session) partitionfield=\"destination.ip\"",
+                                "function": "high_sum",
+                                "field_name": "number_processes_per_session",
+                                "partition_field_name": "destination.ip",
+                                "detector_index": 1
+                              }
+                            ],
+                        "influencers": [
+                            "host.name",
+                            "user.name",
+                            "source.ip",
+                            "destination.ip"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "session.start_time",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-lmd"
+                    }
+                }
+            },
+          {
+                "id": "lmd_unusual_time_weekday_rdp_session_start",
+                "config": {
+                    "groups": [
+                        "security",
+                        "lateral_movement"
+                    ],
+                    "description": "Detects an RDP session started at an usual time or weekday.",
+                    "analysis_config": {
+                        "bucket_span": "6h",
+                        "detectors": [
+                          {
+                            "detector_description": "time_of_day partitionfield=\"source.ip\"",
+                            "function": "time_of_day",
+                            "partition_field_name": "source.ip",
+                            "detector_index": 0
+                          },
+                          {
+                            "detector_description": "time_of_week partitionfield=\"source.ip\"",
+                            "function": "time_of_week",
+                            "partition_field_name": "source.ip",
+                            "detector_index": 1
+                          }
+                            ],
+                        "influencers": [
+                            "host.name",
+                            "user.name",
+                            "destination.ip",
+                            "source.ip"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "session.start_time",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-lmd"
+                    }
+                }
+            },
+          {
+                "id": "lmd_high_rdp_distinct_count_source_ip_for_destination",
+                "config": {
+                    "groups": [
+                        "security",
+                        "lateral_movement"
+                    ],
+                    "description": "Detects a high count of source IPs making an RDP connection with a single destination IP.",
+                    "analysis_config": {
+                        "bucket_span": "6h",
+                        "detectors": [
+                          {
+                            "detector_description": "high_distinct_count(\"source.ip\") partitionfield=\"destination.ip\"",
+                            "function": "high_distinct_count",
+                            "field_name": "source.ip",
+                            "partition_field_name": "destination.ip",
+                            "detector_index": 0
+                          }
+                            ],
+                        "influencers": [
+                            "host.name",
+                            "user.name",
+                            "destination.ip"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "session.start_time",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-lmd"
+                    }
+                }
+            },
+          {
+                "id": "lmd_high_rdp_distinct_count_destination_ip_for_source",
+                "config": {
+                    "groups": [
+                        "security",
+                        "lateral_movement"
+                    ],
+                    "description": "Detects a high count of destination IPs establishing an RDP connection with a single source IP.",
+                    "analysis_config": {
+                        "bucket_span": "6h",
+                        "detectors": [
+                              {
+                                "detector_description": "high_distinct_count(\"destination.ip\") partitionfield=\"source.ip\"",
+                                "function": "high_distinct_count",
+                                "field_name": "destination.ip",
+                                "partition_field_name": "source.ip",
+                                "detector_index": 0
+                              }
+                            ],
+                        "influencers": [
+                            "host.name",
+                            "user.name",
+                            "source.ip"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "session.start_time",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-lmd"
+                    }
+                }
+            },
+           {
+             "id": "lmd_high_mean_rdp_process_args",
+                "config": {
+                    "groups": [
+                        "security",
+                        "lateral_movement"
+                    ],
+                    "description": "Detects unusually high number of process arguments in an RDP session.",
+                    "analysis_config": {
+                        "bucket_span": "6h",
+                        "detectors": [
+                            {
+                              "detector_description": "high_mean(total_length_process_args) partitionfield=\"source.ip\"",
+                              "function": "high_mean",
+                              "field_name": "total_length_process_args",
+                              "partition_field_name": "source.ip",
+                              "detector_index": 0
+                            },
+                            {
+                              "detector_description": "high_mean(total_length_process_args) partitionfield=\"destination.ip\"",
+                              "function": "high_mean",
+                              "field_name": "total_length_process_args",
+                              "partition_field_name": "destination.ip",
+                              "detector_index": 1
+                            }
+                            ],
+                        "influencers": [
+                            "host.name",
+                            "user.name",
+                            "source.ip",
+                            "destination.ip"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "session.start_time",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-lmd"
+                    }
+                }
             }
         ],
         "datafeeds": [
             {
-                "id": "datafeed-high-count-remote-file-transfer",
-                "job_id": "high-count-remote-file-transfer",
+                "id": "datafeed-lmd_high_count_remote_file_transfer",
+                "job_id": "lmd_high_count_remote_file_transfer",
                 "config": {
                     "indices": [
                         "INDEX_PATTERN_NAME"
                     ],
-                    "job_id": "high-count-remote-file-transfer",
+                    "job_id": "lmd_high_count_remote_file_transfer",
                     "query": {
                        "bool": {
                         "must_not": [
@@ -231,13 +493,13 @@
                 }
             },
             {
-                "id": "datafeed-high-file-size-remote-file-transfer",
-                "job_id": "high-file-size-remote-file-transfer",
+                "id": "datafeed-lmd_high_file_size_remote_file_transfer",
+                "job_id": "lmd_high_file_size_remote_file_transfer",
                 "config": {
                     "indices": [
                         "INDEX_PATTERN_NAME"
                     ],
-                    "job_id": "high-file-size-remote-file-transfer",
+                    "job_id": "lmd_high_file_size_remote_file_transfer",
                     "query": {
                         "bool": {
                         "must_not": [
@@ -289,13 +551,13 @@
                 }
             },
             {
-                "id": "datafeed-rare-file-extension-remote-transfer",
-                "job_id": "rare-file-extension-remote-transfer",
+                "id": "datafeed-lmd_rare_file_extension_remote_transfer",
+                "job_id": "lmd_rare_file_extension_remote_transfer",
                 "config": {
                     "indices": [
                         "INDEX_PATTERN_NAME"
                     ],
-                    "job_id": "rare-file-extension-remote-transfer",
+                    "job_id": "lmd_rare_file_extension_remote_transfer",
                     "query": {
                         "bool": {
                         "must_not": [
@@ -346,14 +608,231 @@
                     }
                 }
             },
-            {
-                "id": "datafeed-rare-file-path-remote-transfer",
-                "job_id": "rare-file-path-remote-transfer",
+          {
+                "id": "datafeed-lmd_high_mean_rdp_session_duration",
+                "job_id": "lmd_high_mean_rdp_session_duration",
                 "config": {
                     "indices": [
                         "INDEX_PATTERN_NAME"
                     ],
-                    "job_id": "rare-file-path-remote-transfer",
+                    "job_id": "lmd_high_mean_rdp_session_duration",
+                    "query": {
+                    "bool": {
+                      "filter": [
+                        {
+                          "exists": {
+                            "field": "source.ip"
+                          }
+                        },
+                        {
+                          "exists": {
+                            "field": "destination.ip"
+                          }
+                        },
+                        {
+                          "exists": {
+                            "field": "session.start_time"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+            },
+          {
+                "id": "datafeed-lmd_high_var_rdp_session_duration",
+                "job_id": "lmd_high_var_rdp_session_duration",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "lmd_high_var_rdp_session_duration",
+                    "query": {
+                    "bool": {
+                      "filter": [
+                        {
+                          "exists": {
+                            "field": "source.ip"
+                          }
+                        },
+                        {
+                          "exists": {
+                            "field": "destination.ip"
+                          }
+                        },
+                        {
+                          "exists": {
+                            "field": "session.start_time"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+            },
+          {
+                "id": "datafeed-lmd_high_sum_rdp_number_of_processes",
+                "job_id": "lmd_high_sum_rdp_number_of_processes",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "lmd_high_sum_rdp_number_of_processes",
+                    "query": {
+                    "bool": {
+                      "filter": [
+                        {
+                          "exists": {
+                            "field": "source.ip"
+                          }
+                        },
+                        {
+                          "exists": {
+                            "field": "destination.ip"
+                          }
+                        },
+                        {
+                          "exists": {
+                            "field": "session.start_time"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+            },
+          {
+                "id": "datafeed-lmd_unusual_time_weekday_rdp_session_start",
+                "job_id": "lmd_unusual_time_weekday_rdp_session_start",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "lmd_unusual_time_weekday_rdp_session_start",
+                    "query": {
+                    "bool": {
+                      "filter": [
+                        {
+                          "exists": {
+                            "field": "source.ip"
+                          }
+                        },
+                        {
+                          "exists": {
+                            "field": "destination.ip"
+                          }
+                        },
+                        {
+                          "exists": {
+                            "field": "session.start_time"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+            },
+          {
+                "id": "datafeed-lmd_high_rdp_distinct_count_source_ip_for_destination",
+                "job_id": "lmd_high_rdp_distinct_count_source_ip_for_destination",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "lmd_high_rdp_distinct_count_source_ip_for_destination",
+                    "query": {
+                    "bool": {
+                      "filter": [
+                        {
+                          "exists": {
+                            "field": "source.ip"
+                          }
+                        },
+                        {
+                          "exists": {
+                            "field": "destination.ip"
+                          }
+                        },
+                        {
+                          "exists": {
+                            "field": "session.start_time"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+            },
+          {
+                "id": "datafeed-lmd_high_rdp_distinct_count_destination_ip_for_source",
+                "job_id": "lmd_high_rdp_distinct_count_destination_ip_for_source",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "lmd_high_rdp_distinct_count_destination_ip_for_source",
+                    "query": {
+                    "bool": {
+                      "filter": [
+                        {
+                          "exists": {
+                            "field": "source.ip"
+                          }
+                        },
+                        {
+                          "exists": {
+                            "field": "destination.ip"
+                          }
+                        },
+                        {
+                          "exists": {
+                            "field": "session.start_time"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+            },
+          {
+                "id": "datafeed-lmd_high_mean_rdp_process_args",
+                "job_id": "lmd_high_mean_rdp_process_args",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "lmd_high_mean_rdp_process_args",
+                    "query": {
+                    "bool": {
+                      "filter": [
+                        {
+                          "exists": {
+                            "field": "source.ip"
+                          }
+                        },
+                        {
+                          "exists": {
+                            "field": "destination.ip"
+                          }
+                        },
+                        {
+                          "exists": {
+                            "field": "session.start_time"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+            },
+            {
+                "id": "datafeed-lmd_rare_file_path_remote_transfer",
+                "job_id": "lmd_rare_file_path_remote_transfer",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "lmd_rare_file_path_remote_transfer",
                     "query": {
                         "bool": {
                     "must_not": [

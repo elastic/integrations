@@ -1,18 +1,28 @@
-format_version: 2.0.0
+format_version: "3.0.0"
 name: ceph
 title: Ceph
-version: 0.8.0
+version: "1.1.0"
 description: This Elastic integration collects metrics from Ceph instance.
 type: integration
 categories:
   - datastore
   - os_system
 conditions:
-  kibana.version: ^8.5.1
-  elastic.subscription: basic
+  kibana:
+    version: ^8.7.1
+  elastic:
+    subscription: basic
 screenshots:
-  - src: /img/ceph-overview-dashboard.png
-    title: Ceph overview dashboard
+  - src: /img/ceph-overview-dashboard-cluster-metrics.png
+    title: Ceph cluster metrics overview
+    size: 600x600
+    type: image/png
+  - src: /img/ceph-overview-dashboard-pool-metrics.png
+    title: Ceph pool metrics overview
+    size: 600x600
+    type: image/png
+  - src: /img/ceph-overview-dashboard-osd-status.png
+    title: Ceph OSD status overview
     size: 600x600
     type: image/png
 icons:
@@ -36,6 +46,13 @@ policy_templates:
             show_user: true
             required: true
             default: https://localhost:8003
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            multi: false
+            required: false
+            show_user: false
+            description: The request tracer logs requests and responses to the agent's local filesystem for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
           - name: api_user
             type: text
             title: API User
@@ -80,4 +97,5 @@ policy_templates:
               #    sxSmbIUfc2SGJGCJD4I=
               #    -----END CERTIFICATE-----
 owner:
-  github: elastic/obs-service-integrations
+  github: elastic/obs-infraobs-integrations
+  type: elastic

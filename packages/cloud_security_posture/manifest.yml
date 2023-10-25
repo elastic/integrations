@@ -1,7 +1,7 @@
-format_version: 2.3.0
+format_version: 3.0.0
 name: cloud_security_posture
 title: "Security Posture Management"
-version: "1.3.0-preview2"
+version: "1.6.4"
 source:
   license: "Elastic-2.0"
 description: "Identify & remediate configuration risks in your Cloud infrastructure"
@@ -11,8 +11,12 @@ categories:
   - kubernetes
   - security
 conditions:
-  kibana.version: "^8.8.0"
-  elastic.subscription: basic
+  kibana:
+    version: "^8.11.0"
+  elastic:
+    subscription: basic
+    capabilities:
+      - security
 screenshots:
   - src: /img/dashboard.png
     title: Dashboard page
@@ -54,12 +58,11 @@ vars:
     required: true
     show_user: false
     description: Chosen deployment type (aws/gcp/azure/eks/k8s)
-# IMPORTANT: set all templates as not-multiple - we do no support multiple: true
 policy_templates:
   - name: kspm
     title: Kubernetes Security Posture Management (KSPM)
     description: Identify & remediate configuration risks in Kubernetes
-    multiple: false
+    multiple: true
     categories:
       - containers
       - kubernetes
@@ -87,11 +90,12 @@ policy_templates:
   - name: cspm
     title: Cloud Security Posture Management (CSPM)
     description: Identify & remediate configuration risks in the Cloud services you leverage
-    multiple: false
+    multiple: true
     categories:
       - security
       - cloud
       - aws
+      - google_cloud
     icons:
       - src: /img/logo_cspm.svg
         title: CSPM logo
@@ -103,16 +107,44 @@ policy_templates:
       - type: cloudbeat/cis_aws
         title: Amazon Web Services
         description: CIS Benchmark for Amazon Web Services Foundations
+        vars:
+          - name: cloud_formation_template
+            type: text
+            title: CloudFormation Template
+            multi: false
+            required: true
+            show_user: false
+            description: Template URL to Cloud Formation Quick Create Stack
+            # ACCOUNT_TYPE value should be either "single-account" or "organization-account"
+            default: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-cspm-ACCOUNT_TYPE-8.11.0.yml&stackName=Elastic-Cloud-Security-Posture-Management&param_EnrollmentToken=FLEET_ENROLLMENT_TOKEN&param_FleetUrl=FLEET_URL&param_ElasticAgentVersion=KIBANA_VERSION&param_ElasticArtifactServer=https://artifacts.elastic.co/downloads/beats/elastic-agent
       - type: cloudbeat/cis_gcp
         title: GCP
-        description: CIS Benchmark for Google Cloud Platform Foundation
+        description: CIS Benchmark for Google Cloud Platform Foundations
+        vars:
+          - name: cloud_shell_url
+            type: text
+            title: CloudShell URL
+            multi: false
+            required: true
+            show_user: false
+            description: A URL to CloudShell for creating a new deployment
+            default: https://shell.cloud.google.com/cloudshell/?ephemeral=true&cloudshell_git_repo=https%3A%2F%2Fgithub.com%2Felastic%2Fcloudbeat&cloudshell_git_branch=8.11&cloudshell_workspace=deploy%2Fdeployment-manager&show=terminal
       - type: cloudbeat/cis_azure
         title: Azure
         description: CIS Benchmark for Microsoft Azure Foundations
+        vars:
+          - name: arm_template_url
+            type: text
+            title: ARM Template URL
+            multi: false
+            required: true
+            show_user: false
+            description: A URL to the ARM Template for creating a new deployment
+            default: https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fcloudbeat%2F8.11%2Fdeploy%2Fazure%2FazureARMTemplate.json
   - name: vuln_mgmt
-    title: Vulnerability Management
-    description: Scan for cloud resources vulnerabilities
-    multiple: false
+    title: Cloud Native Vulnerability Management (CNVM)
+    description: Scan for cloud workload vulnerabilities
+    multiple: true
     categories:
       - security
       - cloud
@@ -121,20 +153,30 @@ policy_templates:
         title: Vulnerability Management logo
         size: 32x32
         type: image/svg+xml
+    screenshots:
+      - src: /img/cnvm_vulnerabilities_table.png
+        title: Vulnerabilities Table
+        size: 3420x1912
+        type: image/png
+      - src: /img/cnvm_vulnerabilities_flyout.png
+        title: Vulnerability
+        size: 3452x1926
+        type: image/png
     data_streams:
       - vulnerabilities
     inputs:
       - type: cloudbeat/vuln_mgmt_aws
         title: Amazon Web Services Vulnerability Management
         description: Vulnerability scan over running resources
-    vars:
-    - name: cloud_formation_template
-      type: text
-      title: Cloud Formation Template
-      multi: false
-      required: true
-      show_user: false
-      description: S3 URL to the Cloud Formation Template
-      default: https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/vuln-mgmt/cloudformation-8.8.0-2023-03-28-15-10-59.yml
+        vars:
+          - name: cloud_formation_template
+            type: text
+            title: CloudFormation Template
+            multi: false
+            required: true
+            show_user: false
+            description: Template URL to Cloud Formation Quick Create Stack
+            default: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-cnvm-8.11.0.yml&stackName=Elastic-Vulnerability-Management&param_EnrollmentToken=FLEET_ENROLLMENT_TOKEN&param_FleetUrl=FLEET_URL&param_ElasticAgentVersion=KIBANA_VERSION&param_ElasticArtifactServer=https://artifacts.elastic.co/downloads/beats/elastic-agent
 owner:
   github: elastic/cloud-security-posture
+  type: elastic

@@ -1,5 +1,8 @@
 config_version: 2
 interval: {{period}}
+{{#if enable_request_tracer}}
+request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+{{/if}}
 {{#if ssl}}
 request.ssl: {{ssl}}
 {{/if}}
@@ -18,7 +21,11 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if processors}}
 processors:
+- add_fields:
+    target: service
+    fields:
+      address: {{hostname}}
+{{#if processors}}
 {{processors}}
 {{/if}}

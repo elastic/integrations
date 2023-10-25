@@ -25,7 +25,11 @@ processors:
       if: ctx.source?.address != null
   - append:
       field: event.type
-      value: error
+      value: info
+      allow_duplicates: false
+  - append:
+      field: event.outcome
+      value: failure
       allow_duplicates: false
       if: ctx.message.toLowerCase().contains('error') || ctx.message.toLowerCase().contains('not auth') 
   - append:
@@ -41,6 +45,9 @@ processors:
       field: network.protocol
       value: openvpn
 on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
   - append:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: '{{{ _ingest.on_failure_message }}}'

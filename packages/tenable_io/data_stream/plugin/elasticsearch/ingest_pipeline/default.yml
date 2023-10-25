@@ -1,15 +1,15 @@
 ---
-description: Pipeline for processing Tenable.io plugin logs.
+description: Pipeline for processing Tenable Vulnerability Management plugin logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.7.0'
+      value: '8.10.0'
   - set:
       field: event.type
       value: [info]
   - set:
       field: event.kind
-      value: event
+      value: state
   - set:
       field: vulnerability.scanner.vendor
       value: Tenable
@@ -22,13 +22,6 @@ processors:
       target_field: json
   - drop:
       if: ctx.json?.data?.plugin_details != null && ctx.json.data.plugin_details.isEmpty()
-  - fingerprint:
-      fields:
-        - json.id
-        - json.attributes.plugin_modification_date
-        - json.attributes.plugin_publication_date
-      target_field: _id
-      ignore_missing: true
   - convert:
       field: json.id
       target_field: tenable_io.plugin.id
@@ -576,16 +569,14 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
-  - append:
+  - set:
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
-  - append:
+  - set:
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false

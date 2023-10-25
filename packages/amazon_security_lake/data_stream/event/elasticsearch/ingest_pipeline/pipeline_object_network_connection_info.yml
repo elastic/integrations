@@ -1,0 +1,105 @@
+---
+description: Pipeline for processing Network Connection object.
+# Network Connection object docs: https://schema.ocsf.io/1.0.0-rc.3/objects/network_connection_info
+processors:
+  - convert:
+      field: ocsf.connection_info.boundary_id
+      tag: convert_connection_info_boundary_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.connection_info.direction_id
+      tag: convert_connection_info_direction_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.connection_info.protocol_ver_id
+      tag: convert_connection_info_protocol_ver_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.connection_info.protocol_num
+      tag: convert_connection_info_protocol_num_to_long
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.connection_info.tcp_flags
+      tag: convert_connection_info_tcp_flags_to_long
+      type: long
+      ignore_missing: true
+      if: ctx.ocsf?.connection_info?.tcp_flags != ''
+      on_failure:
+        - remove:
+            field: ocsf.connection_info.tcp_flags
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - lowercase:
+      field: ocsf.connection_info.protocol_ver
+      tag: lowercase_ocsf_connection_info_protocol_ver
+      target_field: network.type
+      ignore_missing: true
+      if: ctx.ocsf?.connection_info?.protocol_ver != ''
+      on_failure:
+        - remove:
+            field: ocsf.connection_info.protocol_ver
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - lowercase:
+      field: ocsf.connection_info.protocol_name
+      tag: lowercase_ocsf_connection_info_protocol_name
+      target_field: network.transport
+      ignore_missing: true
+      if: ctx.ocsf?.connection_info?.protocol_name != ''
+      on_failure:
+        - remove:
+            field: ocsf.connection_info.protocol_name
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: network.iana_number
+      tag: set_network_iana_number
+      copy_from: ocsf.connection_info.protocol_num
+      ignore_empty_value: true
+  - append:
+      field: network.direction
+      tag: append_connection_info_boundary_into_network_direction
+      value: internal
+      allow_duplicates: false
+      if: ctx.ocsf?.connection_info?.boundary != null && ctx.ocsf.connection_info.boundary == 'Internal'
+  - append:
+      field: network.direction
+      tag: append_connection_info_boundary_into_network_direction
+      value: external
+      allow_duplicates: false
+      if: ctx.ocsf?.connection_info?.boundary != null && ctx.ocsf.connection_info.boundary == 'External'
+  - append:
+      field: network.direction
+      tag: append_connection_info_direction_into_network_direction
+      value: inbound
+      allow_duplicates: false
+      if: ctx.ocsf?.connection_info?.direction != null && ctx.ocsf.connection_info.direction == 'Inbound'
+  - append:
+      field: network.direction
+      tag: append_connection_info_direction_into_network_direction
+      value: outbound
+      allow_duplicates: false
+      if: ctx.ocsf?.connection_info?.direction != null && ctx.ocsf.connection_info.direction == 'Outbound'
+  - append:
+      field: network.direction
+      tag: append_unknown_value_into_network_direction
+      value: unknown
+      allow_duplicates: false
+      if: (ctx.ocsf?.connection_info?.direction != null && ctx.ocsf.connection_info.direction == 'Unknown') || (ctx.ocsf?.connection_info?.boundary != null && ctx.ocsf.connection_info.boundary == 'Unknown')
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

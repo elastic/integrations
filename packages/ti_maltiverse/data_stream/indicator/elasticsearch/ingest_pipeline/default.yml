@@ -1,0 +1,307 @@
+---
+description: Pipeline for processing Maltiverse Indicators
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: maltiverse
+      ignore_failure: true
+  - set:
+      field: event.kind
+      value: enrichment
+  - append:
+      field: event.category
+      value: threat
+  - append:
+      field: event.type
+      value: indicator
+# Maltiverse specific
+  - set:
+      field: threat.indicator.marking.tlp
+      value: WHITE
+# MV to ECS conversion
+  - date:
+      field: maltiverse.blacklist.last_seen
+      target_field: "@timestamp"
+      formats: ["yyyy-MM-dd HH:mm:ss"]
+## Convert types Maltiverse to ECS types
+  - set:
+      field: threat.indicator.type
+      value: ipv4-addr
+      if: 'ctx.maltiverse?.type == "ip"'
+  - set:
+      field: threat.indicator.type
+      value: domain-name
+      if: 'ctx.maltiverse?.type == "hostname"'
+  - set:
+      field: threat.indicator.type
+      value: url
+      if: 'ctx.maltiverse?.type == "url"'
+  - set:
+      field: threat.indicator.type
+      value: file
+      if: 'ctx.maltiverse?.type == "sample"'
+  - foreach:
+      field: maltiverse.tag
+      ignore_missing: true
+      processor:
+        append:
+          field: tags
+          value: "{{{ _ingest._value }}}"
+      if: 'ctx.maltiverse?.tag != null'
+  - rename:
+      field: _conf.feed
+      target_field: maltiverse.feed
+      ignore_missing: true
+  - set:
+      field: threat.feed.reference
+      value: "https://maltiverse.com/feed/{{ maltiverse.feed }}"
+      if: ctx.maltiverse?.feed != null
+## blacklist fields
+  - date:
+      field: maltiverse.blacklist.first_seen
+      target_field: maltiverse.blacklist.first_seen
+      formats: ["yyyy-MM-dd HH:mm:ss"]
+      if: 'ctx.maltiverse?.blacklist?.first_seen != null'
+  - set:
+      field: threat.indicator.first_seen
+      copy_from: maltiverse.blacklist.first_seen
+  - date:
+      field: maltiverse.blacklist.last_seen
+      target_field: maltiverse.blacklist.last_seen
+      formats: ["yyyy-MM-dd HH:mm:ss"]
+      if: 'ctx.maltiverse?.blacklist?.last_seen != null'
+  - set:
+      field: threat.indicator.last_seen
+      copy_from: maltiverse.blacklist.last_seen
+  - rename:
+      field: maltiverse.blacklist.count
+      target_field: threat.indicator.sightings
+      ignore_missing: true
+      if: 'ctx.maltiverse?.blacklist?.count != null'
+  - set:
+      field: threat.indicator.description
+      copy_from: maltiverse.blacklist.description
+      if: 'ctx.maltiverse?.blacklist?.description != null'
+  - rename:
+      field: maltiverse.blacklist.source
+      target_field: threat.indicator.provider
+      ignore_missing: true
+      if: 'ctx.maltiverse?.blacklist?.source != null'
+
+  - date:
+      field: maltiverse.asn_date
+      target_field: maltiverse.asn_date
+      formats: ["yyyy-MM-dd HH:mm:ss"]
+      if: 'ctx.maltiverse?.asn_date != null'
+  - date:
+      field: maltiverse.creation_time
+      target_field: maltiverse.creation_time
+      formats: ["yyyy-MM-dd HH:mm:ss"]
+      if: 'ctx.maltiverse?.creation_time != null'
+  - date:
+      field: maltiverse.modification_time
+      target_field: maltiverse.modification_time
+      formats: ["yyyy-MM-dd HH:mm:ss"]
+      if: 'ctx.maltiverse?.modification_time != null'
+  - date:
+      field: maltiverse.last_online_time
+      target_field: maltiverse.last_online_time
+      formats: ["yyyy-MM-dd HH:mm:ss"]
+      if: 'ctx.maltiverse?.last_online_time != null'
+
+## map classification and confidence to ECS severity
+  - set:
+      field: event.severity
+      value: 6
+      if: 'ctx.maltiverse?.classification == "suspicious"'
+  - set:
+      field: threat.indicator.confidence
+      value: Medium
+      if: 'ctx.maltiverse?.classification == "suspicious"'
+  - set:
+      field: event.severity
+      value: 9
+      if: 'ctx.maltiverse?.classification == "malicious"'
+  - set:
+      field: threat.indicator.confidence
+      value: High
+      if: 'ctx.maltiverse?.classification == "malicious"'
+## IP specifics
+  - rename:
+      field: maltiverse.ip_addr
+      target_field: threat.indicator.ip
+      ignore_missing: true
+      if: 'ctx.maltiverse?.type == "ip"'
+  - set:
+      field: threat.indicator.reference
+      value: "https://maltiverse.com/ip/{{ threat.indicator.ip }}"
+      if: 'ctx.maltiverse?.type == "ip"'
+## TODO: match the AS regex
+  - rename:
+      field: maltiverse.city
+      target_field: threat.indicator.geo.city_name
+      ignore_missing: true
+      if: 'ctx.maltiverse?.type == "ip" && ctx.maltiverse?.city != null'
+  - rename:
+      field: maltiverse.country_code
+      target_field: threat.indicator.geo.country_iso_code
+      ignore_missing: true
+      if: 'ctx.maltiverse?.type == "ip" && ctx.maltiverse?.country_code != null'
+  - rename:
+      field: maltiverse.country_code
+      target_field: threat.indicator.geo.country_iso_code
+      ignore_missing: true
+      if: 'ctx.maltiverse?.type == "ip" && ctx.maltiverse?.country_code != null'
+  # IP geo fields
+  - convert:
+      field: maltiverse.location.lat
+      target_field: threat.indicator.geo.location.lat
+      type: double
+      if: "ctx.maltiverse?.location?.lat != null && ctx.maltiverse?.location?.lon != null"
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Cannot convert lat field "{{{ maltiverse.lat }}}" to double'
+  - convert:
+      field: maltiverse.location.lon
+      target_field: threat.indicator.geo.location.lon
+      type: double
+      if: "ctx.maltiverse?.location?.lat != null && ctx.maltiverse?.location?.lon != null"
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Cannot convert lon field "{{{ maltiverse.lon }}}" to double'
+
+## hostname fields
+  - rename:
+      field: maltiverse.hostname
+      target_field: threat.indicator.url.domain
+      ignore_missing: true
+      if: 'ctx.maltiverse?.type == "hostname"'
+  - rename:
+      field: maltiverse.domain
+      target_field: threat.indicator.url.registered_domain
+      ignore_missing: true
+      if: 'ctx.maltiverse?.type == "hostname"'
+  - rename:
+      field: maltiverse.tld
+      target_field: threat.indicator.url.top_level_domain
+      ignore_missing: true
+      if: 'ctx.maltiverse?.type == "hostname"'
+  - set:
+      field: threat.indicator.reference
+      value: "https://maltiverse.com/hostname/{{ threat.indicator.url.domain }}"
+      if: 'ctx.maltiverse?.type == "hostname"'
+## TODO: match the AS regex
+## URL fields
+  - rename:
+      field: maltiverse.url
+      target_field: threat.indicator.url.full
+      ignore_missing: true
+      if: 'ctx.maltiverse?.type == "url"'
+  - rename:
+      field: maltiverse.url
+      target_field: threat.indicator.url.original
+      ignore_missing: true
+      if: 'ctx.maltiverse?.type == "url"'
+  - rename:
+      field: maltiverse.tld
+      target_field: threat.indicator.url.top_level_domain
+      ignore_missing: true
+      if: 'ctx.maltiverse?.type == "url" && ctx.maltiverse?.tld != null'
+  - rename:
+      field: maltiverse.domain
+      target_field: threat.indicator.url.registered_domain
+      ignore_missing: true
+      if: 'ctx.maltiverse?.type == "url" && ctx.maltiverse?.domain != null'
+  - set:
+      field: threat.indicator.reference
+      value: "https://maltiverse.com/url/{{ maltiverse.urlchecksum }}"
+      if: 'ctx.maltiverse?.type == "url" && ctx.maltiverse?.urlchecksum != null'
+## Sample fields
+  - rename:
+      field: maltiverse.sha256
+      target_field: threat.indicator.file.hash.sha256
+      ignore_missing: true
+      if: 'ctx.maltiverse?.type == "sample"'
+  - rename:
+      field: maltiverse.md5
+      target_field: threat.indicator.file.hash.md5
+      ignore_missing: true
+      if: 'ctx.maltiverse?.type == "sample" && ctx.maltiverse?.md5 != null'
+  - rename:
+      field: maltiverse.sha512
+      target_field: threat.indicator.file.hash.sha512
+      ignore_missing: true
+      if: 'ctx.maltiverse?.type == "sample" && ctx.maltiverse?.sha512 != null'
+  - rename:
+      field: maltiverse.filetype
+      target_field: threat.indicator.file.type
+      ignore_missing: true
+      if: 'ctx.maltiverse?.type == "sample" && ctx.maltiverse?.filetype != null'
+  - rename:
+      field: maltiverse.size
+      target_field: threat.indicator.file.size
+      ignore_missing: true
+      if: 'ctx.maltiverse?.type == "sample" && ctx.maltiverse?.size != null'
+  - set:
+      field: threat.indicator.reference
+      value: "https://maltiverse.com/sample/{{ threat.indicator.file.hash.sha256 }}"
+      if: 'ctx.maltiverse?.type == "sample"'
+
+# Generate an event ID based on the original event
+  - fingerprint:
+      target_field: event.id
+      fields: ["threat.indicator.last_seen", "threat.indicator.first_seen", "threat.indicator.provider"]
+  - set:
+      field: _id
+      value: "{{{ event.id }}}"
+      if: 'ctx.event?.id != null'
+
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - remove:
+      field:
+        - maltiverse.tag
+        - maltiverse.blacklist.description
+        - maltiverse.blacklist.first_seen
+        - maltiverse.blacklist.last_seen
+        - maltiverse.location
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+
+on_failure:
+  - append:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error

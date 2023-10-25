@@ -1,5 +1,4 @@
 ---
-version: 1
 description: Pipeline to process Forcepoint Web logs
 processors:
 
@@ -46,7 +45,7 @@ processors:
 
   - set:
       field: ecs.version
-      value: '8.7.0'
+      value: '8.10.0'
 
   - rename:
       if: "ctx?.tags != null && ctx.tags.contains('preserve_original_event')"
@@ -352,6 +351,9 @@ processors:
         handleMap(ctx);
 
 on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
   - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: '{{{ _ingest.on_failure_message }}}'

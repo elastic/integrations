@@ -1,5 +1,6 @@
 type: logs
 title: Anomali Threatstream
+ilm_policy: logs-ti_anomali.threatstream-default_policy
 streams:
   - input: http_endpoint
     vars:
@@ -52,6 +53,15 @@ streams:
           enabled: false
           certificate: "/etc/pki/client/cert.pem"
           key: "/etc/pki/client/cert.key"
+      - name: ioc_expiration_duration
+        type: text
+        title: IOC Expiration Duration
+        multi: false
+        required: true
+        show_user: true
+        default: "90d"
+        description: >-
+          Enforces all IOCs to expire after this duration. This setting is required to avoid "orphaned" IOCs that never expire. Use [Elasticsearch time units](https://www.elastic.co/guide/en/elasticsearch/reference/current/api-conventions.html#time-units) in days, hours, or minutes (e.g 10d)
       - name: tags
         type: text
         title: Tags
