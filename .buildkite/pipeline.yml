@@ -44,12 +44,51 @@ steps:
   #     - step: "publish-packages"
   #       allow_failure: false
 
-  # - wait: ~
-  #   continue_on_failure: true
+  # to be moved to schedule-daily job
+  - label: "Check integrations in serverless - project observability"
+    key: "test-integrations-serverless-obs"
+    command: ".buildkite/scripts/test_integrations_with_serverless.sh"
+    timeout_in_minutes: 120
+    env:
+      SERVERLESS: true
+      SERVERLESS_PROJECT: observability
+      FORCE_CHECK_ALL: true
+      UPLOAD_SAFE_LOGS: 1
+    agents:
+      provider: "gcp"
+    depends_on:
+      - step: "check"   # TODO: change to publish-packages if re-added
+        allow_failure: false
+    artifact_paths:
+      - "build/test-results/*.xml"
+      # - "build/elastic-stack-dump/*/logs/*.log"
+      # - "build/elastic-stack-dump/*/logs/fleet-server-internal/**/*"
 
-  # - label: ":junit: Junit annotate"
-  #   plugins:
-  #     - junit-annotate#v2.4.1:
-  #         artifacts: "build/test-results/*.xml"
-  #   agents:
-  #     provider: "gcp"  # junit plugin requires docker
+  - label: "Check integrations in serverless - project security"
+    key: "test-integrations-serverless-security"
+    command: ".buildkite/scripts/test_integrations_with_serverless.sh"
+    timeout_in_minutes: 120
+    env:
+      SERVERLESS: true
+      SERVERLESS_PROJECT: security
+      FORCE_CHECK_ALL: true
+      UPLOAD_SAFE_LOGS: 1
+    agents:
+      provider: "gcp"
+    depends_on:
+      - step: "check"   # TODO: change to publish-packages if re-added
+        allow_failure: false
+    artifact_paths:
+      - "build/test-results/*.xml"
+      # - "build/elastic-stack-dump/*/logs/*.log"
+      # - "build/elastic-stack-dump/*/logs/fleet-server-internal/**/*"
+
+  - wait: ~
+    continue_on_failure: true
+
+  - label: ":junit: Junit annotate"
+    plugins:
+      - junit-annotate#v2.4.1:
+          artifacts: "build/test-results/*.xml"
+    agents:
+      provider: "gcp"  # junit plugin requires docker
