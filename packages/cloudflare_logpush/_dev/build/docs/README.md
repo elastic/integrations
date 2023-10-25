@@ -92,7 +92,7 @@ This module has been tested against **Cloudflare version v4**.
 
 
 **Note**:
-- It is possible to ingest data from Cloudflare R2, an S3-compatible storage service, by setting the parameter `Cloudflare R2`. Using non-AWS S3 compatible buckets requires the use of Access Key ID and Secret Access Key for authentication, as well as the endpoint must be set to replace the default API endpoint. Endpoint should be a full URI in the form of `https(s)://<s3 endpoint>`, that will be used as the API endpoint of the service.
+- It is possible to ingest data from Cloudflare R2, an S3-compatible storage service, by setting the parameter `Cloudflare R2`. Using non-AWS S3 compatible buckets requires the use of Access Key ID and Secret Access Key for authentication, as well as the endpoint must be set to replace the default API endpoint. Endpoint should be a full URI, tipically in the form of `https(s)://<accountid>.r2.cloudflarestorage.com`, that will be used as the API endpoint of the service.
 - This setting can be also used to ingest data from other S3-compatible storage services.
 
 ### To collect data from AWS SQS, follow the below steps:
