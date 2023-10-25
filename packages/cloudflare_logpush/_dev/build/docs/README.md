@@ -90,6 +90,10 @@ This module has been tested against **Cloudflare version v4**.
   | Spectrum Event             | spectrum_event         |
   | Workers Trace Events       | workers_trace          |
 
+
+**Note**:
+- It is possible to ingest data from a third-party S3 compatible service by setting the parameter `Non AWS Bucket Name`. Using non-AWS S3 compatible buckets requires the use of Access Key ID and Secret Access Key for authentication, as well as the endpoint must be set to replace the default API endpoint. Endpoint should be a full URI in the form of `https(s)://<s3 endpoint>`, that will be used as the API endpoint of the service.
+
 ### To collect data from AWS SQS, follow the below steps:
 1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
 2. To setup an SQS queue, follow "Step 1: Create an Amazon SQS queue" mentioned in the [Documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
