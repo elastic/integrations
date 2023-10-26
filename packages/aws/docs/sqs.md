@@ -128,7 +128,6 @@ An example event for `sqs` looks as following:
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
 | aws.dimensions.QueueName | SQS queue name | keyword |  |
-| aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |
 | aws.sqs.empty_receives | The number of ReceiveMessage API calls that did not return a message. | long | gauge |
 | aws.sqs.messages.delayed | TThe number of messages in the queue that are delayed and not available for reading immediately. | long | gauge |
 | aws.sqs.messages.deleted | The number of messages deleted from the queue. | long | gauge |

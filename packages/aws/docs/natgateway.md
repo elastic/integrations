@@ -166,7 +166,6 @@ An example event for `natgateway` looks as following:
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
-| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | double |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
 | aws.dimensions.NatGatewayId | Filter the metric data by the NAT gateway ID. | keyword |  |
 | aws.natgateway.metrics.ActiveConnectionCount.max | The total number of concurrent active TCP connections through the NAT gateway. | long | gauge |
@@ -183,7 +182,6 @@ An example event for `natgateway` looks as following:
 | aws.natgateway.metrics.PacketsInFromSource.sum | The number of packets received by the NAT gateway from clients in your VPC. | long | gauge |
 | aws.natgateway.metrics.PacketsOutToDestination.sum | The number of packets sent out through the NAT gateway to the destination. | long | gauge |
 | aws.natgateway.metrics.PacketsOutToSource.sum | The number of packets sent through the NAT gateway to the clients in your VPC. | long | gauge |
-| aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |
 | aws.tags | Tag key value pairs from aws resources. | flattened |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |

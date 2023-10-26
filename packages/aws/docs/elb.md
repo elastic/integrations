@@ -449,7 +449,6 @@ An example event for `elb` looks as following:
 | aws.networkelb.metrics.TCP_Target_Reset_Count.sum | The total number of reset (RST) packets sent from a target to a client. | long | gauge |
 | aws.networkelb.metrics.TargetTLSNegotiationErrorCount.sum | The total number of TLS handshakes that failed during negotiation between a TLS listener and a target. | long | gauge |
 | aws.networkelb.metrics.UnHealthyHostCount.max | The number of targets that are considered unhealthy. | long | gauge |
-| aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |
 | aws.tags | Tag key value pairs from aws resources. | flattened |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |

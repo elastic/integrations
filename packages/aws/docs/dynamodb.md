@@ -168,7 +168,6 @@ An example event for `dynamodb` looks as following:
 | aws.dynamodb.metrics.TransactionConflict.avg |  | double | gauge |
 | aws.dynamodb.metrics.TransactionConflict.sum |  | long | gauge |
 | aws.dynamodb.metrics.WriteThrottleEvents.sum | Requests to DynamoDB that exceed the provisioned write capacity units for a table or a global secondary index. | long | gauge |
-| aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |
 | aws.tags | Tag key value pairs from aws resources. | flattened |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
