@@ -291,6 +291,7 @@ An example event for `activity` looks as following:
 | postgresql.activity.database.oid | OID of the database this backend is connected to. | long |
 | postgresql.activity.pid | Process ID of this backend. | long |
 | postgresql.activity.query | Text of this backend's most recent query. If state is active this field shows the currently executing query. In all other states, it shows the last query that was executed. | keyword |
+| postgresql.activity.query_id | Unique ID representing the query executed | keyword |
 | postgresql.activity.query_start | Time when the currently active query was started, or if state is not active, when the last query was started. | date |
 | postgresql.activity.state | Current overall state of this backend. Possible values are:    \* active: The backend is executing a query.   \* idle: The backend is waiting for a new client command.   \* idle in transaction: The backend is in a transaction, but is not     currently executing a query.   \* idle in transaction (aborted): This state is similar to idle in     transaction, except one of the statements in the transaction caused     an error.   \* fastpath function call: The backend is executing a fast-path function.   \* disabled: This state is reported if track_activities is disabled in this backend. | keyword |
 | postgresql.activity.state_change | Time when the state was last changed. | date |
