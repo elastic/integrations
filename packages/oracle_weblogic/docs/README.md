@@ -177,7 +177,9 @@ An example event for `access` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "ip": "172.17.32.1",
+        "ip": [
+            "172.17.32.1"
+        ],
         "mac": [
             "02:42:ac:12:00:07"
         ],
@@ -636,13 +638,17 @@ An example event for `deployed_application` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "web",
+        "category": [
+            "web"
+        ],
         "dataset": "oracle_weblogic.deployed_application",
         "duration": 27026922,
         "ingested": "2022-06-01T06:06:20Z",
         "kind": "metric",
         "module": "oracle_weblogic",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "host": {
         "architecture": "x86_64",
@@ -771,13 +777,17 @@ An example event for `threadpool` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "web",
+        "category": [
+            "web"
+        ],
         "dataset": "oracle_weblogic.threadpool",
         "duration": 55017871,
         "ingested": "2023-08-23T11:54:39Z",
         "kind": "metric",
         "module": "oracle_weblogic",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "host": {
         "architecture": "x86_64",

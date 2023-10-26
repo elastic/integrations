@@ -4,13 +4,14 @@ processors:
   - rename:
       field: message
       target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: onepassword
   - drop:
       description: Drop if no timestamp (invalid json)
       if: "ctx?.onepassword?.timestamp == null"
-
   #######################
   ## ECS Event Mapping ##
   #######################
@@ -34,7 +35,6 @@ processors:
       field: onepassword.action
       target_field: event.action
       ignore_missing: true
-
   #########################
   ## ECS Related Mapping ##
   #########################
@@ -58,7 +58,6 @@ processors:
       value: "{{onepassword.client.ip_address}}"
       allow_duplicates: false
       if: ctx?.onepassword?.client?.ip_address != null
-
   ######################
   ## ECS User Mapping ##
   ######################
@@ -74,7 +73,6 @@ processors:
       field: onepassword.user.email
       target_field: user.email
       ignore_missing: true
-
   ####################
   ## ECS OS Mapping ##
   ####################
@@ -86,7 +84,6 @@ processors:
       field: onepassword.client.os_version
       target_field: host.os.version
       ignore_missing: true
-
   ########################
   ## ECS Source Mapping ##
   ########################
@@ -113,7 +110,6 @@ processors:
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
-
   ######################
   ## ECS Base Mapping ##
   ######################
@@ -121,7 +117,6 @@ processors:
       field: onepassword.timestamp
       formats:
         - ISO8601
-
   #############
   ## Cleanup ##
   #############
