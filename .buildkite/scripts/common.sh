@@ -150,9 +150,9 @@ with_yq() {
 
     retry 5 curl -sSL -o ${BIN_FOLDER}/yq.tar.gz "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${binary}.tar.gz"
 
-    tar -C ${BIN_FOLDER} -xpf ${BIN_FOLDER}/yq.tar.gz ./yq_linux_amd64
+    tar -C ${BIN_FOLDER} -xpf ${BIN_FOLDER}/yq.tar.gz ./${binary}
 
-    mv ${BIN_FOLDER}/yq_linux_amd64 ${BIN_FOLDER}/yq
+    mv ${BIN_FOLDER}/${binary} ${BIN_FOLDER}/yq
     chmod +x ${BIN_FOLDER}/yq
     yq --version
 
@@ -540,8 +540,7 @@ create_collapsed_annotation() {
 
     local annotation_file="tmp.annotation.md"
     echo "<details><summary>${title}</summary>" >> ${annotation_file}
-    echo "" >> ${annotation_file}
-    echo "" >> ${annotation_file}
+    echo -e "\n\n" >> ${annotation_file}
     cat ${file} >> ${annotation_file}
     echo "</details>" >> ${annotation_file}
 
