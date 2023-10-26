@@ -1055,6 +1055,18 @@ The `auth` data stream provides auth logs.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Input type | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.offset | Log offset | long |
+| log.syslog.appname | The device or application that originated the Syslog message. | keyword |
+| log.syslog.facility.code | The Syslog numeric facility of the log event, if available. According to RFCs 5424 and 3164, this value should be an integer between 0 and 23. | long |
+| log.syslog.facility.name | The Syslog text-based facility of the log event, if available. | keyword |
+| log.syslog.hostname | The hostname, FQDN, or IP of the machine that originally sent the Syslog message. | keyword |
+| log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
+| log.syslog.procid | The process name or ID that originated the Syslog message, if available. | keyword |
+| log.syslog.severity.code | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different numeric severity value (e.g. firewall, IDS), your source's numeric severity should go to `event.severity`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `event.severity`. | long |
+| log.syslog.severity.name | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different severity value (e.g. firewall, IDS), your source's text severity should go to `log.level`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `log.level`. | keyword |
+| log.syslog.version | The version of the Syslog protocol specification. Only applicable for RFC 5424 messages. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
@@ -1085,8 +1097,10 @@ The `auth` data stream provides auth logs.
 | system.auth.sudo.pwd | The current directory where the sudo command is executed. | keyword |
 | system.auth.sudo.tty | The TTY where the sudo command is executed. | keyword |
 | system.auth.sudo.user | The target user to which the sudo command is switching. | keyword |
+| system.auth.syslog.version |  | keyword |
 | system.auth.useradd.home | The home folder for the new user. | keyword |
 | system.auth.useradd.shell | The default shell for the new user. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 | user.effective.name | Short name or login of the user. | keyword |
 | user.effective.name.text | Multi-field of `user.effective.name`. | match_only_text |
 | user.id | Unique identifier of the user. | keyword |
