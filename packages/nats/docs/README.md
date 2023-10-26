@@ -259,35 +259,43 @@ An example event for `stats` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| nats.server.id | The server ID | keyword |
-| nats.server.time | Server time of metric creation | date |
-| nats.stats.cores | The number of logical cores the NATS process runs on | integer |
-| nats.stats.cpu | The current cpu usage of NATs process | scaled_float |
-| nats.stats.http.req_stats.uri.connz | The number of hits on connz monitoring uri | long |
-| nats.stats.http.req_stats.uri.root | The number of hits on root monitoring uri | long |
-| nats.stats.http.req_stats.uri.routez | The number of hits on routez monitoring uri | long |
-| nats.stats.http.req_stats.uri.subsz | The number of hits on subsz monitoring uri | long |
-| nats.stats.http.req_stats.uri.varz | The number of hits on varz monitoring uri | long |
-| nats.stats.in.bytes | The amount of incoming bytes | long |
-| nats.stats.in.messages | The amount of incoming messages | long |
-| nats.stats.mem.bytes | The current memory usage of NATS process | long |
-| nats.stats.out.bytes | The amount of outgoing bytes | long |
-| nats.stats.out.messages | The amount of outgoing messages | long |
-| nats.stats.remotes | The number of registered remotes | integer |
-| nats.stats.slow_consumers | The number of slow consumers currently on NATS | long |
-| nats.stats.total_connections | The number of totally created clients | long |
-| nats.stats.uptime | The period the server is up (sec) | long |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| nats.server.id | The server ID | keyword |  |
+| nats.server.time | Server time of metric creation | date |  |
+| nats.stats.cores | The number of logical cores the NATS process runs on | integer | gauge |
+| nats.stats.cpu | The current cpu usage of NATs process | scaled_float | gauge |
+| nats.stats.http.req_stats.uri.connz | The number of hits on connz monitoring uri | long | counter |
+| nats.stats.http.req_stats.uri.root | The number of hits on root monitoring uri | long | counter |
+| nats.stats.http.req_stats.uri.routez | The number of hits on routez monitoring uri | long | counter |
+| nats.stats.http.req_stats.uri.subsz | The number of hits on subsz monitoring uri | long | counter |
+| nats.stats.http.req_stats.uri.varz | The number of hits on varz monitoring uri | long | counter |
+| nats.stats.in.bytes | The amount of incoming bytes | long | counter |
+| nats.stats.in.messages | The amount of incoming messages | long | counter |
+| nats.stats.mem.bytes | The current memory usage of NATS process | long | gauge |
+| nats.stats.out.bytes | The amount of outgoing bytes | long | counter |
+| nats.stats.out.messages | The amount of outgoing messages | long | counter |
+| nats.stats.remotes | The number of registered remotes | integer | gauge |
+| nats.stats.slow_consumers | The number of slow consumers currently on NATS | long | gauge |
+| nats.stats.total_connections | The number of totally created clients | long | counter |
+| nats.stats.uptime | The period the server is up (sec) | long | counter |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### connections
@@ -371,20 +379,28 @@ An example event for `connections` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| nats.connections.total | The number of currently active clients | integer |
-| nats.server.id | The server ID | keyword |
-| nats.server.time | Server time of metric creation | date |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| nats.connections.total | The number of currently active clients | integer | gauge |
+| nats.server.id | The server ID | keyword |  |
+| nats.server.time | Server time of metric creation | date |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### routes
@@ -468,20 +484,28 @@ An example event for `routes` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| nats.routes.total | The number of registered routes | integer |
-| nats.server.id | The server ID | keyword |
-| nats.server.time | Server time of metric creation | date |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| nats.routes.total | The number of registered routes | integer | gauge |
+| nats.server.id | The server ID | keyword |  |
+| nats.server.time | Server time of metric creation | date |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### subscriptions
@@ -572,27 +596,35 @@ An example event for `subscriptions` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| nats.server.id | The server ID | keyword |
-| nats.server.time | Server time of metric creation | date |
-| nats.subscriptions.cache.fanout.avg | The average fanout served by cache | double |
-| nats.subscriptions.cache.fanout.max | The maximum fanout served by cache | integer |
-| nats.subscriptions.cache.hit_rate | The rate matches are being retrieved from cache | scaled_float |
-| nats.subscriptions.cache.size | The number of result sets in the cache | integer |
-| nats.subscriptions.inserts | The number of insert operations in subscriptions list | long |
-| nats.subscriptions.matches | The number of times a match is found for a subscription | long |
-| nats.subscriptions.removes | The number of remove operations in subscriptions list | long |
-| nats.subscriptions.total | The number of active subscriptions | integer |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| nats.server.id | The server ID | keyword |  |
+| nats.server.time | Server time of metric creation | date |  |
+| nats.subscriptions.cache.fanout.avg | The average fanout served by cache | double | gauge |
+| nats.subscriptions.cache.fanout.max | The maximum fanout served by cache | integer | gauge |
+| nats.subscriptions.cache.hit_rate | The rate matches are being retrieved from cache | scaled_float | gauge |
+| nats.subscriptions.cache.size | The number of result sets in the cache | integer | gauge |
+| nats.subscriptions.inserts | The number of insert operations in subscriptions list | long | counter |
+| nats.subscriptions.matches | The number of times a match is found for a subscription | long | counter |
+| nats.subscriptions.removes | The number of remove operations in subscriptions list | long | counter |
+| nats.subscriptions.total | The number of active subscriptions | integer | gauge |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### connection
@@ -687,28 +719,36 @@ An example event for `connection` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| nats.connection.idle_time | The period the connection is idle (sec) | long |
-| nats.connection.in.bytes | The amount of incoming bytes | long |
-| nats.connection.in.messages | The amount of incoming messages | long |
-| nats.connection.name | The name of the connection | keyword |
-| nats.connection.out.bytes | The amount of outgoing bytes | long |
-| nats.connection.out.messages | The amount of outgoing messages | long |
-| nats.connection.pending_bytes | The number of pending bytes of this connection | long |
-| nats.connection.subscriptions | The number of subscriptions in this connection | integer |
-| nats.connection.uptime | The period the connection is up (sec) | long |
-| nats.server.id | The server ID | keyword |
-| nats.server.time | Server time of metric creation | date |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| nats.connection.idle_time | The period the connection is idle (sec) | long | counter |
+| nats.connection.in.bytes | The amount of incoming bytes | long | counter |
+| nats.connection.in.messages | The amount of incoming messages | long | counter |
+| nats.connection.name | The name of the connection | keyword |  |
+| nats.connection.out.bytes | The amount of outgoing bytes | long | counter |
+| nats.connection.out.messages | The amount of outgoing messages | long | counter |
+| nats.connection.pending_bytes | The number of pending bytes of this connection | long | gauge |
+| nats.connection.subscriptions | The number of subscriptions in this connection | integer | gauge |
+| nats.connection.uptime | The period the connection is up (sec) | long | counter |
+| nats.server.id | The server ID | keyword |  |
+| nats.server.time | Server time of metric creation | date |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### route
@@ -803,26 +843,34 @@ An example event for `route` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| nats.route.in.bytes | The amount of incoming bytes | long |
-| nats.route.in.messages | The amount of incoming messages | long |
-| nats.route.ip | The ip of the route | ip |
-| nats.route.out.bytes | The amount of outgoing bytes | long |
-| nats.route.out.messages | The amount of outgoing messages | long |
-| nats.route.pending_size | The number of pending routes | long |
-| nats.route.port | The port of the route | integer |
-| nats.route.remote_id | The remote id on which the route is connected to | keyword |
-| nats.route.subscriptions | The number of subscriptions in this connection | integer |
-| nats.server.id | The server ID | keyword |
-| nats.server.time | Server time of metric creation | date |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| nats.route.in.bytes | The amount of incoming bytes | long | counter |
+| nats.route.in.messages | The amount of incoming messages | long | counter |
+| nats.route.ip | The ip of the route | ip |  |
+| nats.route.out.bytes | The amount of outgoing bytes | long | counter |
+| nats.route.out.messages | The amount of outgoing messages | long | counter |
+| nats.route.pending_size | The number of pending routes | long | gauge |
+| nats.route.port | The port of the route | integer |  |
+| nats.route.remote_id | The remote id on which the route is connected to | keyword |  |
+| nats.route.subscriptions | The number of subscriptions in this connection | integer | gauge |
+| nats.server.id | The server ID | keyword |  |
+| nats.server.time | Server time of metric creation | date |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 

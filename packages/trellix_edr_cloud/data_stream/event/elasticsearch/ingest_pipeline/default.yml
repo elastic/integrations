@@ -14,6 +14,7 @@ processors:
       tag: rename_message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       tag: json_event_original
@@ -52,13 +53,13 @@ processors:
       description: Script to set event.type for all the event types.
       if: ctx.event?.category != null
       source: >-
-        def event_type = ctx.json._eventType.toLowerCase();
-        if (!ctx.event.category.contains('registry')){
+        def event_type = ctx.json._eventType.toLowerCase(); if (!ctx.event.category.contains('registry')){
+
+
           ctx.event.type = ['info']
-        }
-        ArrayList items = new ArrayList(['access', 'creat', 'delet', 'modif', 'change']);
-        ArrayList set_items = new ArrayList(['access', 'creation', 'deletion', 'change', 'change']);
-        for (def j = 0; j < items.length; j++) {
+        } ArrayList items = new ArrayList(['access', 'creat', 'delet', 'modif', 'change']); ArrayList set_items = new ArrayList(['access', 'creation', 'deletion', 'change', 'change']); for (def j = 0; j < items.length; j++) {
+
+
             if (event_type.contains(items[j]) && (!event_type.contains('process created'))){
                 ctx.event.type = [set_items[j]];
             }
