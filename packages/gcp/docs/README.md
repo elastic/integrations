@@ -1021,7 +1021,7 @@ The `dns` dataset collects queries that name servers resolve for your Virtual Pr
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
-| dns.answers | An array containing an object for each answer section returned by the server. The main keys that should be present in these objects are defined by ECS. Records that have more information may contain more keys than what ECS defines. Not all DNS data sources give all details about DNS answers. At minimum, answer objects must contain the `data` key. If more information is available, map as much of it to ECS as possible, and add any additional fields to the answer objects as custom fields. | group |
+| dns.answers | An array containing an object for each answer section returned by the server. The main keys that should be present in these objects are defined by ECS. Records that have more information may contain more keys than what ECS defines. Not all DNS data sources give all details about DNS answers. At minimum, answer objects must contain the `data` key. If more information is available, map as much of it to ECS as possible, and add any additional fields to the answer objects as custom fields. | object |
 | dns.answers.class | The class of DNS data contained in this resource record. | keyword |
 | dns.answers.data | The data describing the resource. The meaning of this data depends on the type and class of the resource record. | keyword |
 | dns.answers.name | The domain name to which this resource record pertains. If a chain of CNAME is being resolved, each answer's `name` should be the one that corresponds with the answer's `data`. It should not simply be the original `question.name` repeated. | keyword |
@@ -1606,6 +1606,8 @@ The `compute` dataset is designed to fetch metrics for [Compute Engine](https://
 | gcp.labels.resource.\* |  | object |  |
 | gcp.labels.system.\* |  | object |  |
 | gcp.labels.user.\* |  | object |  |
+| gcp.labels_fingerprint | Hashed value of the labels field. | keyword |  |
+| gcp.metric_names_fingerprint | Hashed value of the concatenated metric names. | keyword |  |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
@@ -1775,6 +1777,8 @@ The `dataproc` dataset is designed to fetch metrics from [Dataproc](https://clou
 | gcp.labels.resource.\* |  | object |  |
 | gcp.labels.system.\* |  | object |  |
 | gcp.labels.user.\* |  | object |  |
+| gcp.labels_fingerprint | Hashed value of the labels field. | keyword |  |
+| gcp.metric_names_fingerprint | Hashed value of the concatenated metric names. | keyword |  |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
@@ -1892,6 +1896,8 @@ The `firestore` dataset fetches metrics from [Firestore](https://cloud.google.co
 | gcp.labels.resource.\* |  | object |  |
 | gcp.labels.system.\* |  | object |  |
 | gcp.labels.user.\* |  | object |  |
+| gcp.labels_fingerprint | Hashed value of the labels field. | keyword |  |
+| gcp.metric_names_fingerprint | Hashed value of the concatenated metric names. | keyword |  |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
@@ -2050,6 +2056,8 @@ The `gke` dataset is designed to fetch metrics from [GKE](https://cloud.google.c
 | gcp.labels.resource.\* |  | object |  |
 | gcp.labels.system.\* |  | object |  |
 | gcp.labels.user.\* |  | object |  |
+| gcp.labels_fingerprint | Hashed value of the labels field. | keyword |  |
+| gcp.metric_names_fingerprint | Hashed value of the concatenated metric names. | keyword |  |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
@@ -2164,6 +2172,7 @@ The `loadbalancing_metrics` dataset is designed to fetch HTTPS, HTTP, and Layer 
 | gcp.labels.resource.\* |  | object |  |
 | gcp.labels.system.\* |  | object |  |
 | gcp.labels.user.\* |  | object |  |
+| gcp.labels_fingerprint | Hashed value of the labels field. | keyword |  |
 | gcp.loadbalancing_metrics.https.backend_latencies.value | A distribution of the latency calculated from when the request was sent by the proxy to the backend until the proxy received from the backend the last byte of response. | object |  |
 | gcp.loadbalancing_metrics.https.backend_request.bytes | Delta of the number of bytes sent as requests from HTTP/S load balancer to backends. | long | gauge |
 | gcp.loadbalancing_metrics.https.backend_request.count | Delta of the number of requests served by backends of HTTP/S load balancer. | long | gauge |
@@ -2193,6 +2202,7 @@ The `loadbalancing_metrics` dataset is designed to fetch HTTPS, HTTP, and Layer 
 | gcp.loadbalancing_metrics.tcp_ssl_proxy.ingress.bytes | Delta of the number of bytes sent from client to VM using proxy. | long | gauge |
 | gcp.loadbalancing_metrics.tcp_ssl_proxy.new_connections.value | Delta of the number of connections that were created over TCP/SSL proxy. | long | gauge |
 | gcp.loadbalancing_metrics.tcp_ssl_proxy.open_connections.value | Current number of outstanding connections through the TCP/SSL proxy. | long | gauge |
+| gcp.metric_names_fingerprint | Hashed value of the concatenated metric names. | keyword |  |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
@@ -2313,6 +2323,8 @@ The `redis` dataset is designed to fetch metrics from [GCP Memorystore](https://
 | gcp.labels.resource.\* |  | object |  |  |
 | gcp.labels.system.\* |  | object |  |  |
 | gcp.labels.user.\* |  | object |  |  |
+| gcp.labels_fingerprint | Hashed value of the labels field. | keyword |  |  |
+| gcp.metric_names_fingerprint | Hashed value of the concatenated metric names. | keyword |  |  |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |  |
 | gcp.redis.clients.blocked.count | Number of blocked clients. | long |  | gauge |
 | gcp.redis.clients.connected.count | Number of client connections. | long |  | gauge |
@@ -2456,6 +2468,8 @@ The `storage` dataset fetches metrics from [Storage](https://cloud.google.com/st
 | gcp.labels.resource.\* |  | object |  |
 | gcp.labels.system.\* |  | object |  |
 | gcp.labels.user.\* |  | object |  |
+| gcp.labels_fingerprint | Hashed value of the labels field. | keyword |  |
+| gcp.metric_names_fingerprint | Hashed value of the concatenated metric names. | keyword |  |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
 | gcp.storage.api.request.count | Delta count of API calls, grouped by the API method name and response code. | long | gauge |
 | gcp.storage.authz.acl_based_object_access.count | Delta count of requests that result in an object being granted access solely due to object ACLs. | long | gauge |
