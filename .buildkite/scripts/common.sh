@@ -591,11 +591,6 @@ upload_safe_logs_from_package() {
 
     local parent_folder="insecure-logs"
 
-    #TODO remove this if when just triggered from integrations-serverless pipeline
-    if [[ "${SERVERLESS_PROJECT}" != "" ]]; then
-        parent_folder="insecure-serverless-${SERVERLESS_PROJECT}-logs"
-    fi
-
     upload_safe_logs \
         "${JOB_GCS_BUCKET_INTERNAL}" \
         "${build_directory}/elastic-stack-dump/${package}/logs/elastic-agent-internal/*.*" \
