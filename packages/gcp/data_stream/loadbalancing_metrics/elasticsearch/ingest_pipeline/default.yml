@@ -1,6 +1,11 @@
 ---
 description: Pipeline for parsing GCP Loadbalancing metrics.
 processors:
+  - fingerprint:
+      fields:
+        - gcp.labels
+      target_field: gcp.labels_fingerprint
+      ignore_missing: true
   - rename:
       field: gcp.metrics.https.backend_request.bytes
       target_field: gcp.loadbalancing_metrics.https.backend_request.bytes
