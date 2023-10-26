@@ -8,6 +8,8 @@ processors:
   - rename:
       field: message
       target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       description: Parse 'message' JSON contents into a 'mimecast' object.
       field: event.original
@@ -20,7 +22,6 @@ processors:
         - mimecast.date
       target_field: "_id"
       ignore_missing: true
-
   - date:
       description: Use 'mimecast.date' as the '@timestamp'
       field: mimecast.date
@@ -38,15 +39,15 @@ processors:
       if: "ctx?.mimecast?.recipientAddress != null"
       ignore_failure: true
   - dissect:
-       field: email.from.address
-       pattern: "<%{email.from.address}>"
-       ignore_missing: true
-       ignore_failure: true
+      field: email.from.address
+      pattern: "<%{email.from.address}>"
+      ignore_missing: true
+      ignore_failure: true
   - dissect:
-       field: email.to.address
-       pattern: "<%{email.to.address}>"
-       ignore_missing: true
-       ignore_failure: true      
+      field: email.to.address
+      pattern: "<%{email.to.address}>"
+      ignore_missing: true
+      ignore_failure: true
   - gsub:
       field: mimecast.actionTriggered
       pattern: ","
@@ -108,7 +109,7 @@ processors:
       if: 'ctx?.email?.attachments?.file?.name != null'
   - script:
       lang: painless
-      source: | 
+      source: |
         ctx.email.attachments.file.extension = ctx.file.parts[ctx.file.parts.length-1];
       if: 'ctx?.file?.parts !=null && ctx?.file?.parts.length > 1'
   - append:
@@ -122,7 +123,7 @@ processors:
   ### Cleanup
   - remove:
       description: Cleanup of repeated/unwanted/temporary fields.
-      field: 
+      field:
         - mimecast.date
         - file.parts
         - file
@@ -134,7 +135,6 @@ processors:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
-      
 # Error handling
 on_failure:
   - set:
