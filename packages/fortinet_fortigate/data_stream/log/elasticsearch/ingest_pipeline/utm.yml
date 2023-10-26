@@ -110,6 +110,14 @@ processors:
       ignore_missing: true
       if: "ctx.source?.ip == null"
   - rename:
+      field: fortinet.firewall.httpmethod
+      target_field: http.request.method
+      ignore_missing: true
+  - rename:
+      field: fortinet.firewall.referralurl
+      target_field: http.request.referrer
+      ignore_missing: true
+  - rename:
       field: fortinet.firewall.srcmac
       target_field: source.mac
       ignore_missing: true
@@ -158,34 +166,6 @@ processors:
       ignore_missing: true
       if: "ctx.rule?.category != null"
   - rename:
-      field: fortinet.firewall.dir
-      target_field: network.direction
-      ignore_missing: true
-      if: "ctx.network?.direction == null"
-  - rename:
-      field: fortinet.firewall.direction
-      target_field: network.direction
-      ignore_missing: true
-      if: "ctx.network?.direction == null"
-  # Normalize the network direction
-  - script:
-      lang: painless
-      ignore_failure: true
-      params:
-        outgoing: outbound
-        incoming: inbound
-      source: >-
-        if (ctx.network?.direction == null) {
-            return;
-        }
-        def k = ctx.network?.direction.toLowerCase();
-        def normalized = params.get(k);
-        if (normalized != null) {
-            ctx.network.direction = normalized;
-            return
-        }
-        ctx.network.direction = k;
-  - rename:
       field: fortinet.firewall.error
       target_field: event.message
       ignore_missing: true
@@ -202,10 +182,6 @@ processors:
       target_field: event.id
       ignore_missing: true
       if: "ctx.event?.id == null"
-  - rename:
-      field: fortinet.firewall.eventtype
-      target_field: event.action
-      ignore_missing: true
   - rename:
       field: fortinet.firewall.filename
       target_field: file.name
@@ -340,6 +316,112 @@ processors:
       field: fortinet.firewall.sender
       target_field: tls.server.issuer
       ignore_missing: true
+  - rename:
+      field: fortinet.firewall.issuer
+      target_field: tls.server.issuer
+      ignore_missing: true
+      if: "ctx.tls?.server?.issuer == null"
+  - rename:
+      field: fortinet.firewall.authalgo
+      target_field: tls.server.x509.public_key_algorithm
+      ignore_missing: true
+  - rename:
+      field: fortinet.firewall.keyalgo
+      target_field: tls.server.x509.public_key_algorithm
+      ignore_missing: true
+      if: "ctx.tls?.server?.x509?.public_key_algorithm == null"
+  - rename:
+      field: fortinet.firewall.notbefore
+      target_field: tls.server.not_before
+      ignore_missing: true
+      if: "ctx.tls?.server?.not_before == null"
+  - rename:
+      field: fortinet.firewall.notafter
+      target_field: tls.server.not_after
+      ignore_missing: true
+      if: "ctx.tls?.server?.not_after == null"
+  - rename:
+      field: fortinet.firewall.keysize
+      target_field: tls.server.x509.public_key_size
+      ignore_missing: true
+      if: "ctx.tls?.server?.x509?.public_key_size == null"
+  - convert:
+      field: tls.server.x509.public_key_size
+      type: long
+      ignore_missing: true
+  - rename:
+      field: fortinet.firewall.sn
+      target_field: tls.server.x509.serial_number
+      ignore_missing: true
+      if: "ctx.tls?.server?.x509?.serial_number == null"
+  - rename:
+      field: fortinet.firewall.certhash
+      target_field: tls.server.hash.sha1
+      ignore_missing: true
+      if: "ctx.tls?.server?.hash?.sha1 == null"
+  - append:
+      field: related.hash
+      value: "{{{tls.server.hash.sha1}}}"
+      allow_duplicates: false
+      if: ctx.tls?.server?.hash?.sha1 != null
+  - set:
+      field: tls.server.x509.not_after
+      copy_from: tls.server.not_after
+      ignore_empty_value: true
+  - set:
+      field: tls.server.x509.not_before
+      copy_from: tls.server.not_before
+      ignore_empty_value: true
+  - split:
+      field: fortinet.firewall.san
+      separator: ";"
+      target_field: tls.server.x509.alternative_names
+      ignore_missing: true
+  - append:
+      field: tls.server.x509.alternative_names
+      value: "{{{fortinet.firewall.cn}}}"
+      allow_duplicates: false
+      if: ctx.fortinet?.firewall?.cn != null
+  - set:
+      field: tls.client.x509.public_key_algorithm
+      copy_from: tls.server.x509.public_key_algorithm
+      ignore_empty_value: true
+  - rename:
+      field: fortinet.firewall.kxcurve
+      target_field: tls.curve
+      ignore_missing: true
+  - rename:
+      field: fortinet.firewall.cipher
+      target_field: tls.cipher
+      ignore_missing: true
+  - rename:
+      field: fortinet.firewall.sni
+      target_field: tls.client.server_name
+      ignore_missing: true
+  - set:
+      field: destination.domain
+      copy_from: tls.client.server_name
+      ignore_empty_value: true
+      if: ctx.destination?.domain == null
+  - set:
+      field: tls.established
+      value: true
+      if: ctx.fortinet?.firewall?.handshake == "full"
+  - script:
+      lang: painless
+      if: ctx.fortinet?.firewall?.tlsver != null
+      source: >-
+        def pat = /\d+/;
+        def tlsver = ctx.fortinet.firewall.tlsver.toLowerCase();
+        def matcher = pat.matcher(tlsver);
+        if (!matcher.find()) {
+            return;
+        }
+        ctx.tls.version_protocol = tlsver.substring(0, matcher.start());
+        ctx.tls.version = tlsver.substring(matcher.start(), tlsver.length());
+        if (!ctx.tls.version.contains(".")) {
+          ctx.tls.version += ".0";
+        }
   - append:
       field: vulnerability.category
       value: "{{fortinet.firewall.dtype}}"
@@ -368,6 +450,8 @@ processors:
       ignore_missing: true
   - remove:
       field:
+        - fortinet.firewall.cn
+        - fortinet.firewall.san
         - fortinet.firewall.dst_port
         - fortinet.firewall.remport
         - fortinet.firewall.dstport
@@ -378,9 +462,8 @@ processors:
         - fortinet.firewall.srcport
         - fortinet.firewall.sentbyte
         - fortinet.firewall.filesize
-        - fortinet.firewall.dir
-        - fortinet.firewall.direction
         - fortinet.firewall.dtype
+        - fortinet.firewall.tlsver
       ignore_missing: true
 on_failure:
   - set:

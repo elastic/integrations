@@ -21,7 +21,7 @@
                 "port": 80
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "close",
@@ -72,6 +72,7 @@
             "network": {
                 "application": "HTTP.BROWSER_Firefox",
                 "bytes": 2412,
+                "direction": "outbound",
                 "iana_number": "6",
                 "packets": 33,
                 "protocol": "http",
@@ -129,7 +130,7 @@
                 "port": 443
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "server-rst",
@@ -169,6 +170,7 @@
             "network": {
                 "application": "Web Management(HTTPS)",
                 "bytes": 2966,
+                "direction": "internal",
                 "iana_number": "6",
                 "packets": 11,
                 "protocol": "https",
@@ -219,7 +221,7 @@
                 "port": 7878
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "accept",
@@ -257,6 +259,7 @@
             },
             "network": {
                 "bytes": 5940,
+                "direction": "outbound",
                 "iana_number": "17",
                 "packets": 11,
                 "protocol": "udp/7878",
@@ -319,7 +322,7 @@
                 "port": 443
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "accept",
@@ -364,6 +367,7 @@
             },
             "network": {
                 "bytes": 0,
+                "direction": "external",
                 "iana_number": "6",
                 "packets": 0,
                 "protocol": "https",
@@ -434,7 +438,7 @@
                 "port": 80
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "accept",
@@ -462,7 +466,6 @@
                     "sessionid": "30384",
                     "srccountry": "Reserved",
                     "srcintfrole": "undefined",
-                    "srcthreatfeed": "g-source",
                     "subtype": "sniffer",
                     "trandisp": "snat",
                     "transip": "0.0.0.0",
@@ -475,6 +478,7 @@
             },
             "network": {
                 "bytes": 0,
+                "direction": "internal",
                 "iana_number": "6",
                 "packets": 0,
                 "protocol": "http",
@@ -519,14 +523,20 @@
             },
             "tags": [
                 "preserve_original_event"
-            ]
+            ],
+            "threat": {
+                "feed": {
+                    "name": "g-source"
+                }
+            }
         },
         {
             "@timestamp": "2020-03-29T16:41:30.000-07:00",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
+                "action": "Health Check",
                 "code": "0113022923",
                 "kind": "event",
                 "original": "date=2020-03-29 time=16:41:30 logid=\"0113022923\" type=\"event\" subtype=\"sdwan\" level=\"notice\" vd=\"root\" eventtime=1585525290513555981 tz=\"-0700\" logdesc=\"Virtual WAN Link status\" eventtype=\"Health Check\" healthcheck=\"ping1\" slatargetid=1 oldvalue=\"1\" newvalue=\"2\" msg=\"Number of pass member changed.\"",
@@ -535,7 +545,6 @@
             },
             "fortinet": {
                 "firewall": {
-                    "eventtype": "Health Check",
                     "healthcheck": "ping1",
                     "newvalue": "2",
                     "oldvalue": "1",
@@ -564,9 +573,10 @@
         {
             "@timestamp": "2020-03-29T16:51:27.000-07:00",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
+                "action": "SLA",
                 "code": "0113022925",
                 "kind": "event",
                 "original": "date=2020-03-29 time=16:51:27 logid=\"0113022925\" type=\"event\" subtype=\"sdwan\" level=\"notice\" vd=\"root\" eventtime=1585525888177637570 tz=\"-0700\" logdesc=\"Virtual WAN Link SLA information\" eventtype=\"SLA\" healthcheck=\"ping1\" slatargetid=1 interface=\"R150\" status=\"up\" latency=\"0.013\" jitter=\"0.001\" packetloss=\"100.000%\" inbandwidth=\"0kbps\" outbandwidth=\"0kbps\" bibandwidth=\"0kbps\" slamap=\"0x0\" metric=\"packetloss\" msg=\"Health Check SLA status. SLA failed due to being over the performance metric threshold.\"",
@@ -576,12 +586,11 @@
             "fortinet": {
                 "firewall": {
                     "bibandwidth": "0kbps",
-                    "eventtype": "SLA",
                     "healthcheck": "ping1",
                     "inbandwidth": "0kbps",
                     "interface": "R150",
-                    "jitter": "0.001",
-                    "latency": "0.013",
+                    "jitter": 0.001,
+                    "latency": 0.013,
                     "metric": "packetloss",
                     "outbandwidth": "0kbps",
                     "packetloss": "100.000%",
@@ -615,12 +624,13 @@
                 "ip": "172.16.200.2"
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0100032001",
                 "kind": "event",
                 "original": "date=2019-05-13 time=11:20:54 logid=\"0100032001\" type=\"event\" subtype=\"system\" level=\"information\" vd=\"vdom1\" eventtime=1557771654587081441 logdesc=\"Admin login successful\" sn=\"1557771654\" user=\"admin\" ui=\"ssh(172.16.200.254)\" method=\"ssh\" srcip=172.16.200.254 dstip=172.16.200.2 action=\"login\" status=\"success\" reason=\"none\" profile=\"super_admin\" msg=\"Administrator admin logged in successfully from ssh(172.16.200.254)\"",
+                "reason": "none",
                 "start": "2019-05-13T18:20:54.587Z"
             },
             "fortinet": {
@@ -628,7 +638,6 @@
                     "action": "login",
                     "method": "ssh",
                     "profile": "super_admin",
-                    "reason": "none",
                     "sn": "1557771654",
                     "status": "success",
                     "subtype": "system",
@@ -641,6 +650,9 @@
                 "level": "information"
             },
             "message": "Administrator admin logged in successfully from ssh(172.16.200.254)",
+            "network": {
+                "direction": "internal"
+            },
             "observer": {
                 "product": "Fortigate",
                 "type": "firewall",
@@ -671,7 +683,7 @@
         {
             "@timestamp": "2019-05-13T14:12:26.000Z",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0103020301",
@@ -721,7 +733,7 @@
                 "port": 500
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "category": [
@@ -800,7 +812,7 @@
                 "ip": "172.16.200.55"
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "category": [
@@ -815,7 +827,6 @@
                 "firewall": {
                     "action": "authentication",
                     "authproto": "TELNET(10.1.100.11)",
-                    "interface": "port10",
                     "status": "success",
                     "subtype": "user",
                     "type": "event",
@@ -826,7 +837,15 @@
                 "level": "notice"
             },
             "message": "User bob succeeded in authentication",
+            "network": {
+                "direction": "internal"
+            },
             "observer": {
+                "ingress": {
+                    "interface": {
+                        "name": "port10"
+                    }
+                },
                 "product": "Fortigate",
                 "type": "firewall",
                 "vendor": "Fortinet"
@@ -860,7 +879,7 @@
         {
             "@timestamp": "2019-05-14T08:32:13.000Z",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0107045057",
@@ -916,7 +935,7 @@
         {
             "@timestamp": "2019-05-14T08:19:38.000Z",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0107045058",
@@ -972,7 +991,7 @@
         {
             "@timestamp": "2019-05-10T09:53:18.000Z",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0108037894",
@@ -1009,7 +1028,7 @@
         {
             "@timestamp": "2019-05-13T14:40:59.000Z",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0110052000",
@@ -1069,7 +1088,7 @@
                 "port": 636
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0105048039",
@@ -1092,6 +1111,9 @@
                 "level": "error"
             },
             "message": "SSL Alert sent",
+            "network": {
+                "direction": "external"
+            },
             "observer": {
                 "product": "Fortigate",
                 "type": "firewall",
@@ -1140,7 +1162,7 @@
                 "port": 443
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0105048038",
@@ -1163,6 +1185,9 @@
                 "level": "error"
             },
             "message": "SSL Alert received",
+            "network": {
+                "direction": "outbound"
+            },
             "observer": {
                 "product": "Fortigate",
                 "type": "firewall",
@@ -1189,7 +1214,7 @@
         {
             "@timestamp": "2019-05-13T11:30:08.000Z",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0104043568",
@@ -1243,7 +1268,7 @@
         {
             "@timestamp": "2019-05-13T16:09:43.000Z",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0112053200",
@@ -1282,7 +1307,7 @@
         {
             "@timestamp": "2019-05-13T16:09:43.000Z",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0112053201",
@@ -1321,7 +1346,7 @@
         {
             "@timestamp": "2019-02-20T09:57:22.000Z",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0111046400",
@@ -1356,7 +1381,7 @@
         {
             "@timestamp": "2019-02-20T09:51:42.000Z",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0111046401",
@@ -1398,7 +1423,7 @@
         {
             "@timestamp": "2019-02-20T10:02:26.000Z",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0111046409",
@@ -1449,7 +1474,7 @@
         {
             "@timestamp": "2019-02-20T10:33:57.000Z",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0111046407",
@@ -1495,7 +1520,7 @@
         {
             "@timestamp": "2019-02-20T10:02:24.000Z",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0111046409",
@@ -1543,7 +1568,7 @@
         {
             "@timestamp": "2019-02-20T10:47:19.000Z",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0111046407",
@@ -1586,7 +1611,7 @@
         {
             "@timestamp": "2019-02-20T10:57:50.000Z",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0111046407",
@@ -1630,12 +1655,13 @@
         {
             "@timestamp": "2019-02-20T12:02:24.000Z",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0111046407",
                 "kind": "event",
                 "original": "date=2019-02-20 time=12:02:24 logid=\"0111046407\" type=\"event\" subtype=\"fortiextender\" level=\"warning\" vd=\"root\" eventtime=1550692942 logdesc=\"Remote FortiExtender warning activity\" sn=\"FX04DN4N16002352\" ip=81.2.69.144 action=\"SIM Switch\" imei=\"359376060442770\" reason=\"sim-switch can't take effect due to unavailability of 2 sim cards\" msg=\"FX04DN4N16002352 SIM: sim-switch can't take effect due to unavailability of 2 sim cards\"",
+                "reason": "sim-switch can't take effect due to unavailability of 2 sim cards",
                 "start": "2019-02-20T20:02:22.000Z"
             },
             "fortinet": {
@@ -1643,7 +1669,6 @@
                     "action": "SIM Switch",
                     "imei": "359376060442770",
                     "ip": "81.2.69.144",
-                    "reason": "sim-switch can't take effect due to unavailability of 2 sim cards",
                     "sn": "FX04DN4N16002352",
                     "subtype": "fortiextender",
                     "type": "event",
@@ -1674,7 +1699,7 @@
         {
             "@timestamp": "2019-02-19T18:08:46.000Z",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0111046409",
@@ -1734,7 +1759,7 @@
                 "bytes": 7760
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0111046409",
@@ -1789,7 +1814,7 @@
         {
             "@timestamp": "2020-09-28T15:37:02.000-07:00",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0114032695",
@@ -1836,7 +1861,7 @@
         {
             "@timestamp": "2020-09-28T15:37:02.000-07:00",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0114032697",
@@ -1883,7 +1908,7 @@
         {
             "@timestamp": "2020-09-28T15:37:01.000-07:00",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0114032605",
@@ -1931,7 +1956,7 @@
         {
             "@timestamp": "2020-09-28T15:36:59.000-07:00",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0114022904",
@@ -1984,7 +2009,7 @@
         {
             "@timestamp": "2020-09-28T15:36:26.000-07:00",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0114032601",
@@ -2032,7 +2057,7 @@
         {
             "@timestamp": "2020-09-28T15:36:26.000-07:00",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0114032601",
@@ -2080,7 +2105,7 @@
         {
             "@timestamp": "2020-09-28T15:36:26.000-07:00",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0114032601",
@@ -2128,7 +2153,7 @@
         {
             "@timestamp": "2022-02-02T15:52:09.000-08:00",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0116047301",
@@ -2179,7 +2204,7 @@
         {
             "@timestamp": "2022-02-02T15:52:06.000-08:00",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0116047301",
@@ -2230,7 +2255,7 @@
         {
             "@timestamp": "2022-02-02T15:52:06.000-08:00",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0116047301",
@@ -2281,7 +2306,7 @@
         {
             "@timestamp": "2022-02-02T15:52:06.000-08:00",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0116047301",
@@ -2333,7 +2358,7 @@
         {
             "@timestamp": "2022-02-02T15:52:06.000-08:00",
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0116047301",
@@ -2403,7 +2428,7 @@
                 "port": 514
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "code": "0100020214",
@@ -2424,6 +2449,7 @@
                 "level": "warning"
             },
             "network": {
+                "direction": "outbound",
                 "iana_number": "6",
                 "transport": "tcp"
             },
@@ -2469,11 +2495,12 @@
                     "region_name": "Washington"
                 },
                 "ip": "216.160.83.56",
+                "mac": "E8-1C-BA-C2-86-63",
                 "packets": 0,
                 "port": 514
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "timeout",
@@ -2500,7 +2527,6 @@
                     "dstcountry": "Thailand",
                     "dsthwvendor": "Fortinet",
                     "dstintfrole": "undefined",
-                    "dstmac": "e8:1c:ba:c2:86:63",
                     "dstserver": "0",
                     "masterdstmac": "e8:1c:ba:c2:86:63",
                     "sessionid": "23632",
@@ -2518,6 +2544,7 @@
             "network": {
                 "application": "tcp/514",
                 "bytes": 240,
+                "direction": "outbound",
                 "iana_number": "6",
                 "packets": 4,
                 "protocol": "tcp/514",
@@ -2565,7 +2592,7 @@
                 "port": 80
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "infected",
@@ -2667,7 +2694,7 @@
                 "port": 80
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "close",
@@ -2726,6 +2753,7 @@
             "network": {
                 "application": "HTTP.BROWSER",
                 "bytes": 2698,
+                "direction": "internal",
                 "iana_number": "6",
                 "packets": 12,
                 "protocol": "http",
@@ -2800,7 +2828,7 @@
                 "port": 80
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "ftgd_blk",
@@ -2910,7 +2938,7 @@
                 "port": 80
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "close",
@@ -2959,6 +2987,7 @@
             },
             "network": {
                 "bytes": 3874,
+                "direction": "outbound",
                 "iana_number": "6",
                 "packets": 19,
                 "protocol": "http",
@@ -3028,7 +3057,7 @@
                 ]
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "dns-response",
@@ -3063,6 +3092,7 @@
             },
             "message": "Domain is monitored",
             "network": {
+                "direction": "internal",
                 "iana_number": "17",
                 "transport": "udp"
             },
@@ -3123,7 +3153,7 @@
                 }
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "dns-query",
@@ -3153,6 +3183,7 @@
                 "level": "information"
             },
             "network": {
+                "direction": "internal",
                 "iana_number": "17",
                 "transport": "udp"
             },
@@ -3202,7 +3233,7 @@
                 "port": 53
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "accept",
@@ -3248,6 +3279,7 @@
             },
             "network": {
                 "bytes": 274,
+                "direction": "internal",
                 "iana_number": "17",
                 "packets": 2,
                 "protocol": "dns",
@@ -3321,7 +3353,7 @@
                 "port": 443
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "app-ctrl-all",
@@ -3442,7 +3474,7 @@
                 "port": 443
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "app-ctrl-all",
@@ -3546,7 +3578,7 @@
                 "port": 443
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "app-ctrl-all",
@@ -3651,7 +3683,7 @@
                 "port": 443
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "client-rst",
@@ -3703,6 +3735,7 @@
             "network": {
                 "application": "Dailymotion",
                 "bytes": 8189,
+                "direction": "outbound",
                 "iana_number": "6",
                 "protocol": "https",
                 "transport": "tcp"
@@ -3757,7 +3790,7 @@
                 "port": 80
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "signature",
@@ -3846,7 +3879,7 @@
                 "port": 80
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "close",
@@ -3894,6 +3927,7 @@
             },
             "network": {
                 "bytes": 9677,
+                "direction": "internal",
                 "iana_number": "6",
                 "packets": 17,
                 "protocol": "http",
@@ -3948,7 +3982,7 @@
                 "ip": "172.16.200.55"
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "anomaly",
@@ -3957,7 +3991,7 @@
                 ],
                 "code": "0720018433",
                 "kind": "event",
-                "original": "date=2019-05-13 time=17:05:59 logid=\"0720018433\" type=\"utm\" subtype=\"anomaly\" eventtype=\"anomaly\" level=\"alert\" vd=\"vdom1\" eventtime=1557792359461869329 severity=\"critical\" srcip=10.1.100.11 srccountry=\"Reserved\" dstip=172.16.200.55 srcintf=\"port12\" srcintfrole=\"undefined\" sessionid=0 action=\"clear_session\" proto=1 service=\"PING\" count=1 attack=\"icmp_flood\" icmpid=\"0x1474\" icmptype=\"0x08\" icmpcode=\"0x00\" attackid=16777316 policyid=1 policytype=\"DoS-policy\" ref=\"http://www.fortinet.com/ids/VID16777316\" msg=\"anomaly: icmp_flood, 51 \u003e threshold 50\" crscore=50 craction=4096 crlevel=\"critical\"",
+                "original": "date=2019-05-13 time=17:05:59 logid=\"0720018433\" type=\"utm\" subtype=\"anomaly\" eventtype=\"anomaly\" level=\"alert\" vd=\"vdom1\" eventtime=1557792359461869329 severity=\"critical\" srcip=10.1.100.11 srccountry=\"Reserved\" dstip=172.16.200.55 srcintf=\"port12\" srcintfrole=\"undefined\" sessionid=0 action=\"clear_session\" proto=1 service=\"PING\" count=1 attack=\"icmp_flood\" icmpid=\"0x1474\" icmptype=\"0x08\" icmpcode=\"0x00\" attackid=16777316 policyid=1 policytype=\"DoS-policy\" ref=\"http://www.fortinet.com/ids/VID16777316\" msg=\"anomaly: icmp_flood, 51 > threshold 50\" crscore=50 craction=4096 crlevel=\"critical\"",
                 "outcome": "success",
                 "reference": "http://www.fortinet.com/ids/VID16777316",
                 "start": "2019-05-14T00:05:59.461Z"
@@ -3987,8 +4021,9 @@
             "log": {
                 "level": "alert"
             },
-            "message": "anomaly: icmp_flood, 51 \u003e threshold 50",
+            "message": "anomaly: icmp_flood, 51 > threshold 50",
             "network": {
+                "direction": "internal",
                 "iana_number": "1",
                 "protocol": "ping",
                 "transport": "icmp"
@@ -4044,7 +4079,7 @@
                 "port": 443
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "dlp",
@@ -4078,10 +4113,8 @@
                     "filteridx": "1",
                     "filtertype": "file-type",
                     "forwardedfor": "192.168.0.99",
-                    "httpmethod": "GET",
                     "policytype": "policy",
                     "rawdata": "x-forwarded-for=192.168.0.99|Response-Content-Type=application/pdf",
-                    "referralurl": "https://example.com/referer.html",
                     "sessionid": "156237",
                     "severity": "medium",
                     "srccountry": "Reserved",
@@ -4089,6 +4122,12 @@
                     "subtype": "dlp",
                     "type": "utm",
                     "vd": "root"
+                }
+            },
+            "http": {
+                "request": {
+                    "method": "GET",
+                    "referrer": "https://example.com/referer.html"
                 }
             },
             "log": {
@@ -4167,7 +4206,7 @@
                 "port": 443
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "server-rst",
@@ -4220,6 +4259,7 @@
             },
             "network": {
                 "bytes": 7580,
+                "direction": "outbound",
                 "iana_number": "6",
                 "packets": 45,
                 "protocol": "https",
@@ -4275,7 +4315,7 @@
                 "port": 22
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "ssh-channel",
@@ -4354,7 +4394,7 @@
                 "port": 22
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "close",
@@ -4396,6 +4436,7 @@
             },
             "network": {
                 "bytes": 6066,
+                "direction": "internal",
                 "iana_number": "6",
                 "packets": 34,
                 "protocol": "ssh",
@@ -4467,7 +4508,7 @@
                 "port": 443
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "server-rst",
@@ -4516,6 +4557,7 @@
             },
             "network": {
                 "bytes": 7762,
+                "direction": "outbound",
                 "iana_number": "6",
                 "packets": 30,
                 "protocol": "https",
@@ -4585,7 +4627,7 @@
                 "port": 443
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "ssl-anomalies",
@@ -4596,6 +4638,7 @@
                 "kind": "event",
                 "original": "date=2019-03-28 time=10:44:53 logid=\"1700062002\" type=\"utm\" subtype=\"ssl\" eventtype=\"ssl-anomalies\" level=\"warning\" vd=\"vdom1\" eventtime=1553795092 policyid=1 sessionid=10796 service=\"HTTPS\" srcip=10.1.100.66 srcport=43602 dstip=216.160.83.56 dstport=443 srcintf=\"port2\" srcintfrole=\"undefined\" dstintf=\"port3\" dstintfrole=\"undefined\" proto=6 action=\"blocked\" msg=\"Server certificate blocked\" reason=\"block-cert-invalid\"",
                 "outcome": "success",
+                "reason": "block-cert-invalid",
                 "start": "2019-03-28T17:44:52.000Z",
                 "type": [
                     "denied"
@@ -4605,7 +4648,6 @@
                 "firewall": {
                     "action": "blocked",
                     "dstintfrole": "undefined",
-                    "reason": "block-cert-invalid",
                     "sessionid": "10796",
                     "srcintfrole": "undefined",
                     "subtype": "ssl",
@@ -4618,6 +4660,7 @@
             },
             "message": "Server certificate blocked",
             "network": {
+                "direction": "outbound",
                 "iana_number": "6",
                 "protocol": "https",
                 "transport": "tcp"
@@ -4661,7 +4704,7 @@
                 "port": 443
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "ssl-anomalies",
@@ -4672,6 +4715,7 @@
                 "kind": "event",
                 "original": "date=2019-03-28 time=10:51:17 logid=\"1700062002\" type=\"utm\" subtype=\"ssl\" eventtype=\"ssl-anomalies\" level=\"warning\" vd=\"vdom1\" eventtime=1553795476 policyid=1 sessionid=11110 service=\"HTTPS\" srcip=10.1.100.66 srcport=49076 dstip=172.16.200.99 dstport=443 srcintf=\"port2\" srcintfrole=\"undefined\" dstintf=\"port3\" dstintfrole=\"undefined\" proto=6 action=\"blocked\" msg=\"Server certificate blocked\" reason=\"block-cert-untrusted\"",
                 "outcome": "success",
+                "reason": "block-cert-untrusted",
                 "start": "2019-03-28T17:51:16.000Z",
                 "type": [
                     "denied"
@@ -4681,7 +4725,6 @@
                 "firewall": {
                     "action": "blocked",
                     "dstintfrole": "undefined",
-                    "reason": "block-cert-untrusted",
                     "sessionid": "11110",
                     "srcintfrole": "undefined",
                     "subtype": "ssl",
@@ -4694,6 +4737,7 @@
             },
             "message": "Server certificate blocked",
             "network": {
+                "direction": "internal",
                 "iana_number": "6",
                 "protocol": "https",
                 "transport": "tcp"
@@ -4737,7 +4781,7 @@
                 "port": 443
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "ssl-anomalies",
@@ -4748,6 +4792,7 @@
                 "kind": "event",
                 "original": "date=2019-03-28 time=10:55:43 logid=\"1700062002\" type=\"utm\" subtype=\"ssl\" eventtype=\"ssl-anomalies\" level=\"warning\" vd=\"vdom1\" eventtime=1553795742 policyid=1 sessionid=11334 service=\"HTTPS\" srcip=10.1.100.66 srcport=49082 dstip=172.16.200.99 dstport=443 srcintf=\"port2\" srcintfrole=\"undefined\" dstintf=\"port3\" dstintfrole=\"undefined\" proto=6 action=\"blocked\" msg=\"Server certificate blocked\" reason=\"block-cert-req\"",
                 "outcome": "success",
+                "reason": "block-cert-req",
                 "start": "2019-03-28T17:55:42.000Z",
                 "type": [
                     "denied"
@@ -4757,7 +4802,6 @@
                 "firewall": {
                     "action": "blocked",
                     "dstintfrole": "undefined",
-                    "reason": "block-cert-req",
                     "sessionid": "11334",
                     "srcintfrole": "undefined",
                     "subtype": "ssl",
@@ -4770,6 +4814,7 @@
             },
             "message": "Server certificate blocked",
             "network": {
+                "direction": "internal",
                 "iana_number": "6",
                 "protocol": "https",
                 "transport": "tcp"
@@ -4813,7 +4858,7 @@
                 "port": 8080
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "ssl-anomalies",
@@ -4824,6 +4869,7 @@
                 "kind": "event",
                 "original": "date=2019-03-28 time=10:57:42 logid=\"1700062053\" type=\"utm\" subtype=\"ssl\" eventtype=\"ssl-anomalies\" level=\"warning\" vd=\"vdom1\" eventtime=1553795861 policyid=1 sessionid=11424 service=\"SMTPS\" profile=\"block-unsupported-ssl\" srcip=10.1.100.66 srcport=41296 dstip=172.16.200.99 dstport=8080 srcintf=\"port2\" srcintfrole=\"undefined\" dstintf=unknown-0 dstintfrole=\"undefined\" proto=6 action=\"blocked\" msg=\"Connection is blocked due to unsupported SSL traffic\" reason=\"malformed input\"",
                 "outcome": "success",
+                "reason": "malformed input",
                 "start": "2019-03-28T17:57:41.000Z",
                 "type": [
                     "denied"
@@ -4833,7 +4879,6 @@
                 "firewall": {
                     "action": "blocked",
                     "dstintfrole": "undefined",
-                    "reason": "malformed input",
                     "sessionid": "11424",
                     "srcintfrole": "undefined",
                     "subtype": "ssl",
@@ -4846,6 +4891,7 @@
             },
             "message": "Connection is blocked due to unsupported SSL traffic",
             "network": {
+                "direction": "internal",
                 "iana_number": "6",
                 "protocol": "smtps",
                 "transport": "tcp"
@@ -4890,7 +4936,7 @@
                 "port": 443
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "ssl-anomalies",
@@ -4901,6 +4947,7 @@
                 "kind": "event",
                 "original": "date=2019-03-28 time=11:00:17 logid=\"1700062002\" type=\"utm\" subtype=\"ssl\" eventtype=\"ssl-anomalies\" level=\"warning\" vd=\"vdom1\" eventtime=1553796016 policyid=1 sessionid=11554 service=\"HTTPS\" srcip=10.1.100.66 srcport=49088 dstip=172.16.200.99 dstport=443 srcintf=\"port2\" srcintfrole=\"undefined\" dstintf=\"port3\" dstintfrole=\"undefined\" proto=6 action=\"blocked\" msg=\"Server certificate blocked\" reason=\"block-cert-sni-mismatch\"",
                 "outcome": "success",
+                "reason": "block-cert-sni-mismatch",
                 "start": "2019-03-28T18:00:16.000Z",
                 "type": [
                     "denied"
@@ -4910,7 +4957,6 @@
                 "firewall": {
                     "action": "blocked",
                     "dstintfrole": "undefined",
-                    "reason": "block-cert-sni-mismatch",
                     "sessionid": "11554",
                     "srcintfrole": "undefined",
                     "subtype": "ssl",
@@ -4923,6 +4969,7 @@
             },
             "message": "Server certificate blocked",
             "network": {
+                "direction": "internal",
                 "iana_number": "6",
                 "protocol": "https",
                 "transport": "tcp"
@@ -4966,7 +5013,7 @@
                 "port": 443
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "ssl-exempt",
@@ -4977,13 +5024,13 @@
                 "kind": "event",
                 "original": "date=2019-03-28 time=11:09:14 logid=\"1701062003\" type=\"utm\" subtype=\"ssl\" eventtype=\"ssl-exempt\" level=\"notice\" vd=\"vdom1\" eventtime=1553796553 policyid=1 sessionid=12079 service=\"HTTPS\" srcip=10.1.100.66 srcport=49102 dstip=172.16.200.99 dstport=443 srcintf=\"port2\" srcintfrole=\"undefined\" dstintf=\"port3\" dstintfrole=\"undefined\" proto=6 action=\"exempt\" msg=\"SSL connection exempted\" reason=\"exempt-addr\"",
                 "outcome": "success",
+                "reason": "exempt-addr",
                 "start": "2019-03-28T18:09:13.000Z"
             },
             "fortinet": {
                 "firewall": {
                     "action": "exempt",
                     "dstintfrole": "undefined",
-                    "reason": "exempt-addr",
                     "sessionid": "12079",
                     "srcintfrole": "undefined",
                     "subtype": "ssl",
@@ -4996,6 +5043,7 @@
             },
             "message": "SSL connection exempted",
             "network": {
+                "direction": "internal",
                 "iana_number": "6",
                 "protocol": "https",
                 "transport": "tcp"
@@ -5057,7 +5105,7 @@
                 "port": 443
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "ssl-exempt",
@@ -5068,13 +5116,13 @@
                 "kind": "event",
                 "original": "date=2019-03-28 time=11:10:55 logid=\"1701062003\" type=\"utm\" subtype=\"ssl\" eventtype=\"ssl-exempt\" level=\"notice\" vd=\"vdom1\" eventtime=1553796654 policyid=1 sessionid=12171 service=\"HTTPS\" srcip=10.1.100.66 srcport=47390 dstip=89.160.20.112 dstport=443 srcintf=\"port2\" srcintfrole=\"undefined\" dstintf=\"port3\" dstintfrole=\"undefined\" proto=6 action=\"exempt\" msg=\"SSL connection exempted\" reason=\"exempt-ftgd-cat\"",
                 "outcome": "success",
+                "reason": "exempt-ftgd-cat",
                 "start": "2019-03-28T18:10:54.000Z"
             },
             "fortinet": {
                 "firewall": {
                     "action": "exempt",
                     "dstintfrole": "undefined",
-                    "reason": "exempt-ftgd-cat",
                     "sessionid": "12171",
                     "srcintfrole": "undefined",
                     "subtype": "ssl",
@@ -5087,6 +5135,7 @@
             },
             "message": "SSL connection exempted",
             "network": {
+                "direction": "outbound",
                 "iana_number": "6",
                 "protocol": "https",
                 "transport": "tcp"
@@ -5130,7 +5179,7 @@
                 "port": 8080
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "ssl-negotiation",
@@ -5141,6 +5190,7 @@
                 "kind": "event",
                 "original": "date=2020-02-07 time=11:10:58 logid=\"1702062101\" type=\"utm\" subtype=\"ssl\" eventtype=\"ssl-negotiation\" level=\"warning\" vd=\"vdom1\" eventtime=1581102658589415731 tz=\"-0800\" action=\"blocked\" policyid=1 sessionid=141224 service=\"HTTPS\" profile=\"deep-inspection-clone\" srcip=10.1.100.66 srcport=33666 dstip=172.16.200.99 dstport=8080 srcintf=\"port2\" srcintfrole=\"undefined\" dstintf=\"port3\" dstintfrole=\"undefined\" proto=6 eventsubtype=\"unexpected-protocol\" msg=\"SSL connection is blocked.\"",
                 "outcome": "success",
+                "reason": "unexpected-protocol",
                 "start": "2020-02-07T11:10:58.589-08:00",
                 "timezone": "-0800",
                 "type": [
@@ -5151,7 +5201,6 @@
                 "firewall": {
                     "action": "blocked",
                     "dstintfrole": "undefined",
-                    "eventsubtype": "unexpected-protocol",
                     "sessionid": "141224",
                     "srcintfrole": "undefined",
                     "subtype": "ssl",
@@ -5164,6 +5213,7 @@
             },
             "message": "SSL connection is blocked.",
             "network": {
+                "direction": "internal",
                 "iana_number": "6",
                 "protocol": "https",
                 "transport": "tcp"
@@ -5204,6 +5254,7 @@
         {
             "@timestamp": "2021-06-17T16:55:26.000-07:00",
             "destination": {
+                "domain": "www.fortinet.com",
                 "geo": {
                     "city_name": "London",
                     "continent_name": "Europe",
@@ -5220,7 +5271,7 @@
                 "port": 443
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "ssl-negotiation",
@@ -5231,27 +5282,17 @@
                 "kind": "event",
                 "original": "date=2021-06-17 time=16:55:26 eventtime=1623974126384215772 tz=\"-0700\" logid=\"1702062103\" type=\"utm\" subtype=\"ssl\" eventtype=\"ssl-negotiation\" level=\"information\" vd=\"vdom1\" action=\"info\" policyid=1 sessionid=6361 service=\"HTTPS\" profile=\"deep-inspection-clone\" srcip=10.1.100.11 srcport=48892 dstip=81.2.69.192 dstport=443 srcintf=\"port2\" srcintfrole=\"undefined\" dstintf=\"port3\" dstintfrole=\"undefined\" srcuuid=\"8666f70e-cfb9-51eb-4991-9012417d69da\" dstuuid=\"8666f70e-cfb9-51eb-4991-9012417d69da\" proto=6 sni=\"www.fortinet.com\" eventsubtype=\"server-cert-info\" hostname=\"www.fortinet.com\" notbefore=\"2021-03-13T00:00:00Z\" notafter=\"2022-04-13T23:59:59Z\" issuer=\"DigiCert TLS RSA SHA256 2020 CA1\" cn=\"*.fortinet.com\" san=\"*.fortinet.com;www.fortinet.com;fortinet.com\" sn=\"000aa00a00000a00000a00a00aa000a0\" ski=\"df9152b605cc18b346efb34de6907275dbdb2b3c\" certhash=\"1d55cd34a1ed5d3f69bd825a45e04fbd2efba937\" keyalgo=\"rsa\" keysize=2048",
                 "outcome": "success",
+                "reason": "server-cert-info",
                 "start": "2021-06-17T16:55:26.384-07:00",
                 "timezone": "-0700"
             },
             "fortinet": {
                 "firewall": {
                     "action": "info",
-                    "certhash": "1d55cd34a1ed5d3f69bd825a45e04fbd2efba937",
-                    "cn": "*.fortinet.com",
                     "dstintfrole": "undefined",
                     "dstuuid": "8666f70e-cfb9-51eb-4991-9012417d69da",
-                    "eventsubtype": "server-cert-info",
-                    "issuer": "DigiCert TLS RSA SHA256 2020 CA1",
-                    "keyalgo": "rsa",
-                    "keysize": "2048",
-                    "notafter": "2022-04-13T23:59:59Z",
-                    "notbefore": "2021-03-13T00:00:00Z",
-                    "san": "*.fortinet.com;www.fortinet.com;fortinet.com",
                     "sessionid": "6361",
                     "ski": "df9152b605cc18b346efb34de6907275dbdb2b3c",
-                    "sn": "000aa00a00000a00000a00a00aa000a0",
-                    "sni": "www.fortinet.com",
                     "srcintfrole": "undefined",
                     "srcuuid": "8666f70e-cfb9-51eb-4991-9012417d69da",
                     "subtype": "ssl",
@@ -5263,6 +5304,7 @@
                 "level": "information"
             },
             "network": {
+                "direction": "outbound",
                 "iana_number": "6",
                 "protocol": "https",
                 "transport": "tcp"
@@ -5283,6 +5325,9 @@
                 "vendor": "Fortinet"
             },
             "related": {
+                "hash": [
+                    "1d55cd34a1ed5d3f69bd825a45e04fbd2efba937"
+                ],
                 "ip": [
                     "10.1.100.11",
                     "81.2.69.192"
@@ -5299,6 +5344,34 @@
             "tags": [
                 "preserve_original_event"
             ],
+            "tls": {
+                "client": {
+                    "server_name": "www.fortinet.com",
+                    "x509": {
+                        "public_key_algorithm": "rsa"
+                    }
+                },
+                "server": {
+                    "hash": {
+                        "sha1": "1d55cd34a1ed5d3f69bd825a45e04fbd2efba937"
+                    },
+                    "issuer": "DigiCert TLS RSA SHA256 2020 CA1",
+                    "not_after": "2022-04-13T23:59:59Z",
+                    "not_before": "2021-03-13T00:00:00Z",
+                    "x509": {
+                        "alternative_names": [
+                            "*.fortinet.com",
+                            "www.fortinet.com",
+                            "fortinet.com"
+                        ],
+                        "not_after": "2022-04-13T23:59:59Z",
+                        "not_before": "2021-03-13T00:00:00Z",
+                        "public_key_algorithm": "rsa",
+                        "public_key_size": 2048,
+                        "serial_number": "000aa00a00000a00000a00a00aa000a0"
+                    }
+                }
+            },
             "url": {
                 "domain": "www.fortinet.com"
             }
@@ -5306,6 +5379,7 @@
         {
             "@timestamp": "2021-06-17T16:55:26.000-07:00",
             "destination": {
+                "domain": "www.fortinet.com",
                 "geo": {
                     "city_name": "London",
                     "continent_name": "Europe",
@@ -5322,7 +5396,7 @@
                 "port": 443
             },
             "ecs": {
-                "version": "8.9.0"
+                "version": "8.10.0"
             },
             "event": {
                 "action": "ssl-negotiation",
@@ -5333,27 +5407,22 @@
                 "kind": "event",
                 "original": "date=2021-06-17 time=16:55:26 eventtime=1623974126411127210 tz=\"-0700\" logid=\"1702062103\" type=\"utm\" subtype=\"ssl\" eventtype=\"ssl-negotiation\" level=\"information\" vd=\"vdom1\" action=\"info\" policyid=1 sessionid=6361 service=\"HTTPS\" profile=\"deep-inspection-clone\" srcip=10.1.100.11 srcport=48892 dstip=81.2.69.192 dstport=443 srcintf=\"port2\" srcintfrole=\"undefined\" dstintf=\"port3\" dstintfrole=\"undefined\" srcuuid=\"8666f70e-cfb9-51eb-4991-9012417d69da\" dstuuid=\"8666f70e-cfb9-51eb-4991-9012417d69da\" proto=6 tlsver=\"tls1.3\" sni=\"www.fortinet.com\" cipher=\"0x1302\" authalgo=\"rsa\" kxproto=\"ecdhe\" kxcurve=\"secp256r1\" eventsubtype=\"handshake-done\" hostname=\"www.fortinet.com\" handshake=\"full\" mitm=\"yes\"",
                 "outcome": "success",
+                "reason": "handshake-done",
                 "start": "2021-06-17T16:55:26.411-07:00",
                 "timezone": "-0700"
             },
             "fortinet": {
                 "firewall": {
                     "action": "info",
-                    "authalgo": "rsa",
-                    "cipher": "0x1302",
                     "dstintfrole": "undefined",
                     "dstuuid": "8666f70e-cfb9-51eb-4991-9012417d69da",
-                    "eventsubtype": "handshake-done",
                     "handshake": "full",
-                    "kxcurve": "secp256r1",
                     "kxproto": "ecdhe",
                     "mitm": "yes",
                     "sessionid": "6361",
-                    "sni": "www.fortinet.com",
                     "srcintfrole": "undefined",
                     "srcuuid": "8666f70e-cfb9-51eb-4991-9012417d69da",
                     "subtype": "ssl",
-                    "tlsver": "tls1.3",
                     "type": "utm",
                     "vd": "vdom1"
                 }
@@ -5362,6 +5431,7 @@
                 "level": "information"
             },
             "network": {
+                "direction": "outbound",
                 "iana_number": "6",
                 "protocol": "https",
                 "transport": "tcp"
@@ -5398,8 +5468,147 @@
             "tags": [
                 "preserve_original_event"
             ],
+            "tls": {
+                "cipher": "0x1302",
+                "client": {
+                    "server_name": "www.fortinet.com",
+                    "x509": {
+                        "public_key_algorithm": "rsa"
+                    }
+                },
+                "curve": "secp256r1",
+                "established": true,
+                "server": {
+                    "x509": {
+                        "public_key_algorithm": "rsa"
+                    }
+                },
+                "version": "1.3",
+                "version_protocol": "tls"
+            },
             "url": {
                 "domain": "www.fortinet.com"
+            }
+        },
+        {
+            "destination": {
+                "as": {
+                    "number": 29518,
+                    "organization": {
+                        "name": "Bredband2 AB"
+                    }
+                },
+                "bytes": 0,
+                "geo": {
+                    "city_name": "Linköping",
+                    "continent_name": "Europe",
+                    "country_iso_code": "SE",
+                    "country_name": "Sweden",
+                    "location": {
+                        "lat": 58.4167,
+                        "lon": 15.6167
+                    },
+                    "region_iso_code": "SE-E",
+                    "region_name": "Östergötland County"
+                },
+                "ip": "89.160.20.128",
+                "port": 443
+            },
+            "ecs": {
+                "version": "8.10.0"
+            },
+            "event": {
+                "action": "ftgd_allow",
+                "category": [
+                    "network"
+                ],
+                "code": "0317013312",
+                "kind": "event",
+                "original": "<165>1 2022-11-14T06:54:03Z use2-dmz-fw02 - - - - eventtime=1668408842876531561 tz=\"-0800\" logid=\"0317013312\" type=\"utm\" subtype=\"webfilter\" eventtype=\"ftgd_allow\" level=\"notice\" vd=\"root\" policyid=25 poluuid=\"ccb269e0-5735-51e9-a218-a397dd08b7eb\" policytype=\"policy\" sessionid=130637139 srcip=10.80.28.193 srcport=64152 srccountry=\"Reserved\" srcintf=\"az-b\" srcintfrole=\"undefined\" srcuuid=\"8666f70e-cfb9-51eb-4991-9012417d69da\" dstip=89.160.20.128 dstport=443 dstcountry=\"United States\" dstintf=\"port1\" dstintfrole=\"undefined\" dstuuid=\"ae28f494-5735-51e9-f247-d1d2ce663f4b\" proto=6 service=\"HTTPS\" hostname=\"[server.example.com](https://server.example.com/)\" profile=\"default-ipsoft\" action=\"passthrough\" reqtype=\"direct\" url=\"https://server.example.com/\" sentbyte=517 rcvdbyte=0 direction=\"outgoing\" msg=\"URL belongs to an allowed category in policy\" method=\"domain\" cat=52 catdesc=\"Information Technology\"",
+                "outcome": "success",
+                "start": "2022-11-13T22:54:02.876-08:00",
+                "timezone": "-0800",
+                "type": [
+                    "allowed"
+                ]
+            },
+            "fortinet": {
+                "firewall": {
+                    "action": "passthrough",
+                    "cat": "52",
+                    "dstcountry": "United States",
+                    "dstintfrole": "undefined",
+                    "dstuuid": "ae28f494-5735-51e9-f247-d1d2ce663f4b",
+                    "method": "domain",
+                    "policytype": "policy",
+                    "poluuid": "ccb269e0-5735-51e9-a218-a397dd08b7eb",
+                    "reqtype": "direct",
+                    "sessionid": "130637139",
+                    "srccountry": "Reserved",
+                    "srcintfrole": "undefined",
+                    "srcuuid": "8666f70e-cfb9-51eb-4991-9012417d69da",
+                    "subtype": "webfilter",
+                    "type": "utm",
+                    "vd": "root"
+                }
+            },
+            "log": {
+                "level": "notice",
+                "syslog": {
+                    "facility": {
+                        "code": 20
+                    },
+                    "priority": 165,
+                    "severity": {
+                        "code": 5
+                    }
+                }
+            },
+            "message": "URL belongs to an allowed category in policy",
+            "network": {
+                "bytes": 517,
+                "direction": "outbound",
+                "iana_number": "6",
+                "protocol": "https",
+                "transport": "tcp"
+            },
+            "observer": {
+                "egress": {
+                    "interface": {
+                        "name": "port1"
+                    }
+                },
+                "ingress": {
+                    "interface": {
+                        "name": "az-b"
+                    }
+                },
+                "product": "Fortigate",
+                "type": "firewall",
+                "vendor": "Fortinet"
+            },
+            "related": {
+                "ip": [
+                    "10.80.28.193",
+                    "89.160.20.128"
+                ]
+            },
+            "rule": {
+                "category": "Information Technology",
+                "id": "25",
+                "ruleset": "default-ipsoft"
+            },
+            "source": {
+                "bytes": 517,
+                "ip": "10.80.28.193",
+                "port": 64152
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "url": {
+                "domain": "[server.example.com](https://server.example.com/)",
+                "path": "https://server.example.com/"
             }
         }
     ]

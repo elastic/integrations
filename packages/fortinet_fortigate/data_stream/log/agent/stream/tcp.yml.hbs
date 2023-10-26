@@ -18,8 +18,12 @@ processors:
 {{#if external_interfaces.length}}
 processors:
 {{else}}
+{{#if internal_networks.length}}
+processors:
+{{else}}
 {{#if processors}}
 processors:
+{{/if}}
 {{/if}}
 {{/if}}
 {{/if}}
@@ -42,6 +46,15 @@ processors:
         external_interfaces:
           {{#each external_interfaces as |interface i|}}
           - {{interface}}
+          {{/each}}
+{{/if}}
+{{#if internal_networks.length}}
+  - add_fields:
+      target: _temp
+      fields:
+        internal_networks:
+          {{#each internal_networks as |network i|}}
+          - {{network}}
           {{/each}}
 {{/if}}
 {{#if tcp_options}}
