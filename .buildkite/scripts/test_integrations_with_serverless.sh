@@ -7,6 +7,7 @@ set -euo pipefail
 # default values
 SERVERLESS=${SERVERLESS:-"false"}
 STACK_VERSION=${STACK_VERSION:-""}
+UPLOAD_SAFE_LOGS=${UPLOAD_SAFE_LOGS:-"0"}
 # used in common.sh
 FORCE_CHECK_ALL=${FORCE_CHECK_ALL:-"false"}
 

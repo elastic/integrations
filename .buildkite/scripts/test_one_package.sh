@@ -5,6 +5,8 @@ source .buildkite/scripts/common.sh
 set -euo pipefail
 
 # default values
+STACK_VERSION=${STACK_VERSION:-""}
+UPLOAD_SAFE_LOGS=${UPLOAD_SAFE_LOGS:-"0"}
 SERVERLESS=false
 
 # used in common.sh

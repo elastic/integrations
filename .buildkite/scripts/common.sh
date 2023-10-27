@@ -665,7 +665,7 @@ process_package() {
         any_package_failing=1
     fi
 
-    if [ "${SEVERLESS}" == "false" ]; then
+    if [ "${SERVERLESS}" == "false" ]; then
         echo "Run benchmarks. TODO"
         # TODO: add benchmarks support (https://github.com/elastic/integrations/blob/befdc5cb752a08aaf5f79b0d9bdb68588ade9f27/.ci/Jenkinsfile#L180)
         # ${ELASTIC_PACKAGE_BIN} benchmark pipeline -v --report-format json --report-output file
