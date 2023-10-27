@@ -409,7 +409,7 @@ processors:
       if: ctx.fortinet?.firewall?.handshake == "full"
   - script:
       lang: painless
-      if: ctx.fortinet?.firewall?.tlsver != null
+      if: ctx.fortinet?.firewall?.tlsver instanceof String
       source: >-
         def pat = /\d+/;
         def tlsver = ctx.fortinet.firewall.tlsver.toLowerCase();
@@ -424,9 +424,9 @@ processors:
         }
   - append:
       field: vulnerability.category
-      value: "{{fortinet.firewall.dtype}}"
+      value: "{{{fortinet.firewall.dtype}}}"
       allow_duplicates: false
-      if: "ctx.fortinet?.firewall?.dtype != null"
+      if: ctx.fortinet?.firewall?.dtype instanceof String
   - rename:
       field: fortinet.firewall.ref
       target_field: event.reference
