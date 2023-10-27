@@ -25,7 +25,7 @@ processors:
         - '^Internal %{DATA:network.protocol} giving up on message to %{DATA:email.to.address} with subject %{GREEDYDATA:email.subject}.$'
         - '^Internal %{DATA:network.protocol} Error: %{GREEDYDATA:cisco_secure_email_gateway.log.description} to host %{IP:destination.ip}:%{NUMBER:destination.port:long} for recipient %{DATA:email.to.address}: %{GREEDYDATA:cisco_secure_email_gateway.log.subject}$'
         - '^MID %{NUMBER:email.message_id} RID \[%{DATA:cisco_secure_email_gateway.log.recipient_id}\] Response %{GREEDYDATA:cisco_secure_email_gateway.log.response}$'
-        - '^MID %{NUMBER:email.message_id} Subject %{GREEDYDATA:cisco_secure_email_gateway.log.subject}$'
+        - '^MID %{NUMBER:email.message_id} Subject \"%{GREEDYDATA:cisco_secure_email_gateway.log.subject}\"$'
         - '^MID %{NUMBER:email.message_id} %{GREEDYDATA:cisco_secure_email_gateway.log.message_status} for delivery$'
         - '^Message %{GREEDYDATA:cisco_secure_email_gateway.log.message_status} MID %{NUMBER:email.message_id} done$'
         - '^MID %{NUMBER:email.message_id} interim verdict using engine\: %{GREEDYDATA:cisco_secure_email_gateway.log.engine}$'
@@ -51,6 +51,44 @@ processors:
       field: event.type
       if: ctx.cisco_secure_email_gateway?.log?.type == 'changed'
       value: change
+  - lowercase:
+      field: cisco_secure_email_gateway.log.spf_aligned
+      tag: 'lowercase_spf_aligned'
+      ignore_missing: true
+      if: ctx.cisco_secure_email_gateway?.log?.spf_aligned != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - lowercase:
+      field: cisco_secure_email_gateway.log.dkim_aligned
+      tag: 'lowercase_dkim_aligned'
+      ignore_missing: true
+      if: ctx.cisco_secure_email_gateway?.log?.dkim_aligned != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: cisco_secure_email_gateway.log.spf_aligned
+      tag: convert_cisco_secure_email_gateway_log_spf_aligned
+      type: boolean
+      ignore_missing: true
+      if: ctx.cisco_secure_email_gateway?.log?.spf_aligned != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: cisco_secure_email_gateway.log.dkim_aligned
+      tag: convert_cisco_secure_email_gateway_log_dkim_aligned
+      type: boolean
+      ignore_missing: true
+      if: ctx.cisco_secure_email_gateway?.log?.dkim_aligned != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{cisco_secure_email_gateway.log.interface}}}'

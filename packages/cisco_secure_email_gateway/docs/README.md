@@ -263,8 +263,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2023-03-17T18:24:37.000Z",
     "agent": {
-        "ephemeral_id": "1848b47d-0e94-4282-b80d-e358cbf210f5",
-        "id": "105adc04-c966-425d-8527-bbe6cd863833",
+        "ephemeral_id": "4abfe524-b65c-4e54-9cf7-01ce5941ed09",
+        "id": "d667e418-5ad9-431c-bb51-f80161727008",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.7.1"
@@ -286,7 +286,7 @@ An example event for `log` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "105adc04-c966-425d-8527-bbe6cd863833",
+        "id": "d667e418-5ad9-431c-bb51-f80161727008",
         "snapshot": false,
         "version": "8.7.1"
     },
@@ -303,7 +303,7 @@ An example event for `log` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "cisco_secure_email_gateway.log",
-        "ingested": "2023-10-25T12:32:32Z",
+        "ingested": "2023-10-27T12:31:15Z",
         "kind": "event",
         "timezone": "UTC"
     },
@@ -313,7 +313,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "info",
         "source": {
-            "address": "192.168.242.6:45965"
+            "address": "192.168.243.5:36975"
         },
         "syslog": {
             "priority": 166
@@ -391,7 +391,7 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.device_direction |  | keyword |
 | cisco_secure_email_gateway.log.disk_io | Disk I/O Utilization. | long |
 | cisco_secure_email_gateway.log.disposition | The file reputation disposition values are: MALICIOUS CLEAN FILE UNKNOWN - When the reputation score is zero. VERDICT UNKNOWN - When the disposition is FILE UNKNOWN and score is non-zero. LOW RISK - When no dynamic content is found in a file after file analysis, the verdict is Low Risk. The file is not sent for file analysis, and the message continues through the email pipeline. | keyword |
-| cisco_secure_email_gateway.log.dkim_aligned | Protocol DKIM aligned is true or false. | keyword |
+| cisco_secure_email_gateway.log.dkim_aligned | Protocol DKIM aligned is true or false. | boolean |
 | cisco_secure_email_gateway.log.dns.hard_bounces | DNS Hard Bounces. | long |
 | cisco_secure_email_gateway.log.dns.requests | DNS Requests. | long |
 | cisco_secure_email_gateway.log.domain |  | keyword |
@@ -508,7 +508,7 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.severity |  | keyword |
 | cisco_secure_email_gateway.log.soft_bounced_events | Soft Bounced Events. | long |
 | cisco_secure_email_gateway.log.sophos_ld | Percent CPU used by Sophos anti-virus scanning. | long |
-| cisco_secure_email_gateway.log.spf_aligned | Protocol SPF aligned is true or false. | keyword |
+| cisco_secure_email_gateway.log.spf_aligned | Protocol SPF aligned is true or false. | boolean |
 | cisco_secure_email_gateway.log.spy_name | The name of the threat, if a malware is found in the file during file analysis. | keyword |
 | cisco_secure_email_gateway.log.start_time |  | keyword |
 | cisco_secure_email_gateway.log.subject |  | text |
