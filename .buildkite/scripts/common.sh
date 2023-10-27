@@ -329,7 +329,7 @@ prepare_stack() {
     else
         local version=$(oldest_supported_version)
         if [[ "${version}" != "null" ]]; then
-            args+="${args} --version ${version}"
+            args="${args} --version ${version}"
         fi
     fi
 
