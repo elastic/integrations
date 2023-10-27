@@ -136,11 +136,11 @@ After the integration is successfully configured, clicking on the Assets tab of 
 
 ## Troubleshooting
 
-- `apache_tomcat.access.header_forwarder` is renamed to `client.ip` in version `0.16.1` of this integration. Hence please consider changing `apache_tomcat.access.header_forwarder` to `client.ip` field where it is being used. By using the [Update By Query API](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update-by-query.html#docs-update-by-query) `apache_tomcat.access.header_forwarder` can be renamed to `client.ip` field for all the documents which would help to adapt this change.
+- `apache_tomcat.access.header_forwarder` is renamed to `client.ip` in version `0.16.1` of this integration. Hence please consider changing `apache_tomcat.access.header_forwarder` to `client.ip` field where it is being used. By using the [Update By Query API](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update-by-query.html#docs-update-by-query-api-ingest-pipeline), `apache_tomcat.access.header_forwarder` can be renamed to `client.ip` field for all the documents which would help to adapt this change.
 
-The following steps must be performed to change the field name for existing documents by using an update query.
+The following steps must be performed in "Dev Tools" to change the field name for existing documents:
 
-1. Create a rename processor by performing the following steps in the Dev tools.
+1. Create a rename processor by performing the following step using the "Pipeline API".
 ```
 PUT _ingest/pipeline/rename
 {
@@ -154,7 +154,7 @@ PUT _ingest/pipeline/rename
   } ]
 }
 ```
-2. Apply the created pipeline to all the existing documents under the index.
+2. Apply the created pipeline to all the existing documents under the index `logs-apache_tomcat.access-default` using "Update By Query API".
 ```
 POST logs-apache_tomcat.access-default/_update_by_query?conflicts=proceed&pipeline=rename
 ```
