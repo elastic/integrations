@@ -443,9 +443,11 @@ is_pr_affected() {
         return 1
     fi
 
-    if ! is_supported_capability ; then
-        echo "[${package}] PR is not affected: capabilities not mached with the project (${SERVERLESS_PROJECT})"
-        return 1
+    if [[ "${SERVERLESS}" == "true" ]]; then
+        if ! is_supported_capability ; then
+            echo "[${package}] PR is not affected: capabilities not mached with the project (${SERVERLESS_PROJECT})"
+            return 1
+        fi
     fi
 
     if [[ ${FORCE_CHECK_ALL} == "true" ]];then

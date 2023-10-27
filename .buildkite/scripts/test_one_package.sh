@@ -11,6 +11,8 @@ SERVERLESS=false
 
 # used in common.sh
 FORCE_CHECK_ALL=${FORCE_CHECK_ALL:-"false"}
+SKIPPED_PACKAGES_FILE_PATH="${WORKSPACE}/skipped_packages.txt"
+FAILED_PACKAGES_FILE_PATH="${WORKSPACE}/failed_packages.txt"
 
 package="$1"
 
