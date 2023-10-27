@@ -22,4 +22,3 @@ for package in ${PACKAGE_LIST}; do
     echo "      artifact_paths:"
     echo "        - build/results/*.xml"
 done
-

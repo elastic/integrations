@@ -7,7 +7,6 @@ set -euo pipefail
 # default values
 STACK_VERSION=${STACK_VERSION:-""}
 UPLOAD_SAFE_LOGS=${UPLOAD_SAFE_LOGS:-"0"}
-SERVERLESS=false
 
 # used in common.sh
 FORCE_CHECK_ALL=${FORCE_CHECK_ALL:-"false"}
@@ -32,8 +31,6 @@ with_docker_compose
 with_kubernetes
 
 use_elastic_package
-
-prepare_stack
 
 pushd packages > /dev/null
 process_package ${package}

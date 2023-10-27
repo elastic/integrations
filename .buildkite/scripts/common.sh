@@ -671,6 +671,11 @@ process_package() {
     echo "--- Package ${package}: check"
     pushd ${package} > /dev/null
 
+    # For non serverless, each Elastic stack is boot up checking each package manifest
+    if [[ ${SERVERLESS} == "false" ]] ; then
+        prepare_stack
+    fi
+
     clean_safe_logs
 
     if [[ ${SERVERLESS} == "true" ]] ; then

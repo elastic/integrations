@@ -27,7 +27,6 @@ if running_on_buildkite; then
     buildkite-agent annotate "Serverless Project: ${SERVERLESS_PROJECT}" --context "ctx-info-${SERVERLESS_PROJECT}" --style "info"
 fi
 
-
 if [ ! -d packages ]; then
     echo "Missing packages folder"
     if running_on_buildkite ; then
