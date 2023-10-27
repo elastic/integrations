@@ -328,7 +328,7 @@ prepare_stack() {
         args="${args} --version ${STACK_VERSION}"
     else
         local version=$(oldest_supported_version)
-        if [[ "${kibana_version}" != "null" ]]; then
+        if [[ "${version}" != "null" ]]; then
             args+="${args} --version ${version}"
         fi
     fi
