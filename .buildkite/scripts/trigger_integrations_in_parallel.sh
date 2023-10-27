@@ -16,7 +16,7 @@ echo "    steps:"
 for package in ${PACKAGE_LIST}; do
     echo "    - label: \"Check integrations ${package}\""
     echo "      key: \"test-integrations-${package}\""
-    echo "      command: \".buildkite/scripts/run_integrations_sync.sh\""
+    echo "      command: \".buildkite/scripts/test_one_package.sh\""
     echo "      agents:"
     echo "        provider: gcp"
     echo "      artifact_paths:"

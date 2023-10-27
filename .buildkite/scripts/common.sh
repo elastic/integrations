@@ -622,7 +622,7 @@ upload_safe_logs_from_package() {
 }
 
 # Helper to run all tests and checks for a package
-check_package() {
+process_package() {
     local package="$1"
 
     echo "--- Package ${package}: check"

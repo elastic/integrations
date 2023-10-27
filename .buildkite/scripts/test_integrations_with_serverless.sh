@@ -50,7 +50,7 @@ any_package_failing=0
 
 pushd packages > /dev/null
 for package in $(list_all_directories); do
-    check_package ${package}
+    process_package ${package}
 done
 popd > /dev/null
 

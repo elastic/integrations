@@ -29,4 +29,4 @@ use_elastic_package
 
 prepare_stack
 
-check_package ${package}
+process_package ${package}
