@@ -12,6 +12,8 @@ SERVERLESS=false
 # used in common.sh
 FORCE_CHECK_ALL=${FORCE_CHECK_ALL:-"false"}
 
+package="$1"
+
 if [ ! -d packages ]; then
     echo "Missing packages folder"
     if running_on_buildkite ; then
@@ -31,4 +33,6 @@ use_elastic_package
 
 prepare_stack
 
+pushd packages > /dev/null
 process_package ${package}
+popd > /dev/null
