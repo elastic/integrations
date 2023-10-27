@@ -480,7 +480,7 @@ is_pr_affected() {
     fi
 
     echo "[${package}] git-diff: check non-package files"
-    if git diff --name-only $(git merge-base ${from} ${to}) ${to} | egrep '^(packages/|.github/CODEOWNERS)' ; then
+    if git diff --name-only $(git merge-base ${from} ${to}) ${to} | egrep -v '^(packages/|.github/CODEOWNERS)' ; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi
