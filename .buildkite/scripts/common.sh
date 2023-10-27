@@ -352,7 +352,11 @@ prepare_serverless_stack() {
     # used as Elastic stack version (for agents) the default version in elastic-package
 
     # Creating a new profile allow to set a specific name for the serverless project
-    create_elastic_package_profile "integrations-${BUILDKITE_PULL_REQUEST}-${BUILDKITE_BUILD_NUMBER}-${SERVERLESS_PROJECT}"
+    local profile_name="integrations-${BUILDKITE_PIPELINE_SLUG}-${BUILDKITE_BUILD_NUMBER}-${SERVERLESS_PROJECT}"
+    if [[ "${BUILDKITE_PULL_REQUEST}" != "false" ]]; then
+        profile_name="integrations-${BUILDKITE_PULL_REQUEST}-${BUILDKITE_BUILD_NUMBER}-${SERVERLESS_PROJECT}"
+    fi
+    create_elastic_package_profile ${profile_name}
 
     export EC_API_KEY=${EC_API_KEY_SECRET}
     export EC_HOST=${EC_HOST_SECRET}
