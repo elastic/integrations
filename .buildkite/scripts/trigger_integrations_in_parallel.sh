@@ -14,12 +14,12 @@ echo "    key: \"integration-tests\""
 echo "    steps:"
 
 for package in ${PACKAGE_LIST}; do
-    echo "  - label: \"Check integrations ${package}\""
-    echo "    key: \"test-integrations-${package}\""
-    echo "    command: \".buildkite/scripts/run_integrations_sync.sh\""
-    echo "    agents:"
-    echo "      provider: gcp"
-    echo "    artifact_paths:"
-    echo "      - build/results/*.xml"
+    echo "    - label: \"Check integrations ${package}\""
+    echo "      key: \"test-integrations-${package}\""
+    echo "      command: \".buildkite/scripts/run_integrations_sync.sh\""
+    echo "      agents:"
+    echo "        provider: gcp"
+    echo "      artifact_paths:"
+    echo "        - build/results/*.xml"
 done
 
