@@ -378,19 +378,59 @@ is_spec_3_0_0() {
     return 1
 }
 
+echoerr() {
+    echo "$@" 1>&2
+
+}
+get_commit_from_build() {
+    local pipeline="$1"
+    local branch="$2"
+    local status="$3"
+
+    local previous_commit=$(curl -sH "Authorization: Bearer ${BUILDKITE_API_TOKEN}" "https://api.buildkite.com/v2/organizations/elastic/pipelines/${BUILDKITE_PIPELINE_SLUG}/builds?branch=${BUILDKITE_BRANCH}&state=${status}&per_page=1" | jq '.[0] |.commit}')
+    echoerr ">>> Commit from ${pipeline} - branch ${branch} - status: ${status} -> ${previous_commit}"
+
+    echo ${previous_commit}
+}
+
 get_from_changeset() {
-    if [ "${BUILDKITE_PULL_REQUEST_BASE_BRANCH}" != "false" ]; then
+    local from=""
+    if [ "${BUILDKITE_PULL_REQUEST}" != "false" ]; then
         # pull request
         echo "origin/${BUILDKITE_PULL_REQUEST_BASE_BRANCH}"
         return
     fi
-    # main or backport branches
-    previous_commit=$(git rev-parse --verify FETCH_HEAD~1)
-    echo "${previous_commit}"
+
+    local previous_commit=$(get_commit_from_build ${BUILDKITE_PIPELINE_SLUG} ${BUILDKITE_BRANCH} "finished")
+
+    if [[ "${previous_commit}" != "null" ]] ; then
+        from="${previous_commit}"
+    fi
+
+    from="${BUILDKITE_COMIMT}^"
+
+    if [[ "${BUILDKITE_BRANCH}" == "main" || ${BUILDKITE_BRANCH} =~ ^bakcport- ]]; then
+        local previous_successful_commit=$(get_commit_from_build ${BUILDKITE_PIPELINE_SLUG} ${BUILDKITE_BRANCH} "passed")
+
+        from="${previous_successful_commit}"
+        if [[ "${previous_successful_commit}" == "null" ]]; then
+            from="origin/${BUILDKITE_BRANCH}^"
+        fi
+    fi
+
+    echo "${from}"
+    ## main or backport branches
+    # previous_commit=$(git rev-parse --verify FETCH_HEAD~1)
+    # echo "${previous_commit}"
 }
 
 get_to_changeset() {
-    echo "${BUILDKITE_COMMIT}"
+    local to="${BUILDKITE_COMMIT}"
+
+    if [[ "${BUILDKITE_BRANCH}" == "main" || ${BUILDKITE_BRANCH} =~ ^bakcport- ]]; then
+        to="origin/${BUILDKITE_BRANCH}"
+    fi
+    echo ${to}
 }
 
 # TODO: it is required to have GIT_PREVIOUS_COMMIT and GIT_PREVIOUS_SUCCESSFUL_COMMIT
@@ -418,6 +458,7 @@ is_pr_affected() {
     # def from = env.CHANGE_TARGET?.trim() ? "origin/${env.CHANGE_TARGET}" : "${env.GIT_PREVIOUS_COMMIT?.trim() ? env.GIT_PREVIOUS_COMMIT : env.GIT_BASE_COMMIT}"
     local from="$(get_from_changeset)"
     local to="$(get_to_changeset)"
+    echo ">> Changesets: FROM: '${from}' - TO: '${to}'"
 
     # TODO: If running for an integration branch (main, backport-*) check with
     # GIT_PREVIOUS_SUCCESSFUL_COMMIT to check if the branch is still healthy.
