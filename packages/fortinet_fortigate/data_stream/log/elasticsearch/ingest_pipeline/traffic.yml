@@ -11,7 +11,7 @@ processors:
 - set:
     field: event.outcome
     value: success
-    if: "ctx.fortinet?.firewall?.action != null"
+    if: ctx.fortinet?.firewall?.action != null
 - append:
     field: event.category
     value: network
@@ -21,23 +21,23 @@ processors:
 - append:
     field: event.type
     value: start
-    if: "ctx.fortinet?.firewall?.action == 'start'"
+    if: ctx.fortinet?.firewall?.action == 'start'
 - append:
     field: event.type
     value: end
-    if: "ctx.fortinet?.firewall?.action != null && ctx.fortinet?.firewall?.action !='start'"
+    if: ctx.fortinet?.firewall?.action != null && ctx.fortinet?.firewall?.action !='start'
 - append:
     field: event.type
     value: protocol
-    if: "ctx.fortinet?.firewall?.app != null && ctx.fortinet?.firewall?.action != 'deny'"
+    if: ctx.fortinet?.firewall?.app != null && ctx.fortinet?.firewall?.action != 'deny'
 - append:
     field: event.type
     value: allowed
-    if: "ctx.fortinet?.firewall?.utmaction == null && ctx.fortinet?.firewall?.action != 'deny'"
+    if: ctx.fortinet?.firewall?.utmaction == null && ctx.fortinet?.firewall?.action != 'deny'
 - append:
     field: event.type
     value: denied
-    if: "ctx.fortinet?.firewall?.utmaction == 'block' || ctx.fortinet?.firewall?.action == 'deny'"
+    if: ctx.fortinet?.firewall?.utmaction == 'block' || ctx.fortinet?.firewall?.action == 'deny'
 - rename:
     field: fortinet.firewall.dstip
     target_field: destination.ip
@@ -80,7 +80,7 @@ processors:
 - append:
     field: email.to.address
     value: "{{fortinet.firewall.dstcollectedemail}}"
-    if: "ctx?.fortinet?.firewall?.dstcollectedemail != null"
+    if: ctx?.fortinet?.firewall?.dstcollectedemail != null
 - rename:
     field: fortinet.firewall.dstname
     target_field: destination.address
@@ -125,11 +125,11 @@ processors:
     field: fortinet.firewall.user
     target_field: source.user.name
     ignore_missing: true
-    if: "ctx.source?.user?.name == null"
+    if: ctx.source?.user?.name == null
 - append:
     field: email.from.address
     value: "{{fortinet.firewall.collectedemail}}"
-    if: "ctx?.fortinet?.firewall?.collectedemail != null"
+    if: ctx?.fortinet?.firewall?.collectedemail != null
 - convert:
     field: fortinet.firewall.sentpkt
     target_field: source.packets
@@ -165,7 +165,7 @@ processors:
     field: fortinet.firewall.logid
     target_field: event.code
     ignore_missing: true
-    if: "ctx.event?.code == null"
+    if: ctx.event?.code == null
 - rename:
     field: fortinet.firewall.msg
     target_field: message
@@ -178,7 +178,7 @@ processors:
     field: fortinet.firewall.policyid
     target_field: rule.id
     ignore_missing: true
-    if: "ctx.rule?.id == null"
+    if: ctx.rule?.id == null
 - rename:
     field: fortinet.firewall.poluuid
     target_field: rule.uuid
