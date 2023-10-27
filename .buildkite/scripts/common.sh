@@ -306,18 +306,11 @@ is_supported_stack() {
 }
 
 oldest_supported_version() {
-    local kibana_version=$(cat manifest.yml | yq ".conditions.kibana.version")
+    local kibana_version=$(kibana_version_manifest)
     if [ $kibana_version != "null" ]; then
         python3 .buildkite/scripts/find_oldest_supported_version --manifest manifest.yml
         return
     fi
-
-    kibana_version=$(cat manifest.yml | yq ".conditions.\"kibana.version\"")
-    if [ $kibana_version != "null" ]; then
-        python3 .buildkite/scripts/find_oldest_supported_version --manifest manifest.yml
-        return
-    fi
-
     echo "null"
 }
 
@@ -325,6 +318,26 @@ create_elastic_package_profile() {
     local name="$1"
     ${ELASTIC_PACKAGE_BIN} profiles create "${name}"
     ${ELASTIC_PACKAGE_BIN} profiles use "${name}"
+}
+
+prepare_stack() {
+    echo "--- Prepare stack"
+
+    local args="-v"
+    if [ -n "${STACK_VERSION}" ]; then
+        args="${args} --version ${STACK_VERSION}"
+    else
+        local version=$(oldest_supported_version)
+        if [[ "${kibana_version}" != "null" ]]; then
+            args+="${args} --version ${version}"
+        fi
+    fi
+
+    echo "Boot up the Elastic stack"
+    ${ELASTIC_PACKAGE_BIN} stack up -d ${args}
+    echo ""
+    ${ELASTIC_PACKAGE_BIN} stack status
+    echo ""
 }
 
 prepare_serverless_stack() {
@@ -468,7 +481,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort # |egrep "netskope|logstash|ti_rapid7"
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort | head -n 10
 }
 
 check_package() {
@@ -606,4 +619,67 @@ upload_safe_logs_from_package() {
         "${JOB_GCS_BUCKET_INTERNAL}" \
         "${build_directory}/container-logs/*.log" \
         "${parent_folder}/${package}/container-logs/"
+}
+
+# Helper to run all tests and checks for a package
+check_package() {
+    local package="$1"
+
+    echo "--- Package ${package}: check"
+    pushd ${package} > /dev/null
+
+    clean_safe_logs
+
+    if [[ ${SERVERLESS} == "true" ]] ; then
+        if [[ "${package}" == "fleet_server" ]]; then
+            echo "fleet_server not supported. Skipped"
+            echo "- [${package}] not supported" >> ${SKIPPED_PACKAGES_FILE_PATH}
+            popd > /dev/null
+            return
+        fi
+        if ! is_spec_3_0_0 ; then
+            echo "Not v3 spec version. Skipped"
+            echo "- [${package}] spec <3.0.0" >> ${SKIPPED_PACKAGES_FILE_PATH}
+            popd > /dev/null
+            return
+        fi
+    fi
+
+    if ! reason=$(is_pr_affected ${package}) ; then
+        echo "${reason}"
+        echo "- ${reason}" >> ${SKIPPED_PACKAGES_FILE_PATH}
+        popd > /dev/null
+        return
+    fi
+
+    use_kind=0
+    if kubernetes_service_deployer_used ; then
+        echo "Kubernetes service deployer is used. Creating Kind cluster"
+        use_kind=1
+        create_kind_cluster
+    fi
+
+    if ! run_tests_package ${package} ; then
+        echo "[${package}] run_tests_package failed"
+        echo "- ${package}" >> ${FAILED_PACKAGES_FILE_PATH}
+        any_package_failing=1
+    fi
+
+    if [ "${SEVERLESS}" == "false" ]; then
+        echo "Run benchmarks. TODO"
+        # TODO: add benchmarks support (https://github.com/elastic/integrations/blob/befdc5cb752a08aaf5f79b0d9bdb68588ade9f27/.ci/Jenkinsfile#L180)
+        # ${ELASTIC_PACKAGE_BIN} benchmark pipeline -v --report-format json --report-output file
+    fi
+
+    if [ ${use_kind} -eq 1 ]; then
+        delete_kind_cluster
+    fi
+
+    if [ "$SERVERLESS" == "true" ]; then
+        teardown_serverless_test_package ${package}
+    else
+        teardown_test_package ${package}
+    fi
+
+    popd > /dev/null
 }
