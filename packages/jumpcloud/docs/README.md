@@ -117,9 +117,7 @@ All JumpCloud Directory Insights events are available in the `jumpcloud.events` 
 | jumpcloud.event.auth_meta.auth_methods.password.success |  | boolean |
 | jumpcloud.event.auth_method |  | keyword |
 | jumpcloud.event.base |  | keyword |
-| jumpcloud.event.changes.field |  | keyword |
-| jumpcloud.event.changes.from |  | boolean |
-| jumpcloud.event.changes.to |  | boolean |
+| jumpcloud.event.changes |  | flattened |
 | jumpcloud.event.client_ip |  | keyword |
 | jumpcloud.event.connection_id |  | keyword |
 | jumpcloud.event.deref |  | long |
@@ -235,11 +233,11 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2023-01-14T08:16:06.495Z",
     "agent": {
-        "ephemeral_id": "bcbcbf24-2cdd-480e-9b75-96c0bafe1473",
-        "id": "25caf3f7-6754-40c9-8532-3f029a1a5c4d",
+        "ephemeral_id": "6bb5080e-3d3c-4b5c-8d62-af0f195b06c8",
+        "id": "747b3f2a-8b40-4ee3-9ddd-ec86e51f9342",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.2"
+        "version": "8.10.1"
     },
     "client": {
         "geo": {
@@ -265,9 +263,9 @@ An example event for `events` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "25caf3f7-6754-40c9-8532-3f029a1a5c4d",
+        "id": "747b3f2a-8b40-4ee3-9ddd-ec86e51f9342",
         "snapshot": false,
-        "version": "8.8.2"
+        "version": "8.10.1"
     },
     "event": {
         "action": "admin_login_attempt",
@@ -275,12 +273,12 @@ An example event for `events` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2023-08-01T09:12:24.427Z",
+        "created": "2023-10-26T06:57:29.823Z",
         "dataset": "jumpcloud.events",
         "id": "63c264c6c1bd55c1b7e901a4",
-        "ingested": "2023-08-01T09:12:25Z",
+        "ingested": "2023-10-26T06:57:32Z",
         "module": "directory",
-        "original": "{\"@version\":\"1\",\"client_ip\":\"81.2.69.144\",\"event_type\":\"admin_login_attempt\",\"geoip\":{\"continent_code\":\"OC\",\"country_code\":\"AU\",\"latitude\":-27.658,\"longitude\":152.8915,\"region_code\":\"QLD\",\"region_name\":\"Queensland\",\"timezone\":\"Australia/Brisbane\"},\"id\":\"63c264c6c1bd55c1b7e901a4\",\"initiated_by\":{\"email\":\"user.name@sub.domain.tld\",\"id\":\"123456789abcdef123456789\",\"type\":\"admin\"},\"mfa\":true,\"organization\":\"1234abcdef123456789abcde\",\"provider\":null,\"service\":\"directory\",\"success\":true,\"timestamp\":\"2023-01-14T08:16:06.495Z\",\"useragent\":{\"device\":\"Mac\",\"major\":\"109\",\"minor\":\"0\",\"name\":\"Chrome\",\"os\":\"Mac OS X\",\"os_full\":\"Mac OS X 10.15.7\",\"os_major\":\"10\",\"os_minor\":\"15\",\"os_name\":\"Mac OS X\",\"os_patch\":\"7\",\"os_version\":\"10.15.7\",\"patch\":\"0\",\"version\":\"109.0.0.0\"}}",
+        "original": "{\"@version\":\"1\",\"changes\":[{\"field\":\"active\",\"to\":true},{\"field\":\"displayName\",\"to\":\"Willy Wonka\"},{\"field\":\"emails\",\"to\":[{\"primary\":true,\"type\":\"work\",\"value\":\"w.wonka@chocolate.biz\"}]},{\"field\":\"externalId\",\"to\":\"63ec9bba89a64e507ce0a4c2\"},{\"field\":\"schemas\",\"to\":[\"urn:ietf:params:scim:schemas:core:2.0:User\",\"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\"]}],\"client_ip\":\"81.2.69.144\",\"event_type\":\"admin_login_attempt\",\"geoip\":{\"continent_code\":\"OC\",\"country_code\":\"AU\",\"latitude\":-27.658,\"longitude\":152.8915,\"region_code\":\"QLD\",\"region_name\":\"Queensland\",\"timezone\":\"Australia/Brisbane\"},\"id\":\"63c264c6c1bd55c1b7e901a4\",\"initiated_by\":{\"email\":\"user.name@sub.domain.tld\",\"id\":\"123456789abcdef123456789\",\"type\":\"admin\"},\"mfa\":true,\"organization\":\"1234abcdef123456789abcde\",\"provider\":null,\"service\":\"directory\",\"success\":true,\"timestamp\":\"2023-01-14T08:16:06.495Z\",\"useragent\":{\"device\":\"Mac\",\"major\":\"109\",\"minor\":\"0\",\"name\":\"Chrome\",\"os\":\"Mac OS X\",\"os_full\":\"Mac OS X 10.15.7\",\"os_major\":\"10\",\"os_minor\":\"15\",\"os_name\":\"Mac OS X\",\"os_patch\":\"7\",\"os_version\":\"10.15.7\",\"patch\":\"0\",\"version\":\"109.0.0.0\"}}",
         "outcome": "success",
         "type": [
             "info"
@@ -291,6 +289,37 @@ An example event for `events` looks as following:
     },
     "jumpcloud": {
         "event": {
+            "changes": [
+                {
+                    "field": "active",
+                    "to": true
+                },
+                {
+                    "field": "displayName",
+                    "to": "Willy Wonka"
+                },
+                {
+                    "field": "emails",
+                    "to": [
+                        {
+                            "primary": true,
+                            "type": "work",
+                            "value": "w.wonka@chocolate.biz"
+                        }
+                    ]
+                },
+                {
+                    "field": "externalId",
+                    "to": "63ec9bba89a64e507ce0a4c2"
+                },
+                {
+                    "field": "schemas",
+                    "to": [
+                        "urn:ietf:params:scim:schemas:core:2.0:User",
+                        "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"
+                    ]
+                }
+            ],
             "client_ip": "81.2.69.144",
             "event_type": "admin_login_attempt",
             "geoip": {
