@@ -1,0 +1,51 @@
+#!/bin/bash
+
+source .buildkite/scripts/common.sh
+
+set -euo pipefail
+
+if [[ "$BUILDKITE_PIPELINE_SLUG" == "integrations" ]]; then
+    # FIXME: update condition depending on the pipeline steps triggered
+    if [[ "$BUILDKITE_STEP_KEY" == "test-integrations" ]]; then
+        unset ELASTIC_PACKAGE_AWS_ACCESS_KEY
+        unset ELASTIC_PACKAGE_AWS_SECRET_KEY
+        unset AWS_ACCESS_KEY_ID
+        unset AWS_SECRET_ACCESS_KEY
+
+        # Ensure that kind cluster is deleted
+        delete_kind_cluster
+
+        # Ensure elastic stack is stopped
+        if [ -f ${ELASTIC_PACKAGE_BIN} ]; then
+            echo "--- Take down the Elastic stack"
+            ${ELASTIC_PACKAGE_BIN} stack down -v
+        fi
+    fi
+fi
+
+if [[ "$BUILDKITE_PIPELINE_SLUG" == "integrations-serverless" ]]; then
+    if [[ "$BUILDKITE_STEP_KEY" == "test-integrations-serverless-project" ]]; then
+        unset ELASTIC_PACKAGE_AWS_ACCESS_KEY
+        unset ELASTIC_PACKAGE_AWS_SECRET_KEY
+        unset AWS_ACCESS_KEY_ID
+        unset AWS_SECRET_ACCESS_KEY
+
+        # Ensure that kind cluster is deleted
+        delete_kind_cluster
+
+        # Ensure elastic stack is stopped
+        if [ -f ${ELASTIC_PACKAGE_BIN} ]; then
+            echo "--- Take down the Elastic stack"
+            export EC_API_KEY=${EC_API_KEY_SECRET}
+            export EC_HOST=${EC_HOST_SECRET}
+
+            ${ELASTIC_PACKAGE_BIN} stack down -v
+
+            unset EC_API_KEY
+            unset EC_HOST
+        fi
+    fi
+fi
+
+unset_secrets
+cleanup

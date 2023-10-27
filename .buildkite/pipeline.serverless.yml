@@ -1,0 +1,73 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
+
+env:
+  SETUP_GVM_VERSION: "v0.5.1"
+  LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
+  DOCKER_COMPOSE_VERSION: "v2.17.2"
+  KIND_VERSION: 'v0.20.0'
+  K8S_VERSION: 'v1.27.3'
+  YQ_VERSION: 'v4.35.2'
+  # Elastic package settings
+  # Manage docker output/logs
+  ELASTIC_PACKAGE_COMPOSE_DISABLE_ANSI: "true"
+  ELASTIC_PACKAGE_COMPOSE_DISABLE_PULL_PROGRESS_INFORMATION: "true"
+  # Default license to use by `elastic-package build`
+  ELASTIC_PACKAGE_REPOSITORY_LICENSE: "licenses/Elastic-2.0.txt"
+  # Link definitions path (full path to be set in the corresponding step)
+  ELASTIC_PACKAGE_LINKS_FILE_PATH: "links_table.yml"
+  # Disable comparison of results in pipeline tests to avoid errors related to GeoIP fields
+  ELASTIC_PACKAGE_SERVERLESS_PIPELINE_TEST_DISABLE_COMPARE_RESULTS: "true"
+
+steps:
+  - input: "Input values for the variables"
+    key: "input-variables"
+    fields:
+    - select: "SERVERLESS_PROJECT"
+      key: "SERVERLESS_PROJECT"
+      options:
+        - label: "observability"
+          value: "observability"
+        - label: "security"
+          value: "security"
+      default: "observability"
+    if: "build.source == 'ui'"
+
+  - wait: ~
+    if: "build.source == 'ui'"
+    allow_dependency_failure: false
+
+  - label: ":white_check_mark: Check go sources"
+    key: "check"
+    command: ".buildkite/scripts/check_sources.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "8"
+      memory: "4G"
+
+  - label: "Check integrations in serverless"
+    key: "test-integrations-serverless-project"
+    command: ".buildkite/scripts/test_integrations_with_serverless.sh"
+    timeout_in_minutes: 120
+    env:
+      SERVERLESS: true
+      FORCE_CHECK_ALL: true
+      UPLOAD_SAFE_LOGS: 1
+    agents:
+      provider: "gcp"
+    artifact_paths:
+      - "build/test-results/*.xml"
+      # - "build/elastic-stack-dump/*/logs/*.log"
+      # - "build/elastic-stack-dump/*/logs/fleet-server-internal/**/*"
+    depends_on:
+      - step: "check"
+        allow_failure: false
+
+  - wait: ~
+    continue_on_failure: true
+
+  - label: ":junit: Junit annotate"
+    plugins:
+      - junit-annotate#v2.4.1:
+          artifacts: "build/test-results/*.xml"
+    agents:
+      provider: "gcp"  # junit plugin requires docker
