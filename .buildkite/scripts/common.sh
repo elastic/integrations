@@ -8,6 +8,8 @@ platform_type="$(uname)"
 hw_type="$(uname -m)"
 platform_type_lowercase="${platform_type,,}"
 
+SCRIPTS_BUILDKITE_PATH="${WORKSPACE}/.buildkite/scripts"
+
 GOOGLE_CREDENTIALS_FILENAME="google-cloud-credentials.json"
 export ELASTIC_PACKAGE_BIN=${WORKSPACE}/build/elastic-package
 
@@ -308,7 +310,7 @@ is_supported_stack() {
 oldest_supported_version() {
     local kibana_version=$(kibana_version_manifest)
     if [ $kibana_version != "null" ]; then
-        python3 .buildkite/scripts/find_oldest_supported_version.py --manifest manifest.yml
+        python3 ${SCRIPTS_BUILDKITE_PATH}/find_oldest_supported_version.py --manifest manifest.yml
         return
     fi
     echo "null"
