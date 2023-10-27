@@ -25,16 +25,19 @@ program: |
         "pipeline_source_map":
           get(state.url + "/pipelines/" + pipeline_name + "?graph=true&vertices=true")
             .as(resp, bytes(resp.Body).decode_json()
-              .as(body, body.pipelines.map(pipeline_name, ((body.pipelines[pipeline_name].graph.graph.vertices)
-                .as(vertices, vertices.map(each, each.type == "plugin", {"plugin_id":each.id, "source":each.meta.source})
-                )
+              .as(pipes,
+                 (has(pipes.pipeline)) ?
+                       pipes.pipelines.map(pipeline_name, (has(pipes.pipelines) && pipes.pipelines != null && pipes.pipelines[pipeline_name].graph.graph.vertices != null), ((pipes.pipelines[pipeline_name].graph.graph.vertices)
+                        .as(vertices, vertices.map(each, each.type == "plugin", {"plugin_id":each.id, "source":each.meta.source})
+                        )
               )
             ).drop("graph").flatten()
+          : []
           )
         ),
-        "es_cluster_id":((body.pipelines[pipeline_name].vertices).as(vertices, vertices.map(each, has(each.cluster_uuid), each.cluster_uuid))),
-        "es_cluster_id_map":((body.pipelines[pipeline_name].vertices).as(vertices, vertices.map(each, has(each.cluster_uuid), {"plugin_id":each.id, "cluster_id":each.cluster_uuid}))),
-        "counter_map":((body.pipelines[pipeline_name].vertices).as(vertices, vertices.map(each, has(each.long_counters), each.long_counters.map(counter, {"plugin_id":each.id, "name":counter.name, "value":counter.value})))),
+        "es_cluster_id":has(body.pipelines[pipeline_name].vertices) ? body.pipelines[pipeline_name].vertices.as(vertices, vertices.map(each, has(each.cluster_uuid), each.cluster_uuid)) : [],
+        "es_cluster_id_map":has(body.pipelines[pipeline_name].vertices) ? ((body.pipelines[pipeline_name].vertices).as(vertices, vertices.map(each, has(each.cluster_uuid), {"plugin_id":each.id, "cluster_id":each.cluster_uuid}))) : [],
+        "counter_map":has(body.pipelines[pipeline_name].vertices) ? ((body.pipelines[pipeline_name].vertices).as(vertices, vertices.map(each, has(each.long_counters), each.long_counters.map(counter, {"plugin_id":each.id, "name":counter.name, "value":counter.value})))) : [],
         "outputs":body.pipelines[pipeline_name].plugins.outputs,
         "inputs":body.pipelines[pipeline_name].plugins.inputs,
         "filters":body.pipelines[pipeline_name].plugins.filters,
@@ -47,7 +50,7 @@ program: |
     )
     )).as(events, events.map(event,
     {
-      "inputs":event.inputs.map(input,
+      "inputs":event.inputs.map(input, has(event.hash),
       {
         "name":event.name,
         "id":event.hash,
@@ -75,7 +78,7 @@ program: |
         }
       }.drop_empty()
       ),
-      "codecs":event.codecs.map(codec,
+      "codecs":event.codecs.map(codec, has(event.hash),
       {
         "name":event.name,
         "id":event.hash,
@@ -104,7 +107,7 @@ program: |
         }
       }.drop_empty()
       ),
-      "filters":event.filters.map(filter,
+      "filters":event.filters.map(filter, has(event.hash),
       {
         "name":event.name,
         "id":event.hash,
@@ -133,7 +136,7 @@ program: |
         }
       }.drop_empty()
       ),
-      "outputs":event.outputs.map(output,
+      "outputs":event.outputs.map(output, has(event.hash),
       {
         "name":event.name,
         "id":event.hash,
