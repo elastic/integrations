@@ -308,7 +308,7 @@ is_supported_stack() {
 oldest_supported_version() {
     local kibana_version=$(kibana_version_manifest)
     if [ $kibana_version != "null" ]; then
-        python3 .buildkite/scripts/find_oldest_supported_version --manifest manifest.yml
+        python3 .buildkite/scripts/find_oldest_supported_version.py --manifest manifest.yml
         return
     fi
     echo "null"
