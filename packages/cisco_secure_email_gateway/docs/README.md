@@ -391,16 +391,16 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.device_direction |  | keyword |
 | cisco_secure_email_gateway.log.disk_io | Disk I/O Utilization. | long |
 | cisco_secure_email_gateway.log.disposition | The file reputation disposition values are: MALICIOUS CLEAN FILE UNKNOWN - When the reputation score is zero. VERDICT UNKNOWN - When the disposition is FILE UNKNOWN and score is non-zero. LOW RISK - When no dynamic content is found in a file after file analysis, the verdict is Low Risk. The file is not sent for file analysis, and the message continues through the email pipeline. | keyword |
-| cisco_secure_email_gateway.log.dkim_aligned |  | keyword |
+| cisco_secure_email_gateway.log.dkim_aligned | Protocol DKIM aligned is true or false. | keyword |
 | cisco_secure_email_gateway.log.dns.hard_bounces | DNS Hard Bounces. | long |
 | cisco_secure_email_gateway.log.dns.requests | DNS Requests. | long |
 | cisco_secure_email_gateway.log.domain |  | keyword |
 | cisco_secure_email_gateway.log.dropped_messages | Dropped Messages. | long |
 | cisco_secure_email_gateway.log.email |  | keyword |
-| cisco_secure_email_gateway.log.email_tracker_header |  | keyword |
+| cisco_secure_email_gateway.log.email_tracker_header | Header consisting of (but not typically displaying) critical information for efficient email tracking and delivery. | keyword |
 | cisco_secure_email_gateway.log.encrypted_hash |  | keyword |
 | cisco_secure_email_gateway.log.encryption_queue | Messages in the Encryption Queue. | long |
-| cisco_secure_email_gateway.log.engine |  | keyword |
+| cisco_secure_email_gateway.log.engine | Engine used by the interim verdict. | keyword |
 | cisco_secure_email_gateway.log.env |  | keyword |
 | cisco_secure_email_gateway.log.error_code |  | keyword |
 | cisco_secure_email_gateway.log.esa.amp_verdict |  | keyword |
@@ -462,7 +462,7 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.log_available | Amount of disk space available for log files. | keyword |
 | cisco_secure_email_gateway.log.log_used | Percent of log partition used. | long |
 | cisco_secure_email_gateway.log.malware | The name of the malware threat. | keyword |
-| cisco_secure_email_gateway.log.maturity |  | keyword |
+| cisco_secure_email_gateway.log.maturity | Sender maturity time. | keyword |
 | cisco_secure_email_gateway.log.max_io | Maximum disk I/O operations per second for the mail process. | long |
 | cisco_secure_email_gateway.log.mcafee_ld | Percent CPU used by McAfee anti-virus scanning. | long |
 | cisco_secure_email_gateway.log.message |  | text |
@@ -477,7 +477,7 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.object_category |  | keyword |
 | cisco_secure_email_gateway.log.other_hard_bounces | Other Hard Bounces. | long |
 | cisco_secure_email_gateway.log.outcome |  | keyword |
-| cisco_secure_email_gateway.log.policy |  | keyword |
+| cisco_secure_email_gateway.log.policy | Per-recipient policy defined in the inbound table. | keyword |
 | cisco_secure_email_gateway.log.privilege |  | keyword |
 | cisco_secure_email_gateway.log.qname |  | keyword |
 | cisco_secure_email_gateway.log.quarantine.load | CPU load during the Quarantine process. | long |
@@ -508,7 +508,7 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.severity |  | keyword |
 | cisco_secure_email_gateway.log.soft_bounced_events | Soft Bounced Events. | long |
 | cisco_secure_email_gateway.log.sophos_ld | Percent CPU used by Sophos anti-virus scanning. | long |
-| cisco_secure_email_gateway.log.spf_aligned |  | keyword |
+| cisco_secure_email_gateway.log.spf_aligned | Protocol SPF aligned is true or false. | keyword |
 | cisco_secure_email_gateway.log.spy_name | The name of the threat, if a malware is found in the file during file analysis. | keyword |
 | cisco_secure_email_gateway.log.start_time |  | keyword |
 | cisco_secure_email_gateway.log.subject |  | text |
@@ -519,8 +519,8 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.swapped.out | Memory swapped out. | long |
 | cisco_secure_email_gateway.log.swapped.page.in | Memory paged in. | long |
 | cisco_secure_email_gateway.log.swapped.page.out | Memory paged out. | long |
-| cisco_secure_email_gateway.log.threat_category |  | keyword |
-| cisco_secure_email_gateway.log.threat_level |  | keyword |
+| cisco_secure_email_gateway.log.threat_category | Category of the threat. | keyword |
+| cisco_secure_email_gateway.log.threat_level | Threat level. | keyword |
 | cisco_secure_email_gateway.log.total_ld | Total CPU consumption. | long |
 | cisco_secure_email_gateway.log.type |  | keyword |
 | cisco_secure_email_gateway.log.unattempted_recipients | Unattempted Recipients. | long |
@@ -529,7 +529,7 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.upload.priority | Upload priority values are: High - For all selected file types, except PDF file type. Low - For only PDF file types. | keyword |
 | cisco_secure_email_gateway.log.vendor_action |  | keyword |
 | cisco_secure_email_gateway.log.verdict | The file retrospective verdict value is malicious or clean. | keyword |
-| cisco_secure_email_gateway.log.verdict_scale |  | keyword |
+| cisco_secure_email_gateway.log.verdict_scale | Verdict is negative or postive. | keyword |
 | cisco_secure_email_gateway.log.verified |  | keyword |
 | cisco_secure_email_gateway.log.work_queue | This is the number of messages currently in the work queue. | long |
 | cisco_secure_email_gateway.log.zone |  | keyword |
