@@ -8,6 +8,7 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: resp
@@ -194,11 +195,11 @@ processors:
   - uri_parts:
       field: json.url
       on_failure:
-      - set:
-          field: url.original
-          value: '{{{json.eurl}}}'
-          if: ctx.json?.eurl != null
-          ignore_failure: true
+        - set:
+            field: url.original
+            value: '{{{json.eurl}}}'
+            if: ctx.json?.eurl != null
+            ignore_failure: true
   - set:
       field: url.full
       value: '{{{url.original}}}'
@@ -214,11 +215,11 @@ processors:
   - user_agent:
       field: json.eua
       on_failure:
-      - set:
-          field: user_agent.original
-          value: '{{{json.eua}}}'
-          if: ctx.json?.eurl != null
-          ignore_failure: true
+        - set:
+            field: user_agent.original
+            value: '{{{json.eua}}}'
+            if: ctx.json?.eurl != null
+            ignore_failure: true
   - rename:
       field: json.login
       target_field: user.email

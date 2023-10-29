@@ -4,6 +4,12 @@ services:
     image: alpine
     volumes:
       - ${SERVICE_LOGS_DIR}:/service_logs
+  auth:
+    image: alpine
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "cp /sample_logs/*.log /var/log/"
   security:
     image: docker.elastic.co/observability/stream:v0.4.0
     ports:
