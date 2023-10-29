@@ -414,7 +414,6 @@ An example event for `firewall` looks as following:
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
-| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | double |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
 | aws.dimensions.AvailabilityZone | Availability Zone in the Region where the Network Firewall firewall is active. | keyword |  |
 | aws.dimensions.CustomAction | Dimension for a publish metrics custom action that you defined. You can define this for a rule action in a stateless rule group or for a stateless default action in a firewall policy. | keyword |  |
@@ -424,7 +423,6 @@ An example event for `firewall` looks as following:
 | aws.networkfirewall.metrics.Packets.sum | Number of packets inspected for a firewall policy or stateless rulegroup for which a custom action is defined. This metric is only used for the dimension CustomAction. | long | gauge |
 | aws.networkfirewall.metrics.PassedPackets.sum | The number of packets passed by the Network Firewall. | long | gauge |
 | aws.networkfirewall.metrics.ReceivedPackets.sum | The number of packets received by the Network Firewall. | long | gauge |
-| aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |
 | aws.tags | Tag key value pairs from aws resources. | flattened |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
