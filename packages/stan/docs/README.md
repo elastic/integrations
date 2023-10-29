@@ -314,33 +314,33 @@ An example event for `channels` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
-| container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-| stan.channels.bytes | The number of STAN bytes in the channel | long |
-| stan.channels.depth | Queue depth based upon current sequence number and highest reported subscriber sequence number | long |
-| stan.channels.first_seq | First sequence number stored in the channel. If first_seq \> min([seq in subscriptions]) data loss has possibly occurred | long |
-| stan.channels.last_seq | Last sequence number stored in the channel | long |
-| stan.channels.messages | The number of STAN streaming messages | long |
-| stan.channels.name | The name of the STAN streaming channel | keyword |
-| stan.cluster.id | The cluster ID | keyword |
-| stan.server.id | The server ID | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
+| stan.channels.bytes | The number of STAN bytes in the channel | long | counter |
+| stan.channels.depth | Queue depth based upon current sequence number and highest reported subscriber sequence number | long | gauge |
+| stan.channels.first_seq | First sequence number stored in the channel. If first_seq \> min([seq in subscriptions]) data loss has possibly occurred | long |  |
+| stan.channels.last_seq | Last sequence number stored in the channel | long | counter |
+| stan.channels.messages | The number of STAN streaming messages | long | counter |
+| stan.channels.name | The name of the STAN streaming channel | keyword |  |
+| stan.cluster.id | The cluster ID | keyword |  |
+| stan.server.id | The server ID | keyword |  |
 
 
 ### subscriptions
