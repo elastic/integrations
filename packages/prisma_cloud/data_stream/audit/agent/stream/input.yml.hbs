@@ -1,0 +1,93 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  user: {{username}}
+  password: {{password}}
+  time_amount: {{time_amount}}
+  time_unit: {{time_unit}}
+  state_interval: {{interval}}
+redact:
+  fields:
+    - password
+program: |
+  (
+    state.with(
+      post_request(
+        state.url + "/login",
+        "application/json",
+        {"username":state.user,"password":state.password}.encode_json()
+      ).do_request().as(resp, bytes(resp.Body).decode_json().as(body, {
+          "access_token": body.token,
+      }))
+    ).as(state, state.with(
+      request("GET",
+        state.url +
+        "/audit/redlock?timeType=relative&timeAmount=" +
+        (has(state.cursor) && has(state.cursor.time_amount_in_minute) && state.cursor.time_amount_in_minute != null
+          ?
+            string(state.cursor.time_amount_in_minute)
+          :
+            string(state.time_amount)) +
+            "&timeUnit=" +
+            (has(state.cursor) && has(state.cursor.time_amount_in_minute) && state.cursor.time_amount_in_minute != null
+            ?
+              "minute"
+            :
+              state.time_unit)
+      ).with({
+        "Header":{
+          "x-redlock-auth": [state.access_token],
+        }
+      }).do_request().as(resp, bytes(resp.Body).decode_json().as(inner_body, {
+          "events": inner_body.map(e, {
+            "message": e.encode_json(),
+          }),
+          "cursor": {
+              "time_amount_in_minute": (
+                inner_body.size() > 0
+                ?
+                  (int((now() - timestamp(int(timestamp(0)+duration(string(int(inner_body.map(e, e.timestamp).max()))+"ms")))).getSeconds()) + int((duration(state.state_interval)).getSeconds()))/60
+                :
+                  (
+                    has(state.cursor) && has(state.cursor.time_amount_in_minute)
+                    ?
+                      state.cursor.time_amount_in_minute
+                    :
+                      null
+                  )
+              )
+            }
+        }))
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
