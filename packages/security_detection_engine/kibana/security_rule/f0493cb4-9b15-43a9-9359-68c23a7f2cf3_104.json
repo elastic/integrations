@@ -12,7 +12,7 @@
         "license": "Elastic License v2",
         "name": "Suspicious HTML File Creation",
         "note": "",
-        "query": "sequence by user.id with maxspan=5m\n [file where host.os.type == \"windows\" and event.action in (\"creation\", \"rename\") and\n  file.extension : (\"htm\", \"html\") and\n   file.path : (\"?:\\\\Users\\\\*\\\\Downloads\\\\*\",\n                \"?:\\\\Users\\\\*\\\\Content.Outlook\\\\*\",\n                \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Temp\\\\Temp?_*\",\n                \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Temp\\\\7z*\",\n                \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Temp\\\\Rar$*\") and\n   ((file.Ext.entropy \u003e= 5 and file.size \u003e= 150000) or file.size \u003e= 1000000)]\n [process where host.os.type == \"windows\" and event.action == \"start\" and\n  (\n   (process.name in (\"chrome.exe\", \"msedge.exe\", \"brave.exe\", \"whale.exe\", \"browser.exe\", \"dragon.exe\", \"vivaldi.exe\", \"opera.exe\")\n    and process.args == \"--single-argument\") or\n   (process.name == \"iexplore.exe\" and process.args_count == 2) or\n   (process.name in (\"firefox.exe\", \"waterfox.exe\") and process.args == \"-url\")\n  )\n  and process.args : (\"?:\\\\Users\\\\*\\\\Downloads\\\\*.htm*\",\n                      \"?:\\\\Users\\\\*\\\\Content.Outlook\\\\*.htm*\",\n                      \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Temp\\\\Temp?_*.htm*\",\n                      \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Temp\\\\7z*.htm*\",\n                      \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Temp\\\\Rar$*.htm*\")]\n",
+        "query": "sequence by user.id with maxspan=5m\n [file where host.os.type == \"windows\" and event.action in (\"creation\", \"rename\") and\n  file.extension : (\"htm\", \"html\") and\n   file.path : (\"?:\\\\Users\\\\*\\\\Downloads\\\\*\",\n                \"?:\\\\Users\\\\*\\\\Content.Outlook\\\\*\",\n                \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Temp\\\\Temp?_*\",\n                \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Temp\\\\7z*\",\n                \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Temp\\\\Rar$*\") and\n   ((file.Ext.entropy >= 5 and file.size >= 150000) or file.size >= 1000000)]\n [process where host.os.type == \"windows\" and event.action == \"start\" and\n  (\n   (process.name in (\"chrome.exe\", \"msedge.exe\", \"brave.exe\", \"whale.exe\", \"browser.exe\", \"dragon.exe\", \"vivaldi.exe\", \"opera.exe\")\n    and process.args == \"--single-argument\") or\n   (process.name == \"iexplore.exe\" and process.args_count == 2) or\n   (process.name in (\"firefox.exe\", \"waterfox.exe\") and process.args == \"-url\")\n  )\n  and process.args : (\"?:\\\\Users\\\\*\\\\Downloads\\\\*.htm*\",\n                      \"?:\\\\Users\\\\*\\\\Content.Outlook\\\\*.htm*\",\n                      \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Temp\\\\Temp?_*.htm*\",\n                      \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Temp\\\\7z*.htm*\",\n                      \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Temp\\\\Rar$*.htm*\")]\n",
         "related_integrations": [
             {
                 "package": "endpoint",
@@ -73,7 +73,7 @@
         ],
         "risk_score": 47,
         "rule_id": "f0493cb4-9b15-43a9-9359-68c23a7f2cf3",
-        "setup": "If enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.",
+        "setup": "If enabling an EQL rule on a non-elastic-agent index (such as beats) for versions <8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.",
         "severity": "medium",
         "tags": [
             "Domain: Endpoint",
@@ -84,7 +84,7 @@
         ],
         "threat": [
             {
-                "framework": "MITRE ATT\u0026CK",
+                "framework": "MITRE ATT&CK",
                 "tactic": {
                     "id": "TA0001",
                     "name": "Initial Access",
@@ -111,7 +111,7 @@
                 ]
             },
             {
-                "framework": "MITRE ATT\u0026CK",
+                "framework": "MITRE ATT&CK",
                 "tactic": {
                     "id": "TA0005",
                     "name": "Defense Evasion",

@@ -3,7 +3,7 @@
         "author": [
             "Elastic"
         ],
-        "description": "Detects potential exploitation of curl CVE-2023-38545 by monitoring for vulnerable command line arguments in conjunction with an unusual command line length. A flaw in curl version \u003c= 8.3 makes curl vulnerable to a heap based buffer overflow during the SOCKS5 proxy handshake. Upgrade to curl version \u003e= 8.4 to patch this vulnerability. This exploit can be executed with and without the use of environment variables. For increased visibility, enable the collection of http_proxy, HTTPS_PROXY and ALL_PROXY environment variables based on the instructions provided in the setup guide of this rule.",
+        "description": "Detects potential exploitation of curl CVE-2023-38545 by monitoring for vulnerable command line arguments in conjunction with an unusual command line length. A flaw in curl version <= 8.3 makes curl vulnerable to a heap based buffer overflow during the SOCKS5 proxy handshake. Upgrade to curl version >= 8.4 to patch this vulnerability. This exploit can be executed with and without the use of environment variables. For increased visibility, enable the collection of http_proxy, HTTPS_PROXY and ALL_PROXY environment variables based on the instructions provided in the setup guide of this rule.",
         "from": "now-9m",
         "index": [
             "logs-endpoint.events.*"
@@ -11,7 +11,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Potential curl CVE-2023-38545 Exploitation",
-        "query": "process where host.os.type == \"linux\" and event.action == \"exec\" and event.type == \"start\" and process.name == \"curl\" \nand (\n  process.args : (\"--socks5-hostname\", \"--proxy\", \"--preproxy\", \"socks5*\") or \n  process.env_vars: (\"http_proxy=socks5h://*\", \"HTTPS_PROXY=socks5h://*\", \"ALL_PROXY=socks5h://*\")\n) and length(process.command_line) \u003e 255\n",
+        "query": "process where host.os.type == \"linux\" and event.action == \"exec\" and event.type == \"start\" and process.name == \"curl\" \nand (\n  process.args : (\"--socks5-hostname\", \"--proxy\", \"--preproxy\", \"socks5*\") or \n  process.env_vars: (\"http_proxy=socks5h://*\", \"HTTPS_PROXY=socks5h://*\", \"ALL_PROXY=socks5h://*\")\n) and length(process.command_line) > 255\n",
         "references": [
             "https://curl.se/docs/CVE-2023-38545.html",
             "https://daniel.haxx.se/blog/2023/10/11/curl-8-4-0/",
@@ -74,7 +74,7 @@
         ],
         "threat": [
             {
-                "framework": "MITRE ATT\u0026CK",
+                "framework": "MITRE ATT&CK",
                 "tactic": {
                     "id": "TA0002",
                     "name": "Execution",
