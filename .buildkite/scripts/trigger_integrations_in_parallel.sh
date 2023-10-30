@@ -20,5 +20,5 @@ for package in ${PACKAGE_LIST}; do
     echo "      agents:"
     echo "        provider: gcp"
     echo "      artifact_paths:"
-    echo "        - build/results/*.xml"
+    echo "        - build/test-results/*.xml"
 done
