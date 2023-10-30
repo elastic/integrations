@@ -237,27 +237,27 @@ An example event for `leader` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| etcd.api_version | Etcd API version for metrics retrieval | keyword |
-| etcd.leader.followers.counts.followers.counts.fail | Failed Raft RPC requests | integer |
-| etcd.leader.followers.counts.followers.counts.success | Successful Raft RPC requests | integer |
-| etcd.leader.followers.latency.followers.latency.average |  | scaled_float |
-| etcd.leader.followers.latency.followers.latency.current |  | scaled_float |
-| etcd.leader.followers.latency.followers.latency.maximum |  | scaled_float |
-| etcd.leader.followers.latency.followers.latency.minimum |  | integer |
-| etcd.leader.followers.latency.followers.latency.standardDeviation |  | scaled_float |
-| etcd.leader.leader | ID of actual leader | keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| host.ip | Host ip addresses. | ip |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| etcd.api_version | Etcd API version for metrics retrieval | keyword |  |
+| etcd.leader.followers.counts.followers.counts.fail | Failed Raft RPC requests | integer | counter |
+| etcd.leader.followers.counts.followers.counts.success | Successful Raft RPC requests | integer | counter |
+| etcd.leader.followers.latency.followers.latency.average |  | scaled_float | gauge |
+| etcd.leader.followers.latency.followers.latency.current |  | scaled_float | gauge |
+| etcd.leader.followers.latency.followers.latency.maximum |  | scaled_float | gauge |
+| etcd.leader.followers.latency.followers.latency.minimum |  | integer | gauge |
+| etcd.leader.followers.latency.followers.latency.standardDeviation |  | scaled_float | gauge |
+| etcd.leader.leader | ID of actual leader | keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### self
