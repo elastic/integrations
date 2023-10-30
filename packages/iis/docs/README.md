@@ -26,7 +26,7 @@ Find more details in [Metrics](#metrics-reference).
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
-You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your hardware.
 
 ## Setup
 
@@ -46,7 +46,7 @@ The IIS module has been tested with logs from version 7.5, 8 and version 10.
 
 ### access
 
-This dataset will collect and parse access IIS logs. The supported log format is W3C. The W3C log format is customizable with different fields.
+This data stream will collect and parse access IIS logs. The supported log format is W3C. The W3C log format is customizable with different fields.
 
 The IIS ships logs with few fields by default and if the user is interested in customizing the selection, the IIS Manager provides ability to add new fields for logging.
 
@@ -59,15 +59,15 @@ IIS integration offers certain field combinations shipped automatically into Ela
 #### Custom Logging:
 
     - Fields: date time s-sitename cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs(User-Agent) cs(cookie) cs(Referer) cs-host sc-status sc-substatus sc-win32-status time-taken
-    
+
     - Fields: date time s-sitename s-ip cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs-version cs(User-Agent) cs(cookie) cs(Referer) sc-status sc-substatus sc-win32-status sc-bytes, cs-bytes time-taken
-    
+
     - Fields: date time s-sitename s-computername s-ip cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs-version cs(User-Agent) cs(cookie) cs(Referer) cs-host sc-status sc-substatus sc-win32-status sc-bytes, cs-bytes time-taken
-    
+
     - Fields: date time s-ip cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs(User-Agent) sc-status sc-substatus sc-win32-status time-taken
-    
+
     - Fields: date time s-ip cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs(User-Agent) sc-status sc-substatus sc-win32-status sc-bytes, cs-bytes time-taken
-    
+
     - Fields: date time s-ip cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs(User-Agent) cs(cookie) cs(Referer) sc-status sc-substatus sc-win32-status sc-bytes, cs-bytes time-taken
 
     - Fields: date time s-computername s-ip cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs(User-Agent) sc-status sc-substatus sc-win32-status sc-bytes, cs-bytes time-taken
@@ -256,7 +256,7 @@ The fields reported are:
 
 ### error
 
-This dataset will collect and parse error IIS logs.
+This data stream will collect and parse error IIS logs.
 
 An example event for `error` looks as following:
 
@@ -398,7 +398,7 @@ The fields reported are:
 
 ### webserver
 
-The `webserver` dataset allows users to retrieve aggregated metrics for the entire webserver.
+The `webserver` data stream allows users to retrieve aggregated metrics for the entire web server.
 
 An example event for `webserver` looks as following:
 
@@ -588,7 +588,7 @@ The fields reported are:
 
 ### website
 
-This dataset will collect metrics of specific sites, users can configure which websites they want to monitor, else, all are considered.
+This data stream will collect metrics of specific sites, users can configure which websites they want to monitor, else, all are considered.
 
 An example event for `website` looks as following:
 
@@ -704,7 +704,7 @@ The fields reported are:
 
 ### application_pool
 
-This dataset will collect metrics of specific application pools, users can configure which websites they want to monitor, else, all are considered.
+This data stream will collect metrics of specific application pools, users can configure which websites they want to monitor, else, all are considered.
 
 An example event for `application_pool` looks as following:
 
