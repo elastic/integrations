@@ -20,7 +20,7 @@ processors:
       ignore_missing: true
   - set:
       field: event.type
-      value: info
+      value: [info]
   - set:
       field: event.kind
       value: event
@@ -62,6 +62,11 @@ processors:
       field: json.request.remoteAddress
       target_field: host.ip
       ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: host.ip
+      value: ["{{{host.ip}}}"]
+      ignore_empty_value: true
       ignore_failure: true
   - rename:
       field: json.response.status
