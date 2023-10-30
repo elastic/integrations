@@ -21,15 +21,15 @@ Find more details in [Logs](#logs-reference).
 **Metrics** give you insight into the state of Microsoft SQL Server.
 Metric data streams collected by the integration include:
 
-* `performance` metrics gathers the list of performance objects available on that server. Each server will have a different list of performance objects depending on the installed software.
-* `transaction_log` metrics collects all usage stats and the total space usage.
+* `performance` metrics gather the list of performance objects available on that server. Each server will have a different list of performance objects depending on the installed software.
+* `transaction_log` metrics collect all usage stats and the total space usage.
 
 Find more details in [Metrics](#metrics-reference).
 
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
-You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your hardware.
 
 ### Microsoft SQL Server permissions
 
@@ -83,7 +83,7 @@ As part of the input configuration, you need to provide the user name, password 
 
 #### Audit
 
-There are several levels of auditing for SQL Server, depending on government or standards requirements for your installation. The SQL Server Audit feature enables you to audit server-level and database-level groups of events and individual events. 
+There are several levels of auditing for SQL Server, depending on government or standards requirements for your installation. The SQL Server Audit feature enables you to audit server-level and database-level groups of events and individual events.
 
 For more information on the different audit levels, refer to [SQL Server Audit Action Groups and Actions](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-action-groups-and-actions?view=sql-server-ver15).
 Then to enable auditing for SQL Server, refer to these [instructions](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/create-a-server-audit-and-server-audit-specification?view=sql-server-ver15).
@@ -109,16 +109,16 @@ MSSQL supports a limited set of regular expressions. For more details, refer to 
 
 > Note: Dynamic counters will go through some basic ingest pipeline post-processing to make counter names in lowercase and remove special characters and these fields will not have any static field mappings.
 
-The feature `merge_results` has been introduced in 8.4 beats which creates a single event by combining the metrics together in a single event. For more details, refer to [SQL module](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-sql.html#_example_merge_multiple_queries_to_single_event).
+The feature `merge_results` has been introduced in 8.4 beats which creates a single event by combining the metrics in a single event. For more details, refer to [SQL module](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-sql.html#_example_merge_multiple_queries_to_single_event).
 
-Read more in [Instructions about each performance counter metrics](https://docs.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver15).
+Read more in [instructions about each performance counter metrics](https://docs.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver15).
 
 #### Transaction log metrics
 
 Collects system level `transaction_log` metrics information for SQL Server instance.
 Metrics for user-level databases can be collected by providing a list of user databases for which metrics are to be collected.
 
-Read more in [Instructions and the operations supported by transaction log](https://docs.microsoft.com/en-us/sql/relational-databases/logs/the-transaction-log-sql-server?view=sql-server-ver15).
+Read more in [instructions and the operations supported by transaction log](https://docs.microsoft.com/en-us/sql/relational-databases/logs/the-transaction-log-sql-server?view=sql-server-ver15).
 
 #### Fetch from all databases
 
