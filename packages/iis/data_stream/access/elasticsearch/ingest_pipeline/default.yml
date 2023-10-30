@@ -60,6 +60,11 @@ processors:
           (?:-|%{IPORHOST:source.address}) (?:-|%{NOTSPACE:user_agent.original}) (?:-|%{NOTSPACE:iis.access.cookie}) (?:-|%{NOTSPACE:http.request.referrer})
           (?:-|%{NUMBER:http.response.status_code:long}) (?:-|%{NUMBER:iis.access.sub_status:long})
           (?:-|%{NUMBER:iis.access.win32_status:long}) (?:-|%{NUMBER:_temp_.duration:long})( (?:-|%{IPORHOST:network.forwarded_ip}))?'
+        - '%{TIMESTAMP_ISO8601:iis.access.time} (?:-|%{NOTSPACE:iis.access.server_name}) (?:-|%{IPORHOST:destination.address}) (?:-|%{WORD:http.request.method}) 
+          (?:-|%{NOTSPACE:_temp_.url_path}) (?:-|%{NOTSPACE:_temp_.url_query}) (?:-|%{NUMBER:destination.port:long}) (?:-|%{NOTSPACE:user.name}) 
+          (?:-|%{IPORHOST:source.address}) (?:-|%{NOTSPACE:user_agent.original}) (?:-|%{NOTSPACE:http.request.referrer}) 
+          (?:-|%{NUMBER:http.response.status_code:long}) (?:-|%{NUMBER:iis.access.sub_status:long}) (?:-|%{NUMBER:iis.access.win32_status:long}) 
+          (?:-|%{NUMBER:_temp_.duration:long})( (?:-|%{IPORHOST:network.forwarded_ip}))?'
   - uri_parts:
       field: _temp_.url_path
       ignore_failure: true
@@ -105,6 +110,48 @@ processors:
   - user_agent:
       field: user_agent.original
       ignore_missing: true
+  - script:
+      lang: painless
+      description: |
+        This script processor handles ctx.source[field] as per grok changes in ES 8.7+.
+        Read more: https://github.com/elastic/integrations/issues/6016
+      source: |
+        for (field in params.fields) {
+            if (ctx.source[field] instanceof List) {
+                def vals = ctx.source[field];
+                vals = vals.stream().distinct().collect(Collectors.toList());
+                if (vals.size() == 1) {
+                    ctx.source[field] = vals[0]
+                } else {
+                    ctx.source[field] = vals
+                }
+            }
+        }
+      if: "ctx?.source != null"
+      params:
+        fields:
+            - "address"
+  - script:
+      lang: painless
+      description: |
+        This script processor handles ctx.destination[field] as per grok changes in ES 8.7+.
+        Read more: https://github.com/elastic/integrations/issues/6016
+      source: |
+        for (field in params.fields) {
+            if (ctx.destination[field] instanceof List) {
+                def vals = ctx.destination[field];
+                vals = vals.stream().distinct().collect(Collectors.toList());
+                if (vals.size() == 1) {
+                    ctx.destination[field] = vals[0]
+                } else {
+                    ctx.destination[field] = vals
+                }
+            }
+        }
+      if: "ctx?.destination != null"
+      params:
+        fields:
+            - "address"
   - grok:
       field: destination.address
       ignore_failure: true
@@ -153,18 +200,39 @@ processors:
       field: event.type
       value: connection
       if: "ctx?.source?.ip != null && ctx?.destination?.ip != null"
+  - grok:
+      field: user.name
+      patterns:
+        - '%{DATA:_tmp.user_leading_domain}\\%{DATA:user.name}@%{GREEDYDATA:user.domain}'
+        - '%{DATA:user.name}@%{GREEDYDATA:user.domain}'
+        - '%{DATA:user.domain}\\%{GREEDYDATA:user.name}'
+        - '%{GREEDYDATA:user.name}'
+      ignore_missing: true
+      if: ctx.user?.name != null && ctx.user?.name != ""
+  - lowercase:
+      field: iis.access.server_name
+      target_field: host.name
+      if: ctx.iis?.access?.server_name != null
   - append:
       field: related.ip
       value: "{{source.ip}}"
+      allow_duplicates: false
       if: "ctx?.source?.ip != null"
   - append:
       field: related.ip
       value: "{{destination.ip}}"
+      allow_duplicates: false
       if: "ctx?.destination?.ip != null"
   - append:
       field: related.user
       value: "{{user.name}}"
+      allow_duplicates: false
       if: "ctx?.user?.name != null"
+  - append:
+      field: related.hosts
+      value: "{{host.name}}"
+      allow_duplicates: false
+      if: "ctx?.host?.name != null"
   - set:
       field: event.outcome
       value: success
@@ -173,48 +241,6 @@ processors:
       field: event.outcome
       value: failure
       if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400"
-  - script:
-      lang: painless
-      description: |
-        This script processor handles ctx.source[field] as per grok changes in ES 8.7+.
-        Read more: https://github.com/elastic/integrations/issues/6016
-      source: |
-        for (field in params.fields) {
-            if (ctx.source[field] instanceof List) {
-                def vals = ctx.source[field];
-                vals = vals.stream().distinct().collect(Collectors.toList());
-                if (vals.size() == 1) {
-                    ctx.source[field] = vals[0]
-                } else {
-                    ctx.source[field] = vals
-                }
-            }
-        }
-      if: "ctx?.source != null"
-      params:
-        fields:
-            - "address"
-  - script:
-      lang: painless
-      description: |
-        This script processor handles ctx.destination[field] as per grok changes in ES 8.7+.
-        Read more: https://github.com/elastic/integrations/issues/6016
-      source: |
-        for (field in params.fields) {
-            if (ctx.destination[field] instanceof List) {
-                def vals = ctx.destination[field];
-                vals = vals.stream().distinct().collect(Collectors.toList());
-                if (vals.size() == 1) {
-                    ctx.destination[field] = vals[0]
-                } else {
-                    ctx.destination[field] = vals
-                }
-            }
-        }
-      if: "ctx?.destination != null"
-      params:
-        fields:
-            - "address"
   - script:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
@@ -239,6 +265,10 @@ processors:
           }
         }
         handleMap(ctx);
+  - remove:
+      field: _tmp
+      ignore_failure: true
+      ignore_missing: true
   - remove:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
