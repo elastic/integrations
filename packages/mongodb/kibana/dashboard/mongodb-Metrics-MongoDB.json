@@ -1,20 +1,21 @@
 {
     "attributes": {
         "description": "Overview of MongoDB server status",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [],
-                "highlightAll": true,
                 "query": {
                     "language": "kuery",
                     "query": ""
-                },
-                "version": true
+                }
             }
         },
         "optionsJSON": {
-            "darkTheme": false
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
         },
         "panelsJSON": [
             {
@@ -34,7 +35,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "45c42eb1-8f78-4db0-96e4-1811e8492a82": {
                                             "columnOrder": [
@@ -146,7 +147,9 @@
                                 "paging": {
                                     "enabled": true,
                                     "size": 10
-                                }
+                                },
+                                "rowHeight": "single",
+                                "rowHeightLines": 1
                             }
                         },
                         "title": "",
@@ -165,7 +168,7 @@
                 "panelIndex": "bc6d5996-59f3-4afa-a07a-9b195f98526b",
                 "title": "Hosts",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
@@ -184,7 +187,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "629fcc28-f3f6-4e83-916c-2819fc27932f": {
                                             "columnOrder": [
@@ -252,17 +255,20 @@
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "groups": [
-                                            "89a1e248-457e-4c1f-8d2e-1a06d123b98b",
-                                            "7c1cd580-5b6c-4936-8bb8-b28afc94acb2"
-                                        ],
                                         "layerId": "629fcc28-f3f6-4e83-916c-2819fc27932f",
                                         "layerType": "data",
                                         "legendDisplay": "default",
                                         "legendPosition": "bottom",
-                                        "metric": "6b3897b4-0ed3-4d0b-ae9d-112beb917f2a",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "6b3897b4-0ed3-4d0b-ae9d-112beb917f2a"
+                                        ],
                                         "nestedLegend": false,
-                                        "numberDisplay": "percent"
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "89a1e248-457e-4c1f-8d2e-1a06d123b98b",
+                                            "7c1cd580-5b6c-4936-8bb8-b28afc94acb2"
+                                        ]
                                     }
                                 ],
                                 "palette": {
@@ -288,17 +294,13 @@
                 "panelIndex": "aa0a1ce4-dab6-4b9d-a917-51ea8eabb3aa",
                 "title": "Engine \u0026 Version",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
                             {
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-4ac4c2b2-57a7-4452-9c9e-ded3004eb832",
@@ -306,8 +308,9 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "4ac4c2b2-57a7-4452-9c9e-ded3004eb832": {
                                             "columnOrder": [
@@ -322,6 +325,15 @@
                                                     "isBucketed": false,
                                                     "label": "Write Available",
                                                     "operationType": "average",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "mongodb.status.wired_tiger.concurrent_transactions.write.available"
                                                 },
@@ -331,6 +343,15 @@
                                                     "isBucketed": false,
                                                     "label": "Write Used",
                                                     "operationType": "average",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "mongodb.status.wired_tiger.concurrent_transactions.write.out"
                                                 },
@@ -340,6 +361,7 @@
                                                     "label": "@timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
+                                                        "includeEmptyRows": true,
                                                         "interval": "auto"
                                                     },
                                                     "scale": "interval",
@@ -352,6 +374,7 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": "(data_stream.dataset:mongodb.collstats OR data_stream.dataset:mongodb.dbstats OR data_stream.dataset:mongodb.metrics OR data_stream.dataset:mongodb.replstatus OR data_stream.dataset:mongodb.status)"
@@ -390,6 +413,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "auto",
                                     "position": "bottom",
                                     "showSingleSeries": true
                                 },
@@ -421,17 +445,13 @@
                 "panelIndex": "38e509ef-aead-4347-8f62-79d1b27328e8",
                 "title": "Concurrent transactions Write",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
                             {
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-4ac4c2b2-57a7-4452-9c9e-ded3004eb832",
@@ -439,8 +459,9 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "4ac4c2b2-57a7-4452-9c9e-ded3004eb832": {
                                             "columnOrder": [
@@ -459,6 +480,15 @@
                                                     "isBucketed": false,
                                                     "label": "command",
                                                     "operationType": "max",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "mongodb.status.ops.counters.command"
                                                 },
@@ -468,6 +498,15 @@
                                                     "isBucketed": false,
                                                     "label": "update",
                                                     "operationType": "max",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "mongodb.status.ops.replicated.update"
                                                 },
@@ -477,6 +516,15 @@
                                                     "isBucketed": false,
                                                     "label": "query",
                                                     "operationType": "max",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "mongodb.status.ops.counters.query"
                                                 },
@@ -486,6 +534,15 @@
                                                     "isBucketed": false,
                                                     "label": "delete",
                                                     "operationType": "max",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "mongodb.status.ops.counters.delete"
                                                 },
@@ -495,6 +552,7 @@
                                                     "label": "@timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
+                                                        "includeEmptyRows": true,
                                                         "interval": "auto"
                                                     },
                                                     "scale": "interval",
@@ -506,6 +564,15 @@
                                                     "isBucketed": false,
                                                     "label": "getmore",
                                                     "operationType": "max",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "mongodb.status.ops.counters.getmore"
                                                 },
@@ -515,6 +582,15 @@
                                                     "isBucketed": false,
                                                     "label": "insert",
                                                     "operationType": "max",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "mongodb.status.ops.counters.insert"
                                                 }
@@ -525,6 +601,7 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": "(data_stream.dataset:mongodb.collstats OR data_stream.dataset:mongodb.dbstats OR data_stream.dataset:mongodb.metrics OR data_stream.dataset:mongodb.replstatus OR data_stream.dataset:mongodb.status)"
@@ -587,6 +664,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "auto",
                                     "position": "bottom",
                                     "showSingleSeries": true
                                 },
@@ -618,17 +696,13 @@
                 "panelIndex": "8d83ef8a-9338-4a39-8f56-1007e767f237",
                 "title": "Operation counters",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
                             {
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-4ac4c2b2-57a7-4452-9c9e-ded3004eb832",
@@ -636,8 +710,9 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "4ac4c2b2-57a7-4452-9c9e-ded3004eb832": {
                                             "columnOrder": [
@@ -652,6 +727,15 @@
                                                     "isBucketed": false,
                                                     "label": "Read Available",
                                                     "operationType": "average",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "mongodb.status.wired_tiger.concurrent_transactions.read.available"
                                                 },
@@ -661,6 +745,15 @@
                                                     "isBucketed": false,
                                                     "label": "Read Used",
                                                     "operationType": "average",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "mongodb.status.wired_tiger.concurrent_transactions.read.out"
                                                 },
@@ -670,6 +763,7 @@
                                                     "label": "@timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
+                                                        "includeEmptyRows": true,
                                                         "interval": "auto"
                                                     },
                                                     "scale": "interval",
@@ -682,6 +776,7 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": "(data_stream.dataset:mongodb.collstats OR data_stream.dataset:mongodb.dbstats OR data_stream.dataset:mongodb.metrics OR data_stream.dataset:mongodb.replstatus OR data_stream.dataset:mongodb.status)"
@@ -720,6 +815,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "auto",
                                     "position": "bottom",
                                     "showSingleSeries": true
                                 },
@@ -751,17 +847,13 @@
                 "panelIndex": "01cd0dd5-fe82-474c-a71d-1d383a578ac3",
                 "title": "Concurrent transactions Read",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
                             {
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-4ac4c2b2-57a7-4452-9c9e-ded3004eb832",
@@ -769,8 +861,9 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "4ac4c2b2-57a7-4452-9c9e-ded3004eb832": {
                                             "columnOrder": [
@@ -786,6 +879,14 @@
                                                     "isBucketed": false,
                                                     "label": "max",
                                                     "operationType": "average",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "mongodb.status.wired_tiger.cache.maximum.bytes"
                                                 },
@@ -795,6 +896,14 @@
                                                     "isBucketed": false,
                                                     "label": "used",
                                                     "operationType": "average",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "mongodb.status.wired_tiger.cache.used.bytes"
                                                 },
@@ -804,6 +913,7 @@
                                                     "label": "@timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
+                                                        "includeEmptyRows": true,
                                                         "interval": "auto"
                                                     },
                                                     "scale": "interval",
@@ -815,6 +925,14 @@
                                                     "isBucketed": false,
                                                     "label": "dirty",
                                                     "operationType": "average",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "mongodb.status.wired_tiger.cache.dirty.bytes"
                                                 }
@@ -825,6 +943,7 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": "(data_stream.dataset:mongodb.collstats OR data_stream.dataset:mongodb.dbstats OR data_stream.dataset:mongodb.metrics OR data_stream.dataset:mongodb.replstatus OR data_stream.dataset:mongodb.status)"
@@ -869,6 +988,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "auto",
                                     "position": "bottom",
                                     "showSingleSeries": true
                                 },
@@ -900,17 +1020,13 @@
                 "panelIndex": "bac2a243-da26-47e5-a25e-0190bbf6b2e5",
                 "title": "WiredTiger Cache",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
                             {
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-4ac4c2b2-57a7-4452-9c9e-ded3004eb832",
@@ -918,8 +1034,9 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "4ac4c2b2-57a7-4452-9c9e-ded3004eb832": {
                                             "columnOrder": [
@@ -937,6 +1054,15 @@
                                                     "isBucketed": false,
                                                     "label": "message",
                                                     "operationType": "max",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "mongodb.status.asserts.msg"
                                                 },
@@ -946,6 +1072,15 @@
                                                     "isBucketed": false,
                                                     "label": "warning",
                                                     "operationType": "max",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "mongodb.status.asserts.warning"
                                                 },
@@ -955,6 +1090,15 @@
                                                     "isBucketed": false,
                                                     "label": "regular",
                                                     "operationType": "max",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "mongodb.status.asserts.regular"
                                                 },
@@ -964,6 +1108,7 @@
                                                     "label": "@timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
+                                                        "includeEmptyRows": true,
                                                         "interval": "auto"
                                                     },
                                                     "scale": "interval",
@@ -975,6 +1120,15 @@
                                                     "isBucketed": false,
                                                     "label": "rollover",
                                                     "operationType": "max",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "mongodb.status.asserts.rollovers"
                                                 },
@@ -984,6 +1138,15 @@
                                                     "isBucketed": false,
                                                     "label": "user",
                                                     "operationType": "max",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "mongodb.status.asserts.user"
                                                 }
@@ -994,6 +1157,7 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": "(data_stream.dataset:mongodb.collstats OR data_stream.dataset:mongodb.dbstats OR data_stream.dataset:mongodb.metrics OR data_stream.dataset:mongodb.replstatus OR data_stream.dataset:mongodb.status)"
@@ -1050,6 +1214,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "auto",
                                     "position": "bottom",
                                     "showSingleSeries": true
                                 },
@@ -1081,17 +1246,13 @@
                 "panelIndex": "f010c091-9148-441c-9104-d991418b0584",
                 "title": "Asserts",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
                             {
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-4ac4c2b2-57a7-4452-9c9e-ded3004eb832",
@@ -1099,8 +1260,9 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "4ac4c2b2-57a7-4452-9c9e-ded3004eb832": {
                                             "columnOrder": [
@@ -1117,6 +1279,16 @@
                                                     "isBucketed": false,
                                                     "label": "Mapped",
                                                     "operationType": "average",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0,
+                                                                "suffix": " MB"
+                                                            }
+                                                        }
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "mongodb.status.memory.mapped.mb"
                                                 },
@@ -1126,6 +1298,16 @@
                                                     "isBucketed": false,
                                                     "label": "Mapped with journal",
                                                     "operationType": "average",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0,
+                                                                "suffix": "MB"
+                                                            }
+                                                        }
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "mongodb.status.memory.mapped_with_journal.mb"
                                                 },
@@ -1135,6 +1317,7 @@
                                                     "label": "@timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
+                                                        "includeEmptyRows": true,
                                                         "interval": "auto"
                                                     },
                                                     "scale": "interval",
@@ -1146,6 +1329,14 @@
                                                     "isBucketed": false,
                                                     "label": "Rezident",
                                                     "operationType": "average",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "mongodb.status.memory.resident.mb"
                                                 },
@@ -1155,6 +1346,16 @@
                                                     "isBucketed": false,
                                                     "label": "Virtual",
                                                     "operationType": "average",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0,
+                                                                "suffix": "MB"
+                                                            }
+                                                        }
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "mongodb.status.memory.virtual.mb"
                                                 }
@@ -1165,11 +1366,17 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": "(data_stream.dataset:mongodb.collstats OR data_stream.dataset:mongodb.dbstats OR data_stream.dataset:mongodb.metrics OR data_stream.dataset:mongodb.replstatus OR data_stream.dataset:mongodb.status)"
                             },
                             "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
                                 "gridlinesVisibilitySettings": {
                                     "x": false,
                                     "yLeft": false,
@@ -1215,6 +1422,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "auto",
                                     "position": "bottom",
                                     "showSingleSeries": true
                                 },
@@ -1227,7 +1435,7 @@
                                 "yRightExtent": {
                                     "mode": "full"
                                 },
-                                "yTitle": "Count"
+                                "yTitle": "Memory"
                             }
                         },
                         "title": "",
@@ -1246,18 +1454,17 @@
                 "panelIndex": "4de5684e-c5c9-45be-b15a-0251215994c2",
                 "title": "Memory stats",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.10.2"
             }
         ],
         "timeRestore": false,
         "title": "[Metrics MongoDB] Overview",
         "version": 1
     },
-    "coreMigrationVersion": "8.1.0",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-30T07:34:56.381Z",
     "id": "mongodb-Metrics-MongoDB",
-    "migrationVersion": {
-        "dashboard": "8.1.0"
-    },
+    "managed": false,
     "references": [
         {
             "id": "metrics-*",
@@ -1281,17 +1488,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "38e509ef-aead-4347-8f62-79d1b27328e8:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
             "name": "38e509ef-aead-4347-8f62-79d1b27328e8:indexpattern-datasource-layer-4ac4c2b2-57a7-4452-9c9e-ded3004eb832",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "8d83ef8a-9338-4a39-8f56-1007e767f237:indexpattern-datasource-current-indexpattern",
             "type": "index-pattern"
         },
         {
@@ -1301,17 +1498,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "01cd0dd5-fe82-474c-a71d-1d383a578ac3:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
             "name": "01cd0dd5-fe82-474c-a71d-1d383a578ac3:indexpattern-datasource-layer-4ac4c2b2-57a7-4452-9c9e-ded3004eb832",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "bac2a243-da26-47e5-a25e-0190bbf6b2e5:indexpattern-datasource-current-indexpattern",
             "type": "index-pattern"
         },
         {
@@ -1321,17 +1508,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "f010c091-9148-441c-9104-d991418b0584:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
             "name": "f010c091-9148-441c-9104-d991418b0584:indexpattern-datasource-layer-4ac4c2b2-57a7-4452-9c9e-ded3004eb832",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "4de5684e-c5c9-45be-b15a-0251215994c2:indexpattern-datasource-current-indexpattern",
             "type": "index-pattern"
         },
         {
@@ -1340,5 +1517,6 @@
             "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }
