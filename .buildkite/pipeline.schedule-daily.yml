@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
+name: integrations-schedule-daily
+
+env:
+  SETUP_GVM_VERSION: "v0.5.1"
+  LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
+
+# The pipeline is triggered by the scheduler every day
+steps:
+  - label: ":white_check_mark: Check go sources"
+    key: "check"
+    command: ".buildkite/scripts/check_sources.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "8"
+      memory: "4G"
+
+  - label: "Check integrations in serverless - project: Observability"
+    key: "trigger-integrations-serverless-obs"
+    trigger: "integrations-serverless"
+    build:
+      env:
+        SERVERLESS_PROJECT: observability
+    depends_on:
+      - step: "check"
+        allow_failure: false
+
+  - label: "Check integrations in serverless - project: Security"
+    key: "trigger-integrations-serverless-security"
+    trigger: "integrations-serverless"
+    build:
+      env:
+        SERVERLESS_PROJECT: security
+    depends_on:
+      - step: "check"
+        allow_failure: false

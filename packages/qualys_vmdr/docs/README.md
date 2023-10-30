@@ -88,10 +88,10 @@ An example event for `asset_host_detection` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-08-28T09:53:52.909Z",
+    "@timestamp": "2023-10-25T08:52:23.474Z",
     "agent": {
-        "ephemeral_id": "24c009cf-e26d-4f8a-b66f-7412425ed0fe",
-        "id": "6b293533-5b3c-4cb2-a00c-b2b25ba9edec",
+        "ephemeral_id": "8365cc1b-0570-46a3-986b-eb86f03344d2",
+        "id": "50e7e437-d3fc-4872-8bd1-0da718796b4a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.9.0"
@@ -105,7 +105,7 @@ An example event for `asset_host_detection` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "6b293533-5b3c-4cb2-a00c-b2b25ba9edec",
+        "id": "50e7e437-d3fc-4872-8bd1-0da718796b4a",
         "snapshot": false,
         "version": "8.9.0"
     },
@@ -115,7 +115,7 @@ An example event for `asset_host_detection` looks as following:
             "host"
         ],
         "dataset": "qualys_vmdr.asset_host_detection",
-        "ingested": "2023-08-28T09:53:53Z",
+        "ingested": "2023-10-25T08:52:26Z",
         "kind": "alert",
         "type": [
             "info"
@@ -291,8 +291,8 @@ An example event for `knowledge_base` looks as following:
 {
     "@timestamp": "2023-06-29T12:20:46.000Z",
     "agent": {
-        "ephemeral_id": "24c009cf-e26d-4f8a-b66f-7412425ed0fe",
-        "id": "6b293533-5b3c-4cb2-a00c-b2b25ba9edec",
+        "ephemeral_id": "b3f577ba-0fb1-49e7-a88b-9bef53396008",
+        "id": "09fa5e8b-ac5e-4ecf-a0cb-264fb54f1062",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.9.0"
@@ -306,18 +306,18 @@ An example event for `knowledge_base` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "6b293533-5b3c-4cb2-a00c-b2b25ba9edec",
+        "id": "09fa5e8b-ac5e-4ecf-a0cb-264fb54f1062",
         "snapshot": false,
         "version": "8.9.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
-            "host"
+            "vulnerability"
         ],
         "dataset": "qualys_vmdr.knowledge_base",
         "id": "11830",
-        "ingested": "2023-08-28T09:54:51Z",
+        "ingested": "2023-10-26T12:30:53Z",
         "kind": "alert",
         "type": [
             "info"
@@ -404,6 +404,7 @@ An example event for `knowledge_base` looks as following:
 | qualys_vmdr.knowledge_base.cvss.access.vector |  | keyword |
 | qualys_vmdr.knowledge_base.cvss.authentication |  | keyword |
 | qualys_vmdr.knowledge_base.cvss.base |  | keyword |
+| qualys_vmdr.knowledge_base.cvss.base_obj |  | flattened |
 | qualys_vmdr.knowledge_base.cvss.exploitability |  | keyword |
 | qualys_vmdr.knowledge_base.cvss.impact.availability |  | keyword |
 | qualys_vmdr.knowledge_base.cvss.impact.confidentiality |  | keyword |
@@ -433,6 +434,7 @@ An example event for `knowledge_base` looks as following:
 | qualys_vmdr.knowledge_base.discovery.additional_info |  | keyword |
 | qualys_vmdr.knowledge_base.discovery.auth_type_list.value |  | keyword |
 | qualys_vmdr.knowledge_base.discovery.remote |  | long |
+| qualys_vmdr.knowledge_base.error |  | keyword |
 | qualys_vmdr.knowledge_base.id_range |  | keyword |
 | qualys_vmdr.knowledge_base.ids |  | keyword |
 | qualys_vmdr.knowledge_base.is_disabled |  | boolean |
