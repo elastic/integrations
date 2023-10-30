@@ -53,14 +53,6 @@ unset_secrets () {
   done
 }
 
-repo_name() {
-    # Example of URL: git@github.com:acme-inc/my-project.git
-    local repoUrl=$1
-
-    orgAndRepo=$(echo $repoUrl | cut -d':' -f 2)
-    echo "$(basename ${orgAndRepo} .git)"
-}
-
 check_platform_architecture() {
   case "${hw_type}" in
     "x86_64")
@@ -77,6 +69,26 @@ check_platform_architecture() {
     ;;
   esac
 }
+
+# Helpers for Buildkite
+repo_name() {
+    # Example of URL: git@github.com:acme-inc/my-project.git
+    local repoUrl=$1
+
+    orgAndRepo=$(echo $repoUrl | cut -d':' -f 2)
+    echo "$(basename ${orgAndRepo} .git)"
+}
+
+buildkite_pr_branch_build_id() {
+    if [ "${BUILDKITE_PULL_REQUEST}" == "false" ]; then
+        # add pipeline slug ad build_id to distinguish between integration and integrations-serverless builds
+        # when both are executed using main branch
+        echo "${BUILDKITE_BRANCH}-${BUILDKITE_PIPELINE_SLUG}-${BUILDKITE_BUILD_NUMBER}"
+        return
+    fi
+    echo "PR-${BUILDKITE_PULL_REQUEST}-${BUILDKITE_BUILD_NUMBER}"
+}
+
 
 # Helpers to install required tools
 create_bin_folder() {
@@ -644,16 +656,6 @@ upload_safe_logs() {
     gsutil cp ${source} "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${target}"
 
     google_cloud_logout_active_account
-}
-
-buildkite_pr_branch_build_id() {
-    if [ "${BUILDKITE_PULL_REQUEST}" == "false" ]; then
-        # add pipeline slug ad build_id to distinguish between integration and integrations-serverless builds
-        # when both are executed using main branch
-        echo "${BUILDKITE_BRANCH}-${BUILDKITE_PIPELINE_SLUG}-${BUILDKITE_BUILD_NUMBER}"
-        return
-    fi
-    echo "PR-${BUILDKITE_PULL_REQUEST}-${BUILDKITE_BUILD_NUMBER}"
 }
 
 clean_safe_logs() {
