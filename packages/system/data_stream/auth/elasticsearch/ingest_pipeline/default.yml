@@ -2,11 +2,13 @@
 description: Pipeline for parsing system authorization and secure logs.
 processors:
   - rename:
+      tag: rename_message
       if: ctx.event?.original == null
       field: message
       target_field: event.original
       ignore_missing: true
   - grok:
+      if: ctx.log?.syslog == null
       description: Grok the message header.
       tag: grok-message-header
       field: event.original
@@ -14,7 +16,18 @@ processors:
         GREEDYMULTILINE: '(.|\n)*'
         TIMESTAMP: (?:%{TIMESTAMP_ISO8601}|%{SYSLOGTIMESTAMP})
       patterns:
+        - '^<%{NONNEGINT:log.syslog.priority:int}>(?:%{NONNEGINT:system.auth.syslog.version} )?+(?:-|%{TIMESTAMP:system.auth.timestamp}) 
+            +(?:-|%{IPORHOST:host.hostname}) +(?:-|%{SYSLOG5424PRINTASCII:process.name}) 
+            +(?:-|%{POSINT:process.pid:long}) +(?:-|%{SYSLOG5424PRINTASCII:event.code}) 
+            +(?:-|%{SYSLOG5424SD:syslog5424_sd})? 
+            +%{GREEDYDATA:_temp.message}$'
         - '^%{TIMESTAMP:system.auth.timestamp} %{SYSLOGHOST:host.hostname}? %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?:%{SPACE}%{GREEDYMULTILINE:_temp.message}$'
+        - '^<%{NONNEGINT:log.syslog.priority:int}>(?:%{NONNEGINT:system.auth.syslog.version} )?%{TIMESTAMP:system.auth.timestamp} %{SYSLOGHOST:host.hostname}? %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?:%{SPACE}%{GREEDYMULTILINE:_temp.message}$'
+  - rename:
+      tag: rename_message_tmp_message
+      field: message
+      target_field: _temp.message
+      if: ctx.log?.syslog != null && ctx.message != null
   - grok:
       description: Grok specific auth messages.
       tag: grok-specific-messages
@@ -33,12 +46,15 @@ processors:
             field: _temp.message
             target_field: message
   - append:
+      tag: append_category_process
       field: event.category
       value: process
       allow_duplicates: false
       if: ctx.system?.auth?.sudo?.command != null
   - remove:
+      tag: remove_temp
       field: _temp
+      ignore_missing: true
   - grok:
       description: Grok usernames from PAM messages.
       tag: grok-pam-users
@@ -63,69 +79,129 @@ processors:
       patterns:
         - '^pam_unix(%{DATA}:%{WORD:_temp.category})'
       if: ctx.message != null && ctx.message.contains('pam_unix(')
+  - kv:
+      tag: "kv_syslog_structured_semicolon_colon"
+      if: ctx.syslog5424_sd != null && ctx.syslog5424_sd != ''
+      field: syslog5424_sd
+      field_split: '(?<="); '
+      value_split: '(?i)(?<=[a-z]):{1,2}(?=")'
+      trim_key: " "
+      trim_value: " "
+      prefix: system.auth.
+      strip_brackets: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+  - grok:
+      field: syslog5424_sd
+      tag: grok_syslog5424_sd
+      if: ctx.system?.auth == null && ctx.syslog5424_sd != null
+      patterns:
+        - '(?:%{NOTSPACE} +)?%{GREEDYDATA:syslog5424_sd}'
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+  - kv:
+      tag: "kv_syslog_structured_space_equals"
+      if: ctx.system?.auth == null && ctx.syslog5424_sd != null
+      field: syslog5424_sd
+      field_split: '(?<=") '
+      value_split: '(?i)(?<=[a-z])=(?=")'
+      trim_key: " "
+      trim_value: " "
+      prefix: system.auth.
+      strip_brackets: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+  - foreach:
+      tag: foreach_system-auth
+      field: system.auth
+      if: ctx.system?.auth != null
+      ignore_missing: true
+      processor: 
+        lowercase:
+          field: "_ingest._key"
   - append:
+      tag: append_category_session
       field: event.category
       value: session
       allow_duplicates: false
       if: ctx._temp?.category == 'session'
   - append:
+      tag: append_category_authentication
       field: event.category
       value: authentication
       allow_duplicates: false
       if: ctx._temp?.category == 'auth'
   - set:
+      tag: set_outcome_success
       field: event.outcome
       value: success
       if: ctx._temp?.category == 'auth' && ctx.message != null && !ctx.message.contains('authentication failure')
   - set:
+      tag: set_outcome_failure
       field: event.outcome
       value: failure
       if: ctx.message != null && ctx.message.contains('authentication failure')
   - append:
+      tag: append_category_authentication_2
       field: event.category
       value: authentication
       allow_duplicates: false
       if: ctx.message != null && ctx.message.contains('authentication failure')
   - set:
+      tag: set_action_logged-on
       field: event.action
       value: 'logged-on'
       if: ctx.message != null && ctx.message.contains('session opened')
   - set:
+      tag: set_action_logged-off
       field: event.action
       value: 'logged-off'
       if: ctx.message != null && ctx.message.contains('session closed')
   - rename:
+      tag: rename_byuser
       field: _temp.byuser
       target_field: user.name
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_byuid
       field: _temp.byuid
       target_field: user.id
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_foruser
       field: _temp.foruser
       target_field: user.name
       ignore_missing: true
       ignore_failure: true
       if: ctx.user?.name == null || ctx.user?.name == ""
   - rename:
+      tag: rename_user
       field: _temp.user
       target_field: user.name
       ignore_missing: true
       ignore_failure: true
       if: ctx.user?.name == null || ctx.user?.name == ""
   - rename:
+      tag: rename_foruser
       field: _temp.foruser
       target_field: user.effective.name
       ignore_missing: true
       ignore_failure: true
       if: ctx.user?.name != null
   - remove:
+      tag: remove_temp_2
       field: _temp
       ignore_missing: true
   - convert:
+      tag: convert_source-address
       field: source.address
       target_field: source.ip
       type: ip
@@ -136,12 +212,14 @@ processors:
             copy_from: source.address
             ignore_failure: true
   - convert:
+      tag: convert_sudo-user
       field: system.auth.sudo.user
       target_field: user.effective.name
       type: string
       ignore_failure: true
       if: ctx.system?.auth?.sudo?.user != null
   - convert:
+      tag: convert_dropped-ip
       field: system.auth.ssh.dropped_ip
       target_field: source.ip
       type: ip
@@ -150,7 +228,8 @@ processors:
         - remove:
             field: system.auth.ssh.dropped_ip
   - date:
-      if: ctx.event?.timezone == null
+      tag: date_timestamp_notz
+      if: ctx.event?.timezone == null && ctx['@timestamp'] == null
       field: system.auth.timestamp
       target_field: '@timestamp'
       formats:
@@ -162,7 +241,8 @@ processors:
             field: error.message
             value: '{{{ _ingest.on_failure_message }}}'
   - date:
-      if: ctx.event?.timezone != null
+      tag: date_timestamp_tz
+      if: ctx.event?.timezone != null && ctx['@timestamp'] == null
       field: system.auth.timestamp
       target_field: '@timestamp'
       formats:
@@ -175,12 +255,16 @@ processors:
             field: error.message
             value: '{{{ _ingest.on_failure_message }}}'
   - remove:
+      tag: remove_timestamp
       field: system.auth.timestamp
+      ignore_missing: true
   - geoip:
+      tag: geoip_source-ip-geo
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source-ip-as
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -189,14 +273,17 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source-as-asn
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source-as-org
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - set:
+      tag: set_kind-event
       field: event.kind
       value: event
   - script:
@@ -217,66 +304,83 @@ processors:
           ctx.event.outcome = "failure";
         }
   - append:
+      tag: append_category-iam
       field: event.category
       value: iam
       if: ctx.process?.name != null && ['groupadd', 'groupdel', 'groupmod', 'useradd', 'userdel', 'usermod'].contains(ctx.process.name)
   - set:
+      tag: set_outcome-success
       field: event.outcome
       value: success
       if: ctx.process?.name != null && (ctx.message == null || !ctx.message.contains("fail")) && ['groupadd', 'groupdel', 'groupmod', 'useradd', 'userdel', 'usermod'].contains(ctx.process.name)
   - set:
+      tag: set_outcome-failure
       field: event.outcome
       value: failure
       if: ctx.process?.name != null && (ctx.message != null && ctx.message.contains("fail")) && ['groupadd', 'groupdel', 'groupmod', 'useradd', 'userdel', 'usermod'].contains(ctx.process.name)
   - append:
+      tag: append_type-user
       field: event.type
       value: user
       if: ctx.process?.name != null && ['useradd', 'userdel', 'usermod'].contains(ctx.process.name)
   - append:
+      tag: append_type-group
       field: event.type
       value: group
       if: ctx.process?.name != null && ['groupadd', 'groupdel', 'groupmod'].contains(ctx.process.name)
   - append:
+      tag: append_type-creation
       field: event.type
       value: creation
       if: ctx.process?.name != null && ['useradd', 'groupadd'].contains(ctx.process.name)
   - append:
+      tag: append_type-deletion
       field: event.type
       value: deletion
       if: ctx.process?.name != null && ['userdel', 'groupdel'].contains(ctx.process.name)
   - append:
+      tag: append_type-change
       field: event.type
       value: change
       if: ctx.process?.name != null && ['usermod', 'groupmod'].contains(ctx.process.name)
   - append:
+      tag: append_related-user-name
       field: related.user
       value: "{{{ user.name }}}"
       allow_duplicates: false
       if: ctx.user?.name != null && ctx.user?.name != ''
   - append:
+      tag: append_related-user-effective-name
       field: related.user
       value: "{{{ user.effective.name }}}"
       allow_duplicates: false
       if: ctx.user?.effective?.name != null && ctx.user?.effective?.name != ''
   - append:
+      tag: append_related-ip
       field: related.ip
       value: "{{{ source.ip }}}"
       allow_duplicates: false
       if: ctx.source?.ip != null && ctx.source?.ip != ''
   - append:
+      tag: append_related-hosts
       field: related.hosts
       value: "{{{ host.hostname }}}"
       allow_duplicates: false
       if: ctx.host?.hostname != null && ctx.host?.hostname != ''
   - set:
+      tag: set_ecs-version
       field: ecs.version
       value: 8.0.0
   - remove:
+      tag: remove_event-original
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - set:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"

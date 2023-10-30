@@ -72,6 +72,8 @@ IIS integration offers certain field combinations shipped automatically into Ela
     
     - Fields: date time s-ip cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs(User-Agent) cs(cookie) cs(Referer) sc-status sc-substatus sc-win32-status sc-bytes, cs-bytes time-taken
 
+    - Fields: date time s-computername s-ip cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs(User-Agent) sc-status sc-substatus sc-win32-status sc-bytes, cs-bytes time-taken
+
 {{event "access"}}
 
 The fields reported are:

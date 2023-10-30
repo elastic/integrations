@@ -12,11 +12,16 @@ processors:
   - set:
       field: event.category
       tag: set_event_catgeory
-      value: [host]
+      value: [vulnerability]
   - set:
       field: event.type
       tag: set_event_type
       value: [info]
+  - rename:
+      field: error
+      tag: rename_error
+      target_field: qualys_vmdr.knowledge_base.error
+      ignore_missing: true
   - json:
       field: message
       tag: json_message
@@ -150,9 +155,16 @@ processors:
       ignore_missing: true
   - rename:
       field: json.CVSS.BASE
-      tag: rename_CVSS.BASE
+      tag: rename_CVSS_BASE
       target_field: qualys_vmdr.knowledge_base.cvss.base
       ignore_missing: true
+      if: ctx.json?.CVSS?.BASE instanceof String
+  - rename:
+      field: json.CVSS.BASE
+      tag: rename_CVSS_BASE
+      target_field: qualys_vmdr.knowledge_base.cvss.base_obj
+      ignore_missing: true
+      if: ctx.json?.CVSS?.BASE instanceof Object
   - rename:
       field: json.CVSS.TEMPORAL
       tag: rename_CVSS_TEMPORAL

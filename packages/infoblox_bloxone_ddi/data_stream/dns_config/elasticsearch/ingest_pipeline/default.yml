@@ -17,6 +17,7 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: json
@@ -1989,20 +1990,7 @@ processors:
   - script:
       description: Drops null/empty values recursively.
       lang: painless
-      source:
-        boolean dropEmptyFields(Object object) {
-          if (object == null || object == '') {
-            return true;
-          } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
-            return (((Map) object).size() == 0);
-          } else if (object instanceof List) {
-            ((List) object).removeIf(value -> dropEmptyFields(value));
-            return (((List) object).length == 0);
-          }
-          return false;
-        }
-        dropEmptyFields(ctx);
+      source: boolean dropEmptyFields(Object object) { if (object == null || object == '') { return true; } else if (object instanceof Map) { ((Map) object).values().removeIf(value -> dropEmptyFields(value)); return (((Map) object).size() == 0); } else if (object instanceof List) { ((List) object).removeIf(value -> dropEmptyFields(value)); return (((List) object).length == 0); } return false; } dropEmptyFields(ctx);
 on_failure:
   - set:
       field: event.kind

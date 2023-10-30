@@ -174,7 +174,6 @@ An example event for `emr` looks as following:
 | aws.elasticmapreduce.metrics.TotalVCPURunning.avg | The current total number of vCPUs available in a running cluster. | long |  | gauge |
 | aws.elasticmapreduce.metrics.UnderReplicatedBlocks.sum | The number of blocks that need to be replicated one or more times. | long |  | gauge |
 | aws.elasticmapreduce.metrics.YARNMemoryAvailablePercentage.avg | The percentage of remaining memory available to YARN | double | percent | gauge |
-| aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |  |
 | aws.tags | Tag key value pairs from aws resources. | flattened |  |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
