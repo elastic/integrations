@@ -180,11 +180,15 @@ processors:
     target_field: user.id
     ignore_failure: true
     ignore_missing: true
-- rename:
-    field: json.UserType
-    target_field: user.roles
+- set:
+    value: ["{{{json.UserType}}}"]
+    field: user.roles
     ignore_failure: true
-    ignore_missing: true
+    ignore_empty_value: true
+- remove:
+      field: json.UserType
+      ignore_failure: true
+      ignore_missing: true
 - convert:
     field: json.SourceIp
     type: ip

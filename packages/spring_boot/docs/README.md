@@ -75,7 +75,9 @@ An example event for `audit_events` looks as following:
         "ingested": "2022-08-05T09:30:14Z",
         "kind": "event",
         "module": "spring_boot",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "host": {
         "architecture": "x86_64",
@@ -176,7 +178,9 @@ An example event for `http_trace` looks as following:
         "ingested": "2022-08-05T09:31:48Z",
         "kind": "event",
         "module": "spring_boot",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "host": {
         "architecture": "x86_64",
@@ -272,7 +276,9 @@ An example event for `memory` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "web",
+        "category": [
+            "web"
+        ],
         "dataset": "spring_boot.memory",
         "duration": 566740708,
         "ingested": "2023-09-28T13:08:48Z",
@@ -403,7 +409,9 @@ An example event for `threading` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "web",
+        "category": [
+            "web"
+        ],
         "dataset": "spring_boot.threading",
         "duration": 197157690,
         "ingested": "2023-09-28T13:09:38Z",
@@ -522,13 +530,17 @@ An example event for `gc` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "web",
+        "category": [
+            "web"
+        ],
         "dataset": "spring_boot.gc",
         "duration": 221408484,
         "ingested": "2023-09-28T13:07:08Z",
         "kind": "metric",
         "module": "spring_boot",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "host": {
         "architecture": "x86_64",
