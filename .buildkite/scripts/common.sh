@@ -542,7 +542,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort | head -n 10
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort | head -n 50
 }
 
 check_package() {
@@ -757,4 +757,93 @@ process_package() {
     fi
 
     popd > /dev/null
+}
+
+## Benchmark helpers
+
+add_github_comment_benchmark() {
+    if ! is_pr {
+        return
+    }
+    
+    local benchmark_github_file="report.md"
+    local benchmark_results="benchmark-results"
+    local current_benchmark_results="build/${benchmark_results}"
+    local baseline="build/${BUILDKITE_PULL_REQUEST_BASE_BRANCH}/${benchmark_results}"
+    local is_full_report="false"
+
+    if [[ "${GITHUB_PR_TRIGGER_COMMENT}" =~ benchmark\ fullreport ]]; then
+        is_full_report="true"
+    fi
+
+    pushd ${WORKSPACE} > /dev/null
+
+    mkdir -p ${current_benchmark_results}
+
+    # download PR benchmarks
+    local bucket_uri=$(get_benchmark_bucket_uri)
+    download_benchmark_results \
+        ${JOB_GCS_BUCKET} \
+        $(get_benchmark_path_prefix) \
+        ${current_benchmark_results}
+
+    # download main benchmark if any
+    download_benchmark_results \
+        ${JOB_GCS_BUCKET} \
+        $(get_benchmark_path_prefix) \
+        baseline
+
+    popd > /dev/null
+
+}
+
+stash_benchmark_results() {
+    # FIXME: should it be JSON
+    local wildcard="build/benchmark-results/*.xml"
+    if ! ls ${wildcard} ; then
+        echo "isBenchmarkResultsPresent: benchmark files not found, report won't be stashed"
+        return 0
+    fi
+
+    upload_benchmark_results \
+        ${JOB_GCS_BUCKET} \
+        ${wildcard} \
+        $(get_benchmark_path_prefix)
+}
+
+get_benchmark_bucket_uri() {
+    echo "gs://${JOB_GCS_BUCKET}/$(get_benchmark_path_prefix)"
+}
+
+get_benchmark_path_prefix() {
+    echo "${BUILDKITE_PIPELINE_SLUG}/${buildkite_pr_branch_build_id}/benchmark-results/"
+}
+
+upload_benchmark_results() {
+    local bucket="$1"
+    local source="$2"
+    local target="$3"
+
+    if ! ls ${source} 2>&1 > /dev/null ; then
+        echo "upload_benchmark_results: artifacts files not found, nothing will be archived"
+        return
+    fi
+
+    google_cloud_auth_safe_logs
+
+    gsutil cp ${source} "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${target}"
+
+    google_cloud_logout_active_account
+}
+
+download_benchmark_results() {
+    local bucket="$1"
+    local source="$2"
+    local target="$3"
+
+    google_cloud_auth_safe_logs
+
+    gsutil cp "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${source}" ${target}
+
+    google_cloud_logout_active_account
 }
