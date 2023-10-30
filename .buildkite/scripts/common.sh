@@ -759,13 +759,12 @@ process_package() {
     popd > /dev/null
 }
 
-## Benchmark helpers
-
+## TODO: Benchmark helpers
 add_github_comment_benchmark() {
-    if ! is_pr {
+    if ! is_pr ; then
         return
-    }
-    
+    fi
+
     local benchmark_github_file="report.md"
     local benchmark_results="benchmark-results"
     local current_benchmark_results="build/${benchmark_results}"
@@ -794,7 +793,6 @@ add_github_comment_benchmark() {
         baseline
 
     popd > /dev/null
-
 }
 
 stash_benchmark_results() {
