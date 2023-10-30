@@ -13,7 +13,7 @@ To access the metrices, the url https://host:port(8989)/sdk needs to be passed t
 
  The virtual machine consists of a set of specification and configuration files and is backed by the physical resources of a host. Every virtual machine has virtual devices that provide the same functionality as physical hardware but are more portable, secure and easier to manage.
 
- Note: vSphere Integration currently supports network names of VM's conecected only to vSS (VSphere Standard Switch) and not vDS (VSphere Dustributed Switches).
+ Note: vSphere Integration currently supports network names of VMs connected only to vSS (vSphere Standard Switch) and not vDS (vSphere Distributed Switches).
 
 {{event "virtualmachine"}}
 
