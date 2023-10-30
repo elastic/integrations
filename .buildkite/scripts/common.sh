@@ -742,9 +742,8 @@ process_package() {
     fi
 
     if [ "${SERVERLESS}" == "false" ]; then
-        echo "Run benchmarks. TODO"
-        # TODO: add benchmarks support (https://github.com/elastic/integrations/blob/befdc5cb752a08aaf5f79b0d9bdb68588ade9f27/.ci/Jenkinsfile#L180)
-        # ${ELASTIC_PACKAGE_BIN} benchmark pipeline -v --report-format json --report-output file
+        # TODO: add benchmarks support stash and comments in PR (https://github.com/elastic/integrations/blob/befdc5cb752a08aaf5f79b0d9bdb68588ade9f27/.ci/Jenkinsfile#L180)
+        ${ELASTIC_PACKAGE_BIN} benchmark pipeline -v --report-format json --report-output file
     fi
 
     if [ ${use_kind} -eq 1 ]; then
