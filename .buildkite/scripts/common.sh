@@ -553,6 +553,18 @@ install_package() {
     return 0
 }
 
+test_package_in_local_stack() {
+    local package=$1
+    TEST_OPTIONS="-v --report-format xUnit --report-output file --test-coverage"
+
+    echo "Test package: ${package}"
+    # Run all test suites
+    if ! ${ELASTIC_PACKAGE_BIN} test ${TEST_OPTIONS} ; then
+        return 1
+    fi
+    echo ""
+    return 0
+}
 # Currently, system tests are not run in serverless to avoid lasting the build
 # too much time, since all packages are run in the same step one by one.
 # Packages are tested one by one to avoid creating more than 100 projects for one build.
@@ -588,9 +600,12 @@ run_tests_package() {
         if ! test_package_in_serverless ${package} ; then
             return 1
         fi
+    else
+        if ! test_package_in_local_stack ${package} ; then
+            return 1
+        fi
     fi
 
-    # TODO add if block to test packages locally as Jenkins performs
     return 0
 }
 
