@@ -1486,9 +1486,16 @@ The `billing` dataset collects GCP Billing information from Google Cloud BigQuer
 | event.module | Event module | constant_keyword |
 | gcp.billing.billing_account_id | Project Billing Account ID. | keyword |
 | gcp.billing.cost_type | Cost types include regular, tax, adjustment, and rounding_error. | keyword |
+| gcp.billing.effective_price | The charged price for usage of the Google Cloud SKUs and SKU tiers. Reflects contract pricing if applicable, otherwise, it's the list price. | float |
 | gcp.billing.invoice_month | Billing report month. | keyword |
 | gcp.billing.project_id | Project ID of the billing report belongs to. | keyword |
 | gcp.billing.project_name | Project Name of the billing report belongs to. | keyword |
+| gcp.billing.service_description | The Google Cloud service that reported the Cloud Billing data. | keyword |
+| gcp.billing.service_id | The ID of the service that the usage is associated with. | keyword |
+| gcp.billing.sku_description | A description of the resource type used by the service. For example, a resource type for Cloud Storage is Standard Storage US. | keyword |
+| gcp.billing.sku_id | The ID of the resource used by the service. | keyword |
+| gcp.billing.tags.key |  | keyword |
+| gcp.billing.tags.value |  | keyword |
 | gcp.billing.total | Total billing amount. | float |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
