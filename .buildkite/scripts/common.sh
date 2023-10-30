@@ -723,7 +723,7 @@ process_package() {
         popd > /dev/null
         return
     else
-        echo "[${package}] >>>> failed to check 'is_pr_affected' for ${package}: ${reason}"
+        echo "${reason}"
     fi
 
     use_kind=0
