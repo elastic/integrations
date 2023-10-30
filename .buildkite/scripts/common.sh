@@ -722,6 +722,8 @@ process_package() {
         echo "- ${reason}" >> ${SKIPPED_PACKAGES_FILE_PATH}
         popd > /dev/null
         return
+    else
+        echo "[${package}] >>>> failed to check `is_pr_affected` for ${package}: ${reason}"
     fi
 
     use_kind=0
