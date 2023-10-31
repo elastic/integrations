@@ -348,7 +348,9 @@ prepare_stack() {
     fi
 
     echo "Boot up the Elastic stack"
-    ${ELASTIC_PACKAGE_BIN} stack up -d ${args}
+    if ! ${ELASTIC_PACKAGE_BIN} stack up -d ${args} ; then
+        return 1
+    fi
     echo ""
     ${ELASTIC_PACKAGE_BIN} stack status
     echo ""
@@ -606,6 +608,12 @@ run_tests_package() {
     if ! check_package ${package} ; then
         return 1
     fi
+
+    # For non serverless, each Elastic stack is boot up checking each package manifest
+    if [[ ${SERVERLESS} == "false" ]] ; then
+        prepare_stack
+    fi
+
     echo "--- [${package}] test installation"
     if ! install_package ${package} ; then
         return 1
@@ -698,11 +706,6 @@ process_package() {
     echo "--- Package ${package}: check"
     pushd ${package} > /dev/null
 
-    # For non serverless, each Elastic stack is boot up checking each package manifest
-    if [[ ${SERVERLESS} == "false" ]] ; then
-        prepare_stack
-    fi
-
     clean_safe_logs
 
     if [[ ${SERVERLESS} == "true" ]] ; then
@@ -739,8 +742,8 @@ process_package() {
     fi
 
     if ! run_tests_package ${package} ; then
-        exit_code=$?
-        echo "[${package}] run_tests_package failed (exit_code $?)"
+        exit_code=1
+        echo "[${package}] run_tests_package failed"
         echo "- ${package}" >> ${FAILED_PACKAGES_FILE_PATH}
     fi
 
@@ -757,8 +760,8 @@ process_package() {
         teardown_serverless_test_package ${package}
     else
         if ! teardown_test_package ${package} ; then
-            exit_code=$?
-            echo "[${package}] teardown_test_package failed (exit_code $?)"
+            exit_code=1
+            echo "[${package}] teardown_test_package failed"
         fi
     fi
 
