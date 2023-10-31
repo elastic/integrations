@@ -35,5 +35,7 @@ with_kubernetes
 use_elastic_package
 
 pushd packages > /dev/null
-process_package ${package}
+if ! process_package ${package}; then
+    exit 1
+fi
 popd > /dev/null

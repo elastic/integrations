@@ -54,7 +54,9 @@ any_package_failing=0
 
 pushd packages > /dev/null
 for package in $(list_all_directories); do
-    process_package ${package}
+    if ! process_package ${package} ; then
+        any_package_failing=1
+    fi
 done
 popd > /dev/null
 

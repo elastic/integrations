@@ -733,14 +733,15 @@ process_package() {
     if kubernetes_service_deployer_used ; then
         echo "Kubernetes service deployer is used. Creating Kind cluster"
         use_kind=1
-        create_kind_cluster
+        if ! create_kind_cluster ; then
+            return 1
+        fi
     fi
 
     if ! run_tests_package ${package} ; then
         exit_code=$?
         echo "[${package}] run_tests_package failed"
         echo "- ${package}" >> ${FAILED_PACKAGES_FILE_PATH}
-        any_package_failing=1
     fi
 
     if [ "${SERVERLESS}" == "false" ]; then
