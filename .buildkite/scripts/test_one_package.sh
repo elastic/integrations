@@ -7,6 +7,8 @@ set -euo pipefail
 # default values
 STACK_VERSION=${STACK_VERSION:-""}
 UPLOAD_SAFE_LOGS=${UPLOAD_SAFE_LOGS:-"0"}
+BENCHMARK_THRESHOLD=${BENCHMARK_THRESHOLD:-'15'}
+
 
 # used in common.sh
 FORCE_CHECK_ALL=${FORCE_CHECK_ALL:-"false"}

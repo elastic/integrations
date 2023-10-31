@@ -778,6 +778,7 @@ add_github_comment_benchmark() {
     pushd ${WORKSPACE} > /dev/null
 
     mkdir -p ${current_benchmark_results}
+    mkdir -p ${baseline}
 
     # download PR benchmarks
     local bucket_uri=$(get_benchmark_bucket_uri)
@@ -792,12 +793,32 @@ add_github_comment_benchmark() {
         $(get_benchmark_path_prefix) \
         baseline
 
+    echo "Debug: current benchmark"
+    ls -l ${current_benchmark_results}
+
+    echo "Debug: baseline benchmark"
+    ls -l ${baseline}
+
+    echo "Run benchmark report"
+    ${ELASTIC_PACKAGE_BIN} report benchmark \
+        --fail-on-missing=false \
+        --new="${current_benchmark_results}" \
+        --old="${baseline}" \
+        --threshold=${BENCHMARK_THRESHOLD} \
+        --report-output-path="${benchmark_github_file}" \
+        --full=${is_full_report}
+
+
+    if [ ! -f ${benchmark_github_file} ]; then
+        echo "add_github_comment_benchmark: it was not possible to send the message"
+        return
+    fi
+    # TODO: write github comment in PR
     popd > /dev/null
 }
 
 stash_benchmark_results() {
-    # FIXME: should it be JSON
-    local wildcard="build/benchmark-results/*.xml"
+    local wildcard="build/benchmark-results/*.json"
     if ! ls ${wildcard} ; then
         echo "isBenchmarkResultsPresent: benchmark files not found, report won't be stashed"
         return 0
