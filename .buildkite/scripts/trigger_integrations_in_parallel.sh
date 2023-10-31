@@ -5,12 +5,12 @@ source .buildkite/scripts/common.sh
 set -euo pipefail
 
 # default values
-echoerr "Some some envs"
-env |egrep 'STACK_VERSION|SERVERLESS|FORCE_CHECK_ALL' || true 1>&2
-
-STACK_VERSION=${STACK_VERSION:-""}
-SERVERLESS="false"
-FORCE_CHECK_ALL=${FORCE_CHECK_ALL:-"false"}
+# echoerr "Some some envs"
+# env |egrep 'STACK_VERSION|SERVERLESS|FORCE_CHECK_ALL' || true 1>&2
+#
+# STACK_VERSION=${STACK_VERSION:-""}
+# SERVERLESS="false"
+# FORCE_CHECK_ALL=${FORCE_CHECK_ALL:-"false"}
 
 pushd packages > /dev/null
 PACKAGE_LIST=$(list_all_directories)
@@ -28,7 +28,7 @@ for package in ${PACKAGE_LIST}; do
     if ! reason=$(is_pr_affected ${package}) ; then
         skip_package="true"
     fi
-    echo "${reason}"
+    echoerr "${reason}"
     popd > /dev/null
 
     if [[ $skip_package == "true" ]] ; then
