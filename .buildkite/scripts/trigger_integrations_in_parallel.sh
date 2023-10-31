@@ -4,6 +4,14 @@ source .buildkite/scripts/common.sh
 
 set -euo pipefail
 
+# default values
+echo "Some some envs"
+env |egrep 'STACK_VERSION|SERVERLESS|FORCE_CHECK_ALL'
+
+STACK_VERSION=${STACK_VERSION:-""}
+SERVERLESS="false"
+FORCE_CHECK_ALL=${FORCE_CHECK_ALL:-"false"}
+
 pushd packages > /dev/null
 PACKAGE_LIST=$(list_all_directories)
 popd > /dev/null
