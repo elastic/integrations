@@ -5,7 +5,7 @@ source .buildkite/scripts/common.sh
 set -euo pipefail
 
 pushd packages > /dev/null
-PACKAGE_LIST=$(list_all_directories | head -n 10)
+PACKAGE_LIST=$(list_all_directories)
 popd > /dev/null
 
 echo "steps:"
@@ -21,4 +21,5 @@ for package in ${PACKAGE_LIST}; do
     echo "        provider: gcp"
     echo "      artifact_paths:"
     echo "        - build/test-results/*.xml"
+    echo "        - build/benchmark-results/*.xml"
 done
