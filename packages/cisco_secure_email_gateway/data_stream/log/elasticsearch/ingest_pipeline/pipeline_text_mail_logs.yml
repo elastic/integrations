@@ -6,26 +6,44 @@ processors:
   - grok:
       field: cisco_secure_email_gateway.log.message
       patterns:
-        - "^graymail \\[CONFIG\\] %{WORD:cisco_secure_email_gateway.log.vendor_action} %{GREEDYDATA:cisco_secure_email_gateway.log.object}$"
-        - "^URL_REP_CLIENT: %{WORD:cisco_secure_email_gateway.log.object_attr} %{DATA:cisco_secure_email_gateway.log.type}. Triggering %{WORD:cisco_secure_email_gateway.log.vendor_action} of %{GREEDYDATA:cisco_secure_email_gateway.log.object}.$"
-        - "^MID %{NUMBER:email.message_id} %{GREEDYDATA:cisco_secure_email_gateway.log.subject}. Severity: %{WORD:cisco_secure_email_gateway.log.severity} \\(Risk Factor: %{NUMBER:cisco_secure_email_gateway.log.risk_factor:long}\\). %{GREEDYDATA:cisco_secure_email_gateway.log.description}$"
-        - "^A System/Warning %{DATA:event.kind} was sent to %{DATA:email.to.address} with subject %{GREEDYDATA:email.subject}.$"
-        - "^%{WORD:cisco_secure_email_gateway.log.connection_status} %{WORD:network.protocol} ICID %{NUMBER:cisco_secure_email_gateway.log.injection_connection_id} interface Management \\(%{IP:cisco_secure_email_gateway.log.interface}\\) address %{IP:cisco_secure_email_gateway.log.address} reverse dns host %{DATA:dns.question.name} verified %{WORD:cisco_secure_email_gateway.log.verified}$"
-        - "^%{WORD:cisco_secure_email_gateway.log.connection_status} MID %{NUMBER:email.message_id} ICID %{NUMBER:cisco_secure_email_gateway.log.injection_connection_id}$"
-        - "^MID %{NUMBER:email.message_id} ICID %{NUMBER:cisco_secure_email_gateway.log.injection_connection_id} From: <%{DATA:email.from.address}>$"
-        - "^MID %{NUMBER:email.message_id} ICID %{NUMBER:cisco_secure_email_gateway.log.injection_connection_id} RID %{DATA:cisco_secure_email_gateway.log.recipient_id} To: <%{DATA:email.to.address}>$"
-        - "^MID %{NUMBER:email.message_id} ready %{NUMBER:cisco_secure_email_gateway.log.read_bytes:long} bytes from <%{DATA:email.from.address}>$"
-        - "^ICID %{NUMBER:cisco_secure_email_gateway.log.injection_connection_id} %{WORD:cisco_secure_email_gateway.log.connection_status}$"
-        - "^%{DATA:cisco_secure_email_gateway.log.message_status} %{WORD:network.protocol} DCID %{NUMBER:cisco_secure_email_gateway.log.delivery_connection_id} interface %{IP:cisco_secure_email_gateway.log.interface} address %{IP:cisco_secure_email_gateway.log.address}$"
-        - "^%{GREEDYDATA:cisco_secure_email_gateway.log.message_status} DCID %{NUMBER:cisco_secure_email_gateway.log.delivery_connection_id} MID %{NUMBER:email.message_id} to RID \\[%{DATA:cisco_secure_email_gateway.log.recipient_id}\\]$"
-        - "^%{GREEDYDATA:cisco_secure_email_gateway.log.message_status} DCID %{NUMBER:cisco_secure_email_gateway.log.delivery_connection_id} MID %{NUMBER:email.message_id} to RID \\[%{DATA:cisco_secure_email_gateway.log.recipient_id}\\]$"
-        - "^DCID %{NUMBER:cisco_secure_email_gateway.log.delivery_connection_id} %{WORD:cisco_secure_email_gateway.log.connection_status}$"
-        - "^%{GREEDYDATA:cisco_secure_email_gateway.log.subject}\\. %{GREEDYDATA:cisco_secure_email_gateway.log.description}$"
-        - "^%{GREEDYDATA:cisco_secure_email_gateway.log.description}: Unable to send System/Warning %{DATA:event.kind} to %{DATA:email.to.address} with subject \"%{GREEDYDATA:email.subject}\".$"
-        - "^Internal %{DATA:network.protocol} system successfully sent a message to %{DATA:email.to.address} with subject %{GREEDYDATA:email.subject}.$"
-        - "^Internal %{DATA:network.protocol} giving up on message to %{DATA:email.to.address} with subject %{GREEDYDATA:email.subject}.$"
-        - "^Internal %{DATA:network.protocol} Error: %{GREEDYDATA:cisco_secure_email_gateway.log.description} to host %{IP:destination.ip}:%{NUMBER:destination.port:long} for recipient %{DATA:email.to.address}: %{GREEDYDATA:cisco_secure_email_gateway.log.subject}$"
-        - "^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$"
+        - '^graymail \[CONFIG\] %{WORD:cisco_secure_email_gateway.log.vendor_action} %{GREEDYDATA:cisco_secure_email_gateway.log.object}$'
+        - '^URL_REP_CLIENT: %{WORD:cisco_secure_email_gateway.log.object_attr} %{DATA:cisco_secure_email_gateway.log.type}. Triggering %{WORD:cisco_secure_email_gateway.log.vendor_action} of %{GREEDYDATA:cisco_secure_email_gateway.log.object}\.$'
+        - '^MID %{NUMBER:email.message_id} %{GREEDYDATA:cisco_secure_email_gateway.log.subject}. Severity: %{WORD:cisco_secure_email_gateway.log.severity} \(Risk Factor: %{NUMBER:cisco_secure_email_gateway.log.risk_factor:long}\). %{GREEDYDATA:cisco_secure_email_gateway.log.description}$'
+        - '^A System/Warning %{DATA:event.kind} was sent to %{DATA:email.to.address} with subject %{GREEDYDATA:email.subject}\.$'
+        - '^%{WORD:cisco_secure_email_gateway.log.connection_status} %{WORD:network.protocol} ICID %{NUMBER:cisco_secure_email_gateway.log.injection_connection_id} interface Management \(%{IP:cisco_secure_email_gateway.log.interface}\) address %{IP:cisco_secure_email_gateway.log.address} reverse dns host %{DATA:dns.question.name} verified %{WORD:cisco_secure_email_gateway.log.verified}$'
+        - '^%{WORD:cisco_secure_email_gateway.log.connection_status} MID %{NUMBER:email.message_id} ICID %{NUMBER:cisco_secure_email_gateway.log.injection_connection_id}$'
+        - '^MID %{NUMBER:email.message_id} ICID %{NUMBER:cisco_secure_email_gateway.log.injection_connection_id} From: <%{DATA:email.from.address}>$'
+        - '^MID %{NUMBER:email.message_id} ICID %{NUMBER:cisco_secure_email_gateway.log.injection_connection_id} RID %{DATA:cisco_secure_email_gateway.log.recipient_id} To: <%{DATA:email.to.address}>$'
+        - '^MID %{NUMBER:email.message_id} ready %{NUMBER:cisco_secure_email_gateway.log.read_bytes:long} bytes from <%{DATA:email.from.address}>$'
+        - '^ICID %{NUMBER:cisco_secure_email_gateway.log.injection_connection_id} %{WORD:cisco_secure_email_gateway.log.connection_status}$'
+        - '^%{DATA:cisco_secure_email_gateway.log.message_status} %{WORD:network.protocol} DCID %{NUMBER:cisco_secure_email_gateway.log.delivery_connection_id} interface %{IP:cisco_secure_email_gateway.log.interface} address %{IP:cisco_secure_email_gateway.log.address}$'
+        - '^%{GREEDYDATA:cisco_secure_email_gateway.log.message_status} DCID %{NUMBER:cisco_secure_email_gateway.log.delivery_connection_id} MID %{NUMBER:email.message_id} to RID \[%{DATA:cisco_secure_email_gateway.log.recipient_id}\]$'
+        - '^%{GREEDYDATA:cisco_secure_email_gateway.log.message_status} DCID %{NUMBER:cisco_secure_email_gateway.log.delivery_connection_id} MID %{NUMBER:email.message_id} to RID \[%{DATA:cisco_secure_email_gateway.log.recipient_id}\]$'
+        - '^DCID %{NUMBER:cisco_secure_email_gateway.log.delivery_connection_id} %{WORD:cisco_secure_email_gateway.log.connection_status}$'
+        - '^%{GREEDYDATA:cisco_secure_email_gateway.log.description}: Unable to send System/Warning %{DATA:event.kind} to %{DATA:email.to.address} with subject "%{GREEDYDATA:email.subject}"\.$'
+        - '^Internal %{DATA:network.protocol} system successfully sent a message to %{DATA:email.to.address} with subject %{GREEDYDATA:email.subject}\.$'
+        - '^Internal %{DATA:network.protocol} giving up on message to %{DATA:email.to.address} with subject %{GREEDYDATA:email.subject}\.$'
+        - '^Internal %{DATA:network.protocol} Error: %{GREEDYDATA:cisco_secure_email_gateway.log.description} to host %{IP:destination.ip}:%{NUMBER:destination.port:long} for recipient %{DATA:email.to.address}: %{GREEDYDATA:cisco_secure_email_gateway.log.subject}$'
+        - '^MID %{NUMBER:email.message_id} RID \[%{DATA:cisco_secure_email_gateway.log.recipient_id}\] Response %{GREEDYDATA:cisco_secure_email_gateway.log.response}$'
+        - '^MID %{NUMBER:email.message_id} Subject "%{GREEDYDATA:cisco_secure_email_gateway.log.subject}"$'
+        - '^MID %{NUMBER:email.message_id} %{GREEDYDATA:cisco_secure_email_gateway.log.message_status} for delivery$'
+        - '^Message %{GREEDYDATA:cisco_secure_email_gateway.log.message_status} MID %{NUMBER:email.message_id} done$'
+        - '^MID %{NUMBER:email.message_id} interim verdict using engine: %{GREEDYDATA:cisco_secure_email_gateway.log.engine}$'
+        - '^MID %{NUMBER:email.message_id} interim AV verdict using %{GREEDYDATA:cisco_secure_email_gateway.log.engine}$'
+        - '^MID %{NUMBER:email.message_id} using engine: %{GREEDYDATA:cisco_secure_email_gateway.log.engine}$'
+        - '^MID %{NUMBER:email.message_id} %{GREEDYDATA:cisco_secure_email_gateway.log.subject}: verdict %{GREEDYDATA:cisco_secure_email_gateway.log.verdict_scale}$'
+        - '^MID %{NUMBER:email.message_id} Message-ID ''\<%{GREEDYDATA:cisco_secure_email_gateway.log.email}\>''$'
+        - '^MID %{NUMBER:email.message_id} %{DATA:network.protocol}: Verification %{GREEDYDATA:cisco_secure_email_gateway.log.verified}$'
+        - '^MID %{NUMBER:email.message_id} %{DATA:network.protocol}: mailfrom identity %{DATA:email.from.address} %{GREEDYDATA:cisco_secure_email_gateway.log.verified} \(v\=spf1\)$'
+        - '^MID %{NUMBER:email.message_id} matched all recipients for per-recipient policy %{WORD:cisco_secure_email_gateway.log.policy} in the %{DATA:email.direction} table$'
+        - '^MID %{NUMBER:email.message_id} SDR: Tracker Header : %{GREEDYDATA:cisco_secure_email_gateway.log.email_tracker_header}$'
+        - '^MID %{NUMBER:email.message_id} SDR: Domains for which SDR is requested: reverse DNS host: %{DATA:dns.question.name}, helo: %{DATA:cisco_secure_email_gateway.log.helo}, env-from: %{DATA:cisco_secure_email_gateway.log.env}, header-from: %{DATA:email.from.address}, reply-to: %{DATA:email.to.address}$'
+        - '^MID %{NUMBER:email.message_id} SDR: Consolidated Sender Threat Level: %{DATA:cisco_secure_email_gateway.log.threat_level}, Threat Category: %{DATA:cisco_secure_email_gateway.log.threat_category}, Suspected Domain\(s\) : %{GREEDYDATA:cisco_secure_email_gateway.log.suspected_domains} \(other reasons for verdict\)\. Sender Maturity: %{GREEDYDATA:cisco_secure_email_gateway.log.maturity} for domain: %{DATA:cisco_secure_email_gateway.log.domain}$'
+        - '^%{GREEDYDATA:cisco_secure_email_gateway.log.subject}\. %{GREEDYDATA:cisco_secure_email_gateway.log.description}$'
+        - '^MID %{NUMBER:email.message_id} %{DATA:network.protocol}: Message from domain %{DATA:email.from.address}, DMARC %{DATA:cisco_secure_email_gateway.log.verified} \(SPF aligned %{DATA:cisco_secure_email_gateway.log.spf_aligned}, DKIM aligned %{DATA:cisco_secure_email_gateway.log.dkim_aligned}\)$'
+        - '^MID %{NUMBER:email.message_id} %{DATA:network.protocol}: pass signature %{DATA:cisco_secure_email_gateway.log.verified} \(%{GREEDYDATA:cisco_secure_email_gateway.log.details}\)$'
+        - '^MID %{NUMBER:email.message_id} %{DATA:file.extension} file %{GREEDYDATA:cisco_secure_email_gateway.log.details}$'
+        - '^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$'
   - lowercase:
       field: network.protocol
       ignore_failure: true
@@ -33,6 +51,44 @@ processors:
       field: event.type
       if: ctx.cisco_secure_email_gateway?.log?.type == 'changed'
       value: change
+  - lowercase:
+      field: cisco_secure_email_gateway.log.spf_aligned
+      tag: 'lowercase_spf_aligned'
+      ignore_missing: true
+      if: ctx.cisco_secure_email_gateway?.log?.spf_aligned != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - lowercase:
+      field: cisco_secure_email_gateway.log.dkim_aligned
+      tag: 'lowercase_dkim_aligned'
+      ignore_missing: true
+      if: ctx.cisco_secure_email_gateway?.log?.dkim_aligned != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: cisco_secure_email_gateway.log.spf_aligned
+      tag: convert_cisco_secure_email_gateway_log_spf_aligned
+      type: boolean
+      ignore_missing: true
+      if: ctx.cisco_secure_email_gateway?.log?.spf_aligned != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: cisco_secure_email_gateway.log.dkim_aligned
+      tag: convert_cisco_secure_email_gateway_log_dkim_aligned
+      type: boolean
+      ignore_missing: true
+      if: ctx.cisco_secure_email_gateway?.log?.dkim_aligned != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{cisco_secure_email_gateway.log.interface}}}'
