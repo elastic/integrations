@@ -5,8 +5,8 @@ source .buildkite/scripts/common.sh
 set -euo pipefail
 
 # default values
-echo "Some some envs"
-env |egrep 'STACK_VERSION|SERVERLESS|FORCE_CHECK_ALL'
+echoerr "Some some envs"
+env |egrep 'STACK_VERSION|SERVERLESS|FORCE_CHECK_ALL' || true 1>&2
 
 STACK_VERSION=${STACK_VERSION:-""}
 SERVERLESS="false"
