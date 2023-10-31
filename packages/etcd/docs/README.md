@@ -172,36 +172,36 @@ An example event for `metrics` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| etcd.api_version | Etcd API version for metrics retrieval | keyword |
-| etcd.disk.backend_commit_duration.ns.bucket.\* | Latency for writing backend changes to disk | long |
-| etcd.disk.backend_commit_duration.ns.count | Backend commits count | long |
-| etcd.disk.backend_commit_duration.ns.sum | Backend commits latency sum | long |
-| etcd.disk.mvcc_db_total_size.bytes | Size of stored data at MVCC | long |
-| etcd.disk.wal_fsync_duration.ns.bucket.\* | Latency for writing ahead logs to disk | long |
-| etcd.disk.wal_fsync_duration.ns.count | Write ahead logs count | long |
-| etcd.disk.wal_fsync_duration.ns.sum | Write ahead logs latency sum | long |
-| etcd.memory.go_memstats_alloc.bytes | Memory allocated bytes as of MemStats Go | long |
-| etcd.network.client_grpc_received.bytes | gRPC received bytes total | long |
-| etcd.network.client_grpc_sent.bytes | gRPC sent bytes total | long |
-| etcd.server.grpc_handled.count | Number of received gRPC requests | long |
-| etcd.server.grpc_started.count | Number of sent gRPC requests | long |
-| etcd.server.has_leader | Whether a leader exists in the cluster | byte |
-| etcd.server.leader_changes.count | Number of leader changes seen at the cluster | long |
-| etcd.server.proposals_committed.count | Number of consensus proposals commited | long |
-| etcd.server.proposals_failed.count | Number of consensus proposals failed | long |
-| etcd.server.proposals_pending.count | Number of consensus proposals pending | long |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| host.ip | Host ip addresses. | ip |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| etcd.api_version | Etcd API version for metrics retrieval | keyword |  |
+| etcd.disk.backend_commit_duration.ns.bucket.\* | Latency for writing backend changes to disk | long | counter |
+| etcd.disk.backend_commit_duration.ns.count | Backend commits count | long | counter |
+| etcd.disk.backend_commit_duration.ns.sum | Backend commits latency sum | long | counter |
+| etcd.disk.mvcc_db_total_size.bytes | Size of stored data at MVCC | long | gauge |
+| etcd.disk.wal_fsync_duration.ns.bucket.\* | Latency for writing ahead logs to disk | long | counter |
+| etcd.disk.wal_fsync_duration.ns.count | Write ahead logs count | long | counter |
+| etcd.disk.wal_fsync_duration.ns.sum | Write ahead logs latency sum | long | counter |
+| etcd.memory.go_memstats_alloc.bytes | Memory allocated bytes as of MemStats Go | long | gauge |
+| etcd.network.client_grpc_received.bytes | gRPC received bytes total | long | counter |
+| etcd.network.client_grpc_sent.bytes | gRPC sent bytes total | long | counter |
+| etcd.server.grpc_handled.count | Number of received gRPC requests | long | counter |
+| etcd.server.grpc_started.count | Number of sent gRPC requests | long | counter |
+| etcd.server.has_leader | Whether a leader exists in the cluster | byte | gauge |
+| etcd.server.leader_changes.count | Number of leader changes seen at the cluster | long | counter |
+| etcd.server.proposals_committed.count | Number of consensus proposals commited | long | gauge |
+| etcd.server.proposals_failed.count | Number of consensus proposals failed | long | counter |
+| etcd.server.proposals_pending.count | Number of consensus proposals pending | long | gauge |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### leader
