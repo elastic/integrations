@@ -119,6 +119,7 @@ dd-MMM-yyyy HH:mm:ss.SSS [Severity] [Subsystem] [Message Text]
 
 Note:
 - Restarting Apache Tomcat does not affect the virtual desktops that are currently running. It will only prevent new users from logging in for the duration of the restart process (typically several seconds).
+- A user can support a new format of log by writing their own custom ingest pipelines. To facilitate the multiline parsing of catalina and localhost logs, the [multiline configuration](https://www.elastic.co/guide/en/beats/filebeat/current/multiline-examples.html) can be used to match the multiline pattern of logs.
 
 ## Configuration
 
