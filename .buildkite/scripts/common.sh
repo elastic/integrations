@@ -728,9 +728,9 @@ process_package() {
         echo "- ${reason}" >> ${SKIPPED_PACKAGES_FILE_PATH}
         popd > /dev/null
         return
-    else
-        echo "${reason}"
     fi
+
+    echo "${reason}"
 
     use_kind=0
     if kubernetes_service_deployer_used ; then

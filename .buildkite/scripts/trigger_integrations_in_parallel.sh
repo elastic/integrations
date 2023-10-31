@@ -14,6 +14,19 @@ echo "    key: \"integration-tests\""
 echo "    steps:"
 
 for package in ${PACKAGE_LIST}; do
+    # check if needed to create an step for this package
+    pushd packages/${package} > /dev/null
+    skip_package="false"
+    if ! reason=$(is_pr_affected ${package}) ; then
+        skip_package="true"
+    fi
+    echo "${reason}"
+    popd > /dev/null
+
+    if [[ $skip_package == "true" ]] ; then
+        continue
+    fi
+
     echo "    - label: \"Check integrations ${package}\""
     echo "      key: \"test-integrations-${package}\""
     echo "      command: \".buildkite/scripts/test_one_package.sh ${package}\""
