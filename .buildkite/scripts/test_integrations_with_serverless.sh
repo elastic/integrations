@@ -46,6 +46,10 @@ use_elastic_package
 
 prepare_serverless_stack
 
+echo "Waiting time to avoid getaddrinfo ENOTFOUND errors..."
+sleep 120
+echo "Done."
+
 any_package_failing=0
 
 pushd packages > /dev/null
