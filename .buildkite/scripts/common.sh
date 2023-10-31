@@ -693,6 +693,7 @@ upload_safe_logs_from_package() {
 # Helper to run all tests and checks for a package
 process_package() {
     local package="$1"
+    local exit_code=0
 
     echo "--- Package ${package}: check"
     pushd ${package} > /dev/null
@@ -736,6 +737,7 @@ process_package() {
     fi
 
     if ! run_tests_package ${package} ; then
+        exit_code=$?
         echo "[${package}] run_tests_package failed"
         echo "- ${package}" >> ${FAILED_PACKAGES_FILE_PATH}
         any_package_failing=1
@@ -753,10 +755,13 @@ process_package() {
     if [ "$SERVERLESS" == "true" ]; then
         teardown_serverless_test_package ${package}
     else
-        teardown_test_package ${package}
+        if ! teardown_test_package ${package} ; then
+            exit_code=$?
+        fi
     fi
 
     popd > /dev/null
+    return $exit_code
 }
 
 ## TODO: Benchmark helpers
