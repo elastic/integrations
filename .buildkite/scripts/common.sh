@@ -499,7 +499,7 @@ is_pr_affected() {
         return 0
     fi
     echo "[${package}] git-diff: check package files"
-    if git diff --name-only $(git merge-base ${from} ${to}) ${to} | egrep '^packages/${package}/' ; then
+    if git diff --name-only $(git merge-base ${from} ${to}) ${to} | egrep "^packages/${package}/" ; then
         echo "[${package}] PR is affected: found package files"
         return 0
     fi
