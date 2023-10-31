@@ -19,6 +19,8 @@ for package in ${PACKAGE_LIST}; do
     echo "      command: \".buildkite/scripts/test_one_package.sh ${package}\""
     echo "      agents:"
     echo "        provider: gcp"
+    echo "      env:"
+    echo "        UPLOAD_SAFE_LOGS: 1"
     echo "      artifact_paths:"
     echo "        - build/test-results/*.xml"
     echo "        - build/benchmark-results/*.xml"

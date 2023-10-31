@@ -36,6 +36,7 @@ use_elastic_package
 
 pushd packages > /dev/null
 if ! process_package ${package}; then
+    echo "[${package}] failed"
     exit 1
 fi
 popd > /dev/null

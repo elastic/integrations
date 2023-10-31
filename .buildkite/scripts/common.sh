@@ -740,7 +740,7 @@ process_package() {
 
     if ! run_tests_package ${package} ; then
         exit_code=$?
-        echo "[${package}] run_tests_package failed"
+        echo "[${package}] run_tests_package failed (exit_code $?)"
         echo "- ${package}" >> ${FAILED_PACKAGES_FILE_PATH}
     fi
 
@@ -758,6 +758,7 @@ process_package() {
     else
         if ! teardown_test_package ${package} ; then
             exit_code=$?
+            echo "[${package}] teardown_test_package failed (exit_code $?)"
         fi
     fi
 
