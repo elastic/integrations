@@ -13,7 +13,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Unsigned DLL Loaded by a Trusted Process",
-        "query": "library where host.os.type == \"windows\" and\n   (dll.Ext.relative_file_creation_time \u003c= 500 or\n    dll.Ext.relative_file_name_modify_time \u003c= 500 or\n    dll.Ext.device.product_id : (\"Virtual DVD-ROM\", \"Virtual Disk\")) and dll.hash.sha256 != null and\n    process.code_signature.status :\"trusted\" and not dll.code_signature.status : (\"trusted\", \"errorExpired\", \"errorCode_endpoint*\") and\n    /* DLL loaded from the process.executable current directory */\n    endswith~(substring(dll.path, 0, length(dll.path) - (length(dll.name) + 1)), substring(process.executable, 0, length(process.executable) - (length(process.name) + 1)))\n    and not user.id : \"S-1-5-18\"\n",
+        "query": "library where host.os.type == \"windows\" and\n   (dll.Ext.relative_file_creation_time <= 500 or\n    dll.Ext.relative_file_name_modify_time <= 500 or\n    dll.Ext.device.product_id : (\"Virtual DVD-ROM\", \"Virtual Disk\")) and dll.hash.sha256 != null and\n    process.code_signature.status :\"trusted\" and not dll.code_signature.status : (\"trusted\", \"errorExpired\", \"errorCode_endpoint*\") and\n    /* DLL loaded from the process.executable current directory */\n    endswith~(substring(dll.path, 0, length(dll.path) - (length(dll.name) + 1)), substring(process.executable, 0, length(process.executable) - (length(process.name) + 1)))\n    and not user.id : \"S-1-5-18\"\n",
         "related_integrations": [
             {
                 "package": "endpoint",
@@ -95,7 +95,7 @@
         ],
         "threat": [
             {
-                "framework": "MITRE ATT\u0026CK",
+                "framework": "MITRE ATT&CK",
                 "tactic": {
                     "id": "TA0005",
                     "name": "Defense Evasion",
