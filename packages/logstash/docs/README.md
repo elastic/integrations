@@ -1094,7 +1094,15 @@ pipeline collection period, and setting it to an appropriate value.
 | logstash.pipeline.plugin.filter.flow.worker_utilization.current | worker utilization for this plugin | scaled_float |  | gauge |
 | logstash.pipeline.plugin.filter.flow.worker_utilization.last_1_minute | worker utilization for this plugin | scaled_float |  | gauge |
 | logstash.pipeline.plugin.filter.id | Id of filter plugin | keyword |  |  |
+| logstash.pipeline.plugin.filter.metrics.dissect.failures | number of dissect failures | long |  | counter |
+| logstash.pipeline.plugin.filter.metrics.dissect.matches | number of dissect matches | long |  | counter |
+| logstash.pipeline.plugin.filter.metrics.grok.failures | number of grok failures | long |  | counter |
+| logstash.pipeline.plugin.filter.metrics.grok.matches | number of grok matches | long |  | counter |
 | logstash.pipeline.plugin.filter.name | Name of filter plugin | keyword |  |  |
+| logstash.pipeline.plugin.filter.source.column |  | keyword |  |  |
+| logstash.pipeline.plugin.filter.source.id |  | keyword |  |  |
+| logstash.pipeline.plugin.filter.source.line |  | long |  |  |
+| logstash.pipeline.plugin.filter.source.protocol |  | keyword |  |  |
 | logstash.pipeline.plugin.filter.time.duration.ms | amount of time working on events in this plugin | long | ms | counter |
 | logstash.pipeline.plugin.input.elasticsearch.cluster.id | Elasticsearch clusters this Logstash plugin is attached to | keyword |  |  |
 | logstash.pipeline.plugin.input.events.out | number of events emitted by the input | long |  | counter |
@@ -1102,6 +1110,10 @@ pipeline collection period, and setting it to an appropriate value.
 | logstash.pipeline.plugin.input.flow.throughput.last_1_minute | throughput of this input plugin | scaled_float |  | gauge |
 | logstash.pipeline.plugin.input.id | Id of input plugin | keyword |  |  |
 | logstash.pipeline.plugin.input.name | Name of input plugin | keyword |  |  |
+| logstash.pipeline.plugin.input.source.column |  | keyword |  |  |
+| logstash.pipeline.plugin.input.source.id |  | keyword |  |  |
+| logstash.pipeline.plugin.input.source.line |  | long |  |  |
+| logstash.pipeline.plugin.input.source.protocol |  | keyword |  |  |
 | logstash.pipeline.plugin.input.time.queue_push_duration.ms | amount of time spend pushing events to the queue | long | ms | counter |
 | logstash.pipeline.plugin.output.elasticsearch.cluster.id | Elasticsearch clusters this Logstash plugin is attached to | keyword |  |  |
 | logstash.pipeline.plugin.output.events.in | number of events received by the output | long |  | counter |
@@ -1111,7 +1123,24 @@ pipeline collection period, and setting it to an appropriate value.
 | logstash.pipeline.plugin.output.flow.worker_utilization.current | worker utilization for this plugin | scaled_float |  | gauge |
 | logstash.pipeline.plugin.output.flow.worker_utilization.last_1_minute | worker utilization for this plugin | scaled_float |  | gauge |
 | logstash.pipeline.plugin.output.id | Id of output plugin | keyword |  |  |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.200 |  | long |  | counter |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.201 |  | long |  | counter |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.400 |  | long |  | counter |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.401 |  | long |  | counter |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.403 |  | long |  | counter |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.404 |  | long |  | counter |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.409 |  | long |  | counter |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.413 |  | long |  | counter |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.429 |  | long |  | counter |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.responses.500 |  | long |  | counter |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.bulk_requests.successes |  | long |  | counter |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.documents.non_retryable_failures |  | long |  | counter |
+| logstash.pipeline.plugin.output.metrics.elasticsearch.documents.successes |  | long |  | counter |
 | logstash.pipeline.plugin.output.name | Name of output plugin | keyword |  |  |
+| logstash.pipeline.plugin.output.source.column |  | keyword |  |  |
+| logstash.pipeline.plugin.output.source.id |  | keyword |  |  |
+| logstash.pipeline.plugin.output.source.line |  | long |  |  |
+| logstash.pipeline.plugin.output.source.protocol |  | keyword |  |  |
 | logstash.pipeline.plugin.output.time.duration.ms | amount of time working on events in this plugin | long | ms | counter |
 | logstash.pipeline.plugin.type | Type of the plugin | keyword |  |  |
 | process.pid | Process id. | long |  |  |
@@ -1127,7 +1156,7 @@ An example event for `plugins` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-10-04T18:51:48.661Z",
+    "@timestamp": "2023-10-24T17:56:40.316Z",
     "data_stream": {
         "dataset": "logstash.plugins",
         "namespace": "default",
@@ -1139,26 +1168,26 @@ An example event for `plugins` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "logstash.plugins",
-        "ingested": "2023-10-04T18:51:49Z"
+        "ingested": "2023-10-24T17:56:41Z"
     },
     "host": {
         "architecture": "x86_64",
         "hostname": "macbook-pro.local",
         "id": "AA4215F6-994F-5CCE-B6F2-B6AED75AE125",
         "ip": [
-            "192.168.1.184"
+            "192.168.4.26"
         ],
         "mac": [
             "AC-DE-48-00-11-22"
         ],
         "name": "macbook-pro.local",
         "os": {
-            "build": "22F82",
+            "build": "22G120",
             "family": "darwin",
-            "kernel": "22.5.0",
+            "kernel": "22.6.0",
             "name": "macOS",
             "platform": "darwin",
-            "version": "13.4.1"
+            "version": "13.6"
         }
     },
     "input": {
@@ -1168,36 +1197,67 @@ An example event for `plugins` looks as following:
         "pipeline": {
             "elasticsearch": {
                 "cluster": {
-                    "id": "2IcePuo6RCi_511abdJxLQ"
+                    "id": "9MOGoKiESvaklNVmxLo3iA"
                 }
             },
             "host": {
-                "address": "0.0.0.0:9600",
-                "name": "21d61ee7529e"
+                "address": "127.0.0.1:9602",
+                "name": "logstash9602"
             },
-            "id": "0542fa70daa36dc3e858ea099f125cc8c9e451ebbfe8ea8867e52f9764da0a35",
-            "name": "pipeline-with-memory-queue",
+            "id": "b18ff60bcd82055aab2bf5601a2bc170502f80b33ab5938f25fa95ec8b04cd4b",
+            "name": "work",
             "plugin": {
-                "codec": {
-                    "decode": {
-                        "duration": {
-                            "ms": 0
-                        },
-                        "in": 0,
-                        "out": 0
+                "output": {
+                    "elasticsearch": {
+                        "cluster": {
+                            "id": "9MOGoKiESvaklNVmxLo3iA"
+                        }
                     },
-                    "encode": {
-                        "duration": {
-                            "ms": 0
-                        },
-                        "in": 0
+                    "events": {
+                        "in": 798,
+                        "out": 798
                     },
-                    "id": "plain_f62ef0fc-3db5-44fb-a464-0458e6181aa0",
-                    "name": "plain"
+                    "flow": {
+                        "worker_millis_per_event": {
+                            "current": 54,
+                            "last_1_minute": 54
+                        },
+                        "worker_utilization": {
+                            "current": 0.023,
+                            "last_1_minute": 0.01
+                        }
+                    },
+                    "id": "out_to_elasticsearch",
+                    "metrics": {
+                        "elasticsearch": {
+                            "bulk_requests": {
+                                "responses": {
+                                    "200": 798
+                                },
+                                "successes": 798
+                            },
+                            "documents": {
+                                "successes": 798
+                            }
+                        }
+                    },
+                    "name": "elasticsearch",
+                    "source": {
+                        "column": "3",
+                        "id": "/Users/test/ingestdemo/logstash-8.8.2/remap.conf",
+                        "line": 132,
+                        "protocol": "file"
+                    },
+                    "time": {
+                        "duration": {
+                            "ms": 198060
+                        }
+                    }
                 },
-                "type": "codec"
+                "type": "output"
             }
         }
     }
 }
+
 ```
