@@ -1,6 +1,6 @@
 config_version: "2"
 interval: {{period}}
-resource.url: "{{url}}/_node/stats?graph=true&vertices=true"
+resource.url: "{{url}}/_node"
 {{#if resource_ssl}}
 resource.ssl:
   {{resource_ssl}}
@@ -17,59 +17,93 @@ redact:
   fields: ~
 
 program: |
-  get(state.url)
-  .as(resp, bytes(resp.Body)
-  .decode_json().as(body,
-    body.pipelines.map(pipeline_name, pipeline_name != ".monitoring-logstash", {"name":pipeline_name}.with(body.pipelines[pipeline_name])
-      .with({
-        "es_cluster_id":((body.pipelines[pipeline_name].vertices).as(vertices, vertices.map(each, has(each.cluster_uuid), each.cluster_uuid))),
-        "es_cluster_id_map":((body.pipelines[pipeline_name].vertices).as(vertices, vertices.map(each, has(each.cluster_uuid), {"plugin_id":each.id, "cluster_id":each.cluster_uuid}))),
-        "outputs":body.pipelines[pipeline_name].plugins.outputs,
-        "inputs":body.pipelines[pipeline_name].plugins.inputs,
-        "filters":body.pipelines[pipeline_name].plugins.filters,
-        "codecs":body.pipelines[pipeline_name].plugins.codecs,
-        "host":{
-          "name":body.name,
-          "address":body.http_address,
-        }
-      })
-    )
-    )).as(events, events.map(event,
-    {
-      "inputs":event.inputs.map(input,
-      {
-        "name":event.name,
-        "id":event.hash,
-        "host":event.host,
-        "elasticsearch.cluster.id":event.es_cluster_id,
-        "plugin":{
-          "type":"input",
-          "input":{
-            "elasticsearch.cluster.id":event.es_cluster_id_map.map(tuple, (tuple.plugin_id == input.id), tuple.cluster_id),
-            "name":input.name,
-            "id":input.id,
-            "flow": has(input.flow) ? input.flow : {},
-            "events":{
-              "out":input.events.out,
+  get(state.url + "/stats?graph=true&vertices=true").as(resp, bytes(resp.Body).decode_json().as(body,
+    body.pipelines.map(pipeline_name, pipeline_name != ".monitoring-logstash", body.pipelines[pipeline_name].with({
+      "name":pipeline_name,
+      "pipeline_source_map":
+        get(state.url + "/pipelines/" + pipeline_name + "?graph=true&vertices=true").as(resp,
+          bytes(resp.Body).decode_json().as(pipes,
+            has(pipes.pipeline) ?
+              pipes.pipelines.map(pipeline_name,
+                has(pipes.pipelines) && pipes.pipelines != null && pipes.pipelines[pipeline_name].graph.graph.vertices != null,
+                pipes.pipelines[pipeline_name].graph.graph.vertices.map(vertex, vertex.type == "plugin", {
+                  "plugin_id": vertex.id,
+                  "source": vertex.meta.source,
+                })
+              ).drop("graph").flatten()
+            :
+              []
+        )
+      ),
+      "es_cluster_id": has(body.pipelines[pipeline_name].vertices) ?
+        body.pipelines[pipeline_name].vertices.map(vertex, has(vertex.cluster_uuid), vertex.cluster_uuid)
+      :
+        [],
+      "es_cluster_id_map": has(body.pipelines[pipeline_name].vertices) ?
+        body.pipelines[pipeline_name].vertices.map(vertex, has(vertex.cluster_uuid), {
+          "plugin_id": vertex.id,
+          "cluster_id": vertex.cluster_uuid,
+        })
+      :
+        [],
+      "counter_map": has(body.pipelines[pipeline_name].vertices) ?
+        body.pipelines[pipeline_name].vertices.map(vertex, has(vertex.long_counters), vertex.long_counters.map(counter, {
+          "plugin_id": vertex.id,
+          "name": counter.name,
+          "value": counter.value
+        }))
+      :
+        [],
+      "outputs": body.pipelines[pipeline_name].plugins.outputs,
+      "inputs": body.pipelines[pipeline_name].plugins.inputs,
+      "filters": body.pipelines[pipeline_name].plugins.filters,
+      "codecs": body.pipelines[pipeline_name].plugins.codecs,
+      "host":{
+        "name": body.name,
+        "address": body.http_address,
+      }
+    })))).as(events, events.map(event, {
+      "inputs": event.inputs.map(input, has(event.hash), {
+        "name": event.name,
+        "id": event.hash,
+        "host": event.host,
+        "elasticsearch.cluster.id": event.es_cluster_id,
+        "plugin": {
+          "type": "input",
+          "input": {
+            "source": event.pipeline_source_map.map(tuple, tuple.plugin_id == input.id, tuple.source)[0],
+            "elasticsearch.cluster.id": event.es_cluster_id_map.map(tuple, tuple.plugin_id == input.id, tuple.cluster_id),
+            "metrics": {
+              input.name: event.counter_map.flatten().filter(tuple, tuple.plugin_id == input.id).as(counter_map, zip(
+                counter_map.map(tuple, tuple.name),
+                counter_map.map(tuple, tuple.value)
+              ))
+             },
+            "name": input.name,
+            "id": input.id,
+            "flow": has(input.flow) ?
+              input.flow
+            :
+              {},
+            "events": {
+              "out": input.events.out,
             },
-            "time":{
-              "queue_push_duration":{
-                "ms":input.events.queue_push_duration_in_millis
+            "time": {
+              "queue_push_duration": {
+                "ms": input.events.queue_push_duration_in_millis
               }
             }
           }
         }
-      }.drop_empty()
-      ),
-      "codecs":event.codecs.map(codec,
-      {
-        "name":event.name,
-        "id":event.hash,
-        "host":event.host,
-        "elasticsearch.cluster.id":event.es_cluster_id,
-        "plugin":{
-          "type":"codec",
-          "codec":{
+      }.drop_empty()),
+      "codecs": event.codecs.map(codec, has(event.hash), {
+        "name": event.name,
+        "id": event.hash,
+        "host": event.host,
+        "elasticsearch.cluster.id": event.es_cluster_id,
+        "plugin": {
+          "type": "codec",
+          "codec": {
           "id":codec.id,
           "name":codec.name,
             "flow": has(codec.flow) ? codec.flow : {},
@@ -88,47 +122,63 @@ program: |
             }
           }
         }
-      }.drop_empty()
-      ),
-      "filters":event.filters.map(filter,
-      {
-        "name":event.name,
-        "id":event.hash,
-        "host":event.host,
-        "elasticsearch.cluster.id":event.es_cluster_id,
-        "plugin":{
-          "type":"filter",
-          "filter":{
-            "id":filter.id,
-            "name":filter.name,
-            "elasticsearch.cluster.id":event.es_cluster_id_map.map(tuple, (tuple.plugin_id == filter.id), tuple.cluster_id),
-            "flow": has(filter.flow) ? filter.flow : {},
-            "events":{
-              "in":filter.events['in'],
-              "out":filter.events.out,
+      }.drop_empty()),
+      "filters": event.filters.map(filter, has(event.hash), {
+        "name": event.name,
+        "id": event.hash,
+        "host": event.host,
+        "elasticsearch.cluster.id": event.es_cluster_id,
+        "plugin": {
+          "type": "filter",
+          "filter": {
+            "source": event.pipeline_source_map.map(tuple, tuple.plugin_id == filter.id, tuple.source).flatten()[0],
+            "id": filter.id,
+            "name": filter.name,
+            "elasticsearch.cluster.id": event.es_cluster_id_map.map(tuple, tuple.plugin_id == filter.id, tuple.cluster_id),
+            "metrics": {
+              filter.name: event.counter_map.flatten().filter(tuple, tuple.plugin_id == filter.id).as(counter_map, zip(
+                counter_map.map(tuple, tuple.name),
+                counter_map.map(tuple, tuple.value)
+              ))
             },
-            "time":{
-              "duration":{
-                "ms":filter.events.duration_in_millis
+            "flow": has(filter.flow) ?
+              filter.flow
+            :
+              {},
+            "events": {
+              "in": filter.events['in'],
+              "out": filter.events.out,
+            },
+            "time": {
+              "duration": {
+                "ms": filter.events.duration_in_millis
               }
             }
           }
         }
-      }.drop_empty()
-      ),
-      "outputs":event.outputs.map(output,
-      {
-        "name":event.name,
-        "id":event.hash,
-        "host":event.host,
-        "elasticsearch.cluster.id":event.es_cluster_id,
-        "plugin":{
-          "type":"output",
-          "output":{
-            "id":output.id,
-            "name":output.name,
-            "elasticsearch.cluster.id":event.es_cluster_id_map.map(tuple, (tuple.plugin_id == output.id), tuple.cluster_id),
-            "flow": has(output.flow) ? output.flow : {},
+      }.drop_empty()),
+      "outputs": event.outputs.map(output, has(event.hash), {
+        "name": event.name,
+        "id": event.hash,
+        "host": event.host,
+        "elasticsearch.cluster.id": event.es_cluster_id,
+        "plugin": {
+          "type": "output",
+          "output": {
+            "id": output.id,
+            "name": output.name,
+            "source": event.pipeline_source_map.map(tuple, tuple.plugin_id == output.id, tuple.source).flatten()[0],
+            "elasticsearch.cluster.id": event.es_cluster_id_map.map(tuple, tuple.plugin_id == output.id, tuple.cluster_id),
+            "metrics": {
+              output.name: event.counter_map.flatten().filter(tuple, tuple.plugin_id == output.id).as(counter_map, zip(
+                counter_map.map(tuple, tuple.name),
+                counter_map.map(tuple, tuple.value)
+              ))
+            },
+            "flow": has(output.flow) ?
+              output.flow
+            :
+              {},
             "events":{
               "in":output.events['in'],
               "out":output.events.out,
@@ -140,7 +190,9 @@ program: |
             }
           }
         }
-      }.drop_empty()
-      )
+      }.drop_empty())
     }).collate(["filters", "outputs", "inputs", "codecs"])).as(plugins, {
-      "events":plugins.map(plugin, {"logstash":{"pipeline":plugin}})})
+      "events": plugins.map(plugin, {
+        "logstash":{"pipeline":plugin}
+      })
+    })
