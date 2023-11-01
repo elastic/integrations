@@ -350,7 +350,7 @@ An example event for `group` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| bitwarden.group.access_all | Determines if this group can access all collections within the organization, or only the associated collections. If set to \{true\}, this option overrides any collection assignments. | boolean |
+| bitwarden.group.access_all | Determines if this group can access all collections within the organization, or only the associated collections. If set to true, this option overrides any collection assignments. | boolean |
 | bitwarden.group.collection.id | The associated object's unique identifier. | keyword |
 | bitwarden.group.collection.read_only | When true, the read only permission will not allow the user or group to make changes to items. | boolean |
 | bitwarden.group.external.id | External identifier for reference or linking this group to another system, such as a user directory. | keyword |
@@ -467,17 +467,17 @@ An example event for `member` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| bitwarden.member.access_all | Determines if this member can access all collections within the organization, or only the associated collections. If set to \{true\}, this option overrides any collection assignments. | boolean |
+| bitwarden.member.access_all | Determines if this member can access all collections within the organization, or only the associated collections. If set to true, this option overrides any collection assignments. | boolean |
 | bitwarden.member.collection.id | The associated object's unique identifier. | keyword |
 | bitwarden.member.collection.read_only | When true, the read only permission will not allow the user or group to make changes to items. | boolean |
 | bitwarden.member.email | The member's email address. | keyword |
 | bitwarden.member.external.id | External identifier for reference or linking this member to another system, such as a user directory. | keyword |
 | bitwarden.member.id | The member's unique identifier within the organization. | keyword |
 | bitwarden.member.name | The member's name, set from their user account profile. | keyword |
-| bitwarden.member.reset_password_enrolled | Returns \{true\} if the member has enrolled in Password Reset assistance within the organization. | boolean |
+| bitwarden.member.reset_password_enrolled | Returns true if the member has enrolled in Password Reset assistance within the organization. | boolean |
 | bitwarden.member.status.name | Organization user status type name. | keyword |
 | bitwarden.member.status.value | Organization user status type value. | keyword |
-| bitwarden.member.two_factor_enabled | Returns \{true\} if the member has a two-step login method enabled on their user account. | boolean |
+| bitwarden.member.two_factor_enabled | Returns true if the member has a two-step login method enabled on their user account. | boolean |
 | bitwarden.member.type.name | Organization user type name. | keyword |
 | bitwarden.member.type.value | Organization user type value. | keyword |
 | bitwarden.member.user.id | The member's unique identifier across Bitwarden. | keyword |
