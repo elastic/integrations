@@ -393,7 +393,7 @@ processors:
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         NOTCOLON: "[^:]*"
         CISCO_USER_OR_SGT: (?:%{CISCO_USER}|%{CISCO_SGT})
-        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}(?:@%{HOSTNAME})?%{CISCO_SGT}?))
+        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?%{CISCO_SGT}?))
         CISCO_SGT: (?:, *)?%{NUMBER}(?::%{WORD})?
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106027'"
@@ -452,7 +452,7 @@ processors:
       patterns:
       - "AAA user %{DATA:_temp_.cisco.aaa_type} Successful(%{SPACE})?: server =(%{SPACE})?%{IP:destination.address} [:,] [Uu]ser = %{CISCO_USER:source.user.name}"
       pattern_definitions:
-        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?))
+        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?))
   - grok:
       if: "ctx._temp_.cisco.message_id == '113005'"
       description: "113005"
@@ -462,7 +462,7 @@ processors:
       pattern_definitions:
         AUTH: (authentication|authorization)
         REASON: (AAA failure|Account has been disabled|Invalid password|Password is expiring|Password has expired|Password malformed|Unspecified)
-        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}\$?(@%{HOSTNAME})?(, *%{NUMBER})?))
+        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?))
         IPORNONE: (%{IP:source.address}|None)
   - grok:
       if: "ctx._temp_.cisco.message_id == '113012'"
@@ -471,7 +471,7 @@ processors:
       patterns:
       - "AAA user authentication Successful(%{SPACE})?: local database(%{SPACE})?: [Uu]ser = %{CISCO_USER:source.user.name}"
       pattern_definitions:
-        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?))
+        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?))
   - grok:
       if: "ctx._temp_.cisco.message_id == '113015'"
       field: "message"
@@ -479,8 +479,8 @@ processors:
       patterns:
       - "AAA user authentication Rejected(%{SPACE})?: reason = %{REASON:_temp_.cisco.rejection_reason}(%{SPACE})?: local database(%{SPACE})?: [Uu]ser = %{CISCO_USER:source.user.name}(%{SPACE})?: [Uu]ser IP = %{IP:source.address}"
       pattern_definitions:
-        REASON: (AAA failure|Account has been disabled|Invalid password|Password is expiring|Password has expired|Password malformed|Unspecified)
-        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?))
+        REASON: (AAA failure|Account has been disabled|Invalid password|Password is expiring|Password has expired|Password malformed|Unspecified|User was not found)
+        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?))
 
   - dissect:
       if: "ctx._temp_.cisco.message_id == '113019'"
@@ -507,7 +507,7 @@ processors:
       pattern_definitions:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
-        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}\$?(@%{HOSTNAME})?(, *%{NUMBER})?))
+        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?))
   - grok:
       if: '["302013", "302015"].contains(ctx._temp_.cisco.message_id)'
       field: "message"
@@ -525,7 +525,7 @@ processors:
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         NOTCOLON: "[^:]*"
         CISCO_USER_OR_SGT: (?:%{CISCO_USER}|%{CISCO_SGT})
-        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}(?:@%{HOSTNAME})?%{CISCO_SGT}?))
+        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?%{CISCO_SGT}?))
         CISCO_SGT: (?:, *)?%{NUMBER}(?::%{WORD})?
 # For messages: 302013, 302015, if outbound is specified in `network.direction`, the original control connection was initiated from the inside.
 # Hence reverse src and dst.
@@ -541,7 +541,7 @@ processors:
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         NOTCOLON: "[^:]*"
         CISCO_USER_OR_SGT: (?:%{CISCO_USER}|%{CISCO_SGT})
-        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}(?:@%{HOSTNAME})?%{CISCO_SGT}?))
+        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?%{CISCO_SGT}?))
         CISCO_SGT: (?:, *)?%{NUMBER}(?::%{WORD})?
   - dissect:
       if: "ctx._temp_.cisco.message_id == '303002'"
@@ -558,7 +558,7 @@ processors:
         NOTCOLON: "[^:]*"
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
-        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?(%{USERNAME})?(@%{HOSTNAME})?(, *%{NUMBER})?(%{NUMBER}:%{DATA})?))
+        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(%{HOSTNAME}\\)?(?:%{USERNAME})?\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?(?:%{NUMBER}:%{DATA})?))
         DURATION: "%{INT}:%{MINUTE}:%{SECOND}"
   - set:
       if: '["302020"].contains(ctx._temp_.cisco.message_id)'
@@ -579,7 +579,7 @@ processors:
         ECSDESTIPORHOST: "(?:%{IP:destination.address}|%{HOSTNAME:destination.domain})"
         MAPPEDSRC: "(?:%{DATA:_temp_.natsrcip}|%{HOSTNAME})"
         CISCO_USER_OR_SGT: (?:%{CISCO_USER}|%{CISCO_SGT})
-        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}(?:@%{HOSTNAME})?%{CISCO_SGT}?))
+        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?%{CISCO_SGT}?))
         CISCO_SGT: (?:, *)?%{NUMBER}(?::%{WORD})?
   - dissect:
       if: "ctx._temp_.cisco.message_id == '302022'"
@@ -628,17 +628,17 @@ processors:
       field: "message"
       description: "313005"
       patterns:
-        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST} dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.ip}(/%{NUMBER:source.port})? dst %{IPORHOST:destination.ip}(/%{NUMBER:destination.port})?[.]?"
-        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST} dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: protocol %{NUMBER:_temp_.cisco.original_iana_number} src %{IPORHOST:source.ip}(/%{NUMBER:source.port})? dst %{IPORHOST:destination.ip}(/%{NUMBER:destination.port})?[.]?"
-        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST}\\(%{NOTCOLON:source.user.domain}\\\\%{NOTSPACE:source.user.group.name}\\\\%{NOTSPACE:source.user.name}\\) dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.ip}(/%{NUMBER:source.port})? dst %{IPORHOST:destination.ip}(/%{NUMBER:destination.port})?[.]?"
-        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST}\\(%{NOTCOLON:source.user.domain}\\\\%{NOTSPACE:source.user.name}\\) dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.ip}(/%{NUMBER:source.port})? dst %{IPORHOST:destination.ip}(/%{NUMBER:destination.port})?[.]?"
-        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST}\\(%{CISCO_USER_OR_SGT:_temp_.cisco.source_user_or_sgt}\\) dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.ip}(/%{NUMBER:source.port})? dst %{IPORHOST:destination.ip}(/%{NUMBER:destination.port})?[.]?"
+        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST} dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.address}(/%{NUMBER:source.port})? dst %{IPORHOST:destination.address}(/%{NUMBER:destination.port})?[.]?"
+        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST} dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: protocol %{NUMBER:_temp_.cisco.original_iana_number} src %{IPORHOST:source.address}(/%{NUMBER:source.port})? dst %{IPORHOST:destination.address}(/%{NUMBER:destination.port})?[.]?"
+        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST}\\(%{NOTCOLON:source.user.domain}\\\\%{NOTSPACE:source.user.group.name}\\\\%{NOTSPACE:source.user.name}\\) dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.address}(/%{NUMBER:source.port})? dst %{IPORHOST:destination.address}(/%{NUMBER:destination.port})?[.]?"
+        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST}\\(%{NOTCOLON:source.user.domain}\\\\%{NOTSPACE:source.user.name}\\) dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.address}(/%{NUMBER:source.port})? dst %{IPORHOST:destination.address}(/%{NUMBER:destination.port})?[.]?"
+        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST}\\(%{CISCO_USER_OR_SGT:_temp_.cisco.source_user_or_sgt}\\) dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.address}(/%{NUMBER:source.port})? dst %{IPORHOST:destination.address}(/%{NUMBER:destination.port})?[.]?"
       pattern_definitions:
         NOTCOLON: "[^:]*"
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         CISCO_USER_OR_SGT: (?:%{CISCO_USER}|%{CISCO_SGT})
-        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}(?:@%{HOSTNAME})?%{CISCO_SGT}?))
+        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?%{CISCO_SGT}?))
         CISCO_SGT: (?:, *)?%{NUMBER}(?::%{WORD})?
   - dissect:
       if: "ctx._temp_.cisco.message_id == '313008'"
@@ -1139,7 +1139,7 @@ processors:
         MAPPEDSRC: "(?:%{IPORHOST:_temp_.natsrcip}|%{HOSTNAME})"
         DURATION: "%{INT}:%{MINUTE}:%{SECOND}"
         CISCO_USER_OR_SGT: (?:%{CISCO_USER}|%{CISCO_SGT})
-        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}(?:@%{HOSTNAME})?%{CISCO_SGT}?))
+        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?%{CISCO_SGT}?))
         CISCO_SGT: (?:, *)?%{NUMBER}(?::%{WORD})?
       on_failure:
         - append:
