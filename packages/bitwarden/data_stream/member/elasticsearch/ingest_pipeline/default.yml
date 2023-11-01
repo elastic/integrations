@@ -1,0 +1,273 @@
+---
+description: Pipeline for processing member logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.10.0
+  - rename:
+      field: message
+      target_field: event.original
+      tag: rename_message
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - json:
+      field: event.original
+      tag: json_decoding
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - drop:
+      if: ctx.json?.data != null && ctx.json.data.isEmpty()
+      tag: drop_empty_events
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - set:
+      field: event.category
+      tag: set_event_category
+      value: [iam]
+  - set:
+      field: event.type
+      tag: set_event_type
+      value: [user]
+  - convert:
+      field: json.type
+      tag: 'convert_type_to_string'
+      target_field: bitwarden.member.type.value
+      type: string
+      ignore_missing: true
+  - script:
+      lang: painless
+      if: ctx.bitwarden?.member?.type?.value != null
+      tag: script_to_set_organization_user_type
+      description: Set Organization user type.
+      # Organization user type
+      # https://github.com/bitwarden/server/blob/master/src/Core/Enums/OrganizationUserType.cs
+      params:
+        OrganizationUserType:
+          - Owner
+          - Admin
+          - User
+          - Manager
+          - Custom
+      source: |-
+        def OrganizationUserTypeValue = Integer.parseInt(ctx.bitwarden.member.type.value);
+        if (OrganizationUserTypeValue >= 0 && OrganizationUserTypeValue < params.OrganizationUserType.length) {
+          ctx.bitwarden.member.type.put('name', params['OrganizationUserType'][OrganizationUserTypeValue]);
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.accessAll
+      tag: 'convert_accessAll_to_boolean'
+      target_field: bitwarden.member.access_all
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.externalId
+      target_field: bitwarden.member.external.id
+      tag: rename_externalId
+      ignore_missing: true
+  - convert:
+      field: json.resetPasswordEnrolled
+      tag: 'convert_resetPasswordEnrolled_to_boolean'
+      target_field: bitwarden.member.reset_password_enrolled
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.object
+      target_field: bitwarden.object
+      tag: rename_object
+      ignore_missing: true
+  - rename:
+      field: json.id
+      target_field: bitwarden.member.id
+      tag: rename_id
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{bitwarden.member.id}}}'
+      tag: append_id_to_related_user
+      allow_duplicates: false
+      if: ctx.bitwarden?.member?.id != null
+  - set:
+      field: user.id
+      copy_from: bitwarden.member.id
+      tag: set_user_id
+      ignore_empty_value: true
+  - rename:
+      field: json.userId
+      target_field: bitwarden.member.user.id
+      tag: rename_userId
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{bitwarden.member.user.id}}}'
+      tag: append_user_id_to_related_user
+      allow_duplicates: false
+      if: ctx.bitwarden?.member?.user?.id != null
+  - rename:
+      field: json.name
+      target_field: bitwarden.member.name
+      tag: rename_name
+      ignore_missing: true
+  - set:
+      field: user.name
+      copy_from: bitwarden.member.name
+      tag: set_user_name
+      ignore_empty_value: true
+  - rename:
+      field: json.email
+      target_field: bitwarden.member.email
+      tag: rename_email
+      ignore_missing: true
+  - set:
+      field: user.email
+      copy_from: bitwarden.member.email
+      tag: set_user_email
+      ignore_empty_value: true
+  - convert:
+      field: json.twoFactorEnabled
+      tag: 'convert_twoFactorEnabled_to_boolean'
+      target_field: bitwarden.member.two_factor_enabled
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.status
+      tag: 'convert_status_to_string'
+      target_field: bitwarden.member.status.value
+      type: string
+      ignore_missing: true
+  - script:
+      lang: painless
+      if: ctx.bitwarden?.member?.status?.value != null
+      tag: script_to_set_organization_user_status
+      description: Set Organization user status type.
+      # Organization user status type
+      # https://github.com/bitwarden/server/blob/master/src/Core/Enums/OrganizationUserStatusType.cs
+      params:
+        OrganizationUserStatusType:
+          - Revoked
+          - Invited
+          - Accepted
+          - Confirmed
+      source: |-
+        def OrganizationUserStatusTypeValue = Integer.parseInt(ctx.bitwarden.member.status.value)+1;
+        if (OrganizationUserStatusTypeValue >= 0 && OrganizationUserStatusTypeValue < params.OrganizationUserStatusType.length) {
+          ctx.bitwarden.member.status.put('name', params['OrganizationUserStatusType'][OrganizationUserStatusTypeValue]);
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.collections
+      if: ctx.json?.collections instanceof List
+      processor:
+        convert:
+          field: _ingest._value.readOnly
+          target_field: _ingest._value.read_only
+          tag: 'convert_collection_readOnly_to_boolean'
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.readOnly
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.collections
+      if: ctx.json?.collections instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.readOnly
+          tag: remove_readOnly
+          ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.collections
+      target_field: bitwarden.member.collection
+      tag: rename_collections
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      tag: append_user_name_to_related_user
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      value: '{{{user.email}}}'
+      tag: append_user_email_to_related_user
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - remove:
+      field:
+        - json
+      tag: remove_json
+      ignore_missing: true
+  - remove:
+      field:
+        - bitwarden.member.id
+        - bitwarden.member.name
+        - bitwarden.member.email
+      tag: remove_duplicate_custom_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field:
+        - event.original
+      tag: remove_event_original
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
