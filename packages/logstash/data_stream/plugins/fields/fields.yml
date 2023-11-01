@@ -1,5 +1,6 @@
 - name: logstash.pipeline
   type: group
+  description: Logstash pipeline metrics
   fields:
     - name: name
       type: keyword
@@ -84,6 +85,18 @@
               type: long
               metric_type: counter
               description: number of events emitted by the input
+            - name: source
+              type: group
+              description: Pipeline Source location
+              fields:
+                - name: column
+                  type: keyword
+                - name: id
+                  type: keyword
+                - name: line
+                  type: long
+                - name: protocol
+                  type: keyword
             - name: flow
               type: group
               description: flow metrics
@@ -123,6 +136,46 @@
               type: long
               description: number of events emitted by the filter
               metric_type: counter
+            - name: metrics
+              type: group
+              description: Plugin specific metrics
+              fields:
+                - name: grok
+                  type: group
+                  description: Grok filter plugin specific metrics
+                  fields:
+                    - name: failures
+                      type: long
+                      description: number of grok failures
+                      metric_type: counter
+                    - name: matches
+                      type: long
+                      description: number of grok matches
+                      metric_type: counter
+                - name: dissect
+                  type: group
+                  description: Dissect filter plugin specific metrics
+                  fields:
+                    - name: failures
+                      type: long
+                      description: number of dissect failures
+                      metric_type: counter
+                    - name: matches
+                      type: long
+                      description: number of dissect matches
+                      metric_type: counter
+            - name: source
+              type: group
+              description: Pipeline Source location
+              fields:
+                - name: column
+                  type: keyword
+                - name: id
+                  type: keyword
+                - name: line
+                  type: long
+                - name: protocol
+                  type: keyword
             - name: flow
               type: group
               description: flow metrics
@@ -170,6 +223,77 @@
               type: long
               metric_type: counter
               description: number of events emitted by the output
+            - name: metrics
+              type: group
+              description: Plugin specific metrics
+              fields:
+                - name: elasticsearch
+                  type: group
+                  description: Elasticsearch output plugin specific metrics
+                  fields:
+                    - name: documents
+                      type: group
+                      description: metrics related to documents
+                      fields:
+                        - name: successes
+                          type: long
+                          metric_type: counter
+                        - name: non_retryable_failures
+                          type: long
+                          metric_type: counter
+                    - name: bulk_requests
+                      type: group
+                      description: metrics related to bulk requests
+                      fields:
+                        - name: successes
+                          type: long
+                          metric_type: counter
+                        - name: responses
+                          type: group
+                          description: metrics related to responses from bulk requests
+                          fields:
+                            - name: "200"
+                              type: long
+                              metric_type: counter
+                            - name: "201"
+                              type: long
+                              metric_type: counter
+                            - name: "400"
+                              type: long
+                              metric_type: counter
+                            - name: "401"
+                              type: long
+                              metric_type: counter
+                            - name: "403"
+                              type: long
+                              metric_type: counter
+                            - name: "404"
+                              type: long
+                              metric_type: counter
+                            - name: "409"
+                              type: long
+                              metric_type: counter
+                            - name: "413"
+                              type: long
+                              metric_type: counter
+                            - name: "429"
+                              type: long
+                              metric_type: counter
+                            - name: "500"
+                              type: long
+                              metric_type: counter
+            - name: source
+              type: group
+              description: Pipeline Source location
+              fields:
+                - name: column
+                  type: keyword
+                - name: id
+                  type: keyword
+                - name: line
+                  type: long
+                - name: protocol
+                  type: keyword
             - name: flow
               type: group
               description: flow metrics
