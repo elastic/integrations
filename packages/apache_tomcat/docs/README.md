@@ -137,6 +137,8 @@ After the integration is successfully configured, clicking on the Assets tab of 
 
 ## Troubleshooting
 
+- `apache_tomcat.access.header_forwarder` is renamed to `client.ip` in version `0.16.1` of this integration. Hence please consider changing `apache_tomcat.access.header_forwarder` to `client.ip` field where it is being used. By using the [Update By Query API](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update-by-query.html#docs-update-by-query-api-ingest-pipeline), `apache_tomcat.access.header_forwarder` can be renamed to `client.ip` field for all the documents which would help to adapt this change.
+
 - In case of data ingestion if user encounter following errors then it is because of the rate limit of Prometheus endpoint. Here there won't be any data loss but if user still want to avoid it then make sure configured Prometheus endpoint is not being accessed from multiple places.
 ```
 {
@@ -249,11 +251,11 @@ An example event for `access` looks as following:
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | apache_tomcat.access.connection_status | Connection status when response is completed. | keyword |  |
-| apache_tomcat.access.header_forwarder | Header forwarder of log. | ip |  |
 | apache_tomcat.access.http.ident | Remote logical username from identd. | keyword |  |
 | apache_tomcat.access.http.useragent | The user id of the authenticated user requesting the page (if HTTP authentication is used). | keyword |  |
 | apache_tomcat.access.ip.local | Local IP address. | ip |  |
 | apache_tomcat.access.response_time | Response time of the endpoint. | double | s |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
