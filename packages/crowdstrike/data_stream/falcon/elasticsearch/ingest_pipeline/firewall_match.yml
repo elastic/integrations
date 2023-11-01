@@ -58,11 +58,15 @@ processors:
       type: long
       ignore_missing: true
       tag: convert_pid
-  - rename:
+  - set:
+      value: '{{{crowdstrike.event.ImageFileName}}}'
+      field: process.executable
+      ignore_empty_value: true
+      tag: set_process_executable_to_image_file_name
+  - remove:
       field: crowdstrike.event.ImageFileName
-      target_field: process.executable
       ignore_missing: true
-      tag: rename_image_file_name
+      tag: remove_image_file_name
   - rename:
       field: crowdstrike.event.RuleId
       target_field: rule.id
