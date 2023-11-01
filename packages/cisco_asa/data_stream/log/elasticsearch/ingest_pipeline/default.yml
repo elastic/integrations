@@ -393,7 +393,7 @@ processors:
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         NOTCOLON: "[^:]*"
         CISCO_USER_OR_SGT: (?:%{CISCO_USER}|%{CISCO_SGT})
-        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}(?:@%{HOSTNAME})?%{CISCO_SGT}?))
+        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?%{CISCO_SGT}?))
         CISCO_SGT: (?:, *)?%{NUMBER}(?::%{WORD})?
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106027'"
@@ -452,7 +452,7 @@ processors:
       patterns:
       - "AAA user %{DATA:_temp_.cisco.aaa_type} Successful(%{SPACE})?: server =(%{SPACE})?%{IP:destination.address} [:,] [Uu]ser = %{CISCO_USER:source.user.name}"
       pattern_definitions:
-        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?))
+        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}\$?(@%{HOSTNAME})?(, *%{NUMBER})?))
   - grok:
       if: "ctx._temp_.cisco.message_id == '113005'"
       description: "113005"
@@ -471,7 +471,7 @@ processors:
       patterns:
       - "AAA user authentication Successful(%{SPACE})?: local database(%{SPACE})?: [Uu]ser = %{CISCO_USER:source.user.name}"
       pattern_definitions:
-        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?))
+        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}\$?(@%{HOSTNAME})?(, *%{NUMBER})?))
   - grok:
       if: "ctx._temp_.cisco.message_id == '113015'"
       field: "message"
@@ -480,7 +480,7 @@ processors:
       - "AAA user authentication Rejected(%{SPACE})?: reason = %{REASON:_temp_.cisco.rejection_reason}(%{SPACE})?: local database(%{SPACE})?: [Uu]ser = %{CISCO_USER:source.user.name}(%{SPACE})?: [Uu]ser IP = %{IP:source.address}"
       pattern_definitions:
         REASON: (AAA failure|Account has been disabled|Invalid password|Password is expiring|Password has expired|Password malformed|Unspecified|User was not found)
-        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?))
+        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}\$?(@%{HOSTNAME})?(, *%{NUMBER})?))
 
   - dissect:
       if: "ctx._temp_.cisco.message_id == '113019'"
@@ -558,7 +558,7 @@ processors:
         NOTCOLON: "[^:]*"
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
-        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?(%{USERNAME})?(@%{HOSTNAME})?(, *%{NUMBER})?(%{NUMBER}:%{DATA})?))
+        CISCO_USER: (\*\*\*\*\*|((LOCAL\\)?(%{HOSTNAME}\\)?(%{USERNAME})?\$?(@%{HOSTNAME})?(, *%{NUMBER})?(%{NUMBER}:%{DATA})?))
         DURATION: "%{INT}:%{MINUTE}:%{SECOND}"
   - set:
       if: '["302020"].contains(ctx._temp_.cisco.message_id)'
