@@ -11,47 +11,84 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "bucket" {
-  bucket = "elastic-package-sentinel-one-bucket-${var.TEST_RUN_ID}"
+  bucket = "elastic-package-security-lake-bucket-${var.TEST_RUN_ID}"
 }
 
 resource "aws_sqs_queue" "queue" {
-  name       = "elastic-package-sentinel-one-queue-${var.TEST_RUN_ID}"
-  policy     = <<POLICY
+  name = "elastic-package-security-lake-queue-${var.TEST_RUN_ID}"
+}
+
+# data "aws_caller_identity" "current" {}
+
+resource "aws_sqs_queue_policy" "schedule-event-policy" {
+  queue_url = aws_sqs_queue.queue.id
+
+  policy = <<POLICY
 {
   "Version": "2012-10-17",
+  "Id": "sqspolicy",
   "Statement": [
     {
+      "Sid": "First",
       "Effect": "Allow",
       "Principal": "*",
-      "Action": "sqs:SendMessage",
-      "Resource": "arn:aws:sqs:*:*:elastic-package-sentinel-one-queue-${var.TEST_RUN_ID}",
-      "Condition": {
-        "ArnEquals": { "aws:SourceArn": "${aws_s3_bucket.bucket.arn}" }
-      }
+      "Action": ["sqs:SendMessage", "sqs:ReceiveMessage"],
+      "Resource": "${aws_sqs_queue.queue.arn}"
     }
   ]
 }
 POLICY
 }
 
-resource "aws_s3_bucket_notification" "bucket_notification" {
-  bucket = aws_s3_bucket.bucket.id
+resource "aws_iam_role" "event_bridge_sqs_role" {
+  name = "event_bridge_sqs_role"
 
-  queue {
-    queue_arn = aws_sqs_queue.queue.arn
-    events    = ["s3:ObjectCreated:*"]
+  assume_role_policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Effect" : "Allow",
+        "Principal" : {
+          "Service" : "scheduler.amazonaws.com"
+        },
+        "Action" : "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+resource "aws_scheduler_schedule" "eventbridge_scheduler_every1minute" {
+  name       = "eventbridge_scheduler_every1minute-${var.TEST_RUN_ID}"
+  group_name = "default"
+
+  flexible_time_window {
+    mode = "OFF"
+  }
+
+  schedule_expression = "rate(1 minutes)"
+
+  target {
+    arn      = aws_sqs_queue.queue.arn
+    role_arn = "arn:aws:iam::144492464627:role/eb-scheduler-role-20231101165501426500000001"
+
+    input = jsonencode({
+      detail = {
+        bucket = {
+          name = "elastic-package-security-lake-bucket-${var.TEST_RUN_ID}"
+        }
+        object = {
+          key = "account_change_key"
+        }
+      }
+    })
   }
 }
 
 resource "aws_s3_object" "object" {
   bucket = aws_s3_bucket.bucket.id
-  key    = "new_object_key"
+  key    = "account_change_key"
   source = "./files/test-account-change.log"
 
-  # # The filemd5() function is available in Terraform 0.11.12 and later
-  # # For Terraform 0.11.11 and earlier, use the md5() function and the file() function:
-  # # etag = "${md5(file("path/to/file"))}"
-  # etag       = filemd5("./files/test-command-script.log")
   depends_on = [aws_sqs_queue.queue]
 }
 
