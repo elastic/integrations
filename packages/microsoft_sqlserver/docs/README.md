@@ -2,8 +2,6 @@
 
 The Microsoft SQL Server integration package allows you to search, observe, and visualize the SQL Server audit logs, as well as performance and transaction log metrics, through Elasticsearch.
 
-For more information on SQL Server auditing, refer to [SQL Server Audit](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-database-engine?view=sql-server-ver15).
-
 ## Data streams
 
 The Microsoft SQL Server integration collects two types of data streams: logs and metrics.
@@ -11,12 +9,12 @@ The Microsoft SQL Server integration collects two types of data streams: logs an
 **Logs** help you keep a record of events happening in Microsoft SQL Server.
 Log data streams collected by the integration include:
 
-* `audit` provides events from the configured Windows event log channel.
+* `audit` provides events from the configured Windows event log channel. For more information on SQL Server auditing, refer to [SQL Server Audit](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-database-engine?view=sql-server-ver15).
 * `logs` parses error logs created by the Microsoft SQL server.
 
 Other log sources, such as files, are not supported.
 
-Find more details in [Logs](#logs-reference).
+Find more details in [Logs](#logs).
 
 **Metrics** give you insight into the state of Microsoft SQL Server.
 Metric data streams collected by the integration include:
@@ -24,7 +22,7 @@ Metric data streams collected by the integration include:
 * `performance` metrics gather the list of performance objects available on that server. Each server will have a different list of performance objects depending on the installed software.
 * `transaction_log` metrics collect all usage stats and the total space usage.
 
-Find more details in [Metrics](#metrics-reference).
+Find more details in [Metrics](#metrics).
 
 ## Requirements
 
@@ -52,7 +50,6 @@ For step-by-step instructions on how to set up any integration, refer to the
 
 Below you'll find more specific details on setting up the Microsoft SQL Server integration.
 
-<!-- Additional set up instructions -->
 ### Named Instance
 
 Microsoft SQL Server has a feature that allows running multiple databases on the same host (or clustered hosts) with separate settings. Establish a named instance connection by using the instance name along with the hostname (e.g. `host/instance_name` or `host:named_instance_port`) to collect metrics. Details of the host configuration are provided below.
