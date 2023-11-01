@@ -149,21 +149,21 @@ program: |
                                   })
                           :
                               // contents does not exist, or is empty array
-                              {
+                              list_contents_resp.Request.URL.parse_url().RawQuery.parse_query().as(reqQuery, {
                                   "events_per_content_type": size(list_contents_resp_body) == 0 ? [] : [list_contents_resp_body],
                                   "content_type": content_type,
                                   "content_created_at": (
                                       (has(list_contents_resp.StatusCode) && list_contents_resp.StatusCode == 200) ?
-                                          list_contents_resp.Request.URL.parse_url().RawQuery.parse_query().endTime[0]
+                                          reqQuery.endTime[0]
                                       :
-                                          list_contents_resp.Request.URL.parse_url().RawQuery.parse_query().startTime[0]
+                                          reqQuery.startTime[0]
                                   ),
                                   "next_page": "",
                                   "want_more_content": (
                                       has(list_contents_resp.StatusCode) && list_contents_resp.StatusCode == 200 &&
-                                      (list_contents_resp.Request.URL.parse_url().RawQuery.parse_query().endTime[0].split('T')[0] != now().format("2006-01-02"))
+                                      (reqQuery.endTime[0].split('T')[0] != now().format("2006-01-02"))
                                   )
-                              }
+                              })
                       )
                   )
               :
