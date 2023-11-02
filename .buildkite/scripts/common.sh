@@ -252,13 +252,13 @@ delete_kind_cluster() {
 
 kibana_version_manifest() {
     local kibana_version=$(cat manifest.yml | yq ".conditions.kibana.version")
-    if [ $kibana_version != "null" ]; then
+    if [ "${kibana_version}" != "null" ]; then
         echo "${kibana_version}"
         return
     fi
 
     kibana_version=$(cat manifest.yml | yq ".conditions.\"kibana.version\"")
-    if [ $kibana_version != "null" ]; then
+    if [ "${kibana_version}" != "null" ]; then
         echo "${kibana_version}"
         return
     fi
