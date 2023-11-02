@@ -35,18 +35,25 @@ request.transforms:
 - set:
     target: header.Content-Type
     value: application/json
-{{!-- - set:
+ {{!-- - set:
     target: header.Accept
-    value: '*/*'
-response.decode_as: application/json --}}
+    value: 'application/json' --}}
+{{!--response.decode_as: application/json --}}
 response.transforms:
 - set:
-    target: body.results
-    value: '[[ toJSON .last_response.body ]]'
+    target: body.data
+    value: '[[ .last_response.body ]]'
+    value_type: json
+    {{!-- value: '[[ .cursor.body ]]' --}}
     default: '{"var1": false, "var2": "all", "var3":"true"}'
 response.split:
-  target: body.results
+  target: body.data
   type: map
+  keep_parent: false
+  key_field: rawdata
+  {{!-- split:
+    target: rawdata
+    keep_parent: false --}}
 {{else}}
 request.transforms:
 - set:

@@ -22,7 +22,6 @@ The AbuseCH URL data_stream retrieves threat intelligence indicators from the UR
 | abusech.url.id | The ID of the indicator. | keyword |
 | abusech.url.larted | Indicates whether the malware URL has been reported to the hosting provider (true or false) | boolean |
 | abusech.url.reporter | The Twitter handle of the reporter that has reported this malware URL (or anonymous). | keyword |
-| abusech.url.results |  | flattened |
 | abusech.url.tags | A list of tags associated with the queried malware URL | keyword |
 | abusech.url.threat | The threat corresponding to this malware URL. | keyword |
 | abusech.url.url_status | The current status of the URL. Possible values are: online, offline and unknown. | keyword |
