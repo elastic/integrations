@@ -104,7 +104,6 @@ The `nx` integration ingests network security logs from FireEye NX through TCP/U
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
 | input.type | Input type | keyword |
-| interface.name | Interface name as reported by the system. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Logs Source Raw address. | keyword |
@@ -112,6 +111,7 @@ The `nx` integration ingests network security logs from FireEye NX through TCP/U
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | observer.product | The product name of the observer. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
@@ -175,11 +175,11 @@ An example event for `nx` looks as following:
 {
     "@timestamp": "2020-09-22T08:34:44.991Z",
     "agent": {
-        "ephemeral_id": "48b0c5c9-2498-4165-95e7-753c3f489c09",
-        "id": "8b10c3ab-9f4b-4ca0-b5ad-b6200b7fe65d",
+        "ephemeral_id": "dff6c436-37c3-4536-bdf9-08aed3ed94bd",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.0"
+        "version": "8.10.1"
     },
     "data_stream": {
         "dataset": "fireeye.nx",
@@ -197,9 +197,9 @@ An example event for `nx` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "8b10c3ab-9f4b-4ca0-b5ad-b6200b7fe65d",
-        "snapshot": true,
-        "version": "8.9.0"
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "snapshot": false,
+        "version": "8.10.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -207,7 +207,7 @@ An example event for `nx` looks as following:
             "network"
         ],
         "dataset": "fireeye.nx",
-        "ingested": "2023-06-15T19:10:16Z",
+        "ingested": "2023-09-25T20:05:32Z",
         "original": "{\"rawmsg\":\"{\\\"timestamp\\\":\\\"2020-09-22T08:34:44.991339+0000\\\",\\\"flow_id\\\":721570461162990,\\\"event_type\\\":\\\"flow\\\",\\\"src_ip\\\":\\\"fe80:0000:0000:0000:feec:daff:fe31:b706\\\",\\\"src_port\\\":45944,\\\"dest_ip\\\":\\\"ff02:0000:0000:0000:0000:0000:0000:0001\\\",\\\"dest_port\\\":10001,\\\"proto\\\":\\\"UDP\\\",\\\"proto_number\\\":17,\\\"ip_tc\\\":0,\\\"app_proto\\\":\\\"failed\\\",\\\"flow\\\":{\\\"pkts_toserver\\\":8,\\\"pkts_toclient\\\":0,\\\"bytes_toserver\\\":1680,\\\"bytes_toclient\\\":0,\\\"start\\\":\\\"2020-09-22T08:34:12.761326+0000\\\",\\\"end\\\":\\\"2020-09-22T08:34:12.761348+0000\\\",\\\"age\\\":0,\\\"state\\\":\\\"new\\\",\\\"reason\\\":\\\"timeout\\\",\\\"alerted\\\":false}}\\n\",\"meta_sip4\":\"192.168.1.99\",\"meta_oml\":520,\"deviceid\":\"860665216674\",\"meta_cbname\":\"fireeye-7e0de1\"}",
         "timezone": "+00:00",
         "type": [
@@ -229,20 +229,20 @@ An example event for `nx` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "85082b6dda81440ab2fd3b084337286f",
+        "id": "28da52b32df94b50aff67dfb8f1be3d6",
         "ip": [
-            "172.23.0.7"
+            "192.168.80.5"
         ],
         "mac": [
-            "02-42-AC-17-00-07"
+            "02-42-C0-A8-50-05"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.47-linuxkit",
+            "kernel": "5.10.104-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",

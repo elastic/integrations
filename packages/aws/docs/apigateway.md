@@ -185,8 +185,7 @@ An example event for `apigateway` looks as following:
 | aws.dimensions.Resource | It represents an endpoint within the API that corresponds to a specific functionality, typically associated with a URL path segment. | keyword |  |  |
 | aws.dimensions.Route | Routes define the path and HTTP methods that clients can use to access different functionalities of the API. | keyword |  |  |
 | aws.dimensions.Stage | It represents a specific version of the API that is accessible to clients. A stage allows you to manage different environments or versions of your API, such as development, testing, and production. | keyword |  |  |
-| aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |  |
-| aws.tags.\* | Tag key-value pairs from AWS resources. | object |  |  |
+| aws.tags | Tag key-value pairs from AWS resources. | flattened |  |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |  |
@@ -217,7 +216,7 @@ An example event for `apigateway` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
@@ -313,7 +312,7 @@ An example event for `apigateway` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |

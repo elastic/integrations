@@ -128,7 +128,6 @@ An example event for `sqs` looks as following:
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
 | aws.dimensions.QueueName | SQS queue name | keyword |  |
-| aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |
 | aws.sqs.empty_receives | The number of ReceiveMessage API calls that did not return a message. | long | gauge |
 | aws.sqs.messages.delayed | TThe number of messages in the queue that are delayed and not available for reading immediately. | long | gauge |
 | aws.sqs.messages.deleted | The number of messages deleted from the queue. | long | gauge |
@@ -139,7 +138,7 @@ An example event for `sqs` looks as following:
 | aws.sqs.oldest_message_age.sec | The approximate age of the oldest non-deleted message in the queue. | long | gauge |
 | aws.sqs.queue.name | SQS queue name | keyword |  |
 | aws.sqs.sent_message_size.bytes | The size of messages added to a queue. | long | gauge |
-| aws.tags.\* | Tag key value pairs from aws resources. | object |  |
+| aws.tags | Tag key value pairs from aws resources. | flattened |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |
@@ -170,7 +169,7 @@ An example event for `sqs` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
 | host.ip | Host ip addresses. | ip |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |

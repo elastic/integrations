@@ -10,6 +10,7 @@ processors:
       target_field: event.original
       tag: rename_message
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       tag: 'json_decoding'
@@ -475,12 +476,12 @@ processors:
   - set:
       field: vulnerability.enumeration
       value: CVE
-      if:  ctx.json?.finding?.vulnerability != null
+      if: ctx.json?.finding?.vulnerability != null
       tag: set_vulnerability_enumeration
   - set:
       field: vulnerability.score.version
       value: '3.1'
-      if:  ctx.json?.finding?.vulnerability != null
+      if: ctx.json?.finding?.vulnerability != null
       tag: set_vulnerability_score_version
   - rename:
       field: json.finding.vulnerability.cve.id
@@ -934,12 +935,12 @@ processors:
           type: ip
           ignore_missing: true
           on_failure:
-              - remove:
-                  field: _ingest._value
-                  ignore_missing: true
-              - append:
-                  field: error.message
-                  value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.finding.indicator.ipAddresses
       if: ctx.json?.finding?.indicator?.ipAddresses instanceof List
