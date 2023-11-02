@@ -5,13 +5,9 @@ source .buildkite/scripts/common.sh
 set -euo pipefail
 
 # default values
-STACK_VERSION=${STACK_VERSION:-""}
-UPLOAD_SAFE_LOGS=${UPLOAD_SAFE_LOGS:-"0"}
 BENCHMARK_THRESHOLD=${BENCHMARK_THRESHOLD:-'15'}
 
-
 # used in common.sh
-FORCE_CHECK_ALL=${FORCE_CHECK_ALL:-"false"}
 SKIPPED_PACKAGES_FILE_PATH="${WORKSPACE}/skipped_packages.txt"
 FAILED_PACKAGES_FILE_PATH="${WORKSPACE}/failed_packages.txt"
 
@@ -33,6 +29,9 @@ with_docker_compose
 with_kubernetes
 
 use_elastic_package
+
+echo ">> Parameters: FORCE_CHECK_ALL: ${FORCE_CHECK_ALL}"
+echo ">> Parameters: STACK_VERSION: ${STACK_VERSION}"
 
 pushd packages > /dev/null
 if ! process_package ${package}; then

@@ -470,7 +470,7 @@ is_pr_affected() {
         fi
     fi
 
-    if [[ ${FORCE_CHECK_ALL} == "true" ]];then
+    if [[ "${FORCE_CHECK_ALL}" == "true" ]];then
         echo "[${package}] PR is affected: \"force_check_all\" parameter enabled"
         return 0
     fi
