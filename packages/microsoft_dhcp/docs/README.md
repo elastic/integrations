@@ -22,11 +22,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2001-01-01T01:01:01.000-05:00",
     "agent": {
-        "ephemeral_id": "a53c1bd7-936f-4ca8-8740-84d1504d537e",
-        "id": "4e45636b-5ca2-4145-9926-801ca8065d87",
+        "ephemeral_id": "599c360c-711b-41f0-8b3b-03101ce1808b",
+        "id": "0874c904-40cc-4817-b0f8-557b17245c75",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.0"
+        "version": "8.8.0"
     },
     "data_stream": {
         "dataset": "microsoft_dhcp.log",
@@ -37,9 +37,9 @@ An example event for `log` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "4e45636b-5ca2-4145-9926-801ca8065d87",
+        "id": "0874c904-40cc-4817-b0f8-557b17245c75",
         "snapshot": false,
-        "version": "8.9.0"
+        "version": "8.8.0"
     },
     "event": {
         "action": "dhcp-dns-update",
@@ -49,7 +49,7 @@ An example event for `log` looks as following:
         ],
         "code": "35",
         "dataset": "microsoft_dhcp.log",
-        "ingested": "2023-08-01T16:33:06Z",
+        "ingested": "2023-10-24T00:08:40Z",
         "kind": "event",
         "original": "35,01/01/01,01:01:01,DNS update request failed,192.168.2.1,host.test.com,000000000000,",
         "outcome": "failure",
@@ -61,15 +61,13 @@ An example event for `log` looks as following:
         ]
     },
     "host": {
-        "domain": "test.com",
-        "id": "000000000000",
         "ip": [
-            "192.168.2.1"
+            "192.168.128.7"
         ],
         "mac": [
-            "00-00-00-00-00-00"
+            "02-42-C0-A8-80-07"
         ],
-        "name": "host.test.com"
+        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "log"
@@ -84,11 +82,17 @@ An example event for `log` looks as following:
     "observer": {
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.16.7"
+            "192.168.128.7"
         ],
         "mac": [
-            "02-42-C0-A8-10-07"
+            "02-42-C0-A8-80-07"
         ]
+    },
+    "source": {
+        "address": "host.test.com",
+        "domain": "host.test.com",
+        "ip": "192.168.2.1",
+        "mac": "00-00-00-00-00-00"
     },
     "tags": [
         "preserve_original_event",
@@ -146,6 +150,10 @@ An example event for `log` looks as following:
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.mac | MAC address of the source. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
