@@ -155,8 +155,10 @@ program: |
                                   "content_created_at": (
                                       (has(list_contents_resp.StatusCode) && list_contents_resp.StatusCode == 200) ?
                                           reqQuery.endTime[0]
-                                      :
+                                      : has(reqQuery.startTime) ?
                                           reqQuery.startTime[0]
+                                      :
+                                          string(now() - duration(state.base.list_contents_start_time))
                                   ),
                                   "next_page": "",
                                   "want_more_content": (
