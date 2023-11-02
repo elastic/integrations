@@ -30,9 +30,6 @@ with_kubernetes
 
 use_elastic_package
 
-echo ">> Parameters: FORCE_CHECK_ALL: ${FORCE_CHECK_ALL}"
-echo ">> Parameters: STACK_VERSION: ${STACK_VERSION}"
-
 pushd packages > /dev/null
 if ! process_package ${package}; then
     echo "[${package}] failed"
