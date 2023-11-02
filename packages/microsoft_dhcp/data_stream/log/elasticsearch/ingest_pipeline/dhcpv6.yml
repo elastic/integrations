@@ -8,8 +8,8 @@ processors:
         - _tmp_.date
         - _tmp_.time
         - message
-        - client.ip
-        - client.address
+        - source.ip
+        - source.address
         - microsoft.dhcp.error_code
         - microsoft.dhcp.duid.length
         - microsoft.dhcp.duid.hex
@@ -18,12 +18,12 @@ processors:
         - microsoft.dhcp.subnet_prefix
       ignore_failure: true
   - lowercase:
-      field: client.address
-      if: "ctx.client?.address != null"
+      field: source.address
+      if: "ctx.source?.address != null"
   - set:
-      field: client.domain
-      if: "ctx.client?.address != null"
-      copy_from: client.address
+      field: source.domain
+      if: "ctx.source?.address != null"
+      copy_from: source.address
   - set:
       field: _tmp_.timestamp
       value: "{{{_tmp_.date}}} {{{_tmp_.time}}}"
