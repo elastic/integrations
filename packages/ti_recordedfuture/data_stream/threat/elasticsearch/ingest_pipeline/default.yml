@@ -85,7 +85,7 @@ processors:
       processor:
         gsub:
           field: '_ingest._value'
-          pattern: '^.+sources?(?: including)?: (.*?)\.(?: .*)?$'
+          pattern: '^(?:.+sources?(?: including)?: (.*?)(?:\. |$))|(.*)$'
           replacement: '$1'
   - foreach:
       field: _temp_.providers
@@ -94,6 +94,16 @@ processors:
         split:
           field: '_ingest._value'
           separator: ', *'
+  - script:
+      description: Iterate through the nested arrays and remove the empty strings
+      lang: painless
+      ignore_failure: true
+      source: |
+        if (ctx._temp_ != null && ctx._temp_.providers != null) {
+          ctx._temp_.providers = ctx._temp_.providers.stream()
+            .filter(p -> p != null && p.size() > 0 && !p.get(0).isEmpty())
+            .collect(Collectors.toList());
+        }
   - foreach:
       field: _temp_.providers
       ignore_missing: true
