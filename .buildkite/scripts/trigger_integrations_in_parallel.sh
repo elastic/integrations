@@ -42,6 +42,9 @@ for package in ${PACKAGE_LIST}; do
     echo "      agents:" >> ${PIPELINE_FILE}
     echo "        provider: gcp" >> ${PIPELINE_FILE}
     echo "      env:" >> ${PIPELINE_FILE}
+    echo "        STACK_VERSION: \"${STACK_VERSION}\"" >> ${PIPELINE_FILE}
+    echo "        FORCE_CHECK_ALL: \"${FORCE_CHECK_ALL}\"" >> ${PIPELINE_FILE}
+    echo "        SERVERLESS: \"false\"" >> ${PIPELINE_FILE}
     echo "        UPLOAD_SAFE_LOGS: 1" >> ${PIPELINE_FILE}
     echo "      artifact_paths:" >> ${PIPELINE_FILE}
     echo "        - build/test-results/*.xml" >> ${PIPELINE_FILE}
