@@ -9,9 +9,9 @@ processors:
         - _tmp_.date
         - _tmp_.time
         - message
-        - source.ip
-        - source.address
-        - _tmp_.source.mac
+        - client.ip
+        - client.address
+        - _tmp_.client.mac
         - user.name
         - microsoft.dhcp.transaction_id
         - microsoft.dhcp.result
@@ -26,12 +26,12 @@ processors:
         - microsoft.dhcp.dns_error_code
       ignore_failure: true
   - lowercase:
-      field: source.address
-      if: "ctx.source?.address != null"
+      field: client.address
+      if: "ctx.client?.address != null"
   - set:
-      field: source.domain
-      if: "ctx.source?.address != null"
-      copy_from: source.address
+      field: client.domain
+      if: "ctx.client?.address != null"
+      copy_from: client.address
   - set:
       field: _tmp_.timestamp
       value: "{{{_tmp_.date}}} {{{_tmp_.time}}}"
@@ -397,17 +397,17 @@ processors:
       value: '{{{event.reason}}}'
       if: ctx.event?.reasson != null
   - uppercase:
-      field: _tmp_.source.mac
+      field: _tmp_.client.mac
       ignore_missing: true
   - gsub:
-      field: _tmp_.source.mac
+      field: _tmp_.client.mac
       pattern: '(..)(?!$)'
       replacement: '$1-'
       ignore_missing: true
   - set:
-      if: ctx._tmp_?.source?.mac != null
-      field: source.mac
-      copy_from: _tmp_.source.mac
+      if: ctx._tmp_?.client?.mac != null
+      field: client.mac
+      copy_from: _tmp_.client.mac
 on_failure:
   - set:
       field: event.kind
