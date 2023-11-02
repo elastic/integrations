@@ -4,6 +4,9 @@ source .buildkite/scripts/common.sh
 
 set -euo pipefail
 
+add_bin_path
+with_yq
+
 pushd packages > /dev/null
 PACKAGE_LIST=$(list_all_directories)
 popd > /dev/null
