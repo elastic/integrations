@@ -494,8 +494,8 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2023-09-13T08:40:39.068Z",
     "agent": {
-        "ephemeral_id": "7aae6130-635a-422f-ac2e-e40324e86921",
-        "id": "acedddc9-63e6-47f7-b4b0-ad41d6af2116",
+        "ephemeral_id": "488ed426-253d-42cf-abcf-d775513dcf93",
+        "id": "de2d03f7-fa6c-4837-b7f5-2d64a2c784b5",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.10.1"
@@ -509,7 +509,7 @@ An example event for `audit` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "acedddc9-63e6-47f7-b4b0-ad41d6af2116",
+        "id": "de2d03f7-fa6c-4837-b7f5-2d64a2c784b5",
         "snapshot": false,
         "version": "8.10.1"
     },
@@ -520,7 +520,7 @@ An example event for `audit` looks as following:
             "authentication"
         ],
         "dataset": "prisma_cloud.audit",
-        "ingested": "2023-10-18T12:09:30Z",
+        "ingested": "2023-11-01T13:38:08Z",
         "kind": "event",
         "original": "{\"action\":\"'john.user@google.com'(with role 'System Admin':'System Admin') logged in via access key.\",\"actionType\":\"LOGIN\",\"ipAddress\":\"81.2.69.192\",\"resourceName\":\"john.user@google.com\",\"resourceType\":\"Login\",\"result\":\"Successful\",\"timestamp\":1694594439068,\"user\":\"john.user@google.com\"}",
         "outcome": "success",
@@ -557,6 +557,7 @@ An example event for `audit` looks as following:
             "81.2.69.192"
         ],
         "user": [
+            "john.user",
             "john.user@google.com"
         ]
     },
@@ -567,7 +568,9 @@ An example event for `audit` looks as following:
         "prisma_cloud-audit"
     ],
     "user": {
-        "email": "john.user@google.com"
+        "domain": "google.com",
+        "email": "john.user@google.com",
+        "name": "john.user"
     }
 }
 ```
