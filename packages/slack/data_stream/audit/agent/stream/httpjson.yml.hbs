@@ -19,20 +19,13 @@ request.transforms:
   - set:
       target: header.Authorization
       value: "Bearer {{oauth_token}}"
-
   - set:
       target: url.params.cursor
       value: '[[.cursor.next_cursor]]'
       default: ''
-
   - set:
       target: url.params.oldest
-      value: |-
-        [[- if eq .cursor.next_cursor "" -]]
-          [[- .cursor.max_date_seen_so_far -]]
-        [[- else -]]
-          [[- .cursor.saved_oldest -]]
-        [[- end -]]
+      value: '[[if eq .cursor.next_cursor ""]][[.cursor.max_date_seen_so_far]][[else]][[.cursor.saved_oldest]][[end]]'
       default: '[[(now (parseDuration "-{{initial_interval}}")).Unix]]'
   - set:
       target: url.params.limit
@@ -47,6 +40,7 @@ request.rate_limit.remaining: '0' # hardcoded to 0 since slack doesn't return re
 
 response.split:
   target: body.entries
+
 response.pagination:
   - set:
       target: url.params.cursor
