@@ -14,6 +14,12 @@ processors:
       field: message
       pattern: "%{}User %{user.name}@%{client.ip} %{_tmp.event} out (login time: %{event.start}, number %{}: %{vsphere.log.api.invocations}, %{}: %{user_agent.original}"
       if: 'ctx.message.contains(''logged out'') ?: false'
+      ignore_failure: true
+  - dissect:
+      field: message
+      pattern: "%{}User {Name: %{user.name}, Domain: %{user.domain}} with role '%{user.roles}'%{}"
+      if: 'ctx.message.contains(''logged out'') ?: false'
+      ignore_failure: true
   - dissect:
       field: message
       pattern: "Received %{_tmp.status} from %{client.ip} port %{client.port}:%{destination.port}: %{}"
