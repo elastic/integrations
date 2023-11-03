@@ -11,7 +11,7 @@ fi
 export BUILD_TAG="buildkite-${BUILDKITE_PIPELINE_SLUG}-${BUILDKITE_BUILD_NUMBER}"
 export REPO_BUILD_TAG="${REPO_NAME}/${BUILD_TAG}"
 
-JENKINS_TRIGGER_PATH="${WORSPACE}/.buildkite/scripts/triggerJenkinsJob"
+JENKINS_TRIGGER_PATH="${WORKSPACE}/.buildkite/scripts/triggerJenkinsJob"
 
 BUILD_PACKAGES_PATH="${WORKSPACE}/build/packages"
 
