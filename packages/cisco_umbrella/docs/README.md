@@ -17,110 +17,71 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-03-08T06:54:32.000Z",
-    "cisco": {
-        "umbrella": {
-            "amp_disposition": "UNKNOWN",
-            "amp_score": "0",
-            "categories": "Computer Security",
-            "identities": [
-                "NetworkName"
-            ],
-            "identity": "NetworkName",
-            "identity_types": [
-                "Networks"
-            ],
-            "policy_identity_type": "Networks",
-            "ruleset_id": "13671956",
-            "sha_sha256": "f6b70243c6f2c3b1b36bb5055550351bd540f35daf53c7c6cc719f34ed8b4c80"
+    "@timestamp": "2023-11-03T07:34:39.717Z",
+    "agent": {
+        "ephemeral_id": "95a13cca-6d60-4c87-bf43-c3e7bbbfaced",
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.10.1"
+    },
+    "aws": {
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-cisco-umbrella-bucket-94360",
+                "name": "elastic-package-cisco-umbrella-bucket-94360"
+            },
+            "object": {
+                "key": "new_object_key"
+            }
         }
     },
-    "destination": {
-        "address": "67.43.156.204",
-        "as": {
-            "number": 35908
-        },
-        "geo": {
-            "continent_name": "Asia",
-            "country_iso_code": "BT",
-            "country_name": "Bhutan",
-            "location": {
-                "lat": 27.5,
-                "lon": 90.5
-            }
-        },
-        "ip": "67.43.156.204"
+    "cloud": {
+        "provider": "",
+        "region": "us-east-1"
+    },
+    "data_stream": {
+        "dataset": "cisco_umbrella.log",
+        "namespace": "ep",
+        "type": "logs"
     },
     "ecs": {
         "version": "8.10.0"
     },
+    "elastic_agent": {
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "snapshot": false,
+        "version": "8.10.1"
+    },
     "event": {
-        "action": "proxy-request-GET",
+        "agent_id_status": "verified",
         "category": "network",
+        "dataset": "cisco_umbrella.log",
+        "ingested": "2023-11-03T07:34:41Z",
         "kind": "event",
-        "original": "\"2023-03-08 06:54:32\",\"NetworkName\",\"\",\"175.16.199.104\",\"67.43.156.204\",\"application/octet-stream\",\"ALLOWED\",\"http://luna.avcdn.net/yq/rjse/evypttvncfx36yl3n2toc7xnu4zgngn2qa2gkx4npzch5a.bin\",\"\",\"Avast Antivirus\",\"200\",\"\",\"561\",\"230\",\"f6b70243c6f2c3b1b36bb5055550351bd540f35daf53c7c6cc719f34ed8b4c80\",\"Computer Security\",\"\",\"\",\"UNKNOWN\",\"\",\"0\",\"Networks\",\"\",\"NetworkName\",\"Networks\",\"GET\",\"\",\"\",\"evypttvncfx36yl3n2toc7xnu4zgngn2qa2gkx4npzch5a.bin\",\"13671956\",\"\",\"\"",
+        "original": "\"2020-07-23 23:48:56\",\"Elastic Machine\",\"192.168.1.1\",\"67.43.156.12\",\"81.2.69.144\",\"\",\"ALLOWED\",\"https://elastic.co/blog/ext_id=Anyclip\",\"https://google.com/elastic\",\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36\",\"200\",\"850\",\"\",\"\",\"\",\"Business Services\",\"AVDetectionName\",\"Malicious\",\"MalwareName\",\"\",\"\",\"Roaming Computers\",\"\"",
         "type": [
-            "allowed",
             "connection"
         ]
     },
-    "file": {
-        "name": "evypttvncfx36yl3n2toc7xnu4zgngn2qa2gkx4npzch5a.bin"
+    "input": {
+        "type": "aws-s3"
     },
-    "http": {
-        "request": {
-            "method": "GET",
-            "mime_type": "application/octet-stream"
+    "log": {
+        "file": {
+            "path": "https://elastic-package-cisco-umbrella-bucket-94360.s3.us-east-1.amazonaws.com/new_object_key"
         },
-        "response": {
-            "body": {
-                "bytes": 230
-            },
-            "bytes": 561,
-            "status_code": 200
-        }
-    },
-    "network": {
-        "name": [
-            "NetworkName"
-        ]
+        "offset": 0
     },
     "observer": {
         "product": "Umbrella",
-        "type": "proxy",
         "vendor": "Cisco"
     },
-    "related": {
-        "hash": [
-            "f6b70243c6f2c3b1b36bb5055550351bd540f35daf53c7c6cc719f34ed8b4c80"
-        ],
-        "ip": [
-            "175.16.199.104",
-            "67.43.156.204"
-        ]
-    },
-    "source": {
-        "nat": {
-            "ip": "175.16.199.104"
-        }
-    },
     "tags": [
-        "preserve_original_event"
-    ],
-    "url": {
-        "domain": "luna.avcdn.net",
-        "extension": "bin",
-        "original": "http://luna.avcdn.net/yq/rjse/evypttvncfx36yl3n2toc7xnu4zgngn2qa2gkx4npzch5a.bin",
-        "path": "/yq/rjse/evypttvncfx36yl3n2toc7xnu4zgngn2qa2gkx4npzch5a.bin",
-        "scheme": "http"
-    },
-    "user_agent": {
-        "device": {
-            "name": "Other"
-        },
-        "name": "Other",
-        "original": "Avast Antivirus"
-    }
+        "preserve_original_event",
+        "cisco-umbrella",
+        "forwarded"
+    ]
 }
 ```
 
@@ -129,6 +90,9 @@ An example event for `log` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | cisco.umbrella.action | Whether the request was allowed or blocked. | keyword |
 | cisco.umbrella.amp_disposition | The status of the files proxied and scanned by Cisco Advanced Malware Protection (AMP) as part of the Umbrella File Inspection feature; can be Clean, Malicious or Unknown. | keyword |
 | cisco.umbrella.amp_malware_name | If Malicious, the name of the malware according to AMP. | keyword |
@@ -250,6 +214,7 @@ An example event for `log` looks as following:
 | http.response.status_code | HTTP response status code. | long |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.offset |  | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.application | When a specific application or service is identified from network connection details (source/dest IPs, ports, certificates, or wire format), this field captures the application's or service's name. For example, the original event identifies the network connection being from a specific web service in a `https` network connection, like `facebook` or `twitter`. The field value must be normalized to lowercase for querying. | keyword |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
