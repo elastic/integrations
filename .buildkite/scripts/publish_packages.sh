@@ -150,10 +150,10 @@ publish_packages() {
     google_cloud_logout_active_account
 }
 
-if skipPublishing ; then
-    echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
-    exit 0
-fi
+# if skipPublishing ; then
+#     echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
+#     exit 0
+# fi
 
 echo "Checking gsutil command..."
 if ! command -v gsutil &> /dev/null ; then
@@ -174,6 +174,8 @@ if [ "${unpublished}" == "false" ]; then
     echo "All packages are in sync"
     exit 0
 fi
+
+exit
 
 sign_packages
 
