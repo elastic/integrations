@@ -179,7 +179,7 @@ with_yq() {
 ## Logging and logout from Google Cloud
 google_cloud_upload_auth() {
   local secretFileLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE_BASE}.XXXXXXXXX")/${GOOGLE_CREDENTIALS_FILENAME}
-  echo "${PRIVATE_INFRA_GCS_CREDENTIALS_SECRET}" > ${secretFileLocation}
+  echo "${PACKAGE_UPLOADER_GCS_CREDENTIALS_SECRET}" > ${secretFileLocation}
   gcloud auth activate-service-account --key-file ${secretFileLocation} 2> /dev/null
   export GOOGLE_APPLICATION_CREDENTIALS=${secretFileLocation}
 }

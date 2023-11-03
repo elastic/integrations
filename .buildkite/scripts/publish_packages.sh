@@ -11,7 +11,9 @@ fi
 export BUILD_TAG="buildkite-${BUILDKITE_PIPELINE_SLUG}-${BUILDKITE_BUILD_NUMBER}"
 export REPO_BUILD_TAG="${REPO_NAME}/${BUILD_TAG}"
 
-JENKINS_TRIGGER_PATH=".buildkite/scripts/triggerJenkinsJob"
+JENKINS_TRIGGER_PATH="${WORSPACE}/.buildkite/scripts/triggerJenkinsJob"
+
+BUILD_PACKAGES_PATH="${WORKSPACE}/build/packages"
 
 # signing
 INFRA_SIGNING_BUCKET_NAME='internal-ci-artifacts'
@@ -19,6 +21,8 @@ INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_SUBFOLDER="${REPO_BUILD_TAG}/signed-artifa
 INFRA_SIGNING_BUCKET_ARTIFACTS_PATH="gs://${INFRA_SIGNING_BUCKET_NAME}/${REPO_BUILD_TAG}"
 INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_PATH="gs://${INFRA_SIGNING_BUCKET_NAME}/${INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_SUBFOLDER}"
 
+## Publishing
+PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH="gs://elastic-bekitzur-package-storage-internal/queue-publishing/${REPO_BUILD_TAG}"
 
 skipPublishing() {
     if [[ "${BUILDKITE_PULL_REQUEST}" != "false" ]]; then
@@ -81,12 +85,69 @@ build_packages() {
 
 sign_packages() {
     echo "Signing packages"
-    # TODO require signing: to be based on elastic-package
+    pushd ${BUILD_PACKAGES_PATH} > /dev/null
+
+    google_cloud_signing_auth
+
+    # upload zip package (trailing forward slashes are required)
+    echo "Upload zip packages files for signing to ${INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}"
+    gsutil cp *.zip "${INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}/"
+
+    echo "Trigger Jenkins job for signing package ${packageZip}"
+    pushd ${JENKINS_TRIGGER_PATH} > /dev/null
+
+    go run main.go \
+        --jenkins-job sign \
+        --folder ${INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}
+
+    sleep 5
+    popd > /dev/null
+
+    echo "Download signatures"
+    gsutil cp "${INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_PATH}/*.asc" "."
+
+    echo "Rename asc to sig"
+    for f in *.asc; do
+        mv "$f" "${f%.asc}.sig"
+    done
+
+    popd > /dev/null
+
+    ls -l "${BUILD_PACKAGES_PATH}"
+    google_cloud_logout_active_account
 }
 
 publish_packages() {
     echo "Publishing packages"
-    # TODO require publishing: to be based on elastic-package
+
+    google_cloud_upload_auth
+
+    pushd ${BUILD_PACKAGES_PATH}
+
+    for packageZip in *.zip ; do
+        # upload files (trailing forward slashes are required)
+        echo "Upload package .zip file ${packageZip} to ${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}"
+        # gsutil cp ${packageZip} "${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/"
+
+        echo "Upload package .sig file ${packageZip}.sig to ${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}"
+        echo gsutil cp ${packageZip}.sig "${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/"
+
+        echo "Trigger Jenkins job for publishing package ${packageZip}"
+        pushd ${JENKINS_TRIGGER_PATH} > /dev/null
+
+        # TODO: Change dry-run parameter to false
+        echo go run main.go \
+            --jenkins-job publish \
+            --dry-run=true \
+            --package="${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${packageZip}" \
+            --signature="${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${packageZip}.sig"
+
+        sleep 5
+        popd > /dev/null
+    done
+    popd > /dev/null
+
+    google_cloud_logout_active_account
 }
 
 if skipPublishing ; then
@@ -109,11 +170,11 @@ unpublished="false"
 
 build_packages
 
-
 if [ "${unpublished}" == "false" ]; then
     echo "All packages are in sync"
     exit 0
 fi
 
 sign_packages
+
 publish_packages
