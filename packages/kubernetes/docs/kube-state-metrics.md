@@ -196,17 +196,33 @@ An example event for `state_container` looks as following:
 | kubernetes.container.cpu.request.cores | Container CPU requested cores | float |  | gauge |
 | kubernetes.container.cpu.request.nanocores | Container CPU requested nanocores | long |  | gauge |
 | kubernetes.container.id | Container id | keyword |  |  |
+| kubernetes.container.image | Kubernetes container image | keyword |  |  |
 | kubernetes.container.memory.limit.bytes | Container memory limit in bytes | long | byte | gauge |
 | kubernetes.container.memory.request.bytes | Container requested memory in bytes | long | byte | gauge |
+| kubernetes.container.name | Kubernetes container name | keyword |  |  |
 | kubernetes.container.status.phase | Container phase (running, waiting, terminated) | keyword |  |  |
 | kubernetes.container.status.ready | Container ready status | boolean |  |  |
 | kubernetes.container.status.reason | Waiting (ContainerCreating, CrashLoopBackoff, ErrImagePull, ImagePullBackoff) or termination (Completed, ContainerCannotRun, Error, OOMKilled) reason. | keyword |  |  |
 | kubernetes.container.status.restarts | Container restarts count | integer |  | counter |
 | kubernetes.cronjob.name | Name of the CronJob to which the Pod belongs | keyword |  |  |
+| kubernetes.daemonset.name | Kubernetes daemonset name | keyword |  |  |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
+| kubernetes.job.name | Name of the Job to which the Pod belongs | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
+| kubernetes.namespace_annotations.\* | Kubernetes namespace annotations map | object |  |  |
 | kubernetes.namespace_labels.\* | Kubernetes namespace labels map | object |  |  |
 | kubernetes.namespace_uid | Kubernetes namespace UID | keyword |  |  |
+| kubernetes.node.annotations.\* | Kubernetes node annotations map | object |  |  |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
+| kubernetes.node.labels.\* | Kubernetes node labels map | object |  |  |
+| kubernetes.node.name | Kubernetes node name | keyword |  |  |
+| kubernetes.node.uid | Kubernetes node UID | keyword |  |  |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |  |  |
+| kubernetes.pod.name | Kubernetes pod name | keyword |  |  |
+| kubernetes.pod.uid | Kubernetes pod UID | keyword |  |  |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
