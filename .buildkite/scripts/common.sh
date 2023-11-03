@@ -13,6 +13,9 @@ SCRIPTS_BUILDKITE_PATH="${WORKSPACE}/.buildkite/scripts"
 GOOGLE_CREDENTIALS_FILENAME="google-cloud-credentials.json"
 export ELASTIC_PACKAGE_BIN=${WORKSPACE}/build/elastic-package
 
+API_BUILDKITE_PIPELINES_URL="https://api.buildkite.com/v2/organizations/elastic/pipelines/"
+
+
 running_on_buildkite() {
     if [[ "${BUILDKITE:-"false"}" == "true" ]]; then
         return 0
@@ -400,37 +403,54 @@ is_spec_3_0_0() {
 
 echoerr() {
     echo "$@" 1>&2
-
 }
+
 get_commit_from_build() {
     local pipeline="$1"
     local branch="$2"
-    local status="$3"
+    local state_query_param="$3"
 
-    local previous_commit=$(curl -sH "Authorization: Bearer ${BUILDKITE_API_TOKEN}" "https://api.buildkite.com/v2/organizations/elastic/pipelines/${BUILDKITE_PIPELINE_SLUG}/builds?branch=${BUILDKITE_BRANCH}&state=${status}&per_page=1" | jq '.[0] |.commit}')
+    local api_url="${API_BUILDKITE_PIPELINES_URL}/${pipeline}/builds?branch=${branch}&${state_query_param}&per_page=1"
+    local previous_commit=$(curl -sH "Authorization: Bearer ${BUILDKITE_API_TOKEN}" "${api_url}" | jq '.[0] |.commit')
     echoerr ">>> Commit from ${pipeline} - branch ${branch} - status: ${status} -> ${previous_commit}"
 
+    echo ${previous_commit}
+}
+
+get_previous_commit() {
+    local pipeline="$1"
+    local branch="$2"
+    # state=finished implies also skip and cancelled builds https://buildkite.com/docs/pipelines/notifications#build-states
+    local status="state[]=failed&state[]=passed"
+    local previous_commit=$(get_commit_from_build "${pipeline}" "${branch}" "${status}")
+    echo ${previous_commit}
+}
+
+get_previous_successful_commit() {
+    local pipeline="$1"
+    local branch="$2"
+    local status="state=passed"
+    local previous_commit=$(get_commit_from_build "${pipeline}" "${branch}" "${status}")
     echo ${previous_commit}
 }
 
 get_from_changeset() {
     local from=""
     if [ "${BUILDKITE_PULL_REQUEST}" != "false" ]; then
-        # pull request
         echo "origin/${BUILDKITE_PULL_REQUEST_BASE_BRANCH}"
         return
     fi
 
-    local previous_commit=$(get_commit_from_build ${BUILDKITE_PIPELINE_SLUG} ${BUILDKITE_BRANCH} "finished")
+    local previous_commit=$(get_previous_commit ${BUILDKITE_PIPELINE_SLUG} ${BUILDKITE_BRANCH})
 
     if [[ "${previous_commit}" != "null" ]] ; then
         from="${previous_commit}"
+    else
+        from="${BUILDKITE_COMMIT}^"
     fi
 
-    from="${BUILDKITE_COMIMT}^"
-
-    if [[ "${BUILDKITE_BRANCH}" == "main" || ${BUILDKITE_BRANCH} =~ ^bakcport- ]]; then
-        local previous_successful_commit=$(get_commit_from_build ${BUILDKITE_PIPELINE_SLUG} ${BUILDKITE_BRANCH} "passed")
+    if [[ "${BUILDKITE_BRANCH}" == "main" || ${BUILDKITE_BRANCH} =~ ^backport- ]]; then
+        local previous_successful_commit=$(get_previous_successful_commit ${BUILDKITE_PIPELINE_SLUG} ${BUILDKITE_BRANCH})
 
         from="${previous_successful_commit}"
         if [[ "${previous_successful_commit}" == "null" ]]; then
@@ -439,15 +459,12 @@ get_from_changeset() {
     fi
 
     echo "${from}"
-    ## main or backport branches
-    # previous_commit=$(git rev-parse --verify FETCH_HEAD~1)
-    # echo "${previous_commit}"
 }
 
 get_to_changeset() {
     local to="${BUILDKITE_COMMIT}"
 
-    if [[ "${BUILDKITE_BRANCH}" == "main" || ${BUILDKITE_BRANCH} =~ ^bakcport- ]]; then
+    if [[ "${BUILDKITE_BRANCH}" == "main" || ${BUILDKITE_BRANCH} =~ ^backport- ]]; then
         to="origin/${BUILDKITE_BRANCH}"
     fi
     echo ${to}
@@ -480,7 +497,6 @@ is_pr_affected() {
     # def from = env.CHANGE_TARGET?.trim() ? "origin/${env.CHANGE_TARGET}" : "${env.GIT_PREVIOUS_COMMIT?.trim() ? env.GIT_PREVIOUS_COMMIT : env.GIT_BASE_COMMIT}"
     local from="$(get_from_changeset)"
     local to="$(get_to_changeset)"
-    echo ">> Changesets: FROM: '${from}' - TO: '${to}'"
 
     # TODO: If running for an integration branch (main, backport-*) check with
     # GIT_PREVIOUS_SUCCESSFUL_COMMIT to check if the branch is still healthy.
