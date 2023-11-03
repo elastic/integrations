@@ -84,7 +84,6 @@ build_packages() {
 }
 
 sign_packages() {
-    echo "Signing packages"
     pushd ${BUILD_PACKAGES_PATH} > /dev/null
 
     google_cloud_signing_auth
@@ -118,11 +117,9 @@ sign_packages() {
 }
 
 publish_packages() {
-    echo "Publishing packages"
+    pushd ${BUILD_PACKAGES_PATH}
 
     google_cloud_upload_auth
-
-    pushd ${BUILD_PACKAGES_PATH}
 
     for packageZip in *.zip ; do
         # upload files (trailing forward slashes are required)
@@ -168,6 +165,7 @@ use_elastic_package
 
 unpublished="false"
 
+echo "--- Build packages"
 build_packages
 
 if [ "${unpublished}" == "false" ]; then
@@ -177,6 +175,8 @@ fi
 
 exit
 
+echo "--- Sign packages"
 sign_packages
 
+echo "--- Sign packages"
 publish_packages
