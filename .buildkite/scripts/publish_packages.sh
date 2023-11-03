@@ -91,26 +91,26 @@ sign_packages() {
     google_cloud_signing_auth
 
     # upload zip package (trailing forward slashes are required)
-    echo "Upload zip packages files for signing to ${INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}"
-    echo gsutil cp *.zip "${INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}/"
+    echo "Upload zip packages files for signing"
+    # echo gsutil cp *.zip "${INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}/"
 
     echo "Trigger Jenkins job for signing packages"
     pushd ${JENKINS_TRIGGER_PATH} > /dev/null
 
-    echo go run main.go \
-        --jenkins-job sign \
-        --folder ${INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}
+    # go run main.go \
+    #     --jenkins-job sign \
+    #   --folder ${INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}
 
     sleep 5
     popd > /dev/null
 
     echo "Download signatures"
-    echo gsutil cp "${INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_PATH}/*.asc" "."
+    # echo gsutil cp "${INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_PATH}/*.asc" "."
 
     echo "Rename asc to sig"
-    for f in *.asc; do
-        mv "$f" "${f%.asc}.sig"
-    done
+    # for f in *.asc; do
+    #     mv "$f" "${f%.asc}.sig"
+    # done
 
     popd > /dev/null
 
@@ -125,21 +125,21 @@ publish_packages() {
 
     for package_zip in *.zip ; do
         # upload files (trailing forward slashes are required)
-        echo "Upload package .zip file ${package_zip} to ${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}"
-        echo gsutil cp ${package_zip} "${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/"
+        echo "Upload package .zip file ${package_zip} for publishing"
+        # gsutil cp ${package_zip} "${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/"
 
-        echo "Upload package .sig file ${package_zip}.sig to ${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}"
-        echo gsutil cp ${package_zip}.sig "${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/"
+        echo "Upload package .sig file ${package_zip}.sig for publishing"
+        # gsutil cp ${package_zip}.sig "${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/"
 
         echo "Trigger Jenkins job for publishing package ${package_zip}"
         pushd ${JENKINS_TRIGGER_PATH} > /dev/null
 
         # TODO: Change dry-run parameter to false
-        echo go run main.go \
-            --jenkins-job publish \
-            --dry-run=true \
-            --package="${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${package_zip}" \
-            --signature="${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${package_zip}.sig"
+        # go run main.go \
+        #     --jenkins-job publish \
+        #     --dry-run=true \
+        #     --package="${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${package_zip}" \
+        #     --signature="${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${package_zip}.sig"
 
         sleep 5
         popd > /dev/null
