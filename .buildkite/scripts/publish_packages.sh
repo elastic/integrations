@@ -41,12 +41,12 @@ check_and_build_package() {
 }
 
 report_build_failure() {
-    local integration="${1}"
-    echo "Build package ${integration}failed"
+    local package="${1}"
+    echo "Build package ${package} failed"
 
     # if running in Buildkite , add an annotation
-    if [ -n "$BUILDKITE_BRANCH" ]; then
-        buildkite-agent annotate "Build package ${integration} failed" --style "warning"
+    if [ -n "${BUILDKITE_BRANCH+x}" ]; then
+        buildkite-agent annotate "Build package ${package} failed" --style "warning"
     fi
 }
 
@@ -54,10 +54,10 @@ build_packages() {
     pushd packages > /dev/null
 
     for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
-        integration=$(basename ${it})
-        echo "Package ${integration}: check"
+        package=$(basename ${it})
+        echo "Package ${package}: check"
 
-        pushd ${integration} > /dev/null
+        pushd ${package} > /dev/null
 
         version=$(cat manifest.yml | yq .version)
         name=$(cat manifest.yml | yq .name)
@@ -70,8 +70,8 @@ build_packages() {
             continue
         fi
 
-        echo "Build integration as zip: ${integration}"
-        check_and_build_package || report_build_failure ${integration}
+        echo "Build package as zip: ${package}"
+        check_and_build_package || report_build_failure ${package}
         popd > /dev/null
 
         unpublished="true"
