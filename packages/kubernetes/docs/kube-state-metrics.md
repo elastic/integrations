@@ -1756,8 +1756,10 @@ An example event for `state_pod` looks as following:
 | kubernetes.job.name | Name of the Job to which the Pod belongs | keyword |
 | kubernetes.labels.\* | Kubernetes labels map | object |
 | kubernetes.namespace | Kubernetes namespace | keyword |
+| kubernetes.namespace_annotations.\* | Kubernetes namespace annotations map | object |
 | kubernetes.namespace_labels.\* | Kubernetes namespace labels map | object |
 | kubernetes.namespace_uid | Kubernetes namespace UID | keyword |
+| kubernetes.node.annotations.\* | Kubernetes node annotations map | object |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
 | kubernetes.node.labels.\* | Kubernetes node labels map | object |
 | kubernetes.node.name | Kubernetes node name | keyword |
