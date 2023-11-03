@@ -178,5 +178,5 @@ fi
 echo "--- Sign packages"
 sign_packages
 
-echo "--- Sign packages"
+echo "--- Publish packages"
 publish_packages
