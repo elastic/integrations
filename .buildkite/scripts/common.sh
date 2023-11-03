@@ -470,8 +470,6 @@ get_to_changeset() {
     echo ${to}
 }
 
-# TODO: it is required to have GIT_PREVIOUS_COMMIT and GIT_PREVIOUS_SUCCESSFUL_COMMIT
-# as in Jenkins to set the right from (changesets)
 is_pr_affected() {
     local package="${1}"
 
@@ -595,6 +593,7 @@ test_package_in_local_stack() {
     echo ""
     return 0
 }
+
 # Currently, system tests are not run in serverless to avoid lasting the build
 # too much time, since all packages are run in the same step one by one.
 # Packages are tested one by one to avoid creating more than 100 projects for one build.
