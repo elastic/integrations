@@ -92,7 +92,7 @@ sign_packages() {
     echo "Upload zip packages files for signing to ${INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}"
     gsutil cp *.zip "${INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}/"
 
-    echo "Trigger Jenkins job for signing package ${packageZip}"
+    echo "Trigger Jenkins job for signing packages"
     pushd ${JENKINS_TRIGGER_PATH} > /dev/null
 
     go run main.go \
@@ -121,23 +121,23 @@ publish_packages() {
 
     google_cloud_upload_auth
 
-    for packageZip in *.zip ; do
+    for package_zip in *.zip ; do
         # upload files (trailing forward slashes are required)
-        echo "Upload package .zip file ${packageZip} to ${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}"
-        # gsutil cp ${packageZip} "${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/"
+        echo "Upload package .zip file ${package_zip} to ${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}"
+        # gsutil cp ${package_zip} "${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/"
 
-        echo "Upload package .sig file ${packageZip}.sig to ${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}"
-        echo gsutil cp ${packageZip}.sig "${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/"
+        echo "Upload package .sig file ${package_zip}.sig to ${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}"
+        echo gsutil cp ${package_zip}.sig "${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/"
 
-        echo "Trigger Jenkins job for publishing package ${packageZip}"
+        echo "Trigger Jenkins job for publishing package ${package_zip}"
         pushd ${JENKINS_TRIGGER_PATH} > /dev/null
 
         # TODO: Change dry-run parameter to false
         echo go run main.go \
             --jenkins-job publish \
             --dry-run=true \
-            --package="${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${packageZip}" \
-            --signature="${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${packageZip}.sig"
+            --package="${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${package_zip}" \
+            --signature="${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${package_zip}.sig"
 
         sleep 5
         popd > /dev/null
