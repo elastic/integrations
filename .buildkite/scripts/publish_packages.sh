@@ -58,20 +58,22 @@ build_packages() {
     pushd packages > /dev/null
 
     for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
-        package=$(basename ${it})
+        local package=$(basename ${it})
         echo "Package ${package}: check"
 
         pushd ${package} > /dev/null
 
-        version=$(cat manifest.yml | yq .version)
-        name=$(cat manifest.yml | yq .name)
+        local version=$(cat manifest.yml | yq .version)
+        local name=$(cat manifest.yml | yq .name)
 
-        package_zip="${name}-${version}.zip"
+        local package_zip="${name}-${version}.zip"
 
+        if [[ "${package_zip}" != "elastic_package_registry-0.1.0.zip" ]]; then
         if is_already_published ${package_zip} ; then
             echo "Skipping. ${package_zip} already published"
             popd > /dev/null
             continue
+        fi
         fi
 
         echo "Build package as zip: ${package}"
@@ -90,12 +92,12 @@ sign_packages() {
 
     # upload zip package (trailing forward slashes are required)
     echo "Upload zip packages files for signing to ${INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}"
-    gsutil cp *.zip "${INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}/"
+    echo gsutil cp *.zip "${INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}/"
 
     echo "Trigger Jenkins job for signing packages"
     pushd ${JENKINS_TRIGGER_PATH} > /dev/null
 
-    go run main.go \
+    echo go run main.go \
         --jenkins-job sign \
         --folder ${INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}
 
@@ -103,7 +105,7 @@ sign_packages() {
     popd > /dev/null
 
     echo "Download signatures"
-    gsutil cp "${INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_PATH}/*.asc" "."
+    echo gsutil cp "${INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_PATH}/*.asc" "."
 
     echo "Rename asc to sig"
     for f in *.asc; do
@@ -124,7 +126,7 @@ publish_packages() {
     for package_zip in *.zip ; do
         # upload files (trailing forward slashes are required)
         echo "Upload package .zip file ${package_zip} to ${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}"
-        # gsutil cp ${package_zip} "${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/"
+        echo gsutil cp ${package_zip} "${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/"
 
         echo "Upload package .sig file ${package_zip}.sig to ${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}"
         echo gsutil cp ${package_zip}.sig "${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/"
@@ -172,8 +174,6 @@ if [ "${unpublished}" == "false" ]; then
     echo "All packages are in sync"
     exit 0
 fi
-
-exit
 
 echo "--- Sign packages"
 sign_packages
