@@ -157,6 +157,12 @@ program: |
                                           reqQuery.endTime[0]
                                       : has(reqQuery.startTime) ?
                                           reqQuery.startTime[0]
+                                      : has(state.cursor.content_types_state_as_list.filter(e,
+                                          e.content_type == content_type
+                                      )[0].content_created_at) ?
+                                          state.cursor.content_types_state_as_list.filter(e,
+                                              e.content_type == content_type
+                                          )[0].content_created_at
                                       :
                                           string(now() - duration(state.base.list_contents_start_time))
                                   ),
