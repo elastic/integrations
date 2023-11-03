@@ -112,15 +112,49 @@ An example event for `event` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-01-01T00:00:00.180Z",
+    "@timestamp": "2022-10-25T07:47:24.180Z",
+    "agent": {
+        "ephemeral_id": "26afb86c-4349-4dc3-8efa-fe82afd55bcf",
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.10.1"
+    },
+    "aws": {
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-sentinel-one-bucket-47039",
+                "name": "elastic-package-sentinel-one-bucket-47039"
+            },
+            "object": {
+                "key": "command_script.log"
+            }
+        }
+    },
+    "cloud": {
+        "region": "us-east-1"
+    },
+    "data_stream": {
+        "dataset": "sentinel_one_cloud_funnel.event",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
         "version": "8.10.0"
     },
+    "elastic_agent": {
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "snapshot": false,
+        "version": "8.10.1"
+    },
     "event": {
+        "agent_id_status": "verified",
         "category": [
             "process"
         ],
+        "dataset": "sentinel_one_cloud_funnel.event",
         "id": "01GG71RXEEHZQFY6XZ1WGS2BAE_168",
+        "ingested": "2023-11-02T13:59:39Z",
         "kind": "event",
         "original": "{\"timestamp\":\"10:47:24.180\",\"src.process.parent.isStoryline™Root\":false,\"event.category\":\"command_script\",\"src.process.parent.image.sha1\":\"134fd2ad04cf59b0c10596230da5daf6fc711bd1\",\"site.id\":\"123456789123456789\",\"src.process.image.binaryIsExecutable\":true,\"src.process.parent.displayName\":\"MicrosoftCompatibilityTelemetry\",\"src.process.user\":\"NTAUTHORITY\\\\SYSTEM\",\"src.process.parent.subsystem\":\"SYS_WIN32\",\"src.process.indicatorRansomwareCount\":0,\"src.process.crossProcessDupRemoteProcessHandleCount\":0,\"src.process.activeContent.signedStatus\":\"unsigned\",\"src.process.tgtFileCreationCount\":0,\"src.process.indicatorInjectionCount\":0,\"src.process.moduleCount\":284,\"src.process.parent.name\":\"CompatTelRunner.exe\",\"i.version\":\"preprocess-lib-1.0\",\"src.process.activeContentType\":\"CLI\",\"sca:atlantisIngestTime\":1666684057507,\"src.process.image.md5\":\"7353f60b1739074eb17c5f4dddefe239\",\"src.process.indicatorReconnaissanceCount\":8,\"src.process.Storyline™.id\":\"87EE3C19E0250305\",\"src.process.childProcCount\":1,\"mgmt.url\":\"asdf-123.sentinelone.org\",\"src.process.crossProcessOpenProcessCount\":0,\"cmdScript.isComplete\":true,\"src.process.subsystem\":\"SYS_WIN32\",\"meta.event.name\":\"SCRIPTS\",\"src.process.parent.integrityLevel\":\"SYSTEM\",\"src.process.indicatorExploitationCount\":0,\"src.process.parent.Storyline™.id\":\"87EE3C19E0250305\",\"i.scheme\":\"edr\",\"src.process.integrityLevel\":\"SYSTEM\",\"site.name\":\"ASDF\",\"src.process.netConnInCount\":0,\"event.time\":1666684044180,\"account.id\":\"123456789123456789\",\"dataSource.name\":\"SentinelOne\",\"endpoint.name\":\"asdf1\",\"src.process.image.sha1\":\"6cbce4a295c163791b60fc23d285e6d84f28ee4c\",\"src.process.isStoryline™Root\":false,\"cmdScript.applicationName\":\"PowerShell_C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe_10.0.17763.1\",\"src.process.parent.image.path\":\"C:\\\\Windows\\\\System32\\\\CompatTelRunner.exe\",\"src.process.pid\":5912,\"tgt.file.isSigned\":\"signed\",\"sca:ingestTime\":1666684063,\"dataSource.category\":\"security\",\"src.process.cmdline\":\"powershell.exe-ExecutionPolicyRestricted-CommandWrite-Host'Finalresult:1';\",\"src.process.publisher\":\"MICROSOFTWINDOWS\",\"src.process.crossProcessThreadCreateCount\":0,\"src.process.parent.isNative64Bit\":false,\"src.process.parent.isRedirectCmdProcessor\":false,\"src.process.signedStatus\":\"signed\",\"src.process.crossProcessCount\":0,\"event.id\":\"01GG71RXEEHZQFY6XZ1WGS2BAE_168\",\"src.process.parent.cmdline\":\"C:\\\\Windows\\\\system32\\\\CompatTelRunner.exe-m:appraiser.dll-f:DoScheduledTelemetryRun-cv:1DRRwZous0W15sCL.2\",\"cmdScript.content\":\"$global:?\",\"src.process.image.path\":\"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\",\"src.process.tgtFileModificationCount\":4,\"src.process.indicatorEvasionCount\":1,\"src.process.netConnOutCount\":0,\"cmdScript.sha256\":\"feb60de98632d9f666e16e89bd1c99174801c761115d4a9f52f05ef41e397d2d\",\"src.process.crossProcessDupThreadHandleCount\":0,\"endpoint.os\":\"windows\",\"src.process.tgtFileDeletionCount\":0,\"src.process.startTime\":1666684041917,\"mgmt.id\":\"1337\",\"os.name\":\"WindowsServer2019Standard\",\"src.process.activeContent.id\":\"3EFA3EFA3EFA3EFA\",\"src.process.displayName\":\"WindowsPowerShell\",\"src.process.activeContent.path\":\"\\\\Unknowndevice\\\\Unknownfile\",\"src.process.isNative64Bit\":false,\"src.process.parent.sessionId\":0,\"src.process.uid\":\"230B188E26085676\",\"src.process.parent.image.md5\":\"47dd94d79d9bac54a2c3a1cf502770c6\",\"src.process.indicatorInfostealerCount\":0,\"src.process.indicatorBootConfigurationUpdateCount\":0,\"process.unique.key\":\"230B188E26085676\",\"cmdScript.originalSize\":18,\"agent.version\":\"22.1.4.10010\",\"src.process.parent.uid\":\"8608188E26085676\",\"src.process.parent.image.sha256\":\"046f009960f70981597cd7b3a1e44cbb4ba5893cc1407734366aa55fbeda5d66\",\"src.process.sessionId\":0,\"src.process.netConnCount\":0,\"mgmt.osRevision\":\"17763\",\"group.id\":\"asdf\",\"src.process.isRedirectCmdProcessor\":false,\"src.process.verifiedStatus\":\"verified\",\"src.process.parent.publisher\":\"MICROSOFTWINDOWS\",\"src.process.parent.startTime\":1666683971590,\"src.process.dnsCount\":0,\"endpoint.type\":\"server\",\"trace.id\":\"01GG71RXEEHZQFY6XZ1WGS2BAE\",\"src.process.name\":\"powershell.exe\",\"agent.uuid\":\"asdf356783457dfds4456d65\",\"src.process.activeContent.hash\":\"a8ae2c841e3f0f39d494a45370815a90cf00421e\",\"src.process.image.sha256\":\"de96a6e69944335375dc1ac238336066889d9ffc7d73628ef4fe1b1b160ab32c\",\"src.process.indicatorGeneralCount\":49,\"src.process.crossProcessOutOfStoryline™Count\":0,\"src.process.registryChangeCount\":0,\"packet.id\":\"9CB6AC4F10C34F5BB0A2788760E870F5\",\"src.process.indicatorPersistenceCount\":0,\"src.process.parent.signedStatus\":\"signed\",\"src.process.parent.user\":\"NTAUTHORITY\\\\SYSTEM\",\"event.type\":\"CommandScript\",\"src.process.indicatorPostExploitationCount\":0,\"src.process.parent.pid\":6008}",
         "type": [
@@ -138,6 +172,15 @@ An example event for `event` looks as following:
         },
         "type": "server"
     },
+    "input": {
+        "type": "aws-s3"
+    },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-sentinel-one-bucket-47039.s3.us-east-1.amazonaws.com/command_script.log"
+        },
+        "offset": 0
+    },
     "process": {
         "command_line": "powershell.exe-ExecutionPolicyRestricted-CommandWrite-Host'Finalresult:1';",
         "hash": {
@@ -154,14 +197,14 @@ An example event for `event` looks as following:
             },
             "name": "CompatTelRunner.exe",
             "pid": 6008,
-            "start": "2023-01-01T00:00:00.590Z",
+            "start": "2022-10-25T07:46:11.590Z",
             "title": "MicrosoftCompatibilityTelemetry",
             "user": {
                 "name": "NTAUTHORITY\\SYSTEM"
             }
         },
         "pid": 5912,
-        "start": "2023-01-01T00:00:00.917Z",
+        "start": "2022-10-25T07:47:21.917Z",
         "title": "WindowsPowerShell",
         "user": {
             "name": "NTAUTHORITY\\SYSTEM"
@@ -205,19 +248,10 @@ An example event for `event` looks as following:
                 "category": "security",
                 "name": "SentinelOne"
             },
-            "endpoint": {
-                "name": "asdf1",
-                "os": "windows",
-                "type": "server"
-            },
-            "group": {
-                "id": "asdf"
-            },
             "i": {
                 "scheme": "edr",
                 "version": "preprocess-lib-1.0"
             },
-            "id": "01GG71RXEEHZQFY6XZ1WGS2BAE_168",
             "meta_event_name": "SCRIPTS",
             "mgmt": {
                 "id": "1337",
@@ -228,8 +262,8 @@ An example event for `event` looks as following:
             "packet_id": "9CB6AC4F10C34F5BB0A2788760E870F5",
             "process_unique_key": "230B188E26085676",
             "sca": {
-                "atlantis_ingest_time": "2023-01-01T00:00:00.507Z",
-                "ingest_time": "2023-01-01T00:00:00.063Z"
+                "atlantis_ingest_time": "2022-10-25T07:47:37.507Z",
+                "ingest_time": "1970-01-20T06:58:04.063Z"
             },
             "site": {
                 "id": "123456789123456789",
@@ -245,7 +279,6 @@ An example event for `event` looks as following:
                         "type": "CLI"
                     },
                     "child_proc_count": 1,
-                    "cmd_line": "powershell.exe-ExecutionPolicyRestricted-CommandWrite-Host'Finalresult:1';",
                     "cross_process": {
                         "count": 0,
                         "dup": {
@@ -256,14 +289,10 @@ An example event for `event` looks as following:
                         "out_of_storyline_count": 0,
                         "thread_create_count": 0
                     },
-                    "display_name": "WindowsPowerShell",
                     "dns_count": 0,
                     "image": {
                         "binary_is_executable": true,
-                        "md5": "7353f60b1739074eb17c5f4dddefe239",
-                        "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
-                        "sha1": "6cbce4a295c163791b60fc23d285e6d84f28ee4c",
-                        "sha256": "de96a6e69944335375dc1ac238336066889d9ffc7d73628ef4fe1b1b160ab32c"
+                        "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
                     },
                     "indicator": {
                         "boot_configuration_update_count": 0,
@@ -282,44 +311,31 @@ An example event for `event` looks as following:
                     "is_redirect_cmd_processor": false,
                     "is_storyline_tm_root": false,
                     "module_count": 284,
-                    "name": "powershell.exe",
                     "net_conn": {
                         "count": 0,
                         "in_count": 0,
                         "out_count": 0
                     },
                     "parent": {
-                        "cmd_line": "C:\\Windows\\system32\\CompatTelRunner.exe-m:appraiser.dll-f:DoScheduledTelemetryRun-cv:1DRRwZous0W15sCL.2",
-                        "display_name": "MicrosoftCompatibilityTelemetry",
                         "image": {
                             "md5": "47dd94d79d9bac54a2c3a1cf502770c6",
-                            "path": "C:\\Windows\\System32\\CompatTelRunner.exe",
-                            "sha1": "134fd2ad04cf59b0c10596230da5daf6fc711bd1",
-                            "sha256": "046f009960f70981597cd7b3a1e44cbb4ba5893cc1407734366aa55fbeda5d66"
+                            "path": "C:\\Windows\\System32\\CompatTelRunner.exe"
                         },
                         "integrity_level": "SYSTEM",
                         "is_native_64_bit": false,
                         "is_redirect_cmd_processor": false,
                         "is_storyline_tm_root": false,
-                        "name": "CompatTelRunner.exe",
-                        "pid": 6008,
                         "publisher": "MICROSOFTWINDOWS",
                         "session_id": "0",
                         "signed_status": "signed",
-                        "start_time": "2023-01-01T00:00:00.590Z",
                         "storyline_tm_id": "87EE3C19E0250305",
                         "subsystem": "SYS_WIN32",
-                        "uid": "8608188E26085676",
-                        "user": {
-                            "name": "NTAUTHORITY\\SYSTEM"
-                        }
+                        "uid": "8608188E26085676"
                     },
-                    "pid": 5912,
                     "publisher": "MICROSOFTWINDOWS",
                     "registry_change_count": 0,
                     "session_id": "0",
                     "signed_status": "signed",
-                    "start_time": "2023-01-01T00:00:00.917Z",
                     "storyline_tm_id": "87EE3C19E0250305",
                     "subsystem": "SYS_WIN32",
                     "tgt_file": {
@@ -328,9 +344,6 @@ An example event for `event` looks as following:
                         "modification_count": 4
                     },
                     "uid": "230B188E26085676",
-                    "user": {
-                        "name": "NTAUTHORITY\\SYSTEM"
-                    },
                     "verified_status": "verified"
                 }
             },
@@ -339,15 +352,16 @@ An example event for `event` looks as following:
                     "is_signed": "signed"
                 }
             },
-            "time": "2023-01-01T00:00:00.180Z",
             "timestamp": "2023-01-01T10:47:24.180Z",
             "trace_id": "01GG71RXEEHZQFY6XZ1WGS2BAE",
             "type": "CommandScript"
         }
     },
     "tags": [
+        "collect_sqs_logs",
         "preserve_original_event",
-        "preserve_duplicate_custom_fields"
+        "forwarded",
+        "sentinel_one_cloud_funnel-event"
     ]
 }
 ```
@@ -357,6 +371,9 @@ An example event for `event` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn |  | keyword |
+| aws.s3.bucket.name |  | keyword |
+| aws.s3.object.key |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
