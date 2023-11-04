@@ -196,7 +196,6 @@ An example event for `state_container` looks as following:
 | kubernetes.container.cpu.request.cores | Container CPU requested cores | float |  | gauge |
 | kubernetes.container.cpu.request.nanocores | Container CPU requested nanocores | long |  | gauge |
 | kubernetes.container.id | Container id | keyword |  |  |
-| kubernetes.container.image | Kubernetes container image | keyword |  |  |
 | kubernetes.container.memory.limit.bytes | Container memory limit in bytes | long | byte | gauge |
 | kubernetes.container.memory.request.bytes | Container requested memory in bytes | long | byte | gauge |
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
@@ -2227,6 +2226,7 @@ An example event for `state_service` looks as following:
 | kubernetes.annotations.\* | Kubernetes annotations map | object |
 | kubernetes.labels.\* | Kubernetes labels map | object |
 | kubernetes.namespace | Kubernetes namespace | keyword |
+| kubernetes.namespace_annotations.\* | Kubernetes namespace annotations map | object |
 | kubernetes.namespace_labels.\* | Kubernetes namespace labels map | object |
 | kubernetes.namespace_uid | Kubernetes namespace UID | keyword |
 | kubernetes.selectors.\* | Kubernetes Service selectors map | object |
