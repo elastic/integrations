@@ -596,8 +596,6 @@ test_package_in_local_stack() {
     # Run all test suites
     ${ELASTIC_PACKAGE_BIN} test ${TEST_OPTIONS}
     local ret=$?
-    echo "[>> ${package}] failing test (exit_code $ret)"
-
     echo ""
     return $ret
 }
