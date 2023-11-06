@@ -771,7 +771,8 @@ process_package() {
 
     if ! is_serverless ; then
         if [[ $exit_code -eq 0 ]]; then
-            # TODO: add benchmarks support stash and comments in PR (https://github.com/elastic/integrations/blob/befdc5cb752a08aaf5f79b0d9bdb68588ade9f27/.ci/Jenkinsfile#L180)
+            # TODO: add benchmarks support stash and comments in PR
+            # https://github.com/elastic/integrations/blob/befdc5cb752a08aaf5f79b0d9bdb68588ade9f27/.ci/Jenkinsfile#L180
             ${ELASTIC_PACKAGE_BIN} benchmark pipeline -v --report-format json --report-output file
         fi
     fi
