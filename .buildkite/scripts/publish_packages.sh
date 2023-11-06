@@ -40,11 +40,12 @@ skipPublishing() {
 }
 
 check_and_build_package() {
-    if ! check_package ; then
+    local package=$1
+    if ! check_package ${package} ; then
         return 1
     fi
 
-    if ! build_zip_package ; then
+    if ! build_zip_package ${package} ; then
         return 1
     fi
 
@@ -84,7 +85,7 @@ build_packages() {
         fi
 
         echo "Build package as zip: ${package}"
-        check_and_build_package || report_build_failure ${package}
+        check_and_build_package ${package} || report_build_failure ${package}
         popd > /dev/null
 
         unpublished="true"
