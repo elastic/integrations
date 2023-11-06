@@ -102,6 +102,9 @@ The `elb` dataset collects logs from AWS ELBs.
 | aws.elb.tls_named_group | The TLS named group. | keyword |
 | aws.elb.trace_id | The contents of the `X-Amzn-Trace-Id` header. | keyword |
 | aws.elb.type | The type of the load balancer for v2 Load Balancers. | keyword |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -152,6 +155,9 @@ The `elb` dataset collects logs from AWS ELBs.
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
+| input.type | Input type | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.offset | Log offset | long |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
