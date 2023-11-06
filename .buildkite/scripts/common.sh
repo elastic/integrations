@@ -361,9 +361,9 @@ prepare_stack() {
 
 is_serverless() {
     if [[ "${SERVERLESS}" == "true" ]]; then
-        return 1
+        return 0
     fi
-    return 0
+    return 1
 }
 
 prepare_serverless_stack() {
