@@ -85,10 +85,12 @@ build_packages() {
         fi
 
         echo "Build package as zip: ${package}"
-        check_and_build_package ${package} || report_build_failure ${package}
+        if check_and_build_package ${package} ; then
+            unpublished="true"
+        else
+            report_build_failure ${package}
+        fi
         popd > /dev/null
-
-        unpublished="true"
     done
     popd > /dev/null
 }
