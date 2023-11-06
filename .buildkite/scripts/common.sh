@@ -587,11 +587,11 @@ test_package_in_local_stack() {
 
     echo "Test package: ${package}"
     # Run all test suites
-    if ! ${ELASTIC_PACKAGE_BIN} test ${TEST_OPTIONS} ; then
-        return 1
-    fi
+    ${ELASTIC_PACKAGE_BIN} test ${TEST_OPTIONS}
+    local ret=$?
+    echo "[>> ${package}] failing test (exit_code $?)"
     echo ""
-    return 0
+    return $ret
 }
 
 # Currently, system tests are not run in serverless to avoid lasting the build
