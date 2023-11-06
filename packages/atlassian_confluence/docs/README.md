@@ -124,8 +124,8 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2021-11-16T09:25:56.666Z",
     "agent": {
-        "ephemeral_id": "eff59388-5443-486b-92f3-eb3f0bc07a73",
-        "id": "e4953194-1a45-4268-b1d0-bed4299144b9",
+        "ephemeral_id": "5e7e2606-c5b7-4cca-bcf6-5a9959484395",
+        "id": "1f67a92c-38d3-40a8-9093-c4495a7411a3",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.10.2"
@@ -148,16 +148,16 @@ An example event for `audit` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "e4953194-1a45-4268-b1d0-bed4299144b9",
+        "id": "1f67a92c-38d3-40a8-9093-c4495a7411a3",
         "snapshot": false,
         "version": "8.10.2"
     },
     "event": {
         "action": "User deactivated",
         "agent_id_status": "verified",
-        "created": "2023-11-06T13:09:50.385Z",
+        "created": "2023-11-06T13:17:04.339Z",
         "dataset": "atlassian_confluence.audit",
-        "ingested": "2023-11-06T13:09:51Z",
+        "ingested": "2023-11-06T13:17:05Z",
         "kind": "event",
         "original": "{\"affectedObject\":{\"name\":\"\",\"objectType\":\"\"},\"associatedObjects\":[],\"author\":{\"accountType\":\"\",\"displayName\":\"System\",\"externalCollaborator\":false,\"isExternalCollaborator\":false,\"operations\":null,\"publicName\":\"Unknown user\",\"type\":\"user\"},\"category\":\"Users and groups\",\"changedValues\":[],\"creationDate\":1637054756666,\"description\":\"\",\"remoteAddress\":\"81.2.69.143\",\"summary\":\"User deactivated\",\"superAdmin\":false,\"sysAdmin\":false}",
         "type": [
