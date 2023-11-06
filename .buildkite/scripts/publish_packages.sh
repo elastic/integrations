@@ -54,7 +54,7 @@ check_and_build_package() {
 
 report_build_failure() {
     local package="${1}"
-    echo "Build package ${package} failed"
+    echo "[${package}] Skipped. Build package failed"
 
     # if running in Buildkite , add an annotation
     if [ -n "${BUILDKITE_BRANCH+x}" ]; then
