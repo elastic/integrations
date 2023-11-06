@@ -63,6 +63,7 @@ redact:
   fields: ~
 
 program: |
+  now().as(now, // Prevent now time skew. Remove this and the closing parenthesis when kibana.version is 8.10.1 or higher.
   "{{content_types}}".split(",").map(content_type_raw,
       content_type_raw.trim_space()
   ).map(content_type,
@@ -91,22 +92,24 @@ program: |
                               content_type_state[0].content_created_at.as(content_type_state_created_at,
                                   // if saved time inside state is more than 7 days old, then change it to 7 days.
                                   content_type_state_created_at.parse_time(time_layout.RFC3339).as(state_created_at,
-                                      state_created_at < (now() - duration("168h")) ?
-                                          now() - duration("168h")
+                                      // The 168h API age limit is expressed as 167h55m to
+                                      // prevent API call delay from causing a call to fail.
+                                      state_created_at < (now - duration("167h55m")) ?
+                                          now - duration("167h55m")
                                       :
                                           state_created_at
                                   ).as(state_created_at_calc, 
                                       state.base.list_contents_url + content_type + "&PublisherIdentifier={{azure_tenant_id}}" 
                                           + "&startTime=" + string(state_created_at_calc + duration("1s"))
-                                          + "&endTime=" + string((state_created_at_calc + duration("24h")).as(calc_end_time, calc_end_time <= now() ? calc_end_time : now()))
+                                          + "&endTime=" + string((state_created_at_calc + duration("24h")).as(calc_end_time, calc_end_time <= now ? calc_end_time : now))
                                   )
                               )
                           )
                       :
                           // initial run when no cursor state exists i.e., polling from initial_interval
                           state.base.list_contents_url + content_type + "&PublisherIdentifier={{azure_tenant_id}}"  
-                              + "&startTime=" + string(now() - duration(state.base.list_contents_start_time))
-                              + "&endTime=" + string((now() - duration(state.base.list_contents_start_time) + duration("24h")).as(calc_end_time, calc_end_time <= now() ? calc_end_time : now()))
+                              + "&startTime=" + string(now - duration(state.base.list_contents_start_time))
+                              + "&endTime=" + string((now - duration(state.base.list_contents_start_time) + duration("24h")).as(calc_end_time, calc_end_time <= now ? calc_end_time : now))
                   ).do_request().as(list_contents_resp,
                       bytes(list_contents_resp.Body).decode_json().as(list_contents_resp_body,
                           (
@@ -143,7 +146,7 @@ program: |
                                               )
                                           ) ||
                                           (
-                                              {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().split('T')[0] != now().format("2006-01-02")
+                                              {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().split('T')[0] != now.format("2006-01-02")
                                           )
                                       )
                                   })
@@ -164,12 +167,12 @@ program: |
                                               e.content_type == content_type
                                           )[0].content_created_at
                                       :
-                                          string(now() - duration(state.base.list_contents_start_time))
+                                          string(now - duration(state.base.list_contents_start_time))
                                   ),
                                   "next_page": "",
                                   "want_more_content": (
                                       has(list_contents_resp.StatusCode) && list_contents_resp.StatusCode == 200 &&
-                                      (reqQuery.endTime[0].split('T')[0] != now().format("2006-01-02"))
+                                      (reqQuery.endTime[0].split('T')[0] != now.format("2006-01-02"))
                                   )
                               })
                       )
@@ -183,7 +186,7 @@ program: |
                           (has (state.cursor) && has(state.cursor.content_types_state_as_list)) ?
                               state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)[0].content_created_at
                           :
-                              string(now() - duration(state.base.list_contents_start_time))
+                              string(now - duration(state.base.list_contents_start_time))
                       ,
                       "next_page": "",
                       "want_more_content": false
@@ -201,6 +204,7 @@ program: |
           "content_types_state_as_list": events_list.drop(["events_per_content_type"]),
       }
   })
+  ) // Remove when kibana.version is 8.10.1+.
 
 {{#if tags}}
 tags:
