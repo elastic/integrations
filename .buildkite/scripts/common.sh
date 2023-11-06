@@ -759,6 +759,7 @@ process_package() {
         echo "Kubernetes service deployer is used. Creating Kind cluster"
         use_kind=1
         if ! create_kind_cluster ; then
+            popd > /dev/null
             return 1
         fi
     fi
