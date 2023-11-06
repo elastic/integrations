@@ -42,11 +42,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-02-07T16:43:53.000Z",
     "agent": {
-        "ephemeral_id": "79788e62-6885-49cb-b397-b329ddb0f349",
-        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
+        "ephemeral_id": "91cd5dfa-317b-4703-978a-b833a6f2b714",
+        "id": "56df57b5-55fe-47f5-a382-b9a4b1918ce6",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.0"
+        "version": "8.10.1"
     },
     "client": {
         "address": "213.97.47.133",
@@ -61,9 +61,9 @@ An example event for `audit` looks as following:
         "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
+        "id": "56df57b5-55fe-47f5-a382-b9a4b1918ce6",
         "snapshot": false,
-        "version": "8.9.0"
+        "version": "8.10.1"
     },
     "event": {
         "action": "PageViewed",
@@ -74,8 +74,9 @@ An example event for `audit` looks as following:
         "code": "SharePoint",
         "dataset": "o365.audit",
         "id": "99d005e6-a4c6-46fd-117c-08d7abeceab5",
-        "ingested": "2023-07-27T16:10:06Z",
+        "ingested": "2023-11-06T19:08:33Z",
         "kind": "event",
+        "original": "{Site=d5180cfc-3479-44d6-b410-8c985ac894e3, ObjectId=https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/_layouts/15/onedrive.aspx, ItemType=Page, UserKey=i:0h.f|membership|1003200096971f55@live.com, OrganizationId=b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd, Operation=PageViewed, ClientIP=213.97.47.133, Workload=OneDrive, EventSource=SharePoint, RecordType=4, Version=1, WebId=8c5c94bb-8396-470c-87d7-8999f440cd30, UserId=asr@testsiem.onmicrosoft.com, CreationTime=2020-02-07T16:43:53, UserAgent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:72.0) Gecko/20100101 Firefox/72.0, CustomUniqueId=true, CorrelationId=622b339f-4000-a000-f25f-92b3478c7a25, Id=99d005e6-a4c6-46fd-117c-08d7abeceab5, UserType=0, ListItemUniqueId=59a8433d-9bb8-cfef-6edc-4c0fc8b86875}",
         "outcome": "success",
         "provider": "OneDrive",
         "type": [
