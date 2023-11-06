@@ -596,7 +596,6 @@ test_package_in_local_stack() {
     # Run all test suites
     ${ELASTIC_PACKAGE_BIN} test ${TEST_OPTIONS}
     local ret=$?
-    echo "[>> ${package}] failing test (exit_code $?)"
     echo ""
     return $ret
 }
@@ -771,8 +770,10 @@ process_package() {
     fi
 
     if !is_serverless ; then
-        # TODO: add benchmarks support stash and comments in PR (https://github.com/elastic/integrations/blob/befdc5cb752a08aaf5f79b0d9bdb68588ade9f27/.ci/Jenkinsfile#L180)
-        ${ELASTIC_PACKAGE_BIN} benchmark pipeline -v --report-format json --report-output file
+        if [[ $exit_code -eq 0 ]]; then
+            # TODO: add benchmarks support stash and comments in PR (https://github.com/elastic/integrations/blob/befdc5cb752a08aaf5f79b0d9bdb68588ade9f27/.ci/Jenkinsfile#L180)
+            ${ELASTIC_PACKAGE_BIN} benchmark pipeline -v --report-format json --report-output file
+        fi
     fi
 
     if [ ${use_kind} -eq 1 ]; then
