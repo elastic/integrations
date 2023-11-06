@@ -16,6 +16,8 @@ processors:
   - rename:
       field: message
       target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: panw_cortex.xdr
@@ -241,7 +243,6 @@ processors:
       field: threat.framework
       value: "MITRE ATT&CK"
       if: "ctx.threat?.technique != null || ctx.threat?.tactic != null"
-
   #The Action actor is an an activity that took place and was recorded by the agent.
   - convert:
       field: panw_cortex.xdr.events.action_remote_ip
@@ -403,8 +404,7 @@ processors:
       field: panw_cortex.xdr.events.causality_actor_process_execution_time
       target_field: process.parent.uptime
       ignore_missing: true
-
-# Parse user.domain from user.name
+      # Parse user.domain from user.name
   - grok:
       field: panw_cortex.xdr.events.user_name
       ignore_missing: true
@@ -535,12 +535,11 @@ processors:
   - foreach:
       field: panw_cortex.xdr.tags
       if: ctx.panw_cortex?.xdr?.tags != null
-      processor: 
+      processor:
         append:
           field: tags
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
-      
   - remove:
       field:
         - panw_cortex.xdr.host_name

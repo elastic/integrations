@@ -228,10 +228,12 @@ An example event for `audit` looks as following:
 | o365.audit.ActorIpAddress |  | keyword |
 | o365.audit.ActorUserId |  | keyword |
 | o365.audit.ActorYammerUserId |  | keyword |
+| o365.audit.AdditionalInfo.\* |  | object |
 | o365.audit.AlertEntityId |  | keyword |
 | o365.audit.AlertId |  | keyword |
 | o365.audit.AlertLinks |  | flattened |
 | o365.audit.AlertType |  | keyword |
+| o365.audit.AppAccessContext.\* |  | object |
 | o365.audit.AppId |  | keyword |
 | o365.audit.ApplicationDisplayName |  | keyword |
 | o365.audit.ApplicationId |  | keyword |

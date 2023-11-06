@@ -8,13 +8,13 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: json
       ignore_failure: true
       allow_duplicate_keys: true
-
-# according to check apache modesec log or nginx modsec log
+      # according to check apache modesec log or nginx modsec log
   - set:
       field: modsec.audit.server
       copy_from: json.audit_data.server
@@ -33,7 +33,6 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "apache-modsec" }}'
       if: (ctx.modsec?.audit?.server != null && ctx.modsec.audit.server.toLowerCase().contains('apache')) || (ctx.modsec?.audit?.connector != null && ctx.modsec.audit.connector.toLowerCase().contains('apache'))
-
 on_failure:
   - set:
       field: event.kind
