@@ -420,7 +420,7 @@ get_commit_from_build() {
 get_previous_commit() {
     local pipeline="$1"
     local branch="$2"
-    # state=finished implies also skip and cancelled builds https://buildkite.com/docs/pipelines/notifications#build-states
+    # Not using state=finished because it implies also skip and cancelled builds https://buildkite.com/docs/pipelines/notifications#build-states
     local status="state[]=failed&state[]=passed"
     local previous_commit=$(get_commit_from_build "${pipeline}" "${branch}" "${status}")
     echo ${previous_commit}
