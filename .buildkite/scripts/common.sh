@@ -359,6 +359,13 @@ prepare_stack() {
     echo ""
 }
 
+is_serverless() {
+    if [[ "${SERVERLESS}" == "true" ]]; then
+        return 1
+    fi
+    return 0
+}
+
 prepare_serverless_stack() {
     echo "--- Prepare serverless stack"
 
@@ -478,7 +485,7 @@ is_pr_affected() {
         return 1
     fi
 
-    if [[ "${SERVERLESS}" == "true" ]]; then
+    if is_serverless; then
         if ! is_supported_capability ; then
             echo "[${package}] PR is not affected: capabilities not mached with the project (${SERVERLESS_PROJECT})"
             return 1
@@ -625,7 +632,7 @@ run_tests_package() {
     fi
 
     # For non serverless, each Elastic stack is boot up checking each package manifest
-    if [[ ${SERVERLESS} == "false" ]] ; then
+    if !is_serverless ; then
         prepare_stack
     fi
 
@@ -634,7 +641,7 @@ run_tests_package() {
         return 1
     fi
     echo "--- [${package}] run test suites"
-    if [[ $SERVERLESS == "true" ]]; then
+    if is_serverless; then
         if ! test_package_in_serverless ${package} ; then
             return 1
         fi
@@ -723,7 +730,7 @@ process_package() {
 
     clean_safe_logs
 
-    if [[ ${SERVERLESS} == "true" ]] ; then
+    if is_serverless ; then
         if [[ "${package}" == "fleet_server" ]]; then
             echo "fleet_server not supported. Skipped"
             echo "- [${package}] not supported" >> ${SKIPPED_PACKAGES_FILE_PATH}
@@ -762,7 +769,7 @@ process_package() {
         echo "- ${package}" >> ${FAILED_PACKAGES_FILE_PATH}
     fi
 
-    if [ "${SERVERLESS}" == "false" ]; then
+    if !is_serverless ; then
         # TODO: add benchmarks support stash and comments in PR (https://github.com/elastic/integrations/blob/befdc5cb752a08aaf5f79b0d9bdb68588ade9f27/.ci/Jenkinsfile#L180)
         ${ELASTIC_PACKAGE_BIN} benchmark pipeline -v --report-format json --report-output file
     fi
@@ -771,7 +778,7 @@ process_package() {
         delete_kind_cluster
     fi
 
-    if [ "$SERVERLESS" == "true" ]; then
+    if is_serverless ; then
         teardown_serverless_test_package ${package}
     else
         if ! teardown_test_package ${package} ; then
