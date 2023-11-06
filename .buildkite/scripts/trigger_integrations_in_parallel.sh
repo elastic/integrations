@@ -14,10 +14,12 @@ popd > /dev/null
 PIPELINE_FILE="packages_pipeline.yml"
 touch packages_pipeline.yml
 
-echo "steps:" > ${PIPELINE_FILE}
-echo "  - group: \":terminal: Test integrations\"" >> ${PIPELINE_FILE}
-echo "    key: \"integration-tests\"" >> ${PIPELINE_FILE}
-echo "    steps:" >> ${PIPELINE_FILE}
+cat <<EOF > ${PIPELINE_FILE}
+steps:
+  - group: ":terminal: Test integrations"
+    key: "integration-tests"
+    steps:
+EOF
 
 packages_to_test=0
 
@@ -36,19 +38,21 @@ for package in ${PACKAGE_LIST}; do
     fi
 
     packages_to_test=$((packages_to_test+1))
-    echo "    - label: \"Check integrations ${package}\"" >> ${PIPELINE_FILE}
-    echo "      key: \"test-integrations-${package}\"" >> ${PIPELINE_FILE}
-    echo "      command: \".buildkite/scripts/test_one_package.sh ${package}\"" >> ${PIPELINE_FILE}
-    echo "      agents:" >> ${PIPELINE_FILE}
-    echo "        provider: gcp" >> ${PIPELINE_FILE}
-    echo "      env:" >> ${PIPELINE_FILE}
-    echo "        STACK_VERSION: \"${STACK_VERSION}\"" >> ${PIPELINE_FILE}
-    echo "        FORCE_CHECK_ALL: \"${FORCE_CHECK_ALL}\"" >> ${PIPELINE_FILE}
-    echo "        SERVERLESS: \"false\"" >> ${PIPELINE_FILE}
-    echo "        UPLOAD_SAFE_LOGS: 1" >> ${PIPELINE_FILE}
-    echo "      artifact_paths:" >> ${PIPELINE_FILE}
-    echo "        - build/test-results/*.xml" >> ${PIPELINE_FILE}
-    echo "        - build/benchmark-results/*.xml" >> ${PIPELINE_FILE}
+    cat << EOF >> ${PIPELINE_FILE}
+    - label: "Check integrations ${package}"
+      key: "test-integrations-${package}"
+      command: ".buildkite/scripts/test_one_package.sh ${package}"
+      agents:
+        provider: gcp
+      env:
+        STACK_VERSION: "${STACK_VERSION}"
+        FORCE_CHECK_ALL: "${FORCE_CHECK_ALL}"
+        SERVERLESS: "false"
+        UPLOAD_SAFE_LOGS: 1"
+      artifact_paths:
+        - build/test-results/*.xml
+        - build/benchmark-results/*.xml
+EOF
 done
 
 if [ ${packages_to_test} -eq 0 ]; then
