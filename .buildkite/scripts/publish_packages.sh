@@ -58,7 +58,7 @@ report_build_failure() {
 
     # if running in Buildkite , add an annotation
     if [ -n "${BUILDKITE_BRANCH+x}" ]; then
-        buildkite-agent annotate "Build package ${package} failed" --style "warning"
+        buildkite-agent annotate "Build package ${package} failed, not published." --ctx "ctx-build-${package}" --style "warning"
     fi
 }
 
