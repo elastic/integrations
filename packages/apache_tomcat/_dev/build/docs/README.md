@@ -71,7 +71,7 @@ rules:
 Environment='JAVA_OPTS=-javaagent:<TOMCAT_HOME>/webapps/jmx_prometheus_javaagent-<prometheus_version>.jar=<prometheus_port>:/opt/tomcat/webapps/config.yml'
 ```
 
-5. Run the following commands to reload demon and restart Apache Tomcat instance: -
+5. Run the following commands to reload the systemd manager configuration and restart the Apache Tomcat service to set the updated environment variable: -
 
 ```
 systemctl daemon-reload
