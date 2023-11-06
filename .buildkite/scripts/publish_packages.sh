@@ -40,8 +40,15 @@ skipPublishing() {
 }
 
 check_and_build_package() {
-    ${ELASTIC_PACKAGE_BIN} check
-    ${ELASTIC_PACKAGE_BIN} build --zip
+    if ! check_package ; then
+        return 1
+    fi
+
+    if ! build_zip_package ; then
+        return 1
+    fi
+
+    return 0
 }
 
 report_build_failure() {

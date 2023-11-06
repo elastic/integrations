@@ -578,6 +578,16 @@ check_package() {
     return 0
 }
 
+build_zip_package() {
+    local package=$1
+    echo "Build zip package: ${package}"
+    if ! ${ELASTIC_PACKAGE_BIN} build --zip ; then
+        return 1
+    fi
+    echo ""
+    return 0
+}
+
 install_package() {
     local package=$1
     echo "Install package: ${package}"
