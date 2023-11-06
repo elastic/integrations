@@ -633,7 +633,7 @@ run_tests_package() {
     fi
 
     # For non serverless, each Elastic stack is boot up checking each package manifest
-    if !is_serverless ; then
+    if ! is_serverless ; then
         prepare_stack
     fi
 
@@ -771,7 +771,7 @@ process_package() {
         echo "- ${package}" >> ${FAILED_PACKAGES_FILE_PATH}
     fi
 
-    if !is_serverless ; then
+    if ! is_serverless ; then
         if [[ $exit_code -eq 0 ]]; then
             # TODO: add benchmarks support stash and comments in PR (https://github.com/elastic/integrations/blob/befdc5cb752a08aaf5f79b0d9bdb68588ade9f27/.ci/Jenkinsfile#L180)
             ${ELASTIC_PACKAGE_BIN} benchmark pipeline -v --report-format json --report-output file
