@@ -103,7 +103,6 @@ An example event for `storage` looks as following:
 | gcp.labels.system.\* |  | object |  |
 | gcp.labels.user.\* |  | object |  |
 | gcp.labels_fingerprint | Hashed value of the labels field. | keyword |  |
-| gcp.metric_names_fingerprint | Hashed value of the concatenated metric names. | keyword |  |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
 | gcp.storage.api.request.count | Delta count of API calls, grouped by the API method name and response code. | long | gauge |
 | gcp.storage.authz.acl_based_object_access.count | Delta count of requests that result in an object being granted access solely due to object ACLs. | long | gauge |

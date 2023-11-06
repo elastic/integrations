@@ -378,7 +378,6 @@ An example event for `loadbalancing` looks as following:
 | gcp.loadbalancing_metrics.tcp_ssl_proxy.ingress.bytes | Delta of the number of bytes sent from client to VM using proxy. | long | gauge |
 | gcp.loadbalancing_metrics.tcp_ssl_proxy.new_connections.value | Delta of the number of connections that were created over TCP/SSL proxy. | long | gauge |
 | gcp.loadbalancing_metrics.tcp_ssl_proxy.open_connections.value | Current number of outstanding connections through the TCP/SSL proxy. | long | gauge |
-| gcp.metric_names_fingerprint | Hashed value of the concatenated metric names. | keyword |  |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |

@@ -98,7 +98,6 @@ An example event for `pubsub` looks as following:
 | gcp.labels.system.\* |  | object |  |
 | gcp.labels.user.\* |  | object |  |
 | gcp.labels_fingerprint | Hashed value of the labels field. | keyword |  |
-| gcp.metric_names_fingerprint | Hashed value of the concatenated metric names. | keyword |  |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
 | gcp.pubsub.snapshot.backlog.bytes | Total byte size of the messages retained in a snapshot. | long | gauge |
 | gcp.pubsub.snapshot.backlog_bytes_by_region.bytes | Total byte size of the messages retained in a snapshot, broken down by Cloud region. | long | gauge |

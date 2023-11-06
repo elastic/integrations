@@ -1607,7 +1607,6 @@ The `compute` dataset is designed to fetch metrics for [Compute Engine](https://
 | gcp.labels.system.\* |  | object |  |
 | gcp.labels.user.\* |  | object |  |
 | gcp.labels_fingerprint | Hashed value of the labels field. | keyword |  |
-| gcp.metric_names_fingerprint | Hashed value of the concatenated metric names. | keyword |  |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
@@ -1778,7 +1777,6 @@ The `dataproc` dataset is designed to fetch metrics from [Dataproc](https://clou
 | gcp.labels.system.\* |  | object |  |
 | gcp.labels.user.\* |  | object |  |
 | gcp.labels_fingerprint | Hashed value of the labels field. | keyword |  |
-| gcp.metric_names_fingerprint | Hashed value of the concatenated metric names. | keyword |  |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
@@ -1897,7 +1895,6 @@ The `firestore` dataset fetches metrics from [Firestore](https://cloud.google.co
 | gcp.labels.system.\* |  | object |  |
 | gcp.labels.user.\* |  | object |  |
 | gcp.labels_fingerprint | Hashed value of the labels field. | keyword |  |
-| gcp.metric_names_fingerprint | Hashed value of the concatenated metric names. | keyword |  |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
@@ -2057,7 +2054,6 @@ The `gke` dataset is designed to fetch metrics from [GKE](https://cloud.google.c
 | gcp.labels.system.\* |  | object |  |
 | gcp.labels.user.\* |  | object |  |
 | gcp.labels_fingerprint | Hashed value of the labels field. | keyword |  |
-| gcp.metric_names_fingerprint | Hashed value of the concatenated metric names. | keyword |  |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
@@ -2202,7 +2198,6 @@ The `loadbalancing_metrics` dataset is designed to fetch HTTPS, HTTP, and Layer 
 | gcp.loadbalancing_metrics.tcp_ssl_proxy.ingress.bytes | Delta of the number of bytes sent from client to VM using proxy. | long | gauge |
 | gcp.loadbalancing_metrics.tcp_ssl_proxy.new_connections.value | Delta of the number of connections that were created over TCP/SSL proxy. | long | gauge |
 | gcp.loadbalancing_metrics.tcp_ssl_proxy.open_connections.value | Current number of outstanding connections through the TCP/SSL proxy. | long | gauge |
-| gcp.metric_names_fingerprint | Hashed value of the concatenated metric names. | keyword |  |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
@@ -2324,7 +2319,6 @@ The `redis` dataset is designed to fetch metrics from [GCP Memorystore](https://
 | gcp.labels.system.\* |  | object |  |  |
 | gcp.labels.user.\* |  | object |  |  |
 | gcp.labels_fingerprint | Hashed value of the labels field. | keyword |  |  |
-| gcp.metric_names_fingerprint | Hashed value of the concatenated metric names. | keyword |  |  |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |  |
 | gcp.redis.clients.blocked.count | Number of blocked clients. | long |  | gauge |
 | gcp.redis.clients.connected.count | Number of client connections. | long |  | gauge |
@@ -2469,7 +2463,6 @@ The `storage` dataset fetches metrics from [Storage](https://cloud.google.com/st
 | gcp.labels.system.\* |  | object |  |
 | gcp.labels.user.\* |  | object |  |
 | gcp.labels_fingerprint | Hashed value of the labels field. | keyword |  |
-| gcp.metric_names_fingerprint | Hashed value of the concatenated metric names. | keyword |  |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
 | gcp.storage.api.request.count | Delta count of API calls, grouped by the API method name and response code. | long | gauge |
 | gcp.storage.authz.acl_based_object_access.count | Delta count of requests that result in an object being granted access solely due to object ACLs. | long | gauge |
