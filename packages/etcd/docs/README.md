@@ -314,32 +314,32 @@ An example event for `self` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| etcd.api_version | Etcd API version for metrics retrieval | keyword |
-| etcd.self.id | The unique identifier for the member | keyword |
-| etcd.self.leaderinfo.leader | ID of the current leader member | keyword |
-| etcd.self.leaderinfo.start_time | The time when this node was started | keyword |
-| etcd.self.leaderinfo.uptime | Amount of time the leader has been leader | keyword |
-| etcd.self.name | This member’s name | keyword |
-| etcd.self.recv.append_request.count | Number of append requests this node has processed | integer |
-| etcd.self.recv.bandwidth_rate | Number of bytes per second this node is receiving (follower only) | scaled_float |
-| etcd.self.recv.pkg_rate | Number of requests per second this node is receiving (follower only) | scaled_float |
-| etcd.self.send.append_request.count | Number of requests that this node has sent | integer |
-| etcd.self.send.bandwidth_rate | Number of bytes per second this node is sending (leader only). This value is undefined on single member clusters. | scaled_float |
-| etcd.self.send.pkg_rate | Number of requests per second this node is sending (leader only). This value is undefined on single member clusters. | scaled_float |
-| etcd.self.start_time | The time when this node was started | keyword |
-| etcd.self.state | Either leader or follower | keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| host.ip | Host ip addresses. | ip |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| etcd.api_version | Etcd API version for metrics retrieval | keyword |  |
+| etcd.self.id | The unique identifier for the member | keyword |  |
+| etcd.self.leaderinfo.leader | ID of the current leader member | keyword |  |
+| etcd.self.leaderinfo.start_time | The time when this node was started | keyword |  |
+| etcd.self.leaderinfo.uptime | Amount of time the leader has been leader | keyword |  |
+| etcd.self.name | This member’s name | keyword |  |
+| etcd.self.recv.append_request.count | Number of append requests this node has processed | integer | counter |
+| etcd.self.recv.bandwidth_rate | Number of bytes per second this node is receiving (follower only) | scaled_float | gauge |
+| etcd.self.recv.pkg_rate | Number of requests per second this node is receiving (follower only) | scaled_float | gauge |
+| etcd.self.send.append_request.count | Number of requests that this node has sent | integer | counter |
+| etcd.self.send.bandwidth_rate | Number of bytes per second this node is sending (leader only). This value is undefined on single member clusters. | scaled_float | gauge |
+| etcd.self.send.pkg_rate | Number of requests per second this node is sending (leader only). This value is undefined on single member clusters. | scaled_float | gauge |
+| etcd.self.start_time | The time when this node was started | keyword |  |
+| etcd.self.state | Either leader or follower | keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### store
