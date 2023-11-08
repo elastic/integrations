@@ -194,8 +194,8 @@ if [ "${unpublished}" == "false" ]; then
 fi
 
 if [ "${DRY_RUN}" == "true" ]; then
-    echo "--- [DRY-RUN] Packages to be published $(ls *.zip | wc -l)"
     pushd ${BUILD_PACKAGES_PATH} > /dev/null
+    echo "--- [DRY-RUN] Packages to be published $(ls *.zip | wc -l)"
     ls *.zip
     popd > /dev/null
     exit 0
