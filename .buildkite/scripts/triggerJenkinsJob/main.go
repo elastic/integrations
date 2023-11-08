@@ -117,5 +117,8 @@ func runPublishingRemoteJob(ctx context.Context, client *jenkins.JenkinsClient, 
 		"gs_package_signature_path": signaturePath,
 	}
 
-	return client.RunJob(ctx, jobName, async, params, opts)
+	fmt.Println("Parameters for publishing job: %+v", params)
+	return nil
+
+	// return client.RunJob(ctx, jobName, async, params, opts)
 }
