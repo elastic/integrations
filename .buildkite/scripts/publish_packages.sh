@@ -8,10 +8,10 @@ if [ ${SKIP_PUBLISHING:-"false"} == "true" ] ; then
     exit 0
 fi
 
-# if skipPublishing ; then
-#     echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
-#     exit 0
-# fi
+if skipPublishing ; then
+    echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
+    exit 0
+fi
 
 
 DRY_RUN=${DRY_RUN:-true}
@@ -193,7 +193,7 @@ fi
 
 if [ "${DRY_RUN}" == "true" ]; then
     pushd ${BUILD_PACKAGES_PATH} > /dev/null
-    echo "--- [DRY-RUN] Packages to be published $(ls *.zip | wc -l)"
+    echo "--- packageStoragePublish: [DRY-RUN] Packages to be published $(ls *.zip | wc -l)"
     ls *.zip
     popd > /dev/null
     exit 0
