@@ -224,27 +224,65 @@ An example event for `emr` looks as following:
 
 ```json
 {
-    "data_stream": {
-        "namespace": "default",
-        "type": "logs",
-        "dataset": "aws.emr_logs"
+    "@timestamp": "2023-06-26T13:45:49.685Z",
+    "agent": {
+        "ephemeral_id": "0a919e63-9dce-455c-8b69-badc2c0912d9",
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.10.1"
     },
-    "@timestamp": "2020-02-20T07:01:01.000Z",
+    "aws": {
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-aws-bucket-93168",
+                "name": "elastic-package-aws-bucket-93168"
+            },
+            "object": {
+                "key": "emr-hadoop.log"
+            }
+        }
+    },
+    "cloud": {
+        "region": "us-east-1"
+    },
+    "data_stream": {
+        "dataset": "aws.emr_logs",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
         "version": "8.0.0"
     },
-    "log": {
-        "level": "INFO"
+    "elastic_agent": {
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "snapshot": false,
+        "version": "8.10.1"
     },
     "event": {
-        "original": "2023-06-26 13:45:50,566 INFO common.Util: dfs.datanode.fileio.profiling.sampling.percentage set to 0. Disabling file IO profiling"
+        "agent_id_status": "verified",
+        "dataset": "aws.emr_logs",
+        "ingested": "2023-11-07T09:02:30Z",
+        "original": "2023-06-26 13:45:49,685 INFO namenode.NameNode: STARTUP_MSG:"
     },
+    "input": {
+        "type": "aws-s3"
+    },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-aws-bucket-93168.s3.us-east-1.amazonaws.com/emr-hadoop.log"
+        },
+        "level": "INFO",
+        "offset": 0
+    },
+    "message": "STARTUP_MSG:",
     "process": {
-        "name": "blockmanagement.BlockManager"
+        "name": "namenode.NameNode"
     },
-    "message": "dfs.datanode.fileio.profiling.sampling.percentage set to 0. Disabling file IO profiling",
     "tags": [
-        "preserve_original_event"
+        "preserve_original_event",
+        "forwarded",
+        "aws-emr-logs"
     ]
 }
 ```
@@ -295,7 +333,10 @@ An example event for `emr` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Input type | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| log.offset | Log offset | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | process.entrypoint | Process entrypoint. | keyword |
 | process.message | Process message. | keyword |

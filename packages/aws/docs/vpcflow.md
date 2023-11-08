@@ -164,6 +164,9 @@ The `number_of_workers` setting defines the number of workers assigned to readin
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Input type | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.offset | Log offset | long |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
@@ -194,72 +197,143 @@ An example event for `vpcflow` looks as following:
 
 ```json
 {
-    "data_stream": {
-        "namespace": "default",
-        "type": "logs",
-        "dataset": "aws.vpcflow"
+    "@timestamp": "2014-12-14T04:07:50.000Z",
+    "agent": {
+        "ephemeral_id": "1ffa6099-2893-4e54-8f41-e84bf2244161",
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.10.1"
     },
-    "destination": {
-        "port": 22,
-        "address": "2001:db8:1234:a102:3304:8879:34cf:4071",
-        "ip": "2001:db8:1234:a102:3304:8879:34cf:4071"
-    },
-    "source": {
-        "address": "2001:db8:1234:a100:8d6e:3477:df66:f105",
-        "port": 34892,
-        "bytes": 8855,
-        "packets": 54,
-        "ip": "2001:db8:1234:a100:8d6e:3477:df66:f105"
-    },
-    "tags": [
-        "preserve_original_event"
-    ],
-    "network": {
-        "community_id": "1:hXZclvxUJScaVf0xMIJR6yW6tBQ=",
-        "transport": "tcp",
-        "type": "ipv6",
-        "bytes": 8855,
-        "iana_number": "6",
-        "packets": 54
-    },
-    "cloud": {
-        "provider": "aws",
-        "account": {
-            "id": "123456789010"
+    "aws": {
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-aws-bucket-63461",
+                "name": "elastic-package-aws-bucket-63461"
+            },
+            "object": {
+                "key": "extra-samples.log"
+            }
+        },
+        "vpcflow": {
+            "account_id": "123456789010",
+            "action": "ACCEPT",
+            "interface_id": "eni-1235b8ca123456789",
+            "log_status": "OK",
+            "version": "2"
         }
     },
-    "@timestamp": "2016-10-31T11:37:00.000Z",
+    "cloud": {
+        "account": {
+            "id": "123456789010"
+        },
+        "provider": "aws",
+        "region": "us-east-1"
+    },
+    "data_stream": {
+        "dataset": "aws.vpcflow",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "address": "89.160.20.156",
+        "as": {
+            "number": 29518,
+            "organization": {
+                "name": "Bredband2 AB"
+            }
+        },
+        "geo": {
+            "city_name": "Linköping",
+            "continent_name": "Europe",
+            "country_iso_code": "SE",
+            "country_name": "Sweden",
+            "location": {
+                "lat": 58.4167,
+                "lon": 15.6167
+            },
+            "region_iso_code": "SE-E",
+            "region_name": "Östergötland County"
+        },
+        "ip": "89.160.20.156",
+        "port": 22
+    },
     "ecs": {
         "version": "8.0.0"
     },
-    "related": {
-        "ip": [
-            "2001:db8:1234:a100:8d6e:3477:df66:f105",
-            "2001:db8:1234:a102:3304:8879:34cf:4071"
-        ]
+    "elastic_agent": {
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "snapshot": false,
+        "version": "8.10.1"
     },
     "event": {
-        "ingested": "2021-09-28T19:10:43.075027100Z",
-        "original": "2 123456789010 eni-1235b8ca123456789 2001:db8:1234:a100:8d6e:3477:df66:f105 2001:db8:1234:a102:3304:8879:34cf:4071 34892 22 6 54 8855 1477913708 1477913820 ACCEPT OK",
-        "kind": "event",
-        "start": "2016-10-31T11:35:08.000Z",
-        "end": "2016-10-31T11:37:00.000Z",
-        "type": [
-            "connection"
-        ],
+        "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "outcome": "success"
+        "dataset": "aws.vpcflow",
+        "end": "2014-12-14T04:07:50.000Z",
+        "ingested": "2023-11-07T14:31:30Z",
+        "kind": "event",
+        "original": "2 123456789010 eni-1235b8ca123456789 89.160.20.156 89.160.20.156 20641 22 6 20 4249 1418530010 1418530070 ACCEPT OK",
+        "outcome": "success",
+        "start": "2014-12-14T04:06:50.000Z",
+        "type": [
+            "connection"
+        ]
     },
-    "aws": {
-        "vpcflow": {
-            "action": "ACCEPT",
-            "account_id": "123456789010",
-            "log_status": "OK",
-            "interface_id": "eni-1235b8ca123456789",
-            "version": "2"
-        }
-    }
+    "input": {
+        "type": "aws-s3"
+    },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-aws-bucket-63461.s3.us-east-1.amazonaws.com/extra-samples.log"
+        },
+        "offset": 338
+    },
+    "network": {
+        "bytes": 4249,
+        "community_id": "1:CEGBlG6oEeW2Y5LLdr9GONITz00=",
+        "iana_number": "6",
+        "packets": 20,
+        "transport": "tcp",
+        "type": "ipv4"
+    },
+    "related": {
+        "ip": [
+            "89.160.20.156",
+            "89.160.20.156"
+        ]
+    },
+    "source": {
+        "address": "89.160.20.156",
+        "as": {
+            "number": 29518,
+            "organization": {
+                "name": "Bredband2 AB"
+            }
+        },
+        "bytes": 4249,
+        "geo": {
+            "city_name": "Linköping",
+            "continent_name": "Europe",
+            "country_iso_code": "SE",
+            "country_name": "Sweden",
+            "location": {
+                "lat": 58.4167,
+                "lon": 15.6167
+            },
+            "region_iso_code": "SE-E",
+            "region_name": "Östergötland County"
+        },
+        "ip": "89.160.20.156",
+        "packets": 20,
+        "port": 20641
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "aws-vpcflow"
+    ]
 }
 ```

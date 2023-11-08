@@ -72,6 +72,9 @@ and `process.name`. For logs from other services, please use the **AWS CloudWatc
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | aws.ec2.ip_address | The internet address of the requester. | keyword |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -109,6 +112,9 @@ and `process.name`. For logs from other services, please use the **AWS CloudWatc
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Input type | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.offset | Log offset | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | process.name | Process name. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
@@ -118,30 +124,68 @@ An example event for `ec2` looks as following:
 
 ```json
 {
-    "data_stream": {
-        "namespace": "default",
-        "type": "logs",
-        "dataset": "aws.ec2_logs"
-    },
-    "process": {
-        "name": "systemd"
-    },
     "@timestamp": "2020-02-20T07:01:01.000Z",
-    "ecs": {
-        "version": "8.0.0"
-    },
-    "event": {
-        "ingested": "2021-07-19T21:47:04.871450600Z",
-        "original": "2020-02-20T07:01:01.000Z Feb 20 07:01:01 ip-172-31-81-156 systemd: Stopping User Slice of root."
+    "agent": {
+        "ephemeral_id": "d86fb0e5-bdd6-4b91-8a3e-3535b80a4118",
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.10.1"
     },
     "aws": {
         "ec2": {
             "ip_address": "ip-172-31-81-156"
+        },
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-aws-bucket-36908",
+                "name": "elastic-package-aws-bucket-36908"
+            },
+            "object": {
+                "key": "ec2.log"
+            }
         }
     },
+    "cloud": {
+        "provider": "",
+        "region": "us-east-1"
+    },
+    "data_stream": {
+        "dataset": "aws.ec2_logs",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "snapshot": false,
+        "version": "8.10.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "aws.ec2_logs",
+        "ingested": "2023-11-03T15:00:09Z",
+        "original": "2020-02-20T07:01:01.000Z Feb 20 07:01:01 ip-172-31-81-156 systemd: Stopping User Slice of root."
+    },
+    "input": {
+        "type": "aws-s3"
+    },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-aws-bucket-36908.s3.us-east-1.amazonaws.com/ec2.log"
+        },
+        "offset": 0
+    },
     "message": "Stopping User Slice of root.",
+    "process": {
+        "name": "systemd"
+    },
     "tags": [
-        "preserve_original_event"
+        "preserve_original_event",
+        "forwarded",
+        "aws-ec2-logs"
     ]
 }
 ```

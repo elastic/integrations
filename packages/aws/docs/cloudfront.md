@@ -59,6 +59,9 @@ CloudFront standard logs provide detailed records about every request that’s m
 | aws.cloudfront.edge_result_type | How the server classified the response after the last byte left the server. In some cases, the result type can change between the time that the server is ready to send the response and the time that it finishes sending the response.  See also the x-edge-response-result-type field. For example, in HTTP streaming, suppose the server finds a segment of the stream in the cache. In that scenario, the value of this field would ordinarily be Hit.  However, if the viewer closes the connection before the server has delivered the entire segment, the final result type (and the value of this field) is Error. WebSocket connections will have a value of Miss for this field because the content is not cacheable and is proxied directly to the origin. | keyword |
 | aws.cloudfront.time_to_first_byte | The number of seconds between receiving the request and writing the first byte of the response, as measured on the server. | float |
 | aws.edge_location | The edge location that served the request. Each edge location is identified by a three-letter code and an arbitrarily assigned number (for example, DFW3). The three-letter code typically corresponds with the International Air Transport Association (IATA) airport code for an airport near the edge location’s geographic location. | alias |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -107,6 +110,9 @@ CloudFront standard logs provide detailed records about every request that’s m
 | http.response.bytes | Total size in bytes of the response (body and headers). | long |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
+| input.type | Input type | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.offset | Log offset | long |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
@@ -157,55 +163,95 @@ An example event for `cloudfront` looks as following:
 
 ```json
 {
+    "@timestamp": "2019-12-04T21:02:31.000Z",
+    "agent": {
+        "ephemeral_id": "2e56d54c-2c59-4b67-8f1a-41cf7dbd9d08",
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.10.1"
+    },
+    "aws": {
+        "cloudfront": {
+            "content_type": "text/html",
+            "domain": "d111111abcdef8.cloudfront.net",
+            "edge_detailed_result_type": "Hit",
+            "edge_location": "LAX1",
+            "edge_response_result_type": "Hit",
+            "edge_result_type": "Hit",
+            "time_to_first_byte": 0.001
+        },
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-aws-bucket-58094",
+                "name": "elastic-package-aws-bucket-58094"
+            },
+            "object": {
+                "key": "cloudfront"
+            }
+        }
+    },
+    "cloud": {
+        "provider": "aws",
+        "region": "us-east-1"
+    },
+    "data_stream": {
+        "dataset": "aws.cloudfront_logs",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "destination": {
         "address": "d111111abcdef8.cloudfront.net",
         "domain": "d111111abcdef8.cloudfront.net"
     },
-    "source": {
-        "geo": {
-            "continent_name": "Europe",
-            "region_iso_code": "SE-E",
-            "city_name": "Linköping",
-            "country_iso_code": "SE",
-            "country_name": "Sweden",
-            "region_name": "Östergötland County",
-            "location": {
-                "lon": 15.6167,
-                "lat": 58.4167
-            }
-        },
-        "as": {
-            "number": 29518,
-            "organization": {
-                "name": "Bredband2 AB"
-            }
-        },
-        "address": "89.160.20.112",
-        "port": 11040,
-        "ip": "89.160.20.112"
-    },
-    "url": {
-        "path": "/index.html",
-        "extension": "html",
-        "registered_domain": "d111111abcdef8.cloudfront.net",
-        "scheme": "https",
-        "top_level_domain": "cloudfront.net",
-        "domain": "d111111abcdef8.cloudfront.net",
-        "full": "https://d111111abcdef8.cloudfront.net/index.html"
-    },
-    "tags": [
-        "preserve_original_event"
-    ],
-    "network": {
-        "type": "ipv4",
-        "protocol": "https"
-    },
-    "cloud": {
-        "provider": "aws"
-    },
-    "@timestamp": "2019-12-04T21:02:31.000Z",
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "snapshot": false,
+        "version": "8.10.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": "web",
+        "dataset": "aws.cloudfront_logs",
+        "id": "SOX4xwn4XV6Q4rgb7XiVGOHms_BGlTAC4KyHmureZmBNrjGdRLiNIQ==",
+        "ingested": "2023-11-03T13:01:05Z",
+        "kind": "event",
+        "original": "2019-12-04\t21:02:31\tLAX1\t392\t89.160.20.112\tGET\td111111abcdef8.cloudfront.net\t/index.html\t200\t-\tMozilla/5.0%20(Windows%20NT%2010.0;%20Win64;%20x64)%20AppleWebKit/537.36%20(KHTML,%20like%20Gecko)%20Chrome/78.0.3904.108%20Safari/537.36\t-\t-\tHit\tSOX4xwn4XV6Q4rgb7XiVGOHms_BGlTAC4KyHmureZmBNrjGdRLiNIQ==\td111111abcdef8.cloudfront.net\thttps\t23\t0.001\t-\tTLSv1.2\tECDHE-RSA-AES128-GCM-SHA256\tHit\tHTTP/2.0\t-\t-\t11040\t0.001\tHit\ttext/html\t78\t-\t-",
+        "outcome": "success",
+        "type": [
+            "access"
+        ]
+    },
+    "http": {
+        "request": {
+            "bytes": 23,
+            "id": "SOX4xwn4XV6Q4rgb7XiVGOHms_BGlTAC4KyHmureZmBNrjGdRLiNIQ==",
+            "method": "GET"
+        },
+        "response": {
+            "body": {
+                "bytes": 78
+            },
+            "bytes": 392,
+            "status_code": 200
+        },
+        "version": "2.0"
+    },
+    "input": {
+        "type": "aws-s3"
+    },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-aws-bucket-58094.s3.us-east-1.amazonaws.com/cloudfront"
+        },
+        "offset": 471
+    },
+    "network": {
+        "protocol": "https",
+        "type": "ipv4"
     },
     "related": {
         "hosts": [
@@ -215,58 +261,59 @@ An example event for `cloudfront` looks as following:
             "89.160.20.112"
         ]
     },
-    "http": {
-        "request": {
-            "method": "GET",
-            "bytes": 23,
-            "id": "SOX4xwn4XV6Q4rgb7XiVGOHms_BGlTAC4KyHmureZmBNrjGdRLiNIQ=="
+    "source": {
+        "address": "89.160.20.112",
+        "as": {
+            "number": 29518,
+            "organization": {
+                "name": "Bredband2 AB"
+            }
         },
-        "version": "2.0",
-        "response": {
-            "body": {
-                "bytes": 78
+        "geo": {
+            "city_name": "Linköping",
+            "continent_name": "Europe",
+            "country_iso_code": "SE",
+            "country_name": "Sweden",
+            "location": {
+                "lat": 58.4167,
+                "lon": 15.6167
             },
-            "bytes": 392,
-            "status_code": 200
-        }
+            "region_iso_code": "SE-E",
+            "region_name": "Östergötland County"
+        },
+        "ip": "89.160.20.112",
+        "port": 11040
     },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "aws-cloudfront"
+    ],
     "tls": {
         "cipher": "ECDHE-RSA-AES128-GCM-SHA256",
         "version": "1.2",
         "version_protocol": "tls"
     },
-    "event": {
-        "ingested": "2022-01-07T06:44:14.262549044Z",
-        "original": "2019-12-04\t21:02:31\tLAX1\t392\t89.160.20.112\tGET\td111111abcdef8.cloudfront.net\t/index.html\t200\t-\tMozilla/5.0%20(Windows%20NT%2010.0;%20Win64;%20x64)%20AppleWebKit/537.36%20(KHTML,%20like%20Gecko)%20Chrome/78.0.3904.108%20Safari/537.36\t-\t-\tHit\tSOX4xwn4XV6Q4rgb7XiVGOHms_BGlTAC4KyHmureZmBNrjGdRLiNIQ==\td111111abcdef8.cloudfront.net\thttps\t23\t0.001\t-\tTLSv1.2\tECDHE-RSA-AES128-GCM-SHA256\tHit\tHTTP/2.0\t-\t-\t11040\t0.001\tHit\ttext/html\t78\t-\t-",
-        "kind": "event",
-        "id": "SOX4xwn4XV6Q4rgb7XiVGOHms_BGlTAC4KyHmureZmBNrjGdRLiNIQ==",
-        "category": "web",
-        "type": [
-            "access"
-        ],
-        "outcome": "success"
-    },
-    "aws": {
-        "cloudfront": {
-            "edge_result_type": "Hit",
-            "content_type": "text/html",
-            "edge_detailed_result_type": "Hit",
-            "domain": "d111111abcdef8.cloudfront.net",
-            "edge_response_result_type": "Hit",
-            "time_to_first_byte": 0.001,
-            "edge_location": "LAX1"
-        }
+    "url": {
+        "domain": "d111111abcdef8.cloudfront.net",
+        "extension": "html",
+        "full": "https://d111111abcdef8.cloudfront.net/index.html",
+        "path": "/index.html",
+        "registered_domain": "cloudfront.net",
+        "scheme": "https",
+        "subdomain": "d111111abcdef8",
+        "top_level_domain": "net"
     },
     "user_agent": {
+        "device": {
+            "name": "Other"
+        },
         "name": "Chrome",
         "original": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
         "os": {
+            "full": "Windows 10",
             "name": "Windows",
-            "version": "10",
-            "full": "Windows 10"
-        },
-        "device": {
-            "name": "Other"
+            "version": "10"
         },
         "version": "78.0.3904.108"
     }
