@@ -41,9 +41,9 @@ An example event for `indicator` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-11-08T01:36:14.333Z",
+    "@timestamp": "2023-11-08T02:03:08.320Z",
     "agent": {
-        "ephemeral_id": "d8d04c26-d29c-44a4-a32d-be40f9da8432",
+        "ephemeral_id": "1ea1d81f-3116-44ce-8d48-0d62858b3c67",
         "id": "474fc8e9-e050-4530-b0f0-28e74cf4f064",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -70,8 +70,9 @@ An example event for `indicator` looks as following:
         "created": "2018-02-05T08:04:53.000Z",
         "dataset": "ti_opencti.indicator",
         "id": "d019b01c-b637-4eb2-af53-6d527be3193d",
-        "ingested": "2023-11-08T01:36:17Z",
+        "ingested": "2023-11-08T02:03:11Z",
         "kind": "enrichment",
+        "original": "{standard_id=indicator--cde0a6e1-c622-52c4-b857-e9aeac56131b, externalReferences={edges=[]}, killChainPhases={edges=[]}, pattern_type=stix, created=2018-02-05T08:04:53.000Z, confidence=15, pattern=[hostname:value = 'ec2-23-21-172-164.compute-1.amazonaws.com'], pattern_version=2.1, description=, valid_from=2018-02-05T08:04:53.000Z, objectMarking={edges=[{node={definition_type=TLP, definition=TLP:GREEN}}]}, revoked=true, x_opencti_main_observable_type=Hostname, observables={edges=[{node={standard_id=hostname--2047cd44-ffae-5b34-b912-5856add59b59, entity_type=Hostname, id=b0a91059-5637-4050-8dce-a976a607f75c, value=ec2-23-21-172-164.compute-1.amazonaws.com, observable_value=ec2-23-21-172-164.compute-1.amazonaws.com}}], pageInfo={globalCount=1}}, valid_until=2019-02-05T08:04:53.000Z, is_inferred=false, createdBy={identity_class=organization, name=CthulhuSPRL.be}, name=ec2-23-21-172-164.compute-1.amazonaws.com, modified=2023-01-17T05:53:42.851Z, x_opencti_detection=false, id=d019b01c-b637-4eb2-af53-6d527be3193d, x_opencti_score=40, lang=en, objectLabel={edges=[{node={value=information-credibility-6}}, {node={value=osint}}]}}",
         "type": [
             "indicator"
         ]
@@ -110,6 +111,7 @@ An example event for `indicator` looks as following:
         ]
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "opencti-indicator",
         "information-credibility-6",
