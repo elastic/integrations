@@ -2435,51 +2435,19 @@ processors:
             ctx.user.target.put("domain", ctx.winlog.event_data.TargetDomainName);
           }
         }
+# split member name into parts based on comma ignoring escaped commas
+  - split:
+      if: ctx.winlog?.event_data?.MemberName != null
+      field: winlog.event_data.MemberName
+      target_field: _temp.MemberNameParts
+      separator: "(?<!\\\\),"
+      ignore_missing: true
   - script:
       lang: painless
       ignore_failure: false
       tag: Copy MemberName to User and User to Group
       description: Copy MemberName to User and User to Group
       source: |-
-        def splitString(String input) {
-          // Count the number of parts
-          int count = 1;
-          for (int i = 0; i < input.length(); i++) {
-              if (Character.compare(input.charAt(i), ",".charAt(0))==0 && i < input.length() - 3 && Character.isUpperCase(input.charAt(i + 1))
-                      && Character.isUpperCase(input.charAt(i + 2)) && Character.compare(input.charAt(i + 3), "=".charAt(0))==0) {
-                  count++;
-              }
-          }
-
-          // Array to store the parts after splitting
-          String[] parts = new String[count];
-
-          // Temporary StringBuilder to build each part
-          StringBuilder currentPart = new StringBuilder();
-          int index = 0;
-
-          // Iterate through the input string and split it based on commas and conditions
-          for (int i = 0; i < input.length(); i++) {
-              char currentChar = input.charAt(i);
-              if (Character.compare(currentChar, ",".charAt(0))==0 && i < input.length() - 3 && Character.isUpperCase(input.charAt(i + 1))
-                      && Character.isUpperCase(input.charAt(i + 2)) && Character.compare(input.charAt(i + 3), "=".charAt(0))==0) {
-
-                  // Split if comma is followed by 2 uppercase letters and an equal sign
-                  parts[index] = currentPart.toString();
-                  currentPart.setLength(0); // Clear the current part
-                  index++;
-              } else {
-                 currentPart.append(currentChar);
-              }
-          }
-
-          // Add the last part after the loop
-          parts[index] = currentPart.toString();
-
-          // Return the array of parts
-          return parts;
-        }
-
         if (ctx?.event?.code == null ||
             !["4727", "4728", "4729", "4730", "4731", "4732", "4733", "4734", "4735",
               "4737", "4744", "4745", "4746", "4747", "4748", "4749", "4750", "4751",
@@ -2488,7 +2456,7 @@ processors:
           return;
         }
         if (ctx?.winlog?.event_data?.MemberName != null) {
-          def memberNameParts = splitString(ctx.winlog.event_data.MemberName);
+          def memberNameParts = ctx._temp.MemberNameParts;
           def memberName = memberNameParts[0].replace("CN=","").replace("cn=","");
           if (ctx?.related == null) {
             HashMap hm = new HashMap();
@@ -3321,6 +3289,12 @@ processors:
             value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
         - fail:
             message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+
+  #Cleanup _temp fields as it is not needed anymore
+  - remove:
+      field: _temp
+      ignore_missing: true
+      ignore_failure: true
 
 on_failure:
   - set:
