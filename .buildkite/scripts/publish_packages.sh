@@ -102,7 +102,7 @@ sign_packages() {
 
     # upload zip package (trailing forward slashes are required)
     echo "Upload zip packages files for signing"
-    echo gsutil cp *.zip "${INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}/"
+    gsutil cp *.zip "${INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}/"
 
     echo "Trigger Jenkins job for signing packages"
     pushd ${JENKINS_TRIGGER_PATH} > /dev/null
@@ -115,7 +115,7 @@ sign_packages() {
     popd > /dev/null
 
     echo "Download signatures"
-    echo gsutil cp "${INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_PATH}/*.asc" "."
+    gsutil cp "${INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_PATH}/*.asc" "."
 
     echo "Rename asc to sig"
     for f in *.asc; do
