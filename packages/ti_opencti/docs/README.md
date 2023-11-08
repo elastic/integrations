@@ -41,13 +41,13 @@ An example event for `indicator` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-09-29T19:16:15.226Z",
+    "@timestamp": "2023-11-08T01:36:14.333Z",
     "agent": {
-        "ephemeral_id": "53f803d5-6063-4fda-b5b2-fd41bfd2ca27",
-        "id": "41e802df-9279-45d8-8c76-dbd82b415e01",
+        "ephemeral_id": "d8d04c26-d29c-44a4-a32d-be40f9da8432",
+        "id": "474fc8e9-e050-4530-b0f0-28e74cf4f064",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.2"
+        "version": "8.10.1"
     },
     "data_stream": {
         "dataset": "ti_opencti.indicator",
@@ -55,12 +55,12 @@ An example event for `indicator` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "41e802df-9279-45d8-8c76-dbd82b415e01",
+        "id": "474fc8e9-e050-4530-b0f0-28e74cf4f064",
         "snapshot": false,
-        "version": "8.9.2"
+        "version": "8.10.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -70,7 +70,7 @@ An example event for `indicator` looks as following:
         "created": "2018-02-05T08:04:53.000Z",
         "dataset": "ti_opencti.indicator",
         "id": "d019b01c-b637-4eb2-af53-6d527be3193d",
-        "ingested": "2023-09-29T19:16:18Z",
+        "ingested": "2023-11-08T01:36:17Z",
         "kind": "enrichment",
         "type": [
             "indicator"
