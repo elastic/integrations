@@ -71,9 +71,6 @@ An example event for `metrics` looks as following:
         "period": 10000,
         "name": "collector"
     },
-    "prometheus": {
-        "grpc_server_started_total": {}
-    },
     "event": {
         "duration": 19492282,
         "agent_id_status": "verified",
