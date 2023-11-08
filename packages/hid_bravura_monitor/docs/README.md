@@ -167,7 +167,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "891454b6-66ae-48e0-a2df-0f093ea30e4c",
@@ -236,6 +236,7 @@ An example event for `log` looks as following:
         "id": ""
     }
 }
+
 ```
 
 **Exported fields**
@@ -473,7 +474,7 @@ An example event for `winlog` looks as following:
         "region": "us-east-1"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "event": {
         "code": 92,
@@ -535,6 +536,7 @@ An example event for `winlog` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
