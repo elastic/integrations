@@ -8,6 +8,14 @@ if [ ${SKIP_PUBLISHING:-"false"} == "true" ] ; then
     exit 0
 fi
 
+# if skipPublishing ; then
+#     echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
+#     exit 0
+# fi
+
+
+DRY_RUN=${DRY_RUN:-true}
+
 export BUILD_TAG="buildkite-${BUILDKITE_PIPELINE_SLUG}-${BUILDKITE_BUILD_NUMBER}"
 export REPO_BUILD_TAG="${REPO_NAME}/${BUILD_TAG}"
 
@@ -164,11 +172,6 @@ publish_packages() {
     google_cloud_logout_active_account
 }
 
-# if skipPublishing ; then
-#     echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
-#     exit 0
-# fi
-
 echo "Checking gsutil command..."
 if ! command -v gsutil &> /dev/null ; then
     echo "⚠️  gsutil is not installed"
@@ -189,6 +192,13 @@ if [ "${unpublished}" == "false" ]; then
     echo "All packages are in sync"
     exit 0
 fi
+
+if [ "${DRY_RUN}" == "true" ]; then
+    echo "Packages to be published"
+    ls ${BUILD_PACKAGES_PATH}/*.zip
+fi
+
+exit 0
 
 echo "--- Sign packages"
 sign_packages
