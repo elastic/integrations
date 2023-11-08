@@ -43,7 +43,7 @@ An example event for `asset` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -135,6 +135,7 @@ An example event for `asset` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
@@ -239,7 +240,7 @@ An example event for `plugin` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -350,7 +351,7 @@ An example event for `plugin` looks as following:
                             "id": "threat_recency",
                             "name": "Threat Recency",
                             "type": "string",
-                            "value": "\u003e 365 days"
+                            "value": "> 365 days"
                         },
                         {
                             "id": "threat_sources_last_28",
@@ -364,7 +365,7 @@ An example event for `plugin` looks as following:
                     "exploit_code_maturity": "Unproven",
                     "product_coverage": "Low",
                     "threat_intensity_last_28": "Very Low",
-                    "threat_recency": "\u003e 365 days",
+                    "threat_recency": "> 365 days",
                     "threat_sources_last_28": "No recorded events"
                 },
                 "score": 4.4
@@ -379,6 +380,7 @@ An example event for `plugin` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
@@ -504,7 +506,7 @@ An example event for `vulnerability` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -600,7 +602,7 @@ An example event for `vulnerability` looks as following:
                 "mod_date": "2019-10-04T12:00:00.000Z",
                 "name": "ICMP Timestamp Request Remote Date Disclosure",
                 "pub_date": "1999-08-01T12:00:00.000Z",
-                "text": "\u003cplugin_output\u003eThe remote clock is synchronized with the local clock.\n\u003c/plugin_output\u003e"
+                "text": "<plugin_output>The remote clock is synchronized with the local clock.\n</plugin_output>"
             },
             "port": "0",
             "protocol": "ICMP",
@@ -705,6 +707,7 @@ An example event for `vulnerability` looks as following:
         "severity": "Info"
     }
 }
+
 ```
 
 **Exported fields**
