@@ -81,7 +81,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
@@ -193,6 +193,7 @@ An example event for `log` looks as following:
         "email": "dan@email.com"
     }
 }
+
 ```
 
 **Exported fields**
