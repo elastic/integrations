@@ -32,12 +32,38 @@ processors:
       if: ctx.event?.original == null
   - json:
       field: event.original
+      target_field: _temp_.abusech_url
+# abusech.url.data field is present if `Enable Indicator Expiry` is selected in the manifest.
+# This field contains the actual indicator data.
+  - rename:
+      field: _temp_.abusech_url
       target_field: abusech.url
+      ignore_missing: true
+      if: ctx._temp_.abusech_url?.data == null
+  - rename:
+      field: _temp_.abusech_url.data
+      target_field: abusech.url
+      ignore_missing: true
+      if: ctx._temp_.abusech_url?.data != null
+  # - json:
+  #     field: _temp_url_data
+  #     tag: json_abusech-url-data
+  #     add_to_root: true
+  #     if: ctx._temp_url_data instanceof Map && ctx._temp_url_data.size() > 0
+  #     on_failure:
+  #       - append:
+  #           field: error.message
+  #           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+# Process URL's ID captured into keyfield inside input config.
+  - rename:
+      field: _temp_.abusech_url.keyfield
+      target_field: abusech.url.id
+      if: ctx._temp_.abusech_url?.keyfield != null && ctx.abusech.url.id == null
   - fingerprint:
       fields:
         - abusech.url.id
       target_field: "_id"
-      # TODO add IoC Expiry support
       if: ctx.abusech?.url?.id != null
 
   #####################
@@ -59,7 +85,14 @@ processors:
       formats:
         - "yyyy-MM-dd HH:mm:ss z"
         - "yyyy-MM-dd HH:mm:ss Z"
-      if: "ctx.abusech?.url?.dateadded != null && ctx.threat?.indicator?.first_seen != null"
+      if: "ctx.abusech?.url?.dateadded != null && ctx.threat?.indicator?.first_seen == null"
+  - date:
+      field: abusech.url.last_online
+      target_field: abusech.url.last_online
+      formats:
+        - "yyyy-MM-dd HH:mm:ss z"
+        - "yyyy-MM-dd HH:mm:ss Z"
+      if: ctx.abusech?.url?.last_online != null
   - uri_parts:
       field: abusech.url.url
       # TODO add IoC Expiry support
@@ -74,6 +107,11 @@ processors:
   - rename:
       field: abusech.url.urlhaus_reference
       target_field: threat.indicator.reference
+      ignore_missing: true
+  - rename:
+      field: abusech.url.urlhaus_link
+      target_field: threat.indicator.reference
+      if: ctx.abusech?.url?.urlhaus_link != null && ctx.threat?.indicator?.reference == null
       ignore_missing: true
   # Host can be both IP addresses and domain names
   - grok:
@@ -128,10 +166,12 @@ processors:
   - remove:
       field:
         - abusech.url.date_added
+        - abusech.url.dateadded
         - abusech.url.url
         - abusech.url.host
         - message
         - _conf
+        - _temp_
       ignore_missing: true
   - script:
       description: Remove null/empty values recursively.
