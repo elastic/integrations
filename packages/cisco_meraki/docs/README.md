@@ -92,6 +92,9 @@ The `cisco_meraki.log` dataset provides events from the configured syslog server
 | cisco_meraki.vap |  | keyword |
 | cisco_meraki.wpa_auth |  | flattened |
 | cisco_meraki.wpa_deauth |  | flattened |
+| client.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| client.as.organization.name | Organization name. | keyword |
+| client.as.organization.name.text | Multi-field of `client.as.organization.name`. | match_only_text |
 | client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | client.geo.city_name | City name. | keyword |
 | client.geo.continent_name | Name of the continent. | keyword |
