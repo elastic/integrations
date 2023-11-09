@@ -57,7 +57,8 @@ response.pagination:
       value: '[[.last_response.url.params.Get "startDate"]]'
   - set:
       target: url.params.start
-      value: '[[add (toInt .last_response.body.start) (toInt .last_response.body.limit)]]'
+      value: '[[if (ne (len .last_response.body.results) 0)]][[add (toInt .last_response.body.start) (toInt .last_response.body.limit)]][[end]]'
+      fail_on_template_error: true
   - set:
       target: url.params.limit
       value: '{{limit}}'
