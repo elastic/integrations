@@ -1,46 +1,27 @@
 - name: etcd.leader
   type: group
   fields:
-    - name: followers
-      type: group
-      fields:
-        - name: counts
-          type: group
-          fields:
-            - name: followers
-              type: group
-              fields:
-                - name: counts
-                  type: group
-                  fields:
-                    - name: success
-                      type: integer
-                      description: |
-                        Successful Raft RPC requests
-                    - name: fail
-                      type: integer
-                      description: |
-                        Failed Raft RPC requests
-        - name: latency
-          type: group
-          fields:
-            - name: followers
-              type: group
-              fields:
-                - name: latency
-                  type: group
-                  fields:
-                    - name: average
-                      type: scaled_float
-                    - name: current
-                      type: scaled_float
-                    - name: maximum
-                      type: scaled_float
-                    - name: minimum
-                      type: integer
-                    - name: standardDeviation
-                      type: scaled_float
-    - name: leader
-      type: keyword
-      description: |
-        ID of actual leader
+  - name: follower
+    type: group
+    description: >
+      Contains follower statistics.
+    fields:
+      - name: id
+        type: keyword
+        description: ID of follower
+      - name: latency
+        type: group
+        description: >
+          Latency to each peer in the cluster
+        fields:
+          - name: ms
+            type: scaled_float
+      - name: success_operations
+        type: long
+        description: successful Raft RPC requests
+      - name: failed_operations
+        type: long
+        description: failed Raft RPC requests
+      - name: leader
+        type: keyword
+        description: ID of actual leader

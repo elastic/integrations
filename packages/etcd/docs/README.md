@@ -214,11 +214,18 @@ An example event for `leader` looks as following:
 {
     "@timestamp": "2017-10-12T08:05:34.853Z",
     "etcd": {
-        "api_version": "2",
         "leader": {
-            "followers": {},
-            "leader": "8e9e05c52164694d"
-        }
+            "follower": {
+                "leader": "91bc3c398fb3c146",
+                "latency": {
+                    "ms": 0.001169
+                },
+                "failed_operations": 0,
+                "id": "8211f1d0f64f3269",
+                "success_operations": 5
+            }
+        },
+        "api_version": "2"
     },
     "event": {
         "dataset": "etcd.leader",
@@ -245,14 +252,11 @@ An example event for `leader` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | etcd.api_version | Etcd API version for metrics retrieval | keyword |
-| etcd.leader.followers.counts.followers.counts.fail | Failed Raft RPC requests | integer |
-| etcd.leader.followers.counts.followers.counts.success | Successful Raft RPC requests | integer |
-| etcd.leader.followers.latency.followers.latency.average |  | scaled_float |
-| etcd.leader.followers.latency.followers.latency.current |  | scaled_float |
-| etcd.leader.followers.latency.followers.latency.maximum |  | scaled_float |
-| etcd.leader.followers.latency.followers.latency.minimum |  | integer |
-| etcd.leader.followers.latency.followers.latency.standardDeviation |  | scaled_float |
-| etcd.leader.leader | ID of actual leader | keyword |
+| etcd.leader.follower.failed_operations | failed Raft RPC requests | long |
+| etcd.leader.follower.id | ID of follower | keyword |
+| etcd.leader.follower.latency.ms |  | scaled_float |
+| etcd.leader.follower.leader | ID of actual leader | keyword |
+| etcd.leader.follower.success_operations | successful Raft RPC requests | long |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.ip | Host ip addresses. | ip |
