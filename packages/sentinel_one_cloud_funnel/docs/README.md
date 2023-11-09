@@ -2,9 +2,10 @@
 
 This [SentinelOne Cloud Funnel](https://assets.sentinelone.com/training/sentinelone_cloud_fu#page=1) integration enables your security team to securely stream XDR data to Elastic Security, via Amazon S3. When integrated with Elastic Security, this valuable data can be leveraged within Elastic for threat protection, detection, and incident response.
 
-The SentinelOne Cloud Funnel integration can be used in two different modes to collect data:
+The SentinelOne Cloud Funnel integration can be used in three different modes to collect data:
 - AWS S3 polling mode: SentinelOne Cloud Funnel writes data to S3, and Elastic Agent polls the S3 bucket by listing its contents and reading new files.
 - AWS S3 SQS mode: SentinelOne Cloud Funnel writes data to S3, S3 sends a notification of a new object to SQS, the Elastic Agent receives the notification from SQS, and then reads the S3 object. Multiple agents can be used in this mode.
+- GCS polling mode: SentinelOne Cloud Funnel writes data to GCS bucket, and Elastic Agent polls the GCS bucket by listing its contents and reading new files.
 
 ## Compatibility
 
@@ -71,6 +72,8 @@ The minimum **kibana.version** required is **8.7.1**.
 - SentinelOne Cloud Funnel sends logs to the following destination: `s1/ > cloud_funnel/ > yyyy/ > mm/ > dd/ > account_id={account_id}`.
 
 - You must have SentinelOne Admin Account Credentials along with the Login URL.
+
+- When using the GCS input, if you are using JSON Credentials inline, then you must specify the entire JSON object within single quotes i.e `'{GCS_CREDS_JSON_OBJECT}'`
 
 ### To collect data from AWS SQS, follow the below steps:
 
