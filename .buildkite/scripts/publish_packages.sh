@@ -159,6 +159,7 @@ publish_packages() {
         go run main.go \
             --jenkins-job publish \
             --dry-run=true \
+            --legacy-package=false \
             --package="${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${package_zip}" \
             --signature="${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${package_zip}.sig"
 

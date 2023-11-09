@@ -56,6 +56,7 @@ func main() {
 	sigPackagePath := flag.String("signature", "", "Path to the signature file of the package file (*.zip.sig)")
 	async := flag.Bool("async", false, "Run async the Jenkins job")
 	dryRun := flag.Bool("dry-run", true, "Trigger in DRY_RUN mode the pipeline")
+	legacyPackage := flag.Bool("legacy-package", false, "Legacy package, spec validation will be disabled")
 	flag.Parse()
 
 	if _, ok := allowedJenkinsJobs[*jenkinsJob]; !ok {
@@ -79,7 +80,7 @@ func main() {
 
 	switch *jenkinsJob {
 	case publishJobKey:
-		err = runPublishingRemoteJob(ctx, client, *async, allowedJenkinsJobs[*jenkinsJob], *zipPackagePath, *sigPackagePath, *dryRun, opts)
+		err = runPublishingRemoteJob(ctx, client, *async, allowedJenkinsJobs[*jenkinsJob], *zipPackagePath, *sigPackagePath, *dryRun, *legacyPackage, opts)
 	case signJobKey:
 		err = runSignPackageJob(ctx, client, *async, allowedJenkinsJobs[*jenkinsJob], *folderPath, opts)
 	default:
@@ -102,7 +103,7 @@ func runSignPackageJob(ctx context.Context, client *jenkins.JenkinsClient, async
 	return client.RunJob(ctx, jobName, async, params, opts)
 }
 
-func runPublishingRemoteJob(ctx context.Context, client *jenkins.JenkinsClient, async bool, jobName, packagePath, signaturePath string, dryRun bool, opts jenkins.Options) error {
+func runPublishingRemoteJob(ctx context.Context, client *jenkins.JenkinsClient, async bool, jobName, packagePath, signaturePath string, dryRun, legacyPackage bool, opts jenkins.Options) error {
 	if packagePath == "" {
 		return fmt.Errorf("missing parameter --gs_package_build_zip_path")
 	}
@@ -115,6 +116,7 @@ func runPublishingRemoteJob(ctx context.Context, client *jenkins.JenkinsClient, 
 		"dry_run":                   strconv.FormatBool(dryRun),
 		"gs_package_build_zip_path": packagePath,
 		"gs_package_signature_path": signaturePath,
+		"legacy_package":            strconv.FormatBool(legacyPackage),
 	}
 
 	return client.RunJob(ctx, jobName, async, params, opts)
