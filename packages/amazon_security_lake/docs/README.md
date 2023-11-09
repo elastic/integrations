@@ -95,6 +95,9 @@ This is the `Event` dataset.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -643,6 +646,7 @@ This is the `Event` dataset.
 | ocsf.cloud.account.type | The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source. | keyword |
 | ocsf.cloud.account.type_id | The normalized account type identifier. | keyword |
 | ocsf.cloud.account.uid | The unique identifier of the account (e.g. AWS Account ID). | keyword |
+| ocsf.cloud.account_uid | The unique identifier of a Cloud account. | keyword |
 | ocsf.cloud.org.name | The name of the organization. For example, Widget, Inc. | keyword |
 | ocsf.cloud.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
 | ocsf.cloud.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
