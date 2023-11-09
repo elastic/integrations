@@ -8,10 +8,10 @@ if [ ${SKIP_PUBLISHING:-"false"} == "true" ] ; then
     exit 0
 fi
 
-if skipPublishing ; then
-    echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
-    exit 0
-fi
+# if skipPublishing ; then
+#     echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
+#     exit 0
+# fi
 
 
 DRY_RUN=${DRY_RUN:-true}
@@ -84,10 +84,12 @@ build_packages() {
 
         local package_zip="${name}-${version}.zip"
 
+        if [[ "${package_zip}" != "elastic_package_registry-0.1.0.zip" ]]; then
         if is_already_published ${package_zip} ; then
             echo "Skipping. ${package_zip} already published"
             popd > /dev/null
             continue
+        fi
         fi
 
         echo "Build package as zip: ${package}"
