@@ -835,22 +835,6 @@ processors:
         false
       allow_duplicates: false
 
-  #################################################################
-  # preserve_original_event tag handling to ensure ECS compliance #
-  #################################################################
-
-  - remove:
-      field: event.original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
-
-  - convert:
-      if: "ctx.tags.contains('preserve_original_event')"
-      field: event.original
-      type: string
-      ignore_missing: true
-
 ###################
 # Failure handler #
 ###################
