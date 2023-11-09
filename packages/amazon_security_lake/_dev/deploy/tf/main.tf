@@ -20,42 +20,42 @@ resource "aws_sqs_queue" "queue" {
 
 # data "aws_caller_identity" "current" {}
 
-resource "aws_sqs_queue_policy" "schedule-event-policy" {
-  queue_url = aws_sqs_queue.queue.id
+# resource "aws_sqs_queue_policy" "schedule-event-policy" {
+#   queue_url = aws_sqs_queue.queue.id
 
-  policy = <<POLICY
-{
-  "Version": "2012-10-17",
-  "Id": "sqspolicy",
-  "Statement": [
-    {
-      "Sid": "First",
-      "Effect": "Allow",
-      "Principal": "*",
-      "Action": ["sqs:SendMessage", "sqs:ReceiveMessage"],
-      "Resource": "${aws_sqs_queue.queue.arn}"
-    }
-  ]
-}
-POLICY
-}
+#   policy = <<POLICY
+# {
+#   "Version": "2012-10-17",
+#   "Id": "sqspolicy",
+#   "Statement": [
+#     {
+#       "Sid": "First",
+#       "Effect": "Allow",
+#       "Principal": "*",
+#       "Action": ["sqs:SendMessage", "sqs:ReceiveMessage"],
+#       "Resource": "${aws_sqs_queue.queue.arn}"
+#     }
+#   ]
+# }
+# POLICY
+# }
 
-resource "aws_iam_role" "event_bridge_sqs_role" {
-  name = "event_bridge_sqs_role"
+# resource "aws_iam_role" "event_bridge_sqs_role" {
+#   name = "event_bridge_sqs_role"
 
-  assume_role_policy = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
-      {
-        "Effect" : "Allow",
-        "Principal" : {
-          "Service" : "scheduler.amazonaws.com"
-        },
-        "Action" : "sts:AssumeRole"
-      }
-    ]
-  })
-}
+#   assume_role_policy = jsonencode({
+#     "Version" : "2012-10-17",
+#     "Statement" : [
+#       {
+#         "Effect" : "Allow",
+#         "Principal" : {
+#           "Service" : "scheduler.amazonaws.com"
+#         },
+#         "Action" : "sts:AssumeRole"
+#       }
+#     ]
+#   })
+# }
 
 resource "aws_scheduler_schedule" "eventbridge_scheduler_every1minute" {
   name       = "eventbridge_scheduler_every1minute-${var.TEST_RUN_ID}"
@@ -77,7 +77,7 @@ resource "aws_scheduler_schedule" "eventbridge_scheduler_every1minute" {
           name = "elastic-package-security-lake-bucket-${var.TEST_RUN_ID}"
         }
         object = {
-          key = "account_change_key"
+          key = "test_parquet_key"
         }
       }
     })
@@ -86,8 +86,8 @@ resource "aws_scheduler_schedule" "eventbridge_scheduler_every1minute" {
 
 resource "aws_s3_object" "object" {
   bucket = aws_s3_bucket.bucket.id
-  key    = "account_change_key"
-  source = "./files/test-account-change.log"
+  key    = "test_parquet_key"
+  source = "./files/test.gz.parquet"
 
   depends_on = [aws_sqs_queue.queue]
 }
