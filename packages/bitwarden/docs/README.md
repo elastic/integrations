@@ -75,7 +75,7 @@ An example event for `collection` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "fa60f5ca-bf95-4706-9195-907dd5f9b537",
@@ -103,6 +103,7 @@ An example event for `collection` looks as following:
         "bitwarden-collection"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -181,7 +182,7 @@ An example event for `event` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "fa60f5ca-bf95-4706-9195-907dd5f9b537",
@@ -236,6 +237,7 @@ An example event for `event` looks as following:
         "id": "e68b8629-85eb-4929-92c0-b84464976ba4"
     }
 }
+
 ```
 
 **Exported fields**
@@ -308,7 +310,7 @@ An example event for `group` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "fa60f5ca-bf95-4706-9195-907dd5f9b537",
@@ -343,6 +345,7 @@ An example event for `group` looks as following:
         "bitwarden-group"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -416,7 +419,7 @@ An example event for `member` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "fa60f5ca-bf95-4706-9195-907dd5f9b537",
@@ -460,6 +463,7 @@ An example event for `member` looks as following:
         "name": "John Smith"
     }
 }
+
 ```
 
 **Exported fields**
@@ -544,7 +548,7 @@ An example event for `policy` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "fa60f5ca-bf95-4706-9195-907dd5f9b537",
@@ -572,6 +576,7 @@ An example event for `policy` looks as following:
         "bitwarden-policy"
     ]
 }
+
 ```
 
 **Exported fields**
