@@ -418,7 +418,7 @@ get_commit_from_build() {
     local state_query_param="$3"
 
     local api_url="${API_BUILDKITE_PIPELINES_URL}/${pipeline}/builds?branch=${branch}&${state_query_param}&per_page=1"
-    local previous_commit=$(curl -sH "Authorization: Bearer ${BUILDKITE_API_TOKEN}" "${api_url}" | jq '.[0] |.commit')
+    local previous_commit=$(curl -sH "Authorization: Bearer ${BUILDKITE_API_TOKEN}" "${api_url}" | jq -r '.[0] |.commit')
     echoerr ">>> Commit from ${pipeline} - branch ${branch} - status: ${status} -> ${previous_commit}"
 
     echo ${previous_commit}
