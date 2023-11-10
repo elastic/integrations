@@ -5,18 +5,7 @@ set -euo pipefail
 
 SKIP_PUBLISHING=${SKIP_PUBLISHING:-"false"}
 
-if [ "${SKIP_PUBLISHING}" == "true" ] ; then
-    echo "packageStoragePublish: skipping because skip_publishing param is ${SKIP_PUBLISHING}"
-    exit 0
-fi
-
-if skipPublishing ; then
-    echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
-    exit 0
-fi
-
-
-DRY_RUN=${DRY_RUN:-true}
+DRY_RUN=${DRY_RUN:-"true"}
 
 export BUILD_TAG="buildkite-${BUILDKITE_PIPELINE_SLUG}-${BUILDKITE_BUILD_NUMBER}"
 export REPO_BUILD_TAG="${REPO_NAME}/${BUILD_TAG}"
@@ -175,6 +164,16 @@ publish_packages() {
 
     google_cloud_logout_active_account
 }
+
+if [ "${SKIP_PUBLISHING}" == "true" ] ; then
+    echo "packageStoragePublish: skipping because skip_publishing param is ${SKIP_PUBLISHING}"
+    exit 0
+fi
+
+if skipPublishing ; then
+    echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
+    exit 0
+fi
 
 echo "Checking gsutil command..."
 if ! command -v gsutil &> /dev/null ; then

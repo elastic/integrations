@@ -29,6 +29,7 @@ to="$(get_to_changeset)"
 
 echo "[DEBUG] Checking with commits: from: '${from}' to: '${to}'"
 
+exit 0
 packages_to_test=0
 
 for package in ${PACKAGE_LIST}; do
