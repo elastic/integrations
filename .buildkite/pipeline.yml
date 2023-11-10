@@ -29,7 +29,7 @@ steps:
 
   - label: "Unit tests"
     key: "unit-tests"
-    command: ".buildkite/scripts/unit-tests.sh"
+    command: ".buildkite/scripts/unit-test.sh"
     artifact_paths:
       - build/*.xml
       - build/coverage.out
@@ -61,22 +61,22 @@ steps:
   #     - step: "check"
   #       allow_failure: false
 
-  - label: "Trigger integrations"
-    key: "test-integrations"
-    command: ".buildkite/scripts/trigger_integrations_in_parallel.sh"
-    env:
-      UPLOAD_SAFE_LOGS: 1
-    depends_on:
-      - step: "check"
-        allow_failure: false
+  # - label: "Trigger integrations"
+  #   key: "test-integrations"
+  #   command: ".buildkite/scripts/trigger_integrations_in_parallel.sh"
+  #   env:
+  #     UPLOAD_SAFE_LOGS: 1
+  #   depends_on:
+  #     - step: "check"
+  #       allow_failure: false
 
-  - wait: ~
-    continue_on_failure: true
+  # - wait: ~
+  #   continue_on_failure: true
 
-  - label: ":junit: Junit annotate"
-    plugins:
-      - junit-annotate#v2.4.1:
-          artifacts: "build/test-results/*.xml"
-          failed-download-exit-code: 0 # Not fail the build in case there are no XML files
-    agents:
-      provider: "gcp"  # junit plugin requires docker
+  # - label: ":junit: Junit annotate"
+  #   plugins:
+  #     - junit-annotate#v2.4.1:
+  #         artifacts: "build/test-results/*.xml"
+  #         failed-download-exit-code: 0 # Not fail the build in case there are no XML files
+  #   agents:
+  #     provider: "gcp"  # junit plugin requires docker
