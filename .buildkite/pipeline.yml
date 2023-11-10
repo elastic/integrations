@@ -28,11 +28,10 @@ steps:
       memory: "4G"
 
   - label: "Unit tests"
-    key: "unit-tests"
+    key: "unit-test"
     command: ".buildkite/scripts/unit_test.sh"
     artifact_paths:
-      - build/*.xml
-      - build/coverage.out
+      - coverage.out
     agents:
       image: "${LINUX_AGENT_IMAGE}"
       cpu: "8"
@@ -44,7 +43,7 @@ steps:
     agents:
       image: "docker.elastic.co/cloud-ci/sonarqube/buildkite-scanner:latest"
     command:
-      - "buildkite-agent artifact download build/*coverage.out ."
+      - "buildkite-agent artifact download *coverage.out ."
       - "/scan-source-code.sh"
     depends_on:
       - step: "unit-test"
