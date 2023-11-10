@@ -28,7 +28,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "bb043b0c-36d1-4054-81ed-2d3f4546a433",
@@ -66,6 +66,7 @@ An example event for `audit` looks as following:
         "id": "userid123test-234sdfa2-423sdfa-2134"
     }
 }
+
 ```
 
 **Exported fields**
@@ -133,7 +134,7 @@ An example event for `vulnerabilities` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "bb043b0c-36d1-4054-81ed-2d3f4546a433",
@@ -217,7 +218,7 @@ An example event for `vulnerabilities` looks as following:
                     "urls": [
                         "https://snyk-patches.s3.amazonaws.com/npm/ejs/20161128/ejs_20161128_0_0_3d447c5a335844b25faec04b1132dbc721f9c8f6.patch"
                     ],
-                    "version": "\u003c2.5.3 \u003e=2.2.4"
+                    "version": "<2.5.3 >=2.2.4"
                 }
             ],
             "priority_score": 4.05,
@@ -225,7 +226,7 @@ An example event for `vulnerabilities` looks as following:
             "reachability": "No Info",
             "semver": {
                 "vulnerable": [
-                    "\u003c2.5.3"
+                    "<2.5.3"
                 ]
             },
             "title": "Arbitrary Code Execution",
@@ -258,6 +259,7 @@ An example event for `vulnerabilities` looks as following:
         "severity": "high"
     }
 }
+
 ```
 
 **Exported fields**
