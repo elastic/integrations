@@ -137,6 +137,9 @@ curl --location --request POST 'https://api.cloudflare.com/client/v4/zones/<ZONE
     "logpull_options": "fields=RayID,EdgeStartTimestamp&timestamps=rfc3339"
 }'
 ```
+
+**Note**:
+- The destination_conf parameter inside the request data should set the Content-Type header to `application/json`. This is the content type that the HTTP endpoint expects for incoming events.
 - Default port for the HTTP Endpoint is _9560_.
 - When using the same port for more than one dataset, be sure to specify different dataset paths.
 
