@@ -140,7 +140,7 @@ An example event for `event` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
@@ -364,6 +364,7 @@ An example event for `event` looks as following:
         "sentinel_one_cloud_funnel-event"
     ]
 }
+
 ```
 
 **Exported fields**

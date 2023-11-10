@@ -43,7 +43,7 @@ An example event for `activity` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "0dc831b8-c128-48db-a3c7-379a3da30bb1",
@@ -110,6 +110,7 @@ An example event for `activity` looks as following:
         "id": "1234567890123456789"
     }
 }
+
 ```
 
 **Exported fields**
@@ -261,7 +262,7 @@ An example event for `agent` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "0dc831b8-c128-48db-a3c7-379a3da30bb1",
@@ -439,6 +440,7 @@ An example event for `agent` looks as following:
         "sentinel_one-agent"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -634,7 +636,7 @@ An example event for `alert` looks as following:
         }
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "0dc831b8-c128-48db-a3c7-379a3da30bb1",
@@ -869,6 +871,7 @@ An example event for `alert` looks as following:
         "name": "string"
     }
 }
+
 ```
 
 **Exported fields**
@@ -1061,7 +1064,7 @@ An example event for `group` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "0dc831b8-c128-48db-a3c7-379a3da30bb1",
@@ -1121,6 +1124,7 @@ An example event for `group` looks as following:
         "full_name": "Test User"
     }
 }
+
 ```
 
 **Exported fields**
@@ -1214,7 +1218,7 @@ An example event for `threat` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "0dc831b8-c128-48db-a3c7-379a3da30bb1",
@@ -1470,6 +1474,7 @@ An example event for `threat` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
