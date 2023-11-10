@@ -3,15 +3,17 @@
 source .buildkite/scripts/common.sh
 set -euo pipefail
 
-if [ ${SKIP_PUBLISHING:-"false"} == "true" ] ; then
+SKIP_PUBLISHING=${SKIP_PUBLISHING:-"false"}
+
+if [ "${SKIP_PUBLISHING}" == "true" ] ; then
     echo "packageStoragePublish: skipping because skip_publishing param is ${SKIP_PUBLISHING}"
     exit 0
 fi
 
-if skipPublishing ; then
-    echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
-    exit 0
-fi
+# if skipPublishing ; then
+#     echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
+#     exit 0
+# fi
 
 
 DRY_RUN=${DRY_RUN:-true}
@@ -49,11 +51,11 @@ skipPublishing() {
 
 check_and_build_package() {
     local package=$1
-    if ! check_package ${package} ; then
+    if ! check_package "${package}" ; then
         return 1
     fi
 
-    if ! build_zip_package ${package} ; then
+    if ! build_zip_package "${package}" ; then
         return 1
     fi
 
@@ -74,27 +76,32 @@ build_packages() {
     pushd packages > /dev/null
 
     for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
-        local package=$(basename ${it})
+        local package
+        local version
+        local name
+        package=$(basename "${it}")
         echo "Package ${package}: check"
 
-        pushd ${package} > /dev/null
+        pushd "${package}" > /dev/null
 
-        local version=$(cat manifest.yml | yq .version)
-        local name=$(cat manifest.yml | yq .name)
+        version=$(cat manifest.yml | yq .version)
+        name=$(cat manifest.yml | yq .name)
 
         local package_zip="${name}-${version}.zip"
 
-        if is_already_published ${package_zip} ; then
+        if [[ "${package_zip}" != "elastic_package_registry-0.1.0.zip" ]]; then
+        if is_already_published "${package_zip}" ; then
             echo "Skipping. ${package_zip} already published"
             popd > /dev/null
             continue
         fi
+        fi
 
         echo "Build package as zip: ${package}"
-        if check_and_build_package ${package} ; then
+        if check_and_build_package "${package}" ; then
             unpublished="true"
         else
-            report_build_failure ${package}
+            report_build_failure "${package}"
         fi
         popd > /dev/null
     done
@@ -102,7 +109,7 @@ build_packages() {
 }
 
 sign_packages() {
-    pushd ${BUILD_PACKAGES_PATH} > /dev/null
+    pushd "${BUILD_PACKAGES_PATH}" > /dev/null
 
     google_cloud_signing_auth
 
@@ -111,11 +118,11 @@ sign_packages() {
     gsutil cp *.zip "${INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}/"
 
     echo "Trigger Jenkins job for signing packages"
-    pushd ${JENKINS_TRIGGER_PATH} > /dev/null
+    pushd "${JENKINS_TRIGGER_PATH}" > /dev/null
 
     go run main.go \
       --jenkins-job sign \
-      --folder ${INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}
+      --folder "${INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}"
 
     sleep 5
     popd > /dev/null
@@ -135,25 +142,25 @@ sign_packages() {
 }
 
 publish_packages() {
-    pushd ${BUILD_PACKAGES_PATH}
+    pushd "${BUILD_PACKAGES_PATH}" > /dev/null
 
     google_cloud_upload_auth
 
     for package_zip in *.zip ; do
-        if [ ! -f ${package_zip}.sig ]; then
+        if [ ! -f "${package_zip}.sig" ]; then
             echo "Missing signature file for ${package_zip}"
             continue
         fi
 
         # upload files (trailing forward slashes are required)
         echo "Upload package .zip file ${package_zip} for publishing"
-        gsutil cp ${package_zip} "${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/"
+        gsutil cp "${package_zip}" "${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/"
 
         echo "Upload package .sig file ${package_zip}.sig for publishing"
-        gsutil cp ${package_zip}.sig "${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/"
+        gsutil cp "${package_zip}.sig" "${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/"
 
         echo "Trigger Jenkins job for publishing package ${package_zip}"
-        pushd ${JENKINS_TRIGGER_PATH} > /dev/null
+        pushd "${JENKINS_TRIGGER_PATH}" > /dev/null
 
         # TODO: Change dry-run parameter to false
         go run main.go \
@@ -193,9 +200,9 @@ if [ "${unpublished}" == "false" ]; then
 fi
 
 if [ "${DRY_RUN}" == "true" ]; then
-    pushd ${BUILD_PACKAGES_PATH} > /dev/null
-    echo "--- packageStoragePublish: [DRY-RUN] Packages to be published $(ls *.zip | wc -l)"
-    ls *.zip
+    pushd "${BUILD_PACKAGES_PATH}" > /dev/null
+    echo "--- packageStoragePublish: [DRY-RUN] Packages to be published $(ls ./*.zip | wc -l)"
+    ls ./*.zip
     popd > /dev/null
     exit 0
 fi
