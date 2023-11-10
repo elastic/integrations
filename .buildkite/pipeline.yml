@@ -27,6 +27,30 @@ steps:
       cpu: "8"
       memory: "4G"
 
+  - label: "Unit tests"
+    key: "unit-tests"
+    command: ".buildkite/scripts/unit-tests.sh"
+    artifact_paths:
+      - build/*.xml
+      - build/coverage.out
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "8"
+      memory: "4G"
+
+  - label: ":sonarqube: Continuous Code Inspection"
+    env:
+      VAULT_SONAR_TOKEN_PATH: "kv/data/ci-shared/platform-ingest/elastic/integrations/sonar-analyze-token"
+    agents:
+      image: "docker.elastic.co/cloud-ci/sonarqube/buildkite-scanner:latest"
+    command:
+      - "buildkite-agent artifact download build/*coverage.out ."
+      - "/scan-source-code.sh"
+    depends_on:
+      - step: "unit-test"
+        allow_failure: false
+
+
   # TODO: Pending to migrate stages from https://github.com/elastic/integrations/blob/993537b80456edf2035f2a4826031841116c2019/.ci/Jenkinsfile
   # - label: "Publish packages - INCOMPLETE"
   #   key: "publish-packages"

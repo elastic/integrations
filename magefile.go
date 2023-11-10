@@ -128,3 +128,8 @@ func findFilesRecursive(match func(path string, info os.FileInfo) bool) ([]strin
 func ModTidy() error {
 	return sh.RunV("go", "mod", "tidy")
 }
+
+// UnitTest performs unit test on agent.
+func UnitTest() {
+	mg.Deps(Test.All)
+}
