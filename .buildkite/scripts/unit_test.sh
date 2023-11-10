@@ -1,6 +1,12 @@
 #!/bin/bash
 
+source .buildkite/scripts/common.sh
+
 set -euo pipefail
+
+add_bin_path
+
+with_mage
 
 echo "Starting the unit tests..."
 RACE_DETECTOR=true TEST_COVERAGE=true mage unitTest
