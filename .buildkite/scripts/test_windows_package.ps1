@@ -25,7 +25,9 @@ go install github.com/jstemmer/go-junit-report
 go install gotest.tools/gotestsum
 go install github.com/elastic/elastic-package
 
-sal "docker-compose" "docker compose"
+docker version
+docker compose version
+docker-compose version
 
 elastic-package stack up -d
 
