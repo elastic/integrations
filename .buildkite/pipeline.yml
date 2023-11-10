@@ -1,31 +1,40 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
 
-env:
-  SETUP_GVM_VERSION: "v0.5.1"
-  LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
-  DOCKER_COMPOSE_VERSION: "v2.17.2"
-  KIND_VERSION: 'v0.20.0'
-  K8S_VERSION: 'v1.27.3'
-  YQ_VERSION: 'v4.35.2'
-  # Elastic package settings
-  # Manage docker output/logs
-  ELASTIC_PACKAGE_COMPOSE_DISABLE_ANSI: "true"
-  ELASTIC_PACKAGE_COMPOSE_DISABLE_PULL_PROGRESS_INFORMATION: "true"
-  # Default license to use by `elastic-package build`
-  ELASTIC_PACKAGE_REPOSITORY_LICENSE: "licenses/Elastic-2.0.txt"
-  # Link definitions path (full path to be set in the corresponding step)
-  ELASTIC_PACKAGE_LINKS_FILE_PATH: "links_table.yml"
-  # Disable comparison of results in pipeline tests to avoid errors related to GeoIP fields
-  ELASTIC_PACKAGE_SERVERLESS_PIPELINE_TEST_DISABLE_COMPARE_RESULTS: "true"
+# env:
+#   SETUP_GVM_VERSION: "v0.5.1"
+#   LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
+#   DOCKER_COMPOSE_VERSION: "v2.17.2"
+#   KIND_VERSION: 'v0.20.0'
+#   K8S_VERSION: 'v1.27.3'
+#   YQ_VERSION: 'v4.35.2'
+#   # Elastic package settings
+#   # Manage docker output/logs
+#   ELASTIC_PACKAGE_COMPOSE_DISABLE_ANSI: "true"
+#   ELASTIC_PACKAGE_COMPOSE_DISABLE_PULL_PROGRESS_INFORMATION: "true"
+#   # Default license to use by `elastic-package build`
+#   ELASTIC_PACKAGE_REPOSITORY_LICENSE: "licenses/Elastic-2.0.txt"
+#   # Link definitions path (full path to be set in the corresponding step)
+#   ELASTIC_PACKAGE_LINKS_FILE_PATH: "links_table.yml"
+#   # Disable comparison of results in pipeline tests to avoid errors related to GeoIP fields
+#   ELASTIC_PACKAGE_SERVERLESS_PIPELINE_TEST_DISABLE_COMPARE_RESULTS: "true"
 
 steps:
-  - label: ":white_check_mark: Check go sources"
+  - label: "Test windows system tests"
     key: "check"
-    command: ".buildkite/scripts/check_sources.sh"
+    command: ".buildkite/scripts/test_windows_package.ps1"
     agents:
-      image: "${LINUX_AGENT_IMAGE}"
+      image: windows-2019
+      provider: "gcp"
       cpu: "8"
       memory: "4G"
+
+  # - label: ":white_check_mark: Check go sources"
+  #   key: "check"
+  #   command: ".buildkite/scripts/check_sources.sh"
+  #   agents:
+  #     image: "${LINUX_AGENT_IMAGE}"
+  #     cpu: "8"
+  #     memory: "4G"
 
   # TODO: Pending to migrate stages from https://github.com/elastic/integrations/blob/993537b80456edf2035f2a4826031841116c2019/.ci/Jenkinsfile
   # - label: "Publish packages - INCOMPLETE"
@@ -37,22 +46,22 @@ steps:
   #     - step: "check"
   #       allow_failure: false
 
-  - label: "Trigger integrations"
-    key: "test-integrations"
-    command: ".buildkite/scripts/trigger_integrations_in_parallel.sh"
-    env:
-      UPLOAD_SAFE_LOGS: 1
-    depends_on:
-      - step: "check"
-        allow_failure: false
+  # - label: "Trigger integrations"
+  #   key: "test-integrations"
+  #   command: ".buildkite/scripts/trigger_integrations_in_parallel.sh"
+  #   env:
+  #     UPLOAD_SAFE_LOGS: 1
+  #   depends_on:
+  #     - step: "check"
+  #       allow_failure: false
 
-  - wait: ~
-    continue_on_failure: true
+  # - wait: ~
+  #   continue_on_failure: true
 
-  - label: ":junit: Junit annotate"
-    plugins:
-      - junit-annotate#v2.4.1:
-          artifacts: "build/test-results/*.xml"
-          failed-download-exit-code: 0 # Not fail the build in case there are no XML files
-    agents:
-      provider: "gcp"  # junit plugin requires docker
+  # - label: ":junit: Junit annotate"
+  #   plugins:
+  #     - junit-annotate#v2.4.1:
+  #         artifacts: "build/test-results/*.xml"
+  #         failed-download-exit-code: 0 # Not fail the build in case there are no XML files
+  #   agents:
+  #     provider: "gcp"  # junit plugin requires docker
