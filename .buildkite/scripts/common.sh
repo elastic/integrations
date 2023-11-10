@@ -443,9 +443,6 @@ get_previous_successful_commit() {
 
 get_from_changeset() {
     local from=""
-    local previous_commit=$(get_previous_commit ${BUILDKITE_PIPELINE_SLUG} ${BUILDKITE_BRANCH})
-    echo ${previous_commit}
-    return
     if [ "${BUILDKITE_PULL_REQUEST}" != "false" ]; then
         echo "origin/${BUILDKITE_PULL_REQUEST_BASE_BRANCH}"
         return
