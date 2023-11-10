@@ -2,9 +2,10 @@
 
 This [SentinelOne Cloud Funnel](https://assets.sentinelone.com/training/sentinelone_cloud_fu#page=1) integration enables your security team to securely stream XDR data to Elastic Security, via Amazon S3. When integrated with Elastic Security, this valuable data can be leveraged within Elastic for threat protection, detection, and incident response.
 
-The SentinelOne Cloud Funnel integration can be used in two different modes to collect data:
+The SentinelOne Cloud Funnel integration can be used in three different modes to collect data:
 - AWS S3 polling mode: SentinelOne Cloud Funnel writes data to S3, and Elastic Agent polls the S3 bucket by listing its contents and reading new files.
 - AWS S3 SQS mode: SentinelOne Cloud Funnel writes data to S3, S3 sends a notification of a new object to SQS, the Elastic Agent receives the notification from SQS, and then reads the S3 object. Multiple agents can be used in this mode.
+- GCS polling mode: SentinelOne Cloud Funnel writes data to GCS bucket, and Elastic Agent polls the GCS bucket by listing its contents and reading new files.
 
 ## Compatibility
 
@@ -56,7 +57,7 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **kibana.version** required is **8.7.1**.
+The minimum **kibana.version** required is **8.11.0**.
 
 ## Setup
 
@@ -66,11 +67,48 @@ The minimum **kibana.version** required is **8.7.1**.
 - Enable the Cloud Funnel Streaming as mentioned here: `[Your Login URL]/docs/en/how-to-enable-cloud-funnel-streaming.html#how-to-enable-cloud-funnel-streaming`.
 - The default value of the field `Bucket List Prefix` is s1/cloud_funnel.
 
+### To collect data from a GCS bucket, follow the below steps:
+
+- Considering you already have a GCS bucket setup, configure it with SentinelOne Cloud Funnel.
+- Enable the Cloud Funnel Streaming as mentioned here: `[Your Login URL]/docs/en/how-to-enable-cloud-funnel-streaming.html#how-to-enable-cloud-funnel-streaming`.
+- The default value of the field `File Selectors` is `- regex: "s1/cloud_funnel"`. It is commented out by default and resides in the advanced settings section.
+- Configure the integration with your GCS project ID and JSON Credentials key.
+
+## The GCS credentials key file:
+This is a one-time download JSON key file that you get after adding a key to a GCP service account. 
+If you are just starting out creating your GCS bucket, do the following: 
+
+1) Make sure you have a service account available, if not follow the steps below:
+   - Navigate to 'APIs & Services' > 'Credentials'
+   - Click on 'Create credentials' > 'Service account'
+2) Once the service account is created, you can navigate to the 'Keys' section and attach/generate your service account key.
+3) Make sure to download the JSON key file once prompted.
+4) Use this JSON key file either inline (JSON string object), or by specifying the path to the file on the host machine, where the agent is running.
+
+A sample JSON Credentials file looks as follows: 
+```json
+{
+  "type": "dummy_service_account",
+  "project_id": "dummy-project",
+  "private_key_id": "dummy-private-key-id",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nDummyPrivateKey\n-----END PRIVATE KEY-----\n",
+  "client_email": "dummy-service-account@example.com",
+  "client_id": "12345678901234567890",
+  "auth_uri": "https://dummy-auth-uri.com",
+  "token_uri": "https://dummy-token-uri.com",
+  "auth_provider_x509_cert_url": "https://dummy-auth-provider-cert-url.com",
+  "client_x509_cert_url": "https://dummy-client-cert-url.com",
+  "universe_domain": "dummy-universe-domain.com"
+}
+```
+
 **NOTE**:
 
 - SentinelOne Cloud Funnel sends logs to the following destination: `s1/ > cloud_funnel/ > yyyy/ > mm/ > dd/ > account_id={account_id}`.
 
 - You must have SentinelOne Admin Account Credentials along with the Login URL.
+
+- When using the GCS input, if you are using JSON Credentials inline, then you must specify the entire JSON object within single quotes i.e `'{GCS_CREDS_JSON_OBJECT}'`
 
 ### To collect data from AWS SQS, follow the below steps:
 
