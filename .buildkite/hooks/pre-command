@@ -53,6 +53,10 @@ if [ ${BUILDKITE_PIPELINE_SLUG} == "integrations" ]; then
 fi
 
 if [ ${BUILDKITE_PIPELINE_SLUG} == "integrations" ]; then
+    if [[ ${BUILDKITE_STEP_KEY} == "test-integrations" ]]; then
+        export BUILDKITE_API_TOKEN=$(retry 5 vault kv get -field buildkite_token ${BUILDKITE_API_TOKEN_PATH})
+    fi
+
     if [[ ${BUILDKITE_STEP_KEY} =~ ^test-integrations- ]]; then
         export ELASTIC_PACKAGE_AWS_SECRET_KEY=$(retry 5 vault kv get -field secret_key ${AWS_SERVICE_ACCOUNT_SECRET_PATH})
         export ELASTIC_PACKAGE_AWS_ACCESS_KEY=$(retry 5 vault kv get -field access_key ${AWS_SERVICE_ACCOUNT_SECRET_PATH})
