@@ -34,7 +34,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "0874c904-40cc-4817-b0f8-557b17245c75",
@@ -100,6 +100,7 @@ An example event for `log` looks as following:
         "microsoft_dhcp"
     ]
 }
+
 ```
 
 **Exported fields**

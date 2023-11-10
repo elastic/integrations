@@ -64,7 +64,7 @@ An example event for `system` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -198,6 +198,7 @@ An example event for `system` looks as following:
         "version": "72.0."
     }
 }
+
 ```
 
 **Exported fields**

@@ -138,7 +138,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
@@ -239,4 +239,5 @@ An example event for `audit` looks as following:
         "version": "96.0.4664.45"
     }
 }
+
 ```

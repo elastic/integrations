@@ -73,7 +73,7 @@ An example event for `dhcp_lease` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "e0bb9c9c-c3ad-47d7-882c-5fff0f458160",
@@ -148,6 +148,7 @@ An example event for `dhcp_lease` looks as following:
         "infoblox_bloxone_ddi-dhcp_lease"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -255,7 +256,7 @@ An example event for `dns_config` looks as following:
         }
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "e0bb9c9c-c3ad-47d7-882c-5fff0f458160",
@@ -904,6 +905,7 @@ An example event for `dns_config` looks as following:
         "infoblox_bloxone_ddi-dns_config"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -1283,7 +1285,7 @@ An example event for `dns_data` looks as following:
         }
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "e0bb9c9c-c3ad-47d7-882c-5fff0f458160",
@@ -1407,6 +1409,7 @@ An example event for `dns_data` looks as following:
         "bloxone_ddi-dns_data"
     ]
 }
+
 ```
 
 **Exported fields**

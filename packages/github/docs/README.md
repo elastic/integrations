@@ -109,7 +109,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f86f831a-cae2-454f-a985-4f579b0ee515",
@@ -155,6 +155,7 @@ An example event for `audit` looks as following:
         "name": "monalisa"
     }
 }
+
 ```
 
 
@@ -279,7 +280,7 @@ An example event for `code_scanning` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f86f831a-cae2-454f-a985-4f579b0ee515",
@@ -354,6 +355,7 @@ An example event for `code_scanning` looks as following:
         "security"
     ]
 }
+
 ```
 
 
@@ -456,7 +458,7 @@ An example event for `secret_scanning` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f86f831a-cae2-454f-a985-4f579b0ee515",
@@ -516,6 +518,7 @@ An example event for `secret_scanning` looks as following:
         "hide_secret"
     ]
 }
+
 ```
 
 ### Dependabot
@@ -643,7 +646,7 @@ An example event for `dependabot` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f86f831a-cae2-454f-a985-4f579b0ee515",
@@ -708,7 +711,7 @@ An example event for `dependabot` looks as following:
                     "name": "jsonwebtoken"
                 },
                 "updated_at": "2018-11-30T19:54:28Z",
-                "vulnerable_version_range": "\u003c 4.2.2"
+                "vulnerable_version_range": "< 4.2.2"
             },
             "state": "open",
             "vulnerable_manifest_filename": "package.json",
@@ -760,6 +763,7 @@ An example event for `dependabot` looks as following:
         "severity": "critical"
     }
 }
+
 ```
 
 ### Issues
@@ -893,7 +897,7 @@ An example event for `issues` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f86f831a-cae2-454f-a985-4f579b0ee515",
@@ -1005,4 +1009,5 @@ An example event for `issues` looks as following:
         "name": "octocat"
     }
 }
+
 ```

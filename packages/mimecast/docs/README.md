@@ -40,7 +40,7 @@ An example event for `archive_search` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f81bb806-77be-4e89-9f08-d426b37fd611",
@@ -87,6 +87,7 @@ An example event for `archive_search` looks as following:
         "name": "admin_dhamilton"
     }
 }
+
 ```
 
 **Exported fields**
@@ -176,7 +177,7 @@ An example event for `audit_events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
@@ -216,6 +217,7 @@ An example event for `audit_events` looks as following:
         "name": "johndoe"
     }
 }
+
 ```
 
 **Exported fields**
@@ -328,7 +330,7 @@ An example event for `dlp` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
@@ -339,10 +341,10 @@ An example event for `dlp` looks as following:
         "direction": "inbound",
         "from": {
             "address": [
-                "\u003c\u003e"
+                "<>"
             ]
         },
-        "message_id": "\u003c20211118214115.B346F10021D-2@mail.emailsec.ninja\u003e",
+        "message_id": "<20211118214115.B346F10021D-2@mail.emailsec.ninja>",
         "subject": "Undelivered Mail Returned to Sender",
         "to": {
             "address": [
@@ -370,6 +372,7 @@ An example event for `dlp` looks as following:
         "mimecast-dlp-logs"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -453,7 +456,7 @@ An example event for `siem` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
@@ -497,6 +500,7 @@ An example event for `siem` looks as following:
         "mimecast-siem-logs"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -655,7 +659,7 @@ An example event for `threat_intel_malware_customer` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
@@ -711,6 +715,7 @@ An example event for `threat_intel_malware_customer` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
@@ -811,7 +816,7 @@ An example event for `threat_intel_malware_grid` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
@@ -867,6 +872,7 @@ An example event for `threat_intel_malware_grid` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
@@ -970,7 +976,7 @@ An example event for `ttp_ap` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
@@ -991,10 +997,10 @@ An example event for `ttp_ap` looks as following:
         "direction": "inbound",
         "from": {
             "address": [
-                "\u003c\u003e"
+                "<>"
             ]
         },
-        "message_id": "\u003c1-CAKUQxhimsCd1bvWQVs14Amuh1+Hnw_bmSuA7ot8hy4eDa9_ziQ@mail.gmail.com\u003e",
+        "message_id": "<1-CAKUQxhimsCd1bvWQVs14Amuh1+Hnw_bmSuA7ot8hy4eDa9_ziQ@mail.gmail.com>",
         "subject": "Test Files",
         "to": {
             "address": [
@@ -1031,6 +1037,7 @@ An example event for `ttp_ap` looks as following:
         "mimecast-ttp-ap"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -1131,7 +1138,7 @@ An example event for `ttp_ip` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
@@ -1144,7 +1151,7 @@ An example event for `ttp_ip` looks as following:
                 "johndoe@example.com"
             ]
         },
-        "message_id": "\u003c20-MN2PR16MB2719879CA4DB60C265F7FD8FB0959@MN2PR16MB2719.namprd16.prod.outlook.com\u003e",
+        "message_id": "<20-MN2PR16MB2719879CA4DB60C265F7FD8FB0959@MN2PR16MB2719.namprd16.prod.outlook.com>",
         "subject": "Don't read, just fill out!",
         "to": {
             "address": [
@@ -1173,7 +1180,7 @@ An example event for `ttp_ip` looks as following:
             {
                 "checkerResult": "hit",
                 "impersonationDomainSource": "internal_user_name",
-                "similarDomain": "John Doe \u003cjohndoe_cdw@example.com\u003e",
+                "similarDomain": "John Doe <johndoe_cdw@example.com>",
                 "stringSimilarToDomain": "John Doe"
             }
         ],
@@ -1197,6 +1204,7 @@ An example event for `ttp_ip` looks as following:
         "mimecast-ttp-ip"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -1305,7 +1313,7 @@ An example event for `ttp_url` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
@@ -1319,7 +1327,7 @@ An example event for `ttp_url` looks as following:
                 "googlealerts-noreply@google.com"
             ]
         },
-        "message_id": "\u003c20-000000000000a02a0a05d0671c06@google.com\u003e",
+        "message_id": "<20-000000000000a02a0a05d0671c06@google.com>",
         "subject": "Google Alert - china",
         "to": {
             "address": [
@@ -1342,7 +1350,7 @@ An example event for `ttp_url` looks as following:
         "action": "allow",
         "actions": "Allow",
         "adminOverride": "N/A",
-        "category": "Search Engines \u0026 Portals",
+        "category": "Search Engines & Portals",
         "creationMethod": "User Click",
         "emailPartsDescription": [
             "Body"
@@ -1370,7 +1378,7 @@ An example event for `ttp_url` looks as following:
         "mimecast-ttp-url"
     ],
     "url": {
-        "original": "https://www.google.co.za/alerts/share?hl=en\u0026gl=US\u0026ru=https://www.wsj.com/articles/u-s-tests-israels-iron-dome-in-guam-as-defense-against-chinese-cruise-missiles-11636455224\u0026ss=tw\u0026rt=U.S.+Tests+Israel%27s+Iron+Dome+in+Guam+as+Defense+Against+Chinese+Cruise+Missiles+-+WSJ\u0026cd=KhQxNzg2NTc5NDQ3ODIzODUyNjI5NzIcZmQ4N2VjYzkxMGIxMWE4Yzpjby56YTplbjpVUw\u0026ssp=AMJHsmW3CCK1S4TNPifSXszcyaNMwd6TDg"
+        "original": "https://www.google.co.za/alerts/share?hl=en&gl=US&ru=https://www.wsj.com/articles/u-s-tests-israels-iron-dome-in-guam-as-defense-against-chinese-cruise-missiles-11636455224&ss=tw&rt=U.S.+Tests+Israel%27s+Iron+Dome+in+Guam+as+Defense+Against+Chinese+Cruise+Missiles+-+WSJ&cd=KhQxNzg2NTc5NDQ3ODIzODUyNjI5NzIcZmQ4N2VjYzkxMGIxMWE4Yzpjby56YTplbjpVUw&ssp=AMJHsmW3CCK1S4TNPifSXszcyaNMwd6TDg"
     },
     "user": {
         "email": [
@@ -1378,6 +1386,7 @@ An example event for `ttp_url` looks as following:
         ]
     }
 }
+
 ```
 
 **Exported fields**

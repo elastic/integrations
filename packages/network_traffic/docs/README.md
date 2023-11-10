@@ -300,7 +300,7 @@ An example event for `flow` looks as following:
         "packets": 2
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "c70d142e-4a17-4f44-8e4f-ae1b216f2ea2",
@@ -365,6 +365,7 @@ An example event for `flow` looks as following:
     },
     "type": "flow"
 }
+
 ```
 
 ## Protocols
@@ -611,7 +612,7 @@ An example event for `amqp` looks as following:
         "port": 5672
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "24617916-b7fd-4486-af56-1754af7b012c",
@@ -681,6 +682,7 @@ An example event for `amqp` looks as following:
     "status": "OK",
     "type": "amqp"
 }
+
 ```
 
 ### Cassandra
@@ -980,7 +982,7 @@ An example event for `cassandra` looks as following:
         "port": 9042
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "adef13cd-055b-465e-bc3e-5f12f6a4c481",
@@ -1051,6 +1053,7 @@ An example event for `cassandra` looks as following:
     "status": "OK",
     "type": "cassandra"
 }
+
 ```
 
 ### DHCP
@@ -1273,7 +1276,7 @@ An example event for `dhcpv4` looks as following:
         "transaction_id": "0x00003d1d"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "9e89fcea-696e-4a75-9119-4c7bc3a85882",
@@ -1342,6 +1345,7 @@ An example event for `dhcpv4` looks as following:
     "status": "OK",
     "type": "dhcpv4"
 }
+
 ```
 
 ### DNS
@@ -1625,7 +1629,7 @@ An example event for `dns` looks as following:
         "type": "answer"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
@@ -1708,6 +1712,7 @@ An example event for `dns` looks as following:
     "status": "OK",
     "type": "dns"
 }
+
 ```
 
 ### HTTP
@@ -2026,7 +2031,7 @@ An example event for `http` looks as following:
         "port": 8080
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "20cb5c83-48bd-4c1e-ab57-1a86b91daedc",
@@ -2132,6 +2137,7 @@ An example event for `http` looks as following:
         "original": "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; WOW64; Trident/4.0; chromeframe/20.0.1132.57; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; InfoPath.3; .NET4.0C; .NET4.0E)"
     }
 }
+
 ```
 
 ### ICMP
@@ -2314,7 +2320,7 @@ An example event for `icmp` looks as following:
         "ip": "10.0.0.2"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "138c995b-c63c-44be-aba8-a8cb9a58872d",
@@ -2396,6 +2402,7 @@ An example event for `icmp` looks as following:
     "status": "OK",
     "type": "icmp"
 }
+
 ```
 
 ### Memcached
@@ -2645,7 +2652,7 @@ An example event for `memcached` looks as following:
         "port": 11211
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f617d9af-c859-41da-b89c-a10379936378",
@@ -2734,6 +2741,7 @@ An example event for `memcached` looks as following:
     "status": "OK",
     "type": "memcache"
 }
+
 ```
 
 ### MongoDB
@@ -2939,7 +2947,7 @@ An example event for `mongodb` looks as following:
         "port": 27017
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -3022,6 +3030,7 @@ An example event for `mongodb` looks as following:
     "status": "OK",
     "type": "mongodb"
 }
+
 ```
 
 ### MySQL
@@ -3215,7 +3224,7 @@ An example event for `mysql` looks as following:
         "port": 3306
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -3295,6 +3304,7 @@ An example event for `mysql` looks as following:
     "status": "OK",
     "type": "mysql"
 }
+
 ```
 
 ### NFS
@@ -3484,7 +3494,7 @@ An example event for `nfs` looks as following:
         "port": 2049
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -3582,6 +3592,7 @@ An example event for `nfs` looks as following:
     "type": "nfs",
     "user.id": 48
 }
+
 ```
 
 ### PostgreSQL
@@ -3767,7 +3778,7 @@ An example event for `pgsql` looks as following:
         "port": 5432
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -3844,6 +3855,7 @@ An example event for `pgsql` looks as following:
     "status": "OK",
     "type": "pgsql"
 }
+
 ```
 
 ### Redis
@@ -4027,7 +4039,7 @@ An example event for `redis` looks as following:
         "port": 6380
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -4105,6 +4117,7 @@ An example event for `redis` looks as following:
     "status": "OK",
     "type": "redis"
 }
+
 ```
 
 ### SIP
@@ -4367,7 +4380,7 @@ An example event for `sip` looks as following:
         "port": 5060
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -4386,7 +4399,7 @@ An example event for `sip` looks as following:
         "end": "2023-05-08T10:14:50.199Z",
         "ingested": "2023-05-08T10:14:51Z",
         "kind": "event",
-        "original": "REGISTER sip:sip.cybercity.dk SIP/2.0\r\nVia: SIP/2.0/UDP 192.168.1.2;branch=z9hG4bKnp112903503-43a64480192.168.1.2;rport\r\nFrom: \u003csip:voi18062@sip.cybercity.dk\u003e;tag=6bac55c\r\nTo: \u003csip:voi18062@sip.cybercity.dk\u003e\r\nCall-ID: 578222729-4665d775@578222732-4665d772\r\nContact:  \u003csip:voi18062@192.168.1.2:5060;line=aca6b97ca3f5e51a\u003e;expires=1200;q=0.500\r\nExpires: 1200\r\nCSeq: 75 REGISTER\r\nContent-Length: 0\r\nAuthorization: Digest username=\"voi18062\",realm=\"sip.cybercity.dk\",uri=\"sip:192.168.1.2\",nonce=\"1701b22972b90f440c3e4eb250842bb\",opaque=\"1701a1351f70795\",nc=\"00000001\",response=\"79a0543188495d288c9ebbe0c881abdc\"\r\nMax-Forwards: 70\r\nUser-Agent: Nero SIPPS IP Phone Version 2.0.51.16\r\n\r\n",
+        "original": "REGISTER sip:sip.cybercity.dk SIP/2.0\r\nVia: SIP/2.0/UDP 192.168.1.2;branch=z9hG4bKnp112903503-43a64480192.168.1.2;rport\r\nFrom: <sip:voi18062@sip.cybercity.dk>;tag=6bac55c\r\nTo: <sip:voi18062@sip.cybercity.dk>\r\nCall-ID: 578222729-4665d775@578222732-4665d772\r\nContact:  <sip:voi18062@192.168.1.2:5060;line=aca6b97ca3f5e51a>;expires=1200;q=0.500\r\nExpires: 1200\r\nCSeq: 75 REGISTER\r\nContent-Length: 0\r\nAuthorization: Digest username=\"voi18062\",realm=\"sip.cybercity.dk\",uri=\"sip:192.168.1.2\",nonce=\"1701b22972b90f440c3e4eb250842bb\",opaque=\"1701a1351f70795\",nc=\"00000001\",response=\"79a0543188495d288c9ebbe0c881abdc\"\r\nMax-Forwards: 70\r\nUser-Agent: Nero SIPPS IP Phone Version 2.0.51.16\r\n\r\n",
         "sequence": 75,
         "start": "2023-05-08T10:14:50.199Z",
         "type": [
@@ -4509,6 +4522,7 @@ An example event for `sip` looks as following:
         "name": "voi18062"
     }
 }
+
 ```
 
 ### Thrift
@@ -4782,7 +4796,7 @@ An example event for `thrift` looks as following:
         "port": 9090
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -4860,6 +4874,7 @@ An example event for `thrift` looks as following:
     },
     "type": "thrift"
 }
+
 ```
 
 ### TLS
@@ -5258,7 +5273,7 @@ An example event for `tls` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "8a4932f4-ce31-4183-b0c7-a7008f14e6fa",
@@ -5440,6 +5455,7 @@ An example event for `tls` looks as following:
     },
     "type": "tls"
 }
+
 ```
 
 ## Licensing for Windows Systems

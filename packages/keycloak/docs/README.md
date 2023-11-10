@@ -152,7 +152,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "d053789b-7b04-4a8c-b06c-ca79014bb61a",
@@ -212,4 +212,5 @@ An example event for `log` looks as following:
         "keycloak-log"
     ]
 }
+
 ```
