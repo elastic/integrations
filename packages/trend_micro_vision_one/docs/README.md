@@ -61,7 +61,7 @@ An example event for `alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f86f831a-cae2-454f-a985-4f579b0ee515",
@@ -179,6 +179,7 @@ An example event for `alert` looks as following:
         "scheme": "https"
     }
 }
+
 ```
 
 **Exported fields**
@@ -318,7 +319,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f86f831a-cae2-454f-a985-4f579b0ee515",
@@ -377,6 +378,7 @@ An example event for `audit` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
@@ -472,7 +474,7 @@ An example event for `detection` looks as following:
         "port": 53
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "94a80c96-489d-4fc8-aeab-bdef580d21f8",
@@ -757,6 +759,7 @@ An example event for `detection` looks as following:
         "version": "12.0"
     }
 }
+
 ```
 
 **Exported fields**
