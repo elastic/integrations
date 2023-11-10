@@ -21,13 +21,26 @@ steps:
     steps:
 EOF
 
+# Get from and to changesets to avoid repeating the same queries for each package
+
+# setting default values for a PR
+from="$(get_from_changeset)"
+to="$(get_to_changeset)"
+
+# If this value is not available, check with last commit.
+if [[ ${BUILDKITE_BRANCH} == "main" || ${BUILDKITE_BRANCH} =~ ^backport- ]]; then
+    echo "[${package}] PR is affected: running on ${BUILDKITE_BRANCH} branch"
+    from="origin/${BUILDKITE_BRANCH}^"
+    to="origin/${BUILDKITE_BRANCH}"
+fi
+
 packages_to_test=0
 
 for package in ${PACKAGE_LIST}; do
     # check if needed to create an step for this package
     pushd packages/${package} > /dev/null
     skip_package="false"
-    if ! reason=$(is_pr_affected ${package}) ; then
+    if ! reason=$(is_pr_affected ${package} ${from} ${to}) ; then
         skip_package="true"
     fi
     echoerr "${reason}"
@@ -41,7 +54,7 @@ for package in ${PACKAGE_LIST}; do
     cat << EOF >> ${PIPELINE_FILE}
     - label: "Check integrations ${package}"
       key: "test-integrations-${package}"
-      command: ".buildkite/scripts/test_one_package.sh ${package}"
+      command: ".buildkite/scripts/test_one_package.sh ${package} ${from} ${to}"
       agents:
         provider: gcp
       env:

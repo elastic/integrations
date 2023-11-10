@@ -50,11 +50,22 @@ echo "Waiting time to avoid getaddrinfo ENOTFOUND errors..."
 sleep 120
 echo "Done."
 
+# setting default values for a PR
+from="$(get_from_changeset)"
+to="$(get_to_changeset)"
+
+# If this value is not available, check with last commit.
+if [[ ${BUILDKITE_BRANCH} == "main" || ${BUILDKITE_BRANCH} =~ ^backport- ]]; then
+    echo "[${package}] PR is affected: running on ${BUILDKITE_BRANCH} branch"
+    from="origin/${BUILDKITE_BRANCH}^"
+    to="origin/${BUILDKITE_BRANCH}"
+fi
+
 any_package_failing=0
 
 pushd packages > /dev/null
 for package in $(list_all_directories); do
-    if ! process_package ${package} ; then
+    if ! process_package ${package} ${from} ${to}; then
         any_package_failing=1
     fi
 done
