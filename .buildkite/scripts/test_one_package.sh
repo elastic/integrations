@@ -11,7 +11,12 @@ BENCHMARK_THRESHOLD=${BENCHMARK_THRESHOLD:-'15'}
 SKIPPED_PACKAGES_FILE_PATH="${WORKSPACE}/skipped_packages.txt"
 FAILED_PACKAGES_FILE_PATH="${WORKSPACE}/failed_packages.txt"
 
+# package name
 package="$1"
+# changesets
+from=${2:-""}
+to=${3:-""}
+
 
 if [ ! -d packages ]; then
     echo "Missing packages folder"
@@ -31,7 +36,7 @@ with_kubernetes
 use_elastic_package
 
 pushd packages > /dev/null
-if ! process_package ${package}; then
+if ! process_package ${package} ${from} ${to}; then
     echo "[${package}] failed"
     exit 1
 fi

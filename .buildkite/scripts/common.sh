@@ -469,6 +469,7 @@ get_from_changeset() {
 }
 
 get_to_changeset() {
+    # Changeset that triggered the build
     local to="${BUILDKITE_COMMIT}"
 
     if [[ "${BUILDKITE_BRANCH}" == "main" || ${BUILDKITE_BRANCH} =~ ^backport- ]]; then
@@ -479,6 +480,10 @@ get_to_changeset() {
 
 is_pr_affected() {
     local package="${1}"
+    local from=${2:-""}
+    local to=${3:-""}
+
+    echo "[${package}] Original commits: from '${from}' - to: '${to}'"
 
     if ! is_supported_stack ; then
         echo "[${package}] PR is not affected: unsupported stack (${STACK_VERSION})"
@@ -497,24 +502,14 @@ is_pr_affected() {
         return 0
     fi
 
-    # setting default values for a PR
-    # TODO: get previous built commit as in Jenkins (groovy)
-    # def from = env.CHANGE_TARGET?.trim() ? "origin/${env.CHANGE_TARGET}" : "${env.GIT_PREVIOUS_COMMIT?.trim() ? env.GIT_PREVIOUS_COMMIT : env.GIT_BASE_COMMIT}"
-    local from="$(get_from_changeset)"
-    local to="$(get_to_changeset)"
-
-    # TODO: If running for an integration branch (main, backport-*) check with
-    # GIT_PREVIOUS_SUCCESSFUL_COMMIT to check if the branch is still healthy.
-    # If this value is not available, check with last commit.
-    if [[ ${BUILDKITE_BRANCH} == "main" || ${BUILDKITE_BRANCH} =~ ^backport- ]]; then
-        echo "[${package}] PR is affected: running on ${BUILDKITE_BRANCH} branch"
-        # TODO: get previous successful commit as in Jenkins (groovy)
-        # from = env.GIT_PREVIOUS_SUCCESSFUL_COMMIT?.trim() ? env.GIT_PREVIOUS_SUCCESSFUL_COMMIT : "origin/${env.BRANCH_NAME}^"
-        from="origin/${BUILDKITE_BRANCH}^"
-        to="origin/${BUILDKITE_BRANCH}"
+    if [[ "${from}" == ""  || "${to}" == "" ]]; then
+        echo "[${package}] Calculating commits: from '${from}' - to: '${to}'"
+        # setting range of changesets to check differences
+        from="$(get_from_changeset)"
+        to="$(get_to_changeset)"
     fi
 
-    echo "[${package}]: commits: from: ${from} - to: ${to}"
+    echo "[${package}]: commits: from: '${from}' - to: '${to}'"
 
     echo "[${package}] git-diff: check non-package files"
     if git diff --name-only $(git merge-base ${from} ${to}) ${to} | egrep -v '^(packages/|.github/CODEOWNERS)' ; then
@@ -724,6 +719,8 @@ upload_safe_logs_from_package() {
 # Helper to run all tests and checks for a package
 process_package() {
     local package="$1"
+    local from=${2:-""}
+    local to=${3:-""}
     local exit_code=0
 
     echo "--- Package ${package}: check"
@@ -746,7 +743,7 @@ process_package() {
         fi
     fi
 
-    if ! reason=$(is_pr_affected ${package}) ; then
+    if ! reason=$(is_pr_affected ${package} ${from} ${to}) ; then
         echo "${reason}"
         echo "- ${reason}" >> ${SKIPPED_PACKAGES_FILE_PATH}
         popd > /dev/null

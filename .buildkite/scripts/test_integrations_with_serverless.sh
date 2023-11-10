@@ -50,11 +50,15 @@ echo "Waiting time to avoid getaddrinfo ENOTFOUND errors..."
 sleep 120
 echo "Done."
 
+# setting range of changesets to check differences
+from="$(get_from_changeset)"
+to="$(get_to_changeset)"
+
 any_package_failing=0
 
 pushd packages > /dev/null
 for package in $(list_all_directories); do
-    if ! process_package ${package} ; then
+    if ! process_package ${package} ${from} ${to}; then
         any_package_failing=1
     fi
 done
