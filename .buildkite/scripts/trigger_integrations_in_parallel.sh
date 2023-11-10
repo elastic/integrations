@@ -56,7 +56,7 @@ for package in ${PACKAGE_LIST}; do
         STACK_VERSION: "${STACK_VERSION}"
         FORCE_CHECK_ALL: "${FORCE_CHECK_ALL}"
         SERVERLESS: "false"
-        UPLOAD_SAFE_LOGS: 1"
+        UPLOAD_SAFE_LOGS: ${UPLOAD_SAFE_LOGS}
       artifact_paths:
         - build/test-results/*.xml
         - build/benchmark-results/*.xml
