@@ -21,13 +21,21 @@ steps:
     steps:
 EOF
 
+# Get from and to changesets to avoid repeating the same queries for each package
+
+# setting range of changesets to check differences
+from="$(get_from_changeset)"
+to="$(get_to_changeset)"
+
+echo "[DEBUG] Checking with commits: from: '${from}' to: '${to}'"
+
 packages_to_test=0
 
 for package in ${PACKAGE_LIST}; do
     # check if needed to create an step for this package
     pushd packages/${package} > /dev/null
     skip_package="false"
-    if ! reason=$(is_pr_affected ${package}) ; then
+    if ! reason=$(is_pr_affected ${package} ${from} ${to}) ; then
         skip_package="true"
     fi
     echoerr "${reason}"
@@ -41,7 +49,7 @@ for package in ${PACKAGE_LIST}; do
     cat << EOF >> ${PIPELINE_FILE}
     - label: "Check integrations ${package}"
       key: "test-integrations-${package}"
-      command: ".buildkite/scripts/test_one_package.sh ${package}"
+      command: ".buildkite/scripts/test_one_package.sh ${package} ${from} ${to}"
       agents:
         provider: gcp
       env:
