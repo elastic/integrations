@@ -63,7 +63,7 @@ An example event for `event` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "49007565-f0ac-4df0-9672-50a3e25920e8",
@@ -123,6 +123,7 @@ An example event for `event` looks as following:
         "preserve_original_event"
     ]
 }
+
 ```
 
 **Exported fields**
