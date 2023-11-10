@@ -88,7 +88,7 @@ An example event for `incident` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "94a22d9c-6d6d-444a-9f96-6383ca581cef",
@@ -175,6 +175,7 @@ An example event for `incident` looks as following:
         "scheme": "https"
     }
 }
+
 ```
 
 **Exported fields**

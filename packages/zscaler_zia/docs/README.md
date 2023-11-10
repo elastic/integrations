@@ -194,7 +194,7 @@ An example event for `alerts` looks as following:
         "port": 9012
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "747b3f2a-8b40-4ee3-9ddd-ec86e51f9342",
@@ -234,6 +234,7 @@ An example event for `alerts` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
@@ -291,7 +292,7 @@ An example event for `dns` looks as following:
         }
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "747b3f2a-8b40-4ee3-9ddd-ec86e51f9342",
@@ -366,6 +367,7 @@ An example event for `dns` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
@@ -422,7 +424,7 @@ An example event for `firewall` looks as following:
         "port": 0
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "747b3f2a-8b40-4ee3-9ddd-ec86e51f9342",
@@ -520,6 +522,7 @@ An example event for `firewall` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
@@ -586,7 +589,7 @@ An example event for `tunnel` looks as following:
         "ip": "0.0.0.0"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "747b3f2a-8b40-4ee3-9ddd-ec86e51f9342",
@@ -647,6 +650,7 @@ An example event for `tunnel` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
@@ -716,7 +720,7 @@ An example event for `web` looks as following:
         "ip": "1.128.3.4"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "747b3f2a-8b40-4ee3-9ddd-ec86e51f9342",
@@ -846,6 +850,7 @@ An example event for `web` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**

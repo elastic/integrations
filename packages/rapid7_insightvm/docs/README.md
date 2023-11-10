@@ -52,7 +52,7 @@ An example event for `asset` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
@@ -140,6 +140,7 @@ An example event for `asset` looks as following:
         "rapid7_insightvm-asset"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -252,7 +253,7 @@ An example event for `vulnerability` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
@@ -411,6 +412,7 @@ An example event for `vulnerability` looks as following:
         "severity": "critical"
     }
 }
+
 ```
 
 **Exported fields**

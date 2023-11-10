@@ -115,7 +115,7 @@ An example event for `threat` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "ce0bce5a-6e51-4f74-abca-79147f80e169",
@@ -154,6 +154,7 @@ An example event for `threat` looks as following:
         }
     }
 }
+
 ```
 
 ### Pulses Subscribed (Recommended)
@@ -301,7 +302,7 @@ An example event for `pulses_subscribed` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "600a00f7-4847-4076-8fc2-91c18ea2bc86",
@@ -379,4 +380,5 @@ An example event for `pulses_subscribed` looks as following:
         }
     }
 }
+
 ```
