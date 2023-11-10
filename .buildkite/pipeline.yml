@@ -29,9 +29,8 @@ steps:
 
   - label: "Unit tests"
     key: "unit-test"
-    command: "go test -covermode=atomic -coverprofile=TEST-go-integrations-coverage.cov -v -race -coverprofile=coverage.out ./..."
+    command: "go test -covermode=atomic -v -race -coverprofile=coverage.out ./..."
     artifact_paths:
-      - TEST-go-integrations-coverage.cov
       - coverage.out
     agents:
       image: "${LINUX_AGENT_IMAGE}"
@@ -40,7 +39,7 @@ steps:
 
   - label: ":sonarqube: Continuous Code Inspection"
     env:
-      VAULT_SONAR_TOKEN_PATH: "kv/data/ci-shared/platform-ingest/elastic/integrations/sonar-analyze-token"
+      VAULT_SONAR_TOKEN_PATH: "kv/ci-shared/platform-ingest/elastic/integrations/sonar-analyze-token"
     agents:
       image: "docker.elastic.co/cloud-ci/sonarqube/buildkite-scanner:latest"
     command:
