@@ -71,7 +71,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "45b4f828-da65-463c-980e-09ba9a67922b",
@@ -125,6 +125,7 @@ An example event for `log` looks as following:
         "cisco_nexus-log"
     ]
 }
+
 ```
 
 **Exported fields**

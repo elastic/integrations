@@ -37,7 +37,7 @@ An example event for `log` looks as following:
     },
     "barracuda_cloudgen_firewall": {
         "log": {
-            "app_rule": "\u003cApp\u003e:ALL-APPS",
+            "app_rule": "<App>:ALL-APPS",
             "fw_info": 2007
         }
     },
@@ -70,7 +70,7 @@ An example event for `log` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "70e82165-776e-4b35-98b8-b0c9491f4b6e",
@@ -145,6 +145,7 @@ An example event for `log` looks as following:
         "forwarded"
     ]
 }
+
 ```
 
 **Exported fields**

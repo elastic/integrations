@@ -162,7 +162,7 @@ An example event for `user` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "28086f58-96fe-486b-9ef2-4ca0bd13a4e5",
@@ -252,6 +252,7 @@ An example event for `user` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**

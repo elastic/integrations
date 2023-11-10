@@ -92,7 +92,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "45e49275-eb7d-4b20-a8af-d084fb2551c7",
@@ -127,6 +127,7 @@ An example event for `audit` looks as following:
         "carbon_black_cloud-audit"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -244,7 +245,7 @@ An example event for `alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "c073dde3-4d37-4b40-8161-a008a04d551f",
@@ -293,6 +294,7 @@ An example event for `alert` looks as following:
         "name": "test34@demo.com"
     }
 }
+
 ```
 
 **Exported fields**
@@ -465,7 +467,7 @@ An example event for `endpoint_event` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "3b20ea47-9610-412d-97e3-47cd19b7e4d5",
@@ -515,6 +517,7 @@ An example event for `endpoint_event` looks as following:
         "carbon_black_cloud-endpoint-event"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -732,7 +735,7 @@ An example event for `watchlist_hit` looks as following:
             "watchlists": [
                 {
                     "id": "P5f9AW29TGmTOvBW156Cig",
-                    "name": "ATT\u0026CK Framework"
+                    "name": "ATT&CK Framework"
                 }
             ]
         }
@@ -743,7 +746,7 @@ An example event for `watchlist_hit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -776,7 +779,7 @@ An example event for `watchlist_hit` looks as following:
             "sha256": "4fe6d9eb8109fb79ff645138de7cff37906867aade589bd68afa503a9ab3cfb2"
         },
         "parent": {
-            "command_line": "C:\\WINDOWS\\system32\\cmd.exe /c \"sc query aella_conf | findstr RUNNING \u003e null\"",
+            "command_line": "C:\\WINDOWS\\system32\\cmd.exe /c \"sc query aella_conf | findstr RUNNING > null\"",
             "entity_id": "7DESJ9GN-00442a47-00000fec-00000000-1d81ed87d4655d1",
             "executable": "c:\\windows\\syswow64\\cmd.exe",
             "hash": {
@@ -793,6 +796,7 @@ An example event for `watchlist_hit` looks as following:
         "carbon_black_cloud-watchlist-hit"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -919,7 +923,7 @@ An example event for `asset_vulnerability_summary` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "45e49275-eb7d-4b20-a8af-d084fb2551c7",
@@ -964,6 +968,7 @@ An example event for `asset_vulnerability_summary` looks as following:
         "severity": "CRITICAL"
     }
 }
+
 ```
 
 **Exported fields**

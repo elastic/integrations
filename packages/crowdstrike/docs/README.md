@@ -394,7 +394,7 @@ An example event for `falcon` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -453,6 +453,7 @@ An example event for `falcon` looks as following:
         "name": "api-client-id:1234567890abcdefghijklmnopqrstuvwxyz"
     }
 }
+
 ```
 
 ### FDR
@@ -1130,7 +1131,7 @@ An example event for `fdr` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -1224,4 +1225,5 @@ An example event for `fdr` looks as following:
         "scheme": "http"
     }
 }
+
 ```
