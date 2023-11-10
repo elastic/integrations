@@ -175,7 +175,7 @@ An example event for `log` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f1ee4a83-b99b-4611-925d-b83b001f8b86",
@@ -253,6 +253,7 @@ An example event for `log` looks as following:
         "original": "https://www.example.com/cart"
     }
 }
+
 ```
 
 **Exported fields**

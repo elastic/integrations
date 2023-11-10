@@ -323,7 +323,7 @@ An example event for `log` looks as following:
         "port": 56391
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "29d48081-6d4f-4236-b959-925451410f6f",
@@ -339,7 +339,7 @@ An example event for `log` looks as following:
         ],
         "dataset": "cisco_meraki.log",
         "ingested": "2023-09-20T09:12:35Z",
-        "original": "\u003c134\u003e1 1637691198.348361125 MX84 security_event ids_alerted signature=1:29708:4 priority=1 timestamp=1637691198.330873 dhost=D0:AB:D5:7B:43:73 direction=ingress protocol=tcp/ip src=67.43.156.12:80 dst=10.0.3.162:56391 decision=allowed message: BROWSER-IE Microsoft Internet Explorer CSS uninitialized object access attempt detected",
+        "original": "<134>1 1637691198.348361125 MX84 security_event ids_alerted signature=1:29708:4 priority=1 timestamp=1637691198.330873 dhost=D0:AB:D5:7B:43:73 direction=ingress protocol=tcp/ip src=67.43.156.12:80 dst=10.0.3.162:56391 decision=allowed message: BROWSER-IE Microsoft Internet Explorer CSS uninitialized object access attempt detected",
         "type": [
             "info",
             "indicator"
@@ -388,6 +388,7 @@ An example event for `log` looks as following:
         }
     }
 }
+
 ```
 
 ### API Endpoint (Webhooks)
@@ -632,7 +633,7 @@ An example event for `events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "29d48081-6d4f-4236-b959-925451410f6f",
@@ -681,4 +682,5 @@ An example event for `events` looks as following:
         "meraki-events"
     ]
 }
+
 ```
