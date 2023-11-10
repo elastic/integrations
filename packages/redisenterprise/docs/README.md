@@ -2,7 +2,8 @@
 
 Redis Enterprise integration provides monitoring of [redis](https://redis.com/) cluster. Monitoring is done via prometheus exported port of redis enterprise cluster. Once a redis enterprise [cluster](https://redis.com/redis-enterprise/technology/redis-enterprise-cluster-architecture/) is installed, prometheus port is available for monitoring. The url of the host:port(8070) needs to be passed to the hosts in the settings.
 
-Redis Enterpise integration is tested with redislabs/redis:7.2.4-72 version.
+## Compatibility
+Tested with Redis Enterprise v7.2.4.
 
 # Metrics
 
@@ -186,7 +187,7 @@ An example event for `node` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
-| redisenterprise.node.\*.value | Redisenterprise node gauge metric | object |
+| redisenterprise.node.\*.value | Node metrics fields. | object |
 | redisenterprise.node.labels.\* | Label fields | object |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
@@ -484,7 +485,7 @@ An example event for `proxy` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
-| redisenterprise.proxy.\*.counter | Redisenterprise proxy counter metric | object |
+| redisenterprise.proxy.\*.counter | Proxy metrics fields. | object |
 | redisenterprise.proxy.labels.\* | Label fields | object |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
