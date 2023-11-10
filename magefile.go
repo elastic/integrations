@@ -129,7 +129,67 @@ func ModTidy() error {
 	return sh.RunV("go", "mod", "tidy")
 }
 
-// UnitTest performs unit test on agent.
-func UnitTest() {
-	mg.Deps(Test.All)
-}
+// func (Prepare) Env() {
+// 	mg.Deps(Mkdir("build"), Build.GenerateConfig)
+// 	RunGo("version")
+// 	RunGo("env")
+// }
+
+// func (Build) GenerateConfig() error {
+// 	mg.Deps(Mkdir(buildDir))
+// 	return sh.Copy(filepath.Join(buildDir, configFile), filepath.Join(metaDir, configFile))
+// }
+
+// func (Build) TestBinaries() error {
+// 	wd, _ := os.Getwd()
+// 	testBinaryPkgs := []string{
+// 		filepath.Join(wd, "pkg", "component", "fake", "component"),
+// 		filepath.Join(wd, "pkg", "component", "fake", "shipper"),
+// 		filepath.Join(wd, "internal", "pkg", "agent", "install", "testblocking"),
+// 	}
+// 	for _, pkg := range testBinaryPkgs {
+// 		binary := filepath.Base(pkg)
+// 		if runtime.GOOS == "windows" {
+// 			binary += ".exe"
+// 		}
+
+// 		outputName := filepath.Join(pkg, binary)
+// 		err := RunGo("build", "-o", outputName, filepath.Join(pkg))
+// 		if err != nil {
+// 			return err
+// 		}
+// 		err = os.Chmod(outputName, 0755)
+// 		if err != nil {
+// 			return err
+// 		}
+// 	}
+// 	return nil
+// }
+
+// // UnitTest performs unit test on agent.
+// func UnitTest() {
+// 	mg.Deps(Test.All)
+// }
+
+// // RunGo runs go command and output the feedback to the stdout and the stderr.
+// func RunGo(args ...string) error {
+// 	return sh.RunV(mg.GoCmd(), args...)
+// }
+
+// // All runs all the tests.
+// func (Test) All() {
+// 	mg.SerialDeps(Test.Unit)
+// }
+
+// // Unit runs all the unit tests.
+// func (Test) Unit(ctx context.Context) error {
+// 	mg.Deps(Prepare.Env, Build.TestBinaries)
+// 	params := devtools.DefaultGoTestUnitArgs()
+// 	return devtools.GoTest(ctx, params)
+// }
+
+// // Coverage takes the coverages report from running all the tests and display the results in the browser.
+// func (Test) Coverage() error {
+// 	mg.Deps(Prepare.Env, Build.TestBinaries)
+// 	return RunGo("tool", "cover", "-html="+filepath.Join(buildDir, "coverage.out"))
+// }

@@ -1,17 +1,17 @@
 #!/bin/bash
 
-source .buildkite/scripts/common.sh
-
 set -euo pipefail
 
-add_bin_path
+go test -covermode=atomic -coverprofile=build/TEST-go-integrations-coverage.cov -v -race -coverprofile=build/coverage.out ./... | tee build/test-unit.out
 
-with_mage
+# add_bin_path
 
-echo "Starting the unit tests..."
-RACE_DETECTOR=true TEST_COVERAGE=true mage unitTest
-TESTS_EXIT_STATUS=$?
+# with_mage
 
-# Copy coverage file to build directory so it can be downloaded as an artifact
-cp build/TEST-go-unit.cov build/coverage.out
-exit $TESTS_EXIT_STATUS
+# echo "Starting the unit tests..."
+# RACE_DETECTOR=true TEST_COVERAGE=true mage unitTest
+# TESTS_EXIT_STATUS=$?
+
+# # Copy coverage file to build directory so it can be downloaded as an artifact
+# cp build/TEST-go-unit.cov build/coverage.out
+# exit $TESTS_EXIT_STATUS
