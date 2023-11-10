@@ -1,22 +1,28 @@
-# Install the current Go release
-$file = 'go1.21.3.windows-amd64.msi'
-$workDir = 'Documents\go'
-$url = 'https://storage.googleapis.com/golang/' + $file
-$dest = Join-Path $Home "Downloads"
-$dest = Join-Path $dest $file
-$gopath = Join-Path $Home $workDir
-If (!(Test-Path $gopath)) {
-    New-Item -path $gopath -type directory
-}
-$gopathbin = Join-Path $gopath "bin"
-[Environment]::SetEnvironmentVariable( "GOPATH", $gopath, [System.EnvironmentVariableTarget]::User )
-[Environment]::SetEnvironmentVariable( "GOBIN", $gopathbin, [System.EnvironmentVariableTarget]::User )
-Write-Output "downloading $url"
-$wc = New-Object System.Net.WebClient
-$wc.UseDefaultCredentials = $true
-$wc.Headers.Add("X-FORMS_BASED_AUTH_ACCEPTED", "f")
-$wc.DownloadFile($url, $dest)
-Write-Output "$url downloaded as $dest"
-Write-Output "installing $v..."
-Start-Process $dest
-Write-Output "done"
+# Install gcc TODO: Move to the VM image
+choco install mingw
+Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
+refreshenv
+
+$ErrorActionPreference = "Stop"
+
+$env:GvmVersion = "0.5.2"
+[Net.ServicePointManager]::SecurityProtocol = "tls12"
+$env:GoVersion = Get-Content -Path .go-version
+Invoke-WebRequest -URI https://github.com/andrewkroh/gvm/releases/download/v$env:GvmVersion/gvm-windows-amd64.exe -Outfile C:\Windows\System32\gvm.exe
+gvm --format=powershell $env:GoVersion | Invoke-Expression
+go version
+
+$GOPATH = $(go env GOPATH)
+$env:Path = "$GOPATH\bin;" + $env:Path
+[Environment]::SetEnvironmentVariable("GOPATH", "$GOPATH", [EnvironmentVariableTarget]::Machine)
+[Environment]::SetEnvironmentVariable("Path", "$GOPATH\bin;$env:Path", [EnvironmentVariableTarget]::Machine)
+
+# Install tools
+go install github.com/magefile/mage
+go install github.com/elastic/go-licenser
+go install golang.org/x/tools/cmd/goimports
+go install github.com/jstemmer/go-junit-report
+go install gotest.tools/gotestsum
+go install github.com/elastic/elastic-package
+
+elastic-package -h
