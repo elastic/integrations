@@ -29,15 +29,15 @@ processors:
       timezone: UTC
       formats:
         - ISO8601
-  - rename:
-      field: json.logName
-      target_field: log.logger
-      ignore_missing: true
-  - rename:
-      field: json.severity
-      target_field: log.level
-      ignore_missing: true
-  - set: 
+  - set:
+      field: log.logger
+      copy_from: json.logName
+      ignore_failure: true
+  - set:
+      field: log.level
+      copy_from: json.severity
+      ignore_failure: true
+  - set:
       field: event.id
       copy_from: json.insertId
       ignore_empty_value: true
@@ -53,14 +53,14 @@ processors:
       target_field: cloud.region
       type: string
       ignore_failure: true
-  - rename:
-      field: json.jsonPayload.authAnswer
-      target_field: gcp.dns.auth_answer
-      ignore_missing: true
-  - rename:
-      field: json.jsonPayload.destinationIP
-      target_field: gcp.dns.destination_ip
-      ignore_missing: true
+  - set:
+      field: gcp.dns.auth_answer
+      copy_from: json.jsonPayload.authAnswer
+      ignore_failure: true
+  - set:
+      field: gcp.dns.destination_ip
+      copy_from: json.jsonPayload.destinationIP
+      ignore_failure: true
   - set:
       field: destination.address
       copy_from: gcp.dns.destination_ip
@@ -70,14 +70,14 @@ processors:
       target_field: destination.ip
       type: ip
       ignore_failure: true
-  - rename:
-      field: json.jsonPayload.egressError
-      target_field: gcp.dns.egress_error
-      ignore_missing: true
-  - rename:
-      field: json.jsonPayload.protocol
-      target_field: gcp.dns.protocol
-      ignore_missing: true
+  - set:
+      field: gcp.dns.egress_error
+      copy_from: json.jsonPayload.egressError
+      ignore_failure: true
+  - set:
+      field: gcp.dns.protocol
+      copy_from: json.jsonPayload.protocol
+      ignore_failure: true
   - set:
       field: network.transport
       copy_from: gcp.dns.protocol
@@ -96,10 +96,10 @@ processors:
   - set:
       field: network.protocol
       value: dns
-  - rename:
-      field: json.jsonPayload.queryName
-      target_field: gcp.dns.query_name
-      ignore_missing: true
+  - set:
+      field: gcp.dns.query_name
+      copy_from: json.jsonPayload.queryName
+      ignore_failure: true
   - set:
       field: dns.question.name
       copy_from: gcp.dns.query_name
@@ -115,18 +115,18 @@ processors:
   - remove:
       field: dns.question.domain
       ignore_missing: true
-  - rename:
-      field: json.jsonPayload.queryType
-      target_field: gcp.dns.query_type
-      ignore_missing: true
+  - set:
+      field: gcp.dns.query_type
+      copy_from: json.jsonPayload.queryType
+      ignore_failure: true
   - set:
       field: dns.question.type
       copy_from: gcp.dns.query_type
       ignore_failure: true
-  - rename:
-      field: json.jsonPayload.rdata
-      target_field: gcp.dns.rdata
-      ignore_missing: true
+  - set:
+      field: gcp.dns.rdata
+      copy_from: json.jsonPayload.rdata
+      ignore_failure: true
 ### Internal DNS query parsing
   - script:
       if: ctx?.gcp?.dns?.rdata != null
@@ -244,30 +244,30 @@ processors:
             ctx.related.hosts.add(mx_server[1]);
           }
         }
-  - rename:
-      field: json.jsonPayload.responseCode
-      target_field: gcp.dns.response_code
-      ignore_missing: true
+  - set:
+      field: gcp.dns.response_code
+      copy_from: json.jsonPayload.responseCode
+      ignore_failure: true
   - set:
       field: dns.response_code
       copy_from: gcp.dns.response_code
       ignore_failure: true
-  - set: 
+  - set:
       field: event.outcome
       value: success
       if: ctx?.gcp?.dns?.response_code != null && ctx?.gcp?.dns?.response_code == "NOERROR"
-  - set: 
+  - set:
       field: event.outcome
       value: failure
       if: ctx?.gcp?.dns?.response_code != null && ctx?.gcp?.dns?.response_code != "NOERROR"
-  - rename:
-      field: json.jsonPayload.serverLatency
-      target_field: gcp.dns.server_latency
-      ignore_missing: true
-  - rename:
-      field: json.jsonPayload.sourceIP
-      target_field: gcp.dns.source_ip
-      ignore_missing: true
+  - set:
+      field: gcp.dns.server_latency
+      copy_from: json.jsonPayload.serverLatency
+      ignore_failure: true
+  - set:
+      field: gcp.dns.source_ip
+      copy_from: json.jsonPayload.sourceIP
+      ignore_failure: true
   - set:
       field: source.address
       copy_from: gcp.dns.source_ip
@@ -277,22 +277,22 @@ processors:
       target_field: source.ip
       type: ip
       ignore_failure: true
-  - rename:
-      field: json.jsonPayload.sourceNetwork
-      target_field: gcp.dns.source_network
-      ignore_missing: true
-  - rename:
-      field: json.jsonPayload.vmInstanceIdString
-      target_field: gcp.dns.vm_instance_id
-      ignore_missing: true
+  - set:
+      field: gcp.dns.source_network
+      copy_from: json.jsonPayload.sourceNetwork
+      ignore_failure: true
+  - set:
+      field: gcp.dns.vm_instance_id
+      copy_from: json.jsonPayload.vmInstanceIdString
+      ignore_failure: true
   - set:
       field: cloud.instance.id
       copy_from: gcp.dns.vm_instance_id
       ignore_failure: true
-  - rename:
-      field: json.jsonPayload.vmInstanceName
-      target_field: gcp.dns.vm_instance_name
-      ignore_missing: true
+  - set:
+      field: gcp.dns.vm_instance_name
+      copy_from: json.jsonPayload.vmInstanceName
+      ignore_failure: true
   - set:
       field: cloud.instance.name
       copy_from: gcp.dns.vm_instance_name
@@ -302,26 +302,26 @@ processors:
       pattern: "^.*[.]"
       replacement: ""
       ignore_failure: true
-  - rename:
-      field: json.jsonPayload.vmProjectId
-      target_field: gcp.dns.vm_project_id
-      ignore_missing: true
-  - rename:
-      field: json.jsonPayload.vmZoneName
-      target_field: gcp.dns.vm_zone_name
-      ignore_missing: true
+  - set:
+      field: gcp.dns.vm_project_id
+      copy_from: json.jsonPayload.vmProjectId
+      ignore_failure: true
+  - set:
+      field: gcp.dns.vm_zone_name
+      copy_from: json.jsonPayload.vmZoneName
+      ignore_failure: true
   - set:
       field: cloud.availability_zone
       copy_from: gcp.dns.vm_zone_name
       ignore_failure: true
-  - rename: 
-      field: json.resource.labels.target_type
-      target_field: gcp.dns.target_type
-      ignore_missing: true
-  - rename: 
-      field: json.resource.labels.source_type
-      target_field: gcp.dns.source_type
-      ignore_missing: true
+  - set:
+      field: gcp.dns.target_type
+      copy_from: json.resource.labels.target_type
+      ignore_failure: true
+  - set:
+      field: gcp.dns.source_type
+      copy_from: json.resource.labels.source_type
+      ignore_failure: true
   - append:
       field: related.ip
       value: "{{source.ip}}"
@@ -337,8 +337,14 @@ processors:
       value: "{{dns.question.name}}"
       allow_duplicates: false
       if: ctx.dns?.question?.name != null
-  - remove:
+  - rename:
       field: json
+      target_field: gcp.dns.flattened
+      if: ctx.json != null && ctx._conf?.keep_json == true
+  - remove:
+      field:
+        - _conf
+        - json
       ignore_missing: true
   - script:
       lang: painless

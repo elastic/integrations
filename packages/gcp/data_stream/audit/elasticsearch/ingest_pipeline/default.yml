@@ -113,20 +113,20 @@ processors:
 ##
 # email address of authenticated user (redacted) or service account
 # principalEmail -> client.user.email
-  - rename:
-      field: json.protoPayload.authenticationInfo.principalEmail
-      target_field: client.user.email
-      ignore_missing: true
+  - set:
+      field: client.user.email
+      copy_from: json.protoPayload.authenticationInfo.principalEmail
+      ignore_failure: true
 # identity of requesting first or third party
 # principalSubject -> client.user.id
-  - rename:
-      field: json.protoPayload.authenticationInfo.principalSubject
-      target_field: client.user.id
-      ignore_missing: true
-  - rename:
-      field: json.protoPayload.authenticationInfo.authoritySelector
-      target_field: gcp.audit.authentication_info.authority_selector
-      ignore_missing: true
+  - set:
+      field: client.user.id
+      copy_from: json.protoPayload.authenticationInfo.principalSubject
+      ignore_failure: true
+  - set:
+      field: gcp.audit.authentication_info.authority_selector
+      copy_from: json.protoPayload.authenticationInfo.authoritySelector
+      ignore_failure: true
 
   - rename:
       field: gcp.audit.authentication_info.principal_email
@@ -151,10 +151,10 @@ processors:
 # .protoPayload.authorizationInfo
 # https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog#authorizationinfo
 ##
-  - rename:
-      field: json.protoPayload.authorizationInfo
-      target_field: gcp.audit.authorization_info
-      ignore_missing: true
+  - set:
+      field: gcp.audit.authorization_info
+      copy_from: json.protoPayload.authorizationInfo
+      ignore_failure: true
   - foreach:
       field: gcp.audit.authorization_info
       ignore_missing: true
@@ -184,10 +184,10 @@ processors:
       field: json.protoPayload.requestMetadata.callerIp
       target_field: source.ip
       ignore_missing: true
-  - rename:
-      field: json.protoPayload.requestMetadata.callerSuppliedUserAgent
-      target_field: user_agent.original
-      ignore_missing: true
+  - set:
+      field: user_agent.original
+      copy_from: json.protoPayload.requestMetadata.callerSuppliedUserAgent
+      ignore_failure: true
   - user_agent:
       field: user_agent.original
       ignore_missing: true
@@ -227,10 +227,10 @@ processors:
         }
 
 # TODO remove duplicate protoPayload.methodName
-  - rename:
-      field: json.protoPayload.methodName
-      target_field: event.action
-      ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: json.protoPayload.methodName
+      ignore_failure: true
   - convert:
       field: json.protoPayload.numResponseItems
       target_field: gcp.audit.num_response_items
@@ -244,10 +244,10 @@ processors:
       field: gcp.audit.request.policy
       ignore_missing: true
       if: ctx.json?.protoPayload?.request?.policy != null && !(ctx.json?.protoPayload?.request.policy instanceof Map)
-  - rename:
-      field: json.protoPayload.request.policy
-      target_field: gcp.audit.request.policy_value
-      ignore_missing: true
+  - set:
+      field: gcp.audit.request.policy_value
+      copy_from: json.protoPayload.request.policy
+      ignore_failure: true
       if: ctx.json?.protoPayload?.request?.policy != null && !(ctx.json?.protoPayload?.request.policy instanceof Map)
   - set:
       field: gcp.audit.response
@@ -257,24 +257,24 @@ processors:
       field: gcp.audit.response.status
       ignore_missing: true
       if: ctx.json?.protoPayload?.response?.status != null && !(ctx.json?.protoPayload?.response.status instanceof Map)
-  - rename:
-      field: json.protoPayload.response.status
-      target_field: gcp.audit.response.status_value
-      ignore_missing: true
+  - set:
+      field: gcp.audit.response.status_value
+      copy_from: json.protoPayload.response.status
+      ignore_failure: true
       if: ctx.json?.protoPayload?.response?.status != null && !(ctx.json?.protoPayload?.response.status instanceof Map)
-  - rename:
-      field: json.protoPayload.resourceName
-      target_field: gcp.audit.resource_name
-      ignore_missing: true
+  - set:
+      field: gcp.audit.resource_name
+      copy_from: json.protoPayload.resourceName
+      ignore_failure: true
       if: ctx.orchestrator?.type != 'kubernetes'
-  - rename:
-      field: json.protoPayload.resourceLocation.currentLocations
-      target_field: gcp.audit.resource_location.current_locations
-      ignore_missing: true
-  - rename:
-      field: json.protoPayload.serviceName
-      target_field: gcp.audit.service_name
-      ignore_missing: true
+  - set:
+      field: gcp.audit.resource_location.current_locations
+      copy_from: json.protoPayload.resourceLocation.currentLocations
+      ignore_failure: true
+  - set:
+      field: gcp.audit.service_name
+      copy_from: json.protoPayload.serviceName
+      ignore_failure: true
   - rename:
       field: gcp.audit.service_name
       target_field: service.name
@@ -291,10 +291,10 @@ processors:
       target_field: gcp.audit.status.code
       type: long
       ignore_missing: true
-  - rename:
-      field: json.protoPayload.status.message
-      target_field: gcp.audit.status.message
-      ignore_missing: true
+  - set:
+      field: gcp.audit.status.message
+      copy_from: json.protoPayload.status.message
+      ignore_failure: true
   - set:
       field: event.outcome
       value: success
@@ -363,8 +363,13 @@ processors:
 ##
 # clean-up
 ##
+  - rename:
+      field: json
+      target_field: gcp.audit.flattened
+      if: ctx.json != null && ctx._conf?.keep_json == true
   - remove:
       field:
+        - _conf
         - _temp
         - json
       ignore_missing: true

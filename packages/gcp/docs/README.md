@@ -260,6 +260,7 @@ The `audit` dataset collects audit logs of administrative activities and accesse
 | gcp.audit.authorization_info.resource_attributes.name | The name of the resource. | keyword |
 | gcp.audit.authorization_info.resource_attributes.service | The name of the service. | keyword |
 | gcp.audit.authorization_info.resource_attributes.type | The type of the resource. | keyword |
+| gcp.audit.flattened | Contains the full audit document as sent by GCP. | flattened |
 | gcp.audit.labels | A map of key, value pairs that provides additional information about the log entry. The labels can be user-defined or system-defined. | flattened |
 | gcp.audit.logentry_operation.first | Optional. Set this to True if this is the first log entry in the operation. | boolean |
 | gcp.audit.logentry_operation.id | Optional. An arbitrary operation identifier. Log entries with the same identifier are assumed to be part of the same operation. | keyword |
@@ -358,8 +359,8 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2019-12-19T00:44:25.051Z",
     "agent": {
-        "ephemeral_id": "7780bdcf-661a-4891-83bd-dd5233873f9d",
-        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
+        "ephemeral_id": "a22278bb-5e1f-4ab7-b468-277c8c0b80a9",
+        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.7.1"
@@ -384,7 +385,7 @@ An example event for `audit` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
+        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
         "snapshot": false,
         "version": "8.7.1"
     },
@@ -395,10 +396,10 @@ An example event for `audit` looks as following:
             "network",
             "configuration"
         ],
-        "created": "2023-07-19T18:53:36.388Z",
+        "created": "2023-10-25T04:18:46.637Z",
         "dataset": "gcp.audit",
         "id": "yonau2dg2zi",
-        "ingested": "2023-07-19T18:53:40Z",
+        "ingested": "2023-10-25T04:18:47Z",
         "kind": "event",
         "outcome": "success",
         "provider": "data_access",
@@ -537,6 +538,7 @@ The `firewall` dataset collects logs from Firewall Rules in your Virtual Private
 | gcp.destination.vpc.project_id | ID of the project containing the VM. | keyword |
 | gcp.destination.vpc.subnetwork_name | Subnetwork on which the VM is operating. | keyword |
 | gcp.destination.vpc.vpc_name | VPC on which the VM is operating. | keyword |
+| gcp.firewall.flattened | Contains the full firewall document as sent by GCP. | flattened |
 | gcp.firewall.rule_details.action | Action that the rule performs on match. | keyword |
 | gcp.firewall.rule_details.destination_range | List of destination ranges that the firewall applies to. | keyword |
 | gcp.firewall.rule_details.direction | Direction of traffic that matches this rule. | keyword |
@@ -611,8 +613,8 @@ An example event for `firewall` looks as following:
 {
     "@timestamp": "2019-10-30T13:52:42.191Z",
     "agent": {
-        "ephemeral_id": "cf009128-e43c-42e4-9158-9b088bd6f3f5",
-        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
+        "ephemeral_id": "175ae0b3-355c-4ca7-87ea-d5f1ee34102e",
+        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.7.1"
@@ -640,7 +642,7 @@ An example event for `firewall` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
+        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
         "snapshot": false,
         "version": "8.7.1"
     },
@@ -650,10 +652,10 @@ An example event for `firewall` looks as following:
         "category": [
             "network"
         ],
-        "created": "2023-07-19T18:55:10.718Z",
+        "created": "2023-10-25T04:20:37.182Z",
         "dataset": "gcp.firewall",
         "id": "1f21ciqfpfssuo",
-        "ingested": "2023-07-19T18:55:14Z",
+        "ingested": "2023-10-25T04:20:41Z",
         "kind": "event",
         "type": [
             "allowed",
@@ -801,6 +803,7 @@ The `vpcflow` dataset collects logs sent from and received by VM instances, incl
 | gcp.source.vpc.project_id | ID of the project containing the VM. | keyword |
 | gcp.source.vpc.subnetwork_name | Subnetwork on which the VM is operating. | keyword |
 | gcp.source.vpc.vpc_name | VPC on which the VM is operating. | keyword |
+| gcp.vpcflow.flattened | Contains the full vpcflow document as sent by GCP. | flattened |
 | gcp.vpcflow.reporter | The side which reported the flow. Can be either 'SRC' or 'DEST'. | keyword |
 | gcp.vpcflow.rtt.ms | Latency as measured (for TCP flows only) during the time interval. This is the time elapsed between sending a SEQ and receiving a corresponding ACK and it contains the network RTT as well as the application related delay. | long |
 | host.architecture | Operating system architecture. | keyword |
@@ -864,14 +867,17 @@ An example event for `vpcflow` looks as following:
 {
     "@timestamp": "2019-06-14T03:50:10.845Z",
     "agent": {
-        "ephemeral_id": "a47f1e8b-f681-4e3b-87cd-6b2d54144577",
-        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
+        "ephemeral_id": "0b8165a2-0e25-4e9a-bb68-271697e0993f",
+        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.7.1"
     },
     "cloud": {
         "availability_zone": "us-east1-b",
+        "instance": {
+            "name": "kibana"
+        },
         "project": {
             "id": "my-sample-project"
         },
@@ -884,28 +890,16 @@ An example event for `vpcflow` looks as following:
         "type": "logs"
     },
     "destination": {
-        "address": "67.43.156.13",
-        "as": {
-            "number": 35908
-        },
-        "domain": "kibana",
-        "geo": {
-            "continent_name": "Asia",
-            "country_iso_code": "BT",
-            "country_name": "Bhutan",
-            "location": {
-                "lat": 27.5,
-                "lon": 90.5
-            }
-        },
-        "ip": "67.43.156.13",
-        "port": 33548
+        "address": "10.139.99.242",
+        "domain": "elasticsearch",
+        "ip": "10.139.99.242",
+        "port": 9200
     },
     "ecs": {
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
+        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
         "snapshot": false,
         "version": "8.7.1"
     },
@@ -914,13 +908,13 @@ An example event for `vpcflow` looks as following:
         "category": [
             "network"
         ],
-        "created": "2023-07-19T18:56:47.758Z",
+        "created": "2023-10-25T04:21:42.006Z",
         "dataset": "gcp.vpcflow",
-        "end": "2019-06-14T03:49:56.393651211Z",
-        "id": "ut8lbrffooxz4",
-        "ingested": "2023-07-19T18:56:51Z",
+        "end": "2019-06-14T03:49:51.821056075Z",
+        "id": "ut8lbrffooxz5",
+        "ingested": "2023-10-25T04:21:43Z",
         "kind": "event",
-        "start": "2019-06-14T03:40:05.147252064Z",
+        "start": "2019-06-14T03:40:20.510622432Z",
         "type": [
             "connection"
         ]
@@ -951,9 +945,9 @@ An example event for `vpcflow` looks as following:
             }
         },
         "vpcflow": {
-            "reporter": "SRC",
+            "reporter": "DEST",
             "rtt": {
-                "ms": 50
+                "ms": 201
             }
         }
     },
@@ -964,28 +958,40 @@ An example event for `vpcflow` looks as following:
         "logger": "projects/my-sample-project/logs/compute.googleapis.com%2Fvpc_flows"
     },
     "network": {
-        "bytes": 159704,
-        "community_id": "1:+S3/6PF+UXU7wlJD68HIrz0Mo6c=",
+        "bytes": 11773,
+        "community_id": "1:FYaJFSEAKLcBCMFoT6sR5TMHf/s=",
         "direction": "internal",
         "iana_number": "6",
         "name": "default",
-        "packets": 241,
+        "packets": 94,
         "transport": "tcp",
         "type": "ipv4"
     },
     "related": {
         "ip": [
-            "10.139.99.242",
-            "67.43.156.13"
+            "67.43.156.13",
+            "10.139.99.242"
         ]
     },
     "source": {
-        "address": "10.139.99.242",
-        "bytes": 159704,
-        "domain": "elasticsearch",
-        "ip": "10.139.99.242",
-        "packets": 241,
-        "port": 9200
+        "address": "67.43.156.13",
+        "as": {
+            "number": 35908
+        },
+        "bytes": 11773,
+        "domain": "kibana",
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
+        "ip": "67.43.156.13",
+        "packets": 94,
+        "port": 33576
     },
     "tags": [
         "forwarded",
@@ -1046,6 +1052,7 @@ The `dns` dataset collects queries that name servers resolve for your Virtual Pr
 | gcp.dns.auth_answer | Authoritative answer. | boolean |
 | gcp.dns.destination_ip | Destination IP address, only applicable for forwarding cases. | ip |
 | gcp.dns.egress_error | Egress proxy error. | keyword |
+| gcp.dns.flattened | Contains the full dns document as sent by GCP. | flattened |
 | gcp.dns.protocol | Protocol TCP or UDP. | keyword |
 | gcp.dns.query_name | DNS query name. | keyword |
 | gcp.dns.query_type | DNS query type. | keyword |
@@ -1097,11 +1104,11 @@ An example event for `dns` looks as following:
 {
     "@timestamp": "2021-12-12T15:59:40.446Z",
     "agent": {
-        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "ephemeral_id": "fd6c4189-cbc6-493a-acfb-c9e7b2b7588c",
+        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.7.1"
     },
     "cloud": {
         "project": {
@@ -1145,18 +1152,18 @@ An example event for `dns` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
+        "snapshot": false,
+        "version": "8.7.1"
     },
     "event": {
         "action": "dns-query",
         "agent_id_status": "verified",
         "category": "network",
-        "created": "2023-01-13T15:00:28.406Z",
+        "created": "2023-10-25T04:19:40.300Z",
         "dataset": "gcp.dns",
         "id": "zir4wud11tm",
-        "ingested": "2023-01-13T15:00:29Z",
+        "ingested": "2023-10-25T04:19:41Z",
         "kind": "event",
         "outcome": "success"
     },
