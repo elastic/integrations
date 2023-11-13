@@ -27,30 +27,6 @@ steps:
       cpu: "8"
       memory: "4G"
 
-  - label: ":smartbear-testexecute: Run unit tests"
-    key: "unit-test"
-    command: ".buildkite/scripts/unit_test.sh"
-    artifact_paths:
-      - "*.out"
-      - "*.xml"
-    agents:
-      image: "${LINUX_AGENT_IMAGE}"
-      cpu: "8"
-      memory: "4G"
-
-  - label: ":sonarqube: Continuous Code Inspection"
-    env:
-      VAULT_SONAR_TOKEN_PATH: "kv/ci-shared/platform-ingest/elastic/integrations/sonar-analyze-token"
-    agents:
-      image: "docker.elastic.co/cloud-ci/sonarqube/buildkite-scanner:latest"
-    command:
-      - "buildkite-agent artifact download coverage.out ."
-      - "buildkite-agent artifact download test-unit.out.xml ."
-      - "/scan-source-code.sh"
-    depends_on:
-      - step: "unit-test"
-        allow_failure: false
-
 
   # TODO: Pending to migrate stages from https://github.com/elastic/integrations/blob/993537b80456edf2035f2a4826031841116c2019/.ci/Jenkinsfile
   # - label: "Publish packages - INCOMPLETE"
@@ -71,8 +47,21 @@ steps:
       - step: "check"
         allow_failure: false
 
+
   - wait: ~
     continue_on_failure: true
+
+  - label: ":sonarqube: Continuous Code Inspection"
+    env:
+      VAULT_SONAR_TOKEN_PATH: "kv/ci-shared/platform-ingest/elastic/integrations/sonar-analyze-token"
+    agents:
+      image: "docker.elastic.co/cloud-ci/sonarqube/buildkite-scanner:latest"
+    command:
+      - "buildkite-agent artifact download build/test-results/*.xml ."
+      - "/scan-source-code.sh"
+    depends_on:
+      - step: "unit-test"
+        allow_failure: false
 
   - label: ":junit: Junit annotate"
     plugins:
