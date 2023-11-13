@@ -695,7 +695,7 @@ upload_safe_logs() {
 
     google_cloud_auth_safe_logs
 
-    gsutil cp "${source}" "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${target}"
+    gsutil cp ${source} "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${target}"
 
     google_cloud_logout_active_account
 }
@@ -907,7 +907,7 @@ download_benchmark_results() {
 
     google_cloud_auth_safe_logs
 
-    gsutil cp "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${source}" ${target}
+    gsutil cp "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${source}" "${target}"
 
     google_cloud_logout_active_account
 }
