@@ -320,10 +320,10 @@ is_supported_stack() {
     if [ "${kibana_version}" == "null" ]; then
         return 0
     fi
-    if [[ ! "${kibana_version}" =~ \^7\. && ${STACK_VERSION} =~ ^7\. ]]; then
+    if [[ ! "${kibana_version}" =~ \^7\. && "${STACK_VERSION}" =~ ^7\. ]]; then
         return 1
     fi
-    if [[ ! "${kibana_version}" =~ \^8\. && ${STACK_VERSION} =~ ^8\. ]]; then
+    if [[ ! "${kibana_version}" =~ \^8\. && "${STACK_VERSION}" =~ ^8\. ]]; then
         return 1
     fi
     return 0
@@ -333,7 +333,7 @@ oldest_supported_version() {
     local kibana_version
     kibana_version=$(kibana_version_manifest)
     if [ "$kibana_version" != "null" ]; then
-        python3 ${SCRIPTS_BUILDKITE_PATH}/find_oldest_supported_version.py --manifest manifest.yml
+        python3 "${SCRIPTS_BUILDKITE_PATH}/find_oldest_supported_version.py" --manifest-path manifest.yml
         return
     fi
     echo "null"
