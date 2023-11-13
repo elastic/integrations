@@ -32,7 +32,7 @@ choco install docker-compose
 # docker run hello-world
 
 wsl --install
-wsl -e .\.buildkite\scripts\setup_docker_wsl.sh
+wsl bash -c "sudo apt install docker-ce docker-ce-cli containerd.io; sudo docker run hello-world"
 
 # elastic-package stack up -d -v
 
