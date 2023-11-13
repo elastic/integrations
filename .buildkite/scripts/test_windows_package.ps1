@@ -32,7 +32,7 @@ choco install docker-compose
 # docker run hello-world
 
 wsl --install
-wsl -e ./.buildkite/scripts/setup_docker_wsl.sh
+wsl -e .\.buildkite\scripts\setup_docker_wsl.sh
 
 # elastic-package stack up -d -v
 
