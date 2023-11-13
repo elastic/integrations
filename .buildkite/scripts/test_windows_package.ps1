@@ -31,8 +31,11 @@ choco install docker-compose
 
 # docker run hello-world
 
+whoami
 wsl --install
-wsl bash -c "sudo apt install docker-ce docker-ce-cli containerd.io; sudo docker run hello-world"
+wsl --version
+wsl -l
+wsl sh -c "whoami"
 
 # elastic-package stack up -d -v
 
