@@ -27,7 +27,14 @@ go install github.com/elastic/elastic-package
 
 choco install docker-compose
 
-Enable-WindowsOptionalFeature -Online -FeatureName Containers -All
+# Enable-WindowsOptionalFeature -Online -FeatureName Containers -All
+
+# docker run hello-world
+
+# wsl --install
+
+# wsl -e "sh -c 'sudo apt install docker-ce docker-ce-cli containerd.io'"
+# wsl -e "sh -c 'sudo docker run hello-world'"
 
 elastic-package stack up -d -v
 
