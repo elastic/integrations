@@ -180,27 +180,27 @@ with_yq() {
 google_cloud_upload_auth() {
   local secretFileLocation
   secretFileLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE_BASE}.XXXXXXXXX")/${GOOGLE_CREDENTIALS_FILENAME}
-  echo "${PRIVATE_INFRA_GCS_CREDENTIALS_SECRET}" > ${secretFileLocation}
-  gcloud auth activate-service-account --key-file ${secretFileLocation} 2> /dev/null
+  echo "${PRIVATE_INFRA_GCS_CREDENTIALS_SECRET}" > "${secretFileLocation}"
+  gcloud auth activate-service-account --key-file "${secretFileLocation}" 2> /dev/null
   export GOOGLE_APPLICATION_CREDENTIALS=${secretFileLocation}
 }
 
 google_cloud_signing_auth() {
   local secretFileLocation
   secretFileLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE_BASE}.XXXXXXXXX")/${GOOGLE_CREDENTIALS_FILENAME}
-  echo "${SIGNING_PACKAGES_GCS_CREDENTIALS_SECRET}" > ${secretFileLocation}
-  gcloud auth activate-service-account --key-file ${secretFileLocation} 2> /dev/null
+  echo "${SIGNING_PACKAGES_GCS_CREDENTIALS_SECRET}" > "${secretFileLocation}"
+  gcloud auth activate-service-account --key-file "${secretFileLocation}" 2> /dev/null
   export GOOGLE_APPLICATION_CREDENTIALS=${secretFileLocation}
 }
 
 google_cloud_auth_safe_logs() {
     local gsUtilLocation
-    gsUtilLocation=$(mktemp -d -p ${WORKSPACE} -t ${TMP_FOLDER_TEMPLATE})
+    gsUtilLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE}")
     local secretFileLocation=${gsUtilLocation}/${GOOGLE_CREDENTIALS_FILENAME}
 
-    echo "${PRIVATE_CI_GCS_CREDENTIALS_SECRET}" > ${secretFileLocation}
+    echo "${PRIVATE_CI_GCS_CREDENTIALS_SECRET}" > "${secretFileLocation}"
 
-    gcloud auth activate-service-account --key-file ${secretFileLocation} 2> /dev/null
+    gcloud auth activate-service-account --key-file "${secretFileLocation}" 2> /dev/null
     export GOOGLE_APPLICATION_CREDENTIALS=${secretFileLocation}
 }
 
@@ -209,7 +209,7 @@ google_cloud_logout_active_account() {
   active_account=$(gcloud auth list --filter=status:ACTIVE --format="value(account)" 2>/dev/null || true)
   if [[ -n "$active_account" && -n "${GOOGLE_APPLICATION_CREDENTIALS+x}" ]]; then
     echo "Logging out from GCP for active account"
-    gcloud auth revoke $active_account > /dev/null 2>&1
+    gcloud auth revoke "$active_account" > /dev/null 2>&1
   else
     echo "No active GCP accounts found."
   fi
@@ -222,7 +222,7 @@ google_cloud_logout_active_account() {
 
 ## Helpers for integrations pipelines
 check_git_diff() {
-    cd ${WORKSPACE}
+    cd "${WORKSPACE}"
     echo "git update-index"
     git update-index --refresh
     echo "git diff-index"
@@ -248,7 +248,7 @@ is_already_published() {
 
 create_kind_cluster() {
     echo "--- Create kind cluster"
-    kind create cluster --config ${WORKSPACE}/kind-config.yaml --image kindest/node:${K8S_VERSION}
+    kind create cluster --config "${WORKSPACE}/kind-config.yaml" --image "kindest/node:${K8S_VERSION}"
 }
 
 
@@ -292,7 +292,7 @@ is_supported_capability() {
     fi
 
     if [[ ${SERVERLESS_PROJECT} == "observability" ]]; then
-        if echo ${capabilities} | grep -E 'apm|observability|uptime' ; then
+        if echo "${capabilities}" | grep -E 'apm|observability|uptime' ; then
             return 0
         else
             return 1
@@ -300,7 +300,7 @@ is_supported_capability() {
     fi
 
     if [[ ${SERVERLESS_PROJECT} == "security" ]]; then
-        if echo ${capabilities} | grep -E 'security' ; then
+        if echo "${capabilities}" | grep -E 'security' ; then
             return 0
         else
             return 1
@@ -401,7 +401,7 @@ prepare_serverless_stack() {
         -d \
         ${args} \
         --provider serverless \
-        -U stack.serverless.region=${EC_REGION_SECRET},stack.serverless.type=${SERVERLESS_PROJECT} 2>&1 | grep -E -v "^Password: " # To remove password from the output
+        -U "stack.serverless.region=${EC_REGION_SECRET},stack.serverless.type=${SERVERLESS_PROJECT}" 2>&1 | grep -E -v "^Password: " # To remove password from the output
     echo ""
     ${ELASTIC_PACKAGE_BIN} stack status
     echo ""
@@ -411,7 +411,7 @@ is_spec_3_0_0() {
     local pkg_spec
     pkg_spec=$(cat manifest.yml | yq '.format_version')
     local major_version
-    major_version=$(echo $pkg_spec | cut -d '.' -f 1)
+    major_version=$(echo "$pkg_spec" | cut -d '.' -f 1)
 
     if [ "${major_version}" -ge 3 ]; then
         return 0
@@ -443,7 +443,7 @@ get_previous_commit() {
     local status="state[]=failed&state[]=passed"
     local previous_commit
     previous_commit=$(get_commit_from_build "${pipeline}" "${branch}" "${status}")
-    echo ${previous_commit}
+    echo "${previous_commit}"
 }
 
 get_previous_successful_commit() {
@@ -452,7 +452,7 @@ get_previous_successful_commit() {
     local status="state=passed"
     local previous_commit
     previous_commit=$(get_commit_from_build "${pipeline}" "${branch}" "${status}")
-    echo ${previous_commit}
+    echo "${previous_commit}"
 }
 
 get_from_changeset() {
@@ -491,7 +491,7 @@ get_to_changeset() {
     if [[ "${BUILDKITE_BRANCH}" == "main" || ${BUILDKITE_BRANCH} =~ ^backport- ]]; then
         to="origin/${BUILDKITE_BRANCH}"
     fi
-    echo ${to}
+    echo "${to}"
 }
 
 is_pr_affected() {
@@ -558,9 +558,9 @@ teardown_serverless_test_package() {
     local dump_directory="${build_directory}/elastic-stack-dump/${package}"
 
     echo "Collect Elastic stack logs"
-    ${ELASTIC_PACKAGE_BIN} stack dump -v --output ${dump_directory}
+    ${ELASTIC_PACKAGE_BIN} stack dump -v --output "${dump_directory}"
 
-    upload_safe_logs_from_package ${package} ${build_directory}
+    upload_safe_logs_from_package "${package}" "${build_directory}"
 }
 
 teardown_test_package() {
@@ -747,13 +747,13 @@ process_package() {
     if is_serverless ; then
         if [[ "${package}" == "fleet_server" ]]; then
             echo "fleet_server not supported. Skipped"
-            echo "- [${package}] not supported" >> ${SKIPPED_PACKAGES_FILE_PATH}
+            echo "- [${package}] not supported" >> "${SKIPPED_PACKAGES_FILE_PATH}"
             popd > /dev/null
             return
         fi
         if ! is_spec_3_0_0 ; then
             echo "Not v3 spec version. Skipped"
-            echo "- [${package}] spec <3.0.0" >> ${SKIPPED_PACKAGES_FILE_PATH}
+            echo "- [${package}] spec <3.0.0" >> "${SKIPPED_PACKAGES_FILE_PATH}"
             popd > /dev/null
             return
         fi
@@ -761,7 +761,7 @@ process_package() {
 
     if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
         echo "${reason}"
-        echo "- ${reason}" >> ${SKIPPED_PACKAGES_FILE_PATH}
+        echo "- ${reason}" >> "${SKIPPED_PACKAGES_FILE_PATH}"
         popd > /dev/null
         return
     fi
@@ -781,7 +781,7 @@ process_package() {
     if ! run_tests_package "${package}" ; then
         exit_code=1
         echo "[${package}] run_tests_package failed"
-        echo "- ${package}" >> ${FAILED_PACKAGES_FILE_PATH}
+        echo "- ${package}" >> "${FAILED_PACKAGES_FILE_PATH}"
     fi
 
     if ! is_serverless ; then
@@ -843,17 +843,17 @@ add_github_comment_benchmark() {
         baseline
 
     echo "Debug: current benchmark"
-    ls -l ${current_benchmark_results}
+    ls -l "${current_benchmark_results}"
 
     echo "Debug: baseline benchmark"
-    ls -l ${baseline}
+    ls -l "${baseline}"
 
     echo "Run benchmark report"
     ${ELASTIC_PACKAGE_BIN} report benchmark \
         --fail-on-missing=false \
         --new="${current_benchmark_results}" \
         --old="${baseline}" \
-        --threshold=${BENCHMARK_THRESHOLD} \
+        --threshold="${BENCHMARK_THRESHOLD}" \
         --report-output-path="${benchmark_github_file}" \
         --full=${is_full_report}
 
