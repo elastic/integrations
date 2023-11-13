@@ -35,4 +35,7 @@ if ! process_package ${package}; then
     echo "[${package}] failed"
     exit 1
 fi
+
+# Test covaerage for SonarQube
+go test -covermode=atomic -v -coverprofile=build/test-coverage/coverage-$package-"$(date +%s%3N)".out
 popd > /dev/null
