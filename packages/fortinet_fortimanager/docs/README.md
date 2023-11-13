@@ -65,7 +65,7 @@ An example event for `log` looks as following:
         "id": "FMGVMSTM23000100"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "1c091add-3dae-4323-a5e8-648158c83b7b",
@@ -140,6 +140,7 @@ An example event for `log` looks as following:
         "name": "system"
     }
 }
+
 ```
 
 **Exported fields**
