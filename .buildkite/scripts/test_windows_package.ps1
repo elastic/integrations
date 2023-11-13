@@ -29,6 +29,10 @@ choco install docker-compose
 
 docker run hello-world
 
+wsl --install
+
+wsl whoami
+
 # elastic-package stack up -d -v
 
 # cd packages/windows
