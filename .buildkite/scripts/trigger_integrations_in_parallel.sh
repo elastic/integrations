@@ -52,7 +52,7 @@ for package in ${PACKAGE_LIST}; do
       artifact_paths:
         - build/test-results/*.xml
         - build/benchmark-results/*.xml
-        - build/test-coverage/*.xml
+        - build/test-coverage/*.out
 EOF
 done
 

@@ -598,6 +598,8 @@ test_package_in_local_stack() {
     # Run all test suites
     ${ELASTIC_PACKAGE_BIN} test ${TEST_OPTIONS}
     local ret=$?
+    # Test covaerage for SonarQube
+    go test -covermode=atomic -v -coverprofile=build/test-coverage/coverage-$package-"$(date +%s%3N)".out
     echo ""
     return $ret
 }
@@ -621,6 +623,8 @@ test_package_in_serverless() {
     if ! ${ELASTIC_PACKAGE_BIN} test pipeline ${TEST_OPTIONS} ; then
         return 1
     fi
+    # Test covaerage for SonarQube
+    go test -covermode=atomic -v -coverprofile=build/test-coverage/coverage-$package-"$(date +%s%3N)".out
     echo ""
     return 0
 }
