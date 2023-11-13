@@ -688,7 +688,7 @@ upload_safe_logs() {
     local source="$2"
     local target="$3"
 
-    if ! ls "${source}" 2>&1 > /dev/null ; then
+    if ! ls ${source} 2>&1 > /dev/null ; then
         echo "upload_safe_logs: artifacts files not found, nothing will be archived"
         return
     fi
