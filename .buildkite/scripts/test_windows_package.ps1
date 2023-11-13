@@ -32,6 +32,7 @@ choco install docker-compose
 # docker run hello-world
 
 wsl --install
+pwd
 wsl -e ./setup_docker_wsl.sh
 
 # elastic-package stack up -d -v
