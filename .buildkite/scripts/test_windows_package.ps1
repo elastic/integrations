@@ -27,10 +27,10 @@ go install github.com/elastic/elastic-package
 
 choco install docker-compose
 
-docker run mcr.microsoft.com/windows/server:ltsc2022 powershell.exe echo "It works!"
+Enable-WindowsOptionalFeature -Online -FeatureName Containers -All
 
-elastic-package stack up -d
+elastic-package stack up -d -v
 
-cd packages/windows
+# cd packages/windows
 
-elastic-package test system -v
+# elastic-package test system -v
