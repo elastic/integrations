@@ -27,8 +27,6 @@ go install github.com/elastic/elastic-package
 
 choco install docker-compose
 
-Enable-WindowsOptionalFeature -Online -FeatureName Containers -All
-
 docker run hello-world
 
 # elastic-package stack up -d -v
