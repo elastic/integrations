@@ -31,12 +31,11 @@ choco install docker-compose
 
 # docker run hello-world
 
-# wsl --install
+wsl --install
+wsl -e "sh -c 'sudo apt install docker-ce docker-ce-cli containerd.io'"
+wsl -e "sh -c 'sudo docker run hello-world'"
 
-# wsl -e "sh -c 'sudo apt install docker-ce docker-ce-cli containerd.io'"
-# wsl -e "sh -c 'sudo docker run hello-world'"
-
-elastic-package stack up -d -v
+# elastic-package stack up -d -v
 
 # cd packages/windows
 
