@@ -132,11 +132,14 @@ curl --location --request POST 'https://api.cloudflare.com/client/v4/zones/<ZONE
 --header 'Content-Type: application/json' \
 --data-raw '{
     "name":"<public domain>",
-    "destination_conf": "https://<public domain>:<public port>/<dataset path>?header_<secret_header>=<secret_value>",
+    "destination_conf": "https://<public domain>:<public port>/<dataset path>?header_Content-Type=application/json&header_<secret_header>=<secret_value>",
     "dataset": "audit",
     "logpull_options": "fields=RayID,EdgeStartTimestamp&timestamps=rfc3339"
 }'
 ```
+
+**Note**:
+- The destination_conf parameter inside the request data should set the Content-Type header to `application/json`. This is the content type that the HTTP endpoint expects for incoming events.
 - Default port for the HTTP Endpoint is _9560_.
 - When using the same port for more than one dataset, be sure to specify different dataset paths.
 
