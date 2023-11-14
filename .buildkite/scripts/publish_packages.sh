@@ -111,7 +111,6 @@ sign_packages() {
       --jenkins-job sign \
       --folder "${INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}"
 
-    sleep 5
     popd > /dev/null
 
     echo "Download signatures"
@@ -157,7 +156,6 @@ publish_packages() {
             --package="${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${package_zip}" \
             --signature="${PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${package_zip}.sig"
 
-        sleep 5
         popd > /dev/null
     done
     popd > /dev/null
