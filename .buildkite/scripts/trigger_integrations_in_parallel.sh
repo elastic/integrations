@@ -33,15 +33,15 @@ packages_to_test=0
 
 for package in ${PACKAGE_LIST}; do
     # check if needed to create an step for this package
-    pushd packages/${package} > /dev/null
+    pushd "packages/${package}" > /dev/null
     skip_package="false"
-    if ! reason=$(is_pr_affected ${package} ${from} ${to}) ; then
+    if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
         skip_package="true"
     fi
     echoerr "${reason}"
     popd > /dev/null
 
-    if [[ $skip_package == "true" ]] ; then
+    if [[ "$skip_package" == "true" ]] ; then
         continue
     fi
 
