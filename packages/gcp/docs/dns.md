@@ -52,6 +52,7 @@ The `dns` dataset collects queries that name servers resolve for your Virtual Pr
 | gcp.dns.auth_answer | Authoritative answer. | boolean |
 | gcp.dns.destination_ip | Destination IP address, only applicable for forwarding cases. | ip |
 | gcp.dns.egress_error | Egress proxy error. | keyword |
+| gcp.dns.flattened | Contains the full dns document as sent by GCP. | flattened |
 | gcp.dns.protocol | Protocol TCP or UDP. | keyword |
 | gcp.dns.query_name | DNS query name. | keyword |
 | gcp.dns.query_type | DNS query type. | keyword |
@@ -103,11 +104,11 @@ An example event for `dns` looks as following:
 {
     "@timestamp": "2021-12-12T15:59:40.446Z",
     "agent": {
-        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "ephemeral_id": "fd6c4189-cbc6-493a-acfb-c9e7b2b7588c",
+        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.7.1"
     },
     "cloud": {
         "project": {
@@ -151,18 +152,18 @@ An example event for `dns` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
+        "snapshot": false,
+        "version": "8.7.1"
     },
     "event": {
         "action": "dns-query",
         "agent_id_status": "verified",
         "category": "network",
-        "created": "2023-01-13T15:00:28.406Z",
+        "created": "2023-10-25T04:19:40.300Z",
         "dataset": "gcp.dns",
         "id": "zir4wud11tm",
-        "ingested": "2023-01-13T15:00:29Z",
+        "ingested": "2023-10-25T04:19:41Z",
         "kind": "event",
         "outcome": "success"
     },
