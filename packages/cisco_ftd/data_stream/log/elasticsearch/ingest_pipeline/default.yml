@@ -1378,6 +1378,96 @@ processors:
   # End of generated code.
   #*******************************************************************************
 
+# Convert security_event fields into their appropriate datatype
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.connection_duration != null
+      tag: convert-security_event_connection_duration
+      field: _temp_.cisco.security_event.connection_duration
+      target_field: _temp_.cisco.security_event.connection_duration
+      type: integer
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.dns_ttl != null
+      tag: convert-security_event_dns_ttl
+      field: _temp_.cisco.security_event.dns_ttl
+      target_field: _temp_.cisco.security_event.dns_ttl
+      type: integer
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.dst_ip != null
+      tag: convert-security_event_dst_ip
+      field: _temp_.cisco.security_event.dst_ip
+      target_field: _temp_.cisco.security_event.dst_ip
+      type: ip
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.dst_port != null
+      tag: convert-security_event_dst_port
+      field: _temp_.cisco.security_event.dst_port
+      target_field: _temp_.cisco.security_event.dst_port
+      type: integer
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.file_count != null
+      tag: convert-security_event_file_count
+      field: _temp_.cisco.security_event.file_count
+      target_field: _temp_.cisco.security_event.file_count
+      type: integer
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.file_size != null
+      tag: convert-security_event_file_size
+      field: _temp_.cisco.security_event.file_size
+      target_field: _temp_.cisco.security_event.file_size
+      type: integer
+  - date:
+      field: _temp_.cisco.security_event.first_packet_second
+      tag: date_first_packet_second
+      if: ctx._temp_?.cisco?.security_event?.first_packet_second != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.http_response != null
+      tag: convert-security_event_http_response
+      field: _temp_.cisco.security_event.http_response
+      target_field: _temp_.cisco.security_event.http_response
+      type: integer
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.initiator_bytes != null
+      tag: convert-security_event_initiator_bytes
+      field: _temp_.cisco.security_event.initiator_bytes
+      target_field: _temp_.cisco.security_event.initiator_bytes
+      type: long
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.initiator_packets != null
+      tag: convert-security_event_initiator_packets
+      field: _temp_.cisco.security_event.initiator_packets
+      target_field: _temp_.cisco.security_event.initiator_packets
+      type: integer
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.responder_bytes != null
+      tag: convert-security_event_responder_bytes
+      field: _temp_.cisco.security_event.responder_bytes
+      target_field: _temp_.cisco.security_event.responder_bytes
+      type: long
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.responder_packets != null
+      tag: convert-security_event_responder_packets
+      field: _temp_.cisco.security_event.responder_packets
+      target_field: _temp_.cisco.security_event.responder_packets
+      type: integer
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.src_ip != null
+      tag: convert-security_event_src_ip
+      field: _temp_.cisco.security_event.src_ip
+      target_field: _temp_.cisco.security_event.src_ip
+      type: ip
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.src_port != null
+      tag: convert-security_event_src_port
+      field: _temp_.cisco.security_event.src_port
+      target_field: _temp_.cisco.security_event.src_port
+      type: integer
+
   # Move out security fields out of flattened datatype. Related: https://github.com/elastic/integrations/issues/5769
   # - set:
   #     copy_from: _temp_.cisco.security

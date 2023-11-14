@@ -20,38 +20,40 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2019-08-16T09:39:03.000Z",
+    "@timestamp": "2019-08-16T09:39:02.000Z",
     "agent": {
-        "ephemeral_id": "26eb6818-fd18-4fc7-aa90-b1b53cefb42c",
-        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "ephemeral_id": "1ab84bcb-b57f-4f6a-bb15-6534c4ceba57",
+        "id": "003c2ae5-ffc1-4a61-a309-b9d59a743dda",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.1"
+        "version": "8.10.3"
     },
     "cisco": {
         "ftd": {
             "rule_name": "malware-and-file-policy",
             "security": {
+                "file_storage_status": "Not Stored (Disposition Was Pending)",
+                "threat_name": "Win.Ransomware.Eicar::95.sbx.tg"
+            },
+            "security_event": {
                 "application_protocol": "HTTP",
                 "client": "cURL",
                 "dst_ip": "81.2.69.144",
-                "dst_port": "80",
+                "dst_port": 80,
                 "file_action": "Malware Cloud Lookup",
                 "file_direction": "Download",
                 "file_name": "eicar_com.zip",
                 "file_policy": "malware-and-file-policy",
                 "file_sandbox_status": "File Size Is Too Small",
                 "file_sha256": "2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad",
-                "file_size": "184",
-                "file_storage_status": "Not Stored (Disposition Was Pending)",
+                "file_size": 184,
                 "file_type": "ZIP",
                 "first_packet_second": "2019-08-16T09:39:02Z",
                 "protocol": "tcp",
                 "sha_disposition": "Unavailable",
                 "spero_disposition": "Spero detection not performed on file",
                 "src_ip": "10.0.1.20",
-                "src_port": "46004",
-                "threat_name": "Win.Ransomware.Eicar::95.sbx.tg",
+                "src_port": 46004,
                 "uri": "http://www.eicar.org/download/eicar_com.zip",
                 "user": "No Authentication Required"
             },
@@ -81,12 +83,12 @@ An example event for `log` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "id": "003c2ae5-ffc1-4a61-a309-b9d59a743dda",
         "snapshot": false,
-        "version": "8.9.1"
+        "version": "8.10.3"
     },
     "event": {
         "action": "malware-detected",
@@ -97,7 +99,7 @@ An example event for `log` looks as following:
         ],
         "code": "430005",
         "dataset": "cisco_ftd.log",
-        "ingested": "2023-08-29T16:38:11Z",
+        "ingested": "2023-11-14T06:10:15Z",
         "kind": "event",
         "original": "2019-08-16T09:39:03Z firepower  %FTD-1-430005: SrcIP: 10.0.1.20, DstIP: 81.2.69.144, SrcPort: 46004, DstPort: 80, Protocol: tcp, FileDirection: Download, FileAction: Malware Cloud Lookup, FileSHA256: 2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad, SHA_Disposition: Unavailable, SperoDisposition: Spero detection not performed on file, ThreatName: Win.Ransomware.Eicar::95.sbx.tg, FileName: eicar_com.zip, FileType: ZIP, FileSize: 184, ApplicationProtocol: HTTP, Client: cURL, User: No Authentication Required, FirstPacketSecond: 2019-08-16T09:39:02Z, FilePolicy: malware-and-file-policy, FileStorageStatus: Not Stored (Disposition Was Pending), FileSandboxStatus: File Size Is Too Small, URI: http://www.eicar.org/download/eicar_com.zip",
         "severity": 1,
@@ -123,7 +125,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "alert",
         "source": {
-            "address": "172.21.0.4:45378"
+            "address": "192.168.160.4:39732"
         }
     },
     "network": {
@@ -216,43 +218,43 @@ An example event for `log` looks as following:
 | cisco.ftd.security_event.application_protocol |  | keyword |
 | cisco.ftd.security_event.client |  | keyword |
 | cisco.ftd.security_event.client_version |  | keyword |
-| cisco.ftd.security_event.connection_duration |  | keyword |
+| cisco.ftd.security_event.connection_duration |  | integer |
 | cisco.ftd.security_event.dns_query |  | keyword |
 | cisco.ftd.security_event.dns_record_type |  | keyword |
 | cisco.ftd.security_event.dns_response_type |  | keyword |
-| cisco.ftd.security_event.dns_ttl |  | keyword |
-| cisco.ftd.security_event.dst_ip |  | keyword |
-| cisco.ftd.security_event.dst_port |  | keyword |
+| cisco.ftd.security_event.dns_ttl |  | integer |
+| cisco.ftd.security_event.dst_ip |  | ip |
+| cisco.ftd.security_event.dst_port |  | integer |
 | cisco.ftd.security_event.egress_interface |  | keyword |
 | cisco.ftd.security_event.egress_zone |  | keyword |
 | cisco.ftd.security_event.file_action |  | keyword |
-| cisco.ftd.security_event.file_count |  | keyword |
+| cisco.ftd.security_event.file_count |  | integer |
 | cisco.ftd.security_event.file_direction |  | keyword |
 | cisco.ftd.security_event.file_name |  | keyword |
 | cisco.ftd.security_event.file_policy |  | keyword |
 | cisco.ftd.security_event.file_sandbox_status |  | keyword |
 | cisco.ftd.security_event.file_sha256 |  | keyword |
-| cisco.ftd.security_event.file_size |  | keyword |
+| cisco.ftd.security_event.file_size |  | integer |
 | cisco.ftd.security_event.file_type |  | keyword |
-| cisco.ftd.security_event.first_packet_second |  | keyword |
+| cisco.ftd.security_event.first_packet_second |  | date |
 | cisco.ftd.security_event.http_referer |  | keyword |
-| cisco.ftd.security_event.http_response |  | keyword |
+| cisco.ftd.security_event.http_response |  | integer |
 | cisco.ftd.security_event.icmp_code |  | keyword |
 | cisco.ftd.security_event.icmp_type |  | keyword |
 | cisco.ftd.security_event.ingress_interface |  | keyword |
 | cisco.ftd.security_event.ingress_zone |  | keyword |
-| cisco.ftd.security_event.initiator_bytes |  | keyword |
-| cisco.ftd.security_event.initiator_packets |  | keyword |
+| cisco.ftd.security_event.initiator_bytes |  | long |
+| cisco.ftd.security_event.initiator_packets |  | integer |
 | cisco.ftd.security_event.nap_policy |  | keyword |
 | cisco.ftd.security_event.prefilter_policy |  | keyword |
 | cisco.ftd.security_event.protocol |  | keyword |
 | cisco.ftd.security_event.referenced_host |  | keyword |
-| cisco.ftd.security_event.responder_bytes |  | keyword |
-| cisco.ftd.security_event.responder_packets |  | keyword |
+| cisco.ftd.security_event.responder_bytes |  | long |
+| cisco.ftd.security_event.responder_packets |  | integer |
 | cisco.ftd.security_event.sha_disposition |  | keyword |
 | cisco.ftd.security_event.spero_disposition |  | keyword |
-| cisco.ftd.security_event.src_ip |  | keyword |
-| cisco.ftd.security_event.src_port |  | keyword |
+| cisco.ftd.security_event.src_ip |  | ip |
+| cisco.ftd.security_event.src_port |  | integer |
 | cisco.ftd.security_event.ssl_actual_action |  | keyword |
 | cisco.ftd.security_event.ssl_certificate |  | keyword |
 | cisco.ftd.security_event.ssl_expected_action |  | keyword |
