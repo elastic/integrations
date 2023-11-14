@@ -436,13 +436,13 @@ An example event for `xg` looks as following:
 
 ```json
 {
-    "@timestamp": "2016-12-02T18:50:20.000-04:00",
+    "@timestamp": "2016-12-02T18:50:20.000Z",
     "agent": {
-        "ephemeral_id": "d5215f8a-30c5-415a-8eb1-522f84d37cd8",
-        "id": "4177e838-ee84-4595-9ab6-ad964a2fa418",
+        "ephemeral_id": "12701a32-24a5-401a-a7f4-b8202e00f440",
+        "id": "533bdb32-d7d6-482e-a4ee-22a7c8ba474c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.10.3"
+        "version": "8.8.1"
     },
     "data_stream": {
         "dataset": "sophos.xg",
@@ -453,9 +453,9 @@ An example event for `xg` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "4177e838-ee84-4595-9ab6-ad964a2fa418",
+        "id": "533bdb32-d7d6-482e-a4ee-22a7c8ba474c",
         "snapshot": false,
-        "version": "8.10.3"
+        "version": "8.8.1"
     },
     "event": {
         "action": "alert",
@@ -465,11 +465,11 @@ An example event for `xg` looks as following:
         ],
         "code": "16010",
         "dataset": "sophos.xg",
-        "ingested": "2023-11-14T18:03:38Z",
+        "ingested": "2023-07-20T08:39:24Z",
         "kind": "event",
         "outcome": "success",
         "severity": 1,
-        "timezone": "-04:00"
+        "timezone": "GMT"
     },
     "host": {
         "name": "XG230"
@@ -480,7 +480,7 @@ An example event for `xg` looks as following:
     "log": {
         "level": "alert",
         "source": {
-            "address": "192.168.48.4:47982"
+            "address": "172.31.0.4:59318"
         }
     },
     "observer": {
@@ -527,6 +527,7 @@ An example event for `xg` looks as following:
         "forwarded"
     ]
 }
+
 ```
 
 **Exported fields**
