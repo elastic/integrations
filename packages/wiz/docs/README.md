@@ -100,7 +100,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "927b2eff-4394-4486-ab77-d6bfa7c529cf",
@@ -241,7 +241,7 @@ An example event for `issue` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "927b2eff-4394-4486-ab77-d6bfa7c529cf",
@@ -509,7 +509,7 @@ An example event for `vulnerability` looks as following:
         "id": "c828de0d-4c42-5b1c-946b-2edee094d0b3"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "927b2eff-4394-4486-ab77-d6bfa7c529cf",
