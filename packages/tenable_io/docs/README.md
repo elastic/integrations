@@ -78,7 +78,7 @@ An example event for `asset` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "3c385f00-c1f1-40dd-b812-1cf0a8cc55cf",
@@ -220,6 +220,7 @@ An example event for `asset` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
@@ -375,7 +376,7 @@ An example event for `plugin` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "3c385f00-c1f1-40dd-b812-1cf0a8cc55cf",
@@ -523,6 +524,7 @@ An example event for `plugin` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
@@ -680,7 +682,7 @@ An example event for `vulnerability` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "3c385f00-c1f1-40dd-b812-1cf0a8cc55cf",
@@ -865,6 +867,7 @@ An example event for `vulnerability` looks as following:
         "severity": "low"
     }
 }
+
 ```
 
 **Exported fields**
@@ -1087,7 +1090,7 @@ An example event for `scan` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "3c385f00-c1f1-40dd-b812-1cf0a8cc55cf",
@@ -1153,6 +1156,7 @@ An example event for `scan` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
