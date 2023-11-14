@@ -41,7 +41,7 @@
                         "description": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "**Navigation** \n\n**Logstash Overview**\n\n[Overview](/app/dashboards#/view/logstash-79270240-48ee-11ee-8cb5-99927777c522)  \n[Nodes Overview](/app/dashboards#/view/logstash-ee860840-41ed-11ee-874b-fdb94cc3273a)  \n[Node Overview](/app/dashboards#/view/logstash-9d450b10-4680-11ee-9ddc-919f87fe352d)  \n[Node Overview Advanced View](/app/dashboards#/view/logstash-a42d7060-45e6-11ee-957b-3720c0b0fbc5)  \n\n**[Pipelines Overview](/app/dashboards#/view/logstash-c0594170-526a-11ee-9ecc-31444cb79548)**  \n[Pipeline Details Overview](/app/dashboards#/view/logstash-bc1a8050-5ee1-11ee-8e78-bf6865bc3ffc)\n\n\nOverview\n\nThis Dashboard gives an overall view of pipelines running on dashboards.  \nClick on a pipeline in the list view to get more details on the running pipeline, and the plugins in that pipeline.",
+                            "markdown": "**Navigation** \n\n**Logstash Overview**\n\n[Overview](/app/dashboards#/view/logstash-79270240-48ee-11ee-8cb5-99927777c522)  \n[Nodes Overview](/app/dashboards#/view/logstash-ee860840-41ed-11ee-874b-fdb94cc3273a)  \n[Node Overview](/app/dashboards#/view/logstash-9d450b10-4680-11ee-9ddc-919f87fe352d)  \n[Node Overview Advanced View](/app/dashboards#/view/logstash-a42d7060-45e6-11ee-957b-3720c0b0fbc5)  \n\n**[Pipelines Overview](/app/dashboards#/view/logstash-c0594170-526a-11ee-9ecc-31444cb79548)**  \n[Pipeline Details Overview](/app/dashboards#/view/logstash-bc1a8050-5ee1-11ee-8e78-bf6865bc3ffc)\n\n\nOverview\n\nThis Dashboard gives an overall view of pipelines running on dashboards.  \n  \nClick on a pipeline in the table view to get more details on the running pipeline, and the plugins in that pipeline.",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -1033,6 +1033,254 @@
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "references": [
+                            {
+                                "id": "logstash-sm-metrics",
+                                "name": "indexpattern-datasource-layer-4d13c1a7-6b92-47fe-8baf-7ca505bd9fda",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "4d13c1a7-6b92-47fe-8baf-7ca505bd9fda": {
+                                            "columnOrder": [
+                                                "31515c2b-a1f2-4da6-a5f7-f6f2ad8bc7d3",
+                                                "1c9f4a0d-3d6f-4126-afbb-ba4745e565d5",
+                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececf",
+                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX0",
+                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX1",
+                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX2",
+                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX3",
+                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX4",
+                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX5",
+                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX6"
+                                            ],
+                                            "columns": {
+                                                "1c9f4a0d-3d6f-4126-afbb-ba4745e565d5": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "31515c2b-a1f2-4da6-a5f7-f6f2ad8bc7d3": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Pipeline Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "logstash.pipeline.name"
+                                                },
+                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececf": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Average time processing per event",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "ms"
+                                                            }
+                                                        },
+                                                        "formula": "cumulative_sum(counter_rate(max(logstash.pipeline.total.time.duration.ms)))/cumulative_sum(counter_rate((max(logstash.pipeline.total.events.out))))",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX6"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Average time processing per event",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "logstash.pipeline.total.time.duration.ms"
+                                                },
+                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Average time processing per event",
+                                                    "operationType": "counter_rate",
+                                                    "references": [
+                                                        "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX0"
+                                                    ],
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
+                                                },
+                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Average time processing per event",
+                                                    "operationType": "cumulative_sum",
+                                                    "references": [
+                                                        "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Average time processing per event",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "logstash.pipeline.total.events.out"
+                                                },
+                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX4": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Average time processing per event",
+                                                    "operationType": "counter_rate",
+                                                    "references": [
+                                                        "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX3"
+                                                    ],
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
+                                                },
+                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX5": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Average time processing per event",
+                                                    "operationType": "cumulative_sum",
+                                                    "references": [
+                                                        "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX4"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX6": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Average time processing per event",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX2",
+                                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX5"
+                                                            ],
+                                                            "location": {
+                                                                "max": 147,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "cumulative_sum(counter_rate(max(logstash.pipeline.total.time.duration.ms)))/cumulative_sum(counter_rate((max(logstash.pipeline.total.events.out))))",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX2",
+                                                        "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX5"
+                                                    ],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "d9cd1ee6-586c-41b4-9d5f-976cd8eececf"
+                                        ],
+                                        "layerId": "4d13c1a7-6b92-47fe-8baf-7ca505bd9fda",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "31515c2b-a1f2-4da6-a5f7-f6f2ad8bc7d3",
+                                        "xAccessor": "1c9f4a0d-3d6f-4126-afbb-ba4745e565d5"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "6609ea37-a262-4072-ac19-90aabff49e12",
+                    "w": 40,
+                    "x": 8,
+                    "y": 12
+                },
+                "panelIndex": "6609ea37-a262-4072-ac19-90aabff49e12",
+                "title": "Average Time processed per event (ms)",
+                "type": "lens",
+                "version": "8.10.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
                         "description": "",
                         "references": [
                             {
@@ -1172,328 +1420,11 @@
                     "h": 8,
                     "i": "1a42a8c2-9823-4178-90ae-f3a403b63711",
                     "w": 20,
-                    "x": 28,
+                    "x": 8,
                     "y": 21
                 },
                 "panelIndex": "1a42a8c2-9823-4178-90ae-f3a403b63711",
-                "title": "Events Received Rate",
-                "type": "lens",
-                "version": "8.10.1"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "logstash-sm-metrics",
-                                "name": "indexpattern-datasource-layer-0dc38ed3-eda8-48d3-85d1-454d187be2f1",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "0dc38ed3-eda8-48d3-85d1-454d187be2f1": {
-                                            "columnOrder": [
-                                                "c10baf86-fe98-4d07-b5da-cc4c8b0f901e",
-                                                "66ce1290-0494-4de1-b877-e672f10deaf3",
-                                                "735d813f-2024-473c-bc2c-69cbcfb5ff29",
-                                                "735d813f-2024-473c-bc2c-69cbcfb5ff29X0",
-                                                "735d813f-2024-473c-bc2c-69cbcfb5ff29X1"
-                                            ],
-                                            "columns": {
-                                                "66ce1290-0494-4de1-b877-e672f10deaf3": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "735d813f-2024-473c-bc2c-69cbcfb5ff29": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Events Emitted Rate",
-                                                    "operationType": "formula",
-                                                    "params": {
-                                                        "formula": "counter_rate(max(logstash.pipeline.total.events.out), kql='logstash.pipeline.total.events.in: *')",
-                                                        "isFormulaBroken": false
-                                                    },
-                                                    "references": [
-                                                        "735d813f-2024-473c-bc2c-69cbcfb5ff29X1"
-                                                    ],
-                                                    "scale": "ratio",
-                                                    "timeScale": "s"
-                                                },
-                                                "735d813f-2024-473c-bc2c-69cbcfb5ff29X0": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Events Emitted Rate",
-                                                    "operationType": "max",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "logstash.pipeline.total.events.out"
-                                                },
-                                                "735d813f-2024-473c-bc2c-69cbcfb5ff29X1": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "logstash.pipeline.total.events.in: *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Part of Events Emitted Rate",
-                                                    "operationType": "counter_rate",
-                                                    "references": [
-                                                        "735d813f-2024-473c-bc2c-69cbcfb5ff29X0"
-                                                    ],
-                                                    "scale": "ratio",
-                                                    "timeScale": "s"
-                                                },
-                                                "c10baf86-fe98-4d07-b5da-cc4c8b0f901e": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top 100 values of logstash.pipeline.name",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "fallback": true,
-                                                            "type": "alphabetical"
-                                                        },
-                                                        "orderDirection": "asc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 100
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "logstash.pipeline.name"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "curveType": "CURVE_MONOTONE_X",
-                                "fittingFunction": "Linear",
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "735d813f-2024-473c-bc2c-69cbcfb5ff29"
-                                        ],
-                                        "layerId": "0dc38ed3-eda8-48d3-85d1-454d187be2f1",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "line",
-                                        "showGridlines": false,
-                                        "splitAccessor": "c10baf86-fe98-4d07-b5da-cc4c8b0f901e",
-                                        "xAccessor": "66ce1290-0494-4de1-b877-e672f10deaf3"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "line",
-                                "title": "Empty XY chart",
-                                "valueLabels": "hide"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 8,
-                    "i": "09177cfd-5361-4e91-b7c3-64eeb7837ce8",
-                    "w": 20,
-                    "x": 8,
-                    "y": 21
-                },
-                "panelIndex": "09177cfd-5361-4e91-b7c3-64eeb7837ce8",
-                "title": "Events Emitted Rate ",
-                "type": "lens",
-                "version": "8.10.1"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "logstash-sm-metrics",
-                                "name": "indexpattern-datasource-layer-0dc38ed3-eda8-48d3-85d1-454d187be2f1",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "0dc38ed3-eda8-48d3-85d1-454d187be2f1": {
-                                            "columnOrder": [
-                                                "c10baf86-fe98-4d07-b5da-cc4c8b0f901e",
-                                                "66ce1290-0494-4de1-b877-e672f10deaf3",
-                                                "735d813f-2024-473c-bc2c-69cbcfb5ff29",
-                                                "88e7718d-261a-4cf0-8558-ae0bfbe0cae0"
-                                            ],
-                                            "columns": {
-                                                "66ce1290-0494-4de1-b877-e672f10deaf3": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "735d813f-2024-473c-bc2c-69cbcfb5ff29": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "logstash.pipeline.total.events.in: *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Persistent Queue Event Count",
-                                                    "operationType": "counter_rate",
-                                                    "references": [
-                                                        "88e7718d-261a-4cf0-8558-ae0bfbe0cae0"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "88e7718d-261a-4cf0-8558-ae0bfbe0cae0": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Maximum of logstash.pipeline.total.queues.events",
-                                                    "operationType": "max",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "logstash.pipeline.total.queues.events"
-                                                },
-                                                "c10baf86-fe98-4d07-b5da-cc4c8b0f901e": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top 100 values of logstash.pipeline.name",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "fallback": true,
-                                                            "type": "alphabetical"
-                                                        },
-                                                        "orderDirection": "asc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 100
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "logstash.pipeline.name"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "curveType": "CURVE_MONOTONE_X",
-                                "fittingFunction": "Linear",
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "735d813f-2024-473c-bc2c-69cbcfb5ff29"
-                                        ],
-                                        "layerId": "0dc38ed3-eda8-48d3-85d1-454d187be2f1",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "line",
-                                        "showGridlines": false,
-                                        "splitAccessor": "c10baf86-fe98-4d07-b5da-cc4c8b0f901e",
-                                        "xAccessor": "66ce1290-0494-4de1-b877-e672f10deaf3"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "line",
-                                "title": "Empty XY chart",
-                                "valueLabels": "hide"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 8,
-                    "i": "4017b8f5-f8f2-46b9-86fe-501f46d551c3",
-                    "w": 20,
-                    "x": 8,
-                    "y": 29
-                },
-                "panelIndex": "4017b8f5-f8f2-46b9-86fe-501f46d551c3",
-                "title": "Persistent Queue Event Count",
+                "title": "Events received per second",
                 "type": "lens",
                 "version": "8.10.1"
             },
@@ -1741,20 +1672,21 @@
                     "i": "d290b2f1-1769-41f4-9d29-41755eef8871",
                     "w": 20,
                     "x": 28,
-                    "y": 29
+                    "y": 22
                 },
                 "panelIndex": "d290b2f1-1769-41f4-9d29-41755eef8871",
-                "title": "Persistent Queue Disk Utilization",
+                "title": "Persistent Queue utilization (%)",
                 "type": "lens",
                 "version": "8.10.1"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "logstash-sm-metrics",
-                                "name": "indexpattern-datasource-layer-4d13c1a7-6b92-47fe-8baf-7ca505bd9fda",
+                                "name": "indexpattern-datasource-layer-0dc38ed3-eda8-48d3-85d1-454d187be2f1",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1763,21 +1695,16 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "4d13c1a7-6b92-47fe-8baf-7ca505bd9fda": {
+                                        "0dc38ed3-eda8-48d3-85d1-454d187be2f1": {
                                             "columnOrder": [
-                                                "31515c2b-a1f2-4da6-a5f7-f6f2ad8bc7d3",
-                                                "1c9f4a0d-3d6f-4126-afbb-ba4745e565d5",
-                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececf",
-                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX0",
-                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX1",
-                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX2",
-                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX3",
-                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX4",
-                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX5",
-                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX6"
+                                                "c10baf86-fe98-4d07-b5da-cc4c8b0f901e",
+                                                "66ce1290-0494-4de1-b877-e672f10deaf3",
+                                                "735d813f-2024-473c-bc2c-69cbcfb5ff29",
+                                                "735d813f-2024-473c-bc2c-69cbcfb5ff29X0",
+                                                "735d813f-2024-473c-bc2c-69cbcfb5ff29X1"
                                             ],
                                             "columns": {
-                                                "1c9f4a0d-3d6f-4126-afbb-ba4745e565d5": {
+                                                "66ce1290-0494-4de1-b877-e672f10deaf3": {
                                                     "dataType": "date",
                                                     "isBucketed": true,
                                                     "label": "@timestamp",
@@ -1790,11 +1717,54 @@
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
                                                 },
-                                                "31515c2b-a1f2-4da6-a5f7-f6f2ad8bc7d3": {
+                                                "735d813f-2024-473c-bc2c-69cbcfb5ff29": {
                                                     "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Events Emitted Rate",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "counter_rate(max(logstash.pipeline.total.events.out), kql='logstash.pipeline.total.events.in: *')",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "735d813f-2024-473c-bc2c-69cbcfb5ff29X1"
+                                                    ],
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
+                                                },
+                                                "735d813f-2024-473c-bc2c-69cbcfb5ff29X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Events Emitted Rate",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "logstash.pipeline.total.events.out"
+                                                },
+                                                "735d813f-2024-473c-bc2c-69cbcfb5ff29X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "logstash.pipeline.total.events.in: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Events Emitted Rate",
+                                                    "operationType": "counter_rate",
+                                                    "references": [
+                                                        "735d813f-2024-473c-bc2c-69cbcfb5ff29X0"
+                                                    ],
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
+                                                },
+                                                "c10baf86-fe98-4d07-b5da-cc4c8b0f901e": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Pipeline Name",
+                                                    "label": "Top 100 values of logstash.pipeline.name",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1811,139 +1781,16 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "size": 10
+                                                        "size": 100
                                                     },
                                                     "scale": "ordinal",
                                                     "sourceField": "logstash.pipeline.name"
-                                                },
-                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececf": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Average time processing per event",
-                                                    "operationType": "formula",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 2,
-                                                                "suffix": "ms"
-                                                            }
-                                                        },
-                                                        "formula": "cumulative_sum(counter_rate(max(logstash.pipeline.total.time.duration.ms)))/cumulative_sum(counter_rate((max(logstash.pipeline.total.events.out))))",
-                                                        "isFormulaBroken": false
-                                                    },
-                                                    "references": [
-                                                        "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX6"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX0": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Average time processing per event",
-                                                    "operationType": "max",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "logstash.pipeline.total.time.duration.ms"
-                                                },
-                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX1": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Average time processing per event",
-                                                    "operationType": "counter_rate",
-                                                    "references": [
-                                                        "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX0"
-                                                    ],
-                                                    "scale": "ratio",
-                                                    "timeScale": "s"
-                                                },
-                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX2": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Average time processing per event",
-                                                    "operationType": "cumulative_sum",
-                                                    "references": [
-                                                        "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX1"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX3": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Average time processing per event",
-                                                    "operationType": "max",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "logstash.pipeline.total.events.out"
-                                                },
-                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX4": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Average time processing per event",
-                                                    "operationType": "counter_rate",
-                                                    "references": [
-                                                        "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX3"
-                                                    ],
-                                                    "scale": "ratio",
-                                                    "timeScale": "s"
-                                                },
-                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX5": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Average time processing per event",
-                                                    "operationType": "cumulative_sum",
-                                                    "references": [
-                                                        "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX4"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX6": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Average time processing per event",
-                                                    "operationType": "math",
-                                                    "params": {
-                                                        "tinymathAst": {
-                                                            "args": [
-                                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX2",
-                                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX5"
-                                                            ],
-                                                            "location": {
-                                                                "max": 147,
-                                                                "min": 0
-                                                            },
-                                                            "name": "divide",
-                                                            "text": "cumulative_sum(counter_rate(max(logstash.pipeline.total.time.duration.ms)))/cumulative_sum(counter_rate((max(logstash.pipeline.total.events.out))))",
-                                                            "type": "function"
-                                                        }
-                                                    },
-                                                    "references": [
-                                                        "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX2",
-                                                        "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX5"
-                                                    ],
-                                                    "scale": "ratio"
                                                 }
                                             },
-                                            "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
                                             "sampling": 1
                                         }
                                     }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
                                 },
                                 "textBased": {
                                     "layers": {}
@@ -1956,18 +1803,20 @@
                                 "query": ""
                             },
                             "visualization": {
+                                "curveType": "CURVE_MONOTONE_X",
+                                "fittingFunction": "Linear",
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "d9cd1ee6-586c-41b4-9d5f-976cd8eececf"
+                                            "735d813f-2024-473c-bc2c-69cbcfb5ff29"
                                         ],
-                                        "layerId": "4d13c1a7-6b92-47fe-8baf-7ca505bd9fda",
+                                        "layerId": "0dc38ed3-eda8-48d3-85d1-454d187be2f1",
                                         "layerType": "data",
                                         "position": "top",
                                         "seriesType": "line",
                                         "showGridlines": false,
-                                        "splitAccessor": "31515c2b-a1f2-4da6-a5f7-f6f2ad8bc7d3",
-                                        "xAccessor": "1c9f4a0d-3d6f-4126-afbb-ba4745e565d5"
+                                        "splitAccessor": "c10baf86-fe98-4d07-b5da-cc4c8b0f901e",
+                                        "xAccessor": "66ce1290-0494-4de1-b877-e672f10deaf3"
                                     }
                                 ],
                                 "legend": {
@@ -1979,20 +1828,171 @@
                                 "valueLabels": "hide"
                             }
                         },
+                        "title": "",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 9,
-                    "i": "6609ea37-a262-4072-ac19-90aabff49e12",
-                    "w": 40,
+                    "h": 8,
+                    "i": "09177cfd-5361-4e91-b7c3-64eeb7837ce8",
+                    "w": 20,
                     "x": 8,
-                    "y": 12
+                    "y": 29
                 },
-                "panelIndex": "6609ea37-a262-4072-ac19-90aabff49e12",
-                "title": "Average Time processed per event (ms)",
+                "panelIndex": "09177cfd-5361-4e91-b7c3-64eeb7837ce8",
+                "title": "Events emitted per second",
+                "type": "lens",
+                "version": "8.10.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logstash-sm-metrics",
+                                "name": "indexpattern-datasource-layer-0dc38ed3-eda8-48d3-85d1-454d187be2f1",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "0dc38ed3-eda8-48d3-85d1-454d187be2f1": {
+                                            "columnOrder": [
+                                                "c10baf86-fe98-4d07-b5da-cc4c8b0f901e",
+                                                "66ce1290-0494-4de1-b877-e672f10deaf3",
+                                                "735d813f-2024-473c-bc2c-69cbcfb5ff29",
+                                                "88e7718d-261a-4cf0-8558-ae0bfbe0cae0"
+                                            ],
+                                            "columns": {
+                                                "66ce1290-0494-4de1-b877-e672f10deaf3": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "735d813f-2024-473c-bc2c-69cbcfb5ff29": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "logstash.pipeline.total.events.in: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Persistent Queue Event Count",
+                                                    "operationType": "counter_rate",
+                                                    "references": [
+                                                        "88e7718d-261a-4cf0-8558-ae0bfbe0cae0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "88e7718d-261a-4cf0-8558-ae0bfbe0cae0": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Maximum of logstash.pipeline.total.queues.events",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "logstash.pipeline.total.queues.events"
+                                                },
+                                                "c10baf86-fe98-4d07-b5da-cc4c8b0f901e": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 100 values of logstash.pipeline.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 100
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "logstash.pipeline.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "curveType": "CURVE_MONOTONE_X",
+                                "fittingFunction": "Linear",
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "735d813f-2024-473c-bc2c-69cbcfb5ff29"
+                                        ],
+                                        "layerId": "0dc38ed3-eda8-48d3-85d1-454d187be2f1",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "c10baf86-fe98-4d07-b5da-cc4c8b0f901e",
+                                        "xAccessor": "66ce1290-0494-4de1-b877-e672f10deaf3"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "4017b8f5-f8f2-46b9-86fe-501f46d551c3",
+                    "w": 20,
+                    "x": 28,
+                    "y": 28
+                },
+                "panelIndex": "4017b8f5-f8f2-46b9-86fe-501f46d551c3",
+                "title": "Persistent Queue size (events)",
                 "type": "lens",
                 "version": "8.10.1"
             }
@@ -2002,9 +2002,9 @@
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2023-10-09T13:22:35.298Z",
+    "created_at": "2023-10-26T14:15:45.734Z",
     "id": "logstash-c0594170-526a-11ee-9ecc-31444cb79548",
-    "managed": true,
+    "managed": false,
     "references": [
         {
             "id": "logstash-sm-metrics",
@@ -2038,17 +2038,12 @@
         },
         {
             "id": "logstash-sm-metrics",
+            "name": "6609ea37-a262-4072-ac19-90aabff49e12:indexpattern-datasource-layer-4d13c1a7-6b92-47fe-8baf-7ca505bd9fda",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logstash-sm-metrics",
             "name": "1a42a8c2-9823-4178-90ae-f3a403b63711:indexpattern-datasource-layer-0dc38ed3-eda8-48d3-85d1-454d187be2f1",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logstash-sm-metrics",
-            "name": "09177cfd-5361-4e91-b7c3-64eeb7837ce8:indexpattern-datasource-layer-0dc38ed3-eda8-48d3-85d1-454d187be2f1",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logstash-sm-metrics",
-            "name": "4017b8f5-f8f2-46b9-86fe-501f46d551c3:indexpattern-datasource-layer-0dc38ed3-eda8-48d3-85d1-454d187be2f1",
             "type": "index-pattern"
         },
         {
@@ -2063,7 +2058,12 @@
         },
         {
             "id": "logstash-sm-metrics",
-            "name": "6609ea37-a262-4072-ac19-90aabff49e12:indexpattern-datasource-layer-4d13c1a7-6b92-47fe-8baf-7ca505bd9fda",
+            "name": "09177cfd-5361-4e91-b7c3-64eeb7837ce8:indexpattern-datasource-layer-0dc38ed3-eda8-48d3-85d1-454d187be2f1",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logstash-sm-metrics",
+            "name": "4017b8f5-f8f2-46b9-86fe-501f46d551c3:indexpattern-datasource-layer-0dc38ed3-eda8-48d3-85d1-454d187be2f1",
             "type": "index-pattern"
         },
         {
