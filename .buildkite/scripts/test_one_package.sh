@@ -36,7 +36,7 @@ with_kubernetes
 use_elastic_package
 
 pushd packages > /dev/null
-if ! process_package ${package} ${from} ${to}; then
+if ! process_package "${package}" "${from}" "${to}"; then
     echo "[${package}] failed"
     exit 1
 fi
