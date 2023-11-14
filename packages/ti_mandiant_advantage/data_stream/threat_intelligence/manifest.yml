@@ -1,0 +1,70 @@
+title: "Mandiant Threat Intelligence"
+type: logs
+streams:
+- input: httpjson
+  title: Mandiant Threat Intelligence
+  description: Collect IOCs from Mandiant Threat Intelligence
+  template_path: httpjson.yml.hbs
+  vars:
+  - name: mati_api_key_id
+    type: text
+    title: Threat Intelligence API Key ID
+    description: Key ID for the Threat Intelligence API.
+    multi: false
+    required: true
+    show_user: true
+  - name: mati_api_key_secret
+    type: password
+    title: Threat Intelligence API Key Secret
+    description: Key Secret for the Threat Intelligence API.
+    multi: false
+    required: true
+    show_user: true
+  - name: interval
+    type: text
+    title: Interval
+    description: Interval at which the indicators will be pulled. Supported units for this parameter are h/m/s.
+    multi: false
+    required: true
+    show_user: true
+    default: 1h
+  - name: initial_interval
+    type: text
+    title: Initial Interval
+    description: 'The time in the past to start the collection of Indicator data from, based on an indicators last_update date. NOTE: Supported units for this parameter are h/m/s.'
+    default: 720h
+    multi: false
+    required: true
+    show_user: true
+  - name: min_ic_score
+    type: text
+    title: Minimum IC-Score
+    description: "Indicators that have an IC-Score greater than or equal to the given value will be collected. Indicators with any IC-Score will be collected if the value is set to 0."
+    multi: false
+    default: 80
+    required: false
+    show_user: true
+  - name: tags
+    type: text
+    title: Tags
+    multi: true
+    show_user: false
+    default:
+    - forwarded
+    - mandiant-threat-intelligence-indicator
+  - name: url
+    type: text
+    title: Threat Intelligence URL
+    default: https://api.intelligence.mandiant.com
+    description: Mandiant Threat Intelligence API Endpoint.
+    multi: false
+    required: true
+    show_user: false
+  - name: preserve_original_event
+    required: true
+    show_user: true
+    title: Preserve original event
+    description: Preserves a raw copy of the original event, added to the field `event.original`.
+    type: bool
+    multi: false
+    default: false
