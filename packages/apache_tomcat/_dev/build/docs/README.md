@@ -34,7 +34,7 @@ Note:
 
 ## Compatibility
 
-This integration has been tested against Apache Tomcat versions `10.1.5`, `9.0.71` and `8.5.85`, and Prometheus version `0.17.2`.
+This integration has been tested against Apache Tomcat versions `10.1.5`, `9.0.71` and `8.5.85`, and Prometheus version `0.20.0`.
 
 ## Prerequisites
 
@@ -65,13 +65,13 @@ wget https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/<
 rules:
 - pattern: ".*"
 ```
-4. Go to `/etc/systemd/system` and add the following content in `tomcat.service` file: -
+4. Go to `/etc/systemd/system` and add the following content within the `[Service]` section of the `tomcat.service` file: -
 
 ```
 Environment='JAVA_OPTS=-javaagent:<TOMCAT_HOME>/webapps/jmx_prometheus_javaagent-<prometheus_version>.jar=<prometheus_port>:/opt/tomcat/webapps/config.yml'
 ```
 
-5. Run the following commands to reload demon and restart Apache Tomcat instance: -
+5. Run the following commands to reload the systemd manager configuration and restart the Apache Tomcat service to set the updated environment variable: -
 
 ```
 systemctl daemon-reload
@@ -137,6 +137,8 @@ After the integration is successfully configured, clicking on the Assets tab of 
 
 ## Troubleshooting
 
+- `apache_tomcat.access.header_forwarder` is renamed to `client.ip` in version `0.16.1` of this integration. Hence please consider changing `apache_tomcat.access.header_forwarder` to `client.ip` field where it is being used. By using the [Update By Query API](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update-by-query.html#docs-update-by-query-api-ingest-pipeline), `apache_tomcat.access.header_forwarder` can be renamed to `client.ip` field for all the documents which would help to adapt this change.
+
 - In case of data ingestion if user encounter following errors then it is because of the rate limit of Prometheus endpoint. Here there won't be any data loss but if user still want to avoid it then make sure configured Prometheus endpoint is not being accessed from multiple places.
 ```
 {
@@ -145,6 +147,8 @@ After the integration is successfully configured, clicking on the Assets tab of 
   }
 }
 ```
+
+- If events are ingested with incorrect timestamps, kindly verify the Timezone setting for the Catalina and Localhost logs data streams on the 'Add Apache Tomcat' page.
 
 ## Logs reference
 

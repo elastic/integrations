@@ -118,16 +118,16 @@ processors:
   - split:
       field: _tmp.header_forwarder
       if: ctx._tmp?.header_forwarder != null && ctx._tmp.header_forwarder != '' && ctx._tmp.header_forwarder != '-'
-      tag: 'split_header_forwarder'
-      target_field: apache_tomcat.access.header_forwarder
+      tag: 'split_x_forwarded_for'
+      target_field: client.ip
       separator: ', '
   - foreach:
-      field: apache_tomcat.access.header_forwarder
-      if: ctx.apache_tomcat?.access?.header_forwarder instanceof List
+      field: client.ip
+      if: ctx.client?.ip instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: 'convert_header_forwarder_to_long'
+          tag: 'convert_client-ip_to_ip'
           type: ip
           ignore_missing: true
           on_failure:
@@ -136,8 +136,8 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_missing: true
   - foreach:
-      field: apache_tomcat.access.header_forwarder
-      if: ctx.apache_tomcat?.access?.header_forwarder instanceof List
+      field: client.ip
+      if: ctx.client?.ip instanceof List
       processor:
         append:
           field: related.ip

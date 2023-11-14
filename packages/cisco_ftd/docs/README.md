@@ -83,7 +83,7 @@ An example event for `log` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "003c2ae5-ffc1-4a61-a309-b9d59a743dda",
@@ -176,6 +176,7 @@ An example event for `log` looks as following:
         "scheme": "http"
     }
 }
+
 ```
 
 **Exported fields**
