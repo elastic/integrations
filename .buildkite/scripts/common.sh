@@ -78,8 +78,8 @@ repo_name() {
     # Example of URL: git@github.com:acme-inc/my-project.git
     local repoUrl=$1
 
-    orgAndRepo=$(echo $repoUrl | cut -d':' -f 2)
-    echo "$(basename ${orgAndRepo} .git)"
+    orgAndRepo=$(echo "$repoUrl" | cut -d':' -f 2)
+    basename "${orgAndRepo}" .git
 }
 
 buildkite_pr_branch_build_id() {
@@ -95,7 +95,7 @@ buildkite_pr_branch_build_id() {
 
 # Helpers to install required tools
 create_bin_folder() {
-  mkdir -p ${BIN_FOLDER}
+  mkdir -p "${BIN_FOLDER}"
 }
 
 add_bin_path() {
@@ -108,13 +108,14 @@ with_go() {
   create_bin_folder
   echo "--- Setting up the Go environment..."
   check_platform_architecture
-  echo " GVM ${SETUP_GVM_VERSION} (platform ${platform_type_lowercase} arch ${arch_type}"
-  retry 5 curl -sL -o ${BIN_FOLDER}/gvm "https://github.com/andrewkroh/gvm/releases/download/${SETUP_GVM_VERSION}/gvm-${platform_type_lowercase}-${arch_type}"
-  chmod +x ${BIN_FOLDER}/gvm
-  eval "$(gvm $(cat .go-version))"
+  echo "GVM ${SETUP_GVM_VERSION} (platform ${platform_type_lowercase} arch ${arch_type}"
+  retry 5 curl -sL -o "${BIN_FOLDER}/gvm" "https://github.com/andrewkroh/gvm/releases/download/${SETUP_GVM_VERSION}/gvm-${platform_type_lowercase}-${arch_type}"
+  chmod +x "${BIN_FOLDER}/gvm"
+  eval "$(gvm "$(cat .go-version)")"
   go version
   which go
-  export PATH="${PATH}:$(go env GOPATH):$(go env GOPATH)/bin"
+  PATH="${PATH}:$(go env GOPATH):$(go env GOPATH)/bin"
+  export PATH
 }
 
 with_mage() {
@@ -139,8 +140,8 @@ with_docker_compose() {
     check_platform_architecture
 
     echo "--- Setting up the Docker-compose environment..."
-    retry 5 curl -sSL -o ${BIN_FOLDER}/docker-compose "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${platform_type_lowercase}-${hw_type}"
-    chmod +x ${BIN_FOLDER}/docker-compose
+    retry 5 curl -sSL -o "${BIN_FOLDER}/docker-compose" "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${platform_type_lowercase}-${hw_type}"
+    chmod +x "${BIN_FOLDER}/docker-compose"
     docker-compose version
 }
 
@@ -149,14 +150,14 @@ with_kubernetes() {
     check_platform_architecture
 
     echo "--- Install kind"
-    retry 5 curl -sSLo ${BIN_FOLDER}/kind "https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-${platform_type_lowercase}-${arch_type}"
-    chmod +x ${BIN_FOLDER}/kind
+    retry 5 curl -sSLo "${BIN_FOLDER}/kind" "https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-${platform_type_lowercase}-${arch_type}"
+    chmod +x "${BIN_FOLDER}/kind"
     kind version
     which kind
 
     echo "--- Install kubectl"
-    retry 5 curl -sSLo ${BIN_FOLDER}/kubectl "https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/${platform_type_lowercase}/${arch_type}/kubectl"
-    chmod +x ${BIN_FOLDER}/kubectl
+    retry 5 curl -sSLo "${BIN_FOLDER}/kubectl" "https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/${platform_type_lowercase}/${arch_type}/kubectl"
+    chmod +x "${BIN_FOLDER}/kubectl"
     kubectl version --client
     which kubectl
 }
@@ -165,22 +166,22 @@ with_yq() {
     check_platform_architecture
     local binary="yq_${platform_type_lowercase}_${arch_type}"
 
-    retry 5 curl -sSL -o ${BIN_FOLDER}/yq.tar.gz "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${binary}.tar.gz"
+    retry 5 curl -sSL -o "${BIN_FOLDER}/yq.tar.gz" "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${binary}.tar.gz"
 
-    tar -C ${BIN_FOLDER} -xpf ${BIN_FOLDER}/yq.tar.gz ./${binary}
+    tar -C "${BIN_FOLDER}" -xpf "${BIN_FOLDER}/yq.tar.gz" "./${binary}"
 
-    mv ${BIN_FOLDER}/${binary} ${BIN_FOLDER}/yq
-    chmod +x ${BIN_FOLDER}/yq
+    mv "${BIN_FOLDER}/${binary}" "${BIN_FOLDER}/yq"
+    chmod +x "${BIN_FOLDER}/yq"
     yq --version
 
-    rm -rf ${BIN_FOLDER}/yq.tar.gz
+    rm -rf "${BIN_FOLDER}/yq.tar.gz"
 }
 
 ## Logging and logout from Google Cloud
 google_cloud_upload_auth() {
   local secretFileLocation
   secretFileLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE_BASE}.XXXXXXXXX")/${GOOGLE_CREDENTIALS_FILENAME}
-  echo "${PRIVATE_INFRA_GCS_CREDENTIALS_SECRET}" > "${secretFileLocation}"
+  echo "${PACKAGE_UPLOADER_GCS_CREDENTIALS_SECRET}" > "${secretFileLocation}"
   gcloud auth activate-service-account --key-file "${secretFileLocation}" 2> /dev/null
   export GOOGLE_APPLICATION_CREDENTIALS=${secretFileLocation}
 }
@@ -238,7 +239,7 @@ use_elastic_package() {
 is_already_published() {
     local packageZip=$1
 
-    if curl -s --head https://package-storage.elastic.co/artifacts/packages/${packageZip} | grep -q "HTTP/2 200" ; then
+    if curl -s --head "https://package-storage.elastic.co/artifacts/packages/${packageZip}" | grep -q "HTTP/2 200" ; then
         echo "- Already published ${packageZip}"
         return 0
     fi
@@ -433,7 +434,7 @@ get_commit_from_build() {
     previous_commit=$(retry 5 curl -sH "Authorization: Bearer ${BUILDKITE_API_TOKEN}" "${api_url}" | jq -r '.[0] |.commit')
     echoerr ">>> Commit from ${pipeline} - branch ${branch} - status: ${status} -> ${previous_commit}"
 
-    echo ${previous_commit}
+    echo "${previous_commit}"
 }
 
 get_previous_commit() {
@@ -528,12 +529,13 @@ is_pr_affected() {
     echo "[${package}]: commits: from: '${from}' - to: '${to}'"
 
     echo "[${package}] git-diff: check non-package files"
-    if git diff --name-only $(git merge-base ${from} ${to}) ${to} | grep -E -v '^(packages/|.github/CODEOWNERS)' ; then
+    commit_merge=$(git merge-base "${from}" "${to}")
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|.github/CODEOWNERS)' ; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi
     echo "[${package}] git-diff: check package files"
-    if git diff --name-only $(git merge-base ${from} ${to}) ${to} | grep -E "^packages/${package}/" ; then
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E "^packages/${package}/" ; then
         echo "[${package}] PR is affected: found package files"
         return 0
     fi
@@ -585,6 +587,16 @@ check_package() {
     local package=$1
     echo "Check package: ${package}"
     if ! ${ELASTIC_PACKAGE_BIN} check -v ; then
+        return 1
+    fi
+    echo ""
+    return 0
+}
+
+build_zip_package() {
+    local package=$1
+    echo "Build zip package: ${package}"
+    if ! ${ELASTIC_PACKAGE_BIN} build --zip ; then
         return 1
     fi
     echo ""
