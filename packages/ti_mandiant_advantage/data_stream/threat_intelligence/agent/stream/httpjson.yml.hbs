@@ -1,0 +1,60 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+{{/if}}
+request.method: GET
+request.url: {{url}}/v4/indicator?
+request.timeout: 60s
+auth.basic.user: {{mati_api_key_id}}
+auth.basic.password: {{mati_api_key_secret}}
+request.transforms:
+  - delete:
+      target: header.User-Agent
+  - set:
+      # NOTE: The "Build" version must be kept in sync with this package's version.
+      target: header.User-Agent
+      value: '[[userAgent "(Elastic Integration; Mandiant Advantage; Build/0.1.0)"]]'
+  - set:
+      # NOTE: The version must be kept in sync with this package's version.
+      target: header.X-App-Name
+      value: '[["MA-Elastic-Integration-0.1.0)"]]'
+  - set:
+      target: url.params.start_epoch
+      value: '[[.cursor.lastUpdateTime]]'
+      default: '[[(now (parseDuration "-{{initial_interval}}")).Unix]]'
+  - set:
+      target: url.params.end_epoch
+      value: '[[(now).Unix]]'
+  - set:
+      target: url.params.limit
+      default: 1000
+  - set:
+      target: url.params.gte_mscore
+      default: {{min_ic_score}}
+  - set:
+      target: url.params.last_seen
+      default: asc
+response.request_body_on_pagination: true
+response.pagination:
+  - set:
+      target: url.params.next
+      value: '[[ .last_response.body.next ]]'
+      fail_on_template_error: true
+cursor:
+  lastUpdateTime:
+    value: '[[.last_response.url.params.Get "end_epoch"]]'
+
+response.split:
+  target: body.indicators
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}

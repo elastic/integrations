@@ -129,7 +129,7 @@ An example event for `asset` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",
@@ -222,6 +222,7 @@ An example event for `asset` looks as following:
         "google_scc-asset"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -520,7 +521,7 @@ An example event for `finding` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",
@@ -585,6 +586,7 @@ An example event for `finding` looks as following:
         "scheme": "http"
     }
 }
+
 ```
 
 **Exported fields**
@@ -806,7 +808,7 @@ An example event for `source` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",
@@ -844,6 +846,7 @@ An example event for `source` looks as following:
         "google_scc-source"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -895,7 +898,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",
@@ -957,6 +960,7 @@ An example event for `audit` looks as following:
         "google_scc-audit"
     ]
 }
+
 ```
 
 **Exported fields**
