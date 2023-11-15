@@ -125,8 +125,8 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2023-09-06T12:30:41.966Z",
     "agent": {
-        "ephemeral_id": "7aae6130-635a-422f-ac2e-e40324e86921",
-        "id": "acedddc9-63e6-47f7-b4b0-ad41d6af2116",
+        "ephemeral_id": "7a1c5441-4384-4ef1-a6d3-079ed7052a4c",
+        "id": "f2974986-16b8-49d0-803d-316e0e9f4e94",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.10.1"
@@ -149,7 +149,7 @@ An example event for `alert` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "acedddc9-63e6-47f7-b4b0-ad41d6af2116",
+        "id": "f2974986-16b8-49d0-803d-316e0e9f4e94",
         "snapshot": false,
         "version": "8.10.1"
     },
@@ -161,7 +161,7 @@ An example event for `alert` looks as following:
         "dataset": "prisma_cloud.alert",
         "end": "2023-09-06T12:30:41.966Z",
         "id": "N-3910",
-        "ingested": "2023-10-18T12:08:31Z",
+        "ingested": "2023-11-03T06:29:20Z",
         "kind": "alert",
         "original": "{\"alertAdditionalInfo\":{\"scannerVersion\":\"CS_2.0\"},\"alertAttribution\":{\"attributionEventList\":[{\"event\":\"first_event\",\"event_ts\":1694003441966,\"username\":\"alex123\"}],\"resourceCreatedBy\":\"string\",\"resourceCreatedOn\":0},\"alertRules\":[],\"alertTime\":1694003441966,\"firstSeen\":1694003441966,\"history\":[{\"modifiedBy\":\"alex123\",\"modifiedOn\":\"1694003441966\",\"reason\":\"Reason1\",\"status\":\"OPEN\"}],\"id\":\"N-3910\",\"investigateOptions\":{\"alertId\":\"N-3910\"},\"lastSeen\":1694003441966,\"lastUpdated\":1694003441966,\"metadata\":null,\"policy\":{\"complianceMetadata\":[{\"complianceId\":\"qwer345bv\",\"customAssigned\":true,\"policyId\":\"werf435tr\",\"requirementDescription\":\"Description of policy compliance.\",\"requirementId\":\"req-123-xyz\",\"requirementName\":\"rigidity\",\"sectionDescription\":\"Description of section.\",\"sectionId\":\"sect-453-abc\",\"sectionLabel\":\"label-1\",\"standardDescription\":\"Description of standard.\",\"standardId\":\"stand-543-pqr\",\"standardName\":\"Class 1\"}],\"deleted\":false,\"description\":\"This policy identifies AWS EC2 instances that are internet reachable with unrestricted access (0.0.0.0/0). EC2 instances with unrestricted access to the internet may enable bad actors to use brute force on a system to gain unauthorised access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit the access to known hosts, services, or specific entities.\",\"findingTypes\":[],\"labels\":[\"Prisma_Cloud\",\"Attack Path Rule\"],\"lastModifiedBy\":\"template@redlock.io\",\"lastModifiedOn\":1687474999057,\"name\":\"AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0)\",\"policyId\":\"ad23603d-754e-4499-8988-b8017xxxx98\",\"policyType\":\"network\",\"recommendation\":\"The following steps are recommended to restrict unrestricted access from the Internet:\\n1. Visit the Network path Analysis from Source to Destination and review the network path components that allow internet access.\\n2. Identify the network component on which restrictive rules can be implemented.\\n3. Implement the required changes and make sure no other resources have been impacted due to these changes:\\n a) The overly permissive Security Group rules can be made more restrictive.\\n b) Move the instance inside a restrictive subnet if the instance does not need to be publicly accessible.\\n c) Define a NAT rule to restrict traffic coming from the Internet to the respective instance.\",\"remediable\":false,\"remediation\":{\"actions\":[{\"operation\":\"buy\",\"payload\":\"erefwsdf\"}],\"cliScriptTemplate\":\"temp1\",\"description\":\"Description of CLI Script Template.\"},\"severity\":\"high\",\"systemDefault\":true},\"policyId\":\"ad23603d-754e-4499-8988-b801xxx85898\",\"reason\":\"NEW_ALERT\",\"resource\":{\"account\":\"AWS Cloud Account\",\"accountId\":\"710002259376\",\"additionalInfo\":null,\"cloudAccountGroups\":[\"Default Account Group\"],\"cloudServiceName\":\"Amazon EC2\",\"cloudType\":\"aws\",\"data\":null,\"id\":\"i-04578exxxx8100947\",\"name\":\"IS-37133\",\"region\":\"AWS Virginia\",\"regionId\":\"us-east-1\",\"resourceApiName\":\"aws-ec2-describe-instances\",\"resourceConfigJsonAvailable\":false,\"resourceDetailsAvailable\":true,\"resourceTs\":1694003441915,\"resourceType\":\"INSTANCE\",\"rrn\":\"rrn:aws:instance:us-east-1:710000059376:e7ddce5a1ffcb47bxxxxxerf2635a3b4d9da3:i-04578e0008100947\",\"unifiedAssetId\":\"66c543b6261c4d9edxxxxxb42e15f4\",\"url\":\"https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#Instances:instanceId=i-0457xxxxx00947\"},\"status\":\"open\"}",
         "start": "2023-09-06T12:30:41.966Z",
@@ -494,8 +494,8 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2023-09-13T08:40:39.068Z",
     "agent": {
-        "ephemeral_id": "488ed426-253d-42cf-abcf-d775513dcf93",
-        "id": "de2d03f7-fa6c-4837-b7f5-2d64a2c784b5",
+        "ephemeral_id": "15be3105-9474-4419-9495-3ba7d5eddf5b",
+        "id": "f2974986-16b8-49d0-803d-316e0e9f4e94",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.10.1"
@@ -509,7 +509,7 @@ An example event for `audit` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "de2d03f7-fa6c-4837-b7f5-2d64a2c784b5",
+        "id": "f2974986-16b8-49d0-803d-316e0e9f4e94",
         "snapshot": false,
         "version": "8.10.1"
     },
@@ -520,7 +520,7 @@ An example event for `audit` looks as following:
             "authentication"
         ],
         "dataset": "prisma_cloud.audit",
-        "ingested": "2023-11-01T13:38:08Z",
+        "ingested": "2023-11-03T06:30:33Z",
         "kind": "event",
         "original": "{\"action\":\"'john.user@google.com'(with role 'System Admin':'System Admin') logged in via access key.\",\"actionType\":\"LOGIN\",\"ipAddress\":\"81.2.69.192\",\"resourceName\":\"john.user@google.com\",\"resourceType\":\"Login\",\"result\":\"Successful\",\"timestamp\":1694594439068,\"user\":\"john.user@google.com\"}",
         "outcome": "success",
@@ -608,10 +608,10 @@ An example event for `host` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-10-18T12:12:26.324Z",
+    "@timestamp": "2023-11-03T06:33:54.250Z",
     "agent": {
-        "ephemeral_id": "b495d34c-84f2-4dde-abdf-838c08e654af",
-        "id": "acedddc9-63e6-47f7-b4b0-ad41d6af2116",
+        "ephemeral_id": "64d561d9-fd72-4f78-b68c-87702b5c3493",
+        "id": "f2974986-16b8-49d0-803d-316e0e9f4e94",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.10.1"
@@ -641,7 +641,7 @@ An example event for `host` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "acedddc9-63e6-47f7-b4b0-ad41d6af2116",
+        "id": "f2974986-16b8-49d0-803d-316e0e9f4e94",
         "snapshot": false,
         "version": "8.10.1"
     },
@@ -652,9 +652,9 @@ An example event for `host` looks as following:
         ],
         "dataset": "prisma_cloud.host",
         "id": "DESKTOP-6PQXXMS",
-        "ingested": "2023-10-18T12:12:27Z",
+        "ingested": "2023-11-03T06:33:55Z",
         "kind": "event",
-        "original": "{\"Secrets\":[],\"_id\":\"DESKTOP-6PQXXMS\",\"agentless\":false,\"allCompliance\":{\"compliance\":[{\"applicableRules\":[\"string\"],\"binaryPkgs\":[\"string\"],\"block\":true,\"cause\":\"string\",\"cri\":true,\"custom\":true,\"cve\":\"string\",\"cvss\":0,\"description\":\"string\",\"discovered\":\"2023-09-08T04:01:49.949Z\",\"exploit\":[\"exploit-db\"],\"fixDate\":0,\"fixLink\":\"string\",\"functionLayer\":\"string\",\"gracePeriodDays\":0,\"id\":0,\"layerTime\":0,\"link\":\"string\",\"packageName\":\"string\",\"packageVersion\":\"string\",\"published\":0,\"riskFactors\":{},\"severity\":\"string\",\"status\":\"string\",\"templates\":[[\"PCI\"]],\"text\":\"string\",\"title\":\"string\",\"twistlock\":true,\"type\":[\"container\"],\"vecStr\":\"string\",\"vulnTagInfos\":[{\"color\":\"string\",\"comment\":\"string\",\"name\":\"string\"}],\"wildfireMalware\":{\"md5\":\"string\",\"path\":\"string\",\"verdict\":\"string\"}}],\"enabled\":\"true\"},\"appEmbedded\":false,\"applications\":[{\"installedFromPackage\":true,\"knownVulnerabilities\":0,\"layerTime\":0,\"name\":\"string\",\"path\":\"string\",\"service\":true,\"version\":\"string\"}],\"binaries\":[{\"altered\":true,\"cveCount\":0,\"deps\":[\"string\"],\"fileMode\":0,\"functionLayer\":\"string\",\"md5\":\"string\",\"missingPkg\":true,\"name\":\"string\",\"path\":\"string\",\"pkgRootDir\":\"string\",\"services\":[\"string\"],\"version\":\"string\"}],\"cloudMetadata\":{\"accountID\":\"Non-onboarded cloud accounts\",\"awsExecutionEnv\":\"string\",\"image\":\"string\",\"labels\":[{\"key\":\"string\",\"sourceName\":\"string\",\"sourceType\":[\"namespace\"],\"timestamp\":\"2023-09-08T04:01:49.949Z\",\"value\":\"string\"}],\"name\":\"string\",\"provider\":[\"aws\"],\"region\":\"string\",\"resourceID\":\"string\",\"resourceURL\":\"string\",\"type\":\"string\",\"vmID\":\"string\",\"vmImageID\":\"string\"},\"clusters\":[\"string\"],\"collections\":[\"All\"],\"complianceDistribution\":{\"critical\":4,\"high\":0,\"low\":0,\"medium\":0,\"total\":4},\"complianceIssuesCount\":4,\"complianceRiskScore\":4000000,\"creationTime\":\"0001-01-01T00:00:00Z\",\"distro\":\"Microsoft Windows [Version 10.0.19045.2006]\",\"err\":\"\",\"externalLabels\":[{\"key\":\"string\",\"sourceName\":\"string\",\"sourceType\":[\"namespace\"],\"timestamp\":\"2023-09-08T04:01:49.949Z\",\"value\":\"string\"}],\"files\":[{\"md5\":\"string\",\"path\":\"string\",\"sha1\":\"string\",\"sha256\":\"string\"}],\"firewallProtection\":{\"enabled\":false,\"outOfBandMode\":\"Observation\",\"ports\":[0],\"supported\":false,\"tlsPorts\":[0],\"unprotectedProcesses\":[{\"port\":0,\"process\":\"string\",\"tls\":true}]},\"firstScanTime\":\"2023-08-11T06:53:57.456Z\",\"history\":[{\"baseLayer\":true,\"created\":0,\"emptyLayer\":true,\"id\":\"string\",\"instruction\":\"string\",\"sizeBytes\":0,\"tags\":[\"string\"],\"vulnerabilities\":[{\"applicableRules\":[\"string\"],\"binaryPkgs\":[\"string\"],\"block\":true,\"cause\":\"string\",\"cri\":true,\"custom\":true,\"cve\":\"string\",\"cvss\":0,\"description\":\"string\",\"discovered\":\"2023-09-08T04:01:49.950Z\",\"exploit\":[\"exploit-db\"],\"exploits\":[{\"kind\":[\"poc\",\"in-the-wild\"],\"link\":\"string\",\"source\":[\"\",\"exploit-db\"]}],\"fixDate\":0,\"fixLink\":\"string\",\"functionLayer\":\"string\",\"gracePeriodDays\":0,\"id\":0,\"layerTime\":0,\"link\":\"string\",\"packageName\":\"string\",\"packageVersion\":\"string\",\"published\":0,\"riskFactors\":{},\"severity\":\"string\",\"status\":\"string\",\"templates\":[[\"PCI\"]],\"text\":\"string\",\"title\":\"string\",\"twistlock\":true,\"type\":[\"container\"],\"vecStr\":\"string\",\"vulnTagInfos\":[{\"color\":\"string\",\"comment\":\"string\",\"name\":\"string\"}],\"wildfireMalware\":{\"md5\":\"string\",\"path\":\"string\",\"verdict\":\"string\"}}]}],\"hostDevices\":[{\"ip\":\"0.0.0.0\",\"name\":\"string\"}],\"hostname\":\"DESKTOP-6PQXXMS\",\"hosts\":{},\"id\":\"string\",\"image\":{\"created\":\"0001-01-01T00:00:00Z\",\"entrypoint\":[\"string\"],\"env\":[\"string\"],\"healthcheck\":true,\"id\":\"string\",\"labels\":{},\"layers\":[\"string\"],\"os\":\"string\",\"repoDigest\":[\"string\"],\"repoTags\":[\"string\"],\"user\":\"string\",\"workingDir\":\"string\"},\"instances\":[{\"host\":\"string\",\"image\":\"string\",\"modified\":\"2023-09-08T04:01:49.951Z\",\"registry\":\"string\",\"repo\":\"string\",\"tag\":\"string\"}],\"isARM64\":false,\"malwareAnalyzedTime\":\"0001-01-01T00:00:00Z\",\"osDistro\":\"windows\",\"osDistroRelease\":\"Windows\",\"osDistroVersion\":\"string\",\"packageCorrelationDone\":true,\"packageManager\":true,\"packages\":[{\"pkgs\":[{\"binaryIdx\":[0],\"binaryPkgs\":[\"string\"],\"cveCount\":0,\"defaultGem\":true,\"files\":[{\"md5\":\"string\",\"path\":\"string\",\"sha1\":\"string\",\"sha256\":\"string\"}],\"functionLayer\":\"string\",\"goPkg\":true,\"jarIdentifier\":\"string\",\"layerTime\":0,\"license\":\"string\",\"name\":\"string\",\"osPackage\":true,\"path\":\"string\",\"version\":\"string\"}],\"pkgsType\":\"nodejs\"}],\"pushTime\":\"0001-01-01T00:00:00Z\",\"redHatNonRPMImage\":false,\"repoDigests\":[],\"repoTag\":null,\"riskFactors\":{},\"scanID\":0,\"scanTime\":\"2023-08-23T11:48:41.803Z\",\"tags\":[{\"digest\":\"string\",\"id\":\"string\",\"registry\":\"string\",\"repo\":\"string\",\"tag\":\"string\"}],\"trustResult\":{\"hostsStatuses\":[{\"host\":\"string\",\"status\":\"trusted\"}]},\"trustStatus\":\"\",\"type\":\"host\",\"vulnerabilitiesCount\":0,\"vulnerabilityDistribution\":{\"critical\":0,\"high\":0,\"low\":0,\"medium\":0,\"total\":0},\"vulnerabilityRiskScore\":0,\"wildFireUsage\":null}",
+        "original": "{\"_id\":\"DESKTOP-6PQXXMS\",\"binaries\":[{\"altered\":true,\"cveCount\":0,\"deps\":[\"string\"],\"fileMode\":0,\"functionLayer\":\"string\",\"md5\":\"string\",\"missingPkg\":true,\"name\":\"string\",\"path\":\"string\",\"pkgRootDir\":\"string\",\"services\":[\"string\"],\"version\":\"string\"}],\"cloudMetadata\":{\"accountID\":\"Non-onboarded cloud accounts\",\"awsExecutionEnv\":\"string\",\"image\":\"string\",\"labels\":[{\"key\":\"string\",\"sourceName\":\"string\",\"sourceType\":[\"namespace\"],\"timestamp\":\"2023-09-08T04:01:49.949Z\",\"value\":\"string\"}],\"name\":\"string\",\"provider\":[\"aws\"],\"region\":\"string\",\"resourceID\":\"string\",\"resourceURL\":\"string\",\"type\":\"string\",\"vmID\":\"string\",\"vmImageID\":\"string\"},\"type\":\"host\",\"hostname\":\"DESKTOP-6PQXXMS\",\"scanTime\":\"2023-08-23T11:48:41.803Z\",\"Secrets\":[],\"osDistro\":\"windows\",\"osDistroVersion\":\"string\",\"osDistroRelease\":\"Windows\",\"distro\":\"Microsoft Windows [Version 10.0.19045.2006]\",\"packageManager\":true,\"packages\":[{\"pkgs\":[{\"binaryIdx\":[0],\"binaryPkgs\":[\"string\"],\"cveCount\":0,\"defaultGem\":true,\"files\":[{\"md5\":\"string\",\"path\":\"string\",\"sha1\":\"string\",\"sha256\":\"string\"}],\"functionLayer\":\"string\",\"goPkg\":true,\"jarIdentifier\":\"string\",\"layerTime\":0,\"license\":\"string\",\"name\":\"string\",\"osPackage\":true,\"path\":\"string\",\"version\":\"string\"}],\"pkgsType\":\"nodejs\"}],\"isARM64\":false,\"packageCorrelationDone\":true,\"redHatNonRPMImage\":false,\"image\":{\"created\":\"0001-01-01T00:00:00Z\",\"entrypoint\":[\"string\"],\"env\":[\"string\"],\"healthcheck\":true,\"id\":\"string\",\"labels\":{},\"layers\":[\"string\"],\"os\":\"string\",\"repoDigest\":[\"string\"],\"repoTags\":[\"string\"],\"user\":\"string\",\"workingDir\":\"string\"},\"allCompliance\":{\"compliance\":[{\"applicableRules\":[\"string\"],\"binaryPkgs\":[\"string\"],\"block\":true,\"cause\":\"string\",\"cri\":true,\"custom\":true,\"cve\":\"string\",\"cvss\":0,\"description\":\"string\",\"discovered\":\"2023-09-08T04:01:49.949Z\",\"exploit\":[\"exploit-db\"],\"fixDate\":0,\"fixLink\":\"string\",\"functionLayer\":\"string\",\"gracePeriodDays\":0,\"id\":0,\"layerTime\":0,\"link\":\"string\",\"packageName\":\"string\",\"packageVersion\":\"string\",\"published\":0,\"riskFactors\":{},\"severity\":\"string\",\"status\":\"string\",\"templates\":[[\"PCI\"]],\"text\":\"string\",\"title\":\"string\",\"twistlock\":true,\"type\":[\"container\"],\"vecStr\":\"string\",\"vulnTagInfos\":[{\"color\":\"string\",\"comment\":\"string\",\"name\":\"string\"}],\"wildfireMalware\":{\"md5\":\"string\",\"path\":\"string\",\"verdict\":\"string\"}}],\"enabled\":\"true\"},\"clusters\":[\"string\"],\"repoTag\":null,\"tags\":[{\"digest\":\"string\",\"id\":\"string\",\"registry\":\"string\",\"repo\":\"string\",\"tag\":\"string\"}],\"trustResult\":{\"hostsStatuses\":[{\"host\":\"string\",\"status\":\"trusted\"}]},\"repoDigests\":[],\"creationTime\":\"0001-01-01T00:00:00Z\",\"pushTime\":\"0001-01-01T00:00:00Z\",\"vulnerabilitiesCount\":0,\"complianceIssuesCount\":4,\"vulnerabilityDistribution\":{\"critical\":0,\"high\":0,\"medium\":0,\"low\":0,\"total\":0},\"complianceDistribution\":{\"critical\":4,\"high\":0,\"medium\":0,\"low\":0,\"total\":4},\"vulnerabilityRiskScore\":0,\"complianceRiskScore\":4000000,\"riskFactors\":{},\"firstScanTime\":\"2023-08-11T06:53:57.456Z\",\"history\":[{\"baseLayer\":true,\"created\":0,\"emptyLayer\":true,\"id\":\"string\",\"instruction\":\"string\",\"sizeBytes\":0,\"tags\":[\"string\"],\"vulnerabilities\":[{\"applicableRules\":[\"string\"],\"binaryPkgs\":[\"string\"],\"block\":true,\"cause\":\"string\",\"cri\":true,\"custom\":true,\"cve\":\"string\",\"cvss\":0,\"description\":\"string\",\"discovered\":\"2023-09-08T04:01:49.950Z\",\"exploit\":[\"exploit-db\"],\"exploits\":[{\"kind\":[\"poc\",\"in-the-wild\"],\"link\":\"string\",\"source\":[\"\",\"exploit-db\"]}],\"fixDate\":0,\"fixLink\":\"string\",\"functionLayer\":\"string\",\"gracePeriodDays\":0,\"id\":0,\"layerTime\":0,\"link\":\"string\",\"packageName\":\"string\",\"packageVersion\":\"string\",\"published\":0,\"riskFactors\":{},\"severity\":\"string\",\"status\":\"string\",\"templates\":[[\"PCI\"]],\"text\":\"string\",\"title\":\"string\",\"twistlock\":true,\"type\":[\"container\"],\"vecStr\":\"string\",\"vulnTagInfos\":[{\"color\":\"string\",\"comment\":\"string\",\"name\":\"string\"}],\"wildfireMalware\":{\"md5\":\"string\",\"path\":\"string\",\"verdict\":\"string\"}}]}],\"hostDevices\":[{\"ip\":\"0.0.0.0\",\"name\":\"string\"}],\"hosts\":{},\"id\":\"string\",\"err\":\"\",\"collections\":[\"All\"],\"instances\":[{\"host\":\"string\",\"image\":\"string\",\"modified\":\"2023-09-08T04:01:49.951Z\",\"registry\":\"string\",\"repo\":\"string\",\"tag\":\"string\"}],\"scanID\":0,\"trustStatus\":\"\",\"externalLabels\":[{\"key\":\"string\",\"sourceName\":\"string\",\"sourceType\":[\"namespace\"],\"timestamp\":\"2023-09-08T04:01:49.949Z\",\"value\":\"string\"}],\"files\":[{\"md5\":\"string\",\"path\":\"string\",\"sha1\":\"string\",\"sha256\":\"string\"}],\"firewallProtection\":{\"enabled\":false,\"supported\":false,\"outOfBandMode\":\"Observation\",\"ports\":[0],\"tlsPorts\":[0],\"unprotectedProcesses\":[{\"port\":0,\"process\":\"string\",\"tls\":true}]},\"applications\":[{\"installedFromPackage\":true,\"knownVulnerabilities\":0,\"layerTime\":0,\"name\":\"string\",\"path\":\"string\",\"service\":true,\"version\":\"string\"}],\"appEmbedded\":false,\"wildFireUsage\":null,\"agentless\":false,\"malwareAnalyzedTime\":\"0001-01-01T00:00:00Z\"}",
         "start": "0001-01-01T00:00:00.000Z",
         "type": [
             "info"
@@ -684,7 +684,12 @@ An example event for `host` looks as following:
         "type": "host"
     },
     "input": {
-        "type": "cel"
+        "type": "udp"
+    },
+    "log": {
+        "source": {
+            "address": "192.168.243.5:34718"
+        }
     },
     "os": {
         "family": "windows",
@@ -1584,10 +1589,10 @@ An example event for `host_profile` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-10-18T12:15:22.607Z",
+    "@timestamp": "2023-11-03T06:37:12.285Z",
     "agent": {
-        "ephemeral_id": "27dd294d-e02a-4b56-a204-034c7853e226",
-        "id": "acedddc9-63e6-47f7-b4b0-ad41d6af2116",
+        "ephemeral_id": "3b83c31f-09ab-4ff3-b475-ecc8648c3ef9",
+        "id": "f2974986-16b8-49d0-803d-316e0e9f4e94",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.10.1"
@@ -1601,7 +1606,7 @@ An example event for `host_profile` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "acedddc9-63e6-47f7-b4b0-ad41d6af2116",
+        "id": "f2974986-16b8-49d0-803d-316e0e9f4e94",
         "snapshot": false,
         "version": "8.10.1"
     },
@@ -1612,22 +1617,27 @@ An example event for `host_profile` looks as following:
         ],
         "created": "2023-08-11T06:53:48.855Z",
         "dataset": "prisma_cloud.host_profile",
-        "ingested": "2023-10-18T12:15:23Z",
+        "ingested": "2023-11-03T06:37:13Z",
         "kind": "asset",
-        "original": "{\"_id\":\"DESKTOP-6PQXXMS\",\"collections\":[\"All\"],\"created\":\"2023-08-11T06:53:48.855Z\",\"hash\":1,\"time\":\"0001-01-01T00:00:00Z\"}",
+        "original": "{\"_id\":\"DESKTOP-6PXXAMS\",\"hash\":1,\"created\":\"2023-08-11T06:53:48.855Z\",\"time\":\"0001-01-01T00:00:00Z\",\"collections\":[\"All\"]}",
         "type": [
             "info"
         ]
     },
     "host": {
-        "hostname": "DESKTOP-6PQXXMS"
+        "hostname": "DESKTOP-6PXXAMS"
     },
     "input": {
-        "type": "cel"
+        "type": "tcp"
+    },
+    "log": {
+        "source": {
+            "address": "192.168.243.5:48144"
+        }
     },
     "prisma_cloud": {
         "host_profile": {
-            "_id": "DESKTOP-6PQXXMS",
+            "_id": "DESKTOP-6PXXAMS",
             "collections": [
                 "All"
             ],
@@ -1641,7 +1651,7 @@ An example event for `host_profile` looks as following:
             "1"
         ],
         "hosts": [
-            "DESKTOP-6PQXXMS"
+            "DESKTOP-6PXXAMS"
         ]
     },
     "tags": [
@@ -1728,10 +1738,10 @@ An example event for `incident_audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-08-30T08:42:17.834Z",
+    "@timestamp": "2023-09-19T07:15:31.899Z",
     "agent": {
-        "ephemeral_id": "36c96ae0-38a3-4668-a74c-b41dae4b633f",
-        "id": "acedddc9-63e6-47f7-b4b0-ad41d6af2116",
+        "ephemeral_id": "2be27553-a973-4cdb-8c8d-e296a788b63a",
+        "id": "f2974986-16b8-49d0-803d-316e0e9f4e94",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.10.1"
@@ -1739,23 +1749,27 @@ An example event for `incident_audit` looks as following:
     "cloud": {
         "account": {
             "id": [
-                "accounttest"
+                "123abc",
+                "abdcsfData"
             ]
         },
         "provider": [
-            "aws"
+            "alibaba",
+            "oci"
         ],
-        "region": "testregion"
+        "region": "string"
     },
     "container": {
-        "id": "testcontainer",
+        "id": "string",
         "image": {
             "name": [
-                "testimgname"
+                "docker.io/library/nginx:latest",
+                "string"
             ]
         },
         "name": [
-            "testcontainername"
+            "nginx",
+            "string"
         ]
     },
     "data_stream": {
@@ -1767,166 +1781,181 @@ An example event for `incident_audit` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "acedddc9-63e6-47f7-b4b0-ad41d6af2116",
+        "id": "f2974986-16b8-49d0-803d-316e0e9f4e94",
         "snapshot": false,
         "version": "8.10.1"
     },
     "event": {
         "agent_id_status": "verified",
+        "category": [
+            "malware"
+        ],
         "dataset": "prisma_cloud.incident_audit",
-        "id": "thgry1736",
-        "ingested": "2023-10-18T12:17:39Z",
+        "id": "651c46b145d15228585exxxx",
+        "ingested": "2023-11-03T06:39:34Z",
         "kind": "event",
-        "original": "{\"_id\":\"thgry1736\",\"accountID\":\"accounttest\",\"acknowledged\":true,\"app\":\"test\",\"appID\":\"test123\",\"audits\":[{\"_id\":\"id1234\",\"accountID\":\"accounttest\",\"app\":\"test\",\"appID\":\"test123\",\"attackTechniques\":[\"exploitationForPrivilegeEscalation\"],\"attackType\":[\"cloudMetadataProbing\"],\"cluster\":\"clustertest\",\"collections\":[\"collectiontest\"],\"command\":\"commandtest\",\"container\":true,\"containerId\":\"testcontainerid\",\"containerName\":\"testcontainername\",\"count\":0,\"country\":\"in\",\"domain\":\"testdomain\",\"effect\":\"block\",\"err\":\"testerr\",\"filepath\":\"testfilepath\",\"fqdn\":\"testfqdn\",\"function\":\"testfun\",\"functionID\":\"testfunid\",\"hostname\":\"testhostname\",\"imageId\":\"testimgid\",\"imageName\":\"testimgname\",\"interactive\":true,\"ip\":\"81.2.69.142\",\"label\":\"testlabel\",\"labels\":{\"sjhia\": \"ifo\"},\"md5\":\"testmd5\",\"msg\":\"testmsg\",\"namespace\":\"testnamespace\",\"os\":\"testos\",\"pid\":0,\"port\":0,\"processPath\":\"testprocesspath\",\"profileId\":\"testprofileid\",\"provider\":\"aws\",\"rawEvent\":\"testrawevent\",\"region\":\"testregion\",\"requestID\":\"testrequestid\",\"resourceID\":\"testresourceid\",\"ruleName\":\"testrulename\",\"runtime\":\"python\",\"severity\":\"low\",\"time\":\"2023-08-30T08:42:17.834Z\",\"type\":\"processes\",\"user\":\"testuser\",\"version\":\"testversion\",\"vmID\":\"testvmid\",\"wildFireReportURL\":\"testwildfirereporturl\"}],\"category\":\"portScanning\",\"cluster\":\"testcluster\",\"collections\":[\"testcollections\"],\"containerID\":\"testcontainer\",\"containerName\":\"testcontainername\",\"customRuleName\":\"testcustomrulename\",\"fqdn\":\"testfqdn\",\"function\":\"testfunction\",\"functionID\":\"testfunctionid\",\"hostname\":\"testhostname\",\"imageID\":\"testimgid\",\"imageName\":\"testimgname\",\"labels\":{\"aaa\":\"bbb\"},\"namespace\":\"testnamespace\",\"profileID\":\"testprofileid\",\"provider\":\"aws\",\"region\":\"testregion\",\"resourceID\":\"testresourceid\",\"runtime\":\"testruntime\",\"serialNum\":0,\"shouldCollect\":true,\"time\":\"2023-08-30T08:42:17.834Z\",\"type\":\"host\",\"vmID\":\"testvmid\",\"windows\":true}"
+        "original": "{\"_id\":\"651c46b145d15228585exxxx\",\"accountID\":\"123abc\",\"acknowledged\":false,\"app\":\"string\",\"appID\":\"string\",\"audits\":[{\"_id\":\"651c46b145d15228585exxxx\",\"accountID\":\"abdcsfData\",\"app\":\"string\",\"appID\":\"string\",\"attackTechniques\":[\"exploitationForPrivilegeEscalation\"],\"attackType\":\"cloudMetadataProbing\",\"cluster\":\"string\",\"collections\":[\"string\"],\"command\":\"string\",\"container\":true,\"containerId\":\"5490e85a1a0c1c9f9c74591a9d3fcbf61beb84a952f14a17277be5fcf00xxxxx\",\"containerName\":\"nginx\",\"count\":0,\"country\":\"string\",\"domain\":\"string\",\"effect\":[\"block\",\"prevent\"],\"err\":\"string\",\"filepath\":\"string\",\"fqdn\":\"audits-fqdn-hostname\",\"function\":\"string\",\"functionID\":\"string\",\"hostname\":\"gke-tp-cluster-tp-pool1-9658xxxx-j87v\",\"imageId\":\"sha256:61395b4c586da2b9b3b7ca903ea6a448e6783dfdd7f768ff2c1a0f3360aaxxxx\",\"imageName\":\"docker.io/library/nginx:latest\",\"interactive\":true,\"ip\":\"0.0.0.0\",\"label\":\"string\",\"labels\":{},\"md5\":\"string\",\"msg\":\"string\",\"namespace\":\"string\",\"os\":\"string\",\"pid\":0,\"port\":0,\"processPath\":\"string\",\"profileId\":\"string\",\"provider\":\"alibaba\",\"rawEvent\":\"string\",\"region\":\"string\",\"requestID\":\"string\",\"resourceID\":\"string\",\"ruleName\":\"string\",\"runtime\":[\"python3.6\"],\"severity\":[\"low\",\"medium\",\"high\"],\"time\":\"2023-09-19T07:15:31.899Z\",\"type\":[\"processes\"],\"user\":\"string\",\"version\":\"string\",\"vmID\":\"string\",\"wildFireReportURL\":\"string\"}],\"category\":\"malware\",\"cluster\":\"string\",\"collections\":[\"string\"],\"containerID\":\"string\",\"containerName\":\"string\",\"customRuleName\":\"string\",\"fqdn\":\"string\",\"function\":\"string\",\"functionID\":\"string\",\"hostname\":\"string\",\"imageID\":\"string\",\"imageName\":\"string\",\"labels\":{},\"namespace\":\"string\",\"profileID\":\"string\",\"provider\":\"oci\",\"region\":\"string\",\"resourceID\":\"string\",\"runtime\":\"string\",\"serialNum\":0,\"shouldCollect\":true,\"time\":\"2023-09-19T07:15:31.899Z\",\"type\":\"host\",\"vmID\":\"string\",\"windows\":true}",
+        "type": [
+            "info"
+        ]
     },
     "host": {
         "domain": [
-            "testfqdn"
+            "audits-fqdn-hostname",
+            "string"
         ],
-        "hostname": "testhostname"
+        "hostname": "string"
     },
     "input": {
         "type": "udp"
     },
     "log": {
         "source": {
-            "address": "192.168.48.7:57454"
+            "address": "192.168.243.5:50216"
         }
+    },
+    "os": {
+        "full": [
+            "string"
+        ]
     },
     "prisma_cloud": {
         "incident_audit": {
-            "_id": "thgry1736",
-            "account_id": "accounttest",
-            "acknowledged": true,
+            "_id": "651c46b145d15228585exxxx",
+            "account_id": "123abc",
+            "acknowledged": false,
             "app": {
-                "id": "test123",
-                "value": "test"
+                "id": "string",
+                "value": "string"
             },
-            "category": "portScanning",
-            "cluster": "testcluster",
+            "category": "malware",
+            "cluster": "string",
             "collections": [
-                "testcollections"
+                "string"
             ],
             "container": {
-                "id": "testcontainer",
-                "name": "testcontainername"
+                "id": "string",
+                "name": "string"
             },
-            "custom_rule_name": "testcustomrulename",
+            "custom_rule_name": "string",
             "data": [
                 {
-                    "_id": "id1234",
-                    "account_id": "accounttest",
+                    "_id": "651c46b145d15228585exxxx",
+                    "account_id": "abdcsfData",
                     "app": {
-                        "id": "test123",
-                        "value": "test"
+                        "id": "string",
+                        "value": "string"
                     },
                     "attack": {
                         "techniques": [
                             "exploitationForPrivilegeEscalation"
                         ],
-                        "type": [
-                            "cloudMetadataProbing"
-                        ]
+                        "type": "cloudMetadataProbing"
                     },
-                    "cluster": "clustertest",
+                    "cluster": "string",
                     "collections": [
-                        "collectiontest"
+                        "string"
                     ],
-                    "command": "commandtest",
+                    "command": "string",
                     "container": {
-                        "id": "testcontainerid",
-                        "name": "testcontainername",
+                        "id": "5490e85a1a0c1c9f9c74591a9d3fcbf61beb84a952f14a17277be5fcf00xxxxx",
+                        "name": "nginx",
                         "value": true
                     },
                     "count": 0,
-                    "country": "in",
-                    "domain": "testdomain",
-                    "effect": "block",
-                    "err": "testerr",
-                    "filepath": "testfilepath",
-                    "fqdn": "testfqdn",
+                    "country": "string",
+                    "domain": "string",
+                    "effect": [
+                        "block",
+                        "prevent"
+                    ],
+                    "err": "string",
+                    "filepath": "string",
+                    "fqdn": "audits-fqdn-hostname",
                     "function": {
-                        "id": "testfunid",
-                        "value": "testfun"
+                        "id": "string",
+                        "value": "string"
                     },
-                    "hostname": "testhostname",
+                    "hostname": "gke-tp-cluster-tp-pool1-9658xxxx-j87v",
                     "image": {
-                        "id": "testimgid",
-                        "name": "testimgname"
+                        "id": "sha256:61395b4c586da2b9b3b7ca903ea6a448e6783dfdd7f768ff2c1a0f3360aaxxxx",
+                        "name": "docker.io/library/nginx:latest"
                     },
                     "interactive": true,
-                    "ip": "81.2.69.142",
-                    "label": "testlabel",
-                    "labels": {
-                        "sjhia": "ifo"
-                    },
-                    "md5": "testmd5",
-                    "msg": "testmsg",
-                    "namespace": "testnamespace",
-                    "os": "testos",
+                    "ip": "0.0.0.0",
+                    "label": "string",
+                    "md5": "string",
+                    "msg": "string",
+                    "namespace": "string",
+                    "os": "string",
                     "pid": 0,
                     "port": 0,
-                    "process_path": "testprocesspath",
-                    "profile_id": "testprofileid",
-                    "provider": "aws",
-                    "raw_event": "testrawevent",
-                    "region": "testregion",
-                    "request_id": "testrequestid",
-                    "resource_id": "testresourceid",
-                    "rule_name": "testrulename",
-                    "runtime": "python",
-                    "severity": "low",
-                    "time": "2023-08-30T08:42:17.834Z",
-                    "type": "processes",
-                    "user": "testuser",
-                    "version": "testversion",
-                    "vm_id": "testvmid",
-                    "wild_fire_report_url": "testwildfirereporturl"
+                    "process_path": "string",
+                    "profile_id": "string",
+                    "provider": "alibaba",
+                    "raw_event": "string",
+                    "region": "string",
+                    "request_id": "string",
+                    "resource_id": "string",
+                    "rule_name": "string",
+                    "runtime": [
+                        "python3.6"
+                    ],
+                    "severity": [
+                        "low",
+                        "medium",
+                        "high"
+                    ],
+                    "time": "2023-09-19T07:15:31.899Z",
+                    "type": [
+                        "processes"
+                    ],
+                    "user": "string",
+                    "version": "string",
+                    "vm_id": "string",
+                    "wild_fire_report_url": "string"
                 }
             ],
-            "fqdn": "testfqdn",
+            "fqdn": "string",
             "function": {
-                "id": "testfunctionid",
-                "value": "testfunction"
+                "id": "string",
+                "value": "string"
             },
-            "hostname": "testhostname",
+            "hostname": "string",
             "image": {
-                "id": "testimgid",
-                "name": "testimgname"
+                "id": "string",
+                "name": "string"
             },
-            "labels": {
-                "aaa": "bbb"
-            },
-            "namespace": "testnamespace",
-            "profile_id": "testprofileid",
-            "provider": "aws",
-            "region": "testregion",
-            "resource_id": "testresourceid",
-            "runtime": "testruntime",
+            "namespace": "string",
+            "profile_id": "string",
+            "provider": "oci",
+            "region": "string",
+            "resource_id": "string",
+            "runtime": "string",
             "serial_num": 0,
             "should_collect": true,
-            "time": "2023-08-30T08:42:17.834Z",
+            "time": "2023-09-19T07:15:31.899Z",
             "type": "host",
-            "vm_id": "testvmid",
+            "vm_id": "string",
             "windows": true
         }
     },
     "related": {
         "hosts": [
-            "testfqdn",
-            "testhostname"
+            "audits-fqdn-hostname",
+            "gke-tp-cluster-tp-pool1-9658xxxx-j87v",
+            "string"
         ],
         "ip": [
-            "81.2.69.142"
+            "0.0.0.0"
         ],
         "user": [
-            "testuser"
+            "string"
         ]
     },
     "rule": {
         "name": [
-            "testrulename",
-            "testcustomrulename"
+            "string"
         ]
     },
     "tags": [
@@ -1937,9 +1966,12 @@ An example event for `incident_audit` looks as following:
     ],
     "threat": {
         "technique": {
+            "name": [
+                "exploitationForPrivilegeEscalation"
+            ],
             "subtechnique": {
                 "name": [
-                    "{0=cloudMetadataProbing}"
+                    "cloudMetadataProbing"
                 ]
             }
         }
