@@ -1016,8 +1016,6 @@ An example event for `pipeline` looks as following:
         }
     }
 }
-
-
 ```
 
 #### Plugin
@@ -1259,5 +1257,4 @@ An example event for `plugins` looks as following:
         }
     }
 }
-
 ```
