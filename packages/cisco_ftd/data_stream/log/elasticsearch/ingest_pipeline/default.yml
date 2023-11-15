@@ -1349,7 +1349,70 @@ processors:
         def counters = new HashMap();
         def dest = new HashMap();
         def dest_event = new HashMap();
-        def security_event_list = new ArrayList(['ac_policy', 'access_control_rule_action', 'access_control_rule_name', 'access_control_rule_reason', 'application_protocol', 'client', 'client_version', 'connection_duration', 'dns_query', 'dns_record_type', 'dns_response_type', 'dns_ttl', 'dst_ip', 'dst_port', 'egress_interface', 'egress_zone', 'file_action', 'file_count', 'file_direction', 'file_name', 'file_policy', 'file_sandbox_status', 'file_sha256', 'file_size', 'file_type', 'first_packet_second', 'http_referer', 'http_response', 'icmp_code', 'icmp_type', 'ingress_interface', 'ingress_zone', 'initiator_bytes', 'initiator_packets', 'nap_policy', 'prefilter_policy', 'protocol', 'referenced_host', 'responder_bytes', 'responder_packets', 'sha_disposition', 'spero_disposition', 'src_ip', 'src_port', 'ssl_actual_action', 'ssl_certificate', 'ssl_expected_action', 'ssl_flow_status', 'ssl_policy', 'ssl_rule_name', 'ssl_server_cert_status', 'ssl_server_name', 'ssl_session_id', 'ssl_ticket_id', 'ssl_version', 'sslurl_category', 'tunnel_or_prefilter_rule', 'uri', 'url', 'url_category', 'url_reputation', 'user', 'user_agent', 'web_application']);
+        def security_event_list = new ArrayList(['ac_policy', 
+                                    'access_control_rule_action', 
+                                    'access_control_rule_name', 
+                                    'access_control_rule_reason', 
+                                    'application_protocol', 
+                                    'client', 
+                                    'client_version', 
+                                    'connection_duration', 
+                                    'dns_query', 
+                                    'dns_record_type', 
+                                    'dns_response_type', 
+                                    'dns_ttl', 
+                                    'dst_ip', 
+                                    'dst_port', 
+                                    'egress_interface', 
+                                    'egress_zone', 
+                                    'file_action', 
+                                    'file_count', 
+                                    'file_direction', 
+                                    'file_name', 
+                                    'file_policy', 
+                                    'file_sandbox_status', 
+                                    'file_sha256', 
+                                    'file_size', 
+                                    'file_type', 
+                                    'first_packet_second', 
+                                    'http_referer', 
+                                    'http_response', 
+                                    'icmp_code', 
+                                    'icmp_type', 
+                                    'ingress_interface', 
+                                    'ingress_zone', 
+                                    'initiator_bytes', 
+                                    'initiator_packets', 
+                                    'nap_policy', 
+                                    'prefilter_policy', 
+                                    'protocol', 
+                                    'referenced_host', 
+                                    'responder_bytes', 
+                                    'responder_packets', 
+                                    'sha_disposition', 
+                                    'spero_disposition', 
+                                    'src_ip', 
+                                    'src_port', 
+                                    'ssl_actual_action', 
+                                    'ssl_certificate', 
+                                    'ssl_expected_action', 
+                                    'ssl_flow_status', 
+                                    'ssl_policy', 
+                                    'ssl_rule_name', 
+                                    'ssl_server_cert_status', 
+                                    'ssl_server_name', 
+                                    'ssl_session_id', 
+                                    'ssl_ticket_id', 
+                                    'ssl_version', 
+                                    'sslurl_category', 
+                                    'tunnel_or_prefilter_rule', 
+                                    'uri', 
+                                    'url', 
+                                    'url_category', 
+                                    'url_reputation', 
+                                    'user', 
+                                    'user_agent', 
+                                    'web_application']);
         ctx._temp_.cisco['security'] = dest;
         ctx._temp_.cisco['security_event'] = dest_event;
         for (entry in msg.entrySet()) {
@@ -1467,36 +1530,6 @@ processors:
       field: _temp_.cisco.security_event.src_port
       target_field: _temp_.cisco.security_event.src_port
       type: integer
-
-  # Move out security fields out of flattened datatype. Related: https://github.com/elastic/integrations/issues/5769
-  # - set:
-  #     copy_from: _temp_.cisco.security
-  #     field: _temp_.cisco.security_event
-  #     if: ctx._temp_?.cisco?.security != null
-  # - foreach:
-  #     field: _temp_.cisco.security
-  #     if: ctx._temp_?.cisco?.security != null
-  #     processor:
-  #       rename:
-  #         field: _temp_.cisco.security.{{_ingest._key}}
-  #         target_field: "_temp_.cisco.security_event.{{_ingest._key}}"
-  #         ignore_missing: true
-  #         on_failure:
-  #           - append:
-  #               field: error.message
-  #               value: '{{{_ingest.on_failure_message}}}'
-  #     on_failure:
-  #       - append:
-  #           field: error.message
-  #           value: '{{{_ingest.on_failure_message}}}'
-  # - rename:
-  #     field: _temp_.cisco.security.ac_policy
-  #     target_field: _temp_.cisco.security_event.ac_policy
-  #     if: ctx._temp_?.cisco?.security?.ac_policy != null
-  # - rename:
-  #     field: _temp_.cisco.security.access_control_rule_action
-  #     target_field: _temp_.cisco.security_event.access_control_rule_action
-  #     if: ctx._temp_?.cisco?.security?.access_control_rule_action != null
 
   #
   # Normalize ECS field values
