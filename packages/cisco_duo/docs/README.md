@@ -54,7 +54,7 @@ An example event for `admin` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
@@ -90,6 +90,7 @@ An example event for `admin` looks as following:
         "name": "narroway"
     }
 }
+
 ```
 
 **Exported fields**
@@ -223,7 +224,7 @@ An example event for `auth` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
@@ -313,6 +314,7 @@ An example event for `auth` looks as following:
         "version": "67.0.3396.99"
     }
 }
+
 ```
 
 **Exported fields**
@@ -473,7 +475,7 @@ An example event for `offline_enrollment` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
@@ -507,6 +509,7 @@ An example event for `offline_enrollment` looks as following:
         "name": "narroway"
     }
 }
+
 ```
 
 **Exported fields**
@@ -597,7 +600,7 @@ An example event for `summary` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
@@ -620,6 +623,7 @@ An example event for `summary` looks as following:
         "cisco_duo-summary"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -704,7 +708,7 @@ An example event for `telephony` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
@@ -728,6 +732,7 @@ An example event for `telephony` looks as following:
         "cisco_duo-telephony"
     ]
 }
+
 ```
 
 **Exported fields**
