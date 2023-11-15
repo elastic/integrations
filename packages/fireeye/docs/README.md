@@ -194,7 +194,7 @@ An example event for `nx` looks as following:
         "port": 10001
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -285,4 +285,5 @@ An example event for `nx` looks as following:
         "fireeye-nx"
     ]
 }
+
 ```
