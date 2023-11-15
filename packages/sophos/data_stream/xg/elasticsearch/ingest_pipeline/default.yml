@@ -74,12 +74,6 @@ processors:
 - set:
     field: event.timezone
     copy_from: _temp_.tz
-# Even at this stage, user can override the timezone with `tz_override` config option.
-- set:
-    field: event.timezone
-    copy_from: _conf.tz_offset
-    override: true
-    if: ctx._conf?.tz_offset != null && ctx._conf.tz_offset != 'local' && ctx._conf.tz_override != null && ctx._conf.tz_override == true
 - gsub:
     field: event.timezone
     pattern: '([+-][0-9]{2})([0-9]{2})'
@@ -109,13 +103,48 @@ processors:
       - ISO8601
     if: ctx._temp_?.time != null
     on_failure:
+    # Try to re-parse as configured timezone or UTC if unknown.
       - remove:
           field: event.timezone
           ignore_missing: true
-      # Try to re-parse as UTC to catch when TZ is invalid or unknown.
+      - set:
+          field: event.timezone
+          copy_from: _conf.tz_offset
+          ignore_empty_value: true
+      - date:
+          tag: "date_config_tz_fallback"
+          timezone: "{{{ event.timezone }}}"
+          if: ctx.event?.timezone != null
+          field: _temp_.time
+          formats:
+            - yyyy-MM-dd HH:mm:ss
+            - yyyy-MM-dd HH:mm:ss Z
+            - yyyy-MM-dd HH:mm:ss z
+            - ISO8601
+          on_failure:
+            - remove:
+                field: event.timezone
+                ignore_missing: true
+            # Try to re-parse as UTC to catch when TZ is invalid or unknown.
+            - date:
+                tag: "date_utc_config_tz_fallback"
+                timezone: UTC
+                field: _temp_.time
+                formats:
+                  - yyyy-MM-dd HH:mm:ss
+                  - yyyy-MM-dd HH:mm:ss Z
+                  - yyyy-MM-dd HH:mm:ss z
+                  - ISO8601
+                on_failure:
+                  - append:
+                      field: error.message
+                      value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+                  - fail:
+                      message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"    
       - date:
           tag: "date_utc_fallback"
           timezone: UTC
+          if: ctx.event?.timezone == null
           field: _temp_.time
           formats:
             - yyyy-MM-dd HH:mm:ss
