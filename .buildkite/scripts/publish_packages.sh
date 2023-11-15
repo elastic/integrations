@@ -123,7 +123,6 @@ sign_packages() {
 
     popd > /dev/null
 
-    ls -l "${BUILD_PACKAGES_PATH}"
     google_cloud_logout_active_account
 }
 
