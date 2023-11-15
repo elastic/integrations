@@ -150,7 +150,7 @@ An example event for `log` looks as following:
         }
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
@@ -170,7 +170,7 @@ An example event for `log` looks as following:
             ]
         },
         "local_id": "cf7a249a-5edd-4350-130a-08da8f69e0f6",
-        "message_id": "\u003ca210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com\u003e",
+        "message_id": "<a210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com>",
         "subject": "PIM: A privileged directory role was assigned outside of PIM",
         "to": {
             "address": [
@@ -196,7 +196,7 @@ An example event for `log` looks as following:
             "EndDate": "2022-09-06T09:01:46.0369423Z",
             "FromIP": "81.2.69.144",
             "Index": 0,
-            "MessageId": "\u003ca210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com\u003e",
+            "MessageId": "<a210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com>",
             "MessageTraceId": "cf7a249a-5edd-4350-130a-08da8f69e0f6",
             "Organization": "contoso.com",
             "Received": "2022-09-05T18:10:13.4907658",
@@ -246,6 +246,7 @@ An example event for `log` looks as following:
         "forwarded"
     ]
 }
+
 ```
 
 **Exported fields**

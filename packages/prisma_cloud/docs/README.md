@@ -146,7 +146,7 @@ An example event for `alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f2974986-16b8-49d0-803d-316e0e9f4e94",
@@ -506,7 +506,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f2974986-16b8-49d0-803d-316e0e9f4e94",
@@ -638,7 +638,7 @@ An example event for `host` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f2974986-16b8-49d0-803d-316e0e9f4e94",
@@ -1603,7 +1603,7 @@ An example event for `host_profile` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f2974986-16b8-49d0-803d-316e0e9f4e94",
@@ -1778,7 +1778,7 @@ An example event for `incident_audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f2974986-16b8-49d0-803d-316e0e9f4e94",
