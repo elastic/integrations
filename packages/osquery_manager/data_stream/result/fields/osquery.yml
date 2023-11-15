@@ -1,4 +1,6 @@
 - name: osquery
+  title: Osquery result
+  description: Fields related to the Osquery result
   type: group
   fields:
     - name: UUID
@@ -168,6 +170,15 @@
         - name: number
           type: long
           default_field: false
+    - name: additional_properties
+      description: windows_search.additional_properties - Comma separated list of columns to include in properties JSON
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: address
       description: |-
         arp_cache.address - IPv4 address target
@@ -258,6 +269,15 @@
       multi_fields:
         - name: number
           type: long
+          default_field: false
+    - name: ambient_brightness_enabled
+      description: connected_displays.ambient_brightness_enabled - The ambient brightness setting associated with the display. This will be 1 if enabled and is 0 if disabled or not supported.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
           default_field: false
     - name: ami_id
       description: ec2_instance_metadata.ami_id - AMI ID used to launch this EC2 instance
@@ -1172,7 +1192,9 @@
           norms: false
           default_field: false
     - name: bundle_version
-      description: apps.bundle_version - Info properties CFBundleVersion label
+      description: |-
+        apps.bundle_version - Info properties CFBundleVersion label
+        safari_extensions.bundle_version - The version of the build that identifies an iteration of the bundle
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -1562,6 +1584,15 @@
           default_field: false
     - name: client_site_name
       description: ntdomains.client_site_name - The name of the site where the domain controller is configured.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: cloud_id
+      description: ycloud_instance_metadata.cloud_id - Cloud identifier for the VM
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -1974,6 +2005,15 @@
           type: text
           norms: false
           default_field: false
+    - name: connection_type
+      description: connected_displays.connection_type - The connection type associated with the display.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: consistency_scan_date
       description: time_machine_destinations.consistency_scan_date - Consistency scan date
       type: keyword
@@ -2075,7 +2115,9 @@
           type: long
           default_field: false
     - name: copyright
-      description: apps.copyright - Info properties NSHumanReadableCopyright label
+      description: |-
+        apps.copyright - Info properties NSHumanReadableCopyright label
+        safari_extensions.copyright - A human-readable copyright notice for the bundle
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -2205,6 +2247,14 @@
           default_field: false
     - name: cpu_shares
       description: docker_info.cpu_shares - 1 if CPU share weighting support is enabled. 0 otherwise
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: cpu_sockets
+      description: system_info.cpu_sockets - Number of processor sockets in the system
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -2484,6 +2534,22 @@
         windows_update_history.date - Date and the time an update was applied
       type: keyword
       ignore_above: 1024
+    - name: date_created
+      description: windows_search.date_created - The unix timestamp of when the item was created.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: date_modified
+      description: windows_search.date_modified - The unix timestamp of when the item was last modified
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: datetime
       description: |-
         crashes.datetime - Date/Time at which the crash occurred
@@ -2955,10 +3021,28 @@
         - name: number
           type: long
           default_field: false
+    - name: display_id
+      description: connected_displays.display_id - The display ID.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: display_name
       description: |-
         apps.display_name - Info properties CFBundleDisplayName label
         services.display_name - Service Display name
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: display_type
+      description: connected_displays.display_type - The type of display.
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -3704,6 +3788,15 @@
           type: text
           norms: false
           default_field: false
+    - name: extension_type
+      description: "safari_extensions.extension_type - Extension Type: WebOrAppExtension or LegacyExtension"
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: extensions
       description: osquery_info.extensions - osquery extensions status
       type: keyword
@@ -3724,6 +3817,7 @@
     - name: extra
       description: |-
         asl.extra - Extra columns, in JSON format. Queries against this column are performed entirely in SQLite, so do not benefit from efficient querying via asl.h.
+        os_version.extra - Optional extra release specification
         platform_info.extra - Platform-specific additional information
       type: keyword
       ignore_above: 1024
@@ -6138,6 +6232,14 @@
           type: text
           norms: false
           default_field: false
+    - name: main
+      description: connected_displays.main - If the display is the main display.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: maintainer
       description: |-
         apt_sources.maintainer - Repository maintainer
@@ -6210,6 +6312,22 @@
           default_field: false
     - name: manufacture_date
       description: battery.manufacture_date - The date the battery was manufactured UNIX Epoch
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: manufactured_week
+      description: connected_displays.manufactured_week - The manufacture week of the display. This field is 0 if not supported
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: manufactured_year
+      description: connected_displays.manufactured_year - The manufacture year of the display. This field is 0 if not supported
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -6322,6 +6440,14 @@
           default_field: false
     - name: max_instances
       description: pipes.max_instances - The maximum number of instances creatable for this pipe
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: max_results
+      description: windows_search.max_results - Maximum number of results returned by windows api, set to -1 for unlimited
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -6815,6 +6941,14 @@
         - name: number
           type: long
           default_field: false
+    - name: mirror
+      description: connected_displays.mirror - If the display is mirrored or not. This field is 1 if mirrored and 0 if not mirrored.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: mirrorlist
       description: yum_sources.mirrorlist - Mirrorlist URL
       type: keyword
@@ -6998,7 +7132,7 @@
           type: long
           default_field: false
     - name: name
-      description: "acpi_tables.name - ACPI table name\nad_config.name - The macOS-specific configuration name\napparmor_events.name - Process name\napparmor_profiles.name - Policy name.\napps.name - Name of the Name.app folder\napt_sources.name - Repository name\natom_packages.name - Package display name\nautoexec.name - Name of the program\nazure_instance_metadata.name - Name of the VM\nblock_devices.name - Block device name\nbrowser_plugins.name - Plugin display name\nchocolatey_packages.name - Package display name\nchrome_extensions.name - Extension display name\ncups_destinations.name - Name of the printer\ndeb_packages.name - Package name\ndisk_encryption.name - Disk name\ndisk_events.name - Disk event name\ndisk_info.name - The label of the disk object.\ndns_cache.name - DNS record name\ndocker_container_mounts.name - Optional mount name\ndocker_container_networks.name - Network name\ndocker_container_processes.name - The process path or shorthand argv[0]\ndocker_container_stats.name - Container name\ndocker_containers.name - Container name\ndocker_info.name - Name of the docker host\ndocker_networks.name - Network name\ndocker_volume_labels.name - Volume name\ndocker_volumes.name - Volume name\netc_protocols.name - Protocol name\netc_services.name - Service name\nfan_speed_sensors.name - Fan name\nfirefox_addons.name - Addon display name\nhomebrew_packages.name - Package name\nie_extensions.name - Extension display name\niokit_devicetree.name - Device node name\niokit_registry.name - Default name of the node\nkernel_extensions.name - Extension label\nkernel_modules.name - Module name\nkernel_panics.name - Process name corresponding to crashed thread\nlaunchd.name - File name of plist (used by launchd)\nlxd_certificates.name - Name of the certificate\nlxd_instance_config.name - Instance name\nlxd_instance_devices.name - Instance name\nlxd_instances.name - Instance name\nlxd_networks.name - Name of the network\nlxd_storage_pools.name - Name of the storage pool\nmanaged_policies.name - Policy key name\nmd_personalities.name - Name of personality supported by kernel\nmemory_map.name - Region name\nnpm_packages.name - Package display name\nntdomains.name - The label by which the object is known.\nnvram.name - Variable name\nos_version.name - Distribution or product name\nosquery_events.name - Event publisher or subscriber name\nosquery_extensions.name - Extension's name\nosquery_flags.name - Flag name\nosquery_packs.name - The given name for this query pack\nosquery_registry.name - Name of the plugin item\nosquery_schedule.name - The given name for this query\npackage_install_history.name - Package display name\nphysical_disk_performance.name - Name of the physical disk\npipes.name - Name of the pipe\npower_sensors.name - Name of power source\nprocesses.name - The process path or shorthand argv[0]\nprograms.name - Commonly used product name.\npython_packages.name - Package display name\nregistry.name - Name of the registry value entry\nrpm_packages.name - RPM package name\nsafari_extensions.name - Extension display name\nscheduled_tasks.name - Name of the scheduled task\nservices.name - Service name\nshared_folders.name - The shared name of the folder as it appears to other users\nshared_resources.name - Alias given to a path set up as a share on a computer system running Windows.\nstartup_items.name - Name of startup item\nsystem_controls.name - Full sysctl MIB name\ntemperature_sensors.name - Name of temperature source\nwindows_firewall_rules.name - Friendly name of the rule\nwindows_optional_features.name - Name of the feature\nwindows_security_products.name - Name of product\nwmi_bios_info.name - Name of the Bios setting\nwmi_cli_event_consumers.name - Unique name of a consumer.\nwmi_event_filters.name - Unique identifier of an event filter.\nwmi_script_event_consumers.name - Unique identifier for the event consumer. \nxprotect_entries.name - Description of XProtected malware\nxprotect_reports.name - Description of XProtected malware\nycloud_instance_metadata.name - Name of the VM\nyum_sources.name - Repository name"
+      description: "acpi_tables.name - ACPI table name\nad_config.name - The macOS-specific configuration name\napparmor_events.name - Process name\napparmor_profiles.name - Policy name.\napps.name - Name of the Name.app folder\napt_sources.name - Repository name\natom_packages.name - Package display name\nautoexec.name - Name of the program\nazure_instance_metadata.name - Name of the VM\nblock_devices.name - Block device name\nbrowser_plugins.name - Plugin display name\nchocolatey_packages.name - Package display name\nchrome_extensions.name - Extension display name\nconnected_displays.name - The name of the display.\ncups_destinations.name - Name of the printer\ndeb_packages.name - Package name\ndisk_encryption.name - Disk name\ndisk_events.name - Disk event name\ndisk_info.name - The label of the disk object.\ndns_cache.name - DNS record name\ndocker_container_mounts.name - Optional mount name\ndocker_container_networks.name - Network name\ndocker_container_processes.name - The process path or shorthand argv[0]\ndocker_container_stats.name - Container name\ndocker_containers.name - Container name\ndocker_info.name - Name of the docker host\ndocker_networks.name - Network name\ndocker_volume_labels.name - Volume name\ndocker_volumes.name - Volume name\netc_protocols.name - Protocol name\netc_services.name - Service name\nfan_speed_sensors.name - Fan name\nfirefox_addons.name - Addon display name\nhomebrew_packages.name - Package name\nie_extensions.name - Extension display name\niokit_devicetree.name - Device node name\niokit_registry.name - Default name of the node\nkernel_extensions.name - Extension label\nkernel_modules.name - Module name\nkernel_panics.name - Process name corresponding to crashed thread\nlaunchd.name - File name of plist (used by launchd)\nlxd_certificates.name - Name of the certificate\nlxd_instance_config.name - Instance name\nlxd_instance_devices.name - Instance name\nlxd_instances.name - Instance name\nlxd_networks.name - Name of the network\nlxd_storage_pools.name - Name of the storage pool\nmanaged_policies.name - Policy key name\nmd_personalities.name - Name of personality supported by kernel\nmemory_map.name - Region name\nnpm_packages.name - Package display name\nntdomains.name - The label by which the object is known.\nnvram.name - Variable name\nos_version.name - Distribution or product name\nosquery_events.name - Event publisher or subscriber name\nosquery_extensions.name - Extension's name\nosquery_flags.name - Flag name\nosquery_packs.name - The given name for this query pack\nosquery_registry.name - Name of the plugin item\nosquery_schedule.name - The given name for this query\npackage_install_history.name - Package display name\nphysical_disk_performance.name - Name of the physical disk\npipes.name - Name of the pipe\npower_sensors.name - Name of power source\nprocesses.name - The process path or shorthand argv[0]\nprograms.name - Commonly used product name.\npython_packages.name - Package display name\nregistry.name - Name of the registry value entry\nrpm_packages.name - RPM package name\nsafari_extensions.name - Extension display name\nscheduled_tasks.name - Name of the scheduled task\nservices.name - Service name\nshared_folders.name - The shared name of the folder as it appears to other users\nshared_resources.name - Alias given to a path set up as a share on a computer system running Windows.\nstartup_items.name - Name of startup item\nsystem_controls.name - Full sysctl MIB name\ntemperature_sensors.name - Name of temperature source\nwindows_firewall_rules.name - Friendly name of the rule\nwindows_optional_features.name - Name of the feature\nwindows_search.name - The name of the item\nwindows_security_products.name - Name of product\nwmi_bios_info.name - Name of the Bios setting\nwmi_cli_event_consumers.name - Unique name of a consumer.\nwmi_event_filters.name - Unique identifier of an event filter.\nwmi_script_event_consumers.name - Unique identifier for the event consumer. \nxprotect_entries.name - Description of XProtected malware\nxprotect_reports.name - Description of XProtected malware\nycloud_instance_metadata.name - Name of the VM\nyum_sources.name - Repository name"
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -7359,6 +7493,14 @@
         - name: number
           type: long
           default_field: false
+    - name: online
+      description: connected_displays.online - The online status of the display. This field is 1 if the display is online and 0 if it is offline.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: online_cpus
       description: docker_container_stats.online_cpus - Online CPUs
       type: keyword
@@ -7633,6 +7775,15 @@
       multi_fields:
         - name: number
           type: long
+          default_field: false
+    - name: owner
+      description: windows_search.owner - The owner of the item
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
           default_field: false
     - name: owner_gid
       description: process_events.owner_gid - File owner group ID
@@ -7984,6 +8135,7 @@
         user_ssh_keys.path - Path to key file
         userassist.path - Application file path.
         windows_crashes.path - Path of the executable file for the crashed process
+        windows_search.path - The full path of the item.
         yara.path - The path scanned
       type: keyword
       ignore_above: 1024
@@ -8308,6 +8460,24 @@
         - name: number
           type: long
           default_field: false
+    - name: pixels
+      description: connected_displays.pixels - The number of pixels of the display.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: pk_hash
+      description: keychain_items.pk_hash - Hash of associated public key (SHA1 of subjectPublicKey, see RFC 8520 4.2.1.2)
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: placement_group_id
       description: azure_instance_metadata.placement_group_id - Placement group for the VM scale set
       type: keyword
@@ -8538,6 +8708,15 @@
         - name: number
           type: long
           default_field: false
+    - name: predicate
+      description: unified_log.predicate - predicate to search (see `log help predicates`), note that this is merged into the predicate created from the column constraints
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: prefix
       description: homebrew_packages.prefix - Homebrew install prefix
       type: keyword
@@ -8679,6 +8858,15 @@
           type: text
           norms: false
           default_field: false
+    - name: product_id
+      description: connected_displays.product_id - The product ID of the display.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: product_name
       description: tpm_info.product_name - Product name of the TPM
       type: keyword
@@ -8764,6 +8952,15 @@
           default_field: false
     - name: propagation
       description: docker_container_mounts.propagation - Mount propagation
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: properties
+      description: windows_search.properties - Additional property values JSON
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -8895,6 +9092,7 @@
       description: |-
         mdfind.query - The query that was run to find the file
         osquery_schedule.query - The exact query to run
+        windows_search.query - Windows search query
         wmi_event_filters.query - Windows Management Instrumentation Query Language (WQL) event query that specifies the set of events for consumer notification, and the specific conditions for notification.
       type: keyword
       ignore_above: 1024
@@ -9335,6 +9533,15 @@
         - name: number
           type: long
           default_field: false
+    - name: resolution
+      description: connected_displays.resolution - The resolution of the display.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: resource_group_name
       description: azure_instance_metadata.resource_group_name - Resource group for the VM
       type: keyword
@@ -9476,6 +9683,15 @@
           default_field: false
     - name: root_volume_uuid
       description: time_machine_destinations.root_volume_uuid - Root UUID of backup volume
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: rotation
+      description: connected_displays.rotation - The orientation of the display.
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -9833,6 +10049,7 @@
       description: |-
         authenticode.serial_number - The certificate serial number
         battery.serial_number - The battery's unique serial number
+        connected_displays.serial_number - The serial number of the display. (may not be unique)
         curl_certificate.serial_number - Certificate serial number
         kernel_keys.serial_number - The serial key of the key.
         memory_devices.serial_number - Serial number of memory device
@@ -10246,6 +10463,7 @@
         shared_memory.size - Size in bytes
         smbios_tables.size - Table entry size in bytes
         smc_keys.size - Reported size of data in bytes
+        windows_search.size - The item size in bytes.
       type: keyword
       ignore_above: 1024
     - name: size_bytes
@@ -10314,6 +10532,15 @@
       multi_fields:
         - name: number
           type: long
+          default_field: false
+    - name: sort
+      description: windows_search.sort - Sort for windows api
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
           default_field: false
     - name: source
       description: |-
@@ -11396,7 +11623,7 @@
           type: long
           default_field: false
     - name: type
-      description: "apparmor_events.type - Event type\nappcompat_shims.type - Type of the SDB database.\nblock_devices.type - Block device type string\nbpf_socket_events.type - The socket type\ncrashes.type - Type of crash log\ndevice_file.type - File status\ndevice_firmware.type - Type of device\ndevice_partitions.type - \ndisk_encryption.type - Description of cipher type and mode if available\ndisk_info.type - The interface type of the disk.\ndns_cache.type - DNS record type\ndns_resolvers.type - Address type: sortlist, nameserver, search\ndocker_container_mounts.type - Type of mount (bind, volume)\ndocker_container_ports.type - Protocol (tcp, udp)\ndocker_volumes.type - Volume type\nfile.type - File status\nfirefox_addons.type - Extension, addon, webapp\nhardware_events.type - Type of hardware and hardware event\ninterface_addresses.type - Type of address. One of dhcp, manual, auto, other, unknown\ninterface_details.type - Interface type (includes virtual)\nkernel_keys.type - The key type.\nkeychain_items.type - Keychain item type (class)\nlast.type - Entry type, according to ut_type types (utmp.h)\nlogged_in_users.type - Login type\nlogical_drives.type - Deprecated (always 'Unknown').\nlxd_certificates.type - Type of the certificate\nlxd_networks.type - Type of network\nmounts.type - Mounted device type\nntfs_acl_permissions.type - Type of access mode for the access control entry.\nnvram.type - Data type (CFData, CFString, etc)\nosquery_events.type - Either publisher or subscriber\nosquery_extensions.type - SDK extension type: core, extension, or module\nosquery_flags.type - Flag type\nprocess_etw_events.type - Event Type (ProcessStart, ProcessStop)\nprocess_open_pipes.type - Pipe Type: named vs unnamed/anonymous\nregistry.type - Type of the registry value, or 'subkey' if item is a subkey\nroutes.type - Type of route\nselinux_events.type - Event type\nshared_resources.type - Type of resource being shared. Types include: disk drives, print queues, interprocess communications (IPC), and general devices.\nsmbios_tables.type - Table entry type\nsmc_keys.type - SMC-reported type literal type\nstartup_items.type - Startup Item or Login Item\nsystem_controls.type - Data type\nulimit_info.type - System resource to be limited\nuser_events.type - The file description for the process socket\nusers.type - Whether the account is roaming (domain), local, or a system profile\nwindows_crashes.type - Type of crash log\nwindows_security_products.type - Type of security product\nxprotect_meta.type - Either plugin or extension"
+      description: "apparmor_events.type - Event type\nappcompat_shims.type - Type of the SDB database.\nblock_devices.type - Block device type string\nbpf_socket_events.type - The socket type\ncrashes.type - Type of crash log\ndevice_file.type - File status\ndevice_firmware.type - Type of device\ndevice_partitions.type - \ndisk_encryption.type - Description of cipher type and mode if available\ndisk_info.type - The interface type of the disk.\ndns_cache.type - DNS record type\ndns_resolvers.type - Address type: sortlist, nameserver, search\ndocker_container_mounts.type - Type of mount (bind, volume)\ndocker_container_ports.type - Protocol (tcp, udp)\ndocker_volumes.type - Volume type\nfile.type - File status\nfirefox_addons.type - Extension, addon, webapp\nhardware_events.type - Type of hardware and hardware event\ninterface_addresses.type - Type of address. One of dhcp, manual, auto, other, unknown\ninterface_details.type - Interface type (includes virtual)\nkernel_keys.type - The key type.\nkeychain_items.type - Keychain item type (class)\nlast.type - Entry type, according to ut_type types (utmp.h)\nlogged_in_users.type - Login type\nlogical_drives.type - Deprecated (always 'Unknown').\nlxd_certificates.type - Type of the certificate\nlxd_networks.type - Type of network\nmounts.type - Mounted device type\nntfs_acl_permissions.type - Type of access mode for the access control entry.\nnvram.type - Data type (CFData, CFString, etc)\nosquery_events.type - Either publisher or subscriber\nosquery_extensions.type - SDK extension type: core, extension, or module\nosquery_flags.type - Flag type\nprocess_etw_events.type - Event Type (ProcessStart, ProcessStop)\nprocess_open_pipes.type - Pipe Type: named vs unnamed/anonymous\nregistry.type - Type of the registry value, or 'subkey' if item is a subkey\nroutes.type - Type of route\nselinux_events.type - Event type\nshared_resources.type - Type of resource being shared. Types include: disk drives, print queues, interprocess communications (IPC), and general devices.\nsmbios_tables.type - Table entry type\nsmc_keys.type - SMC-reported type literal type\nstartup_items.type - Startup Item or Login Item\nsystem_controls.type - Data type\nulimit_info.type - System resource to be limited\nuser_events.type - The file description for the process socket\nusers.type - Whether the account is roaming (domain), local, or a system profile\nwindows_crashes.type - Type of crash log\nwindows_search.type - The item type\nwindows_security_products.type - Type of security product\nxprotect_meta.type - Either plugin or extension"
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11934,6 +12161,7 @@
           default_field: false
     - name: vendor_id
       description: |-
+        connected_displays.vendor_id - The vendor ID of the display.
         hardware_events.vendor_id - Hex encoded Hardware vendor identifier
         pci_devices.vendor_id - Hex encoded PCI Device vendor identifier
         usb_devices.vendor_id - Hex encoded USB Device vendor identifier
