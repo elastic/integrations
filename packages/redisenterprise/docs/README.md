@@ -195,6 +195,7 @@ An example event for `node` looks as following:
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| redisenterprise.node.\*.value | Node metrics. | object |
 | redisenterprise.node.labels.addr | Network address or IP address of the node. | keyword |
 | redisenterprise.node.labels.cluster | name of the cluster to which the node belongs. | keyword |
 | redisenterprise.node.labels.cnm_version | Version of the Redis Enterprise cluster node management software that the node is running. | keyword |
@@ -203,7 +204,6 @@ An example event for `node` looks as following:
 | redisenterprise.node.labels.logical_name | Logical name or role of the node within the cluster. | keyword |
 | redisenterprise.node.labels.node | Specific node within the cluster | keyword |
 | redisenterprise.node.labels.path | Specifies the file path to the certificate file associated with the node and role. | keyword |
-| redisenterprise.node.\*.value | Node metrics. | object |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
