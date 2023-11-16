@@ -15,6 +15,8 @@ Depending on the version of the package you're using, you might also be able to 
 - Upgrade the DGA package to v2.0.0 using the steps [here](https://www.elastic.co/guide/en/fleet/current/upgrade-integration.html)
 - Install the new rules as described in the [Enable detection rules](#enable-detection-rules) section below
 
+In version 2.0.1, the package ignores data in cold and frozen data tiers to reduce heap memory usage, avoid running on outdated data, and to follow best practices.
+
 ## Configuration
 
 To download the assets, click **Settings** > **Install Domain Generated Algorithm Detection assets**.
