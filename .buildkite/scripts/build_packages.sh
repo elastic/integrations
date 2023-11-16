@@ -38,6 +38,12 @@ build_packages() {
     popd > /dev/null
 }
 
+add_bin_path
+
+with_yq
+with_go
+use_elastic_package
+
 unpublished=false
 echo "--- Build packages"
 build_packages
