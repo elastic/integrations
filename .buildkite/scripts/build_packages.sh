@@ -4,6 +4,29 @@ source .buildkite/scripts/common.sh
 
 set -euo pipefail
 
+check_and_build_package() {
+    local package=$1
+    if ! check_package "${package}" ; then
+        return 1
+    fi
+
+    if ! build_zip_package "${package}" ; then
+        return 1
+    fi
+
+    return 0
+}
+
+report_build_failure() {
+    local package="${1}"
+    echo "[${package}] Skipped. Build package failed"
+
+    # if running in Buildkite , add an annotation
+    if [ -n "${BUILDKITE_BRANCH+x}" ]; then
+        buildkite-agent annotate "Build package ${package} failed, not published." --ctx "ctx-build-${package}" --style "warning"
+    fi
+}
+
 build_packages() {
     pushd packages > /dev/null
 
