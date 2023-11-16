@@ -82,21 +82,22 @@ package="elastic_package_registry"
 # fi
 
 # packages_to_test=$((packages_to_test+1))
+
 cat << EOF >> ${PIPELINE_FILE}
-- label: "Check integrations ${package}"
-  key: "test-integrations-${package}"
-  command: ".buildkite/scripts/test_one_package.sh ${package} ${from} ${to}"
-  agents:
-    provider: gcp
-  env:
-    STACK_VERSION: "${STACK_VERSION}"
-    FORCE_CHECK_ALL: "${FORCE_CHECK_ALL}"
-    SERVERLESS: "false"
-    UPLOAD_SAFE_LOGS: ${UPLOAD_SAFE_LOGS}
-  artifact_paths:
-    - build/test-results/*.xml
-    - build/benchmark-results/*.xml
-    - build/test-coverage/*.xml
+    - label: "Check integrations ${package}"
+      key: "test-integrations-${package}"
+      command: ".buildkite/scripts/test_one_package.sh ${package} ${from} ${to}"
+      agents:
+        provider: gcp
+      env:
+        STACK_VERSION: "${STACK_VERSION}"
+        FORCE_CHECK_ALL: "${FORCE_CHECK_ALL}"
+        SERVERLESS: "false"
+        UPLOAD_SAFE_LOGS: ${UPLOAD_SAFE_LOGS}
+      artifact_paths:
+        - build/test-results/*.xml
+        - build/benchmark-results/*.xml
+        - build/test-coverage/*.xml
 EOF
 
 
