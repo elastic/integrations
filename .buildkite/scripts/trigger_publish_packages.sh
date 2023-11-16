@@ -38,10 +38,10 @@ for f in *.asc; do
 done
 popd > /dev/null || exit 1
 
-buildkite-agent artifact download ${PACKAGES_ARTIFACT_FOLDER}/*.sig "${PACKAGES_SIGNED_FOLDER}/"
-buildkite-agent artifact download ${PACKAGES_ARTIFACT_FOLDER}/*.zip "${PACKAGES_SIGNED_FOLDER}/"
+# buildkite-agent artifact download ${PACKAGES_ARTIFACT_FOLDER}/*.sig "${PACKAGES_SIGNED_FOLDER}/"
+buildkite-agent artifact download ${PACKAGES_ARTIFACT_FOLDER}/ "${PACKAGES_SIGNED_FOLDER}/"
 
-ls -l "${PACKAGES_SIGNED_FOLDER}"
+find "${PACKAGES_SIGNED_FOLDER}"
 
 exit 0
 # for each package trigger a publish package
