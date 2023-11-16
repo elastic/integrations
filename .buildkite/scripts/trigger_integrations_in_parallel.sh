@@ -7,9 +7,9 @@ set -euo pipefail
 add_bin_path
 with_yq
 
-pushd packages > /dev/null
-PACKAGE_LIST=$(list_all_directories)
-popd > /dev/null
+# pushd packages > /dev/null
+# PACKAGE_LIST=$(list_all_directories)
+# popd > /dev/null
 
 PIPELINE_FILE="packages_pipeline.yml"
 touch packages_pipeline.yml
@@ -29,7 +29,7 @@ to="$(get_to_changeset)"
 
 echo "[DEBUG] Checking with commits: from: '${from}' to: '${to}'"
 
-packages_to_test=0
+# packages_to_test=0
 
 # for package in ${PACKAGE_LIST}; do
 #     # check if needed to create an step for this package
@@ -69,19 +69,19 @@ packages_to_test=0
 
 package="elastic_package_registry"
 # check if needed to create an step for this package
-pushd "packages/${package}" > /dev/null
-skip_package="false"
-if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
-    skip_package="true"
-fi
-echoerr "${reason}"
-popd > /dev/null
+# pushd "packages/${package}" > /dev/null
+# skip_package="false"
+# if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
+#     skip_package="true"
+# fi
+# echoerr "${reason}"
+# popd > /dev/null
 
-if [[ "$skip_package" == "true" ]] ; then
-    continue
-fi
+# if [[ "$skip_package" == "true" ]] ; then
+#     continue
+# fi
 
-packages_to_test=$((packages_to_test+1))
+# packages_to_test=$((packages_to_test+1))
 cat << EOF >> ${PIPELINE_FILE}
 - label: "Check integrations ${package}"
   key: "test-integrations-${package}"
@@ -100,9 +100,9 @@ cat << EOF >> ${PIPELINE_FILE}
 EOF
 
 
-if [ ${packages_to_test} -eq 0 ]; then
-    buildkite-agent annotate "No packages to be tested" --context "ctx-no-packages" --style "warning"
-    exit 0
-fi
+# if [ ${packages_to_test} -eq 0 ]; then
+#     buildkite-agent annotate "No packages to be tested" --context "ctx-no-packages" --style "warning"
+#     exit 0
+# fi
 
 cat ${PIPELINE_FILE} | buildkite-agent pipeline upload
