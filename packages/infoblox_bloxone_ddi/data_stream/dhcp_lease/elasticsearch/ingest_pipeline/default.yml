@@ -3,7 +3,7 @@ description: Pipeline for parsing DHCP lease logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.9.0'
+      value: '8.11.0'
   - set:
       field: event.kind
       value: event
@@ -17,9 +17,12 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: json
+  - drop:
+      if: ctx.json?.results instanceof List && ctx.json.results.length == 0
   - fingerprint:
       fields:
         - json.starts
@@ -57,9 +60,9 @@ processors:
       formats:
         - ISO8601
       on_failure:
-      - append:
-          field: error.message
-          value: '{{{_ingest.on_failure_message}}}'
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: event.end
       copy_from: infoblox_bloxone_ddi.dhcp_lease.ends
@@ -133,9 +136,9 @@ processors:
       formats:
         - ISO8601
       on_failure:
-      - append:
-          field: error.message
-          value: '{{{_ingest.on_failure_message}}}'
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
       copy_from: infoblox_bloxone_ddi.dhcp_lease.last_updated
@@ -151,9 +154,9 @@ processors:
       formats:
         - ISO8601
       on_failure:
-      - append:
-          field: error.message
-          value: '{{{_ingest.on_failure_message}}}'
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: json.protocol
       value: ipv4
@@ -186,9 +189,9 @@ processors:
       formats:
         - ISO8601
       on_failure:
-      - append:
-          field: error.message
-          value: '{{{_ingest.on_failure_message}}}'
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: event.start
       copy_from: infoblox_bloxone_ddi.dhcp_lease.starts
@@ -201,6 +204,17 @@ processors:
       field: json.type
       target_field: infoblox_bloxone_ddi.dhcp_lease.type
       ignore_missing: true
+  - json:
+      field: infoblox_bloxone_ddi.dhcp_lease.options
+      target_field: infoblox_bloxone_ddi.dhcp_lease.options
+      if: ctx.infoblox_bloxone_ddi?.dhcp_lease?.options instanceof String
+      on_failure:
+        - remove:
+            field: infoblox_bloxone_ddi.dhcp_lease.options
+            ignore_failure: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - remove:
       field: json
       ignore_missing: true

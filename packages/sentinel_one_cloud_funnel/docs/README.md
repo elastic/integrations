@@ -2,9 +2,10 @@
 
 This [SentinelOne Cloud Funnel](https://assets.sentinelone.com/training/sentinelone_cloud_fu#page=1) integration enables your security team to securely stream XDR data to Elastic Security, via Amazon S3. When integrated with Elastic Security, this valuable data can be leveraged within Elastic for threat protection, detection, and incident response.
 
-The SentinelOne Cloud Funnel integration can be used in two different modes to collect data:
+The SentinelOne Cloud Funnel integration can be used in three different modes to collect data:
 - AWS S3 polling mode: SentinelOne Cloud Funnel writes data to S3, and Elastic Agent polls the S3 bucket by listing its contents and reading new files.
 - AWS S3 SQS mode: SentinelOne Cloud Funnel writes data to S3, S3 sends a notification of a new object to SQS, the Elastic Agent receives the notification from SQS, and then reads the S3 object. Multiple agents can be used in this mode.
+- GCS polling mode: SentinelOne Cloud Funnel writes data to GCS bucket, and Elastic Agent polls the GCS bucket by listing its contents and reading new files.
 
 ## Compatibility
 
@@ -56,7 +57,7 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **kibana.version** required is **8.7.1**.
+The minimum **kibana.version** required is **8.11.0**.
 
 ## Setup
 
@@ -66,11 +67,48 @@ The minimum **kibana.version** required is **8.7.1**.
 - Enable the Cloud Funnel Streaming as mentioned here: `[Your Login URL]/docs/en/how-to-enable-cloud-funnel-streaming.html#how-to-enable-cloud-funnel-streaming`.
 - The default value of the field `Bucket List Prefix` is s1/cloud_funnel.
 
+### To collect data from a GCS bucket, follow the below steps:
+
+- Considering you already have a GCS bucket setup, configure it with SentinelOne Cloud Funnel.
+- Enable the Cloud Funnel Streaming as mentioned here: `[Your Login URL]/docs/en/how-to-enable-cloud-funnel-streaming.html#how-to-enable-cloud-funnel-streaming`.
+- The default value of the field `File Selectors` is `- regex: "s1/cloud_funnel"`. It is commented out by default and resides in the advanced settings section.
+- Configure the integration with your GCS project ID and JSON Credentials key.
+
+## The GCS credentials key file:
+This is a one-time download JSON key file that you get after adding a key to a GCP service account. 
+If you are just starting out creating your GCS bucket, do the following: 
+
+1) Make sure you have a service account available, if not follow the steps below:
+   - Navigate to 'APIs & Services' > 'Credentials'
+   - Click on 'Create credentials' > 'Service account'
+2) Once the service account is created, you can navigate to the 'Keys' section and attach/generate your service account key.
+3) Make sure to download the JSON key file once prompted.
+4) Use this JSON key file either inline (JSON string object), or by specifying the path to the file on the host machine, where the agent is running.
+
+A sample JSON Credentials file looks as follows: 
+```json
+{
+  "type": "dummy_service_account",
+  "project_id": "dummy-project",
+  "private_key_id": "dummy-private-key-id",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nDummyPrivateKey\n-----END PRIVATE KEY-----\n",
+  "client_email": "dummy-service-account@example.com",
+  "client_id": "12345678901234567890",
+  "auth_uri": "https://dummy-auth-uri.com",
+  "token_uri": "https://dummy-token-uri.com",
+  "auth_provider_x509_cert_url": "https://dummy-auth-provider-cert-url.com",
+  "client_x509_cert_url": "https://dummy-client-cert-url.com",
+  "universe_domain": "dummy-universe-domain.com"
+}
+```
+
 **NOTE**:
 
 - SentinelOne Cloud Funnel sends logs to the following destination: `s1/ > cloud_funnel/ > yyyy/ > mm/ > dd/ > account_id={account_id}`.
 
 - You must have SentinelOne Admin Account Credentials along with the Login URL.
+
+- When using the GCS input, if you are using JSON Credentials inline, then you must specify the entire JSON object within single quotes i.e `'{GCS_CREDS_JSON_OBJECT}'`
 
 ### To collect data from AWS SQS, follow the below steps:
 
@@ -112,15 +150,49 @@ An example event for `event` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-01-01T00:00:00.180Z",
+    "@timestamp": "2022-10-25T07:47:24.180Z",
+    "agent": {
+        "ephemeral_id": "26afb86c-4349-4dc3-8efa-fe82afd55bcf",
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.10.1"
+    },
+    "aws": {
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-sentinel-one-bucket-47039",
+                "name": "elastic-package-sentinel-one-bucket-47039"
+            },
+            "object": {
+                "key": "command_script.log"
+            }
+        }
+    },
+    "cloud": {
+        "region": "us-east-1"
+    },
+    "data_stream": {
+        "dataset": "sentinel_one_cloud_funnel.event",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "snapshot": false,
+        "version": "8.10.1"
     },
     "event": {
+        "agent_id_status": "verified",
         "category": [
             "process"
         ],
+        "dataset": "sentinel_one_cloud_funnel.event",
         "id": "01GG71RXEEHZQFY6XZ1WGS2BAE_168",
+        "ingested": "2023-11-02T13:59:39Z",
         "kind": "event",
         "original": "{\"timestamp\":\"10:47:24.180\",\"src.process.parent.isStoryline™Root\":false,\"event.category\":\"command_script\",\"src.process.parent.image.sha1\":\"134fd2ad04cf59b0c10596230da5daf6fc711bd1\",\"site.id\":\"123456789123456789\",\"src.process.image.binaryIsExecutable\":true,\"src.process.parent.displayName\":\"MicrosoftCompatibilityTelemetry\",\"src.process.user\":\"NTAUTHORITY\\\\SYSTEM\",\"src.process.parent.subsystem\":\"SYS_WIN32\",\"src.process.indicatorRansomwareCount\":0,\"src.process.crossProcessDupRemoteProcessHandleCount\":0,\"src.process.activeContent.signedStatus\":\"unsigned\",\"src.process.tgtFileCreationCount\":0,\"src.process.indicatorInjectionCount\":0,\"src.process.moduleCount\":284,\"src.process.parent.name\":\"CompatTelRunner.exe\",\"i.version\":\"preprocess-lib-1.0\",\"src.process.activeContentType\":\"CLI\",\"sca:atlantisIngestTime\":1666684057507,\"src.process.image.md5\":\"7353f60b1739074eb17c5f4dddefe239\",\"src.process.indicatorReconnaissanceCount\":8,\"src.process.Storyline™.id\":\"87EE3C19E0250305\",\"src.process.childProcCount\":1,\"mgmt.url\":\"asdf-123.sentinelone.org\",\"src.process.crossProcessOpenProcessCount\":0,\"cmdScript.isComplete\":true,\"src.process.subsystem\":\"SYS_WIN32\",\"meta.event.name\":\"SCRIPTS\",\"src.process.parent.integrityLevel\":\"SYSTEM\",\"src.process.indicatorExploitationCount\":0,\"src.process.parent.Storyline™.id\":\"87EE3C19E0250305\",\"i.scheme\":\"edr\",\"src.process.integrityLevel\":\"SYSTEM\",\"site.name\":\"ASDF\",\"src.process.netConnInCount\":0,\"event.time\":1666684044180,\"account.id\":\"123456789123456789\",\"dataSource.name\":\"SentinelOne\",\"endpoint.name\":\"asdf1\",\"src.process.image.sha1\":\"6cbce4a295c163791b60fc23d285e6d84f28ee4c\",\"src.process.isStoryline™Root\":false,\"cmdScript.applicationName\":\"PowerShell_C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe_10.0.17763.1\",\"src.process.parent.image.path\":\"C:\\\\Windows\\\\System32\\\\CompatTelRunner.exe\",\"src.process.pid\":5912,\"tgt.file.isSigned\":\"signed\",\"sca:ingestTime\":1666684063,\"dataSource.category\":\"security\",\"src.process.cmdline\":\"powershell.exe-ExecutionPolicyRestricted-CommandWrite-Host'Finalresult:1';\",\"src.process.publisher\":\"MICROSOFTWINDOWS\",\"src.process.crossProcessThreadCreateCount\":0,\"src.process.parent.isNative64Bit\":false,\"src.process.parent.isRedirectCmdProcessor\":false,\"src.process.signedStatus\":\"signed\",\"src.process.crossProcessCount\":0,\"event.id\":\"01GG71RXEEHZQFY6XZ1WGS2BAE_168\",\"src.process.parent.cmdline\":\"C:\\\\Windows\\\\system32\\\\CompatTelRunner.exe-m:appraiser.dll-f:DoScheduledTelemetryRun-cv:1DRRwZous0W15sCL.2\",\"cmdScript.content\":\"$global:?\",\"src.process.image.path\":\"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\",\"src.process.tgtFileModificationCount\":4,\"src.process.indicatorEvasionCount\":1,\"src.process.netConnOutCount\":0,\"cmdScript.sha256\":\"feb60de98632d9f666e16e89bd1c99174801c761115d4a9f52f05ef41e397d2d\",\"src.process.crossProcessDupThreadHandleCount\":0,\"endpoint.os\":\"windows\",\"src.process.tgtFileDeletionCount\":0,\"src.process.startTime\":1666684041917,\"mgmt.id\":\"1337\",\"os.name\":\"WindowsServer2019Standard\",\"src.process.activeContent.id\":\"3EFA3EFA3EFA3EFA\",\"src.process.displayName\":\"WindowsPowerShell\",\"src.process.activeContent.path\":\"\\\\Unknowndevice\\\\Unknownfile\",\"src.process.isNative64Bit\":false,\"src.process.parent.sessionId\":0,\"src.process.uid\":\"230B188E26085676\",\"src.process.parent.image.md5\":\"47dd94d79d9bac54a2c3a1cf502770c6\",\"src.process.indicatorInfostealerCount\":0,\"src.process.indicatorBootConfigurationUpdateCount\":0,\"process.unique.key\":\"230B188E26085676\",\"cmdScript.originalSize\":18,\"agent.version\":\"22.1.4.10010\",\"src.process.parent.uid\":\"8608188E26085676\",\"src.process.parent.image.sha256\":\"046f009960f70981597cd7b3a1e44cbb4ba5893cc1407734366aa55fbeda5d66\",\"src.process.sessionId\":0,\"src.process.netConnCount\":0,\"mgmt.osRevision\":\"17763\",\"group.id\":\"asdf\",\"src.process.isRedirectCmdProcessor\":false,\"src.process.verifiedStatus\":\"verified\",\"src.process.parent.publisher\":\"MICROSOFTWINDOWS\",\"src.process.parent.startTime\":1666683971590,\"src.process.dnsCount\":0,\"endpoint.type\":\"server\",\"trace.id\":\"01GG71RXEEHZQFY6XZ1WGS2BAE\",\"src.process.name\":\"powershell.exe\",\"agent.uuid\":\"asdf356783457dfds4456d65\",\"src.process.activeContent.hash\":\"a8ae2c841e3f0f39d494a45370815a90cf00421e\",\"src.process.image.sha256\":\"de96a6e69944335375dc1ac238336066889d9ffc7d73628ef4fe1b1b160ab32c\",\"src.process.indicatorGeneralCount\":49,\"src.process.crossProcessOutOfStoryline™Count\":0,\"src.process.registryChangeCount\":0,\"packet.id\":\"9CB6AC4F10C34F5BB0A2788760E870F5\",\"src.process.indicatorPersistenceCount\":0,\"src.process.parent.signedStatus\":\"signed\",\"src.process.parent.user\":\"NTAUTHORITY\\\\SYSTEM\",\"event.type\":\"CommandScript\",\"src.process.indicatorPostExploitationCount\":0,\"src.process.parent.pid\":6008}",
         "type": [
@@ -138,6 +210,15 @@ An example event for `event` looks as following:
         },
         "type": "server"
     },
+    "input": {
+        "type": "aws-s3"
+    },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-sentinel-one-bucket-47039.s3.us-east-1.amazonaws.com/command_script.log"
+        },
+        "offset": 0
+    },
     "process": {
         "command_line": "powershell.exe-ExecutionPolicyRestricted-CommandWrite-Host'Finalresult:1';",
         "hash": {
@@ -154,14 +235,14 @@ An example event for `event` looks as following:
             },
             "name": "CompatTelRunner.exe",
             "pid": 6008,
-            "start": "2023-01-01T00:00:00.590Z",
+            "start": "2022-10-25T07:46:11.590Z",
             "title": "MicrosoftCompatibilityTelemetry",
             "user": {
                 "name": "NTAUTHORITY\\SYSTEM"
             }
         },
         "pid": 5912,
-        "start": "2023-01-01T00:00:00.917Z",
+        "start": "2022-10-25T07:47:21.917Z",
         "title": "WindowsPowerShell",
         "user": {
             "name": "NTAUTHORITY\\SYSTEM"
@@ -205,19 +286,10 @@ An example event for `event` looks as following:
                 "category": "security",
                 "name": "SentinelOne"
             },
-            "endpoint": {
-                "name": "asdf1",
-                "os": "windows",
-                "type": "server"
-            },
-            "group": {
-                "id": "asdf"
-            },
             "i": {
                 "scheme": "edr",
                 "version": "preprocess-lib-1.0"
             },
-            "id": "01GG71RXEEHZQFY6XZ1WGS2BAE_168",
             "meta_event_name": "SCRIPTS",
             "mgmt": {
                 "id": "1337",
@@ -228,8 +300,8 @@ An example event for `event` looks as following:
             "packet_id": "9CB6AC4F10C34F5BB0A2788760E870F5",
             "process_unique_key": "230B188E26085676",
             "sca": {
-                "atlantis_ingest_time": "2023-01-01T00:00:00.507Z",
-                "ingest_time": "2023-01-01T00:00:00.063Z"
+                "atlantis_ingest_time": "2022-10-25T07:47:37.507Z",
+                "ingest_time": "1970-01-20T06:58:04.063Z"
             },
             "site": {
                 "id": "123456789123456789",
@@ -245,7 +317,6 @@ An example event for `event` looks as following:
                         "type": "CLI"
                     },
                     "child_proc_count": 1,
-                    "cmd_line": "powershell.exe-ExecutionPolicyRestricted-CommandWrite-Host'Finalresult:1';",
                     "cross_process": {
                         "count": 0,
                         "dup": {
@@ -256,14 +327,10 @@ An example event for `event` looks as following:
                         "out_of_storyline_count": 0,
                         "thread_create_count": 0
                     },
-                    "display_name": "WindowsPowerShell",
                     "dns_count": 0,
                     "image": {
                         "binary_is_executable": true,
-                        "md5": "7353f60b1739074eb17c5f4dddefe239",
-                        "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
-                        "sha1": "6cbce4a295c163791b60fc23d285e6d84f28ee4c",
-                        "sha256": "de96a6e69944335375dc1ac238336066889d9ffc7d73628ef4fe1b1b160ab32c"
+                        "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
                     },
                     "indicator": {
                         "boot_configuration_update_count": 0,
@@ -282,44 +349,31 @@ An example event for `event` looks as following:
                     "is_redirect_cmd_processor": false,
                     "is_storyline_tm_root": false,
                     "module_count": 284,
-                    "name": "powershell.exe",
                     "net_conn": {
                         "count": 0,
                         "in_count": 0,
                         "out_count": 0
                     },
                     "parent": {
-                        "cmd_line": "C:\\Windows\\system32\\CompatTelRunner.exe-m:appraiser.dll-f:DoScheduledTelemetryRun-cv:1DRRwZous0W15sCL.2",
-                        "display_name": "MicrosoftCompatibilityTelemetry",
                         "image": {
                             "md5": "47dd94d79d9bac54a2c3a1cf502770c6",
-                            "path": "C:\\Windows\\System32\\CompatTelRunner.exe",
-                            "sha1": "134fd2ad04cf59b0c10596230da5daf6fc711bd1",
-                            "sha256": "046f009960f70981597cd7b3a1e44cbb4ba5893cc1407734366aa55fbeda5d66"
+                            "path": "C:\\Windows\\System32\\CompatTelRunner.exe"
                         },
                         "integrity_level": "SYSTEM",
                         "is_native_64_bit": false,
                         "is_redirect_cmd_processor": false,
                         "is_storyline_tm_root": false,
-                        "name": "CompatTelRunner.exe",
-                        "pid": 6008,
                         "publisher": "MICROSOFTWINDOWS",
                         "session_id": "0",
                         "signed_status": "signed",
-                        "start_time": "2023-01-01T00:00:00.590Z",
                         "storyline_tm_id": "87EE3C19E0250305",
                         "subsystem": "SYS_WIN32",
-                        "uid": "8608188E26085676",
-                        "user": {
-                            "name": "NTAUTHORITY\\SYSTEM"
-                        }
+                        "uid": "8608188E26085676"
                     },
-                    "pid": 5912,
                     "publisher": "MICROSOFTWINDOWS",
                     "registry_change_count": 0,
                     "session_id": "0",
                     "signed_status": "signed",
-                    "start_time": "2023-01-01T00:00:00.917Z",
                     "storyline_tm_id": "87EE3C19E0250305",
                     "subsystem": "SYS_WIN32",
                     "tgt_file": {
@@ -328,9 +382,6 @@ An example event for `event` looks as following:
                         "modification_count": 4
                     },
                     "uid": "230B188E26085676",
-                    "user": {
-                        "name": "NTAUTHORITY\\SYSTEM"
-                    },
                     "verified_status": "verified"
                 }
             },
@@ -339,17 +390,19 @@ An example event for `event` looks as following:
                     "is_signed": "signed"
                 }
             },
-            "time": "2023-01-01T00:00:00.180Z",
             "timestamp": "2023-01-01T10:47:24.180Z",
             "trace_id": "01GG71RXEEHZQFY6XZ1WGS2BAE",
             "type": "CommandScript"
         }
     },
     "tags": [
+        "collect_sqs_logs",
         "preserve_original_event",
-        "preserve_duplicate_custom_fields"
+        "forwarded",
+        "sentinel_one_cloud_funnel-event"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -357,6 +410,9 @@ An example event for `event` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn |  | keyword |
+| aws.s3.bucket.name |  | keyword |
+| aws.s3.object.key |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

@@ -3,7 +3,7 @@ description: Pipeline for parsing DNS config logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.9.0'
+      value: '8.11.0'
   - set:
       field: event.kind
       value: event
@@ -17,9 +17,12 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: json
+  - drop:
+      if: ctx.json?.results instanceof List && ctx.json.results.length == 0
   - fingerprint:
       fields:
         - json.created_at
@@ -60,6 +63,7 @@ processors:
       if: ctx.json?.custom_root_ns instanceof List
       processor:
         convert:
+          if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
@@ -317,6 +321,7 @@ processors:
       if: ctx.json?.forwarders instanceof List
       processor:
         convert:
+          if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
@@ -420,6 +425,7 @@ processors:
       if: ctx.json?.inheritance_sources?.custom_root_ns_block?.value?.custom_root_ns instanceof List
       processor:
         convert:
+          if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
@@ -659,6 +665,7 @@ processors:
       if: ctx.json?.inheritance_sources?.forwarders_block?.value?.forwarders instanceof List
       processor:
         convert:
+          if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
@@ -898,6 +905,7 @@ processors:
       if: ctx.json?.inheritance_sources?.query_acl?.value instanceof List
       processor:
         convert:
+          if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
@@ -962,6 +970,7 @@ processors:
       if: ctx.json?.inheritance_sources?.recursion_acl?.value instanceof List
       processor:
         convert:
+          if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
@@ -1070,6 +1079,7 @@ processors:
       if: ctx.json?.inheritance_sources?.transfer_acl?.value instanceof List
       processor:
         convert:
+          if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
@@ -1134,6 +1144,7 @@ processors:
       if: ctx.json?.inheritance_sources?.update_acl?.value instanceof List
       processor:
         convert:
+          if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
@@ -1398,6 +1409,7 @@ processors:
       if: ctx.json?.match_clients_acl instanceof List
       processor:
         convert:
+          if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
@@ -1460,6 +1472,7 @@ processors:
       if: ctx.json?.match_destinations_acl instanceof List
       processor:
         convert:
+          if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
@@ -1586,6 +1599,7 @@ processors:
       if: ctx.json?.query_acl instanceof List
       processor:
         convert:
+          if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
@@ -1648,6 +1662,7 @@ processors:
       if: ctx.json?.recursion_acl instanceof List
       processor:
         convert:
+          if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
@@ -1734,6 +1749,7 @@ processors:
       if: ctx.json?.transfer_acl instanceof List
       processor:
         convert:
+          if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
@@ -1796,6 +1812,7 @@ processors:
       if: ctx.json?.update_acl instanceof List
       processor:
         convert:
+          if: ctx._ingest?._value?.address != null
           field: _ingest._value.address
           type: ip
           ignore_missing: true
@@ -1973,20 +1990,7 @@ processors:
   - script:
       description: Drops null/empty values recursively.
       lang: painless
-      source:
-        boolean dropEmptyFields(Object object) {
-          if (object == null || object == '') {
-            return true;
-          } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
-            return (((Map) object).size() == 0);
-          } else if (object instanceof List) {
-            ((List) object).removeIf(value -> dropEmptyFields(value));
-            return (((List) object).length == 0);
-          }
-          return false;
-        }
-        dropEmptyFields(ctx);
+      source: boolean dropEmptyFields(Object object) { if (object == null || object == '') { return true; } else if (object instanceof Map) { ((Map) object).values().removeIf(value -> dropEmptyFields(value)); return (((Map) object).size() == 0); } else if (object instanceof List) { ((List) object).removeIf(value -> dropEmptyFields(value)); return (((List) object).length == 0); } return false; } dropEmptyFields(ctx);
 on_failure:
   - set:
       field: event.kind

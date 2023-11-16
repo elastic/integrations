@@ -6,9 +6,10 @@ processors:
       target_field: event.original
       ignore_missing: true
       ignore_failure: true
+      if: ctx.event?.original == null
   - set:
       field: ecs.version
-      value: '8.9.0'
+      value: '8.11.0'
   - grok:
       field: event.original
       patterns:
@@ -113,7 +114,7 @@ processors:
       field: message
       if: ctx._temp_?.reason == 'NIM-3-ADMIN_MODE_DISABLE'
       patterns:
-        - "Port %{INT:interface.id}"
+        - "Port %{INT:observer.ingress.interface.id}"
       ignore_failure: false
   ###
   - grok:

@@ -30,7 +30,7 @@ An example event for `am_access` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -78,6 +78,7 @@ An example event for `am_access` looks as following:
         "id": "id=d7cd65bf-743c-4753-a78f-a20daae7e3bf,ou=user,ou=am-config"
     }
 }
+
 ```
 
 **Exported fields**
@@ -99,7 +100,7 @@ An example event for `am_access` looks as following:
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | forgerock.eventName | The name of the audit event. | keyword |
-| forgerock.http.request.headers | The headers of the HTTP request. | object |
+| forgerock.http.request.headers.\* | The headers of the HTTP request. | object |
 | forgerock.http.request.headers.accept | The accept parameter for the request. | keyword |
 | forgerock.http.request.headers.accept-api-version | The accept-api-version header of the HTTP request. | keyword |
 | forgerock.http.request.headers.content-type | The content-type header of the HTTP request. | keyword |
@@ -109,19 +110,19 @@ An example event for `am_access` looks as following:
 | forgerock.http.request.headers.x-forwarded-for | The x-forwarded-for header of the HTTP request. | keyword |
 | forgerock.http.request.headers.x-forwarded-proto | The x-forwaded-proto header of the HTTP request. | keyword |
 | forgerock.http.request.headers.x-requested-with | The x-requested with header of the HTTP request. | keyword |
-| forgerock.http.request.queryParameters | The query parameter string of the HTTP request. | object |
+| forgerock.http.request.queryParameters.\* | The query parameter string of the HTTP request. | object |
 | forgerock.http.request.secure | A flag describing whether or not the HTTP request was secure. | boolean |
 | forgerock.level | The log level. | keyword |
 | forgerock.objectId | Specifies the identifier of an object that has been created, updated, or deleted. | keyword |
 | forgerock.realm | The realm where the operation occurred. | keyword |
-| forgerock.request.detail | Details around the response status. | object |
+| forgerock.request.detail.\* | Details around the response status. | object |
 | forgerock.request.detail.action | Details around the request action. | keyword |
 | forgerock.request.detail.grant_type | The request's grant type. | keyword |
 | forgerock.request.detail.scope | The request's scope. | keyword |
 | forgerock.request.detail.token_type_hint | The request's token type. | keyword |
 | forgerock.request.operation | The request operation. | keyword |
 | forgerock.request.protocol | The protocol associated with the request; REST or PLL. | keyword |
-| forgerock.response.detail | Details around the response status. | object |
+| forgerock.response.detail.\* | Details around the response status. | object |
 | forgerock.response.detail.active | A flag for whether or not the response was active. | boolean |
 | forgerock.response.detail.client_id | The responses's client id. | keyword |
 | forgerock.response.detail.revision | The responses's revision. | keyword |
@@ -173,7 +174,7 @@ An example event for `am_activity` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -223,6 +224,7 @@ An example event for `am_activity` looks as following:
         "id": "id=d7cd65bf-743c-4753-a78f-a20daae7e3bf,ou=user,ou=am-config"
     }
 }
+
 ```
 
 **Exported fields**
@@ -239,10 +241,8 @@ An example event for `am_activity` looks as following:
 | event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
 | event.id | Unique ID to describe the event. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
-| forgerock.after | Specifies the JSON representation of the object after the activity. | object |
-| forgerock.after.sunAMAuthInvalidAttemptsData | Example JSON representation of the object after the activity. | keyword |
-| forgerock.before | Specifies the JSON representation of the object prior to the activity. | object |
-| forgerock.before.sunAMAuthInvalidAttemptsData | Example JSON representation of the object prior to the activity. | object |
+| forgerock.after.\* | Specifies the JSON representation of the object after the activity. | object |
+| forgerock.before.\* | Specifies the JSON representation of the object prior to the activity. | object |
 | forgerock.changedFields | Specifies the fields that were changed. | keyword |
 | forgerock.eventName | The name of the audit event. | keyword |
 | forgerock.level | The log level. | keyword |
@@ -282,7 +282,7 @@ An example event for `am_authentication` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -344,6 +344,7 @@ An example event for `am_authentication` looks as following:
         "id": "id=autoid-resource-server,ou=agent,ou=am-config"
     }
 }
+
 ```
 
 **Exported fields**
@@ -397,7 +398,7 @@ An example event for `am_config` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -447,6 +448,7 @@ An example event for `am_config` looks as following:
         "id": "id=d7cd65bf-743c-4753-a78f-a20daae7e3bf,ou=user,ou=am-config"
     }
 }
+
 ```
 
 **Exported fields**
@@ -502,7 +504,7 @@ An example event for `am_core` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -538,6 +540,7 @@ An example event for `am_core` looks as following:
         "forgerock-am-core"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -591,7 +594,7 @@ An example event for `idm_access` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -666,6 +669,7 @@ An example event for `idm_access` looks as following:
         "id": "anonymous"
     }
 }
+
 ```
 
 **Exported fields**
@@ -726,7 +730,7 @@ An example event for `idm_activity` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -773,6 +777,7 @@ An example event for `idm_activity` looks as following:
         "id": "9120c7db-d7e6-4b51-b805-07bbee7a4bb9"
     }
 }
+
 ```
 
 **Exported fields**
@@ -826,7 +831,7 @@ An example event for `idm_authentication` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -884,6 +889,7 @@ An example event for `idm_authentication` looks as following:
         "id": "id=user"
     }
 }
+
 ```
 
 **Exported fields**
@@ -935,7 +941,7 @@ An example event for `idm_config` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -981,6 +987,7 @@ An example event for `idm_config` looks as following:
         "id": "d7cd65bf-743c-4753-a78f-a20daae7e3bf"
     }
 }
+
 ```
 
 **Exported fields**
@@ -1031,7 +1038,7 @@ An example event for `idm_core` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -1057,6 +1064,7 @@ An example event for `idm_core` looks as following:
         "forgerock-idm-core"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -1097,7 +1105,7 @@ An example event for `idm_sync` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -1141,6 +1149,7 @@ An example event for `idm_sync` looks as following:
         "id": "d7cd65bf-743c-4753-a78f-a20daae7e3bf"
     }
 }
+
 ```
 
 **Exported fields**

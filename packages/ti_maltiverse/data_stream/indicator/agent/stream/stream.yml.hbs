@@ -2,6 +2,7 @@ config_version: "2"
 interval: {{ interval }}
 {{#if enable_request_tracer}}
 request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
 {{/if}}
 request.method: "GET"
 request.timeout: 50s
@@ -15,12 +16,12 @@ response.split:
   keep_parent: true
 fields_under_root: true
 fields:
-  feed: {{ feed }}
+  _conf.feed: {{ feed }}
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
 {{/if}}
-{{#each tags as |tag i|}}
+{{#each tags as |tag|}}
   - {{tag}}
 {{/each}}
 {{#contains "forwarded" tags}}

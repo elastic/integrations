@@ -6,7 +6,7 @@ processors:
       value: '8.5.1'
   - set:
       field: event.type
-      value: info
+      value: [info]
   - set:
       field: event.kind
       value: metric
@@ -15,11 +15,12 @@ processors:
       value: httpjson
   - set:
       field: event.category
-      value: database
+      value: [database]
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: 'ctx.event?.original == null'
   - json:
       field: event.original
       target_field: json

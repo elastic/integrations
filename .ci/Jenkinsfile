@@ -15,7 +15,7 @@ pipeline {
     HOME = "${env.WORKSPACE}"
     DOCKER_COMPOSE_VERSION = "v2.17.2"
     KIND_VERSION = "v0.20.0"
-    K8S_VERSION = "v1.27.3"
+    K8S_VERSION = "v1.28.0"
     JOB_GCS_BUCKET = 'fleet-ci-temp'
     JOB_GCS_BUCKET_INTERNAL = 'fleet-ci-temp-internal'
     JOB_GCS_CREDENTIALS = 'fleet-ci-gcs-plugin'
@@ -51,7 +51,7 @@ pipeline {
     ELASTIC_PACKAGE_REPOSITORY_LICENSE = "licenses/Elastic-2.0.txt"
   }
   options {
-    timeout(time: 4, unit: 'HOURS')
+    timeout(time: 6, unit: 'HOURS')
     buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '20', daysToKeepStr: '30'))
     timestamps()
     ansiColor('xterm')
@@ -143,7 +143,7 @@ pipeline {
                             archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log, build/elastic-stack-dump/${it}/logs/fleet-server-internal/**/*")
                             archiveArtifactsSafe("insecure-logs/${it}/elastic-agent-logs/", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/*.*")
                             archiveArtifactsSafe("insecure-logs/${it}/elastic-agent-logs/default/", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/default/*")
-                            archiveArtifactsSafe("insecure-logs/${it}/container-logs", "build/container-logs/*.log")
+                            archiveArtifactsSafe("insecure-logs/${it}/container-logs/", "build/container-logs/*.log")
                             sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
                             stashCoverageReport()
                           }
@@ -194,14 +194,14 @@ def gitHubCommentWithBenchmarkReport() {
     }
     dir("${BASE_DIR}") {
       // download artifacts for this PR
-      def bucketUri = getBenchmarkBucketURI() + "*.xml"
+      def bucketUri = getBenchmarkBucketURI() + "*.json"
       log(level: 'INFO', text: "googleStorageDownload(bucketUri: ${bucketUri}, localDirectory: ${currentBenchmarkResults}, pathPrefix: ${getBenchmarkPathPrefix()})")
       googleStorageDownload(bucketUri: bucketUri, credentialsId: "${JOB_GCS_CREDENTIALS}", localDirectory: currentBenchmarkResults, pathPrefix: getBenchmarkPathPrefix())
 
       // download artifacts from the target branch if any
       if (env.CHANGE_TARGET) {
         try {
-          copyArtifacts(filter: "${currentBenchmarkResults}/*.xml", flatten: true, optional: true, projectName: getBaselineJobName(), selector: lastWithArtifacts(), target: baseline)
+          copyArtifacts(filter: "${currentBenchmarkResults}/*.json", flatten: true, optional: true, projectName: getBaselineJobName(), selector: lastWithArtifacts(), target: baseline)
         } catch(e) {
           log(level: 'INFO', text: 'gitHubCommentWithBenchmarkReport: it was not possible to copy the previous build.')
           return
@@ -398,7 +398,7 @@ def prepareStack() {
 }
 
 def stashBenchmarkResults() {
-  def wildcard = 'build/benchmark-results/*.xml'
+  def wildcard = 'build/benchmark-results/*.json'
   r = sh(label: "isBenchmarkResultsPresent", script: "ls ${wildcard}", returnStatus: true)
   if (r != 0) {
     echo "isBenchmarkResultsPresent: benchmark files not found, report won't be stashed"

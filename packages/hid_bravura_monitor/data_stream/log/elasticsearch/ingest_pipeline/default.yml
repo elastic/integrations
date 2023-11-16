@@ -3,12 +3,13 @@ description: Pipeline for parsing hid_bravura_monitor logs
 processors:
   - set:
       field: ecs.version
-      value: '8.9.0'
+      value: '8.11.0'
       description: Set ecs.version to 1.12.0
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - grok:
       field: event.original
       patterns:

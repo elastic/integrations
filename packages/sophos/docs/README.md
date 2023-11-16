@@ -64,7 +64,7 @@ An example event for `utm` looks as following:
         "id": "0"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "533bdb32-d7d6-482e-a4ee-22a7c8ba474c",
@@ -203,6 +203,7 @@ An example event for `utm` looks as following:
         "original": "Microsoft BITS/7.8"
     }
 }
+
 ```
 
 **Exported fields**
@@ -301,6 +302,11 @@ An example event for `utm` looks as following:
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
+| log.syslog.facility.code | The Syslog numeric facility of the log event, if available. According to RFCs 5424 and 3164, this value should be an integer between 0 and 23. | long |
+| log.syslog.facility.name | The Syslog text-based facility of the log event, if available. | keyword |
+| log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
+| log.syslog.severity.code | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different numeric severity value (e.g. firewall, IDS), your source's numeric severity should go to `event.severity`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `event.severity`. | long |
+| log.syslog.severity.name | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different severity value (e.g. firewall, IDS), your source's text severity should go to `log.level`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `log.level`. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.application | When a specific application or service is identified from network connection details (source/dest IPs, ports, certificates, or wire format), this field captures the application's or service's name. For example, the original event identifies the network connection being from a specific web service in a `https` network connection, like `facebook` or `twitter`. The field value must be normalized to lowercase for querying. | keyword |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
@@ -437,11 +443,11 @@ An example event for `xg` looks as following:
 {
     "@timestamp": "2016-12-02T18:50:20.000Z",
     "agent": {
-        "ephemeral_id": "12701a32-24a5-401a-a7f4-b8202e00f440",
-        "id": "533bdb32-d7d6-482e-a4ee-22a7c8ba474c",
+        "ephemeral_id": "244d391d-55cb-405e-baff-e091145a351c",
+        "id": "e756de30-a6b6-437a-8c56-cd75349c61bf",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.1"
+        "version": "8.10.3"
     },
     "data_stream": {
         "dataset": "sophos.xg",
@@ -449,12 +455,12 @@ An example event for `xg` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "533bdb32-d7d6-482e-a4ee-22a7c8ba474c",
+        "id": "e756de30-a6b6-437a-8c56-cd75349c61bf",
         "snapshot": false,
-        "version": "8.8.1"
+        "version": "8.10.3"
     },
     "event": {
         "action": "alert",
@@ -464,7 +470,7 @@ An example event for `xg` looks as following:
         ],
         "code": "16010",
         "dataset": "sophos.xg",
-        "ingested": "2023-07-20T08:39:24Z",
+        "ingested": "2023-11-15T05:39:21Z",
         "kind": "event",
         "outcome": "success",
         "severity": 1,
@@ -479,7 +485,7 @@ An example event for `xg` looks as following:
     "log": {
         "level": "alert",
         "source": {
-            "address": "172.31.0.4:59318"
+            "address": "192.168.32.4:40336"
         }
     },
     "observer": {

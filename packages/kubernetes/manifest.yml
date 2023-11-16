@@ -1,7 +1,7 @@
 format_version: 2.9.0
 name: kubernetes
 title: Kubernetes
-version: 1.44.0
+version: 1.54.0
 description: Collect logs and metrics from Kubernetes clusters with Elastic Agent.
 type: integration
 categories:
@@ -9,7 +9,7 @@ categories:
   - containers
   - kubernetes
 conditions:
-  kibana.version: "^8.10.0"
+  kibana.version: "^8.11.0"
 screenshots:
   - src: /img/metricbeat_kubernetes_overview.png
     title: Metricbeat Kubernetes Overview
@@ -35,6 +35,16 @@ policy_templates:
         title: Collect Kubernetes metrics from Kubelet API
         description: Collecting Node, Pod, Container, Volume and System metrics from Kubelet
         input_group: metrics
+        vars:
+          - name: condition
+            title: Condition
+            description: |
+              Condition to filter when to collect this input. See [Dynamic Input Configuration](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html) for details.
+              Note: This condition value will be appended to the individual metric condition values by an "and" clause if defined.
+            type: text
+            multi: false
+            required: false
+            show_user: false
     icons:
       - src: /img/logo_kubernetes.svg
         title: Logo Kubernetes
@@ -54,6 +64,7 @@ policy_templates:
       - state_daemonset
       - state_deployment
       - state_job
+      - state_namespace
       - state_node
       - state_persistentvolume
       - state_persistentvolumeclaim
@@ -66,8 +77,16 @@ policy_templates:
     inputs:
       - type: kubernetes/metrics
         title: Collect Kubernetes metrics from kube-state-metrics
-        description: Collecting metrics from kube-state-metrics (container, cronjob, deployment, daemonset, node, persistentvolume, persistentvolumeclaim, pod, replicaset, resourcequota, service, statefulset, storageclass)
+        description: Collecting metrics from kube-state-metrics (container, cronjob, deployment, daemonset, namespace, node, persistentvolume, persistentvolumeclaim, pod, replicaset, resourcequota, service, statefulset, storageclass)
         input_group: metrics
+        vars:
+          - name: condition
+            title: Condition
+            description: Condition to filter when to collect this input. See [Dynamic Input Configuration](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html) for details.
+            type: text
+            multi: false
+            required: false
+            show_user: false
     icons:
       - src: /img/logo_kubernetes.svg
         title: Logo Kubernetes

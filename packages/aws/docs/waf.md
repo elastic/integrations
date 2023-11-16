@@ -68,6 +68,9 @@ The `waf` dataset is specifically for WAF logs. Export logs from Kinesis Data Fi
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | aws.waf.arn | AWS ARN of ACL | keyword |
 | aws.waf.id | ID of ACL | keyword |
 | aws.waf.non_terminating_matching_rules | The list of non-terminating rules in the rule group that match the request. These are always COUNT rules (non-terminating rules that match) | nested |
@@ -99,7 +102,7 @@ The `waf` dataset is specifically for WAF logs. Export logs from Kinesis Data Fi
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -109,7 +112,7 @@ The `waf` dataset is specifically for WAF logs. Export logs from Kinesis Data Fi
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -122,6 +125,9 @@ The `waf` dataset is specifically for WAF logs. Export logs from Kinesis Data Fi
 | http.request.id | A unique identifier for each HTTP request to correlate logs between clients and servers in transactions. The id may be contained in a non-standard HTTP header, such as `X-Request-ID` or `X-Correlation-ID`. | keyword |
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.version | HTTP version. | keyword |
+| input.type | Input type | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.offset | Log offset | long |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
@@ -148,97 +154,141 @@ An example event for `waf` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-25T14:25:25.000Z",
-    "data_stream": {
-        "namespace": "default",
-        "type": "logs",
-        "dataset": "aws.waf"
-    },
-    "rule": {
-        "ruleset": "REGULAR",
-        "id": "STMTest_SQLi_XSS"
-    },
-    "source": {
-        "geo": {
-            "continent_name": "Oceania",
-            "country_name": "Australia",
-            "location": {
-                "lon": 143.2104,
-                "lat": -33.494
-            },
-            "country_iso_code": "AU"
-        },
-        "as": {
-            "number": 13335,
-            "organization": {
-                "name": "Cloudflare, Inc."
-            }
-        },
-        "ip": "1.1.1.1"
-    },
-    "tags": [
-        "preserve_original_event"
-    ],
-    "network": {
-        "protocol": "http",
-        "transport": "tcp"
-    },
-    "cloud": {
-        "region": "ap-southeast-2",
-        "provider": "aws",
-        "service": {
-            "name": "wafv2"
-        },
-        "account": {
-            "id": "12345"
-        }
-    },
-    "ecs": {
-        "version": "8.0.0"
-    },
-    "related": {
-        "ip": [
-            "1.1.1.1"
-        ]
-    },
-    "http": {
-        "request": {
-            "method": "POST",
-            "id": "null"
-        },
-        "version": "1.1"
-    },
-    "event": {
-        "action": "BLOCK",
-        "ingested": "2021-10-11T15:00:35.544818361Z",
-        "original": "{\"timestamp\":1576280412771,\"formatVersion\":1,\"webaclId\":\"arn:aws:wafv2:ap-southeast-2:12345:regional/webacl/test/111\",\"terminatingRuleId\":\"STMTest_SQLi_XSS\",\"terminatingRuleType\":\"REGULAR\",\"action\":\"BLOCK\",\"terminatingRuleMatchDetails\":[{\"conditionType\":\"SQL_INJECTION\",\"location\":\"UNKNOWN\",\"matchedData\":[\"10\",\"AND\",\"1\"]}],\"httpSourceName\":\"ALB\",\"httpSourceId\":\"alb\",\"ruleGroupList\":[],\"rateBasedRuleList\":[],\"nonTerminatingMatchingRules\":[],\"requestHeadersInserted\":null,\"responseCodeSent\":null,\"httpRequest\":{\"clientIp\":\"1.1.1.1\",\"country\":\"AU\",\"headers\":[],\"uri\":\"\",\"args\":\"\",\"httpVersion\":\"HTTP/1.1\",\"httpMethod\":\"POST\",\"requestId\":\"null\"},\"labels\":[{\"name\":\"value\"}]}",
-        "category": "web",
-        "type": [
-            "access",
-            "denied"
-        ],
-        "kind": "event"
+    "@timestamp": "2019-12-13T23:40:12.771Z",
+    "agent": {
+        "ephemeral_id": "ee12ef97-ab06-4022-b797-dc57893e4369",
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.10.1"
     },
     "aws": {
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-aws-bucket-55867",
+                "name": "elastic-package-aws-bucket-55867"
+            },
+            "object": {
+                "key": "waf.log"
+            }
+        },
         "waf": {
+            "arn": "arn:aws:wafv2:ap-southeast-2:EXAMPLE12345:regional/webacl/STMTest/1EXAMPLE-2ARN-3ARN-4ARN-123456EXAMPLE",
+            "id": "regional/webacl/STMTest/1EXAMPLE-2ARN-3ARN-4ARN-123456EXAMPLE",
+            "request": {
+                "headers": {
+                    "Accept": "*/*",
+                    "Host": "localhost:1989",
+                    "User-Agent": "curl/7.61.1",
+                    "x-stm-test": "10 AND 1=1"
+                }
+            },
             "terminating_rule_match_details": [
                 {
                     "conditionType": "SQL_INJECTION",
-                    "location": "UNKNOWN",
+                    "location": "HEADER",
                     "matchedData": [
                         "10",
                         "AND",
                         "1"
                     ]
                 }
-            ],
-            "id": "regional/webacl/test/111",
-            "source": {
-                "name": "ALB",
-                "id": "alb"
-            },
-            "arn": "arn:aws:wafv2:ap-southeast-2:12345:regional/webacl/test/111"
+            ]
         }
+    },
+    "cloud": {
+        "account": {
+            "id": "EXAMPLE12345"
+        },
+        "provider": "aws",
+        "region": "ap-southeast-2",
+        "service": {
+            "name": "wafv2"
+        }
+    },
+    "data_stream": {
+        "dataset": "aws.waf",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "snapshot": false,
+        "version": "8.10.1"
+    },
+    "event": {
+        "action": "BLOCK",
+        "agent_id_status": "verified",
+        "category": "web",
+        "dataset": "aws.waf",
+        "ingested": "2023-11-08T08:24:54Z",
+        "kind": "event",
+        "original": "{\"timestamp\":1576280412771,\"formatVersion\":1,\"webaclId\":\"arn:aws:wafv2:ap-southeast-2:EXAMPLE12345:regional/webacl/STMTest/1EXAMPLE-2ARN-3ARN-4ARN-123456EXAMPLE\",\"terminatingRuleId\":\"STMTest_SQLi_XSS\",\"terminatingRuleType\":\"REGULAR\",\"action\":\"BLOCK\",\"terminatingRuleMatchDetails\":[{\"conditionType\":\"SQL_INJECTION\",\"location\":\"HEADER\",\"matchedData\":[\"10\",\"AND\",\"1\"]}],\"httpSourceName\":\"-\",\"httpSourceId\":\"-\",\"ruleGroupList\":[],\"rateBasedRuleList\":[],\"nonTerminatingMatchingRules\":[],\"httpRequest\":{\"clientIp\":\"89.160.20.156\",\"country\":\"AU\",\"headers\":[{\"name\":\"Host\",\"value\":\"localhost:1989\"},{\"name\":\"User-Agent\",\"value\":\"curl/7.61.1\"},{\"name\":\"Accept\",\"value\":\"*/*\"},{\"name\":\"x-stm-test\",\"value\":\"10 AND 1=1\"}],\"uri\":\"/foo\",\"args\":\"\",\"httpVersion\":\"HTTP/1.1\",\"httpMethod\":\"GET\",\"requestId\":\"rid\"},\"labels\":[{\"name\":\"value\"}]}",
+        "type": [
+            "access",
+            "denied"
+        ]
+    },
+    "http": {
+        "request": {
+            "id": "rid",
+            "method": "GET"
+        },
+        "version": "1.1"
+    },
+    "input": {
+        "type": "aws-s3"
+    },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-aws-bucket-55867.s3.us-east-1.amazonaws.com/waf.log"
+        },
+        "offset": 0
+    },
+    "network": {
+        "protocol": "http",
+        "transport": "tcp"
+    },
+    "related": {
+        "ip": [
+            "89.160.20.156"
+        ]
+    },
+    "rule": {
+        "id": "STMTest_SQLi_XSS",
+        "ruleset": "REGULAR"
+    },
+    "source": {
+        "as": {
+            "number": 29518,
+            "organization": {
+                "name": "Bredband2 AB"
+            }
+        },
+        "geo": {
+            "city_name": "Linköping",
+            "continent_name": "Europe",
+            "country_iso_code": "SE",
+            "country_name": "Sweden",
+            "location": {
+                "lat": 58.4167,
+                "lon": 15.6167
+            },
+            "region_iso_code": "SE-E",
+            "region_name": "Östergötland County"
+        },
+        "ip": "89.160.20.156"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "aws-waf"
+    ],
+    "url": {
+        "path": "/foo"
     }
 }
 ```

@@ -4,14 +4,18 @@ This integration includes predefined rules that automatically route AWS service 
 include field mappings, ingest pipelines, predefined dashboards and ect. Here is a list of log types that are supported
 by this integration:
 
-| AWS service log    | Log destination           |
-|--------------------|---------------------------|
-| CloudTrail         | CloudWatch                |
-| Network Firewall   | Firehose, CloudWatch, S3  |
-| Route53 Public DNS | CloudWatch                |
-| Route53 Resolver   | Firehose, CloudWatch, S3  |
-| VPC Flow           | Firehose, CloudWatch, S3  |
-| WAF                | Firehose, CloudWatch      |
+| AWS service log    | Log destination          |
+|--------------------|--------------------------|
+| API Gateway        | CloudWatch               |
+| CloudFront         | S3                       |
+| CloudTrail         | CloudWatch               |
+| ELB                | S3                       |
+| Network Firewall   | Firehose, CloudWatch, S3 |
+| Route53 Public DNS | CloudWatch               |
+| Route53 Resolver   | Firehose, CloudWatch, S3 |
+| S3 access          | S3                       |
+| VPC Flow           | Firehose, CloudWatch, S3 |
+| WAF                | Firehose, CloudWatch. S3 |
 
 ## Limitation
 It is not possible to configure a delivery stream to send data to Elastic Cloud via PrivateLink (VPC endpoint). 
@@ -71,7 +75,7 @@ This is a current limitation in Firehose, which we are working with AWS to resol
 
     7. **Parameters**
 
-       1. Elastic recommends setting the `es_datastream_name` parameter to `logs-awsfirehose.logs-default` in order to
+       1. Elastic recommends setting the `es_datastream_name` parameter to `logs-awsfirehose-default` in order to
        leverage the routing rules defined in this integration. If this parameter is not specified, data is sent to the
        `logs-generic-default` data stream by default.
        ![Firehose Destination Settings](../img/destination-settings.png)

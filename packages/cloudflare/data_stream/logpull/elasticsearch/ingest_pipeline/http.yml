@@ -2,26 +2,48 @@
 description: Pipeline for parsing cloudflare http logs
 processors:
 # Event Time Fields
-- convert:
-    field: json.EdgeStartTimestamp
-    tag: convert_edge_start_timestamp
-    type: string
-- convert:
-    field: json.EdgeEndTimestamp
-    tag: convert_edge_end_timestamp
-    type: string
-- gsub:
-    field: json.EdgeStartTimestamp
-    tag: gsub_edge_start_timestamp
-    pattern: "\\d{6}$"
-    replacement: ""
-    if: "ctx?.json?.EdgeStartTimestamp != null && (ctx?.json?.EdgeStartTimestamp).length() > 18"
-- gsub:
-    field: json.EdgeEndTimestamp
-    tag: gsub_edge_end_timestamp
-    pattern: "\\d{6}$"
-    replacement: ""
-    if: "ctx?.json?.EdgeEndTimestamp != null && (ctx?.json?.EdgeEndTimestamp).length() > 18"
+- script:
+    lang: painless
+    tag: painless_edge_start_timestamp_to_milli
+    if: ctx.json?.EdgeStartTimestamp != null
+    source: |
+      try {
+        long t;
+        if (ctx.json.EdgeStartTimestamp instanceof String) {
+          t = Long.parseLong(ctx.json.EdgeStartTimestamp);
+        } else if (ctx.json.EdgeStartTimestamp instanceof Number) {
+          t = (long)(ctx.json.EdgeStartTimestamp);
+        } else {
+          return;
+        }
+        if (t > (long)(1e18)) {
+          ctx.json.EdgeStartTimestamp = t/(long)(1e6)
+        } else if (t < (long)(1e10))  {
+          ctx.json.EdgeStartTimestamp = t*(long)(1e3)
+        }
+      }
+      catch (Exception e) {}
+- script:
+    lang: painless
+    tag: painless_edge_end_timestamp_to_milli
+    if: ctx.json?.EdgeEndTimestamp != null
+    source: |
+      try {
+        long t;
+        if (ctx.json.EdgeEndTimestamp instanceof String) {
+          t = Long.parseLong(ctx.json.EdgeEndTimestamp);
+        } else if (ctx.json.EdgeEndTimestamp instanceof Number) {
+          t = (long)(ctx.json.EdgeEndTimestamp);
+        } else {
+          return;
+        }
+        if (t > (long)(1e18)) {
+          ctx.json.EdgeEndTimestamp = t/(long)(1e6)
+        } else if (t < (long)(1e10))  {
+          ctx.json.EdgeEndTimestamp = t*(long)(1e3)
+        }
+      }
+      catch (Exception e) {}
 - date:
     field: json.EdgeStartTimestamp
     tag: date_edge_start_timestamp
@@ -143,6 +165,23 @@ processors:
     field: observer.ip
     tag: geoip_observer_ip
     target_field: observer.geo
+    ignore_missing: true
+# Cloudflare Bot Fields
+- convert:
+    field: json.BotScore
+    target_field: cloudflare.bot.score.value
+    if: ctx.json?.BotScore != ''
+    tag: convert_bot_score_value
+    type: long
+    ignore_missing: true
+    on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+- rename:
+    field: json.BotScoreSrc
+    target_field: cloudflare.bot.score.src
+    tag: rename_bot_score_src
     ignore_missing: true
 # Cloudflare Cache Fields
 - rename:

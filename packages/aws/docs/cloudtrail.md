@@ -138,10 +138,10 @@ If blank, CloudTrail Digest logs will be skipped.
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
@@ -161,7 +161,7 @@ If blank, CloudTrail Digest logs will be skipped.
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -171,6 +171,9 @@ If blank, CloudTrail Digest logs will be skipped.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Input type | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.offset | Log offset | long |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
@@ -186,6 +189,10 @@ If blank, CloudTrail Digest logs will be skipped.
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
+| tls.cipher | String indicating the cipher used during the current connection. | keyword |
+| tls.client.server_name | Also called an SNI, this tells the server which hostname to which the client is attempting to connect to. When this value is available, it should get copied to `destination.domain`. | keyword |
+| tls.version | Numeric part of the version parsed from the original string. | keyword |
+| tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
 | user.changes.name | Short name or login of the user. | keyword |
 | user.changes.name.text | Multi-field of `user.changes.name`. | match_only_text |
 | user.id | Unique identifier of the user. | keyword |
@@ -210,88 +217,192 @@ An example event for `cloudtrail` looks as following:
 
 ```json
 {
-    "data_stream": {
-        "namespace": "default",
-        "type": "logs",
-        "dataset": "aws.cloudtrail"
-    },
-    "source": {
-        "address": "127.0.0.1",
-        "ip": "127.0.0.1"
-    },
-    "tags": [
-        "preserve_original_event"
-    ],
-    "cloud": {
-        "region": "us-east-1",
-        "account": {
-            "id": "123456789012"
-        }
-    },
-    "@timestamp": "2020-01-08T20:53:12.000Z",
-    "ecs": {
-        "version": "8.0.0"
-    },
-    "related": {
-        "user": [
-            "Alice",
-            "Bob",
-            "Robert"
-        ]
-    },
-    "event": {
-        "ingested": "2021-10-05T23:06:12.229540200Z",
-        "original": "{\"eventVersion\":\"1.05\",\"userIdentity\":{\"type\":\"IAMUser\",\"principalId\":\"EX_PRINCIPAL_ID\",\"arn\":\"arn:aws:iam::123456789012:user/Alice\",\"accountId\":\"123456789012\",\"accessKeyId\":\"EXAMPLE_KEY_ID\",\"userName\":\"Alice\"},\"eventTime\":\"2020-01-08T20:53:12Z\",\"eventSource\":\"iam.amazonaws.com\",\"eventName\":\"UpdateUser\",\"awsRegion\":\"us-east-1\",\"sourceIPAddress\":\"127.0.0.1\",\"userAgent\":\"aws-cli/1.16.310 Python/3.8.1 Darwin/18.7.0 botocore/1.13.46\",\"requestParameters\":{\"userName\":\"Bob\",\"newUserName\":\"Robert\"},\"responseElements\":null,\"requestID\":\"3a6b3260-739d-465e-9406-bcEXAMPLE\",\"eventID\":\"9150d546-3564-4262-8e62-110EXAMPLE\",\"eventType\":\"AwsApiCall\",\"recipientAccountId\":\"123456789012\"}",
-        "provider": "iam.amazonaws.com",
-        "created": "2020-01-08T20:53:12.000Z",
-        "kind": "event",
-        "action": "UpdateUser",
-        "id": "9150d546-3564-4262-8e62-110EXAMPLE",
-        "type": [
-            "user",
-            "change"
-        ],
-        "category": [
-            "iam"
-        ],
-        "outcome": "success"
+    "@timestamp": "2020-09-11T19:36:49.000Z",
+    "agent": {
+        "ephemeral_id": "66f9cd95-19fa-49fa-8ea4-5b8c8f96ef61",
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.10.1"
     },
     "aws": {
         "cloudtrail": {
-            "event_version": "1.05",
             "flattened": {
-                "request_parameters": {
-                    "userName": "Bob",
-                    "newUserName": "Robert"
+                "digest": {
+                    "end_time": "2020-09-11T19:36:49.000Z",
+                    "log_files": [
+                        {
+                            "hashAlgorithm": "SHA-256",
+                            "hashValue": "420784a5bbc12e9ac442451e8ec1356744fdeabf4fee0d2222508db6d448139c",
+                            "newestEventTime": "2020-09-11T19:26:24Z",
+                            "oldestEventTime": "2020-09-11T19:26:24Z",
+                            "s3Bucket": "alice-bucket",
+                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1930Z_l2pGqVS53QcGdAkp.json.gz"
+                        },
+                        {
+                            "hashAlgorithm": "SHA-256",
+                            "hashValue": "4e1eb2a8b41d032cbb16e5449fc8f3eac304e7d43017a391b37c788c77336196",
+                            "newestEventTime": "2020-09-11T19:11:18Z",
+                            "oldestEventTime": "2020-09-11T19:11:18Z",
+                            "s3Bucket": "alice-bucket",
+                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1915Z_TIKlbLnJ6IwUxqxw.json.gz"
+                        },
+                        {
+                            "hashAlgorithm": "SHA-256",
+                            "hashValue": "2695aeb3b4c1f021fe76e0b36f5ac15e557c41c58af6eef282d77ef056210d70",
+                            "newestEventTime": "2020-09-11T18:32:04Z",
+                            "oldestEventTime": "2020-09-11T18:32:04Z",
+                            "s3Bucket": "alice-bucket",
+                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1835Z_OPJhVNodH1gY760s.json.gz"
+                        },
+                        {
+                            "hashAlgorithm": "SHA-256",
+                            "hashValue": "45a2906f55cbfc912584e9425f8d3d8d6fabf571a45a5ecd7d2a0f4132b81689",
+                            "newestEventTime": "2020-09-11T19:21:28Z",
+                            "oldestEventTime": "2020-09-11T19:21:28Z",
+                            "s3Bucket": "alice-bucket",
+                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1925Z_zJNGzQovyNAImZV9.json.gz"
+                        },
+                        {
+                            "hashAlgorithm": "SHA-256",
+                            "hashValue": "515cc8be750d815266b4fc799c7600765f22502d29f5bb9d5c8969ffc5ab7097",
+                            "newestEventTime": "2020-09-11T18:51:21Z",
+                            "oldestEventTime": "2020-09-11T18:51:21Z",
+                            "s3Bucket": "alice-bucket",
+                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1855Z_RqN9YzoKAJCKbejj.json.gz"
+                        },
+                        {
+                            "hashAlgorithm": "SHA-256",
+                            "hashValue": "18650414e79e084dff02da66253f071347f7bb5c4863279bafe7762a980f7c0b",
+                            "newestEventTime": "2020-09-11T18:46:45Z",
+                            "oldestEventTime": "2020-09-11T18:46:45Z",
+                            "s3Bucket": "alice-bucket",
+                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1850Z_jLldN7U8XrspES8p.json.gz"
+                        },
+                        {
+                            "hashAlgorithm": "SHA-256",
+                            "hashValue": "54050ec665636f1985f5b51ae43c74a58282cb2e500492a45f20a4dc1bf8a6d5",
+                            "newestEventTime": "2020-09-11T19:01:06Z",
+                            "oldestEventTime": "2020-09-11T19:01:06Z",
+                            "s3Bucket": "alice-bucket",
+                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1905Z_jBNdmg4bSGxZ3wC8.json.gz"
+                        },
+                        {
+                            "hashAlgorithm": "SHA-256",
+                            "hashValue": "6e0d8fcbd712d3f6d1caf4a872681f4290b05ed8a8f1c9450a0a6db92ccab4d7",
+                            "newestEventTime": "2020-09-11T19:16:12Z",
+                            "oldestEventTime": "2020-09-11T19:16:12Z",
+                            "s3Bucket": "alice-bucket",
+                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1920Z_bj5DRrmILF6jK23a.json.gz"
+                        },
+                        {
+                            "hashAlgorithm": "SHA-256",
+                            "hashValue": "b2b0e2804d1c6b92d76eee203d7eba32d3d003e6967f175723a83ecc2d7ad4ba",
+                            "newestEventTime": "2020-09-11T18:56:05Z",
+                            "oldestEventTime": "2020-09-11T18:56:05Z",
+                            "s3Bucket": "alice-bucket",
+                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1900Z_6LjrkrhsLQMzCiSN.json.gz"
+                        },
+                        {
+                            "hashAlgorithm": "SHA-256",
+                            "hashValue": "4397a13565a67d9ed6e57737b98eb7e61ca52bb191c9b5da0423136dfc5581c7",
+                            "newestEventTime": "2020-09-11T19:06:31Z",
+                            "oldestEventTime": "2020-09-11T19:06:31Z",
+                            "s3Bucket": "alice-bucket",
+                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1910Z_DLyqye8LaeoD204N.json.gz"
+                        },
+                        {
+                            "hashAlgorithm": "SHA-256",
+                            "hashValue": "94f09d2398632c7b0c0066ed5d56768632dd2e06ed9c80af9d0c2c5f59bd60b6",
+                            "newestEventTime": "2020-09-11T18:41:58Z",
+                            "oldestEventTime": "2020-09-11T18:41:58Z",
+                            "s3Bucket": "alice-bucket",
+                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1845Z_TSDKyASOn2ejOq5n.json.gz"
+                        },
+                        {
+                            "hashAlgorithm": "SHA-256",
+                            "hashValue": "9044f9a05d70688bc6f6048d5f8d00764ab65e132b8ffefb193b22ca4394d771",
+                            "newestEventTime": "2020-09-11T18:37:10Z",
+                            "oldestEventTime": "2020-09-11T18:37:10Z",
+                            "s3Bucket": "alice-bucket",
+                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1840Z_btJydJ2t7hCRnjsN.json.gz"
+                        }
+                    ],
+                    "newest_event_time": "2020-09-11T19:26:24.000Z",
+                    "oldest_event_time": "2020-09-11T18:32:04.000Z",
+                    "previous_hash_algorithm": "SHA-256",
+                    "previous_s3_bucket": "alice-bucket",
+                    "s3_bucket": "alice-bucket",
+                    "signature_algorithm": "SHA256withRSA",
+                    "start_time": "2020-09-11T18:36:49.000Z"
                 }
+            }
+        },
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-aws-bucket-64547",
+                "name": "elastic-package-aws-bucket-64547"
             },
-            "user_identity": {
-                "access_key_id": "EXAMPLE_KEY_ID",
-                "type": "IAMUser",
-                "arn": "arn:aws:iam::123456789012:user/Alice"
-            },
-            "event_type": "AwsApiCall",
-            "recipient_account_id": "123456789012",
-            "request_parameters": "{newUserName=Robert, userName=Bob}"
+            "object": {
+                "key": "cloudtrail-digest.log"
+            }
         }
     },
-    "user": {
-        "name": "Alice",
-        "changes": {
-            "name": "Robert"
+    "cloud": {
+        "account": {
+            "id": "123456789123"
         },
-        "id": "EX_PRINCIPAL_ID",
-        "target": {
-            "name": "Bob"
-        }
+        "region": "us-east-1"
     },
-    "user_agent": {
-        "name": "aws-cli",
-        "original": "aws-cli/1.16.310 Python/3.8.1 Darwin/18.7.0 botocore/1.13.46",
-        "device": {
-            "name": "Spider"
+    "data_stream": {
+        "dataset": "aws.cloudtrail",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "snapshot": false,
+        "version": "8.10.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "created": "2023-11-03T14:36:58.706Z",
+        "dataset": "aws.cloudtrail",
+        "ingested": "2023-11-03T14:37:00Z",
+        "kind": "event",
+        "original": "{\"awsAccountId\":\"123456789123\",\"digestStartTime\":\"2020-09-11T18:36:49Z\",\"digestEndTime\":\"2020-09-11T19:36:49Z\",\"digestS3Bucket\":\"alice-bucket\",\"digestS3Object\":\"AWSLogs/123456789123/CloudTrail-Digest/us-west-2/2020/09/11/123456789123_CloudTrail-Digest_us-west-2_leh-ct-test_us-west-2_20200911T193649Z.json.gz\",\"digestPublicKeyFingerprint\":\"47aaa19f7eec22e9bd0b5e58cfade8cb\",\"digestSignatureAlgorithm\":\"SHA256withRSA\",\"newestEventTime\":\"2020-09-11T19:26:24Z\",\"oldestEventTime\":\"2020-09-11T18:32:04Z\",\"previousDigestS3Bucket\":\"alice-bucket\",\"previousDigestS3Object\":\"AWSLogs/123456789123/CloudTrail-Digest/us-west-2/2020/09/11/123456789123_CloudTrail-Digest_us-west-2_leh-ct-test_us-west-2_20200911T183649Z.json.gz\",\"previousDigestHashValue\":\"531914fcfa0dbacf0c9dd1475a1fdcb5dea6e85921409f3c3ec0ba39063c860\",\"previousDigestHashAlgorithm\":\"SHA-256\",\"previousDigestSignature\":\"10e0872f32fa1d299d0cc98e94d4c88a6a2eada9d9fc3ae6d53dfe8d54c7caf807072f1e1eec47efdeecfcc22483887f8fddfc954ae587fba43e7676b5547f432fa8722ba1c5baa6b233bcb528ce7c01e3748aab8f28c16c024de79da820128b4c9e5ce65e98a9c4e631687ecc89c224a11bb3df06ce441ff740e4ac9fbd41159e77f5863550118284121f193e357866fbd0463faffb56e194af196e35a7675c3bbd0a398f43159343c3f59129d6339a281a8fdb3192f3fffea9bd21dbb0a705ebfae1921f2133aab0ad29522aea6df0828c1780d3f3ed6b8270ab3ba24459916b0fbbe82fba6ff9677bafe7306e0f5edcc0f1508cdb4e36f3e3b30e653e9987\",\"logFiles\":[{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1930Z_l2pGqVS53QcGdAkp.json.gz\",\"hashValue\":\"420784a5bbc12e9ac442451e8ec1356744fdeabf4fee0d2222508db6d448139c\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T19:26:24Z\",\"oldestEventTime\":\"2020-09-11T19:26:24Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1915Z_TIKlbLnJ6IwUxqxw.json.gz\",\"hashValue\":\"4e1eb2a8b41d032cbb16e5449fc8f3eac304e7d43017a391b37c788c77336196\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T19:11:18Z\",\"oldestEventTime\":\"2020-09-11T19:11:18Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1835Z_OPJhVNodH1gY760s.json.gz\",\"hashValue\":\"2695aeb3b4c1f021fe76e0b36f5ac15e557c41c58af6eef282d77ef056210d70\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T18:32:04Z\",\"oldestEventTime\":\"2020-09-11T18:32:04Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1925Z_zJNGzQovyNAImZV9.json.gz\",\"hashValue\":\"45a2906f55cbfc912584e9425f8d3d8d6fabf571a45a5ecd7d2a0f4132b81689\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T19:21:28Z\",\"oldestEventTime\":\"2020-09-11T19:21:28Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1855Z_RqN9YzoKAJCKbejj.json.gz\",\"hashValue\":\"515cc8be750d815266b4fc799c7600765f22502d29f5bb9d5c8969ffc5ab7097\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T18:51:21Z\",\"oldestEventTime\":\"2020-09-11T18:51:21Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1850Z_jLldN7U8XrspES8p.json.gz\",\"hashValue\":\"18650414e79e084dff02da66253f071347f7bb5c4863279bafe7762a980f7c0b\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T18:46:45Z\",\"oldestEventTime\":\"2020-09-11T18:46:45Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1905Z_jBNdmg4bSGxZ3wC8.json.gz\",\"hashValue\":\"54050ec665636f1985f5b51ae43c74a58282cb2e500492a45f20a4dc1bf8a6d5\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T19:01:06Z\",\"oldestEventTime\":\"2020-09-11T19:01:06Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1920Z_bj5DRrmILF6jK23a.json.gz\",\"hashValue\":\"6e0d8fcbd712d3f6d1caf4a872681f4290b05ed8a8f1c9450a0a6db92ccab4d7\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T19:16:12Z\",\"oldestEventTime\":\"2020-09-11T19:16:12Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1900Z_6LjrkrhsLQMzCiSN.json.gz\",\"hashValue\":\"b2b0e2804d1c6b92d76eee203d7eba32d3d003e6967f175723a83ecc2d7ad4ba\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T18:56:05Z\",\"oldestEventTime\":\"2020-09-11T18:56:05Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1910Z_DLyqye8LaeoD204N.json.gz\",\"hashValue\":\"4397a13565a67d9ed6e57737b98eb7e61ca52bb191c9b5da0423136dfc5581c7\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T19:06:31Z\",\"oldestEventTime\":\"2020-09-11T19:06:31Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1845Z_TSDKyASOn2ejOq5n.json.gz\",\"hashValue\":\"94f09d2398632c7b0c0066ed5d56768632dd2e06ed9c80af9d0c2c5f59bd60b6\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T18:41:58Z\",\"oldestEventTime\":\"2020-09-11T18:41:58Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1840Z_btJydJ2t7hCRnjsN.json.gz\",\"hashValue\":\"9044f9a05d70688bc6f6048d5f8d00764ab65e132b8ffefb193b22ca4394d771\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T18:37:10Z\",\"oldestEventTime\":\"2020-09-11T18:37:10Z\"}]}",
+        "outcome": "success",
+        "type": [
+            "info"
+        ]
+    },
+    "file": {
+        "hash": {
+            "sha256": "10e0872f32fa1d299d0cc98e94d4c88a6a2eada9d9fc3ae6d53dfe8d54c7caf807072f1e1eec47efdeecfcc22483887f8fddfc954ae587fba43e7676b5547f432fa8722ba1c5baa6b233bcb528ce7c01e3748aab8f28c16c024de79da820128b4c9e5ce65e98a9c4e631687ecc89c224a11bb3df06ce441ff740e4ac9fbd41159e77f5863550118284121f193e357866fbd0463faffb56e194af196e35a7675c3bbd0a398f43159343c3f59129d6339a281a8fdb3192f3fffea9bd21dbb0a705ebfae1921f2133aab0ad29522aea6df0828c1780d3f3ed6b8270ab3ba24459916b0fbbe82fba6ff9677bafe7306e0f5edcc0f1508cdb4e36f3e3b30e653e9987"
         },
-        "version": "1.16.310"
-    }
+        "path": "AWSLogs/123456789123/CloudTrail-Digest/us-west-2/2020/09/11/123456789123_CloudTrail-Digest_us-west-2_leh-ct-test_us-west-2_20200911T193649Z.json.gz"
+    },
+    "input": {
+        "type": "aws-s3"
+    },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-aws-bucket-64547.s3.us-east-1.amazonaws.com/cloudtrail-digest.log"
+        },
+        "offset": 0
+    },
+    "related": {
+        "hash": [
+            "10e0872f32fa1d299d0cc98e94d4c88a6a2eada9d9fc3ae6d53dfe8d54c7caf807072f1e1eec47efdeecfcc22483887f8fddfc954ae587fba43e7676b5547f432fa8722ba1c5baa6b233bcb528ce7c01e3748aab8f28c16c024de79da820128b4c9e5ce65e98a9c4e631687ecc89c224a11bb3df06ce441ff740e4ac9fbd41159e77f5863550118284121f193e357866fbd0463faffb56e194af196e35a7675c3bbd0a398f43159343c3f59129d6339a281a8fdb3192f3fffea9bd21dbb0a705ebfae1921f2133aab0ad29522aea6df0828c1780d3f3ed6b8270ab3ba24459916b0fbbe82fba6ff9677bafe7306e0f5edcc0f1508cdb4e36f3e3b30e653e9987"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "aws-cloudtrail"
+    ]
 }
 ```

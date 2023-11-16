@@ -3,18 +3,19 @@ description: Pipeline for Okta system logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.9.0'
+      value: '8.11.0'
   # Keep message as event.original.
   # Warn if event.original has already been set. This is most likely due to logstash ecs_compatibility setting.
   - append:
-     if: ctx.event?.original != null
-     field: error.message
-     value: 'event.original is set before start of ingest pipeline'
+      if: ctx.event?.original != null
+      field: error.message
+      value: 'event.original is set before start of ingest pipeline'
   # keep message as event.original if it has not already been set.
   - rename:
       field: message
       target_field: event.original
       if: ctx.event?.original == null
+      ignore_missing: true
   - json:
       field: event.original
       target_field: json
@@ -116,7 +117,7 @@ processors:
       if: '["group.user_membership.add","group.user_membership.remove"].contains(ctx?.okta?.event_type)'
   - append:
       field: event.type
-      value: user
+      value: info
       if: |
         ["user.lifecycle.activate","user.lifecycle.create",
         "user.lifecycle.deactivate","user.lifecycle.suspend",
@@ -159,7 +160,7 @@ processors:
   - grok:
       field: okta.actor.alternate_id
       patterns:
-          - "%{USER:user.name}"
+        - "%{USER:user.name}"
       ignore_missing: true
       ignore_failure: true
   - set:
@@ -323,7 +324,6 @@ processors:
   - remove:
       field: okta.debug_context.debug_data.flattened.risk_object
       if: ctx._risk_object != null
-
   # Make heroic efforts to capture risk level and reason if kv could not get them.
   - grok:
       field: okta.debug_context.debug_data.flattened.risk
@@ -340,7 +340,6 @@ processors:
         KEY: '%{NOTSPACE}='
       if: ctx.okta?.debug_context?.debug_data?.flattened?.risk_object != null && ctx.okta?.debug_context?.debug_data?.flattened?.risk != null
       ignore_failure: true
-
   - remove:
       field: okta.debug_context.debug_data.flattened.risk
       if: ctx._risk_object != null

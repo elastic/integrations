@@ -3,7 +3,7 @@ description: Pipeline for processing Event(Alert and Recommendation) logs.
 processors:
   - set:
       field: ecs.version
-      value: 8.9.0
+      value: 8.11.0
       tag: set_ecs_version
   - set:
       field: event.kind
@@ -22,6 +22,7 @@ processors:
       target_field: event.original
       tag: rename_message
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: json
