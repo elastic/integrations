@@ -39,7 +39,7 @@ done
 popd > /dev/null || exit 1
 
 # buildkite-agent artifact download ${PACKAGES_ARTIFACT_FOLDER}/*.sig "${PACKAGES_SIGNED_FOLDER}/"
-buildkite-agent artifact download ${PACKAGES_ARTIFACT_FOLDER}/ "${PACKAGES_SIGNED_FOLDER}/"
+buildkite-agent artifact download ${PACKAGES_ARTIFACT_FOLDER}/*  "${PACKAGES_SIGNED_FOLDER}/"
 
 find "${PACKAGES_SIGNED_FOLDER}"
 
