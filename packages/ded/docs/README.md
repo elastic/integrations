@@ -26,7 +26,9 @@ Depending on the version of the package you're using, you might also be able to 
 
 Depending on the version of the package you're using, you might also be able to search for the above rules using the tag `Data Exfiltration`.
 - Upgrade the Data Exfiltration Detection package to v2.0.0 using the steps [here](https://www.elastic.co/guide/en/fleet/current/upgrade-integration.html)
-- Install the new rules as described in the [Enable detection rules](#enable-detection-rules) section below
+- Install the new rules as described in the [Enable detection rules](#enable-detection-rules) section below.
+
+In version 2.1.1, the package ignores data in cold and frozen data tiers to reduce heap memory usage, avoid running on outdated data, and to follow best practices.
 
 ## Configuration
 

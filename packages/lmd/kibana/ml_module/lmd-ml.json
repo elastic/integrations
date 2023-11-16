@@ -8,16 +8,34 @@
             "icon": "machineLearningApp"
         },
         "query": {
-          "bool": {"should": [
-            {"term": {
-              "event.category": "file"
-            }},
-            {
-              "bool": {"filter": [
-                {"exists": {"field": "session.start_time"}}
-              ]}
+            "bool": {
+                "should": [
+                    {
+                        "term": {
+                            "event.category": "file"
+                        }
+                    },
+                    {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "exists": {
+                                        "field": "session.start_time"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "must_not": {
+                    "terms": {
+                        "_tier": [
+                            "data_frozen",
+                            "data_cold"
+                        ]
+                    }
+                }
             }
-          ]}
         },
         "jobs": [
             {
@@ -99,7 +117,7 @@
                     "analysis_config": {
                         "bucket_span": "15m",
                         "detectors": [
-                           {
+                            {
                                 "detector_description": "rare by \"file.extension\" partitionfield=\"host.name\"",
                                 "function": "rare",
                                 "by_field_name": "file.extension",
@@ -156,7 +174,7 @@
                     }
                 }
             },
-          {
+            {
                 "id": "lmd_high_mean_rdp_session_duration",
                 "config": {
                     "groups": [
@@ -167,21 +185,21 @@
                     "analysis_config": {
                         "bucket_span": "6h",
                         "detectors": [
-                              {
+                            {
                                 "detector_description": "high_mean(session.duration) partitionfield=\"source.ip\"",
                                 "function": "high_mean",
                                 "field_name": "session.duration",
                                 "partition_field_name": "source.ip",
                                 "detector_index": 0
-                              },
-                              {
+                            },
+                            {
                                 "detector_description": "high_mean(session.duration) partitionfield=\"destination.ip\"",
                                 "function": "high_mean",
                                 "field_name": "session.duration",
                                 "partition_field_name": "destination.ip",
                                 "detector_index": 1
-                              }
-                            ],
+                            }
+                        ],
                         "influencers": [
                             "host.name",
                             "user.name",
@@ -198,7 +216,7 @@
                     }
                 }
             },
-          {
+            {
                 "id": "lmd_high_var_rdp_session_duration",
                 "config": {
                     "groups": [
@@ -209,21 +227,21 @@
                     "analysis_config": {
                         "bucket_span": "6h",
                         "detectors": [
-                             {
+                            {
                                 "detector_description": "high_varp(session.duration) partitionfield=\"source.ip\"",
                                 "function": "high_varp",
                                 "field_name": "session.duration",
                                 "partition_field_name": "source.ip",
                                 "detector_index": 0
-                              },
-                              {
+                            },
+                            {
                                 "detector_description": "high_varp(session.duration) partitionfield=\"destination.ip\"",
                                 "function": "high_varp",
                                 "field_name": "session.duration",
                                 "partition_field_name": "destination.ip",
                                 "detector_index": 1
-                              }
-                            ],
+                            }
+                        ],
                         "influencers": [
                             "host.name",
                             "user.name",
@@ -240,7 +258,7 @@
                     }
                 }
             },
-          {
+            {
                 "id": "lmd_high_sum_rdp_number_of_processes",
                 "config": {
                     "groups": [
@@ -251,21 +269,21 @@
                     "analysis_config": {
                         "bucket_span": "6h",
                         "detectors": [
-                              {
+                            {
                                 "detector_description": "high_sum(number_processes_per_session) partitionfield=\"source.ip\"",
                                 "function": "high_sum",
                                 "field_name": "number_processes_per_session",
                                 "partition_field_name": "source.ip",
                                 "detector_index": 0
-                              },
-                              {
+                            },
+                            {
                                 "detector_description": "high_sum(number_processes_per_session) partitionfield=\"destination.ip\"",
                                 "function": "high_sum",
                                 "field_name": "number_processes_per_session",
                                 "partition_field_name": "destination.ip",
                                 "detector_index": 1
-                              }
-                            ],
+                            }
+                        ],
                         "influencers": [
                             "host.name",
                             "user.name",
@@ -282,7 +300,7 @@
                     }
                 }
             },
-          {
+            {
                 "id": "lmd_unusual_time_weekday_rdp_session_start",
                 "config": {
                     "groups": [
@@ -293,19 +311,19 @@
                     "analysis_config": {
                         "bucket_span": "6h",
                         "detectors": [
-                          {
-                            "detector_description": "time_of_day partitionfield=\"source.ip\"",
-                            "function": "time_of_day",
-                            "partition_field_name": "source.ip",
-                            "detector_index": 0
-                          },
-                          {
-                            "detector_description": "time_of_week partitionfield=\"source.ip\"",
-                            "function": "time_of_week",
-                            "partition_field_name": "source.ip",
-                            "detector_index": 1
-                          }
-                            ],
+                            {
+                                "detector_description": "time_of_day partitionfield=\"source.ip\"",
+                                "function": "time_of_day",
+                                "partition_field_name": "source.ip",
+                                "detector_index": 0
+                            },
+                            {
+                                "detector_description": "time_of_week partitionfield=\"source.ip\"",
+                                "function": "time_of_week",
+                                "partition_field_name": "source.ip",
+                                "detector_index": 1
+                            }
+                        ],
                         "influencers": [
                             "host.name",
                             "user.name",
@@ -322,7 +340,7 @@
                     }
                 }
             },
-          {
+            {
                 "id": "lmd_high_rdp_distinct_count_source_ip_for_destination",
                 "config": {
                     "groups": [
@@ -333,14 +351,14 @@
                     "analysis_config": {
                         "bucket_span": "6h",
                         "detectors": [
-                          {
-                            "detector_description": "high_distinct_count(\"source.ip\") partitionfield=\"destination.ip\"",
-                            "function": "high_distinct_count",
-                            "field_name": "source.ip",
-                            "partition_field_name": "destination.ip",
-                            "detector_index": 0
-                          }
-                            ],
+                            {
+                                "detector_description": "high_distinct_count(\"source.ip\") partitionfield=\"destination.ip\"",
+                                "function": "high_distinct_count",
+                                "field_name": "source.ip",
+                                "partition_field_name": "destination.ip",
+                                "detector_index": 0
+                            }
+                        ],
                         "influencers": [
                             "host.name",
                             "user.name",
@@ -356,7 +374,7 @@
                     }
                 }
             },
-          {
+            {
                 "id": "lmd_high_rdp_distinct_count_destination_ip_for_source",
                 "config": {
                     "groups": [
@@ -367,14 +385,14 @@
                     "analysis_config": {
                         "bucket_span": "6h",
                         "detectors": [
-                              {
+                            {
                                 "detector_description": "high_distinct_count(\"destination.ip\") partitionfield=\"source.ip\"",
                                 "function": "high_distinct_count",
                                 "field_name": "destination.ip",
                                 "partition_field_name": "source.ip",
                                 "detector_index": 0
-                              }
-                            ],
+                            }
+                        ],
                         "influencers": [
                             "host.name",
                             "user.name",
@@ -390,8 +408,8 @@
                     }
                 }
             },
-           {
-             "id": "lmd_high_mean_rdp_process_args",
+            {
+                "id": "lmd_high_mean_rdp_process_args",
                 "config": {
                     "groups": [
                         "security",
@@ -402,20 +420,20 @@
                         "bucket_span": "6h",
                         "detectors": [
                             {
-                              "detector_description": "high_mean(total_length_process_args) partitionfield=\"source.ip\"",
-                              "function": "high_mean",
-                              "field_name": "total_length_process_args",
-                              "partition_field_name": "source.ip",
-                              "detector_index": 0
+                                "detector_description": "high_mean(total_length_process_args) partitionfield=\"source.ip\"",
+                                "function": "high_mean",
+                                "field_name": "total_length_process_args",
+                                "partition_field_name": "source.ip",
+                                "detector_index": 0
                             },
                             {
-                              "detector_description": "high_mean(total_length_process_args) partitionfield=\"destination.ip\"",
-                              "function": "high_mean",
-                              "field_name": "total_length_process_args",
-                              "partition_field_name": "destination.ip",
-                              "detector_index": 1
+                                "detector_description": "high_mean(total_length_process_args) partitionfield=\"destination.ip\"",
+                                "function": "high_mean",
+                                "field_name": "total_length_process_args",
+                                "partition_field_name": "destination.ip",
+                                "detector_index": 1
                             }
-                            ],
+                        ],
                         "influencers": [
                             "host.name",
                             "user.name",
@@ -443,52 +461,52 @@
                     ],
                     "job_id": "lmd_high_count_remote_file_transfer",
                     "query": {
-                       "bool": {
-                        "must_not": [
-                          {
-                            "terms": {
-                              "user.name": [
-                                "SYSTEM",
-                                "root"
-                              ]
-                            }
-                          }
-                        ],
-                        "filter": [
-                          {
-                            "term": {
-                              "event.category": "file"
-                            }
-                          },
-                          {
-                            "term": {
-                              "event.action": "creation"
-                            }
-                          },
-                          {
-                            "terms": {
-                              "process.name": [
-                                "System",
-                                "scp",
-                                "sshd",
-                                "smbd",
-                                "vsftpd",
-                                "sftp-server"
-                              ]
-                            }
-                          },
-                          {
-                            "exists": {
-                              "field": "process.name"
-                            }
-                          },
-                          {
-                            "exists": {
-                              "field": "file.name"
-                            }
-                          }
-                        ]
-                      }
+                        "bool": {
+                            "must_not": [
+                                {
+                                    "terms": {
+                                        "user.name": [
+                                            "SYSTEM",
+                                            "root"
+                                        ]
+                                    }
+                                }
+                            ],
+                            "filter": [
+                                {
+                                    "term": {
+                                        "event.category": "file"
+                                    }
+                                },
+                                {
+                                    "term": {
+                                        "event.action": "creation"
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "process.name": [
+                                            "System",
+                                            "scp",
+                                            "sshd",
+                                            "smbd",
+                                            "vsftpd",
+                                            "sftp-server"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "process.name"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "file.name"
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             },
@@ -502,51 +520,51 @@
                     "job_id": "lmd_high_file_size_remote_file_transfer",
                     "query": {
                         "bool": {
-                        "must_not": [
-                          {
-                            "terms": {
-                              "user.name": [
-                                "SYSTEM",
-                                "root"
-                              ]
-                            }
-                          }
-                        ],
-                        "filter": [
-                          {
-                            "term": {
-                              "event.category": "file"
-                            }
-                          },
-                          {
-                            "term": {
-                              "event.action": "creation"
-                            }
-                          },
-                          {
-                            "terms": {
-                              "process.name": [
-                                "System",
-                                "scp",
-                                "sshd",
-                                "smbd",
-                                "vsftpd",
-                                "sftp-server"
-                              ]
-                            }
-                          },
-                          {
-                            "exists": {
-                              "field": "process.name"
-                            }
-                          },
-                          {
-                            "exists": {
-                              "field": "file.name"
-                            }
-                          }
-                        ]
-                      }
+                            "must_not": [
+                                {
+                                    "terms": {
+                                        "user.name": [
+                                            "SYSTEM",
+                                            "root"
+                                        ]
+                                    }
+                                }
+                            ],
+                            "filter": [
+                                {
+                                    "term": {
+                                        "event.category": "file"
+                                    }
+                                },
+                                {
+                                    "term": {
+                                        "event.action": "creation"
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "process.name": [
+                                            "System",
+                                            "scp",
+                                            "sshd",
+                                            "smbd",
+                                            "vsftpd",
+                                            "sftp-server"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "process.name"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "file.name"
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             },
@@ -560,55 +578,55 @@
                     "job_id": "lmd_rare_file_extension_remote_transfer",
                     "query": {
                         "bool": {
-                        "must_not": [
-                          {
-                            "terms": {
-                              "user.name": [
-                                "SYSTEM",
-                                "root"
-                              ]
-                            }
-                          }
-                        ],
-                        "filter": [
-                          {
-                            "term": {
-                              "event.category": "file"
-                            }
-                          },
-                          {
-                            "term": {
-                              "event.action": "creation"
-                            }
-                          },
-                          {
-                            "terms": {
-                              "process.name": [
-                                "System",
-                                "scp",
-                                "sshd",
-                                "smbd",
-                                "vsftpd",
-                                "sftp-server"
-                              ]
-                            }
-                          },
-                          {
-                            "exists": {
-                              "field": "process.name"
-                            }
-                          },
-                          {
-                            "exists": {
-                              "field": "file.name"
-                            }
-                          }
-                        ]
-                      }
+                            "must_not": [
+                                {
+                                    "terms": {
+                                        "user.name": [
+                                            "SYSTEM",
+                                            "root"
+                                        ]
+                                    }
+                                }
+                            ],
+                            "filter": [
+                                {
+                                    "term": {
+                                        "event.category": "file"
+                                    }
+                                },
+                                {
+                                    "term": {
+                                        "event.action": "creation"
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "process.name": [
+                                            "System",
+                                            "scp",
+                                            "sshd",
+                                            "smbd",
+                                            "vsftpd",
+                                            "sftp-server"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "process.name"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "file.name"
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             },
-          {
+            {
                 "id": "datafeed-lmd_high_mean_rdp_session_duration",
                 "job_id": "lmd_high_mean_rdp_session_duration",
                 "config": {
@@ -617,29 +635,29 @@
                     ],
                     "job_id": "lmd_high_mean_rdp_session_duration",
                     "query": {
-                    "bool": {
-                      "filter": [
-                        {
-                          "exists": {
-                            "field": "source.ip"
-                          }
-                        },
-                        {
-                          "exists": {
-                            "field": "destination.ip"
-                          }
-                        },
-                        {
-                          "exists": {
-                            "field": "session.start_time"
-                          }
+                        "bool": {
+                            "filter": [
+                                {
+                                    "exists": {
+                                        "field": "source.ip"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "destination.ip"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "session.start_time"
+                                    }
+                                }
+                            ]
                         }
-                      ]
                     }
-                  }
                 }
             },
-          {
+            {
                 "id": "datafeed-lmd_high_var_rdp_session_duration",
                 "job_id": "lmd_high_var_rdp_session_duration",
                 "config": {
@@ -648,29 +666,29 @@
                     ],
                     "job_id": "lmd_high_var_rdp_session_duration",
                     "query": {
-                    "bool": {
-                      "filter": [
-                        {
-                          "exists": {
-                            "field": "source.ip"
-                          }
-                        },
-                        {
-                          "exists": {
-                            "field": "destination.ip"
-                          }
-                        },
-                        {
-                          "exists": {
-                            "field": "session.start_time"
-                          }
+                        "bool": {
+                            "filter": [
+                                {
+                                    "exists": {
+                                        "field": "source.ip"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "destination.ip"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "session.start_time"
+                                    }
+                                }
+                            ]
                         }
-                      ]
                     }
-                  }
                 }
             },
-          {
+            {
                 "id": "datafeed-lmd_high_sum_rdp_number_of_processes",
                 "job_id": "lmd_high_sum_rdp_number_of_processes",
                 "config": {
@@ -679,29 +697,29 @@
                     ],
                     "job_id": "lmd_high_sum_rdp_number_of_processes",
                     "query": {
-                    "bool": {
-                      "filter": [
-                        {
-                          "exists": {
-                            "field": "source.ip"
-                          }
-                        },
-                        {
-                          "exists": {
-                            "field": "destination.ip"
-                          }
-                        },
-                        {
-                          "exists": {
-                            "field": "session.start_time"
-                          }
+                        "bool": {
+                            "filter": [
+                                {
+                                    "exists": {
+                                        "field": "source.ip"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "destination.ip"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "session.start_time"
+                                    }
+                                }
+                            ]
                         }
-                      ]
                     }
-                  }
                 }
             },
-          {
+            {
                 "id": "datafeed-lmd_unusual_time_weekday_rdp_session_start",
                 "job_id": "lmd_unusual_time_weekday_rdp_session_start",
                 "config": {
@@ -710,29 +728,29 @@
                     ],
                     "job_id": "lmd_unusual_time_weekday_rdp_session_start",
                     "query": {
-                    "bool": {
-                      "filter": [
-                        {
-                          "exists": {
-                            "field": "source.ip"
-                          }
-                        },
-                        {
-                          "exists": {
-                            "field": "destination.ip"
-                          }
-                        },
-                        {
-                          "exists": {
-                            "field": "session.start_time"
-                          }
+                        "bool": {
+                            "filter": [
+                                {
+                                    "exists": {
+                                        "field": "source.ip"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "destination.ip"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "session.start_time"
+                                    }
+                                }
+                            ]
                         }
-                      ]
                     }
-                  }
                 }
             },
-          {
+            {
                 "id": "datafeed-lmd_high_rdp_distinct_count_source_ip_for_destination",
                 "job_id": "lmd_high_rdp_distinct_count_source_ip_for_destination",
                 "config": {
@@ -741,29 +759,29 @@
                     ],
                     "job_id": "lmd_high_rdp_distinct_count_source_ip_for_destination",
                     "query": {
-                    "bool": {
-                      "filter": [
-                        {
-                          "exists": {
-                            "field": "source.ip"
-                          }
-                        },
-                        {
-                          "exists": {
-                            "field": "destination.ip"
-                          }
-                        },
-                        {
-                          "exists": {
-                            "field": "session.start_time"
-                          }
+                        "bool": {
+                            "filter": [
+                                {
+                                    "exists": {
+                                        "field": "source.ip"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "destination.ip"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "session.start_time"
+                                    }
+                                }
+                            ]
                         }
-                      ]
                     }
-                  }
                 }
             },
-          {
+            {
                 "id": "datafeed-lmd_high_rdp_distinct_count_destination_ip_for_source",
                 "job_id": "lmd_high_rdp_distinct_count_destination_ip_for_source",
                 "config": {
@@ -772,29 +790,29 @@
                     ],
                     "job_id": "lmd_high_rdp_distinct_count_destination_ip_for_source",
                     "query": {
-                    "bool": {
-                      "filter": [
-                        {
-                          "exists": {
-                            "field": "source.ip"
-                          }
-                        },
-                        {
-                          "exists": {
-                            "field": "destination.ip"
-                          }
-                        },
-                        {
-                          "exists": {
-                            "field": "session.start_time"
-                          }
+                        "bool": {
+                            "filter": [
+                                {
+                                    "exists": {
+                                        "field": "source.ip"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "destination.ip"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "session.start_time"
+                                    }
+                                }
+                            ]
                         }
-                      ]
                     }
-                  }
                 }
             },
-          {
+            {
                 "id": "datafeed-lmd_high_mean_rdp_process_args",
                 "job_id": "lmd_high_mean_rdp_process_args",
                 "config": {
@@ -803,26 +821,26 @@
                     ],
                     "job_id": "lmd_high_mean_rdp_process_args",
                     "query": {
-                    "bool": {
-                      "filter": [
-                        {
-                          "exists": {
-                            "field": "source.ip"
-                          }
-                        },
-                        {
-                          "exists": {
-                            "field": "destination.ip"
-                          }
-                        },
-                        {
-                          "exists": {
-                            "field": "session.start_time"
-                          }
+                        "bool": {
+                            "filter": [
+                                {
+                                    "exists": {
+                                        "field": "source.ip"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "destination.ip"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "session.start_time"
+                                    }
+                                }
+                            ]
                         }
-                      ]
                     }
-                  }
                 }
             },
             {
@@ -835,59 +853,60 @@
                     "job_id": "lmd_rare_file_path_remote_transfer",
                     "query": {
                         "bool": {
-                    "must_not": [
-                      {
-                        "terms": {
-                          "user.name": [
-                            "SYSTEM",
-                            "root"
-                          ]
+                            "must_not": [
+                                {
+                                    "terms": {
+                                        "user.name": [
+                                            "SYSTEM",
+                                            "root"
+                                        ]
+                                    }
+                                }
+                            ],
+                            "filter": [
+                                {
+                                    "term": {
+                                        "event.category": "file"
+                                    }
+                                },
+                                {
+                                    "term": {
+                                        "event.action": "creation"
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "process.name": [
+                                            "System",
+                                            "scp",
+                                            "sshd",
+                                            "smbd",
+                                            "vsftpd",
+                                            "sftp-server"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "process.name"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "file.name"
+                                    }
+                                }
+                            ]
                         }
-                      }
-                    ],
-                    "filter": [
-                      {
-                        "term": {
-                          "event.category": "file"
-                        }
-                      },
-                      {
-                        "term": {
-                          "event.action": "creation"
-                        }
-                      },
-                      {
-                        "terms": {
-                          "process.name": [
-                            "System",
-                            "scp",
-                            "sshd",
-                            "smbd",
-                            "vsftpd",
-                            "sftp-server"
-                          ]
-                        }
-                      },
-                      {
-                        "exists": {
-                          "field": "process.name"
-                        }
-                      },
-                      {
-                        "exists": {
-                          "field": "file.name"
-                        }
-                      }
-                    ]
-                  }
                     },
-                  "runtime_mappings":{
-                    "file_directory":
-                    {"type":"keyword","script":
-                    {"source":"def st=new String();\r\ndef st1=new String(); \r\nif(doc.containsKey('file.path') && doc['file.path'].size() != 0 )\r\n{st=doc['file.path'].value.replace('/','\\\\').splitOnToken('\\\\')[-1]; \r\nst1=doc['file.path'].value.replace(st,\"\");\r\n emit((st1));} else { emit('None');}"
-                     }
+                    "runtime_mappings": {
+                        "file_directory": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "def st=new String();\r\ndef st1=new String(); \r\nif(doc.containsKey('file.path') && doc['file.path'].size() != 0 )\r\n{st=doc['file.path'].value.replace('/','\\\\').splitOnToken('\\\\')[-1]; \r\nst1=doc['file.path'].value.replace(st,\"\");\r\n emit((st1));} else { emit('None');}"
+                            }
+                        }
                     }
-                  }
                 }
             }
         ]
