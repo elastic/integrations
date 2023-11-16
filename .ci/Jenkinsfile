@@ -315,7 +315,7 @@ def isPrAffected(integrationName) {
     to = "origin/${env.BRANCH_NAME}"
   }
 
-  def r = sh(label: "[${integrationName}] git-diff: check non-package files", script: "git diff --name-only \$(git merge-base ${from} ${to}) ${to} | egrep -v '^(packages/|.github/CODEOWNERS|.buildkite/|catalog-info.yaml)'", returnStatus: true)
+  def r = sh(label: "[${integrationName}] git-diff: check non-package files", script: "git diff --name-only \$(git merge-base ${from} ${to}) ${to} | egrep -v '^(packages/|.github/CODEOWNERS|.buildkite/|catalog-info.yaml|.ci/Jenkinsfile)'", returnStatus: true)
   if (r == 0) {
     echo "[${integrationName}] PR is affected: found non-package files"
     return true
