@@ -44,6 +44,12 @@ if [ -n "${ELASTIC_PACKAGE_LINKS_FILE_PATH+x}" ]; then
     export ELASTIC_PACKAGE_LINKS_FILE_PATH=${BASE_DIR}/${ELASTIC_PACKAGE_LINKS_FILE_PATH}
 fi
 
+if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations-publishing" ]]; then
+    if [[ "${BUILDKITE_STEP_KEY}" == "trigger-publish" ]]; then
+        BUILDKITE_API_TOKEN=$(retry 5 vault kv get -field buildkite_token ${BUILDKITE_API_TOKEN_PATH})
+        export BUILDKITE_API_TOKEN
+    fi
+fi
 if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations" ]]; then
     if [[ "${BUILDKITE_STEP_KEY}" == "publish-packages" ]]; then
         JENKINS_USERNAME_SECRET=$(retry 5 vault kv get -field username ${JENKINS_API_TOKEN_PATH})

@@ -30,7 +30,7 @@ steps:
   # TODO: Pending to migrate steps to Buildkite pipelines - still triggering Jenkins pipelines
   - label: "Publish packages - (triggering Jenkins builds)"
     key: "publish-packages"
-    command: ".buildkite/scripts/publish_packages.sh" # TODO: missing signature and publishing loops
+    command: ".buildkite/scripts/publish_packages.sh"
     env:
       DRY_RUN: "true" # TODO: Avoid signing and publishing pending packages until Jenkins pipeline is replaced
     agents:
@@ -39,14 +39,51 @@ steps:
       - step: "check"
         allow_failure: false
 
-  - label: "Trigger integrations"
-    key: "test-integrations"
-    command: ".buildkite/scripts/trigger_integrations_in_parallel.sh"
-    env:
-      UPLOAD_SAFE_LOGS: 1
-    depends_on:
-      - step: "check"
-        allow_failure: false
+  - group: ":package: Publish packages"
+    key: "publish-packages-buildkite"
+    steps:
+      - label: "Build packages"
+        key: "build-packages"
+        command: ".buildkite/scripts/build_packages.sh"
+        agents:
+          image: "${LINUX_AGENT_IMAGE}"
+          cpu: "8"
+          memory: "8G"
+        depends_on:
+          - step: "check"
+            allow_failure: false
+        artifact_paths:
+          - packages-to-sign/*.zip
+
+      # # If you change 'key: sign-service' then change .buildkite/scripts/download-signed-artifacts.sh
+      # - label: Sign artifacts
+      #   trigger: unified-release-gpg-signing
+      #   key: sign-service
+      #   build:
+      #     env:
+      #       INPUT_PATH: buildkite://
+
+      - label: "Trigger publishing packages if any"
+        key: "trigger-publish"
+        command: ".buildkite/scripts/trigger_publish_packages.sh"
+        agents:
+          image: "${LINUX_AGENT_IMAGE}"
+          cpu: "8"
+          memory: "8G"
+        depends_on:
+          - step: "check"
+            allow_failure: false
+        artifact_paths:
+          - build/packages/*.zip
+
+  # - label: "Trigger integrations"
+  #   key: "test-integrations"
+  #   command: ".buildkite/scripts/trigger_integrations_in_parallel.sh"
+  #   env:
+  #     UPLOAD_SAFE_LOGS: 1
+  #   depends_on:
+  #     - step: "check"
+  #       allow_failure: false
 
   - wait: ~
     continue_on_failure: true
