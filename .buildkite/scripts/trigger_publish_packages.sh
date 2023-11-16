@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-BUILD_PACKAGES_PATH="build/packages"
+PACKAGES_SIGNED_FOLDER="${WORKSPACE}/packages-signed/"
+PACKAGES_ARTIFACT_FOLDER="packages-to-sign"
+
+mkdir -p "${PACKAGES_SIGNED_FOLDER}"
 
 ## Support main pipeline and downstream pipelines
 pipeline_slug=${BUILDKITE_PIPELINE_SLUG}
@@ -27,7 +30,7 @@ fi
 # mkdir -p ${BUILD_PACKAGES_PATH}
 # buildkite-agent artifact download --build "$GPG_SIGN_BUILD_ID" "*.*" ${BUILD_PACKAGES_PATH}/
 
-pushd "${BUILD_PACKAGES_PATH}" > /dev/null || exit 1
+pushd "${PACKAGES_SIGNED_FOLDER}" > /dev/null || exit 1
 
 echo "Rename asc to sig"
 for f in *.asc; do
@@ -35,10 +38,10 @@ for f in *.asc; do
 done
 popd > /dev/null || exit 1
 
-buildkite-agent artifact upload build/packages/*.sig build/packages
-buildkite-agent artifact download build/packages/*.zip build/packages
+buildkite-agent artifact download ${PACKAGES_ARTIFACT_FOLDER}/*.sig "${PACKAGES_SIGNED_FOLDER}/"
+buildkite-agent artifact download ${PACKAGES_ARTIFACT_FOLDER}/*.zip "${PACKAGES_SIGNED_FOLDER}/"
 
-ls -l build/packages
+ls -l "${PACKAGES_SIGNED_FOLDER}"
 
 exit 0
 # for each package trigger a publish package
