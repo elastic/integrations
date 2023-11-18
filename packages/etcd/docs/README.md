@@ -1,17 +1,20 @@
 # etcd Integration
 
-This integration is used to collect metrics from [etcd v2 and v3 servers](https://etcd.io/).
-This integration periodically fetches metrics from [etcd monitoring server APIs](https://etcd.io/docs/v3.1/op-guide/monitoring/). 
+This integration is used to collect metrics from [etcd v2 and v3 instances](https://etcd.io/).
+
+It periodically fetches metrics from [etcd metrics APIs](https://etcd.io/docs/v3.1/op-guide/monitoring/). 
 
 ## Compatibility
 
-The etcd package was tested with etcd 3.5.1.
+The etcd package was tested with etcd `3.5.x`.
 
 ## Metrics
 
-When using etcd v2, metrics are collected using etcd v2 API. When using v3, metrics are retrieved from the /metrics endpoint.
+For etcd v2, metrics are collected through the etcd v2 APIs, whereas for v3, they are fetched from the `/metrics` endpoint.
 
-When using v3, datasets are bundled into `metrics`. When using v2, datasets available are `leader`, `self` and `store`.
+When using v3, datasets are bundled within `metrics` data stream, while for v2, available datasets include `leader`, `self`, and `store`.
+
+By default, etcd v2 data streams are disabled due to the discouragement of etcd v2 usage. However, it's possible to enable etcd v2 APIs while using etcd v3 by using the `--enable-v2` flag, this feature will not be available in v3.6.
 
 ### metrics
 
@@ -121,13 +124,25 @@ An example event for `metrics` looks as following:
 | etcd.memory.go_memstats_alloc.total.bytes | Memory allocated bytes as of MemStats Go | long | counter |
 | etcd.network.client_grpc_received.bytes | gRPC received bytes total | long | counter |
 | etcd.network.client_grpc_sent.bytes | gRPC sent bytes total | long | counter |
+| etcd.network.peer_received_bytes_total | The total number of bytes received from peers. | long | counter |
+| etcd.network.peer_received_failures_total | The total number of receive failures from peers. | long | counter |
+| etcd.network.peer_round_trip_time_seconds.histogram | Round-Trip-Time histogram between peers. | histogram |  |
+| etcd.network.peer_sent_bytes_total | The total number of bytes sent to peers. | long | counter |
+| etcd.network.peer_sent_failures_total | The total number of send failures from peers. | long | counter |
+| etcd.process_start_time.sec | Start time of the process since unix epoch in seconds. | long | gauge |
 | etcd.server.grpc_handled.count | Number of received gRPC requests | long | counter |
 | etcd.server.grpc_started.count | Number of sent gRPC requests | long | counter |
 | etcd.server.has_leader.count | Whether a leader exists in the cluster | long | gauge |
 | etcd.server.leader_changes.count | Number of leader changes seen at the cluster | long | counter |
+| etcd.server.peer_round_trip_time_seconds | Whether a leader exists in the cluster | long | gauge |
+| etcd.server.proposals_applied_total | The total number of consensus proposals applied. | long | gauge |
 | etcd.server.proposals_committed.count | Number of consensus proposals commited | long | gauge |
 | etcd.server.proposals_failed.count | Number of consensus proposals failed | long | counter |
 | etcd.server.proposals_pending.count | Number of consensus proposals pending | long | gauge |
+| etcd.store.expires_total | Total number of writes (e.g. set/compareAndDelete) seen by this member. | long | counter |
+| etcd.store.reads_total | Total number of reads action by (get/getRecursive), local to this member. | long | counter |
+| etcd.store.watchers | Count of currently active watchers. | long | gauge |
+| etcd.store.writes_total | Total number of expired keys. | long | counter |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
