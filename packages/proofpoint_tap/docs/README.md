@@ -64,7 +64,7 @@ An example event for `clicks_blocked` looks as following:
         "ip": "89.160.20.112"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -153,6 +153,7 @@ An example event for `clicks_blocked` looks as following:
         "version": "199.0.427504638"
     }
 }
+
 ```
 
 **Exported fields**
@@ -299,7 +300,7 @@ An example event for `clicks_permitted` looks as following:
         "ip": "89.160.20.112"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -388,6 +389,7 @@ An example event for `clicks_permitted` looks as following:
         "version": "99.0.1150.46"
     }
 }
+
 ```
 
 **Exported fields**
@@ -511,7 +513,7 @@ An example event for `message_blocked` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -590,9 +592,9 @@ An example event for `message_blocked` looks as following:
         "message_blocked": {
             "completely_rewritten": "true",
             "header": {
-                "cc": "\"Example Abc\" \u003cabc@example.com\u003e",
+                "cc": "\"Example Abc\" <abc@example.com>",
                 "from": "\"A. Bc\" abc@example.com",
-                "to": "\"Aa Bb\" \u003caa.bb@example.com\u003e; \"Hey Hello\" \u003chey.hello@example.com\u003e"
+                "to": "\"Aa Bb\" <aa.bb@example.com>; \"Hey Hello\" <hey.hello@example.com>"
             },
             "impostor_score": 0,
             "malware_score": 100,
@@ -690,6 +692,7 @@ An example event for `message_blocked` looks as following:
         "proofpoint_tap-message_blocked"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -824,7 +827,7 @@ An example event for `message_delivered` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -928,6 +931,7 @@ An example event for `message_delivered` looks as following:
         "proofpoint_tap-message_delivered"
     ]
 }
+
 ```
 
 **Exported fields**

@@ -30,7 +30,7 @@ An example event for `am_access` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -78,6 +78,7 @@ An example event for `am_access` looks as following:
         "id": "id=d7cd65bf-743c-4753-a78f-a20daae7e3bf,ou=user,ou=am-config"
     }
 }
+
 ```
 
 **Exported fields**
@@ -173,7 +174,7 @@ An example event for `am_activity` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -223,6 +224,7 @@ An example event for `am_activity` looks as following:
         "id": "id=d7cd65bf-743c-4753-a78f-a20daae7e3bf,ou=user,ou=am-config"
     }
 }
+
 ```
 
 **Exported fields**
@@ -280,7 +282,7 @@ An example event for `am_authentication` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -342,6 +344,7 @@ An example event for `am_authentication` looks as following:
         "id": "id=autoid-resource-server,ou=agent,ou=am-config"
     }
 }
+
 ```
 
 **Exported fields**
@@ -395,7 +398,7 @@ An example event for `am_config` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -445,6 +448,7 @@ An example event for `am_config` looks as following:
         "id": "id=d7cd65bf-743c-4753-a78f-a20daae7e3bf,ou=user,ou=am-config"
     }
 }
+
 ```
 
 **Exported fields**
@@ -500,7 +504,7 @@ An example event for `am_core` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -536,6 +540,7 @@ An example event for `am_core` looks as following:
         "forgerock-am-core"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -589,7 +594,7 @@ An example event for `idm_access` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -664,6 +669,7 @@ An example event for `idm_access` looks as following:
         "id": "anonymous"
     }
 }
+
 ```
 
 **Exported fields**
@@ -724,7 +730,7 @@ An example event for `idm_activity` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -771,6 +777,7 @@ An example event for `idm_activity` looks as following:
         "id": "9120c7db-d7e6-4b51-b805-07bbee7a4bb9"
     }
 }
+
 ```
 
 **Exported fields**
@@ -824,7 +831,7 @@ An example event for `idm_authentication` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -882,6 +889,7 @@ An example event for `idm_authentication` looks as following:
         "id": "id=user"
     }
 }
+
 ```
 
 **Exported fields**
@@ -933,7 +941,7 @@ An example event for `idm_config` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -979,6 +987,7 @@ An example event for `idm_config` looks as following:
         "id": "d7cd65bf-743c-4753-a78f-a20daae7e3bf"
     }
 }
+
 ```
 
 **Exported fields**
@@ -1029,7 +1038,7 @@ An example event for `idm_core` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -1055,6 +1064,7 @@ An example event for `idm_core` looks as following:
         "forgerock-idm-core"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -1095,7 +1105,7 @@ An example event for `idm_sync` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
@@ -1139,6 +1149,7 @@ An example event for `idm_sync` looks as following:
         "id": "d7cd65bf-743c-4753-a78f-a20daae7e3bf"
     }
 }
+
 ```
 
 **Exported fields**

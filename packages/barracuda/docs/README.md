@@ -55,7 +55,7 @@ An example event for `waf` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "11940e5d-16a1-424a-aeb2-97fb8029a5d0",
@@ -67,7 +67,7 @@ An example event for `waf` looks as following:
         "created": "2023-03-01T13:54:44.502Z",
         "dataset": "barracuda.waf",
         "ingested": "2023-03-29T09:12:07Z",
-        "original": "\u003c129\u003e2023-03-01 14:54:44.502 +0100  barracuda WF ALER NO_PARAM_PROFILE_MATCH 193.56.29.26 61507 10.9.0.4 443 Hackazon:adaptive_url_42099b4af021e53fd8fd URL_PROFILE LOG NONE [Parameter\\=\"0x\\\\[\\\\]\" value\\=\"androxgh0st\"] POST / TLSv1.2 \"-\" \"Mozilla/5.0 (Linux; U; Android 4.4.2; en-US; HM NOTE 1W Build/KOT49H) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 UCBrowser/11.0.5.850 U3/0.8.0 Mobile Safari/534.30\" 20.88.228.79 61507 \"-\" \"-\" 1869d743696-dfcf8d96",
+        "original": "<129>2023-03-01 14:54:44.502 +0100  barracuda WF ALER NO_PARAM_PROFILE_MATCH 193.56.29.26 61507 10.9.0.4 443 Hackazon:adaptive_url_42099b4af021e53fd8fd URL_PROFILE LOG NONE [Parameter\\=\"0x\\\\[\\\\]\" value\\=\"androxgh0st\"] POST / TLSv1.2 \"-\" \"Mozilla/5.0 (Linux; U; Android 4.4.2; en-US; HM NOTE 1W Build/KOT49H) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 UCBrowser/11.0.5.850 U3/0.8.0 Mobile Safari/534.30\" 20.88.228.79 61507 \"-\" \"-\" 1869d743696-dfcf8d96",
         "timezone": "+00:00"
     },
     "input": {
@@ -89,6 +89,7 @@ An example event for `waf` looks as following:
         "forwarded"
     ]
 }
+
 ```
 
 **Exported fields**
