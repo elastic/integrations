@@ -19,19 +19,11 @@ The `log` dataset collects the Microsoft Exchange Online Message Trace logs.
 The basic authentication configuration fields have been removed from this integration as Microsoft has deprecated and disabled basic authentication for Exchange Online. See the [deprecation notification](https://learn.microsoft.com/en-us/exchange/clients-and-mobile-in-exchange-online/deprecation-of-basic-authentication-exchange-online) for details.
 In order to continue using the Microsoft Exchange Online Message Trace you will need to enable and configure OAuth2 authentication.
 
-### Steps :
+### Steps:
 You'll need to register your application with Azure Active Directory and obtain the necessary credentials: Client ID, Client Secret, and Tenant ID. 
 You can follow these steps to create an Azure AD application:
 
-1) Go to the Azure portal (https://portal.azure.com/) and sign in.
-2) Click on "Azure Active Directory" in the left-hand menu.
-3) Select "App registrations" and click "New registration".
-4) Enter a name for your application, select "Accounts in this organizational directory only" for "Supported account types", and enter the redirect 
-   URI for your application.
-5) Click "Register" to create the application.
-6) On the application page, make note of the "Application (client) ID" (which is your client ID) and the "Directory (tenant) ID" (which is your 
-   tenant ID).
-7) Under "Certificates & secrets", click "New client secret" to create a new secret. Make note of the secret value (which is your client secret).
+For a detailed guide on how to setup your account and credentials please refer to the official guide linked [here](https://learn.microsoft.com/en-gb/previous-versions/office/developer/o365-enterprise-developers/jj984325(v=office.15)#get-started-with-reporting-web-service)
 
 With these credentials in hand, you can now configure the integration with the appropriate parameters.
 
@@ -158,7 +150,7 @@ An example event for `log` looks as following:
         }
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
@@ -178,7 +170,7 @@ An example event for `log` looks as following:
             ]
         },
         "local_id": "cf7a249a-5edd-4350-130a-08da8f69e0f6",
-        "message_id": "\u003ca210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com\u003e",
+        "message_id": "<a210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com>",
         "subject": "PIM: A privileged directory role was assigned outside of PIM",
         "to": {
             "address": [
@@ -204,7 +196,7 @@ An example event for `log` looks as following:
             "EndDate": "2022-09-06T09:01:46.0369423Z",
             "FromIP": "81.2.69.144",
             "Index": 0,
-            "MessageId": "\u003ca210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com\u003e",
+            "MessageId": "<a210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com>",
             "MessageTraceId": "cf7a249a-5edd-4350-130a-08da8f69e0f6",
             "Organization": "contoso.com",
             "Received": "2022-09-05T18:10:13.4907658",
@@ -254,6 +246,7 @@ An example event for `log` looks as following:
         "forwarded"
     ]
 }
+
 ```
 
 **Exported fields**

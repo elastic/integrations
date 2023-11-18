@@ -109,7 +109,7 @@ Current supported event types are:
 | crowdstrike.event.ItemPostedTimestamp | Time the raw intelligence was posted. | date |
 | crowdstrike.event.ItemType | Type of raw intelligence. | keyword |
 | crowdstrike.event.KeyStoreErrors | Describes a KeyStore error. | keyword |
-| crowdstrike.event.LMHostIDs | Array of host IDs seen to have experienced lateral movement because of the incident. | nested |
+| crowdstrike.event.LMHostIDs | Array of host IDs seen to have experienced lateral movement because of the incident. | keyword |
 | crowdstrike.event.LateralMovement | Lateral movement field for incident. | long |
 | crowdstrike.event.LdapSearchQueryAttack | Detected LDAP tool attack. | keyword |
 | crowdstrike.event.LoadedObjects | Provides one or more JSON objects describing the loaded objects related to the detection. | nested |
@@ -394,7 +394,7 @@ An example event for `falcon` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -453,6 +453,7 @@ An example event for `falcon` looks as following:
         "name": "api-client-id:1234567890abcdefghijklmnopqrstuvwxyz"
     }
 }
+
 ```
 
 ### FDR
@@ -1130,7 +1131,7 @@ An example event for `fdr` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -1224,4 +1225,5 @@ An example event for `fdr` looks as following:
         "scheme": "http"
     }
 }
+
 ```

@@ -19,7 +19,7 @@ Logs help you keep a record of events that happen on your machine. The `Log` dat
 Metrics give you insight into the statistics of the Apache Tomcat. The `Metric` data streams collected by the Apache Tomcat integration are `cache`, `connection pool`, `memory`, `request`, `session` and `thread pool`, so that the user can monitor and troubleshoot the performance of the Apache Tomcat instance.
 
 Data streams:
-- `access`: Collects information related to overall performance of Java applications.
+- `access`: Collects information related to the HTTP transactions, client IP, response code and request processing time.
 - `cache`: Collects information related to the overall cache of the Apache Tomcat instance.
 - `catalina`: Collects information related to the startup and shutdown of the Apache Tomcat application server, the deployment of new applications, or the failure of one or more subsystems.
 - `connection pool`: Collects information related to connection pool such as number of active and idle connections.
@@ -34,7 +34,7 @@ Note:
 
 ## Compatibility
 
-This integration has been tested against Apache Tomcat versions `10.1.5`, `9.0.71` and `8.5.85`, and Prometheus version `0.17.2`.
+This integration has been tested against Apache Tomcat versions `10.1.5`, `9.0.71` and `8.5.85`, and Prometheus version `0.20.0`.
 
 ## Prerequisites
 
@@ -65,13 +65,13 @@ wget https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/<
 rules:
 - pattern: ".*"
 ```
-4. Go to `/etc/systemd/system` and add the following content in `tomcat.service` file: -
+4. Go to `/etc/systemd/system` and add the following content within the `[Service]` section of the `tomcat.service` file: -
 
 ```
 Environment='JAVA_OPTS=-javaagent:<TOMCAT_HOME>/webapps/jmx_prometheus_javaagent-<prometheus_version>.jar=<prometheus_port>:/opt/tomcat/webapps/config.yml'
 ```
 
-5. Run the following commands to reload demon and restart Apache Tomcat instance: -
+5. Run the following commands to reload the systemd manager configuration and restart the Apache Tomcat service to set the updated environment variable: -
 
 ```
 systemctl daemon-reload
@@ -119,6 +119,7 @@ dd-MMM-yyyy HH:mm:ss.SSS [Severity] [Subsystem] [Message Text]
 
 Note:
 - Restarting Apache Tomcat does not affect the virtual desktops that are currently running. It will only prevent new users from logging in for the duration of the restart process (typically several seconds).
+- A user can support a new format of log by writing their own custom ingest pipelines. To facilitate the multiline parsing of catalina and localhost logs, the [multiline configuration](https://www.elastic.co/guide/en/beats/filebeat/current/multiline-examples.html) can be used to match the multiline pattern of logs.
 
 ## Configuration
 
@@ -136,6 +137,8 @@ After the integration is successfully configured, clicking on the Assets tab of 
 
 ## Troubleshooting
 
+- `apache_tomcat.access.header_forwarder` is renamed to `client.ip` in version `0.16.1` of this integration. Hence please consider changing `apache_tomcat.access.header_forwarder` to `client.ip` field where it is being used. By using the [Update By Query API](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update-by-query.html#docs-update-by-query-api-ingest-pipeline), `apache_tomcat.access.header_forwarder` can be renamed to `client.ip` field for all the documents which would help to adapt this change.
+
 - In case of data ingestion if user encounter following errors then it is because of the rate limit of Prometheus endpoint. Here there won't be any data loss but if user still want to avoid it then make sure configured Prometheus endpoint is not being accessed from multiple places.
 ```
 {
@@ -145,11 +148,13 @@ After the integration is successfully configured, clicking on the Assets tab of 
 }
 ```
 
+- If events are ingested with incorrect timestamps, kindly verify the Timezone setting for the Catalina and Localhost logs data streams on the 'Add Apache Tomcat' page.
+
 ## Logs reference
 
 ### Access
 
-This is the `Access` data stream. This data stream collects logs related to overall performance of Java applications.
+This is the `Access` data stream. This data stream collects logs related to the HTTP transactions, client IP, response code and request processing time.
 
 An example event for `access` looks as following:
 
@@ -248,11 +253,11 @@ An example event for `access` looks as following:
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | apache_tomcat.access.connection_status | Connection status when response is completed. | keyword |  |
-| apache_tomcat.access.header_forwarder | Header forwarder of log. | ip |  |
 | apache_tomcat.access.http.ident | Remote logical username from identd. | keyword |  |
 | apache_tomcat.access.http.useragent | The user id of the authenticated user requesting the page (if HTTP authentication is used). | keyword |  |
 | apache_tomcat.access.ip.local | Local IP address. | ip |  |
 | apache_tomcat.access.response_time | Response time of the endpoint. | double | s |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
@@ -510,13 +515,13 @@ An example event for `cache` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-09-27T19:08:44.142Z",
+    "@timestamp": "2023-07-06T06:19:25.324Z",
     "agent": {
-        "ephemeral_id": "14ae089b-1739-4809-bff2-0890caa003d0",
-        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
+        "ephemeral_id": "dd4ae675-0ef8-49ba-9568-d7f989add4dd",
+        "id": "c78eadae-edd0-4b88-ab24-f2fb84a98229",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.10.1"
+        "version": "8.8.0"
     },
     "apache_tomcat": {
         "cache": {
@@ -556,9 +561,9 @@ An example event for `cache` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
+        "id": "c78eadae-edd0-4b88-ab24-f2fb84a98229",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.8.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -566,8 +571,8 @@ An example event for `cache` looks as following:
             "web"
         ],
         "dataset": "apache_tomcat.cache",
-        "duration": 163789208,
-        "ingested": "2023-09-27T19:08:47Z",
+        "duration": 253547035,
+        "ingested": "2023-07-06T06:19:29Z",
         "kind": "metric",
         "module": "apache_tomcat",
         "type": [
@@ -578,18 +583,18 @@ An example event for `cache` looks as following:
         "architecture": "aarch64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "ddbe644fa129402e9d5cf6452db1422d",
+        "id": "e8978f2086c14e13b7a0af9ed0011d19",
         "ip": [
-            "172.31.0.7"
+            "172.27.0.7"
         ],
         "mac": [
-            "02-42-AC-1F-00-07"
+            "02-42-AC-1B-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.15.49-linuxkit",
+            "kernel": "3.10.0-1160.90.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -623,9 +628,11 @@ An example event for `cache` looks as following:
 | apache_tomcat.cache.size.current.kb | The current estimate of the cache size in kB. | double |  | gauge |
 | apache_tomcat.cache.size.max.kb | The maximum permitted size of the cache in kB. | double |  | gauge |
 | apache_tomcat.cache.ttl.ms | The time-to-live for cache entries in milliseconds. | double | ms | gauge |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
-| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |  |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
 | container.id | Unique container id. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
@@ -996,13 +1003,13 @@ An example event for `request` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-09-27T19:15:32.734Z",
+    "@timestamp": "2023-07-06T06:18:00.930Z",
     "agent": {
-        "ephemeral_id": "e33720a7-0747-406d-965f-2982572a47e5",
-        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
+        "ephemeral_id": "e291bf4e-e4fc-42c4-bb98-8acddc2e7af1",
+        "id": "c78eadae-edd0-4b88-ab24-f2fb84a98229",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.10.1"
+        "version": "8.8.0"
     },
     "apache_tomcat": {
         "request": {
@@ -1018,8 +1025,8 @@ An example event for `request` looks as following:
                 "bytes": 22430
             },
             "time": {
-                "max": 889,
-                "total": 895
+                "max": 942,
+                "total": 942
             }
         }
     },
@@ -1032,9 +1039,9 @@ An example event for `request` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
+        "id": "c78eadae-edd0-4b88-ab24-f2fb84a98229",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.8.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1042,8 +1049,8 @@ An example event for `request` looks as following:
             "web"
         ],
         "dataset": "apache_tomcat.request",
-        "duration": 168350042,
-        "ingested": "2023-09-27T19:15:35Z",
+        "duration": 266759936,
+        "ingested": "2023-07-06T06:18:04Z",
         "kind": "metric",
         "module": "apache_tomcat",
         "type": [
@@ -1054,18 +1061,18 @@ An example event for `request` looks as following:
         "architecture": "aarch64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "ddbe644fa129402e9d5cf6452db1422d",
+        "id": "e8978f2086c14e13b7a0af9ed0011d19",
         "ip": [
-            "172.31.0.7"
+            "172.27.0.7"
         ],
         "mac": [
-            "02-42-AC-1F-00-07"
+            "02-42-AC-1B-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.15.49-linuxkit",
+            "kernel": "3.10.0-1160.90.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -1099,9 +1106,11 @@ An example event for `request` looks as following:
 | apache_tomcat.request.sent.bytes | Amount of data sent, in bytes. | double | byte | counter |
 | apache_tomcat.request.time.max | Maximum time(ms) to process a request. | double | ms | counter |
 | apache_tomcat.request.time.total | Total time(ms) to process the requests. | double | ms | counter |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
-| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |  |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
 | container.id | Unique container id. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
@@ -1250,9 +1259,11 @@ An example event for `session` looks as following:
 | apache_tomcat.session.process_expires_frequency.count | The frequency of the manager checks (expiration and passivation). | double |  | gauge |
 | apache_tomcat.session.processing_time | Time spent doing housekeeping and expiration. | double | ms | gauge |
 | apache_tomcat.session.rejected.count | Number of sessions we rejected due to maxActive being reached. | double |  | gauge |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
-| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |  |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
 | container.id | Unique container id. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |

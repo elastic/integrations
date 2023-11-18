@@ -1,0 +1,38 @@
+{
+    "id": "aa06a6a1-9cc3-5064-86bd-0f6dd7f80a11",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/azure/postgresql/concepts-ssl-connection-security\n2. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-data-protection#dp-4-encrypt-sensitive-information-in-transit\n3. https://learn.microsoft.com/en-us/powershell/module/az.postgresql/get-azpostgresqlserver?view=azps-9.2.0#example-2-get-postgresql-server-by-resource-group-and-server-name\n4. https://learn.microsoft.com/en-us/powershell/module/az.postgresql/update-azpostgresqlserver?view=azps-9.2.0#example-1-update-postgresql-server-by-resource-group-and-server-name",
+            "id": "aa06a6a1-9cc3-5064-86bd-0f6dd7f80a11",
+            "name": "Ensure 'Enforce SSL connection' is set to 'ENABLED' for PostgreSQL Database Server",
+            "profile_applicability": "* Level 1",
+            "description": "Enable `SSL connection` on `PostgreSQL` Servers.",
+            "rationale": "`SSL connectivity` helps to provide a new layer of security by connecting database server to client applications using Secure Sockets Layer (SSL).\nEnforcing SSL connections between database server and client applications helps protect against \"man in the middle\" attacks by encrypting the data stream between the server and application.",
+            "audit": "**From Azure Portal**\n\n1. Login to Azure Portal using https://portal.azure.com\n2. Go to `Azure Database for PostgreSQL server`\n3. For each database, click on `Connection security`\n4. In `SSL` settings, ensure `Enforce SSL connection` is set to `ENABLED`.\n\n**From Azure CLI**\n\nEnsure the output of the below command returns `Enabled`.\n\n```\naz postgres server show --resource-group myresourcegroup --name <resourceGroupName> --query sslEnforcement\n```\n\n**From PowerShell**\n\nEnsure the output of the below command returns `Enabled`.\n\n```\nGet-AzPostgreSqlServer -ResourceGroupName <ResourceGroupName > -ServerName <ServerName> | Select-Object SslEnforcement\n```",
+            "remediation": "**From Azure Portal**\n\n1. Login to Azure Portal using https://portal.azure.com\n2. Go to Azure Database for `PostgreSQL server`\n3. For each database, click on `Connection security`\n4. In `SSL` settings, click on `ENABLED` to enforce SSL connections\n5. Click `Save`\n\n**From Azure CLI**\n\nUse the below command to `enforce ssl connection` for `PostgreSQL` Database.\n\n```\naz postgres server update --resource-group <resourceGroupName> --name <serverName> --ssl-enforcement Enabled\n```\n\n**From PowerShell**\n\n```\nUpdate-AzPostgreSqlServer -ResourceGroupName <ResourceGroupName > -ServerName <ServerName> -SslEnforcement Enabled\n```",
+            "section": "PostgreSQL Database Server",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 4.3.1",
+                "PostgreSQL Database Server"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "4.3.1",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_4_3_1"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

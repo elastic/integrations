@@ -3,11 +3,12 @@ description: Pipeline for Cisco ISE logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.10.0'
+      value: '8.11.0'
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - grok:
       field: event.original
       patterns:
@@ -152,6 +153,11 @@ processors:
         - _tmp
         - cisco_ise.log.log_details_raw
       ignore_missing: true
+  - set:
+      field: event.code
+      copy_from: cisco_ise.log.message.code
+      if: ctx.cisco_ise?.log?.message?.code != null
+      ignore_failure: true
   - remove:
       field: event.original
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))

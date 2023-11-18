@@ -227,8 +227,8 @@ An example event for `signinlogs` looks as following:
 | azure.signinlogs.operation_version | The operation version | keyword |
 | azure.signinlogs.properties.app_display_name | App display name | keyword |
 | azure.signinlogs.properties.app_id | App ID | keyword |
-| azure.signinlogs.properties.applied_conditional_access_policies | A list of conditional access policies that are triggered by the corresponding sign-in activity. | array |
-| azure.signinlogs.properties.authentication_details | The result of the authentication attempt and additional details on the authentication method. | array |
+| azure.signinlogs.properties.applied_conditional_access_policies | A list of conditional access policies that are triggered by the corresponding sign-in activity. | flattened |
+| azure.signinlogs.properties.authentication_details | The result of the authentication attempt and additional details on the authentication method. | flattened |
 | azure.signinlogs.properties.authentication_processing_details | Additional authentication processing details, such as the agent name in case of PTA/PHS or Server/farm name in case of federated authentication. | flattened |
 | azure.signinlogs.properties.authentication_protocol | Authentication protocol type. | keyword |
 | azure.signinlogs.properties.authentication_requirement | This holds the highest level of authentication needed through all the sign-in steps, for sign-in to succeed. | keyword |
@@ -252,7 +252,7 @@ An example event for `signinlogs` looks as following:
 | azure.signinlogs.properties.incoming_token_type | Incoming token type. | keyword |
 | azure.signinlogs.properties.is_interactive | Is interactive | boolean |
 | azure.signinlogs.properties.is_tenant_restricted |  | boolean |
-| azure.signinlogs.properties.network_location_details | The network location details including the type of network used and its names. | array |
+| azure.signinlogs.properties.network_location_details | The network location details including the type of network used and its names. | flattened |
 | azure.signinlogs.properties.original_request_id | Original request ID | keyword |
 | azure.signinlogs.properties.processing_time_ms | Processing time in milliseconds | float |
 | azure.signinlogs.properties.resource_display_name | Resource display name | keyword |
@@ -998,6 +998,7 @@ An example event for `auditlogs` looks as following:
 | azure.auditlogs.operation_version | The operation version | keyword |
 | azure.auditlogs.properties.activity_datetime | Activity timestamp | date |
 | azure.auditlogs.properties.activity_display_name | Activity display name | keyword |
+| azure.auditlogs.properties.additional_details.user_agent | User agent name. | keyword |
 | azure.auditlogs.properties.authentication_protocol | Authentication protocol type. | keyword |
 | azure.auditlogs.properties.category | category | keyword |
 | azure.auditlogs.properties.correlation_id | Correlation ID | keyword |
