@@ -1,6 +1,34 @@
 - name: etcd
   type: group
   fields:
+    - name: process_start_time.sec
+      type: long
+      metric_type: gauge
+      description: |
+        Start time of the process since unix epoch in seconds.
+    - name: store
+      type: group
+      fields:
+        - name: writes_total
+          type: long
+          metric_type: counter
+          description: |
+            Total number of expired keys.
+        - name: expires_total
+          type: long
+          metric_type: counter
+          description: |
+            Total number of writes (e.g. set/compareAndDelete) seen by this member.
+        - name: reads_total
+          type: long
+          metric_type: counter
+          description: |
+            Total number of reads action by (get/getRecursive), local to this member.
+        - name: watchers
+          type: long
+          metric_type: gauge
+          description: |
+            Count of currently active watchers.
     - name: disk
       type: group
       fields:
@@ -43,10 +71,39 @@
           metric_type: counter
           description: |
             gRPC received bytes total
+        - name: peer_round_trip_time_seconds.histogram
+          type: histogram
+          description: |
+            Round-Trip-Time histogram between peers.
+        - name: peer_received_bytes_total
+          type: long
+          metric_type: counter
+          description: |
+            The total number of bytes received from peers.
+        - name: peer_sent_bytes_total
+          type: long
+          metric_type: counter
+          description: |
+            The total number of bytes sent to peers.
+        - name: peer_sent_failures_total
+          type: long
+          metric_type: counter
+          description: |
+            The total number of send failures from peers.
+        - name: peer_received_failures_total
+          type: long
+          metric_type: counter
+          description: |
+            The total number of receive failures from peers.
     - name: server
       type: group
       fields:
         - name: has_leader.count
+          type: long
+          metric_type: gauge
+          description: |
+            Whether a leader exists in the cluster
+        - name: peer_round_trip_time_seconds
           type: long
           metric_type: gauge
           description: |
@@ -81,3 +138,8 @@
           metric_type: counter
           description: |
             Number of received gRPC requests
+        - name: proposals_applied_total
+          type: long
+          metric_type: gauge
+          description: |
+            The total number of consensus proposals applied.
