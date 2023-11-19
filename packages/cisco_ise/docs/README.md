@@ -286,7 +286,9 @@ An example event for `log` looks as following:
 | cisco_ise.log.avpair.timezone |  | keyword |
 | cisco_ise.log.called_station.id |  | keyword |
 | cisco_ise.log.calling_station.id |  | keyword |
+| cisco_ise.log.calling_station_id |  | keyword |
 | cisco_ise.log.category.name |  | keyword |
+| cisco_ise.log.cause |  | keyword |
 | cisco_ise.log.cisco_av_pair.coa-push |  | boolean |
 | cisco_ise.log.cisco_av_pair.cts-device-capability |  | keyword |
 | cisco_ise.log.cisco_av_pair.cts-environment-data |  | keyword |
@@ -324,9 +326,11 @@ An example event for `log` looks as following:
 | cisco_ise.log.ep.identity_group |  | keyword |
 | cisco_ise.log.ep.mac.address |  | keyword |
 | cisco_ise.log.error.message |  | keyword |
+| cisco_ise.log.error_message |  | keyword |
 | cisco_ise.log.event.timestamp |  | date |
 | cisco_ise.log.failure.flag |  | boolean |
 | cisco_ise.log.failure.reason |  | keyword |
+| cisco_ise.log.failure_reason |  | keyword |
 | cisco_ise.log.feed_service.feed.name |  | keyword |
 | cisco_ise.log.feed_service.feed.version |  | keyword |
 | cisco_ise.log.feed_service.host |  | keyword |
@@ -363,11 +367,15 @@ An example event for `log` looks as following:
 | cisco_ise.log.nas.port.id |  | keyword |
 | cisco_ise.log.nas.port.number |  | long |
 | cisco_ise.log.nas.port.type |  | keyword |
+| cisco_ise.log.nas_identifier |  | keyword |
+| cisco_ise.log.nas_ip_address |  | keyword |
 | cisco_ise.log.network.device.groups |  | keyword |
 | cisco_ise.log.network.device.name |  | keyword |
 | cisco_ise.log.network.device.profile |  | keyword |
 | cisco_ise.log.network.device.profile_id |  | keyword |
 | cisco_ise.log.network.device.profile_name |  | keyword |
+| cisco_ise.log.network_device_ip |  | ip |
+| cisco_ise.log.network_device_name |  | keyword |
 | cisco_ise.log.object.internal.id |  | keyword |
 | cisco_ise.log.object.name |  | keyword |
 | cisco_ise.log.object.type |  | keyword |
@@ -552,6 +560,8 @@ An example event for `log` looks as following:
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
+| server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| server.mac | MAC address of the server. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
