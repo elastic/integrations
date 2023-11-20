@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+source .buildkite/scripts/common.sh
+
+set -euo pipefail
+
 PACKAGES_SIGNED_FOLDER="${WORKSPACE}/packagesSigned/"
 PACKAGES_BUILDKITE_ARTIFACT_FOLDER="packagesUnsigned"
 
