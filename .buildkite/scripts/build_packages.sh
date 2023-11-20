@@ -4,6 +4,7 @@ source .buildkite/scripts/common.sh
 
 set -euo pipefail
 
+SKIP_PUBLISHING=${SKIP_PUBLISHING:-"false"}
 PACKAGES_UNSIGNED_FOLDER=${PACKAGES_UNSIGNED_FOLDER:-"packagesUnsigned"}
 BUILD_PACKAGES_FOLDER="build/packages"
 
