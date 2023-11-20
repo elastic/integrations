@@ -37,3 +37,4 @@ explore the builder tools.
 ## Test Coverage
 
 [![Test Coverage Report](https://fleet-ci.elastic.co/job/ingest-manager/job/integrations/job/main/cobertura/graph)](https://fleet-ci.elastic.co/job/Ingest-manager/job/integrations/job/main/cobertura/)
+
