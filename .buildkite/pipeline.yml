@@ -53,17 +53,20 @@ steps:
           - step: "check"
             allow_failure: false
         artifact_paths:
-          - packages-to-sign/*.zip
+          - packagesToSign/*.zip
 
       # # If you change 'key: sign-service' then change .buildkite/scripts/download-signed-artifacts.sh
       # - label: Sign artifacts
       #   trigger: unified-release-gpg-signing
       #   key: sign-service
+      #   depends_on:
+      #     - step: "build-packages"
+      #       allow_failure: false
       #   build:
       #     env:
       #       INPUT_PATH: buildkite://packages-to-sign/
 
-      - label: "Trigger publishing packages if any"
+      - label: ":esbuild: Trigger publishing packages if any"
         key: "trigger-publish"
         command: ".buildkite/scripts/trigger_publish_packages.sh"
         agents:
@@ -71,10 +74,8 @@ steps:
           cpu: "8"
           memory: "8G"
         depends_on:
-          - step: "build-packages"
+          - step: "build-packages" # TODO: to be changed by "sign-service"
             allow_failure: false
-        artifact_paths:
-          - build/packages/*.zip
 
   # - label: "Trigger integrations"
   #   key: "test-integrations"

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 PACKAGES_SIGNED_FOLDER="${WORKSPACE}/packages-signed/"
-PACKAGES_ARTIFACT_FOLDER="packages-to-sign"
+PACKAGES_ARTIFACT_FOLDER="packagesToSign"
 
 mkdir -p "${PACKAGES_SIGNED_FOLDER}"
 
@@ -38,8 +38,8 @@ for f in *.asc; do
 done
 popd > /dev/null || exit 1
 
-# buildkite-agent artifact download ${PACKAGES_ARTIFACT_FOLDER}/*.sig "${PACKAGES_SIGNED_FOLDER}/"
-buildkite-agent artifact download ${PACKAGES_ARTIFACT_FOLDER}/*  "${PACKAGES_SIGNED_FOLDER}/"
+# upload the renamed files
+# buildkite-agent artifact upload ${PACKAGES_ARTIFACT_FOLDER}/*.sig
 
 find "${PACKAGES_SIGNED_FOLDER}"
 
@@ -48,32 +48,13 @@ exit 0
 PIPELINE_FILE="packages_pipeline.yml"
 touch packages_pipeline.yml
 
-cat <<EOF > ${PIPELINE_FILE}
+cat << EOF >> ${PIPELINE_FILE}
 steps:
-  - group: ":package: Trigger publish pipeline"
-    key: "publish-packages"
-    steps:
+  - label: "Publish packages"
+    key: "trigger-publish-packages"
+    trigger: "package-storage-infra-publishing"
+    build:
+      env:
+        DRY_RUN: "true"
+        LEGACY_PACKAGE: "false"
 EOF
-
-for package_zip in *.zip ; do
-  if [ ! -f "${package_zip}.sig" ]; then
-      echo "Missing signature file for ${package_zip}"
-      continue
-  fi
-
-  package_name=$(basename "${package_zip}" .zip)
-  cat << EOF >> ${PIPELINE_FILE}
-    - label: "Publish package ${package_name}"
-      key: "publish-package-${package_name}"
-      trigger: "package-storage-infra-publishing"
-      concurrency: 1
-      concurrency_group: "integrations-trigger-publishing"
-      build:
-        env:
-          DRY_RUN: "true"
-          LEGACY_PACKAGE: "false"
-          PACKAGE_ZIP: "${package_zip}"
-EOF
-
-done
-popd > /dev/null || exit 1
