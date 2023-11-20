@@ -178,34 +178,34 @@ An example event for `node` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
-| container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| redisenterprise.node.\*.value | Node metrics. | object |
-| redisenterprise.node.labels.addr | Network address or IP address of the node. | keyword |
-| redisenterprise.node.labels.cluster | name of the cluster to which the node belongs. | keyword |
-| redisenterprise.node.labels.cnm_version | Version of the Redis Enterprise cluster node management software that the node is running. | keyword |
-| redisenterprise.node.labels.instance | The \<host\>:\<port\> or network address or endpoint of the Redis Enterprise node. | keyword |
-| redisenterprise.node.labels.job | Configured job name like prometheus. | keyword |
-| redisenterprise.node.labels.logical_name | Logical name or role of the node within the cluster. | keyword |
-| redisenterprise.node.labels.node | Specific node within the cluster | keyword |
-| redisenterprise.node.labels.path | Specifies the file path to the certificate file associated with the node and role. | keyword |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| redisenterprise.node.\*.value | Node metrics. | object | gauge |
+| redisenterprise.node.labels.addr | Network address or IP address of the node. | keyword |  |
+| redisenterprise.node.labels.cluster | name of the cluster to which the node belongs. | keyword |  |
+| redisenterprise.node.labels.cnm_version | Version of the Redis Enterprise cluster node management software that the node is running. | keyword |  |
+| redisenterprise.node.labels.instance | The \<host\>:\<port\> or network address or endpoint of the Redis Enterprise node. | keyword |  |
+| redisenterprise.node.labels.job | Configured job name like prometheus. | keyword |  |
+| redisenterprise.node.labels.logical_name | Logical name or role of the node within the cluster. | keyword |  |
+| redisenterprise.node.labels.node | Specific node within the cluster | keyword |  |
+| redisenterprise.node.labels.path | Specifies the file path to the certificate file associated with the node and role. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ## Proxy Metrics
