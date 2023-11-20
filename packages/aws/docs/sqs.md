@@ -128,16 +128,16 @@ An example event for `sqs` looks as following:
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
 | aws.dimensions.QueueName | SQS queue name | keyword |  |
-| aws.sqs.empty_receives | The number of ReceiveMessage API calls that did not return a message. | long | gauge |
-| aws.sqs.messages.delayed | TThe number of messages in the queue that are delayed and not available for reading immediately. | long | gauge |
-| aws.sqs.messages.deleted | The number of messages deleted from the queue. | long | gauge |
-| aws.sqs.messages.not_visible | The number of messages that are in flight. | long | gauge |
-| aws.sqs.messages.received | The number of messages returned by calls to the ReceiveMessage action. | long | gauge |
-| aws.sqs.messages.sent | The number of messages added to a queue. | long | gauge |
-| aws.sqs.messages.visible | The number of messages available for retrieval from the queue. | long | gauge |
-| aws.sqs.oldest_message_age.sec | The approximate age of the oldest non-deleted message in the queue. | long | gauge |
+| aws.sqs.empty_receives | The total number of ReceiveMessage API calls that did not return a message. | long | gauge |
+| aws.sqs.messages.delayed | The average number of messages in the queue that are delayed and not available for reading immediately. | long | gauge |
+| aws.sqs.messages.deleted | The total number of messages deleted from the queue. | long | gauge |
+| aws.sqs.messages.not_visible | The average number of messages that are in flight. | long | gauge |
+| aws.sqs.messages.received | The total number of messages returned by calls to the ReceiveMessage action. | long | gauge |
+| aws.sqs.messages.sent | The total number of messages added to a queue. | long | gauge |
+| aws.sqs.messages.visible | The average number of messages available for retrieval from the queue. | long | gauge |
+| aws.sqs.oldest_message_age.sec | The maximum approximate age of the oldest non-deleted message in the queue. | long | gauge |
 | aws.sqs.queue.name | SQS queue name | keyword |  |
-| aws.sqs.sent_message_size.bytes | The size of messages added to a queue. | long | gauge |
+| aws.sqs.sent_message_size.bytes | The average size of messages added to a queue. | long | gauge |
 | aws.tags | Tag key value pairs from aws resources. | flattened |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
