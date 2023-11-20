@@ -7,6 +7,21 @@ set -euo pipefail
 PACKAGES_UNSIGNED_FOLDER=${PACKAGES_UNSIGNED_FOLDER:-"packagesUnsigned"}
 BUILD_PACKAGES_FOLDER="build/packages"
 
+skipPublishing() {
+    if [[ "${BUILDKITE_PULL_REQUEST}" != "false" ]]; then
+        return 0
+    fi
+
+    if [[ "${BUILDKITE_BRANCH}" == "main" ]]; then
+        return 1
+    fi
+    if [[ "${BUILDKITE_BRANCH}" =~ ^backport- ]]; then
+        return 1
+    fi
+
+    return 0
+}
+
 check_and_build_package() {
     local package=$1
     if ! check_package "${package}" ; then
@@ -31,7 +46,7 @@ report_build_failure() {
 }
 
 build_packages() {
-    pushd packages > /dev/null
+    pushd packages > /dev/null || exit 1
 
     for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
         local package
@@ -40,7 +55,7 @@ build_packages() {
         package=$(basename "${it}")
         echo "Package ${package}: check"
 
-        pushd "${package}" > /dev/null
+        pushd "${package}" > /dev/null || exit 1
 
         version=$(cat manifest.yml | yq .version)
         name=$(cat manifest.yml | yq .name)
@@ -61,9 +76,9 @@ build_packages() {
         else
             report_build_failure "${package}"
         fi
-        popd > /dev/null
+        popd > /dev/null || exit 1
     done
-    popd > /dev/null
+    popd > /dev/null || exit 1
 }
 
 add_bin_path
@@ -71,6 +86,16 @@ add_bin_path
 with_yq
 with_go
 use_elastic_package
+
+if [ "${SKIP_PUBLISHING}" == "true" ] ; then
+    echo "packageStoragePublish: skipping because skip_publishing param is ${SKIP_PUBLISHING}"
+    exit 0
+fi
+
+if skipPublishing ; then
+    echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
+    exit 0
+fi
 
 unpublished=false
 echo "--- Build packages"
@@ -83,3 +108,39 @@ fi
 cd "${WORKSPACE}" || exit 1
 mkdir -p "${PACKAGES_UNSIGNED_FOLDER}"
 cp "${BUILD_PACKAGES_FOLDER}"/*.zip "${PACKAGES_UNSIGNED_FOLDER}"
+
+# triggering dynamically the steps for signing ansd publishing
+# Just allow to check whether or not this group of steps needs to be run in one script
+# just trigger signing or publish if there are any packages to be published
+
+PIPELINE_FILE="pipeline-sign-publish.yml"
+
+cat <<EOF > "${PIPELINE_FILE}"
+env:
+  PACKAGES_UNSIGNED_FOLER: "${PACKAGES_UNSIGNED_FOLDER}"
+
+steps:
+  # # If you change 'key: sign-service' then change .buildkite/scripts/download-signed-artifacts.sh
+  # - label: Sign artifacts
+  #   trigger: unified-release-gpg-signing
+  #   key: sign-service
+  #   depends_on:
+  #     - step: "build-packages"
+  #       allow_failure: false
+  #   build:
+  #     env:
+  #       INPUT_PATH: buildkite://packages-to-sign/
+
+  - label: ":esbuild: Trigger publishing packages if any"
+    key: "trigger-publish"
+    command: ".buildkite/scripts/trigger_publish_packages.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "8"
+      memory: "8G"
+    # depends_on:
+    #   - step: "build-packages" # TODO: to be changed by "sign-service"
+    #     allow_failure: false
+EOF
+
+buildkite-agent pipeline upload "${PIPELINE_FILE}"
