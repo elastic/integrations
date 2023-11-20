@@ -36,10 +36,15 @@ fi
 
 pushd "${PACKAGES_SIGNED_FOLDER}" > /dev/null || exit 1
 
-echo "Rename asc to sig"
-for f in *.asc; do
-    mv "$f" "${f%.asc}.sig"
-done
+if ls ./*.asc ; then
+  echo "Rename asc to sig"
+  for f in *.asc; do
+      mv "$f" "${f%.asc}.sig"
+  done
+else
+  echo "No signatures found"
+  # exit 1
+fi
 popd > /dev/null || exit 1
 
 # upload the renamed files
