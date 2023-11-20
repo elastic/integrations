@@ -4,7 +4,7 @@ source .buildkite/scripts/common.sh
 
 set -euo pipefail
 
-PACKAGES_UNSIGNED_FOLDER=${PACKAGES_UNSIGNED_FOLDER:"packagesUnsigned"}
+PACKAGES_UNSIGNED_FOLDER=${PACKAGES_UNSIGNED_FOLDER:-"packagesUnsigned"}
 BUILD_PACKAGES_FOLDER="build/packages"
 
 check_and_build_package() {
