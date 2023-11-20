@@ -44,7 +44,7 @@ while IFS= read -r -d '' file ; do
   cp "${file}.asc" "${PACKAGES_SIGNED_FOLDER}" || true
 done < <(find . -name "*.zip" -print0)
 
-if ls ./*.asc ; then
+if ls ./*.asc 2> /dev/null ; then
   echo "Rename asc to sig"
   for f in *.asc; do
       mv "$f" "${f%.asc}.sig"
