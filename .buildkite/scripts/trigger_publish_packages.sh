@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-PACKAGES_SIGNED_FOLDER="${WORKSPACE}/packages-signed/"
-PACKAGES_ARTIFACT_FOLDER="packagesToSign"
+PACKAGES_SIGNED_FOLDER="${WORKSPACE}/packagesSigned/"
+PACKAGES_BUILDKITE_ARTIFACT_FOLDER="packagesUnsigned"
 
 mkdir -p "${PACKAGES_SIGNED_FOLDER}"
 
@@ -40,6 +40,9 @@ popd > /dev/null || exit 1
 
 # upload the renamed files
 # buildkite-agent artifact upload ${PACKAGES_ARTIFACT_FOLDER}/*.sig
+
+# TODO: remove testing
+buildkite-agent artifact download "${PACKAGES_BUILDKITE_ARTIFACT_FOLDER}/*.zip" "${PACKAGES_SIGNED_FOLDER}/"
 
 find "${PACKAGES_SIGNED_FOLDER}"
 

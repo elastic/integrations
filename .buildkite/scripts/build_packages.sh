@@ -4,6 +4,9 @@ source .buildkite/scripts/common.sh
 
 set -euo pipefail
 
+PACKAGES_UNSIGNED_FOLDER=${PACKAGES_UNSIGNED_FOLDER:"packagesUnsigned"}
+BUILD_PACKAGES_FOLDER="build/packages"
+
 check_and_build_package() {
     local package=$1
     if ! check_package "${package}" ; then
@@ -77,5 +80,6 @@ if [[ "${unpublished}" == "false" ]]; then
     exit 0
 fi
 
-mkdir -p packages-to-sign/
-cp build/packages/*.zip packages-to-sign
+cd "${WORKSPACE}" || exit 1
+mkdir -p "${PACKAGES_UNSIGNED_FOLDER}"
+cp "${BUILD_PACKAGES_FOLDER}"/*.zip "${PACKAGES_UNSIGNED_FOLDER}"
