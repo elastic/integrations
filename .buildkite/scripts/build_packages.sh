@@ -92,10 +92,10 @@ if [ "${SKIP_PUBLISHING}" == "true" ] ; then
     exit 0
 fi
 
-if skipPublishing ; then
-    echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
-    exit 0
-fi
+# if skipPublishing ; then
+#     echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
+#     exit 0
+# fi
 
 unpublished=false
 echo "--- Build packages"
