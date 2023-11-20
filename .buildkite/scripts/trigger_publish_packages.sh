@@ -34,7 +34,15 @@ fi
 # mkdir -p ${BUILD_PACKAGES_PATH}
 # buildkite-agent artifact download --build "$GPG_SIGN_BUILD_ID" "*.*" ${BUILD_PACKAGES_PATH}/
 
+# TODO: remove testing
+buildkite-agent artifact download "${PACKAGES_BUILDKITE_ARTIFACT_FOLDER}/*.zip" "${PACKAGES_SIGNED_FOLDER}/"
+
 pushd "${PACKAGES_SIGNED_FOLDER}" > /dev/null || exit 1
+
+while IFS= read -r -d '' file ; do
+  cp "${file}" "${PACKAGES_SIGNED_FOLDER}"
+  cp "${file}.asc" "${PACKAGES_SIGNED_FOLDER}" || true
+done < <(find . -name "*.zip" -print0)
 
 if ls ./*.asc ; then
   echo "Rename asc to sig"
@@ -47,11 +55,9 @@ else
 fi
 popd > /dev/null || exit 1
 
-# upload the renamed files
-# buildkite-agent artifact upload ${PACKAGES_ARTIFACT_FOLDER}/*.sig
-
-# TODO: remove testing
-buildkite-agent artifact download "${PACKAGES_BUILDKITE_ARTIFACT_FOLDER}/*.zip" "${PACKAGES_SIGNED_FOLDER}/"
+# TODO: upload the renamed files
+# buildkite-agent artifact upload ${PACKAGES_SIGNED_FOLDER}/*.zip
+# buildkite-agent artifact upload ${PACKAGES_SIGNED_FOLDER}/*.sig
 
 find "${PACKAGES_SIGNED_FOLDER}"
 
