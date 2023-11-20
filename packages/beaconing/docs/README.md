@@ -66,4 +66,4 @@ Beaconing is not used exclusively by malware. Many legitimate, benign processes 
 * The source IP is local and the destination is remote.
 * The destination IP is in a block of known Microsoft IP addresses.
 
-You can create additional filters to meet the needs of your environment.
+You can create additional filters in the transform to meet the needs of your environment.
