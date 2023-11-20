@@ -1,7 +1,12 @@
 {
     "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
+            "panelsJSON": "{\"8756ccb6-0cba-40fb-b741-943849a6f8b1\":{\"type\":\"optionsListControl\",\"order\":0,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"8756ccb6-0cba-40fb-b741-943849a6f8b1\",\"fieldName\":\"azure.application_id\",\"title\":\"Application ID\",\"enhancements\":{}}},\"01abb6de-6e62-41d2-a5f1-79ac443d85f5\":{\"type\":\"optionsListControl\",\"order\":1,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"01abb6de-6e62-41d2-a5f1-79ac443d85f5\",\"fieldName\":\"azure.dimensions.request_url_host\",\"title\":\"Host URL\",\"enhancements\":{}}},\"b5e9a530-f89f-4caf-b00f-faca9fe79d4c\":{\"type\":\"optionsListControl\",\"order\":2,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"b5e9a530-f89f-4caf-b00f-faca9fe79d4c\",\"fieldName\":\"azure.dimensions.cloud_role_name\",\"title\":\"Name\",\"enhancements\":{}}},\"d0c0e67d-2862-4ec1-8053-2710b0561ef1\":{\"type\":\"optionsListControl\",\"order\":3,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"d0c0e67d-2862-4ec1-8053-2710b0561ef1\",\"fieldName\":\"azure.dimensions.browser_timing_url_path\",\"title\":\"Browser URL Host\",\"enhancements\":{}}}}"
+        },
         "description": "Provides relevant app insights metrics for web applications",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [],
@@ -13,256 +18,1386 @@
         },
         "optionsJSON": {
             "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "title": ""
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-85644d0a-8011-45af-a751-7961b8bdd071",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "fleet-managed-default",
+                                "name": "tag-ref-fleet-managed-default",
+                                "type": "tag"
+                            },
+                            {
+                                "id": "fleet-pkg-azure_application_insights-default",
+                                "name": "tag-ref-fleet-pkg-azure_application_insights-default",
+                                "type": "tag"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "85644d0a-8011-45af-a751-7961b8bdd071": {
+                                            "columnOrder": [
+                                                "bcbccc16-d042-40fa-a9b2-0f09268281ff",
+                                                "5788331a-267d-426a-a68e-94a5310af644",
+                                                "b0d8f2d4-91f3-469c-8bcb-962a9fb48fba",
+                                                "e5c93c50-bb0a-4609-a7ce-7003f2f9a20e",
+                                                "9e183a5e-3dba-4929-b07e-2a3321f7926b"
+                                            ],
+                                            "columns": {
+                                                "5788331a-267d-426a-a68e-94a5310af644": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Type",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "orderBy": {
+                                                            "columnId": "b0d8f2d4-91f3-469c-8bcb-962a9fb48fba",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.dimensions.exception_type"
+                                                },
+                                                "9e183a5e-3dba-4929-b07e-2a3321f7926b": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Browser",
+                                                    "operationType": "average",
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.app_state.exceptions_browser.sum"
+                                                },
+                                                "b0d8f2d4-91f3-469c-8bcb-962a9fb48fba": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total",
+                                                    "operationType": "average",
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.app_state.exceptions_count.sum"
+                                                },
+                                                "bcbccc16-d042-40fa-a9b2-0f09268281ff": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "e5c93c50-bb0a-4609-a7ce-7003f2f9a20e": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Server ",
+                                                    "operationType": "average",
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.app_state.exceptions_server.sum"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "fittingFunction": "None",
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "b0d8f2d4-91f3-469c-8bcb-962a9fb48fba",
+                                            "e5c93c50-bb0a-4609-a7ce-7003f2f9a20e",
+                                            "9e183a5e-3dba-4929-b07e-2a3321f7926b"
+                                        ],
+                                        "layerId": "85644d0a-8011-45af-a751-7961b8bdd071",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "area_stacked",
+                                        "showGridlines": false,
+                                        "splitAccessor": "5788331a-267d-426a-a68e-94a5310af644",
+                                        "xAccessor": "bcbccc16-d042-40fa-a9b2-0f09268281ff"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area_stacked"
+                            }
+                        },
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "307a1ecd-284c-4f35-9a3c-d5b77c9a9c82",
-                    "w": 7,
+                    "i": "6f64f1cd-244e-4669-a3a5-75f239b1b47a",
+                    "w": 24,
                     "x": 0,
                     "y": 0
                 },
-                "panelIndex": "307a1ecd-284c-4f35-9a3c-d5b77c9a9c82",
-                "panelRefName": "panel_0",
-                "version": "7.9.2"
-            },
-            {
-                "embeddableConfig": {
-                    "title": "Exceptions"
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "654e745f-360d-4898-89b6-57f788c5f540",
-                    "w": 20,
-                    "x": 7,
-                    "y": 0
-                },
-                "panelIndex": "654e745f-360d-4898-89b6-57f788c5f540",
-                "panelRefName": "panel_1",
+                "panelIndex": "6f64f1cd-244e-4669-a3a5-75f239b1b47a",
                 "title": "Exceptions",
-                "version": "7.9.2"
+                "type": "lens",
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "Available Memory"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-85644d0a-8011-45af-a751-7961b8bdd071",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "fleet-managed-default",
+                                "name": "tag-ref-fleet-managed-default",
+                                "type": "tag"
+                            },
+                            {
+                                "id": "fleet-pkg-azure_application_insights-default",
+                                "name": "tag-ref-fleet-pkg-azure_application_insights-default",
+                                "type": "tag"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "85644d0a-8011-45af-a751-7961b8bdd071": {
+                                            "columnOrder": [
+                                                "bcbccc16-d042-40fa-a9b2-0f09268281ff",
+                                                "a1f669d0-c9f2-4bc5-9bdd-e40badd261b9",
+                                                "b0d8f2d4-91f3-469c-8bcb-962a9fb48fba"
+                                            ],
+                                            "columns": {
+                                                "a1f669d0-c9f2-4bc5-9bdd-e40badd261b9": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Instance",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "orderBy": {
+                                                            "columnId": "b0d8f2d4-91f3-469c-8bcb-962a9fb48fba",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.dimensions.cloud_role_instance"
+                                                },
+                                                "b0d8f2d4-91f3-469c-8bcb-962a9fb48fba": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Available memory",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.app_state.performance_counters_memory_available_bytes.avg"
+                                                },
+                                                "bcbccc16-d042-40fa-a9b2-0f09268281ff": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "fittingFunction": "None",
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "b0d8f2d4-91f3-469c-8bcb-962a9fb48fba"
+                                        ],
+                                        "layerId": "85644d0a-8011-45af-a751-7961b8bdd071",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "area",
+                                        "showGridlines": false,
+                                        "splitAccessor": "a1f669d0-c9f2-4bc5-9bdd-e40badd261b9",
+                                        "xAccessor": "bcbccc16-d042-40fa-a9b2-0f09268281ff"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area"
+                            }
+                        },
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "5adca737-559d-4b4f-9fa7-58841daa99c5",
-                    "w": 21,
-                    "x": 27,
+                    "i": "807d9a1c-9b80-4359-bcf1-cfa1cf273bf0",
+                    "w": 24,
+                    "x": 24,
                     "y": 0
                 },
-                "panelIndex": "5adca737-559d-4b4f-9fa7-58841daa99c5",
-                "panelRefName": "panel_2",
+                "panelIndex": "807d9a1c-9b80-4359-bcf1-cfa1cf273bf0",
                 "title": "Available Memory",
-                "version": "7.9.2"
+                "type": "lens",
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
-                    "title": ""
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-82e648a8-6d9a-4ae0-9449-b802ce1ac723",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "fleet-managed-default",
+                                "name": "tag-ref-fleet-managed-default",
+                                "type": "tag"
+                            },
+                            {
+                                "id": "fleet-pkg-azure_application_insights-default",
+                                "name": "tag-ref-fleet-pkg-azure_application_insights-default",
+                                "type": "tag"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "82e648a8-6d9a-4ae0-9449-b802ce1ac723": {
+                                            "columnOrder": [
+                                                "d62f1bf0-71b4-41ba-9d9c-dc9f4e478ac1"
+                                            ],
+                                            "columns": {
+                                                "d62f1bf0-71b4-41ba-9d9c-dc9f4e478ac1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Unique users",
+                                                    "operationType": "average",
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.app_state.users_count.unique"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "accessor": "d62f1bf0-71b4-41ba-9d9c-dc9f4e478ac1",
+                                "layerId": "82e648a8-6d9a-4ae0-9449-b802ce1ac723",
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
+                            }
+                        },
+                        "visualizationType": "lnsLegacyMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "531cf244-45e0-43c3-9920-8f32397bd973",
+                    "i": "4a1a1cb4-d6c7-465d-8524-7d00f6727bcb",
                     "w": 8,
                     "x": 0,
                     "y": 15
                 },
-                "panelIndex": "531cf244-45e0-43c3-9920-8f32397bd973",
-                "panelRefName": "panel_3",
-                "version": "7.9.2"
+                "panelIndex": "4a1a1cb4-d6c7-465d-8524-7d00f6727bcb",
+                "title": "",
+                "type": "lens",
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
-                    "title": ""
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-82e648a8-6d9a-4ae0-9449-b802ce1ac723",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "fleet-managed-default",
+                                "name": "tag-ref-fleet-managed-default",
+                                "type": "tag"
+                            },
+                            {
+                                "id": "fleet-pkg-azure_application_insights-default",
+                                "name": "tag-ref-fleet-pkg-azure_application_insights-default",
+                                "type": "tag"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "82e648a8-6d9a-4ae0-9449-b802ce1ac723": {
+                                            "columnOrder": [
+                                                "d62f1bf0-71b4-41ba-9d9c-dc9f4e478ac1"
+                                            ],
+                                            "columns": {
+                                                "d62f1bf0-71b4-41ba-9d9c-dc9f4e478ac1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Unique authenticated users",
+                                                    "operationType": "average",
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.app_state.users_authenticated.unique"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "accessor": "d62f1bf0-71b4-41ba-9d9c-dc9f4e478ac1",
+                                "layerId": "82e648a8-6d9a-4ae0-9449-b802ce1ac723",
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
+                            }
+                        },
+                        "visualizationType": "lnsLegacyMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "b9242495-babc-48a7-9ad7-56c62b1dc117",
+                    "i": "0b139af0-1e92-436a-80ca-36ff0e28972e",
                     "w": 8,
                     "x": 8,
                     "y": 15
                 },
-                "panelIndex": "b9242495-babc-48a7-9ad7-56c62b1dc117",
-                "panelRefName": "panel_4",
-                "version": "7.9.2"
+                "panelIndex": "0b139af0-1e92-436a-80ca-36ff0e28972e",
+                "title": "",
+                "type": "lens",
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
-                    "title": ""
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-82e648a8-6d9a-4ae0-9449-b802ce1ac723",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "fleet-managed-default",
+                                "name": "tag-ref-fleet-managed-default",
+                                "type": "tag"
+                            },
+                            {
+                                "id": "fleet-pkg-azure_application_insights-default",
+                                "name": "tag-ref-fleet-pkg-azure_application_insights-default",
+                                "type": "tag"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "82e648a8-6d9a-4ae0-9449-b802ce1ac723": {
+                                            "columnOrder": [
+                                                "d62f1bf0-71b4-41ba-9d9c-dc9f4e478ac1"
+                                            ],
+                                            "columns": {
+                                                "d62f1bf0-71b4-41ba-9d9c-dc9f4e478ac1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Unique sessions",
+                                                    "operationType": "average",
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.app_state.sessions_count.unique"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "accessor": "d62f1bf0-71b4-41ba-9d9c-dc9f4e478ac1",
+                                "layerId": "82e648a8-6d9a-4ae0-9449-b802ce1ac723",
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
+                            }
+                        },
+                        "visualizationType": "lnsLegacyMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "d311025a-f5c5-4e48-9f1c-710f59264c43",
+                    "i": "c6496a70-0d1e-41f1-8433-4fc061c3f0fd",
                     "w": 8,
                     "x": 16,
                     "y": 15
                 },
-                "panelIndex": "d311025a-f5c5-4e48-9f1c-710f59264c43",
-                "panelRefName": "panel_5",
-                "version": "7.9.2"
+                "panelIndex": "c6496a70-0d1e-41f1-8433-4fc061c3f0fd",
+                "title": "",
+                "type": "lens",
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "Requests"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-85644d0a-8011-45af-a751-7961b8bdd071",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "fleet-managed-default",
+                                "name": "tag-ref-fleet-managed-default",
+                                "type": "tag"
+                            },
+                            {
+                                "id": "fleet-pkg-azure_application_insights-default",
+                                "name": "tag-ref-fleet-pkg-azure_application_insights-default",
+                                "type": "tag"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "85644d0a-8011-45af-a751-7961b8bdd071": {
+                                            "columnOrder": [
+                                                "bcbccc16-d042-40fa-a9b2-0f09268281ff",
+                                                "8864c98b-413a-484f-a61d-336a63ef3f13",
+                                                "9ec4d260-e302-46c4-ac09-50ef54627894",
+                                                "a47e59dc-fb62-42f8-90e1-236c7c5a073d"
+                                            ],
+                                            "columns": {
+                                                "8864c98b-413a-484f-a61d-336a63ef3f13": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Host URL",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "orderBy": {
+                                                            "columnId": "9ec4d260-e302-46c4-ac09-50ef54627894",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.dimensions.request_url_host"
+                                                },
+                                                "9ec4d260-e302-46c4-ac09-50ef54627894": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total requests",
+                                                    "operationType": "average",
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.app_state.requests_count.sum"
+                                                },
+                                                "a47e59dc-fb62-42f8-90e1-236c7c5a073d": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Failed requests",
+                                                    "operationType": "average",
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.app_state.requests_failed.sum"
+                                                },
+                                                "bcbccc16-d042-40fa-a9b2-0f09268281ff": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "fittingFunction": "None",
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "9ec4d260-e302-46c4-ac09-50ef54627894",
+                                            "a47e59dc-fb62-42f8-90e1-236c7c5a073d"
+                                        ],
+                                        "layerId": "85644d0a-8011-45af-a751-7961b8bdd071",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "area",
+                                        "showGridlines": false,
+                                        "splitAccessor": "8864c98b-413a-484f-a61d-336a63ef3f13",
+                                        "xAccessor": "bcbccc16-d042-40fa-a9b2-0f09268281ff"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area"
+                            }
+                        },
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "48974418-b1f7-4050-921e-a83771e125ae",
+                    "i": "25acf88f-c041-4b3a-ab00-d77b07b17c3d",
                     "w": 24,
                     "x": 24,
                     "y": 15
                 },
-                "panelIndex": "48974418-b1f7-4050-921e-a83771e125ae",
-                "panelRefName": "panel_6",
+                "panelIndex": "25acf88f-c041-4b3a-ab00-d77b07b17c3d",
                 "title": "Requests",
-                "version": "7.9.2"
+                "type": "lens",
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "Browser Send/Receive Duration"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-85644d0a-8011-45af-a751-7961b8bdd071",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "fleet-managed-default",
+                                "name": "tag-ref-fleet-managed-default",
+                                "type": "tag"
+                            },
+                            {
+                                "id": "fleet-pkg-azure_application_insights-default",
+                                "name": "tag-ref-fleet-pkg-azure_application_insights-default",
+                                "type": "tag"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "85644d0a-8011-45af-a751-7961b8bdd071": {
+                                            "columnOrder": [
+                                                "bcbccc16-d042-40fa-a9b2-0f09268281ff",
+                                                "4d4c068a-0194-4d54-a1fa-3863c3df9331",
+                                                "be6a3d8b-9428-480b-a7b3-071127726093",
+                                                "6bc1fd35-168d-42d5-b9c8-7078896d8ce4",
+                                                "988e9976-3471-478c-89f6-11fd46458d7f"
+                                            ],
+                                            "columns": {
+                                                "4d4c068a-0194-4d54-a1fa-3863c3df9331": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Url Path",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "orderBy": {
+                                                            "columnId": "be6a3d8b-9428-480b-a7b3-071127726093",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.dimensions.browser_timing_url_path"
+                                                },
+                                                "6bc1fd35-168d-42d5-b9c8-7078896d8ce4": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total duration",
+                                                    "operationType": "average",
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.app_state.browser_timings_total_duration.avg"
+                                                },
+                                                "988e9976-3471-478c-89f6-11fd46458d7f": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Receive duration",
+                                                    "operationType": "average",
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.app_state.browser_timings_receive_duration.avg"
+                                                },
+                                                "bcbccc16-d042-40fa-a9b2-0f09268281ff": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "be6a3d8b-9428-480b-a7b3-071127726093": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Send duration",
+                                                    "operationType": "average",
+                                                    "params": {},
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.app_state.browser_timings_send_duration.avg"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "fittingFunction": "None",
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "be6a3d8b-9428-480b-a7b3-071127726093",
+                                            "6bc1fd35-168d-42d5-b9c8-7078896d8ce4",
+                                            "988e9976-3471-478c-89f6-11fd46458d7f"
+                                        ],
+                                        "layerId": "85644d0a-8011-45af-a751-7961b8bdd071",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "4d4c068a-0194-4d54-a1fa-3863c3df9331",
+                                        "xAccessor": "bcbccc16-d042-40fa-a9b2-0f09268281ff"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line"
+                            }
+                        },
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "39d20db1-316a-4ff3-811a-5571cb4497c3",
+                    "i": "6f6587f8-d374-4fa9-ab4d-5482d6018403",
                     "w": 24,
                     "x": 0,
                     "y": 30
                 },
-                "panelIndex": "39d20db1-316a-4ff3-811a-5571cb4497c3",
-                "panelRefName": "panel_7",
+                "panelIndex": "6f6587f8-d374-4fa9-ab4d-5482d6018403",
                 "title": "Browser Send/Receive Duration",
-                "version": "7.9.2"
+                "type": "lens",
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "Browser Networking/Processing Duration"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-85644d0a-8011-45af-a751-7961b8bdd071",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "fleet-managed-default",
+                                "name": "tag-ref-fleet-managed-default",
+                                "type": "tag"
+                            },
+                            {
+                                "id": "fleet-pkg-azure_application_insights-default",
+                                "name": "tag-ref-fleet-pkg-azure_application_insights-default",
+                                "type": "tag"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "85644d0a-8011-45af-a751-7961b8bdd071": {
+                                            "columnOrder": [
+                                                "bcbccc16-d042-40fa-a9b2-0f09268281ff",
+                                                "4d4c068a-0194-4d54-a1fa-3863c3df9331",
+                                                "b5a75764-e98b-434b-a0f0-5658a4aa1cf6",
+                                                "ab158cba-532f-47f8-8450-db883504dc0f"
+                                            ],
+                                            "columns": {
+                                                "4d4c068a-0194-4d54-a1fa-3863c3df9331": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Url Path",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "orderBy": {
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.dimensions.browser_timing_url_path"
+                                                },
+                                                "ab158cba-532f-47f8-8450-db883504dc0f": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Processing duration",
+                                                    "operationType": "average",
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.app_state.browser_timings_processing_duration.avg"
+                                                },
+                                                "b5a75764-e98b-434b-a0f0-5658a4aa1cf6": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Networking duration",
+                                                    "operationType": "average",
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.app_state.browser_timings_network_duration.avg"
+                                                },
+                                                "bcbccc16-d042-40fa-a9b2-0f09268281ff": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "fittingFunction": "None",
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "b5a75764-e98b-434b-a0f0-5658a4aa1cf6",
+                                            "ab158cba-532f-47f8-8450-db883504dc0f"
+                                        ],
+                                        "layerId": "85644d0a-8011-45af-a751-7961b8bdd071",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "4d4c068a-0194-4d54-a1fa-3863c3df9331",
+                                        "xAccessor": "bcbccc16-d042-40fa-a9b2-0f09268281ff"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line"
+                            }
+                        },
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "bc810208-0395-4c70-9057-d7307e064e43",
+                    "i": "9e47a754-7b63-413e-b239-e1057da31386",
                     "w": 24,
                     "x": 24,
                     "y": 30
                 },
-                "panelIndex": "bc810208-0395-4c70-9057-d7307e064e43",
-                "panelRefName": "panel_8",
+                "panelIndex": "9e47a754-7b63-413e-b239-e1057da31386",
                 "title": "Browser Networking/Processing Duration",
-                "version": "7.9.2"
+                "type": "lens",
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "Process CPU Usage"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-85644d0a-8011-45af-a751-7961b8bdd071",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "fleet-managed-default",
+                                "name": "tag-ref-fleet-managed-default",
+                                "type": "tag"
+                            },
+                            {
+                                "id": "fleet-pkg-azure_application_insights-default",
+                                "name": "tag-ref-fleet-pkg-azure_application_insights-default",
+                                "type": "tag"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "85644d0a-8011-45af-a751-7961b8bdd071": {
+                                            "columnOrder": [
+                                                "bcbccc16-d042-40fa-a9b2-0f09268281ff",
+                                                "a1f669d0-c9f2-4bc5-9bdd-e40badd261b9",
+                                                "b0d8f2d4-91f3-469c-8bcb-962a9fb48fba",
+                                                "252dfd5f-26bd-4861-bb01-4b3530cadd95"
+                                            ],
+                                            "columns": {
+                                                "252dfd5f-26bd-4861-bb01-4b3530cadd95": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "CPU percentage",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.app_state.performance_counters_process_cpu_percentage.avg"
+                                                },
+                                                "a1f669d0-c9f2-4bc5-9bdd-e40badd261b9": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Instance",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "orderBy": {
+                                                            "columnId": "b0d8f2d4-91f3-469c-8bcb-962a9fb48fba",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.dimensions.cloud_role_instance"
+                                                },
+                                                "b0d8f2d4-91f3-469c-8bcb-962a9fb48fba": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total CPU percentage ",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.app_state.performance_counters_process_cpu_percentage_total.avg"
+                                                },
+                                                "bcbccc16-d042-40fa-a9b2-0f09268281ff": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "fittingFunction": "None",
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "b0d8f2d4-91f3-469c-8bcb-962a9fb48fba",
+                                            "252dfd5f-26bd-4861-bb01-4b3530cadd95"
+                                        ],
+                                        "layerId": "85644d0a-8011-45af-a751-7961b8bdd071",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "area",
+                                        "showGridlines": false,
+                                        "splitAccessor": "a1f669d0-c9f2-4bc5-9bdd-e40badd261b9",
+                                        "xAccessor": "bcbccc16-d042-40fa-a9b2-0f09268281ff"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area"
+                            }
+                        },
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "ecf6fbfa-ba65-481e-af85-07fd9d5feb5f",
+                    "i": "2d30ce5b-85d0-4039-b03a-fda8b11e6159",
                     "w": 24,
                     "x": 0,
                     "y": 45
                 },
-                "panelIndex": "ecf6fbfa-ba65-481e-af85-07fd9d5feb5f",
-                "panelRefName": "panel_9",
+                "panelIndex": "2d30ce5b-85d0-4039-b03a-fda8b11e6159",
                 "title": "Process CPU Usage",
-                "version": "7.9.2"
+                "type": "lens",
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "Process Private Bytes"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-85644d0a-8011-45af-a751-7961b8bdd071",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "fleet-managed-default",
+                                "name": "tag-ref-fleet-managed-default",
+                                "type": "tag"
+                            },
+                            {
+                                "id": "fleet-pkg-azure_application_insights-default",
+                                "name": "tag-ref-fleet-pkg-azure_application_insights-default",
+                                "type": "tag"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "85644d0a-8011-45af-a751-7961b8bdd071": {
+                                            "columnOrder": [
+                                                "bcbccc16-d042-40fa-a9b2-0f09268281ff",
+                                                "a1f669d0-c9f2-4bc5-9bdd-e40badd261b9",
+                                                "b0d8f2d4-91f3-469c-8bcb-962a9fb48fba"
+                                            ],
+                                            "columns": {
+                                                "a1f669d0-c9f2-4bc5-9bdd-e40badd261b9": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Instance",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "orderBy": {
+                                                            "columnId": "b0d8f2d4-91f3-469c-8bcb-962a9fb48fba",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.dimensions.cloud_role_instance"
+                                                },
+                                                "b0d8f2d4-91f3-469c-8bcb-962a9fb48fba": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Process private bytes",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.app_state.performance_counters_process_private_bytes.avg"
+                                                },
+                                                "bcbccc16-d042-40fa-a9b2-0f09268281ff": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "fittingFunction": "None",
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "b0d8f2d4-91f3-469c-8bcb-962a9fb48fba"
+                                        ],
+                                        "layerId": "85644d0a-8011-45af-a751-7961b8bdd071",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "area",
+                                        "showGridlines": false,
+                                        "splitAccessor": "a1f669d0-c9f2-4bc5-9bdd-e40badd261b9",
+                                        "xAccessor": "bcbccc16-d042-40fa-a9b2-0f09268281ff"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area"
+                            }
+                        },
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "40a1b80b-cd62-446d-91aa-a971bb3769e7",
+                    "i": "595f5a64-a2a7-4733-8f63-38208a77e887",
                     "w": 24,
                     "x": 24,
                     "y": 45
                 },
-                "panelIndex": "40a1b80b-cd62-446d-91aa-a971bb3769e7",
-                "panelRefName": "panel_10",
+                "panelIndex": "595f5a64-a2a7-4733-8f63-38208a77e887",
                 "title": "Process Private Bytes",
-                "version": "7.9.2"
+                "type": "lens",
+                "version": "8.7.0"
             }
         ],
         "timeRestore": false,
         "title": "[Azure Metrics] App State Overview",
         "version": 1
     },
+    "coreMigrationVersion": "8.7.0",
+    "created_at": "2023-11-01T09:20:08.495Z",
     "id": "azure_application_insights-d5fbd610-03d9-11eb-8034-63f2039e9d3f",
     "migrationVersion": {
-        "dashboard": "7.3.0"
+        "dashboard": "8.7.0"
     },
-    "namespaces": [
-        "default"
-    ],
     "references": [
         {
             "id": "metrics-*",
-            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "name": "6f64f1cd-244e-4669-a3a5-75f239b1b47a:indexpattern-datasource-current-indexpattern",
             "type": "index-pattern"
         },
         {
-            "id": "azure_application_insights-2e5183a0-03da-11eb-8034-63f2039e9d3f",
-            "name": "panel_0",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "6f64f1cd-244e-4669-a3a5-75f239b1b47a:indexpattern-datasource-layer-85644d0a-8011-45af-a751-7961b8bdd071",
+            "type": "index-pattern"
         },
         {
-            "id": "azure_application_insights-1064f9a0-04a5-11eb-8034-63f2039e9d3f",
-            "name": "panel_1",
-            "type": "lens"
+            "id": "metrics-*",
+            "name": "807d9a1c-9b80-4359-bcf1-cfa1cf273bf0:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
         },
         {
-            "id": "azure_application_insights-76cc1d70-04a7-11eb-8034-63f2039e9d3f",
-            "name": "panel_2",
-            "type": "lens"
+            "id": "metrics-*",
+            "name": "807d9a1c-9b80-4359-bcf1-cfa1cf273bf0:indexpattern-datasource-layer-85644d0a-8011-45af-a751-7961b8bdd071",
+            "type": "index-pattern"
         },
         {
-            "id": "azure_application_insights-a89c8fd0-03ec-11eb-8034-63f2039e9d3f",
-            "name": "panel_3",
-            "type": "lens"
+            "id": "metrics-*",
+            "name": "4a1a1cb4-d6c7-465d-8524-7d00f6727bcb:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
         },
         {
-            "id": "azure_application_insights-cb5ec410-03ed-11eb-8034-63f2039e9d3f",
-            "name": "panel_4",
-            "type": "lens"
+            "id": "metrics-*",
+            "name": "4a1a1cb4-d6c7-465d-8524-7d00f6727bcb:indexpattern-datasource-layer-82e648a8-6d9a-4ae0-9449-b802ce1ac723",
+            "type": "index-pattern"
         },
         {
-            "id": "azure_application_insights-0df175c0-03ee-11eb-8034-63f2039e9d3f",
-            "name": "panel_5",
-            "type": "lens"
+            "id": "metrics-*",
+            "name": "0b139af0-1e92-436a-80ca-36ff0e28972e:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
         },
         {
-            "id": "azure_application_insights-f0678020-04a2-11eb-8034-63f2039e9d3f",
-            "name": "panel_6",
-            "type": "lens"
+            "id": "metrics-*",
+            "name": "0b139af0-1e92-436a-80ca-36ff0e28972e:indexpattern-datasource-layer-82e648a8-6d9a-4ae0-9449-b802ce1ac723",
+            "type": "index-pattern"
         },
         {
-            "id": "azure_application_insights-e2704140-04a3-11eb-8034-63f2039e9d3f",
-            "name": "panel_7",
-            "type": "lens"
+            "id": "metrics-*",
+            "name": "c6496a70-0d1e-41f1-8433-4fc061c3f0fd:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
         },
         {
-            "id": "azure_application_insights-0e74dee0-04a4-11eb-8034-63f2039e9d3f",
-            "name": "panel_8",
-            "type": "lens"
+            "id": "metrics-*",
+            "name": "c6496a70-0d1e-41f1-8433-4fc061c3f0fd:indexpattern-datasource-layer-82e648a8-6d9a-4ae0-9449-b802ce1ac723",
+            "type": "index-pattern"
         },
         {
-            "id": "azure_application_insights-cfa361a0-04a8-11eb-8034-63f2039e9d3f",
-            "name": "panel_9",
-            "type": "lens"
+            "id": "metrics-*",
+            "name": "25acf88f-c041-4b3a-ab00-d77b07b17c3d:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
         },
         {
-            "id": "azure_application_insights-2b54b2c0-04a8-11eb-8034-63f2039e9d3f",
-            "name": "panel_10",
-            "type": "lens"
+            "id": "metrics-*",
+            "name": "25acf88f-c041-4b3a-ab00-d77b07b17c3d:indexpattern-datasource-layer-85644d0a-8011-45af-a751-7961b8bdd071",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "6f6587f8-d374-4fa9-ab4d-5482d6018403:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "6f6587f8-d374-4fa9-ab4d-5482d6018403:indexpattern-datasource-layer-85644d0a-8011-45af-a751-7961b8bdd071",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "9e47a754-7b63-413e-b239-e1057da31386:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "9e47a754-7b63-413e-b239-e1057da31386:indexpattern-datasource-layer-85644d0a-8011-45af-a751-7961b8bdd071",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "2d30ce5b-85d0-4039-b03a-fda8b11e6159:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "2d30ce5b-85d0-4039-b03a-fda8b11e6159:indexpattern-datasource-layer-85644d0a-8011-45af-a751-7961b8bdd071",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "595f5a64-a2a7-4733-8f63-38208a77e887:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "595f5a64-a2a7-4733-8f63-38208a77e887:indexpattern-datasource-layer-85644d0a-8011-45af-a751-7961b8bdd071",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_8756ccb6-0cba-40fb-b741-943849a6f8b1:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_01abb6de-6e62-41d2-a5f1-79ac443d85f5:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_b5e9a530-f89f-4caf-b00f-faca9fe79d4c:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_d0c0e67d-2862-4ec1-8053-2710b0561ef1:optionsListDataView",
+            "type": "index-pattern"
         }
     ],
-    "type": "dashboard",
-    "updated_at": "2020-10-02T12:22:06.090Z",
-    "version": "WzMzMDEsMl0="
+    "type": "dashboard"
 }

@@ -15,7 +15,15 @@
                             "field": "ml_is_dga.malicious_probability"
                         }
                     }
-                ]
+                ],
+                "must_not": {
+                    "terms": {
+                        "_tier": [
+                            "data_frozen",
+                            "data_cold"
+                        ]
+                    }
+                }
             }
         },
         "jobs": [
@@ -26,7 +34,7 @@
                         "security",
                         "dga"
                     ],
-                    "description": "Detects potential DGA (domain generation algorithm) activity that is often used by malware command and control (C2) channels. Looks for a source IP address making DNS requests that have an aggregate high probability of being DGA activity (experimental).",
+                    "description": "Detects potential DGA (domain generation algorithm) activity that is often used by malware command and control (C2) channels. Looks for a source IP address making DNS requests that have an aggregate high probability of being DGA activity.",
                     "analysis_config": {
                         "bucket_span": "15m",
                         "detectors": [

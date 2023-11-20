@@ -49,7 +49,7 @@ Use the 1Password Events API to retrieve information about sign-in attempts. Eve
 | onepassword.client.platform_name | The name of the platform running the 1Password app | keyword |
 | onepassword.client.platform_version | The version of the browser or computer where the 1Password app is installed, or the CPU of the machine where the 1Password command-line tool is installed | keyword |
 | onepassword.country | The country code of the event. Uses the ISO 3166 standard | keyword |
-| onepassword.details | Additional information about the sign-in attempt, such as any firewall rules that prevent a user from signing in | object |
+| onepassword.details.value |  | keyword |
 | onepassword.session_uuid | The UUID of the session that created the event | keyword |
 | onepassword.type | Details about the sign-in attempt | keyword |
 | onepassword.uuid | The UUID of the event | keyword |
@@ -91,7 +91,7 @@ An example event for `signin_attempts` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -130,7 +130,6 @@ An example event for `signin_attempts` looks as following:
             "platform_version": "93.0.4577.62"
         },
         "country": "AR",
-        "details": null,
         "session_uuid": "UED4KFZ5BH37IQWTJ7LG4VPWK7",
         "type": "credentials_ok",
         "uuid": "HGIF4OEWXDTVWKEQDIWTKV26HU"
@@ -158,6 +157,7 @@ An example event for `signin_attempts` looks as following:
         "id": "OJQGU46KAPROEJLCK674RHSAY5"
     }
 }
+
 ```
 
 ### Item Usages
@@ -232,7 +232,7 @@ An example event for `item_usages` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -297,6 +297,7 @@ An example event for `item_usages` looks as following:
         "id": "OJQGU46KAPROEJLCK674RHSAY5"
     }
 }
+
 ```
 
 
@@ -380,7 +381,7 @@ An example event for `audit_events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -452,4 +453,5 @@ An example event for `audit_events` looks as following:
         "id": "GLF6WUEKS5CSNDJ2OG6TCZD3M4"
     }
 }
+
 ```
