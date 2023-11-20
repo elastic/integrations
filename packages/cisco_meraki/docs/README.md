@@ -79,6 +79,10 @@ The `cisco_meraki.log` dataset provides events from the configured syslog server
 | cisco_meraki.firewall.rule |  | keyword |
 | cisco_meraki.flows |  | flattened |
 | cisco_meraki.multiple_dhcp_servers_detected |  | flattened |
+| cisco_meraki.mxport |  | keyword |
+| cisco_meraki.new_port_status |  | keyword |
+| cisco_meraki.old_port_status |  | keyword |
+| cisco_meraki.port |  | keyword |
 | cisco_meraki.security.action |  | keyword |
 | cisco_meraki.security.decision |  | keyword |
 | cisco_meraki.security.dhost |  | keyword |
@@ -682,5 +686,4 @@ An example event for `events` looks as following:
         "meraki-events"
     ]
 }
-
 ```
