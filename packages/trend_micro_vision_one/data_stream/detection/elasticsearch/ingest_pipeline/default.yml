@@ -3,11 +3,12 @@ description: Pipeline for processing Trend Micro Vision One Alert logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.10.0'
+      value: '8.11.0'
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - set:
       field: event.kind
       value: event
@@ -601,6 +602,7 @@ processors:
             value: 'request string and requests array both present in same document'
   - uri_parts:
       field: trend_micro_vision_one.detection.request
+      if: ctx.trend_micro_vision_one?.detection?.request != null
       on_failure:
         - append:
             field: error.message
@@ -973,7 +975,7 @@ processors:
   - script:
       description: Drops null/empty values recursively.
       lang: painless
-      source:
+      source: |
         boolean dropEmptyFields(Object object) {
           if (object == null || object == '') {
             return true;

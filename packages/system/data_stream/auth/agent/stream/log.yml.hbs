@@ -25,6 +25,16 @@ publisher_pipeline.disable_host: true
 
 processors:
 - add_locale: ~
+- rename:
+    fields:
+      - from: message
+        to: event.original
+    ignore_missing: true
+    fail_on_error: false
+- syslog:
+    field: event.original
+    ignore_missing: true
+    ignore_failure: true
 {{#if processors}}
 {{processors}}
 {{/if}}

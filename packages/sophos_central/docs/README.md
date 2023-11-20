@@ -67,7 +67,7 @@ An example event for `alert` looks as following:
         "port": 789
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "cf659b85-d5b7-4b0d-8b9a-4ea2e187d862",
@@ -252,6 +252,7 @@ An example event for `alert` looks as following:
         "name": "User"
     }
 }
+
 ```
 
 **Exported fields**
@@ -383,7 +384,7 @@ An example event for `event` looks as following:
         "port": 789
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "cf659b85-d5b7-4b0d-8b9a-4ea2e187d862",
@@ -496,6 +497,7 @@ An example event for `event` looks as following:
         "name": "Lightning"
     }
 }
+
 ```
 
 **Exported fields**
