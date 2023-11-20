@@ -509,14 +509,14 @@ An example event for `proxy` looks as following:
 | event.module | Event module | constant_keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | redisenterprise.proxy.\*.counter | Proxy metrics. | object |
-| redisenterprise.proxy.labels.\*.bdb | Back-end Database, indicating which database is being referred to. | keyword |
-| redisenterprise.proxy.labels.\*.cluster | The RedisEnterprise cluster. | keyword |
-| redisenterprise.proxy.labels.\*.endpoint | Specific network endpoint. | keyword |
-| redisenterprise.proxy.labels.\*.instance | The \<host\>:\<port\> or network address or endpoint of the Redis Enterprise node. | keyword |
-| redisenterprise.proxy.labels.\*.job | Configured job name like prometheus. | keyword |
-| redisenterprise.proxy.labels.\*.node | The RedisEnterprise node that is being monitored. | keyword |
-| redisenterprise.proxy.labels.\*.port | The port number associated with the network communication. | keyword |
-| redisenterprise.proxy.labels.\*.proxy | specific proxy within RedisEnterprise. | keyword |
+| redisenterprise.proxy.labels.bdb | Back-end Database, indicating which database is being referred to. | keyword |
+| redisenterprise.proxy.labels.cluster | The RedisEnterprise cluster. | keyword |
+| redisenterprise.proxy.labels.endpoint | Specific network endpoint. | keyword |
+| redisenterprise.proxy.labels.instance | The \<host\>:\<port\> or network address or endpoint of the Redis Enterprise node. | keyword |
+| redisenterprise.proxy.labels.job | Configured job name like prometheus. | keyword |
+| redisenterprise.proxy.labels.node | The RedisEnterprise node that is being monitored. | keyword |
+| redisenterprise.proxy.labels.port | The port number associated with the network communication. | keyword |
+| redisenterprise.proxy.labels.proxy | specific proxy within RedisEnterprise. | keyword |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
