@@ -41,6 +41,7 @@ rm -rf build/benchmark-results
 # download main benchmark if any
 mkdir -p build/benchmark-results
 build_id=$(get_latest_succesful_build integrations main)
+echo "Buildkite Build ID: ${build_id}"
 mkdir -p baseline
 buildkite-agent artifact download \
   "build/benchmark-results/*.xml" \
