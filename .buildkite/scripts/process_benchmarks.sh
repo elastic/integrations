@@ -35,7 +35,7 @@ mkdir -p "${baseline}"
 echo "Download PR benchmarks"
 mkdir -p build/benchmark-results
 if ! buildkite-agent artifact download "build/benchmark-results/*.json" . ; then
-  echo "[benchmarks] Not benchmarks generated"
+  echo "[benchmarks] No benchmarks generated in the PR"
   exit 0
 fi
 
