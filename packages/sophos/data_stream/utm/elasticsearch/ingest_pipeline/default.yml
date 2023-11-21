@@ -42,6 +42,12 @@ processors:
         - set:
             field: event.kind
             value: pipeline_error
+  - lowercase:
+      field: host.hostname
+      target_field: host.name
+      ignore_missing: true
+      ignore_failure: true
+      tag: set_host_name
   # Process syslog parameters
   - script:
       description: Translate log.syslog.priority to log.syslog.severity.code and log.syslog.facility.code
