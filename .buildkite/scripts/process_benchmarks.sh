@@ -33,25 +33,24 @@ mkdir -p "${baseline}"
 
 # download PR benchmarks
 mkdir -p build/benchmark-results
-buildkite-agent artifact download \
-  "build/benchmark-results/*.xml" \
-  .
-
-mv build/benchmark-results/*.xml "${current_benchmark_results}"
-rm -rf build/benchmark-results
+if ! buildkite-agent artifact download "build/benchmark-results/*.xml" . ; then
+  echo "[benchmarks] Not benchmarks generated"
+  exit 0
+fi
 
 # download main benchmark if any
 mkdir -p build/benchmark-results
 build_id=$(get_latest_succesful_build integrations main)
 echo "Buildkite Build ID: ${build_id}"
 mkdir -p baseline
-buildkite-agent artifact download \
-  "build/benchmark-results/*.xml" \
-  --build "${build_id}"\
-  baseline/
 
-mv build/benchmarks-results/*.xml baseline/
-rm -rf build/benchmark-results
+if ! buildkite-agent artifact download "build/benchmark-results/*.xml" --build "${build_id}" baseline/ ; then
+  echo "[benchmarks] Not found baseline benchmarks"
+  exit 0
+fi
+
+mv baseline/build/benchmarks-results/*.xml baseline/
+rm -rf baseline/build
 
 # download_benchmark_results \
 #     "${JOB_GCS_BUCKET}" \
