@@ -23,6 +23,7 @@ GITHUB_PR_TRIGGER_COMMENT="${GITHUB_PR_TRIGGER_COMMENT:-""}"
 benchmark_github_file="report.md"
 benchmark_results="benchmark-results"
 current_benchmark_results="build/${benchmark_results}"
+buildkite_pattern="build/${benchmark_results}/*.json"
 baseline="build/${BUILDKITE_PULL_REQUEST_BASE_BRANCH}/${benchmark_results}"
 is_full_report="false"
 
@@ -37,7 +38,7 @@ mkdir -p "${baseline}"
 
 echo "Download PR benchmarks"
 mkdir -p build/benchmark-results
-if ! buildkite-agent artifact download "build/benchmark-results/*.json" . ; then
+if ! buildkite-agent artifact download "${buildkite_pattern}" . ; then
   echo "[benchmarks] No benchmarks generated in the PR"
   exit 0
 fi
@@ -51,7 +52,7 @@ build_id=$(get_last_failed_or_successful_build integrations main)
 build_id="018bf2bb-9795-48f2-881b-e2e85476c8fb"
 echo "Buildkite Build ID: ${build_id}"
 
-if ! buildkite-agent artifact download "build/benchmark-results/*.json" --build "${build_id}" "${baseline}" ; then
+if ! buildkite-agent artifact download "${buildkite_pattern}" --build "${build_id}" "${baseline}" ; then
   echo "[benchmarks] Not found baseline benchmarks"
   exit 0
 fi
@@ -59,7 +60,8 @@ fi
 echo "Debug: baseline benchmark"
 find "${baseline}"
 
-mv "${baseline}"/build/benchmarks-results/*.json "${baseline}/"
+# required globbling
+mv "${baseline}"/${buildkite_pattern} "${baseline}/"
 rm -rf "${baseline}/build"
 
 # download_benchmark_results \
@@ -89,9 +91,9 @@ if [ ! -f "${benchmark_github_file}" ]; then
 fi
 
 # TODO: write github comment in PR
-if ! gh pr comment \
-  "${BUILDKITE_PULL_REQUEST}" \
-  --body-file "${benchmark_github_file}" ; then
-  echo "[benchmark] It was not possible to send the message"
-fi
+# if ! gh pr comment \
+#   "${BUILDKITE_PULL_REQUEST}" \
+#   --body-file "${benchmark_github_file}" ; then
+#   echo "[benchmark] It was not possible to send the message"
+# fi
 popd > /dev/null || exit 1
