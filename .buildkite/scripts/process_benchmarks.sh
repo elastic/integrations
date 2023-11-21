@@ -30,7 +30,7 @@ if [[ "${GITHUB_PR_TRIGGER_COMMENT}" =~ benchmark\ fullreport ]]; then
     is_full_report="true"
 fi
 
-pushd "${WORKSPACE}" > /dev/null
+pushd "${WORKSPACE}" > /dev/null || exit 1
 
 mkdir -p "${current_benchmark_results}"
 mkdir -p "${baseline}"
@@ -42,6 +42,9 @@ if ! buildkite-agent artifact download "build/benchmark-results/*.json" . ; then
   exit 0
 fi
 
+echo "Debug: current benchmark"
+find "${current_benchmark_results}"
+
 echo "Download main benchmark if any"
 mkdir -p build/benchmark-results
 build_id=$(get_last_failed_or_successful_build integrations main)
@@ -52,6 +55,9 @@ if ! buildkite-agent artifact download "build/benchmark-results/*.json" --build 
   echo "[benchmarks] Not found baseline benchmarks"
   exit 0
 fi
+
+echo "Debug: baseline benchmark"
+find "${baseline}"
 
 mv "${baseline}"/build/benchmarks-results/*.json "${baseline}/"
 rm -rf "${baseline}/build"
@@ -66,12 +72,6 @@ rm -rf "${baseline}/build"
 #     "${JOB_GCS_BUCKET}" \
 #     "$(get_benchmark_path_prefix)" \
 #     baseline
-
-echo "Debug: current benchmark"
-ls -l "${current_benchmark_results}"
-
-echo "Debug: baseline benchmark"
-ls -l "${baseline}"
 
 echo "Run benchmark report"
 ${ELASTIC_PACKAGE_BIN} report benchmark \
@@ -94,4 +94,4 @@ if ! gh pr comment \
   --body-file "${benchmark_github_file}" ; then
   echo "[benchmark] It was not possible to send the message"
 fi
-popd > /dev/null
+popd > /dev/null || exit 1
