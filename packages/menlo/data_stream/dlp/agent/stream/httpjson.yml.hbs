@@ -4,24 +4,26 @@ interval: {{interval}}
 request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
 {{/if}}
 request.method: POST
-request.url: {{url}}/api/rep/v1/fetch/client_select
+request.url: {{url}}
 {{#if proxy_url}}
 request.proxy_url: {{proxy_url}}
 {{/if}}
 request.transforms:
   - set:
-      target: body.data.token
+      target: body.token
       value: {{token}}
   - set:
-      target: body.data.log_type
+      target: body.log_type
       value: 'dlp'
   - set:
       target: url.params.start
-      value: '[[formatDate (parseDate .cursor.last_update_at) "UnixMilli"]]'
-      default: '[[formatDate (now (parseDuration "-{{initial_interval}}")) "UnixMilli"]]'
+      value: '[[(parseDate .cursor.last_requested_at).Unix]]'
+      default: '[[(now (parseDuration "-{{initial_interval}}")).Unix]]'
+      fail_on_template_error: true
   - set:
       target: url.params.end
-      value: '[[formatDate (now) "UnixMilli"]]'
+      value: '[[(now).Unix]]'
+      fail_on_template_error: true
   - set:
       target: url.params.limit
       value: {{batch_size}}
@@ -38,14 +40,14 @@ response.pagination:
       value: '[[.last_response.url.params.Get "end"]]'
       fail_on_template_error: true
   - set:
-      target: url.params.continuationToken
-      value: '[[if index .last_response.body "continuationToken"]][[.last_response.body.continuationToken]][[end]]'
-      fail_on_template_error: true
+      target: body.pagingIdentifiers
+      value: '[[.last_response.body.result.pagingIdentifiers]]'
 cursor:
-  last_update_at:
-    value: '[[if (eq .last_response.body.continuationToken nil)]][[.first_event.date]][[end]]'
+  last_requested_at:
+    value: '[[.last_response.body.timestamp]]'
 response.split:
-  target: body.data
+  target: "body.result.events"
+  ignore_empty_value: true
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

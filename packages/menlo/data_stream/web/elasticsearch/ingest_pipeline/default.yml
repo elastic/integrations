@@ -14,11 +14,11 @@ processors:
   - json:
       field: event.original
       tag: 'json_decoding'
-      target_field: menlo
+      target_field: json
   - date:
-      field: "menlo.event_time"
+      field: "json.event.event_time"
       formats:
-      - "ISO8601"
+        - "ISO8601"
       target_field: "@timestamp"
       timezone: "UTC"
       on_failure:
@@ -30,16 +30,16 @@ processors:
       value: "menlo"
       ignore_failure: true
   - convert:
-      field: "menlo.severity"
+      field: "json.event.severity"
       type: long
       target_field: "event.severity"
       ignore_missing: true
   - rename:
-      field: "menlo.full_session_id"
+      field: "json.event.full_session_id"
       target_field: "event.id"
       ignore_missing: true
   - rename:
-      field: "menlo.pe_action"
+      field: "json.event.pe_action"
       target_field: "event.action"
       ignore_missing: true
   - set:
@@ -54,7 +54,7 @@ processors:
       value: success
       if: ctx.event.action == 'direct' || ctx.event.action == 'allow'
   - rename:
-      field: "menlo.pe_rulename"
+      field: "json.event.pe_reason"
       target_field: "event.reason"
       ignore_missing: true
   - set:
@@ -63,172 +63,227 @@ processors:
   - append:
       field: "event.category"
       value: "network"
+  - append:
+      field: "event.category"
+      value: "threat"
   - rename:
-      field: "menlo.name"
-      target_field: "event.code"
+      field: "json.event.name"
+      target_field: "menlo.web.request_type"
       ignore_missing: true
   - rename:
-      field: "menlo.soph_dlp_ref"
+      field: "json.event.soph_dlp_ref"
       target_field: "event.reference"
-      if: ctx?.json?.soph_dlp_ref != "NA"
+      if: ctx?.json?.event?.soph_dlp_ref != "NA"
       ignore_missing: true
   - rename:
-      field: "menlo.risk_score"
-      target_field: "menlo.web.risk.calculated_level"
-      ignore_missing: true
-  - rename:
-      field: "menlo.reqId"
-      target_field: "process.entity_id"
-      ignore_missing: true
-  - rename:
-      field: menlo.dst
-      target_field: "dns.answers"
+      field: "json.event.risk_score"
+      target_field: "risk.calculated_level"
       ignore_missing: true
   - append:
-      field: "dns.answers"
-      value: "{{{menlo.dst}}}"
+      field: "dns.answers.data"
+      value: "{{{json.event.dst}}}"
       allow_duplicates: false
   - rename:
-      field: "menlo.product"
+      field: "json.event.product"
       target_field: "observer.product"
       ignore_missing: true
   - rename:
-      field: "menlo.vendor"
+      field: "json.event.vendor"
       target_field: "observer.vendor"
       ignore_missing: true
   - convert:
-      field: "menlo.risk_tally"
+      field: "json.event.risk_tally"
       type: long
-      target_field: "menlo.web.risk.tally"
+      target_field: "menlo.web.tally"
       ignore_missing: true
   - convert:
-      field: "menlo.has_password"
+      field: "json.event.has_password"
       type: boolean
       target_field: "menlo.web.has_password"
-      if: ctx?.menlo?.has_password != "NA"
+      if: ctx?.json?.event?.has_password != "NA"
       ignore_missing: true
   - convert:
-      field: "menlo.x-client-ip"
+      field: "json.event.x-client-ip"
       type: ip
       target_field: "client.ip"
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: "menlo.origin_ip"
+      field: "json.event.origin_ip"
       type: ip
       target_field: "server.ip"
       ignore_failure: true
-  - set:
-      field: "destination.ip"
-      copy_from: "server.ip"
   - rename:
-      field: "menlo.origin_country"
+      field: "json.event.origin_country"
       target_field: "server.geo.country_iso_code"
       ignore_failure: true
   - rename:
-      field: "menlo.x-client-country"
+      field: "json.event.x-client-country"
       target_field: "client.geo.country_iso_code"
       ignore_failure: true
   - rename:
-      field: "menlo.egress_country"
+      field: "json.event.egress_country"
       target_field: "observer.geo.country_iso_code"
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: "menlo.file_size"
+      field: "json.event.file_size"
       type: long
       target_field: "file.size"
-      ignore_failure: true
+      if: ctx?.json?.event?.file_size != "NA"
+      ignore_missing: true
+  - append:
+      field: "observer.ip"
+      value: "{{{json.event.egress_ip}}}"
+      allow_duplicates: false
+      if: ctx?.json?.event?.egress_ip != "NA"
+  - set:
+      field: "destination"
+      copy_from: "server"
+  - set:
+      field: "source"
+      copy_from: "client"
   - rename:
-      field: "menlo.egress_ip"
-      target_field: "observer.egress.interface.id"
-      if: ctx?.json?.egress_ip != "NA"
+      field: "json.event.content-type"
+      target_field: "menlo.web.content_type"
+      ignore_missing: true
+  - user_agent:
+      field: "json.event.user-agent"
       ignore_missing: true
   - rename:
-      field: "menlo.content-type"
-      target_field: "http.request.mime_type"
-      ignore_missing: true
-  - rename:
-      field: "menlo.mimeType"
-      target_field: "http.response.mime_type"
-      ignore_missing: true
-  - rename:
-      field: "menlo.user-agent"
-      target_field: "user_agent.original"
-      ignore_missing: true
-  - rename:
-      field: "menlo.browser_and_version"
-      target_field: "user_agent.name"
-      ignore_missing: true
-  - rename:
-      field: "menlo.request_type"
+      field: "json.event.request_type"
       target_field: "http.request.method"
       ignore_missing: true
   - rename:
-      field: "menlo.ua_type"
-      target_field: "user_agent.device.name"
+      field: "json.event.ua_type"
+      target_field: "menlo.web.ua_type"
       ignore_missing: true
   - rename:
-      field: "menlo.version"
+      field: "json.event.version"
       target_field: "observer.version"
       ignore_missing: true
   - uri_parts:
-      field: "menlo.url"
-      target_field: "url"
-      keep_original: false
+      field: "json.event.url"
+      keep_original: true
       remove_if_successful: true
       ignore_failure: true
   - registered_domain:
       field: "url.domain"
       target_field: "url"
   - rename:
-      field: "menlo.referer"
+      field: "json.event.referer"
       target_field: "http.request.referrer"
       ignore_missing: true
   - rename:
-      field: "menlo.userid"
+      field: "json.event.userid"
       target_field: "user.name"
       ignore_missing: true
   - rename:
-      field: "menlo.protocol"
+      field: "json.event.protocol"
       target_field: "network.protocol"
       ignore_missing: true
   - convert:
-      field: "menlo.response_code"
+      field: "json.event.response_code"
       type: long
       target_field: "http.response.status_code"
       ignore_missing: true
   - rename:
-      field: "menlo.region"
-      target_field: "observer.egress.zone"
+      field: "json.event.region"
+      target_field: "cloud.region"
       ignore_missing: true
   - rename:
-      field: "menlo.filename"
+      field: "json.event.filename"
       target_field: "file.name"
       ignore_missing: true
+      if: ctx?.json?.event?.filename != "NA"
   - rename:
-      field: "menlo.sha256"
+      field: "json.event.sha256"
       target_field: "file.hash.sha256"
       ignore_missing: true
   - rename:
-      field: menlo.categories
+      field: json.event.categories
       target_field: menlo.web.categories
   - rename:
-      field: "menlo.groups"
-      target_field: "menlo.web.groups"
-      ignore_missing: true
-  - rename:
-      field: menlo.threats
+      field: json.event.threats
       target_field: menlo.web.threats
       ignore_missing: true
   - rename:
-      field: menlo.threat_types
+      field: json.event.threat_types
       target_field: menlo.web.threat_types
       ignore_missing: true
   - rename:
-      field: "menlo.is_iframe"
+      field: "json.event.is_iframe"
       target_field: "menlo.web.is_iframe"
       ignore_missing: true
+  - rename:
+      field: "json.event.product"
+      target_field: "observer.product"
+      ignore_missing: true
+  - rename:
+      field: "json.event.protocol"
+      target_field: "network.protocol"
+      ignore_missing: true
+  - rename:
+      field: "json.event.cached"
+      target_field: "menlo.web.cached"
+      ignore_missing: true
+  - rename:
+      field: "json.event.casb_app_name"
+      target_field: "menlo.web.casb_app_name"
+      ignore_missing: true
+  - rename:
+      field: "json.event.casb_cat_name"
+      target_field: "menlo.web.casb_cat_name"
+      ignore_missing: true
+  - rename:
+      field: "json.event.casb_fun_name"
+      target_field: "menlo.web.casb_fun_name"
+      ignore_missing: true
+  - rename:
+      field: "json.event.casb_org_name"
+      target_field: "menlo.web.casb_org_name"
+      ignore_missing: true
+  - rename:
+      field: "json.event.casb_profile_id"
+      target_field: "menlo.web.casb_profile_id"
+      ignore_missing: true
+  - rename:
+      field: "json.event.casb_profile_name"
+      target_field: "menlo.web.casb_profile_name"
+      ignore_missing: true
+  - rename:
+      field: "json.event.casb_profile_type"
+      target_field: "menlo.web.casb_profile_type"
+      ignore_missing: true
+  - rename:
+      field: "json.event.casb_risk_score"
+      target_field: "menlo.web.casb_risk_score"
+      ignore_missing: true
+  - rename:
+      field: "json.event.sbox"
+      target_field: "menlo.web.sbox"
+      ignore_missing: true
+  - rename:
+      field: "json.event.sbox_mal_act"
+      target_field: "menlo.web.sbox_mal_act"
+      ignore_missing: true
+  - rename:
+      field: "json.event.soph"
+      target_field: "menlo.web.soph"
+      ignore_missing: true
+  - rename:
+      field: "json.event.tab_id"
+      target_field: "menlo.web.tab_id"
+      ignore_missing: true
+  - rename:
+      field: "json.event.virus_details"
+      target_field: "menlo.web.virus_details"
+      ignore_missing: true
+  - rename:
+      field: "json.event.xff_ip"
+      target_field: "menlo.web.xff_ip"
+      ignore_missing: true
+      if: ctx?.json?.event?.xff_ip != "NA"
   - append:
       field: "related.ip"
       value: '{{source.ip}}'
@@ -239,28 +294,9 @@ processors:
       value: '{{destination.ip}}'
       if: ctx?.destination?.ip != null
       allow_duplicates: false
-  - set:
-      field: "observer.type"
-      value: "proxy"
-      ignore_failure: true
   - remove:
       field:
-        - menlo.domain
-        - menlo.event_time
-        - menlo.file_size
-        - menlo.has_password
-        - menlo.magicName
-        - menlo.numSubfiles
-        - menlo.origin_ip
-        - menlo.pe_reason
-        - menlo.refererl
-        - menlo.response_code
-        - menlo.risk_tally
-        - menlo.severity
-        - menlo.tab_id
-        - menlo.top_url
-        - menlo.x-client-ip
-        - menlo.xff_ip
+        - json
       ignore_missing: true
   - remove:
       field: "event.original"

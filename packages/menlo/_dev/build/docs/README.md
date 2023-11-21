@@ -1,32 +1,50 @@
 # Menlo Security
 
-This integration periodically fetches logs from Menlo Security API. It includes the following data sets
+Menlo Security’s isolation-centric approach splits web browsing and document retrieval between the user’s device and an isolated, Disposable Virtual Container (DVC) away from the endpoint. All risky code is executed in the isolated DVC and never reaches the endpoint. Only safe display data is sent to the user’s browser. User traffic is automatically sent to this infrastructure without any impact on the users themselves.
 
-- Web
-- DLP
+## Web
 
-## Requirements
+Menlo Security's cloud based Browser Security prevents phishing and malware attacks on any browser and any device across your hybrid enterprise.
 
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
-You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+## DLP
 
-- Menlo API URL
-- Menlo API Token
+Data Loss Prevention (also known as Data Leak Prevention) detects potential data breaches or data ex-filtration transmissions and prevents them by detecting and optionally blocking sensitive data passing through the Menlo Security platform.
 
-## Logs
+## Compatibility
+
+This module has been tested against the Menlo Security API **version 2.0**
+
+## Data streams
+
+The Menlo Security integration collects data for the following two events:
+
+| Event Type                    |
+|-------------------------------|
+| Web                           |
+| DLP                           |
+
+## Setup
+
+To collect data through the REST API you will need your Menlo Security API URL and an API token.
+
+## Logs Reference
 
 ### Web
 
-Contains events from the Web data source
+This is the `Web` dataset.
 
-{{ fields "web" }}
+#### Example
 
 {{ event "web" }}
 
+{{ fields "web" }}
+
 ### DLP
 
-Contains events from the DLP data source
+This is the `DLP` dataset.
 
-{{ fields "dlp" }}
+#### Example
 
 {{ event "dlp" }}
+
+{{ fields "dlp" }}
