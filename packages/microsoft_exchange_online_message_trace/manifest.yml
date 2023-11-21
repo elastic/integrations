@@ -1,7 +1,7 @@
 format_version: "3.0.0"
 name: microsoft_exchange_online_message_trace
 title: "Microsoft Exchange Online Message Trace"
-version: "1.16.0"
+version: "1.17.0"
 description: "Microsoft Exchange Online Message Trace Integration"
 type: integration
 categories:
@@ -64,7 +64,7 @@ policy_templates:
             title: Oauth2 Scopes
             multi: true
             default:
-              - ReportingWebService.Read.All
+              - https://outlook.office365.com/.default
             required: false
             show_user: false
             description: |
@@ -78,15 +78,15 @@ policy_templates:
             required: true
             show_user: false
             default: https://login.microsoftonline.com
-            description: "URL of Login server '/tenant-id/oauth2/token added automatically'"
+            description: URL of Login server '/tenant-id/oauth2/v2.0/token added automatically'
           - name: token_url
             type: text
             title: OAuth Token endpoint
             required: true
             multi: false
             show_user: false
-            default: oauth2/token
-            description: "Microsoft supports multiple Oauth2 URL endpoints, the default is oauth2/token, but can also be oauth2/v2.0/token"
+            default: oauth2/v2.0/token
+            description: Microsoft Identity Platform OAuth2 token endpoint
           - name: azure_resource
             type: text
             title: Azure Resource
@@ -106,14 +106,14 @@ policy_templates:
           - name: batch_size
             type: text
             title: Batch Size
-            description: Batch size for the response of Exchange Online
+            description: Batch size for the response of Exchange Online Message Trace
             default: 1000
             required: true
           - name: interval
             type: text
             title: Interval
             description: Duration between requests to Exchange Online. Supported units for this parameter are h/m/s.
-            default: 1m
+            default: 1h
             multi: false
             required: true
             show_user: true
@@ -139,7 +139,7 @@ policy_templates:
             multi: true
             required: true
             show_user: true
-            description: Company owned domains. This is used to calculate the email direction and extract usernames
+            description: Company owned domains. This is used to calculate the email direction and extract user names.
           - name: ssl
             type: yaml
             title: SSL Configuration
