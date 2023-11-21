@@ -424,6 +424,18 @@ echoerr() {
     echo "$@" 1>&2
 }
 
+get_last_successful_build() {
+    local pipeline="$1"
+    local branch="$2"
+    local state_query_param="state=passed"
+
+    local api_url="${API_BUILDKITE_PIPELINES_URL}/${pipeline}/builds?branch=${branch}&${state_query_param}&per_page=1"
+    local build_id
+    build_id=$(retry 5 curl -sH "Authorization: Bearer ${BUILDKITE_API_TOKEN}" "${api_url}" | jq -r '.[0] |.id')
+
+    echo "${build_id}"
+}
+
 get_commit_from_build() {
     local pipeline="$1"
     local branch="$2"
