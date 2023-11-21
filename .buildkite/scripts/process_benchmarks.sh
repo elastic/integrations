@@ -11,6 +11,7 @@ fi
 
 add_bin_path
 with_go
+with_jq  # containers do not have jq installe# containers do not have jq installedd
 use_elastic_package
 
 echo "--- Process Benchmarks"

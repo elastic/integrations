@@ -163,6 +163,7 @@ with_kubernetes() {
 }
 
 with_yq() {
+    create_bin_folder
     check_platform_architecture
     local binary="yq_${platform_type_lowercase}_${arch_type}"
 
@@ -175,6 +176,18 @@ with_yq() {
     yq --version
 
     rm -rf "${BIN_FOLDER}/yq.tar.gz"
+}
+
+with_jq() {
+    create_bin_folder
+    check_platform_architecture
+    # filename for versions <=1.6 is jq-linux64
+    local binary="jq-linux-${arch_type}"
+
+    retry 5 curl -sL -o "${WORKSPACE}/bin/jq" "https://github.com/stedolan/jq/releases/download/jq-${JQ_VERSION}/${binary}"
+
+    chmod +x "${WORKSPACE}/bin/jq"
+    jq --version
 }
 
 ## Logging and logout from Google Cloud
