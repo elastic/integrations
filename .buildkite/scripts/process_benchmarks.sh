@@ -41,7 +41,7 @@ fi
 
 echo "Download main benchmark if any"
 mkdir -p build/benchmark-results
-build_id=$(get_last_successful_build integrations main)
+build_id=$(get_last_failed_or_successful_build integrations main)
 echo "Buildkite Build ID: ${build_id}"
 
 if ! buildkite-agent artifact download "build/benchmark-results/*.json" --build "${build_id}" "${baseline}" ; then

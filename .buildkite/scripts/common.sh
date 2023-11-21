@@ -424,10 +424,11 @@ echoerr() {
     echo "$@" 1>&2
 }
 
-get_last_successful_build() {
+get_last_failed_or_successful_build() {
     local pipeline="$1"
     local branch="$2"
-    local state_query_param="state=passed"
+    # local state_query_param="state=passed"
+    local state_query_param="state[]=failed&state[]=passed"
 
     local api_url="${API_BUILDKITE_PIPELINES_URL}/${pipeline}/builds?branch=${branch}&${state_query_param}&per_page=1"
     local build_id
