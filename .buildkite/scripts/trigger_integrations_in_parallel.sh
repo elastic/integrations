@@ -60,6 +60,8 @@ for package in ${PACKAGE_LIST}; do
       artifact_paths:
         - build/test-results/*.xml
         - build/benchmark-results/*.xml
+        - build/elastic-stack-dump/*/logs/*.log
+        - build/elastic-stack-dump/*/logs/fleet-server-internal/**/*
 EOF
 done
 
