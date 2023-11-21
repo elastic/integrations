@@ -31,6 +31,9 @@ request.transforms:
       value: StartDate eq datetime'[[.cursor.last_execution_datetime]]' and EndDate eq datetime'[[(formatDate (now) "RFC3339")]]'
       default: StartDate eq datetime'[[(formatDate (now (parseDuration "-{{initial_interval}}")) "RFC3339")]]' and EndDate eq datetime'[[(formatDate (now) "RFC3339")]]'
   - set:
+      target: url.params.$top
+      value: {{batch_size}}
+  - set:
       target: url.params.$skiptoken
       value: 0
 fields_under_root: true
@@ -59,14 +62,14 @@ response.pagination:
   - set:
       fail_on_template_error: true
       target: url.params.$skiptoken
-      value: '[[ (add (toInt (index .last_response.url.params "$skiptoken")) 2000) ]]'
+      value: '[[ (add (toInt (index .last_response.url.params "$skiptoken")) {{batch_size}}) ]]'
   - set:
       fail_on_template_error: true
       target: url.params.test
-      value: '[[ (add (toInt (index .last_response.url.params "$skiptoken")) 2000) ]]'
+      value: '[[ (add (toInt (index .last_response.url.params "$skiptoken")) {{batch_size}}) ]]'
 cursor:
   last_execution_datetime:
-    value: '[[(formatDate (now (parseDuration)) "RFC3339")]]'
+    value: '[[(formatDate (now) "RFC3339")]]'
 
 {{#if processors}}
 processors:
