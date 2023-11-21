@@ -190,6 +190,25 @@ with_jq() {
     jq --version
 }
 
+with_github_cli() {
+    mkdir -p "${WORKSPACE}/bin"
+    mkdir -p "${WORKSPACE}/tmp"
+
+    local gh_filename="gh_${GH_CLI_VERSION}_linux_amd64"
+    local gh_tar_file="${gh_filename}.tar.gz"
+    local gh_tar_full_path="${WORKSPACE}/tmp/${gh_tar_file}"
+
+    retry 5 curl -sL -o "${gh_tar_full_path}" "https://github.com/cli/cli/releases/download/v${GH_CLI_VERSION}/${gh_tar_file}"
+
+    # just extract the binary file from the tar.gz
+    tar -C "${WORKSPACE}/bin" -xpf "${gh_tar_full_path}" "${gh_filename}/bin/gh" --strip-components=2
+
+    chmod +x "${WORKSPACE}/bin/gh"
+    rm -rf "${WORKSPACE}/tmp"
+
+    gh version
+}
+
 ## Logging and logout from Google Cloud
 google_cloud_upload_auth() {
   local secretFileLocation

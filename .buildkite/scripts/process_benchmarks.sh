@@ -9,9 +9,11 @@ if ! is_pr ; then
     exit 0
 fi
 
+echo "--- Installing tools"
 add_bin_path
 with_go
 with_jq  # containers do not have jq installe# containers do not have jq installedd
+with_github_cli # to post comments in Pull Requests
 use_elastic_package
 
 echo "--- Process Benchmarks"
@@ -43,6 +45,7 @@ fi
 echo "Download main benchmark if any"
 mkdir -p build/benchmark-results
 build_id=$(get_last_failed_or_successful_build integrations main)
+build_id="018bf2bb-9795-48f2-881b-e2e85476c8fb"
 echo "Buildkite Build ID: ${build_id}"
 
 if ! buildkite-agent artifact download "build/benchmark-results/*.json" --build "${build_id}" "${baseline}" ; then
@@ -50,7 +53,7 @@ if ! buildkite-agent artifact download "build/benchmark-results/*.json" --build 
   exit 0
 fi
 
-mv "${baseline}"/build/benchmarks-results/*.json baseline/
+mv "${baseline}"/build/benchmarks-results/*.json "${baseline}/"
 rm -rf "${baseline}/build"
 
 # download_benchmark_results \
@@ -80,10 +83,15 @@ ${ELASTIC_PACKAGE_BIN} report benchmark \
     --full=${is_full_report}
 
 
-if [ ! -f ${benchmark_github_file} ]; then
-    echo "add_github_comment_benchmark: it was not possible to send the message"
-    return
+if [ ! -f "${benchmark_github_file}" ]; then
+    echo "[benchmark] No report file created"
+    exit 0
 fi
 
 # TODO: write github comment in PR
+if ! gh pr comment \
+  "${BUILDKITE_PULL_REQUEST}" \
+  --body-file "${benchmark_github_file}" ; then
+  echo "[benchmark] It was not possible to send the message"
+fi
 popd > /dev/null
