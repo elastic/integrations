@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -euo pipefail
+set -euox pipefail
 
 sourceFolder="build/test-coverage"
 mergedCoverageFileName="${sourceFolder}/coverage_merged.xml"
