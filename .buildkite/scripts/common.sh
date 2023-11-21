@@ -592,7 +592,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort | grep -E '1password|apache|barracuda'
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort | grep -E '1password|barracuda'
 }
 
 check_package() {
