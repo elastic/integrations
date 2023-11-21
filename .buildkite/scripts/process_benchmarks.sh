@@ -13,6 +13,8 @@ add_bin_path
 with_go
 use_elastic_package
 
+# This variable does not exist in builds triggered automatically
+GITHUB_PR_TRIGGER_COMMENT="${GITHUB_PR_TRIGGER_COMMENT:-""}"
 
 benchmark_github_file="report.md"
 benchmark_results="benchmark-results"
