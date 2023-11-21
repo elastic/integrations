@@ -18,6 +18,31 @@ The Azure Logs integration collects logs.
 **Logs** help you keep a record of events that happen on your Azure account.
 Log data streams collected by the Azure Logs integration include Activity, Platform, Active Directory (Sign-in, Audit, Identity Protection, Provisioning), and Spring Apps logs.
 
+### Which integration to pick? Generic vs. Specialized
+
+The Azure Logs integration packages offers several integrations. Most of them are "specialized" and one is "generic".
+
+#### Specialized
+
+Sigin-in logs, Audit logs, and Activity logs are example of specialized integrations. These integrations can fully parse the log categories they focus on, and usually come with an OOTB dashboard to visualize data.
+
+#### Generic
+
+If the service you want to use does not have a specialized integration, you can leverage the integration named "Collect events from Event Hub" instead. It ingest any log category with a basic out-the-box parsing of common Azure fields.
+
+Besides the basic parsing, you have two options to expand its capability:
+
+- Enable message parsing
+- Add a custom mapping and pipeline
+
+And you can also combine to two options.
+##### Enable message parsing
+
+If you enable the 'parse message' option in the settings, the integration will leverage the dynamic mapping for you.
+##### Add a custom mapping and pipeline
+
+Users can use this integration in combination with a custom mapping and pipeline to extend the default actions. Generic integrations should be used only when there isn't a specialized integration supporting the log category.
+
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
