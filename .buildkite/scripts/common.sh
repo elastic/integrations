@@ -968,3 +968,56 @@ download_benchmark_results() {
 
     google_cloud_logout_active_account
 }
+
+add_or_edit_gh_pr_comment() {
+    local owner=$1
+    local repo=$2
+    local pr_number=$3
+    local metadata="<!--COMMENT_GENERATED_WITH_ID_${4}-->"
+    local commentFilePath=$5
+    local contents
+
+    contents="$(cat "${commentFilePath}")"
+    contents="${contents}\n${metadata}"
+
+    comment_id=$(exists_coment_with_pattern "${owner}" "${repo}" "${pr_number}" "${metadata}")
+    if [[ "${comment_id}" = "" ]]; then
+        echo "Found comment: ${comment_id}"
+        # new comment
+        gh pr comment \
+          "${BUILDKITE_PULL_REQUEST}" \
+          --body "${contents}"
+        return
+    fi
+
+    echo "Updating message"
+    gh api \
+      --method PATCH \
+      -H "Accept: application/vnd.github+json" \
+      -H "X-GitHub-Api-Version: 2022-11-28" \
+      "/repos/${owner}/${repo}/issues/comments/${comment_id}" \
+      -f body="${contents}"
+}
+
+# FIXME: In a Pull Request that there are more than 100 comments,
+# if the comment is older than those 100 comments, it won't be found due to pagination
+exits_comment_with_pattern() {
+    local owner=$1
+    local repo=$2
+    local pr_number=$3
+    local pattern="$1"
+    local comment_id=""
+
+    gh api \
+      -XGET \
+      -H "Accept: application/vnd.github+json" \
+      -H "X-GitHub-Api-Version: 2022-11-28" \
+      "/repos/${owner}/${repo}/issues/${pr_number}/comments" \
+      -F per_page=100 > response_github.json
+
+    comment_id=$(cat response_github.json | jq -r ".[] | select(.body | match(\"${pattern}\")) | .id")
+
+    rm response_github.json
+
+    echo "${comment_id}"
+}
