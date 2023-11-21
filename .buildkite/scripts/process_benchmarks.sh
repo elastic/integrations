@@ -13,6 +13,7 @@ add_bin_path
 with_go
 use_elastic_package
 
+echo "--- Process Benchmarks"
 # This variable does not exist in builds triggered automatically
 GITHUB_PR_TRIGGER_COMMENT="${GITHUB_PR_TRIGGER_COMMENT:-""}"
 
@@ -31,26 +32,25 @@ pushd "${WORKSPACE}" > /dev/null
 mkdir -p "${current_benchmark_results}"
 mkdir -p "${baseline}"
 
-# download PR benchmarks
+echo "Download PR benchmarks"
 mkdir -p build/benchmark-results
 if ! buildkite-agent artifact download "build/benchmark-results/*.json" . ; then
   echo "[benchmarks] Not benchmarks generated"
   exit 0
 fi
 
-# download main benchmark if any
+echo "Download main benchmark if any"
 mkdir -p build/benchmark-results
 build_id=$(get_latest_succesful_build integrations main)
 echo "Buildkite Build ID: ${build_id}"
-mkdir -p baseline
 
-if ! buildkite-agent artifact download "build/benchmark-results/*.json" --build "${build_id}" baseline/ ; then
+if ! buildkite-agent artifact download "build/benchmark-results/*.json" --build "${build_id}" "${baseline}" ; then
   echo "[benchmarks] Not found baseline benchmarks"
   exit 0
 fi
 
-mv baseline/build/benchmarks-results/*.json baseline/
-rm -rf baseline/build
+mv "${baseline}"/build/benchmarks-results/*.json baseline/
+rm -rf "${baseline}/build"
 
 # download_benchmark_results \
 #     "${JOB_GCS_BUCKET}" \
