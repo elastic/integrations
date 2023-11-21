@@ -4,6 +4,9 @@ source .buildkite/scripts/common.sh
 
 set -euo pipefail
 
+# default values
+BENCHMARK_THRESHOLD=${BENCHMARK_THRESHOLD:-'15'}
+
 if ! is_pr ; then
     echo "[benchmarks] Pull request build. Skip procesing benchmarks."
     exit 0
