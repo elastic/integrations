@@ -18,9 +18,6 @@ pipeline {
     rateLimitBuilds(throttle: [count: 60, durationName: 'hour', userBoost: true])
     quietPeriod(10)
   }
-  triggers {
-    cron('H H(2-5) * * *')
-  }
   stages {
     stage('Daily integration builds') {
       parallel {
