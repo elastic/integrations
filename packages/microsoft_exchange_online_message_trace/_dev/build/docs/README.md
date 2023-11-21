@@ -22,7 +22,7 @@ The `log` dataset collects the Microsoft Exchange Online Message Trace logs. To 
 In order to continue using the Microsoft Exchange Online Message Trace you will need to enable and configure OAuth2 authentication via your service app.
 - ### Service App Configuration  
     1) In the [Azure portal](https://portal.azure.com/), create a Microsoft Entra App(service app) Registration. For details please refer to the official [Microsoft Documentation](https://learn.microsoft.com/en-us/entra/identity-platform/howto-create-service-principal-portal).
-    2) In most cases under the `Redirect URI` section, you would want to configure the value `Web` for the `app type` and `http://localhost/` for the `Redirect URI`, unless there are some specific requirements on your end.
+    2) In most cases under the `Redirect URI` section, you would want to configure the value `Web` for the `app type` and `http://localhost` for the `Redirect URI`, unless there are some specific requirements on your end.
     3) Assign the application at least one Microsoft Entra(Azure AD) role that will enable it to access the Reporting Web Service:
 
         - Security Reader
@@ -54,7 +54,8 @@ available in your organization. They are usually under the sections [Accepted Do
   value of `Initial Interval` should not exceed `200 hours` as this might cause unexpected errors with the API.
 
 - The default value of `Batch Size` is set to 1000. This means for every request Httpjson will paginate with a value of 1000 results per page. The 
-   maximum page size supported by the Message Trace API is `2000`. The API will return empty array values when there are no more logs to pull.
+   maximum page size supported by the Message Trace API is `2000`. The API will return an empty `value` array when there are no more logs to pull and the
+   pagination will terminate with an error that can be ignored.
 
 ## Logfile collection 
 
