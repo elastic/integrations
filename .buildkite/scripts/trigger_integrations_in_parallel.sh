@@ -59,7 +59,7 @@ for package in ${PACKAGE_LIST}; do
         UPLOAD_SAFE_LOGS: ${UPLOAD_SAFE_LOGS}
       artifact_paths:
         - build/test-results/*.xml
-        - build/benchmark-results/*.xml
+        - build/benchmark-results/*.json
 EOF
 done
 
