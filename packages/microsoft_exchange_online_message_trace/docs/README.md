@@ -30,7 +30,9 @@ In order to continue using the Microsoft Exchange Online Message Trace you will 
         - Global Administrator
         - Exchange Administrator
     
+    
     NOTE: Make sure that at least one role includes the `ReportingWebService.Read.All` permission. For detailed steps, see [Microsoft's Assign Azure AD Roles to Users](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/manage-roles-portal) topic.
+
 - ### Configuring OAuth2 Credentials
   Once you have your service app registered and configured, you can now configure your OAuth2 credentials as follows:- 
     1) Generate a client secret for your registered service app. Copy and store the `client secret value` with you as this will be required for your OAuth2 credentials.
@@ -39,6 +41,7 @@ In order to continue using the Microsoft Exchange Online Message Trace you will 
         - **Client ID**: The `client_id` of your `service app` to pass in the OAuth request parameter.
         - **Client secret**:  The `client_secret`  of your `service app` that you generated earlier, to pass in the OAuth request parameter.
         - **Tenant ID**: The Directory ID (tenant identifier) of your `service app` in your Microsoft Entra ID(Azure Active Directory).
+  
   
   With these values now configured, the OAuth2 configuration for the integration should be ideally complete. For more details, please check the 
   official doc for [Getting Started with Reporting Web Service](https://learn.microsoft.com/en-gb/previous-versions/office/developer/o365-enterprise-developers/jj984325(v=office.15)#get-started-with-reporting-web-service).
@@ -53,7 +56,7 @@ available in your organization. They are usually under the sections [Accepted Do
 - The default value of `Batch Size` is set to 1000. This means for every request Httpjson will paginate with a value of 1000 results per page. The 
    maximum page size supported by the Message Trace API is `2000`. The API will return empty array values when there are no more logs to pull.
 
-### Logfile collection 
+## Logfile collection 
 
 **Disclaimer:**  With basic authentication support now disabled, the PowerShell script provided below will not work as is. However, you can 
 see the [guides here](https://learn.microsoft.com/en-us/powershell/exchange/connect-to-exchange-online-powershell?view=exchange-ps) on how 
