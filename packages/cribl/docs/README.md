@@ -26,9 +26,13 @@ The Cribl integration offers users a way to ingest logs from Cribl's Elasticsear
 
         ![Cisco ASA sample event documentation](../img/sample-event-dataset-name.png)
 
-    2. Identify the name of the Cribl datasource
+    2. Add informational field to Cribl Source
 
-        Todo -- waiting for Cribl guidance
+        Configure the Cribl Source to specify the source of the data in the `_index` field.
+
+        ![Configure Cribl Source fields](../img/cribl-source-fields.png)
+
+        See (Cribl Data Onboarding)[https://docs.cribl.io/stream/data-onboarding/] for more information on configuring sources.
 
     3. Create custom pipeline
     
@@ -43,7 +47,7 @@ The Cribl integration offers users a way to ingest logs from Cribl's Elasticsear
 
             2. Set the **Namespace** to 'default'.
 
-            3. (TODO) Fill in the conditional to specify the Cribl datasource. 
+            3. Fill in the conditional to specify the Cribl `_index` source field. 
 
             ![Reroute processor](../img/custom-pipeline-reroute-processor.png)
 
@@ -57,7 +61,7 @@ The Cribl integration offers users a way to ingest logs from Cribl's Elasticsear
 
     2. Set **Index or Data Stream** to 'logs-cribl-default'.
 
-    3. **API key** should be a Base64 encoded Elastic API key, which can be created in Kibana by following the instructions under API Keys. If you are using an API key with “Restrict privileges”, be sure to review the Indices privileges to provide at least "auto_configure" & "write" permissions for the logs-* index which you will be using for these Fleet integration data streams.
+    3. **API key** should be a Base64 encoded Elastic API key, which can be created in Kibana by following the instructions under API Keys. If you are using an API key with “Restrict privileges”, be sure to review the Indices privileges to provide at least "auto_configure" & "write" permissions for the logs-* index, which you will be using for these Fleet integration data streams.
 
 
 
