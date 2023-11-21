@@ -22,3 +22,9 @@ services:
       - --addr=:8080
       - -p=http-server
       - /sample_logs/security.json.log
+  syslog:
+    image: alpine
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "cp /sample_logs/*.log /var/log/"

@@ -190,7 +190,7 @@ An example event for `entity` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "15e5a007-7f90-47f5-be2c-f8f167a4d8ba",
@@ -217,6 +217,7 @@ An example event for `entity` looks as following:
         "entityanalytics_entra_id-entity"
     ]
 }
+
 ```
 
 **Exported fields**

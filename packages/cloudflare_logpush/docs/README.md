@@ -132,11 +132,14 @@ curl --location --request POST 'https://api.cloudflare.com/client/v4/zones/<ZONE
 --header 'Content-Type: application/json' \
 --data-raw '{
     "name":"<public domain>",
-    "destination_conf": "https://<public domain>:<public port>/<dataset path>?header_<secret_header>=<secret_value>",
+    "destination_conf": "https://<public domain>:<public port>/<dataset path>?header_Content-Type=application/json&header_<secret_header>=<secret_value>",
     "dataset": "audit",
     "logpull_options": "fields=RayID,EdgeStartTimestamp&timestamps=rfc3339"
 }'
 ```
+
+**Note**:
+- The destination_conf parameter inside the request data should set the Content-Type header to `application/json`. This is the content type that the HTTP endpoint expects for incoming events.
 - Default port for the HTTP Endpoint is _9560_.
 - When using the same port for more than one dataset, be sure to specify different dataset paths.
 
@@ -224,7 +227,7 @@ An example event for `access_request` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -275,6 +278,7 @@ An example event for `access_request` looks as following:
         "id": "166befbb-00e3-5e20-bd6e-27245333949f"
     }
 }
+
 ```
 
 **Exported fields**
@@ -427,7 +431,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -476,6 +480,7 @@ An example event for `audit` looks as following:
         "id": "enl3j9du8rnx2swwd9l32qots7l54t9s"
     }
 }
+
 ```
 
 **Exported fields**
@@ -650,7 +655,7 @@ An example event for `casb` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -688,6 +693,7 @@ An example event for `casb` looks as following:
         "scheme": "https"
     }
 }
+
 ```
 
 **Exported fields**
@@ -835,7 +841,7 @@ An example event for `device_posture` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -896,6 +902,7 @@ An example event for `device_posture` looks as following:
         "version": "2023.3.258"
     }
 }
+
 ```
 
 **Exported fields**
@@ -1028,7 +1035,7 @@ An example event for `dns` looks as following:
         }
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -1067,6 +1074,7 @@ An example event for `dns` looks as following:
         "cloudflare_logpush-dns"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -1198,7 +1206,7 @@ An example event for `dns_firewall` looks as following:
         "response_code": "0"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "e0bfaeb7-64d9-40b9-8534-3d0e780f33cf",
@@ -1253,6 +1261,7 @@ An example event for `dns_firewall` looks as following:
         "cloudflare_logpush-dns_firewall"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -1377,7 +1386,7 @@ An example event for `firewall_event` looks as following:
                 "referer": {
                     "host": "abc.example.com",
                     "path": "/abc/checkout",
-                    "query": "?sourcerer=(default%3A(id%3A!n%2CselectedPatterns%3A!(eqldemo%2C%27logs-endpoint.*-eqldemo%27%2C%27logs-system.*-eqldemo%27%2C%27logs-windows.*-eqldemo%27%2Cmetricseqldemo)))\u0026timerange=(global%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.199Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.200Z%27%2CtoStr%3Anow))%2Ctimeline%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.201Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.202Z%27%2CtoStr%3Anow)))",
+                    "query": "?sourcerer=(default%3A(id%3A!n%2CselectedPatterns%3A!(eqldemo%2C%27logs-endpoint.*-eqldemo%27%2C%27logs-system.*-eqldemo%27%2C%27logs-windows.*-eqldemo%27%2Cmetricseqldemo)))&timerange=(global%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.199Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.200Z%27%2CtoStr%3Anow))%2Ctimeline%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.201Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.202Z%27%2CtoStr%3Anow)))",
                     "scheme": "referer URL scheme"
                 },
                 "request": {
@@ -1385,7 +1394,7 @@ An example event for `firewall_event` looks as following:
                     "method": "GET",
                     "path": "/abc/checkout",
                     "protocol": "HTTP/1.1",
-                    "query": "?sourcerer=(default%3A(id%3A!n%2CselectedPatterns%3A!(eqldemo%2C%27logs-endpoint.*-eqldemo%27%2C%27logs-system.*-eqldemo%27%2C%27logs-windows.*-eqldemo%27%2Cmetricseqldemo)))\u0026timerange=(global%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.199Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.200Z%27%2CtoStr%3Anow))%2Ctimeline%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.201Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.202Z%27%2CtoStr%3Anow)))",
+                    "query": "?sourcerer=(default%3A(id%3A!n%2CselectedPatterns%3A!(eqldemo%2C%27logs-endpoint.*-eqldemo%27%2C%27logs-system.*-eqldemo%27%2C%27logs-windows.*-eqldemo%27%2Cmetricseqldemo)))&timerange=(global%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.199Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.200Z%27%2CtoStr%3Anow))%2Ctimeline%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.201Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.202Z%27%2CtoStr%3Anow)))",
                     "scheme": "https",
                     "user": {
                         "agent": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
@@ -1430,7 +1439,7 @@ An example event for `firewall_event` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -1496,7 +1505,7 @@ An example event for `firewall_event` looks as following:
     "url": {
         "domain": "xyz.example.com",
         "path": "/abc/checkout",
-        "query": "sourcerer=(default%3A(id%3A!n%2CselectedPatterns%3A!(eqldemo%2C%27logs-endpoint.*-eqldemo%27%2C%27logs-system.*-eqldemo%27%2C%27logs-windows.*-eqldemo%27%2Cmetricseqldemo)))\u0026timerange=(global%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.199Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.200Z%27%2CtoStr%3Anow))%2Ctimeline%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.201Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.202Z%27%2CtoStr%3Anow)))",
+        "query": "sourcerer=(default%3A(id%3A!n%2CselectedPatterns%3A!(eqldemo%2C%27logs-endpoint.*-eqldemo%27%2C%27logs-system.*-eqldemo%27%2C%27logs-windows.*-eqldemo%27%2Cmetricseqldemo)))&timerange=(global%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.199Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.200Z%27%2CtoStr%3Anow))%2Ctimeline%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.201Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.202Z%27%2CtoStr%3Anow)))",
         "scheme": "https"
     },
     "user_agent": {
@@ -1513,6 +1522,7 @@ An example event for `firewall_event` looks as following:
         "version": "2.1"
     }
 }
+
 ```
 
 **Exported fields**
@@ -1779,7 +1789,7 @@ An example event for `gateway_dns` looks as following:
         "response_code": "0"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -1852,6 +1862,7 @@ An example event for `gateway_dns` looks as following:
         "id": "166befbb-00e3-5e20-bd6e-27245000000"
     }
 }
+
 ```
 
 **Exported fields**
@@ -2103,7 +2114,7 @@ An example event for `gateway_http` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -2191,6 +2202,7 @@ An example event for `gateway_http` looks as following:
         "original": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) Firefox/112.0"
     }
 }
+
 ```
 
 **Exported fields**
@@ -2419,7 +2431,7 @@ An example event for `gateway_network` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -2499,6 +2511,7 @@ An example event for `gateway_network` looks as following:
         "id": "166befbb-00e3-5e20-bd6e-27245723949f"
     }
 }
+
 ```
 
 **Exported fields**
@@ -2677,7 +2690,7 @@ An example event for `http_request` looks as following:
                     "method": "POST",
                     "path": "/xyz/checkout",
                     "protocol": "HTTP/1.1",
-                    "referer": "https://example.com/s/example/default?sourcerer=(default:(id:!n,selectedPatterns:!(example,%27logs-endpoint.*-example%27,%27logs-system.*-example%27,%27logs-windows.*-example%27)))\u0026timerange=(global:(linkTo:!(),timerange:(from:%272022-05-16T06:26:36.340Z%27,fromStr:now-24h,kind:relative,to:%272022-05-17T06:26:36.340Z%27,toStr:now)),timeline:(linkTo:!(),timerange:(from:%272022-04-17T22:00:00.000Z%27,kind:absolute,to:%272022-04-18T21:59:59.999Z%27)))\u0026timeline=(activeTab:notes,graphEventId:%27%27,id:%279844bdd4-4dd6-5b22-ab40-3cd46fce8d6b%27,isOpen:!t)",
+                    "referer": "https://example.com/s/example/default?sourcerer=(default:(id:!n,selectedPatterns:!(example,%27logs-endpoint.*-example%27,%27logs-system.*-example%27,%27logs-windows.*-example%27)))&timerange=(global:(linkTo:!(),timerange:(from:%272022-05-16T06:26:36.340Z%27,fromStr:now-24h,kind:relative,to:%272022-05-17T06:26:36.340Z%27,toStr:now)),timeline:(linkTo:!(),timerange:(from:%272022-04-17T22:00:00.000Z%27,kind:absolute,to:%272022-04-18T21:59:59.999Z%27)))&timeline=(activeTab:notes,graphEventId:%27%27,id:%279844bdd4-4dd6-5b22-ab40-3cd46fce8d6b%27,isOpen:!t)",
                     "scheme": "https",
                     "source": "edgeWorkerFetch",
                     "uri": "/s/example/api/telemetry/v2/clusters/_stats",
@@ -2817,7 +2830,7 @@ An example event for `http_request` looks as following:
         "ip": "67.43.156.0"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "ce7f1f81-9ce7-45cf-9b99-e339a19e5941",
@@ -2898,6 +2911,7 @@ An example event for `http_request` looks as following:
         "version": "51.0.2704.103"
     }
 }
+
 ```
 
 **Exported fields**
@@ -3137,7 +3151,7 @@ An example event for `magic_ids` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "e0bfaeb7-64d9-40b9-8534-3d0e780f33cf",
@@ -3195,6 +3209,7 @@ An example event for `magic_ids` looks as following:
         "cloudflare_logpush-magic_ids"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -3344,7 +3359,7 @@ An example event for `nel_report` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -3377,6 +3392,7 @@ An example event for `nel_report` looks as following:
         "cloudflare_logpush-nel_report"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -3627,7 +3643,7 @@ An example event for `network_analytics` looks as following:
         "port": 0
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -3681,6 +3697,7 @@ An example event for `network_analytics` looks as following:
         "cloudflare_logpush-network_analytics"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -3952,7 +3969,7 @@ An example event for `network_session` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -4037,6 +4054,7 @@ An example event for `network_session` looks as following:
         "id": "166befbb-00e3-5e20-bd6e-27245723949f"
     }
 }
+
 ```
 
 **Exported fields**
@@ -4259,7 +4277,7 @@ An example event for `sinkhole_http` looks as following:
         "ip": "89.160.20.129"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "e0bfaeb7-64d9-40b9-8534-3d0e780f33cf",
@@ -4345,6 +4363,7 @@ An example event for `sinkhole_http` looks as following:
         "original": "Mozilla/5.0"
     }
 }
+
 ```
 
 **Exported fields**
@@ -4563,7 +4582,7 @@ An example event for `spectrum_event` looks as following:
         "port": 3389
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -4623,6 +4642,7 @@ An example event for `spectrum_event` looks as following:
         "cloudflare_logpush-spectrum_event"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -4791,7 +4811,7 @@ An example event for `workers_trace` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -4839,6 +4859,7 @@ An example event for `workers_trace` looks as following:
         "scheme": "http"
     }
 }
+
 ```
 
 **Exported fields**

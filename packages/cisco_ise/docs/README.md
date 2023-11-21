@@ -158,7 +158,7 @@ An example event for `log` looks as following:
         "ip": "81.2.69.144"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "901f4c48-583a-4848-aa7b-89dc8e9c4b76",
@@ -223,6 +223,7 @@ An example event for `log` looks as following:
         "name": "psxvne"
     }
 }
+
 ```
 
 **Exported fields**
