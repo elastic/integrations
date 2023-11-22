@@ -30,6 +30,13 @@ Current supported event types are:
 - FirewallMatchEvent
 - RemoteResponseSessionStartEvent
 - RemoteResponseSessionEndEvent
+- CSPM Streaming events
+- CSPM Search events
+- IDP Incidents
+- IDP Summary events
+- Mobile Detection events
+- Recon Notification events
+- XDR Detection events
 
 **Exported fields**
 
