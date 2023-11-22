@@ -23,7 +23,7 @@ echo "--- Process Benchmarks"
 # This variable does not exist in builds triggered automatically
 GITHUB_PR_TRIGGER_COMMENT="${GITHUB_PR_TRIGGER_COMMENT:-""}"
 
-benchmark_github_file="report.md"
+benchmark_github_folder="benchmark_reports"
 benchmark_results="benchmark-results"
 current_benchmark_results="build/${benchmark_results}"
 buildkite_pattern="build/${benchmark_results}/*.json"
@@ -79,22 +79,32 @@ find "${baseline}"
 #     "$(get_benchmark_path_prefix)" \
 #     baseline
 
-echo "Run benchmark report"
+echo "Run benchmark report (full report: \"${is_full_report}\")"
 ${ELASTIC_PACKAGE_BIN} report benchmark \
     -v \
     --fail-on-missing=false \
     --new="${current_benchmark_results}" \
     --old="${baseline}" \
     --threshold="${BENCHMARK_THRESHOLD}" \
-    --report-output-path="${benchmark_github_file}" \
+    --report-output-path="${benchmark_github_folder}" \
     --full=${is_full_report}
 
 
-if [ ! -f "${benchmark_github_file}" ]; then
+if [ ! -d "${benchmark_github_folder}" ]; then
     echo "[benchmark] No report file created"
     exit 0
 fi
 
+# get report file path
+num_reports=$(find "${benchmark_github_folder}" -type f | wc -l)
+if [[ "$num_reports" != "1" ]]; then
+    echo "[benchmarks] unexpected number of report files"
+    exit 0
+fi
+
+benchmark_github_file=$(find "${benchmark_github_folder}" -type f)
+
+buildkite-agent artifact upload "${benchmark_github_file}"
 # TODO: write github comment in PR
 # if ! gh pr comment \
 #   "${BUILDKITE_PULL_REQUEST}" \
@@ -108,9 +118,10 @@ if ! add_or_edit_gh_pr_comment \
         "benchmark-report" \
         "${benchmark_github_file}" ; then
     echo "[benchmark] It was not possible to send the message."
-else
-    echo "[benchmark] Comment posted."
+    exit 0
 fi
 
+
+echo "[benchmark] Comment posted."
 
 popd > /dev/null || exit 1
