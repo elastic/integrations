@@ -15,7 +15,7 @@ fi
 echo "--- Installing tools"
 add_bin_path
 with_go
-with_jq  # containers do not have jq installe# containers do not have jq installedd
+with_jq         # containers do not have jq installe# containers do not have jq installedd
 with_github_cli # to post comments in Pull Requests
 use_elastic_package
 
@@ -46,12 +46,9 @@ if ! buildkite-agent artifact download "${buildkite_pattern}" . ; then
   exit 0
 fi
 
-echo "Debug: current benchmark"
-find "${current_benchmark_results}"
-
 echo "Download main benchmark if any"
 mkdir -p build/benchmark-results
-# FIXME: not all integrations builds are running benchmarks for all packages
+# FIXME: not all integrations builds in main branch are running benchmarks for all packages
 build_id=$(get_last_failed_or_successful_build integrations main)
 build_id="018bf2bb-9795-48f2-881b-e2e85476c8fb"
 echo "Buildkite Build ID: ${build_id}"
@@ -65,9 +62,8 @@ fi
 mv "${baseline}"/${buildkite_pattern} "${baseline}/"
 rm -rf "${baseline}/build"
 
-echo "Debug: baseline benchmark"
-find "${baseline}"
-
+echo "Test with is_full_report true"
+is_full_report=true
 echo "Run benchmark report (full report: \"${is_full_report}\")"
 ${ELASTIC_PACKAGE_BIN} report benchmark \
     -v \
