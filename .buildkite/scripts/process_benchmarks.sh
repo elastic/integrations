@@ -51,7 +51,7 @@ download_baseline_benchmarks() {
     build_id=$(get_last_failed_or_successful_build integrations main)
 
     # TODO: Remove
-    build_id="018bf2bb-9795-48f2-881b-e2e85476c8fb"
+    # build_id="018bf2bb-9795-48f2-881b-e2e85476c8fb"
     echo "Buildkite Build ID: ${build_id}"
 
     if ! buildkite-agent artifact download "${buildkite_pattern}" --build "${build_id}" "${baseline}" ; then
@@ -103,7 +103,6 @@ if ! download_baseline_benchmarks ; then
     exit 0
 fi
 
-echo "Run benchmark report (full report: \"${is_full_report}\")"
 ${ELASTIC_PACKAGE_BIN} report benchmark \
     -v \
     --fail-on-missing=false \
@@ -118,7 +117,6 @@ if [ ! -d "${benchmark_github_folder}" ]; then
     exit 0
 fi
 
-# get report file path
 benchmark_github_file=$(get_report_file_path)
 exit_code=$?
 if [[ "${exit_code}" != 0 ]] ; then
