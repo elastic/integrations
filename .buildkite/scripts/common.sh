@@ -978,7 +978,7 @@ add_or_edit_gh_pr_comment() {
     local contents
 
     contents="$(cat "${commentFilePath}")"
-    contents="${contents}\n${metadata}"
+    printf -v contents '%s\n%s' "${contents}" "${metadata}"
 
     comment_id=$(exists_coment_with_pattern "${owner}" "${repo}" "${pr_number}" "${metadata}")
     if [[ "${comment_id}" == "" ]]; then

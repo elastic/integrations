@@ -105,12 +105,7 @@ fi
 benchmark_github_file=$(find "${benchmark_github_folder}" -type f)
 
 buildkite-agent artifact upload "${benchmark_github_file}"
-# TODO: write github comment in PR
-# if ! gh pr comment \
-#   "${BUILDKITE_PULL_REQUEST}" \
-#   --body-file "${benchmark_github_file}" ; then
-#   echo "[benchmark] It was not possible to send the message"
-# fi
+
 if ! add_or_edit_gh_pr_comment \
         "${BUILDKITE_ORGANIZATION_SLUG}" \
         "integrations" \
