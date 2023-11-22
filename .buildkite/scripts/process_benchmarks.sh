@@ -34,36 +34,75 @@ if [[ "${GITHUB_PR_TRIGGER_COMMENT}" =~ benchmark\ fullreport ]]; then
     is_full_report="true"
 fi
 
-pushd "${WORKSPACE}" > /dev/null || exit 1
+download_pr_benchmarks() {
+    mkdir -p "${current_benchmark_results}"
 
-mkdir -p "${current_benchmark_results}"
-mkdir -p "${baseline}"
+    if ! buildkite-agent artifact download "${buildkite_pattern}" . ; then
+      echo "[benchmarks] No benchmarks generated in the PR"
+      return 1
+    fi
+    return 0
+}
+
+download_baselne_benchmarks() {
+    mkdir -p "${baseline}"
+
+    # FIXME: not all integrations builds in main branch are running benchmarks for all packages
+    build_id=$(get_last_failed_or_successful_build integrations main)
+
+    # TODO: Remove
+    build_id="018bf2bb-9795-48f2-881b-e2e85476c8fb"
+    echo "Buildkite Build ID: ${build_id}"
+
+    if ! buildkite-agent artifact download "${buildkite_pattern}" --build "${build_id}" "${baseline}" ; then
+        echo "[benchmarks] Not found baseline benchmarks"
+        return 1
+    fi
+
+    # required globbling
+    mv "${baseline}"/${buildkite_pattern} "${baseline}/"
+    rm -rf "${baseline}/build"
+    return 0
+}
+
+get_report_file_path() {
+    num_reports=$(find "${benchmark_github_folder}" -type f | wc -l)
+    if [[ "$num_reports" != "1" ]]; then
+        echo "[benchmarks] unexpected number of report files"
+        buildkite-agent annotate "Benchmarks: unexpected number of report files" --context "ctx-warn-benchmark" --style "warning"
+        return 1
+    fi
+
+    find "${benchmark_github_folder}" -type f
+}
+
+publish_benchmark_report_github() {
+    local file_path="${1}"
+    if ! add_or_edit_gh_pr_comment \
+            "${BUILDKITE_ORGANIZATION_SLUG}" \
+            "integrations" \
+            "${BUILDKITE_PULL_REQUEST}" \
+            "benchmark-report" \
+            "${file_path}" ; then
+        echo "[benchmark] It was not possible to send the message."
+        buildkite-agent annotate "Benchmark report not posted to Github PR" --context "ctx-warn-benchmark" --style "warning"
+        return 1
+    fi
+
+    echo "[benchmark] Comment posted."
+    return 0
+}
 
 echo "Download PR benchmarks"
-mkdir -p build/benchmark-results
-if ! buildkite-agent artifact download "${buildkite_pattern}" . ; then
-  echo "[benchmarks] No benchmarks generated in the PR"
-  exit 0
+if ! download_pr_benchmarks ; then
+    exit 0
 fi
 
 echo "Download main benchmark if any"
-mkdir -p build/benchmark-results
-# FIXME: not all integrations builds in main branch are running benchmarks for all packages
-build_id=$(get_last_failed_or_successful_build integrations main)
-build_id="018bf2bb-9795-48f2-881b-e2e85476c8fb"
-echo "Buildkite Build ID: ${build_id}"
-
-if ! buildkite-agent artifact download "${buildkite_pattern}" --build "${build_id}" "${baseline}" ; then
-  echo "[benchmarks] Not found baseline benchmarks"
-  exit 0
+if ! download_baseline_benchmarks ; then
+    exit 0
 fi
 
-# required globbling
-mv "${baseline}"/${buildkite_pattern} "${baseline}/"
-rm -rf "${baseline}/build"
-
-echo "Test with is_full_report true"
-is_full_report=true
 echo "Run benchmark report (full report: \"${is_full_report}\")"
 ${ELASTIC_PACKAGE_BIN} report benchmark \
     -v \
@@ -74,35 +113,19 @@ ${ELASTIC_PACKAGE_BIN} report benchmark \
     --report-output-path="${benchmark_github_folder}" \
     --full=${is_full_report}
 
-
 if [ ! -d "${benchmark_github_folder}" ]; then
     echo "[benchmark] No report file created"
     exit 0
 fi
 
 # get report file path
-num_reports=$(find "${benchmark_github_folder}" -type f | wc -l)
-if [[ "$num_reports" != "1" ]]; then
-    echo "[benchmarks] unexpected number of report files"
-    buildkite-agent annotate "Benchmarks: unexpected number of report files" --context "ctx-warn-benchmark" --style "warning"
+benchmark_github_file=$(get_report_file_path)
+exit_code=$?
+if [[ "${exit_code}" != 0 ]] ; then
     exit 0
 fi
-
-benchmark_github_file=$(find "${benchmark_github_folder}" -type f)
-
 buildkite-agent artifact upload "${benchmark_github_file}"
 
-if ! add_or_edit_gh_pr_comment \
-        "${BUILDKITE_ORGANIZATION_SLUG}" \
-        "integrations" \
-        "${BUILDKITE_PULL_REQUEST}" \
-        "benchmark-report" \
-        "${benchmark_github_file}" ; then
-    echo "[benchmark] It was not possible to send the message."
-    buildkite-agent annotate "Benchmark report not posted to Github PR" --context "ctx-warn-benchmark" --style "warning"
+if ! publish_benchmark_report_github "${benchmark_github_file}" ; then
     exit 0
 fi
-
-echo "[benchmark] Comment posted."
-
-popd > /dev/null || exit 1
