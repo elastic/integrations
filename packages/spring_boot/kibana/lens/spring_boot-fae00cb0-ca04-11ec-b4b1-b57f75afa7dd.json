@@ -1,20 +1,15 @@
 {
     "attributes": {
         "state": {
+            "adHocDataViews": {},
             "datasourceStates": {
-                "indexpattern": {
+                "formBased": {
                     "layers": {
                         "e937f0c4-f880-4837-9315-69d043a3f6b1": {
                             "columnOrder": [
+                                "94f7e582-69e9-4fe4-9111-75aaa6a3d470",
                                 "01e713a3-bda9-4e10-b460-988900367abf",
                                 "df8aa04a-8859-48a8-8624-e204eb09ad23",
-                                "df8aa04a-8859-48a8-8624-e204eb09ad23X0",
-                                "df8aa04a-8859-48a8-8624-e204eb09ad23X1",
-                                "df8aa04a-8859-48a8-8624-e204eb09ad23X2",
-                                "df8aa04a-8859-48a8-8624-e204eb09ad23X3",
-                                "df8aa04a-8859-48a8-8624-e204eb09ad23X4",
-                                "df8aa04a-8859-48a8-8624-e204eb09ad23X5",
-                                "df8aa04a-8859-48a8-8624-e204eb09ad23X6",
                                 "79ffbc3e-e907-45d9-b727-6710ca8b19c7",
                                 "79ffbc3e-e907-45d9-b727-6710ca8b19c7X0",
                                 "79ffbc3e-e907-45d9-b727-6710ca8b19c7X1",
@@ -22,7 +17,20 @@
                                 "79ffbc3e-e907-45d9-b727-6710ca8b19c7X3",
                                 "79ffbc3e-e907-45d9-b727-6710ca8b19c7X4",
                                 "79ffbc3e-e907-45d9-b727-6710ca8b19c7X5",
-                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X6"
+                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X6",
+                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X7",
+                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X8",
+                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X9",
+                                "df8aa04a-8859-48a8-8624-e204eb09ad23X0",
+                                "df8aa04a-8859-48a8-8624-e204eb09ad23X1",
+                                "df8aa04a-8859-48a8-8624-e204eb09ad23X2",
+                                "df8aa04a-8859-48a8-8624-e204eb09ad23X3",
+                                "df8aa04a-8859-48a8-8624-e204eb09ad23X4",
+                                "df8aa04a-8859-48a8-8624-e204eb09ad23X5",
+                                "df8aa04a-8859-48a8-8624-e204eb09ad23X6",
+                                "df8aa04a-8859-48a8-8624-e204eb09ad23X7",
+                                "df8aa04a-8859-48a8-8624-e204eb09ad23X8",
+                                "df8aa04a-8859-48a8-8624-e204eb09ad23X9"
                             ],
                             "columns": {
                                 "01e713a3-bda9-4e10-b460-988900367abf": {
@@ -31,8 +39,9 @@
                                     "label": "@timestamp",
                                     "operationType": "date_histogram",
                                     "params": {
-                                        "includeEmptyRows": true,
-                                        "interval": "1m"
+                                        "dropPartials": true,
+                                        "includeEmptyRows": false,
+                                        "interval": "auto"
                                     },
                                     "scale": "interval",
                                     "sourceField": "@timestamp"
@@ -50,11 +59,11 @@
                                                 "decimals": 0
                                             }
                                         },
-                                        "formula": "sum(spring_boot.gc.last_info.memory_usage.before.code_cache.used)+sum(spring_boot.gc.last_info.memory_usage.before.compressed_class_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.metaspace.used)+sum(spring_boot.gc.last_info.memory_usage.before.ps_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.ps_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.before.ps_survivor_space.used)",
+                                        "formula": "sum(spring_boot.gc.last_info.memory_usage.before.code_cache.used)+sum(spring_boot.gc.last_info.memory_usage.before.compressed_class_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.metaspace.used)+sum(spring_boot.gc.last_info.memory_usage.before.ps_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.ps_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.before.ps_survivor_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.g1_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.g1_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.before.g1_survivor_space.used)",
                                         "isFormulaBroken": false
                                     },
                                     "references": [
-                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X6"
+                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X9"
                                     ],
                                     "scale": "ratio"
                                 },
@@ -64,6 +73,9 @@
                                     "isBucketed": false,
                                     "label": "Part of Before",
                                     "operationType": "sum",
+                                    "params": {
+                                        "emptyAsNull": false
+                                    },
                                     "scale": "ratio",
                                     "sourceField": "spring_boot.gc.last_info.memory_usage.before.code_cache.used"
                                 },
@@ -73,6 +85,9 @@
                                     "isBucketed": false,
                                     "label": "Part of Before",
                                     "operationType": "sum",
+                                    "params": {
+                                        "emptyAsNull": false
+                                    },
                                     "scale": "ratio",
                                     "sourceField": "spring_boot.gc.last_info.memory_usage.before.compressed_class_space.used"
                                 },
@@ -82,6 +97,9 @@
                                     "isBucketed": false,
                                     "label": "Part of Before",
                                     "operationType": "sum",
+                                    "params": {
+                                        "emptyAsNull": false
+                                    },
                                     "scale": "ratio",
                                     "sourceField": "spring_boot.gc.last_info.memory_usage.before.metaspace.used"
                                 },
@@ -91,6 +109,9 @@
                                     "isBucketed": false,
                                     "label": "Part of Before",
                                     "operationType": "sum",
+                                    "params": {
+                                        "emptyAsNull": false
+                                    },
                                     "scale": "ratio",
                                     "sourceField": "spring_boot.gc.last_info.memory_usage.before.ps_eden_space.used"
                                 },
@@ -100,6 +121,9 @@
                                     "isBucketed": false,
                                     "label": "Part of Before",
                                     "operationType": "sum",
+                                    "params": {
+                                        "emptyAsNull": false
+                                    },
                                     "scale": "ratio",
                                     "sourceField": "spring_boot.gc.last_info.memory_usage.before.ps_old_gen.used"
                                 },
@@ -109,10 +133,49 @@
                                     "isBucketed": false,
                                     "label": "Part of Before",
                                     "operationType": "sum",
+                                    "params": {
+                                        "emptyAsNull": false
+                                    },
                                     "scale": "ratio",
                                     "sourceField": "spring_boot.gc.last_info.memory_usage.before.ps_survivor_space.used"
                                 },
                                 "79ffbc3e-e907-45d9-b727-6710ca8b19c7X6": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Part of Before",
+                                    "operationType": "sum",
+                                    "params": {
+                                        "emptyAsNull": false
+                                    },
+                                    "scale": "ratio",
+                                    "sourceField": "spring_boot.gc.last_info.memory_usage.before.g1_eden_space.used"
+                                },
+                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X7": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Part of Before",
+                                    "operationType": "sum",
+                                    "params": {
+                                        "emptyAsNull": false
+                                    },
+                                    "scale": "ratio",
+                                    "sourceField": "spring_boot.gc.last_info.memory_usage.before.g1_old_gen.used"
+                                },
+                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X8": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Part of Before",
+                                    "operationType": "sum",
+                                    "params": {
+                                        "emptyAsNull": false
+                                    },
+                                    "scale": "ratio",
+                                    "sourceField": "spring_boot.gc.last_info.memory_usage.before.g1_survivor_space.used"
+                                },
+                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X9": {
                                     "customLabel": true,
                                     "dataType": "number",
                                     "isBucketed": false,
@@ -129,35 +192,56 @@
                                                                     "args": [
                                                                         {
                                                                             "args": [
-                                                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X0",
-                                                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X1"
+                                                                                {
+                                                                                    "args": [
+                                                                                        {
+                                                                                            "args": [
+                                                                                                {
+                                                                                                    "args": [
+                                                                                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X0",
+                                                                                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X1"
+                                                                                                    ],
+                                                                                                    "name": "add",
+                                                                                                    "type": "function"
+                                                                                                },
+                                                                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X2"
+                                                                                            ],
+                                                                                            "name": "add",
+                                                                                            "type": "function"
+                                                                                        },
+                                                                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X3"
+                                                                                    ],
+                                                                                    "name": "add",
+                                                                                    "type": "function"
+                                                                                },
+                                                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X4"
                                                                             ],
                                                                             "name": "add",
                                                                             "type": "function"
                                                                         },
-                                                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X2"
+                                                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X5"
                                                                     ],
                                                                     "name": "add",
                                                                     "type": "function"
                                                                 },
-                                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X3"
+                                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X6"
                                                             ],
                                                             "name": "add",
                                                             "type": "function"
                                                         },
-                                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X4"
+                                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X7"
                                                     ],
                                                     "name": "add",
                                                     "type": "function"
                                                 },
-                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X5"
+                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X8"
                                             ],
                                             "location": {
-                                                "max": 416,
+                                                "max": 624,
                                                 "min": 0
                                             },
                                             "name": "add",
-                                            "text": "sum(spring_boot.gc.last_info.memory_usage.before.code_cache.used)+sum(spring_boot.gc.last_info.memory_usage.before.compressed_class_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.metaspace.used)+sum(spring_boot.gc.last_info.memory_usage.before.ps_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.ps_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.before.ps_survivor_space.used)",
+                                            "text": "sum(spring_boot.gc.last_info.memory_usage.before.code_cache.used)+sum(spring_boot.gc.last_info.memory_usage.before.compressed_class_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.metaspace.used)+sum(spring_boot.gc.last_info.memory_usage.before.ps_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.ps_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.before.ps_survivor_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.g1_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.g1_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.before.g1_survivor_space.used)",
                                             "type": "function"
                                         }
                                     },
@@ -167,9 +251,37 @@
                                         "79ffbc3e-e907-45d9-b727-6710ca8b19c7X2",
                                         "79ffbc3e-e907-45d9-b727-6710ca8b19c7X3",
                                         "79ffbc3e-e907-45d9-b727-6710ca8b19c7X4",
-                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X5"
+                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X5",
+                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X6",
+                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X7",
+                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X8"
                                     ],
                                     "scale": "ratio"
+                                },
+                                "94f7e582-69e9-4fe4-9111-75aaa6a3d470": {
+                                    "dataType": "string",
+                                    "isBucketed": true,
+                                    "label": "Top 5 values of spring_boot.gc.name",
+                                    "operationType": "terms",
+                                    "params": {
+                                        "exclude": [],
+                                        "excludeIsRegex": false,
+                                        "include": [],
+                                        "includeIsRegex": false,
+                                        "missingBucket": false,
+                                        "orderBy": {
+                                            "fallback": true,
+                                            "type": "alphabetical"
+                                        },
+                                        "orderDirection": "asc",
+                                        "otherBucket": false,
+                                        "parentFormat": {
+                                            "id": "terms"
+                                        },
+                                        "size": 5
+                                    },
+                                    "scale": "ordinal",
+                                    "sourceField": "spring_boot.gc.name"
                                 },
                                 "df8aa04a-8859-48a8-8624-e204eb09ad23": {
                                     "customLabel": true,
@@ -184,11 +296,11 @@
                                                 "decimals": 0
                                             }
                                         },
-                                        "formula": "sum(spring_boot.gc.last_info.memory_usage.after.code_cache.used)+sum(spring_boot.gc.last_info.memory_usage.after.compressed_class_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.metaspace.used)+sum(spring_boot.gc.last_info.memory_usage.after.ps_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.ps_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.after.ps_survivor_space.used)",
+                                        "formula": "sum(spring_boot.gc.last_info.memory_usage.after.code_cache.used)+sum(spring_boot.gc.last_info.memory_usage.after.compressed_class_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.metaspace.used)+sum(spring_boot.gc.last_info.memory_usage.after.ps_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.ps_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.after.ps_survivor_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.g1_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.g1_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.after.g1_survivor_space.used)",
                                         "isFormulaBroken": false
                                     },
                                     "references": [
-                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X6"
+                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X9"
                                     ],
                                     "scale": "ratio"
                                 },
@@ -198,6 +310,9 @@
                                     "isBucketed": false,
                                     "label": "Part of After",
                                     "operationType": "sum",
+                                    "params": {
+                                        "emptyAsNull": false
+                                    },
                                     "scale": "ratio",
                                     "sourceField": "spring_boot.gc.last_info.memory_usage.after.code_cache.used"
                                 },
@@ -207,6 +322,9 @@
                                     "isBucketed": false,
                                     "label": "Part of After",
                                     "operationType": "sum",
+                                    "params": {
+                                        "emptyAsNull": false
+                                    },
                                     "scale": "ratio",
                                     "sourceField": "spring_boot.gc.last_info.memory_usage.after.compressed_class_space.used"
                                 },
@@ -216,6 +334,9 @@
                                     "isBucketed": false,
                                     "label": "Part of After",
                                     "operationType": "sum",
+                                    "params": {
+                                        "emptyAsNull": false
+                                    },
                                     "scale": "ratio",
                                     "sourceField": "spring_boot.gc.last_info.memory_usage.after.metaspace.used"
                                 },
@@ -225,6 +346,9 @@
                                     "isBucketed": false,
                                     "label": "Part of After",
                                     "operationType": "sum",
+                                    "params": {
+                                        "emptyAsNull": false
+                                    },
                                     "scale": "ratio",
                                     "sourceField": "spring_boot.gc.last_info.memory_usage.after.ps_eden_space.used"
                                 },
@@ -234,6 +358,9 @@
                                     "isBucketed": false,
                                     "label": "Part of After",
                                     "operationType": "sum",
+                                    "params": {
+                                        "emptyAsNull": false
+                                    },
                                     "scale": "ratio",
                                     "sourceField": "spring_boot.gc.last_info.memory_usage.after.ps_old_gen.used"
                                 },
@@ -243,10 +370,49 @@
                                     "isBucketed": false,
                                     "label": "Part of After",
                                     "operationType": "sum",
+                                    "params": {
+                                        "emptyAsNull": false
+                                    },
                                     "scale": "ratio",
                                     "sourceField": "spring_boot.gc.last_info.memory_usage.after.ps_survivor_space.used"
                                 },
                                 "df8aa04a-8859-48a8-8624-e204eb09ad23X6": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Part of After",
+                                    "operationType": "sum",
+                                    "params": {
+                                        "emptyAsNull": false
+                                    },
+                                    "scale": "ratio",
+                                    "sourceField": "spring_boot.gc.last_info.memory_usage.after.g1_eden_space.used"
+                                },
+                                "df8aa04a-8859-48a8-8624-e204eb09ad23X7": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Part of After",
+                                    "operationType": "sum",
+                                    "params": {
+                                        "emptyAsNull": false
+                                    },
+                                    "scale": "ratio",
+                                    "sourceField": "spring_boot.gc.last_info.memory_usage.after.g1_old_gen.used"
+                                },
+                                "df8aa04a-8859-48a8-8624-e204eb09ad23X8": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Part of After",
+                                    "operationType": "sum",
+                                    "params": {
+                                        "emptyAsNull": false
+                                    },
+                                    "scale": "ratio",
+                                    "sourceField": "spring_boot.gc.last_info.memory_usage.after.g1_survivor_space.used"
+                                },
+                                "df8aa04a-8859-48a8-8624-e204eb09ad23X9": {
                                     "customLabel": true,
                                     "dataType": "number",
                                     "isBucketed": false,
@@ -263,35 +429,56 @@
                                                                     "args": [
                                                                         {
                                                                             "args": [
-                                                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X0",
-                                                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X1"
+                                                                                {
+                                                                                    "args": [
+                                                                                        {
+                                                                                            "args": [
+                                                                                                {
+                                                                                                    "args": [
+                                                                                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X0",
+                                                                                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X1"
+                                                                                                    ],
+                                                                                                    "name": "add",
+                                                                                                    "type": "function"
+                                                                                                },
+                                                                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X2"
+                                                                                            ],
+                                                                                            "name": "add",
+                                                                                            "type": "function"
+                                                                                        },
+                                                                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X3"
+                                                                                    ],
+                                                                                    "name": "add",
+                                                                                    "type": "function"
+                                                                                },
+                                                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X4"
                                                                             ],
                                                                             "name": "add",
                                                                             "type": "function"
                                                                         },
-                                                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X2"
+                                                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X5"
                                                                     ],
                                                                     "name": "add",
                                                                     "type": "function"
                                                                 },
-                                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X3"
+                                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X6"
                                                             ],
                                                             "name": "add",
                                                             "type": "function"
                                                         },
-                                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X4"
+                                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X7"
                                                     ],
                                                     "name": "add",
                                                     "type": "function"
                                                 },
-                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X5"
+                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X8"
                                             ],
                                             "location": {
-                                                "max": 410,
+                                                "max": 615,
                                                 "min": 0
                                             },
                                             "name": "add",
-                                            "text": "sum(spring_boot.gc.last_info.memory_usage.after.code_cache.used)+sum(spring_boot.gc.last_info.memory_usage.after.compressed_class_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.metaspace.used)+sum(spring_boot.gc.last_info.memory_usage.after.ps_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.ps_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.after.ps_survivor_space.used)",
+                                            "text": "sum(spring_boot.gc.last_info.memory_usage.after.code_cache.used)+sum(spring_boot.gc.last_info.memory_usage.after.compressed_class_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.metaspace.used)+sum(spring_boot.gc.last_info.memory_usage.after.ps_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.ps_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.after.ps_survivor_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.g1_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.g1_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.after.g1_survivor_space.used)",
                                             "type": "function"
                                         }
                                     },
@@ -301,7 +488,10 @@
                                         "df8aa04a-8859-48a8-8624-e204eb09ad23X2",
                                         "df8aa04a-8859-48a8-8624-e204eb09ad23X3",
                                         "df8aa04a-8859-48a8-8624-e204eb09ad23X4",
-                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X5"
+                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X5",
+                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X6",
+                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X7",
+                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X8"
                                     ],
                                     "scale": "ratio"
                                 }
@@ -319,7 +509,7 @@
                     "meta": {
                         "alias": null,
                         "disabled": false,
-                        "index": "6a433f61-bcf9-4caf-8839-de0125e53505",
+                        "index": "8aabc9bc-b40b-4f3c-b077-c4d19cd6b477",
                         "key": "event.dataset",
                         "negate": false,
                         "params": {
@@ -334,6 +524,7 @@
                     }
                 }
             ],
+            "internalReferences": [],
             "query": {
                 "language": "kuery",
                 "query": ""
@@ -366,11 +557,13 @@
                         "position": "top",
                         "seriesType": "line",
                         "showGridlines": false,
+                        "splitAccessor": "94f7e582-69e9-4fe4-9111-75aaa6a3d470",
                         "xAccessor": "01e713a3-bda9-4e10-b460-988900367abf"
                     }
                 ],
                 "legend": {
                     "isVisible": true,
+                    "legendSize": "xlarge",
                     "position": "right",
                     "showSingleSeries": true
                 },
@@ -394,17 +587,13 @@
         "title": "Memory usage after and before GC [Metrics Spring Boot]",
         "visualizationType": "lnsXY"
     },
-    "coreMigrationVersion": "8.2.0",
+    "coreMigrationVersion": "8.7.1",
+    "created_at": "2023-11-02T08:40:52.790Z",
     "id": "spring_boot-fae00cb0-ca04-11ec-b4b1-b57f75afa7dd",
     "migrationVersion": {
-        "lens": "8.2.0"
+        "lens": "8.6.0"
     },
     "references": [
-        {
-            "id": "metrics-*",
-            "name": "indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
         {
             "id": "metrics-*",
             "name": "indexpattern-datasource-layer-e937f0c4-f880-4837-9315-69d043a3f6b1",
@@ -412,7 +601,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "6a433f61-bcf9-4caf-8839-de0125e53505",
+            "name": "8aabc9bc-b40b-4f3c-b077-c4d19cd6b477",
             "type": "index-pattern"
         }
     ],
