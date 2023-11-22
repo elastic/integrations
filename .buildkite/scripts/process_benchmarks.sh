@@ -60,12 +60,13 @@ if ! buildkite-agent artifact download "${buildkite_pattern}" --build "${build_i
   exit 0
 fi
 
-echo "Debug: baseline benchmark"
-find "${baseline}"
 
 # required globbling
 mv "${baseline}"/${buildkite_pattern} "${baseline}/"
 rm -rf "${baseline}/build"
+
+echo "Debug: baseline benchmark"
+find "${baseline}"
 
 # download_benchmark_results \
 #     "${JOB_GCS_BUCKET}" \
@@ -80,6 +81,7 @@ rm -rf "${baseline}/build"
 
 echo "Run benchmark report"
 ${ELASTIC_PACKAGE_BIN} report benchmark \
+    -v \
     --fail-on-missing=false \
     --new="${current_benchmark_results}" \
     --old="${baseline}" \
