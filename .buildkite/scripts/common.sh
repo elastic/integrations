@@ -976,11 +976,12 @@ add_or_edit_gh_pr_comment() {
     local metadata="<!--COMMENT_GENERATED_WITH_ID_${4}-->"
     local commentFilePath=$5
     local contents
+    local comment_id
 
     contents="$(cat "${commentFilePath}")"
     printf -v contents '%s\n%s' "${contents}" "${metadata}"
 
-    comment_id=$(exists_coment_with_pattern "${owner}" "${repo}" "${pr_number}" "${metadata}")
+    comment_id=$(exists_comment_with_pattern "${owner}" "${repo}" "${pr_number}" "${metadata}")
     if [[ "${comment_id}" == "" ]]; then
         # new comment
         gh pr comment \

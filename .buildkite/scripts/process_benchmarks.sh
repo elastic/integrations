@@ -51,6 +51,7 @@ find "${current_benchmark_results}"
 
 echo "Download main benchmark if any"
 mkdir -p build/benchmark-results
+# FIXME: not all integrations builds are running benchmarks for all packages
 build_id=$(get_last_failed_or_successful_build integrations main)
 build_id="018bf2bb-9795-48f2-881b-e2e85476c8fb"
 echo "Buildkite Build ID: ${build_id}"
@@ -60,24 +61,12 @@ if ! buildkite-agent artifact download "${buildkite_pattern}" --build "${build_i
   exit 0
 fi
 
-
 # required globbling
 mv "${baseline}"/${buildkite_pattern} "${baseline}/"
 rm -rf "${baseline}/build"
 
 echo "Debug: baseline benchmark"
 find "${baseline}"
-
-# download_benchmark_results \
-#     "${JOB_GCS_BUCKET}" \
-#     "$(get_benchmark_path_prefix)" \
-#     "${current_benchmark_results}"
-#
-# # download main benchmark if any
-# download_benchmark_results \
-#     "${JOB_GCS_BUCKET}" \
-#     "$(get_benchmark_path_prefix)" \
-#     baseline
 
 echo "Run benchmark report (full report: \"${is_full_report}\")"
 ${ELASTIC_PACKAGE_BIN} report benchmark \
@@ -115,7 +104,6 @@ if ! add_or_edit_gh_pr_comment \
     echo "[benchmark] It was not possible to send the message."
     exit 0
 fi
-
 
 echo "[benchmark] Comment posted."
 
