@@ -88,6 +88,7 @@ fi
 num_reports=$(find "${benchmark_github_folder}" -type f | wc -l)
 if [[ "$num_reports" != "1" ]]; then
     echo "[benchmarks] unexpected number of report files"
+    buildkite-agent annotate "Benchmarks: unexpected number of report files" --context "ctx-warn-benchmark" --style "warning"
     exit 0
 fi
 
@@ -102,6 +103,7 @@ if ! add_or_edit_gh_pr_comment \
         "benchmark-report" \
         "${benchmark_github_file}" ; then
     echo "[benchmark] It was not possible to send the message."
+    buildkite-agent annotate "Benchmark report not posted to Github PR" --context "ctx-warn-benchmark" --style "warning"
     exit 0
 fi
 
