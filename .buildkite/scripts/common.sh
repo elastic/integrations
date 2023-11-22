@@ -982,7 +982,7 @@ add_or_edit_gh_pr_comment() {
     printf -v contents '%s\n%s' "${contents}" "${metadata}"
 
     echo "Looking for messages with pattern: \"${metadata}\""
-    comment_id=$(exists_comment_with_pattern "${owner}" "${repo}" "${pr_number}" "${metadata}")
+    comment_id=$(get_comment_with_pattern "${owner}" "${repo}" "${pr_number}" "${metadata}")
     if [[ "${comment_id}" == "" ]]; then
         echo "Creating new comment"
         gh pr comment \
@@ -1002,7 +1002,7 @@ add_or_edit_gh_pr_comment() {
 
 # FIXME: In a Pull Request that there are more than 100 comments,
 # if the comment is older than those 100 comments, it won't be found due to pagination
-exists_comment_with_pattern() {
+get_comment_with_pattern() {
     local owner="$1"
     local repo="$2"
     local pr_number="$3"
@@ -1016,7 +1016,8 @@ exists_comment_with_pattern() {
       "/repos/${owner}/${repo}/issues/${pr_number}/comments" \
       -F per_page=100 > response_github.json
 
-    comment_id=$(cat response_github.json | jq -r ".[] | select(.body | match(\"${pattern}\")) | .id")
+    # get the latest comment ID in case there are several posted
+    comment_id=$(cat response_github.json | jq -r ".[] | select(.body | match(\"${pattern}\")) | .id" | tail -1)
 
     rm response_github.json
 
