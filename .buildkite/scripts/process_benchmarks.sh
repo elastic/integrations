@@ -49,9 +49,6 @@ download_baseline_benchmarks() {
 
     # FIXME: not all integrations builds in main branch are running benchmarks for all packages
     build_id=$(get_last_failed_or_successful_build integrations main)
-
-    # TODO: Remove
-    # build_id="018bf2bb-9795-48f2-881b-e2e85476c8fb"
     echo "Buildkite Build ID: ${build_id}"
 
     if ! buildkite-agent artifact download "${buildkite_pattern}" --build "${build_id}" "${baseline}" ; then
