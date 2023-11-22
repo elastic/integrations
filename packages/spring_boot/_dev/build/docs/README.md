@@ -4,7 +4,7 @@ The Spring Boot integration is used to fetch observability data from [Spring Boo
 
 ## Compatibility
 
-This integration has been tested against Spring Boot v2.3.12.
+This integration has been tested against Spring Boot v2.7.17 with LTS JDK versions 8, 11, 17, and 21.
 
 ## Requirements
 
