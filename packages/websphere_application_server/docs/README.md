@@ -91,7 +91,6 @@ An example event for `jdbc` looks as following:
         "type": "prometheus"
     },
     "tags": [
-        "forwarded",
         "websphere_application_server-jdbc",
         "prometheus"
     ],
@@ -234,7 +233,6 @@ An example event for `servlet` looks as following:
         "type": "prometheus"
     },
     "tags": [
-        "forwarded",
         "websphere_application_server-servlet",
         "prometheus"
     ],
@@ -358,7 +356,6 @@ An example event for `session_manager` looks as following:
         "type": "prometheus"
     },
     "tags": [
-        "forwarded",
         "websphere_application_server-session_manager",
         "prometheus"
     ],
@@ -510,7 +507,6 @@ An example event for `threadpool` looks as following:
         "type": "prometheus"
     },
     "tags": [
-        "forwarded",
         "websphere_application_server-threadpool",
         "prometheus"
     ],

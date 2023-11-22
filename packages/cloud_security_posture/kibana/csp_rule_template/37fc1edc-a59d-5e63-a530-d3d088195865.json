@@ -1,0 +1,38 @@
+{
+    "id": "37fc1edc-a59d-5e63-a530-d3d088195865",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Utilizing and maintaining client certificates will require additional work to obtain and manage replacement and key rotation.",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-identity-management#im-4-authenticate-server-and-services",
+            "id": "37fc1edc-a59d-5e63-a530-d3d088195865",
+            "name": "Ensure the web app has 'Client Certificates (Incoming client certificates)' set to 'On'",
+            "profile_applicability": "* Level 2",
+            "description": "Client certificates allow for the app to request a certificate for incoming requests.\nOnly clients that have a valid certificate will be able to reach the app.",
+            "rationale": "The TLS mutual authentication technique in enterprise environments ensures the authenticity of clients to the server.\nIf incoming client certificates are enabled, then only an authenticated client who has valid certificates can access the app.",
+            "audit": "**From Azure Portal**\n\n1. Login to Azure Portal using https://portal.azure.com \n2. Go to `App Services`\n3. Click on each App\n4. Under the Settings section, Click on `Configuration`, then `General settings`\n5. Ensure that the option `Client certificate mode` located under Incoming client certificates is set to `Require`\n\n**From Azure CLI**\n\nTo check Incoming client certificates value for an existing app, run the following command,\n```\naz webapp show --resource-group <RESOURCE_GROUP_NAME> --name <APP_NAME> --query clientCertEnabled\n```\n\nThe output should return `true` if Incoming client certificates value is set to `On`.\n\n**From PowerShell**\n\nList all web apps.\n\n```\nGet-AzWebApp\n```\n\nFor each web app run the following command.\n\n```\nGet-AzWebApp -ResourceGroup <app resource group> -Name <app name>\n```\n\nMake sure the `ClientCertEnabled` is set to `True`.",
+            "remediation": "**From Azure Portal**\n\n1. Login to Azure Portal using https://portal.azure.com \n2. Go to `App Services`\n3. Click on each App\n4. Under the Settings section, Click on `Configuration`, then `General settings`\n5. Set the option `Client certificate mode` located under Incoming client certificates to `Require`\n\n**From Azure CLI**\n\nTo set Incoming client certificates value for an existing app, run the following command:\n```\naz webapp update --resource-group <RESOURCE_GROUP_NAME> --name <APP_NAME> --set clientCertEnabled=true\n```",
+            "section": "AppService",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 9.4",
+                "AppService"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "9.4",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_9_4"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

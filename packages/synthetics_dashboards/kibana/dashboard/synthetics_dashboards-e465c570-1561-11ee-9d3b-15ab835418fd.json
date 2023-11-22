@@ -1,0 +1,1453 @@
+{
+    "attributes": {
+        "description": "Approximates billing usage based on synthetics data, letting you drill down on a monitor by monitor basis as well.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "observer.geo.name",
+                            "negate": false,
+                            "type": "exists"
+                        },
+                        "query": {
+                            "exists": {
+                                "field": "observer.geo.name"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "## How to Estimate Synthetics Usage / Pricing with this Dashboard\n\nThis dashboard can be used to approximate the cost of using the Elastic Synthetics service given your current monitors. Note that it does not use the more precise metrics used by our actual cloud service to determine actual costs. In some uncommon scenarios costs may differ.\n\nThis dashboard does not distinguish monitors running in private locations from those running on the service. If all of your monitors currently run on the service you can ignore this. If your monitors currently run on private locations you can use this tool to estimate the cost of running those same monitors on the cloud.\n\nNote that pricing data should be determined via https://www.elastic.co/pricing/ , and may vary based on your exchange rate and/or contract terms. If, for instance, your rate for browser monitor execution is $0.014 you can multiply the number of browser billing units used by this number to arrive at an estimated cost. Additionally, please note that this dashboard is only useful for estimating execution costs for the synthetics service, but does not include storage, network transfer, and other associated costs.",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 17,
+                    "i": "1a8368df-8290-41b1-94d2-1075420921e9",
+                    "w": 19,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "1a8368df-8290-41b1-94d2-1075420921e9",
+                "type": "visualization",
+                "version": "8.8.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "6b4c5a50-e5b3-4286-937e-19180234d9f3",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "71168abb-5031-44c6-a5f3-9a0fa5cb7ef7",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {
+                                "synthetics-dashboards-integration-adhoc": {
+                                    "id": "synthetics-dashboards-integration-adhoc",
+                                    "name": "synthetics-dashboards-integration-adhoc",
+                                    "allowNoIndex": true,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {
+                                        "synthetics_url": {
+                                            "id": "url",
+                                            "params": {
+                                                "parsedUrl": {
+                                                    "origin": "",
+                                                    "pathname": "/app/discover",
+                                                    "basePath": ""
+                                                },
+                                                "type": "a",
+                                                "urlTemplate": null,
+                                                "labelTemplate": "View Monitor",
+                                                "width": null,
+                                                "height": null
+                                            }
+                                        },
+                                        "synthetics_error_url": {
+                                            "id": "url",
+                                            "params": {
+                                                "parsedUrl": {
+                                                    "origin": "",
+                                                    "pathname": "/app/discover",
+                                                    "basePath": ""
+                                                },
+                                                "type": "a",
+                                                "urlTemplate": "",
+                                                "labelTemplate": "View Error",
+                                                "width": null,
+                                                "height": null
+                                            }
+                                        }
+                                    },
+                                    "runtimeFieldMap": {
+                                        "est_billing_units": {
+                                            "type": "long",
+                                            "script": {
+                                                "source": "if (doc['monitor.duration.us'].size() > 0) { long dur = doc['monitor.duration.us'][0]; double frac = Math.ceil(((double)(dur) / 1000000) / 60); emit((long)(frac));}"
+                                            }
+                                        },
+                                        "synthetics_url": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if (doc['monitor.id'].size() > 0) { emit(\"/app/synthetics/monitor/\" + doc['monitor.id'][0])}"
+                                            }
+                                        },
+                                        "synthetics_error_url": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if (doc['monitor.id'].size() > 0 && doc['state.status'].size() > 0 && doc['state.status'][0] != \"up\") { emit(\"/app/synthetics/monitor/\" + doc['monitor.id'][0] + \"/errors/\" + doc['state.id'][0]); }"
+                                            }
+                                        }
+                                    },
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "synthetics-*",
+                                    "typeMeta": {}
+                                }
+                            },
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "65aa1d2b-0064-4055-a37f-6144a7d1f3c7": {
+                                            "columnOrder": [
+                                                "72eb0e95-8f74-4f7f-a226-3cb7f9f9fcc1",
+                                                "90ab8754-84f5-425e-9866-3fc32420bb1d"
+                                            ],
+                                            "columns": {
+                                                "72eb0e95-8f74-4f7f-a226-3cb7f9f9fcc1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Estimated Browser Billing Units",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "est_billing_units"
+                                                },
+                                                "90ab8754-84f5-425e-9866-3fc32420bb1d": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "isStaticValue": true,
+                                                    "label": "Static value: 150000",
+                                                    "operationType": "static_value",
+                                                    "params": {
+                                                        "value": "150000"
+                                                    },
+                                                    "references": [],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "summary.down",
+                                        "index": "synthetics-dashboards-integration-adhoc",
+                                        "key": "summary.down",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "summary.down"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "monitor.type",
+                                        "index": "synthetics-dashboards-integration-adhoc",
+                                        "key": "monitor.type",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "browser"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "monitor.type": "browser"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [{
+                                "id": "synthetics-dashboards-integration-adhoc",
+                                "name": "indexpattern-datasource-layer-65aa1d2b-0064-4055-a37f-6144a7d1f3c7",
+                                "type": "index-pattern"
+                            }],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "65aa1d2b-0064-4055-a37f-6144a7d1f3c7",
+                                "layerType": "data",
+                                "metricAccessor": "72eb0e95-8f74-4f7f-a226-3cb7f9f9fcc1"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "80dd067e-cdff-4f0e-b031-daddb2c7369e",
+                    "w": 7,
+                    "x": 19,
+                    "y": 0
+                },
+                "panelIndex": "80dd067e-cdff-4f0e-b031-daddb2c7369e",
+                "title": "Estimated Billing Units by Type",
+                "type": "lens",
+                "version": "8.8.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "25828960-9aed-4a3f-a41f-3f636a7dc357",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {
+                                "synthetics-dashboards-integration-adhoc": {
+                                    "id": "synthetics-dashboards-integration-adhoc",
+                                    "name": "synthetics-dashboards-integration-adhoc",
+                                    "allowNoIndex": true,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {
+                                        "synthetics_url": {
+                                            "id": "url",
+                                            "params": {
+                                                "parsedUrl": {
+                                                    "origin": "",
+                                                    "pathname": "/app/discover",
+                                                    "basePath": ""
+                                                },
+                                                "type": "a",
+                                                "urlTemplate": null,
+                                                "labelTemplate": "View Monitor",
+                                                "width": null,
+                                                "height": null
+                                            }
+                                        },
+                                        "synthetics_error_url": {
+                                            "id": "url",
+                                            "params": {
+                                                "parsedUrl": {
+                                                    "origin": "",
+                                                    "pathname": "/app/discover",
+                                                    "basePath": ""
+                                                },
+                                                "type": "a",
+                                                "urlTemplate": "",
+                                                "labelTemplate": "View Error",
+                                                "width": null,
+                                                "height": null
+                                            }
+                                        }
+                                    },
+                                    "runtimeFieldMap": {
+                                        "est_billing_units": {
+                                            "type": "long",
+                                            "script": {
+                                                "source": "if (doc['monitor.duration.us'].size() > 0) { long dur = doc['monitor.duration.us'][0]; double frac = Math.ceil(((double)(dur) / 1000000) / 60); emit((long)(frac));}"
+                                            }
+                                        },
+                                        "synthetics_url": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if (doc['monitor.id'].size() > 0) { emit(\"/app/synthetics/monitor/\" + doc['monitor.id'][0])}"
+                                            }
+                                        },
+                                        "synthetics_error_url": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if (doc['monitor.id'].size() > 0 && doc['state.status'].size() > 0 && doc['state.status'][0] != \"up\") { emit(\"/app/synthetics/monitor/\" + doc['monitor.id'][0] + \"/errors/\" + doc['state.id'][0]); }"
+                                            }
+                                        }
+                                    },
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "synthetics-*",
+                                    "typeMeta": {}
+                                }
+                            },
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "6678cd95-fa07-4ba2-957f-1c05120c4f35": {
+                                            "columnOrder": [
+                                                "00f6b2f4-fadd-4781-a74a-92d2e478c7b1",
+                                                "43a2aed5-cd1b-4cf1-b8fb-4ab75cd70dc8"
+                                            ],
+                                            "columns": {
+                                                "00f6b2f4-fadd-4781-a74a-92d2e478c7b1": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 20 values of observer.geo.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "43a2aed5-cd1b-4cf1-b8fb-4ab75cd70dc8",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 20
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "observer.geo.name"
+                                                },
+                                                "43a2aed5-cd1b-4cf1-b8fb-4ab75cd70dc8": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Sum of est_billing_units",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "est_billing_units"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "monitor.type",
+                                        "index": "synthetics-dashboards-integration-adhoc",
+                                        "key": "monitor.type",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "browser"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "monitor.type": "browser"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [
+                                {
+                                    "id": "synthetics-dashboards-integration-adhoc",
+                                    "name": "indexpattern-datasource-layer-6678cd95-fa07-4ba2-957f-1c05120c4f35",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "00f6b2f4-fadd-4781-a74a-92d2e478c7b1"
+                                    },
+                                    {
+                                        "columnId": "43a2aed5-cd1b-4cf1-b8fb-4ab75cd70dc8",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "6678cd95-fa07-4ba2-957f-1c05120c4f35",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 16,
+                    "i": "3bcd0e7f-4bad-496f-9e8a-1cef8af9cb10",
+                    "w": 12,
+                    "x": 26,
+                    "y": 1
+                },
+                "panelIndex": "3bcd0e7f-4bad-496f-9e8a-1cef8af9cb10",
+                "title": "Browser Locations",
+                "type": "lens",
+                "version": "8.8.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "6f557a27-c62b-4f6a-851d-20fc3eed3ae0",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "76438927-6522-4b44-8fba-2c2f6c93a485",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {
+                                "synthetics-dashboards-integration-adhoc": {
+                                    "id": "synthetics-dashboards-integration-adhoc",
+                                    "name": "synthetics-dashboards-integration-adhoc",
+                                    "allowNoIndex": true,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {
+                                        "synthetics_url": {
+                                            "id": "url",
+                                            "params": {
+                                                "parsedUrl": {
+                                                    "origin": "",
+                                                    "pathname": "/app/discover",
+                                                    "basePath": ""
+                                                },
+                                                "type": "a",
+                                                "urlTemplate": null,
+                                                "labelTemplate": "View Monitor",
+                                                "width": null,
+                                                "height": null
+                                            }
+                                        },
+                                        "synthetics_error_url": {
+                                            "id": "url",
+                                            "params": {
+                                                "parsedUrl": {
+                                                    "origin": "",
+                                                    "pathname": "/app/discover",
+                                                    "basePath": ""
+                                                },
+                                                "type": "a",
+                                                "urlTemplate": "",
+                                                "labelTemplate": "View Error",
+                                                "width": null,
+                                                "height": null
+                                            }
+                                        }
+                                    },
+                                    "runtimeFieldMap": {
+                                        "est_billing_units": {
+                                            "type": "long",
+                                            "script": {
+                                                "source": "if (doc['monitor.duration.us'].size() > 0) { long dur = doc['monitor.duration.us'][0]; double frac = Math.ceil(((double)(dur) / 1000000) / 60); emit((long)(frac));}"
+                                            }
+                                        },
+                                        "synthetics_url": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if (doc['monitor.id'].size() > 0) { emit(\"/app/synthetics/monitor/\" + doc['monitor.id'][0])}"
+                                            }
+                                        },
+                                        "synthetics_error_url": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if (doc['monitor.id'].size() > 0 && doc['state.status'].size() > 0 && doc['state.status'][0] != \"up\") { emit(\"/app/synthetics/monitor/\" + doc['monitor.id'][0] + \"/errors/\" + doc['state.id'][0]); }"
+                                            }
+                                        }
+                                    },
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "synthetics-*",
+                                    "typeMeta": {}
+                                }
+                            },
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "65aa1d2b-0064-4055-a37f-6144a7d1f3c7": {
+                                            "columnOrder": [
+                                                "72eb0e95-8f74-4f7f-a226-3cb7f9f9fcc1",
+                                                "90ab8754-84f5-425e-9866-3fc32420bb1d"
+                                            ],
+                                            "columns": {
+                                                "72eb0e95-8f74-4f7f-a226-3cb7f9f9fcc1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Lightweight Locations",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "observer.geo.name"
+                                                },
+                                                "90ab8754-84f5-425e-9866-3fc32420bb1d": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "isStaticValue": true,
+                                                    "label": "Static value: 150000",
+                                                    "operationType": "static_value",
+                                                    "params": {
+                                                        "value": "150000"
+                                                    },
+                                                    "references": [],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "summary.down",
+                                        "index": "synthetics-dashboards-integration-adhoc",
+                                        "key": "summary.down",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "summary.down"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "monitor.type",
+                                        "index": "synthetics-dashboards-integration-adhoc",
+                                        "key": "monitor.type",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "browser"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "monitor.type": "browser"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [{
+                                "id": "synthetics-dashboards-integration-adhoc",
+                                "name": "indexpattern-datasource-layer-65aa1d2b-0064-4055-a37f-6144a7d1f3c7",
+                                "type": "index-pattern"
+                            }],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "65aa1d2b-0064-4055-a37f-6144a7d1f3c7",
+                                "layerType": "data",
+                                "metricAccessor": "72eb0e95-8f74-4f7f-a226-3cb7f9f9fcc1"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "60d4a656-5d83-4827-9bc6-89c02f247726",
+                    "w": 7,
+                    "x": 19,
+                    "y": 9
+                },
+                "panelIndex": "60d4a656-5d83-4827-9bc6-89c02f247726",
+                "title": "Total Lightweight Locations",
+                "type": "lens",
+                "version": "8.8.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "7e003f05-a106-4350-a1ab-eb70c7dd2b0a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {
+                                "synthetics-dashboards-integration-adhoc": {
+                                    "id": "synthetics-dashboards-integration-adhoc",
+                                    "name": "synthetics-dashboards-integration-adhoc",
+                                    "allowNoIndex": true,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {
+                                        "synthetics_url": {
+                                            "id": "url",
+                                            "params": {
+                                                "parsedUrl": {
+                                                    "origin": "",
+                                                    "pathname": "/app/discover",
+                                                    "basePath": ""
+                                                },
+                                                "type": "a",
+                                                "urlTemplate": null,
+                                                "labelTemplate": "View Monitor",
+                                                "width": null,
+                                                "height": null
+                                            }
+                                        },
+                                        "synthetics_error_url": {
+                                            "id": "url",
+                                            "params": {
+                                                "parsedUrl": {
+                                                    "origin": "",
+                                                    "pathname": "/app/discover",
+                                                    "basePath": ""
+                                                },
+                                                "type": "a",
+                                                "urlTemplate": "",
+                                                "labelTemplate": "View Error",
+                                                "width": null,
+                                                "height": null
+                                            }
+                                        }
+                                    },
+                                    "runtimeFieldMap": {
+                                        "est_billing_units": {
+                                            "type": "long",
+                                            "script": {
+                                                "source": "if (doc['monitor.duration.us'].size() > 0) { long dur = doc['monitor.duration.us'][0]; double frac = Math.ceil(((double)(dur) / 1000000) / 60); emit((long)(frac));}"
+                                            }
+                                        },
+                                        "synthetics_url": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if (doc['monitor.id'].size() > 0) { emit(\"/app/synthetics/monitor/\" + doc['monitor.id'][0])}"
+                                            }
+                                        },
+                                        "synthetics_error_url": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if (doc['monitor.id'].size() > 0 && doc['state.status'].size() > 0 && doc['state.status'][0] != \"up\") { emit(\"/app/synthetics/monitor/\" + doc['monitor.id'][0] + \"/errors/\" + doc['state.id'][0]); }"
+                                            }
+                                        }
+                                    },
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "synthetics-*",
+                                    "typeMeta": {}
+                                }
+                            },
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "42ee11c3-ab9a-4b73-a2ba-65c4ad273b2d": {
+                                            "columnOrder": [
+                                                "e500b751-5940-4f43-a3ee-5fc4c8347ca8",
+                                                "2d7b32d6-d0e6-4db5-a399-6aa4341f7c76"
+                                            ],
+                                            "columns": {
+                                                "2d7b32d6-d0e6-4db5-a399-6aa4341f7c76": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Monitors",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "monitor.name"
+                                                },
+                                                "e500b751-5940-4f43-a3ee-5fc4c8347ca8": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 20 values of observer.geo.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "2d7b32d6-d0e6-4db5-a399-6aa4341f7c76",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 20
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "observer.geo.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "monitor.type",
+                                        "index": "synthetics-dashboards-integration-adhoc",
+                                        "key": "monitor.type",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "browser"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "monitor.type": "browser"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [{
+                                "id": "synthetics-dashboards-integration-adhoc",
+                                "name": "indexpattern-datasource-layer-42ee11c3-ab9a-4b73-a2ba-65c4ad273b2d",
+                                "type": "index-pattern"
+                            }],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "2d7b32d6-d0e6-4db5-a399-6aa4341f7c76"
+                                    },
+                                    {
+                                        "columnId": "e500b751-5940-4f43-a3ee-5fc4c8347ca8",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "42ee11c3-ab9a-4b73-a2ba-65c4ad273b2d",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "504faa9a-3d93-462b-995d-c50e940a247d",
+                    "w": 12,
+                    "x": 26,
+                    "y": 17
+                },
+                "panelIndex": "504faa9a-3d93-462b-995d-c50e940a247d",
+                "title": "Lightweight locations",
+                "type": "lens",
+                "version": "8.8.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "synthetics-dashboards-integration-adhoc": {
+                                    "id": "synthetics-dashboards-integration-adhoc",
+                                    "name": "synthetics-dashboards-integration-adhoc",
+                                    "allowNoIndex": true,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {
+                                        "synthetics_url": {
+                                            "id": "url",
+                                            "params": {
+                                                "parsedUrl": {
+                                                    "origin": "",
+                                                    "pathname": "/app/discover",
+                                                    "basePath": ""
+                                                },
+                                                "type": "a",
+                                                "urlTemplate": null,
+                                                "labelTemplate": "View Monitor",
+                                                "width": null,
+                                                "height": null
+                                            }
+                                        },
+                                        "synthetics_error_url": {
+                                            "id": "url",
+                                            "params": {
+                                                "parsedUrl": {
+                                                    "origin": "",
+                                                    "pathname": "/app/discover",
+                                                    "basePath": ""
+                                                },
+                                                "type": "a",
+                                                "urlTemplate": "",
+                                                "labelTemplate": "View Error",
+                                                "width": null,
+                                                "height": null
+                                            }
+                                        }
+                                    },
+                                    "runtimeFieldMap": {
+                                        "est_billing_units": {
+                                            "type": "long",
+                                            "script": {
+                                                "source": "if (doc['monitor.duration.us'].size() > 0) { long dur = doc['monitor.duration.us'][0]; double frac = Math.ceil(((double)(dur) / 1000000) / 60); emit((long)(frac));}"
+                                            }
+                                        },
+                                        "synthetics_url": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if (doc['monitor.id'].size() > 0) { emit(\"/app/synthetics/monitor/\" + doc['monitor.id'][0])}"
+                                            }
+                                        },
+                                        "synthetics_error_url": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if (doc['monitor.id'].size() > 0 && doc['state.status'].size() > 0 && doc['state.status'][0] != \"up\") { emit(\"/app/synthetics/monitor/\" + doc['monitor.id'][0] + \"/errors/\" + doc['state.id'][0]); }"
+                                            }
+                                        }
+                                    },
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "synthetics-*",
+                                    "typeMeta": {}
+                                }
+                            },
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "unifiedHistogram": {
+                                            "columnOrder": [
+                                                "f29ec422-c9d7-4267-8ec9-62ab2621da1b",
+                                                "date_column",
+                                                "count_column"
+                                            ],
+                                            "columns": {
+                                                "count_column": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Billing Units",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "est_billing_units"
+                                                },
+                                                "date_column": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "f29ec422-c9d7-4267-8ec9-62ab2621da1b": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Most common monitors",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "accuracyMode": true,
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "count_column",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 50
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "monitor.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "summary.down",
+                                        "index": "synthetics-dashboards-integration-adhoc",
+                                        "key": "summary.down",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "summary.down"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "monitor.type",
+                                        "index": "synthetics-dashboards-integration-adhoc",
+                                        "key": "monitor.type",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "browser"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "monitor.type": "browser"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [{
+                                "id": "synthetics-dashboards-integration-adhoc",
+                                "name": "indexpattern-datasource-layer-unifiedHistogram",
+                                "type": "index-pattern"
+                            }],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "count_column"
+                                        ],
+                                        "layerId": "unifiedHistogram",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessor": "f29ec422-c9d7-4267-8ec9-62ab2621da1b",
+                                        "xAccessor": "date_column"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "showCurrentTimeMarker": true,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Estimated Monitor Billing History",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "fe658793-8dd0-4c6c-860a-b9f8016fbd2e",
+                    "w": 26,
+                    "x": 0,
+                    "y": 17
+                },
+                "panelIndex": "fe658793-8dd0-4c6c-860a-b9f8016fbd2e",
+                "title": "Estimated Browser Monitor Billing History",
+                "type": "lens",
+                "version": "8.8.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "d56bc5ac-37c2-4db8-958e-df713a2544d7",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "d3bfc8e4-9bf7-4421-be2b-e2acd639dc62",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "59367fc9-7eff-4a02-ad14-145824e57772",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {
+                                "synthetics-dashboards-integration-adhoc": {
+                                    "id": "synthetics-dashboards-integration-adhoc",
+                                    "name": "synthetics-dashboards-integration-adhoc",
+                                    "allowNoIndex": true,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {
+                                        "synthetics_url": {
+                                            "id": "url",
+                                            "params": {
+                                                "parsedUrl": {
+                                                    "origin": "",
+                                                    "pathname": "/app/discover",
+                                                    "basePath": ""
+                                                },
+                                                "type": "a",
+                                                "urlTemplate": null,
+                                                "labelTemplate": "View Monitor",
+                                                "width": null,
+                                                "height": null
+                                            }
+                                        },
+                                        "synthetics_error_url": {
+                                            "id": "url",
+                                            "params": {
+                                                "parsedUrl": {
+                                                    "origin": "",
+                                                    "pathname": "/app/discover",
+                                                    "basePath": ""
+                                                },
+                                                "type": "a",
+                                                "urlTemplate": "",
+                                                "labelTemplate": "View Error",
+                                                "width": null,
+                                                "height": null
+                                            }
+                                        }
+                                    },
+                                    "runtimeFieldMap": {
+                                        "est_billing_units": {
+                                            "type": "long",
+                                            "script": {
+                                                "source": "if (doc['monitor.duration.us'].size() > 0) { long dur = doc['monitor.duration.us'][0]; double frac = Math.ceil(((double)(dur) / 1000000) / 60); emit((long)(frac));}"
+                                            }
+                                        },
+                                        "synthetics_url": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if (doc['monitor.id'].size() > 0) { emit(\"/app/synthetics/monitor/\" + doc['monitor.id'][0])}"
+                                            }
+                                        },
+                                        "synthetics_error_url": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if (doc['monitor.id'].size() > 0 && doc['state.status'].size() > 0 && doc['state.status'][0] != \"up\") { emit(\"/app/synthetics/monitor/\" + doc['monitor.id'][0] + \"/errors/\" + doc['state.id'][0]); }"
+                                            }
+                                        }
+                                    },
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "synthetics-*",
+                                    "typeMeta": {}
+                                }
+                            },
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "e1869c68-3f80-4b33-b75f-f9668b5bcd94": {
+                                            "columnOrder": [
+                                                "aa589a53-6c45-4f0e-9f18-81dd4aae2e07",
+                                                "b75998ac-91fa-436e-8038-a17c90045564",
+                                                "113a352d-2e76-4c19-bd0d-295ac23e6131",
+                                                "113a352d-2e76-4c19-bd0d-295ac23e6131X0"
+                                            ],
+                                            "columns": {
+                                                "113a352d-2e76-4c19-bd0d-295ac23e6131": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Billing Units",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "sum(est_billing_units)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "113a352d-2e76-4c19-bd0d-295ac23e6131X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "113a352d-2e76-4c19-bd0d-295ac23e6131X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total Billing Units",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "est_billing_units"
+                                                },
+                                                "aa589a53-6c45-4f0e-9f18-81dd4aae2e07": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 100 values of monitor.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "accuracyMode": true,
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 100
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "monitor.name"
+                                                },
+                                                "b75998ac-91fa-436e-8038-a17c90045564": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "View",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "synthetics_url"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "summary.down",
+                                        "index": "synthetics-dashboards-integration-adhoc",
+                                        "key": "summary.down",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "summary.down"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "monitor.type",
+                                        "index": "synthetics-dashboards-integration-adhoc",
+                                        "key": "monitor.type",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "browser"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "monitor.type": "browser"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "est_billing_units",
+                                        "index": "synthetics-dashboards-integration-adhoc",
+                                        "key": "est_billing_units",
+                                        "negate": false,
+                                        "params": {
+                                            "gte": "1",
+                                            "lt": "999999999999"
+                                        },
+                                        "type": "range",
+                                        "value": {
+                                            "gte": "1",
+                                            "lt": "999999999999"
+                                        }
+                                    },
+                                    "query": {
+                                        "range": {
+                                            "est_billing_units": {
+                                                "gte": "1",
+                                                "lt": "999999999999"
+                                            }
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [{
+                                "id": "synthetics-dashboards-integration-adhoc",
+                                "name": "indexpattern-datasource-layer-e1869c68-3f80-4b33-b75f-f9668b5bcd94",
+                                "type": "index-pattern"
+                            }],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "aa589a53-6c45-4f0e-9f18-81dd4aae2e07"
+                                    },
+                                    {
+                                        "columnId": "113a352d-2e76-4c19-bd0d-295ac23e6131",
+                                        "width": 233.8888888888889
+                                    },
+                                    {
+                                        "columnId": "b75998ac-91fa-436e-8038-a17c90045564",
+                                        "hidden": false,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "e1869c68-3f80-4b33-b75f-f9668b5bcd94",
+                                "layerType": "data",
+                                "sorting": {
+                                    "columnId": "113a352d-2e76-4c19-bd0d-295ac23e6131",
+                                    "direction": "desc"
+                                }
+                            }
+                        },
+                        "title": "Estimated Monitor Billing History",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 28,
+                    "i": "82239bad-4227-4fa7-8907-bdf529c211a9",
+                    "w": 17,
+                    "x": 0,
+                    "y": 31
+                },
+                "panelIndex": "82239bad-4227-4fa7-8907-bdf529c211a9",
+                "title": "Top Monitors (by billed amount)",
+                "type": "lens",
+                "version": "8.8.0"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Synthetics] Estimated Billing",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.7.0",
+    "created_at": "2023-08-04T15:02:43.944Z",
+    "id": "synthetics_dashboards-e465c570-1561-11ee-9d3b-15ab835418fd",
+    "migrationVersion": {
+        "dashboard": "8.7.0"
+    },
+    "references": [],
+    "type": "dashboard"
+}

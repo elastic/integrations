@@ -218,7 +218,13 @@ An example event for `audit` looks as following:
 | kubernetes.audit.user.username | The name that uniquely identifies this user among all active users | keyword |
 | kubernetes.audit.userAgent | UserAgent records the user agent string reported by the client. Note that the UserAgent is provided by the client, and must not be trusted | keyword |
 | kubernetes.audit.verb | Verb is the kubernetes verb associated with the request. For non-resource requests, this is the lower-cased HTTP method | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Path to the log file. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 

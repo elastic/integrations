@@ -27,7 +27,7 @@ The `dns` dataset collects queries that name servers resolve for your Virtual Pr
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
-| dns.answers | An array containing an object for each answer section returned by the server. The main keys that should be present in these objects are defined by ECS. Records that have more information may contain more keys than what ECS defines. Not all DNS data sources give all details about DNS answers. At minimum, answer objects must contain the `data` key. If more information is available, map as much of it to ECS as possible, and add any additional fields to the answer objects as custom fields. | object |
+| dns.answers | An array containing an object for each answer section returned by the server. The main keys that should be present in these objects are defined by ECS. Records that have more information may contain more keys than what ECS defines. Not all DNS data sources give all details about DNS answers. At minimum, answer objects must contain the `data` key. If more information is available, map as much of it to ECS as possible, and add any additional fields to the answer objects as custom fields. | group |
 | dns.answers.class | The class of DNS data contained in this resource record. | keyword |
 | dns.answers.data | The data describing the resource. The meaning of this data depends on the type and class of the resource record. | keyword |
 | dns.answers.name | The domain name to which this resource record pertains. If a chain of CNAME is being resolved, each answer's `name` should be the one that corresponds with the answer's `data`. It should not simply be the original `question.name` repeated. | keyword |
@@ -52,6 +52,7 @@ The `dns` dataset collects queries that name servers resolve for your Virtual Pr
 | gcp.dns.auth_answer | Authoritative answer. | boolean |
 | gcp.dns.destination_ip | Destination IP address, only applicable for forwarding cases. | ip |
 | gcp.dns.egress_error | Egress proxy error. | keyword |
+| gcp.dns.flattened | Contains the full dns document as sent by GCP. | flattened |
 | gcp.dns.protocol | Protocol TCP or UDP. | keyword |
 | gcp.dns.query_name | DNS query name. | keyword |
 | gcp.dns.query_type | DNS query type. | keyword |
@@ -103,11 +104,11 @@ An example event for `dns` looks as following:
 {
     "@timestamp": "2021-12-12T15:59:40.446Z",
     "agent": {
-        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "ephemeral_id": "fd6c4189-cbc6-493a-acfb-c9e7b2b7588c",
+        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.7.1"
     },
     "cloud": {
         "project": {
@@ -151,18 +152,18 @@ An example event for `dns` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
+        "snapshot": false,
+        "version": "8.7.1"
     },
     "event": {
         "action": "dns-query",
         "agent_id_status": "verified",
         "category": "network",
-        "created": "2023-01-13T15:00:28.406Z",
+        "created": "2023-10-25T04:19:40.300Z",
         "dataset": "gcp.dns",
         "id": "zir4wud11tm",
-        "ingested": "2023-01-13T15:00:29Z",
+        "ingested": "2023-10-25T04:19:41Z",
         "kind": "event",
         "outcome": "success"
     },

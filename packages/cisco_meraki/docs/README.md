@@ -79,6 +79,10 @@ The `cisco_meraki.log` dataset provides events from the configured syslog server
 | cisco_meraki.firewall.rule |  | keyword |
 | cisco_meraki.flows |  | flattened |
 | cisco_meraki.multiple_dhcp_servers_detected |  | flattened |
+| cisco_meraki.mxport |  | keyword |
+| cisco_meraki.new_port_status |  | keyword |
+| cisco_meraki.old_port_status |  | keyword |
+| cisco_meraki.port |  | keyword |
 | cisco_meraki.security.action |  | keyword |
 | cisco_meraki.security.decision |  | keyword |
 | cisco_meraki.security.dhost |  | keyword |
@@ -92,6 +96,9 @@ The `cisco_meraki.log` dataset provides events from the configured syslog server
 | cisco_meraki.vap |  | keyword |
 | cisco_meraki.wpa_auth |  | flattened |
 | cisco_meraki.wpa_deauth |  | flattened |
+| client.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| client.as.organization.name | Organization name. | keyword |
+| client.as.organization.name.text | Multi-field of `client.as.organization.name`. | match_only_text |
 | client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | client.geo.city_name | City name. | keyword |
 | client.geo.continent_name | Name of the continent. | keyword |
@@ -320,7 +327,7 @@ An example event for `log` looks as following:
         "port": 56391
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "29d48081-6d4f-4236-b959-925451410f6f",
@@ -336,7 +343,7 @@ An example event for `log` looks as following:
         ],
         "dataset": "cisco_meraki.log",
         "ingested": "2023-09-20T09:12:35Z",
-        "original": "\u003c134\u003e1 1637691198.348361125 MX84 security_event ids_alerted signature=1:29708:4 priority=1 timestamp=1637691198.330873 dhost=D0:AB:D5:7B:43:73 direction=ingress protocol=tcp/ip src=67.43.156.12:80 dst=10.0.3.162:56391 decision=allowed message: BROWSER-IE Microsoft Internet Explorer CSS uninitialized object access attempt detected",
+        "original": "<134>1 1637691198.348361125 MX84 security_event ids_alerted signature=1:29708:4 priority=1 timestamp=1637691198.330873 dhost=D0:AB:D5:7B:43:73 direction=ingress protocol=tcp/ip src=67.43.156.12:80 dst=10.0.3.162:56391 decision=allowed message: BROWSER-IE Microsoft Internet Explorer CSS uninitialized object access attempt detected",
         "type": [
             "info",
             "indicator"
@@ -385,6 +392,7 @@ An example event for `log` looks as following:
         }
     }
 }
+
 ```
 
 ### API Endpoint (Webhooks)
@@ -629,7 +637,7 @@ An example event for `events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "29d48081-6d4f-4236-b959-925451410f6f",

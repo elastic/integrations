@@ -309,7 +309,6 @@ An example event for `qmgr` looks as following:
         "type": "ibmmq"
     },
     "tags": [
-        "forwarded",
         "ibmmq-qmgr"
     ]
 }
