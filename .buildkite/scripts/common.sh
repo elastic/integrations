@@ -981,8 +981,7 @@ add_or_edit_gh_pr_comment() {
     contents="${contents}\n${metadata}"
 
     comment_id=$(exists_coment_with_pattern "${owner}" "${repo}" "${pr_number}" "${metadata}")
-    if [[ "${comment_id}" = "" ]]; then
-        echo "Found comment: ${comment_id}"
+    if [[ "${comment_id}" == "" ]]; then
         # new comment
         gh pr comment \
           "${BUILDKITE_PULL_REQUEST}" \
@@ -990,7 +989,7 @@ add_or_edit_gh_pr_comment() {
         return
     fi
 
-    echo "Updating message"
+    echo "Updating comment: ${comment_id}"
     gh api \
       --method PATCH \
       -H "Accept: application/vnd.github+json" \
@@ -1001,7 +1000,7 @@ add_or_edit_gh_pr_comment() {
 
 # FIXME: In a Pull Request that there are more than 100 comments,
 # if the comment is older than those 100 comments, it won't be found due to pagination
-exits_comment_with_pattern() {
+exists_comment_with_pattern() {
     local owner=$1
     local repo=$2
     local pr_number=$3
