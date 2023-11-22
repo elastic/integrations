@@ -1348,7 +1348,73 @@ processors:
         def msg = ctx._temp_.orig_security;
         def counters = new HashMap();
         def dest = new HashMap();
+        def dest_event = new HashMap();
+        def security_event_list = new ArrayList(['ac_policy', 
+                                    'access_control_rule_action', 
+                                    'access_control_rule_name', 
+                                    'access_control_rule_reason', 
+                                    'application_protocol', 
+                                    'client', 
+                                    'client_version', 
+                                    'connection_duration', 
+                                    'dns_query', 
+                                    'dns_record_type', 
+                                    'dns_response_type', 
+                                    'dns_ttl', 
+                                    'dst_ip', 
+                                    'dst_port', 
+                                    'egress_interface', 
+                                    'egress_zone', 
+                                    'file_action', 
+                                    'file_count', 
+                                    'file_direction', 
+                                    'file_name', 
+                                    'file_policy', 
+                                    'file_sandbox_status', 
+                                    'file_sha256', 
+                                    'file_size', 
+                                    'file_type', 
+                                    'first_packet_second', 
+                                    'http_referer', 
+                                    'http_response', 
+                                    'icmp_code', 
+                                    'icmp_type', 
+                                    'ingress_interface', 
+                                    'ingress_zone', 
+                                    'initiator_bytes', 
+                                    'initiator_packets', 
+                                    'nap_policy', 
+                                    'prefilter_policy', 
+                                    'protocol', 
+                                    'referenced_host', 
+                                    'responder_bytes', 
+                                    'responder_packets', 
+                                    'sha_disposition', 
+                                    'spero_disposition', 
+                                    'src_ip', 
+                                    'src_port', 
+                                    'ssl_actual_action', 
+                                    'ssl_certificate', 
+                                    'ssl_expected_action', 
+                                    'ssl_flow_status', 
+                                    'ssl_policy', 
+                                    'ssl_rule_name', 
+                                    'ssl_server_cert_status', 
+                                    'ssl_server_name', 
+                                    'ssl_session_id', 
+                                    'ssl_ticket_id', 
+                                    'ssl_version', 
+                                    'sslurl_category', 
+                                    'tunnel_or_prefilter_rule', 
+                                    'uri', 
+                                    'url', 
+                                    'url_category', 
+                                    'url_reputation', 
+                                    'user', 
+                                    'user_agent', 
+                                    'web_application']);
         ctx._temp_.cisco['security'] = dest;
+        ctx._temp_.cisco['security_event'] = dest_event;
         for (entry in msg.entrySet()) {
          def param = params.get(entry.getKey());
          if (param == null) {
@@ -1357,7 +1423,12 @@ processors:
          param.getOrDefault('id', []).forEach( id -> counters[id] = 1 + counters.getOrDefault(id, 0) );
          if (!isEmpty(entry.getValue())) {
           param.getOrDefault('ecs', []).forEach( field -> appendOrCreate(ctx, field.splitOnToken('.'), entry.getValue()) );
-          dest[param.target] = entry.getValue();
+          if (security_event_list.contains(param.target)){
+            dest_event[param.target] = entry.getValue();
+          }
+          else{
+            dest[param.target] = entry.getValue();
+          }
          }
         }
         if (ctx._temp_.cisco.message_id != "") return;
@@ -1369,6 +1440,96 @@ processors:
   #*******************************************************************************
   # End of generated code.
   #*******************************************************************************
+
+# Convert security_event fields into their appropriate datatype
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.connection_duration != null
+      tag: convert-security_event_connection_duration
+      field: _temp_.cisco.security_event.connection_duration
+      target_field: _temp_.cisco.security_event.connection_duration
+      type: integer
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.dns_ttl != null
+      tag: convert-security_event_dns_ttl
+      field: _temp_.cisco.security_event.dns_ttl
+      target_field: _temp_.cisco.security_event.dns_ttl
+      type: integer
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.dst_ip != null
+      tag: convert-security_event_dst_ip
+      field: _temp_.cisco.security_event.dst_ip
+      target_field: _temp_.cisco.security_event.dst_ip
+      type: ip
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.dst_port != null
+      tag: convert-security_event_dst_port
+      field: _temp_.cisco.security_event.dst_port
+      target_field: _temp_.cisco.security_event.dst_port
+      type: integer
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.file_count != null
+      tag: convert-security_event_file_count
+      field: _temp_.cisco.security_event.file_count
+      target_field: _temp_.cisco.security_event.file_count
+      type: integer
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.file_size != null
+      tag: convert-security_event_file_size
+      field: _temp_.cisco.security_event.file_size
+      target_field: _temp_.cisco.security_event.file_size
+      type: integer
+  - date:
+      field: _temp_.cisco.security_event.first_packet_second
+      tag: date_first_packet_second
+      if: ctx._temp_?.cisco?.security_event?.first_packet_second != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.http_response != null
+      tag: convert-security_event_http_response
+      field: _temp_.cisco.security_event.http_response
+      target_field: _temp_.cisco.security_event.http_response
+      type: integer
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.initiator_bytes != null
+      tag: convert-security_event_initiator_bytes
+      field: _temp_.cisco.security_event.initiator_bytes
+      target_field: _temp_.cisco.security_event.initiator_bytes
+      type: long
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.initiator_packets != null
+      tag: convert-security_event_initiator_packets
+      field: _temp_.cisco.security_event.initiator_packets
+      target_field: _temp_.cisco.security_event.initiator_packets
+      type: integer
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.responder_bytes != null
+      tag: convert-security_event_responder_bytes
+      field: _temp_.cisco.security_event.responder_bytes
+      target_field: _temp_.cisco.security_event.responder_bytes
+      type: long
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.responder_packets != null
+      tag: convert-security_event_responder_packets
+      field: _temp_.cisco.security_event.responder_packets
+      target_field: _temp_.cisco.security_event.responder_packets
+      type: integer
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.src_ip != null
+      tag: convert-security_event_src_ip
+      field: _temp_.cisco.security_event.src_ip
+      target_field: _temp_.cisco.security_event.src_ip
+      type: ip
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.src_port != null
+      tag: convert-security_event_src_port
+      field: _temp_.cisco.security_event.src_port
+      target_field: _temp_.cisco.security_event.src_port
+      type: integer
 
   #
   # Normalize ECS field values
@@ -2279,13 +2440,13 @@ processors:
   # Define ECS rule fields
   - set:
       field: rule.name
-      copy_from: cisco.ftd.security.access_control_rule_name
-      if: ctx.cisco?.ftd?.security?.access_control_rule_name != null
+      copy_from: cisco.ftd.security_event.access_control_rule_name
+      if: ctx.cisco?.ftd?.security_event?.access_control_rule_name != null
       
   - set: 
       field: rule.ruleset
-      copy_from: cisco.ftd.security.ac_policy
-      if: ctx.cisco?.ftd?.security?.ac_policy != null
+      copy_from: cisco.ftd.security_event.ac_policy
+      if: ctx.cisco?.ftd?.security_event?.ac_policy != null
 
   - set: 
       field: rule.ruleset
@@ -2294,8 +2455,8 @@ processors:
 
   - set: 
       field: rule.ruleset
-      copy_from: cisco.ftd.security.file_policy
-      if: ctx.rule?.ruleset == null && ctx.cisco?.ftd?.security?.file_policy != null 
+      copy_from: cisco.ftd.security_event.file_policy
+      if: ctx.rule?.ruleset == null && ctx.cisco?.ftd?.security_event?.file_policy != null 
 
   # Configures observer fields with a copy from cisco and host fields. Later on these might replace host.hostname.
   - set:
