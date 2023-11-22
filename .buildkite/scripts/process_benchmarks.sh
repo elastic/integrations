@@ -44,7 +44,7 @@ download_pr_benchmarks() {
     return 0
 }
 
-download_baselne_benchmarks() {
+download_baseline_benchmarks() {
     mkdir -p "${baseline}"
 
     # FIXME: not all integrations builds in main branch are running benchmarks for all packages
