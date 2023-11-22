@@ -1557,7 +1557,16 @@ An example event for `billing` looks as following:
             "sku_description": "Network Inter Region Ingress from Jakarta to Americas",
             "service_description": "Compute Engine",
             "effective_price": 0.00292353,
-            "tags": {}
+            "tags": [
+                {
+                    "key": "stage",
+                    "value": "prod"
+                },
+                {
+                    "key": "size",
+                    "value": "standard"
+                }
+            ]
         }
     },
     "metricset": {
