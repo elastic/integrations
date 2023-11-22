@@ -109,7 +109,7 @@ An example event for `log` looks as following:
         "port": 64889
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "bb043b0c-36d1-4054-81ed-2d3f4546a433",
@@ -182,7 +182,7 @@ An example event for `log` looks as following:
         ]
     },
     "rule": {
-        "id": "15 (WAN-\u003eWAN)"
+        "id": "15 (WAN->WAN)"
     },
     "sonicwall": {
         "firewall": {
@@ -206,6 +206,7 @@ An example event for `log` looks as following:
         "name": "admin"
     }
 }
+
 ```
 
 **Exported fields**

@@ -1,0 +1,20 @@
+---
+description: Build ECS fields from an OpenCTI windows registry key observable
+processors:
+
+  - dissect:
+      field: _ingest._value.attribute_key
+      pattern: "%{_tmp_registry.hive}\\%{_tmp_registry.key}"
+
+  # append object
+  - append:
+      field: threat.indicator.registry
+      value: []
+  - script:
+      description: Append to the destination
+      lang: painless
+      source: |
+        ctx.threat.indicator.registry.add(ctx._tmp_registry);
+
+  - remove:
+      field: _tmp_registry

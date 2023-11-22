@@ -1,0 +1,56 @@
+---
+description: Build ECS fields from an OpenCTI x509 certificate observable
+processors:
+
+  - set:
+      field: _tmp_x509.alternative_names
+      value: "{{{_ingest._value.subject_alternative_name}}}"
+
+  - set:
+      field: _tmp_x509.issuer.common_name
+      value: "{{{_ingest._value.issuer}}}"
+
+  - set:
+      field: _tmp_x509.not_after
+      value: "{{{_ingest._value.validity_not_after}}}"
+
+  - set:
+      field: _tmp_x509.not_before
+      value: "{{{_ingest._value.validity_not_before}}}"
+
+  - set:
+      field: _tmp_x509.public_key_algorithm
+      value: "{{{_ingest._value.subject_public_key_algorithm}}}"
+
+  - set:
+      field: _tmp_x509.public_key_exponent
+      value: "{{{_ingest._value.subject_public_key_exponent}}}"
+
+  - set:
+      field: _tmp_x509.serial_number
+      value: "{{{_ingest._value.serial_number}}}"
+
+  - set:
+      field: _tmp_x509.signature_algorithm
+      value: "{{{_ingest._value.signature_algorithm}}}"
+
+  - set:
+      field: _tmp_x509.subject.common_name
+      value: "{{{_ingest._value.subject}}}"
+
+  - set:
+      field: _tmp_x509.version_number
+      value: "{{{_ingest._value.version}}}"
+
+  # append object
+  - append:
+      field: threat.indicator.x509
+      value: []
+  - script:
+      description: Append to the destination
+      lang: painless
+      source: |
+        ctx.threat.indicator.x509.add(ctx._tmp_x509);
+
+  - remove:
+      field: _tmp_x509
