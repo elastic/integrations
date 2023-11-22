@@ -3,12 +3,8 @@ condition: ${host.platform} == 'linux'
 
 type: audit/auditd
 include_raw_message: true
-{{#if multicast}}
-socket_type: multicast
-{{else}}
-socket_type: unicast
+socket_type: '{{socket_type}}'
 immutable: {{immutable}}
-{{/if}}
 resolve_ids: {{resolve_ids}}
 failure_mode: {{failure_mode}}
 {{#if audit_rules}}
@@ -16,7 +12,7 @@ audit_rules: {{escape_string audit_rules}}
 {{/if}}
 {{#if audit_rule_files.length}}
 audit_rule_files:
-{{#each audit_rule_files as |file i|}}
+{{#each audit_rule_files as |file|}}
   - {{file}}
 {{/each}}
 {{/if}}
@@ -28,7 +24,7 @@ tags:
 {{#if preserve_original_event}}
   - preserve_original_event
 {{/if}}
-{{#each tags as |tag i|}}
+{{#each tags as |tag|}}
   - {{tag}}
 {{/each}}
 {{#contains "forwarded" tags}}
