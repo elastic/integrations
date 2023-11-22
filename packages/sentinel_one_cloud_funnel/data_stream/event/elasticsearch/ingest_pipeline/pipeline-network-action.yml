@@ -203,6 +203,21 @@ processors:
       field: json.k8sCluster.podName
       target_field: sentinel_one_cloud_funnel.event.k8s_cluster.pod.name
       ignore_missing: true
+
+  - set:
+      field: process.entity_id
+      copy_from: sentinel_one_cloud_funnel.event.src.process.uid
+      ignore_empty_value: true
+
+  - set:
+      field: process.parent.entity_id
+      copy_from: sentinel_one_cloud_funnel.event.src.process.parent.uid
+      ignore_empty_value: true
+  - set:
+      field: process.name
+      copy_from: sentinel_one_cloud_funnel.event.src.process.name
+      ignore_empty_value: true
+      ignore_failure: true
 on_failure:
   - append:
       field: error.message

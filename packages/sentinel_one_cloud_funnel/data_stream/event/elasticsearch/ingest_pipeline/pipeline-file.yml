@@ -3,21 +3,21 @@ description: Pipeline for processing File Event logs.
 processors:
   - set:
       field: event.category
-      value: [file]
+      value: [ file ]
   - set:
       field: event.type
-      value: [info]
+      value: [ info ]
   - set:
       field: event.type
-      value: [creation]
+      value: [ creation ]
       if: ctx.sentinel_one_cloud_funnel?.event?.type != null && ctx.sentinel_one_cloud_funnel?.event?.type.toLowerCase().contains('creat')
   - set:
       field: event.type
-      value: [deletion]
+      value: [ deletion ]
       if: ctx.sentinel_one_cloud_funnel?.event?.type != null && ctx.sentinel_one_cloud_funnel?.event?.type.toLowerCase().contains('delet')
   - set:
       field: event.type
-      value: [change]
+      value: [ change ]
       if: ctx.sentinel_one_cloud_funnel?.event?.type != null && (ctx.sentinel_one_cloud_funnel?.event?.type.toLowerCase().contains('change') || ctx.sentinel_one_cloud_funnel?.event?.type.toLowerCase().contains('modif'))
   - rename:
       field: json.k8sCluster.containerId
@@ -306,6 +306,19 @@ processors:
       field: json.tgt.file.location
       target_field: sentinel_one_cloud_funnel.event.tgt.file.location
       ignore_missing: true
+  - set:
+      field: process.entity_id
+      copy_from: sentinel_one_cloud_funnel.event.src.process.uid
+      ignore_empty_value: true
+  - set:
+      field: process.parent.entity_id
+      copy_from: sentinel_one_cloud_funnel.event.src.process.parent.uid
+      ignore_empty_value: true
+  - set:
+      field: process.name
+      copy_from: sentinel_one_cloud_funnel.event.src.process.name
+      ignore_empty_value: true
+      ignore_failure: true
 on_failure:
   - append:
       field: error.message
