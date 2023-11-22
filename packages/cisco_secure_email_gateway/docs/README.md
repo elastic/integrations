@@ -283,7 +283,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "0949f27e-3199-48ba-af2b-55e717cda399",
@@ -324,6 +324,7 @@ An example event for `log` looks as following:
         "cisco_secure_email_gateway-log"
     ]
 }
+
 ```
 
 **Exported fields**
