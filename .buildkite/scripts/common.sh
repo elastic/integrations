@@ -970,17 +970,18 @@ download_benchmark_results() {
 }
 
 add_or_edit_gh_pr_comment() {
-    local owner=$1
-    local repo=$2
-    local pr_number=$3
+    local owner="$1"
+    local repo="$2"
+    local pr_number="$3"
     local metadata="<!--COMMENT_GENERATED_WITH_ID_${4}-->"
-    local commentFilePath=$5
+    local commentFilePath="$5"
     local contents
     local comment_id
 
     contents="$(cat "${commentFilePath}")"
     printf -v contents '%s\n%s' "${contents}" "${metadata}"
 
+    echo "Looking for messages with pattern: \"${metadata}\""
     comment_id=$(exists_comment_with_pattern "${owner}" "${repo}" "${pr_number}" "${metadata}")
     if [[ "${comment_id}" == "" ]]; then
         # new comment
@@ -996,7 +997,7 @@ add_or_edit_gh_pr_comment() {
       -H "Accept: application/vnd.github+json" \
       -H "X-GitHub-Api-Version: 2022-11-28" \
       "/repos/${owner}/${repo}/issues/comments/${comment_id}" \
-      -f body="${contents}"
+      -f body="${contents}" | jq -r '.html_url'
 }
 
 # FIXME: In a Pull Request that there are more than 100 comments,
