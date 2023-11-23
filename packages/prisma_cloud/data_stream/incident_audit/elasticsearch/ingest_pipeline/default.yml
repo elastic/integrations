@@ -127,15 +127,11 @@ processors:
           field: _ingest._value.attack.techniques
           ignore_failure: true
           processor:
-            foreach:
-              field: _ingest._value
-              ignore_failure: true
-              processor:
-                append:
-                  field: threat.technique.name
-                  tag: append_prisma_cloud_incident_audit_data_attack_techniques
-                  value: '{{{_ingest._value}}}'
-                  allow_duplicates: false
+            append:
+              field: threat.technique.name
+              tag: append_prisma_cloud_incident_audit_data_attack_techniques
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
   - foreach:
       field: prisma_cloud.incident_audit.data
       if: ctx.prisma_cloud?.incident_audit?.data instanceof List
@@ -239,6 +235,16 @@ processors:
           field: host.domain
           tag: append_prisma_cloud_incident_audit_fqdn_to_host_domain
           value: '{{{_ingest._value.fqdn}}}'
+          allow_duplicates: false
+  - foreach:
+      field: prisma_cloud.incident_audit.data
+      if: ctx.prisma_cloud?.incident_audit?.data instanceof List
+      tag: foreach_append_data_os
+      processor:
+        append:
+          field: os.full
+          tag: append_prisma_cloud_incident_audit_os_to_os_full
+          value: '{{{_ingest._value.os}}}'
           allow_duplicates: false
   - foreach:
       field: prisma_cloud.incident_audit.data
@@ -527,6 +533,7 @@ processors:
             -  _ingest._value.provider
             - _ingest._value.fqdn
             - _ingest._value.account_id
+            - _ingest._value.os
           ignore_missing: true
           tag: remove_apps_data_fields_ecs_duplicate
   - append:
