@@ -181,12 +181,15 @@ with_jq() {
     create_bin_folder
     check_platform_architecture
     # filename for versions <=1.6 is jq-linux64
-    local binary="jq-linux-${arch_type}"
+    local binary="jq-${platform_type_lowercase}-${arch_type}"
 
-    retry 5 curl -sL -o "${WORKSPACE}/bin/jq" "https://github.com/stedolan/jq/releases/download/jq-${JQ_VERSION}/${binary}"
+    echo "Downloading binary ${binary}"
+    retry 5 curl -sL -o "${BIN_FOLDER}/jq" "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/${binary}"
 
-    chmod +x "${WORKSPACE}/bin/jq"
+    chmod +x "${BIN_FOLDER}/jq"
+    echo "JQ version"
     jq --version
+    echo "JQ installed"
 }
 
 ## Logging and logout from Google Cloud

@@ -29,6 +29,7 @@ fi
 
 pipeline_api_url="https://api.buildkite.com/v2/organizations/elastic/pipelines"
 query_url="${pipeline_api_url}/$pipeline_slug/builds/$pipeline_build_number"
+echo "Query URL: ${query_url}"
 build_json=$(curl -sH "Authorization: Bearer $BUILDKITE_API_TOKEN" "${query_url}")
 
 GPG_SIGN_BUILD_ID=$(jq -r ".jobs[] | select(.step_key == \"${SIGNING_STEP_KEY}\").triggered_build.id" <<< "$build_json")
