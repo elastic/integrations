@@ -29,11 +29,6 @@ processors:
     field: signature
     target_field: cisco_meraki.security.signature
     ignore_missing: true
-- date:
-    field: timestamp
-    target_field: threat.indicator.last_seen
-    formats: ['UNIX']
-    if: ctx.timestamp != null
 - gsub:
     field: dhost
     target_field: cisco_meraki.security.dhost
@@ -49,20 +44,15 @@ processors:
     target_field: network.protocol
     ignore_missing: true
 - rename:
-    field: message
-    target_field: threat.indicator.description
-    ignore_missing: true
-    if: ctx?.cisco_meraki?.event_subtype == 'ids_alerted'
-- rename:
     field: decision
     target_field: cisco_meraki.security.decision
     ignore_missing: true
 
 # handle fields of security_filtering_file_scanned or security_filtering_disposition_change type
-- rename:
+- uri_parts:
     field: url
-    target_field: threat.indicator.reference
-    ignore_missing: true
+    if: ctx.url != null
+    ignore_failure: true
 - gsub:
     field: mac
     target_field: cisco_meraki.security.mac
@@ -71,11 +61,11 @@ processors:
     ignore_missing: true
 - rename:
     field: name
-    target_field: threat.indicator.file.name
+    target_field: file.name
     ignore_missing: true
 - rename:
     field: sha256
-    target_field: threat.indicator.file.hash.sha256
+    target_field: file.hash.sha256
     ignore_missing: true
 - rename:
     field: disposition
