@@ -5,7 +5,7 @@ source .buildkite/scripts/common.sh
 set -euo pipefail
 
 SKIP_PUBLISHING=${SKIP_PUBLISHING:-"false"}
-PACKAGES_UNSIGNED_FOLDER=${PACKAGES_UNSIGNED_FOLDER:-"packagesUnsigned"}
+ARTIFACTS_FOLDER=${ARTIFACTS_FOLDER:-"packageArtifacts"}
 BUILD_PACKAGES_FOLDER="build/packages"
 
 skipPublishing() {
@@ -107,8 +107,7 @@ if [[ "${unpublished}" == "false" ]]; then
 fi
 
 cd "${WORKSPACE}" || exit 1
-mkdir -p "${PACKAGES_UNSIGNED_FOLDER}"
-cp "${BUILD_PACKAGES_FOLDER}"/*.zip "${PACKAGES_UNSIGNED_FOLDER}"
+cp "${BUILD_PACKAGES_FOLDER}"/*.zip "${ARTIFACTS_FOLDER}"
 
 # triggering dynamically the steps for signing ansd publishing
 # Just allow to check whether or not this group of steps needs to be run in one script
@@ -117,9 +116,6 @@ cp "${BUILD_PACKAGES_FOLDER}"/*.zip "${PACKAGES_UNSIGNED_FOLDER}"
 PIPELINE_FILE="pipeline-sign-publish.yml"
 
 cat <<EOF > "${PIPELINE_FILE}"
-env:
-  PACKAGES_UNSIGNED_FOLER: "${PACKAGES_UNSIGNED_FOLDER}"
-
 steps:
   # If you change 'key: sign-service' then change SIGNING_STEP_KEY value from trigger-publish step pipeline
   - label: Sign artifacts
@@ -131,14 +127,14 @@ steps:
     build:
       env:
         INPUT_PATH: "buildkite://"
-        DOWNLOAD_ARTIFACTS_FILTER: "packagesUnsigned/*.zip"
+        DOWNLOAD_ARTIFACTS_FILTER: "*.zip"
 
   - label: ":esbuild: Trigger publishing packages if any"
     key: "trigger-publish"
     command: ".buildkite/scripts/trigger_publish_packages.sh"
     env:
       SIGNING_STEP_KEY: "sign-service"
-      ARTIFACTS_FOLDER: "packagesUnsigned/"
+      ARTIFACTS_FOLDER: "."
     agents:
       image: "${LINUX_AGENT_IMAGE}"
       cpu: "8"
