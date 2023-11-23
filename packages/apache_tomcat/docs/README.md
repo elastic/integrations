@@ -19,7 +19,7 @@ Logs help you keep a record of events that happen on your machine. The `Log` dat
 Metrics give you insight into the statistics of the Apache Tomcat. The `Metric` data streams collected by the Apache Tomcat integration are `cache`, `connection pool`, `memory`, `request`, `session` and `thread pool`, so that the user can monitor and troubleshoot the performance of the Apache Tomcat instance.
 
 Data streams:
-- `access`: Collects information related to overall performance of Java applications.
+- `access`: Collects information related to the HTTP transactions, client IP, response code and request processing time.
 - `cache`: Collects information related to the overall cache of the Apache Tomcat instance.
 - `catalina`: Collects information related to the startup and shutdown of the Apache Tomcat application server, the deployment of new applications, or the failure of one or more subsystems.
 - `connection pool`: Collects information related to connection pool such as number of active and idle connections.
@@ -34,7 +34,7 @@ Note:
 
 ## Compatibility
 
-This integration has been tested against Apache Tomcat versions `10.1.5`, `9.0.71` and `8.5.85`, and Prometheus version `0.17.2`.
+This integration has been tested against Apache Tomcat versions `10.1.5`, `9.0.71` and `8.5.85`, and Prometheus version `0.20.0`.
 
 ## Prerequisites
 
@@ -65,13 +65,13 @@ wget https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/<
 rules:
 - pattern: ".*"
 ```
-4. Go to `/etc/systemd/system` and add the following content in `tomcat.service` file: -
+4. Go to `/etc/systemd/system` and add the following content within the `[Service]` section of the `tomcat.service` file: -
 
 ```
 Environment='JAVA_OPTS=-javaagent:<TOMCAT_HOME>/webapps/jmx_prometheus_javaagent-<prometheus_version>.jar=<prometheus_port>:/opt/tomcat/webapps/config.yml'
 ```
 
-5. Run the following commands to reload demon and restart Apache Tomcat instance: -
+5. Run the following commands to reload the systemd manager configuration and restart the Apache Tomcat service to set the updated environment variable: -
 
 ```
 systemctl daemon-reload
@@ -148,11 +148,13 @@ After the integration is successfully configured, clicking on the Assets tab of 
 }
 ```
 
+- If events are ingested with incorrect timestamps, kindly verify the Timezone setting for the Catalina and Localhost logs data streams on the 'Add Apache Tomcat' page.
+
 ## Logs reference
 
 ### Access
 
-This is the `Access` data stream. This data stream collects logs related to overall performance of Java applications.
+This is the `Access` data stream. This data stream collects logs related to the HTTP transactions, client IP, response code and request processing time.
 
 An example event for `access` looks as following:
 

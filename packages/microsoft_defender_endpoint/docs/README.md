@@ -70,7 +70,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "a4d1a8b2-b45c-4d97-a37a-bd371f13111b",
@@ -137,14 +137,14 @@ An example event for `log` looks as following:
         ]
     },
     "rule": {
-        "description": "Binaries signed by Microsoft can be used to run low-reputation arbitrary code. This technique hides the execution of malicious code within a trusted process. As a result, the trusted process might exhibit suspicious behaviors, such as opening a listening port or connecting to a command-and-control (C\u0026C) server."
+        "description": "Binaries signed by Microsoft can be used to run low-reputation arbitrary code. This technique hides the execution of malicious code within a trusted process. As a result, the trusted process might exhibit suspicious behaviors, such as opening a listening port or connecting to a command-and-control (C&C) server."
     },
     "tags": [
         "microsoft-defender-endpoint",
         "forwarded"
     ],
     "threat": {
-        "framework": "MITRE ATT\u0026CK",
+        "framework": "MITRE ATT&CK",
         "technique": {
             "name": [
                 "Execution"
@@ -157,6 +157,7 @@ An example event for `log` looks as following:
         "name": "temp123"
     }
 }
+
 ```
 
 **Exported fields**
