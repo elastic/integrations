@@ -121,17 +121,17 @@ env:
   PACKAGES_UNSIGNED_FOLER: "${PACKAGES_UNSIGNED_FOLDER}"
 
 steps:
-   # If you change 'key: sign-service' then change SIGNING_STEP_KEY value from trigger-publish step pipeline
-   - label: Sign artifacts
-     trigger: unified-release-gpg-signing
-     key: sign-service
-     depends_on:
-       - step: "build-packages"
-         allow_failure: false
-     build:
-       env:
-         INPUT_PATH: "buildkite://"
-         DOWNLOAD_ARTIFACTS_FILTER: "packagesUnsinged/*.zip"
+  # If you change 'key: sign-service' then change SIGNING_STEP_KEY value from trigger-publish step pipeline
+  - label: Sign artifacts
+    trigger: unified-release-gpg-signing
+    key: sign-service
+    depends_on:
+      - step: "build-packages"
+        allow_failure: false
+    build:
+      env:
+        INPUT_PATH: "buildkite://"
+        DOWNLOAD_ARTIFACTS_FILTER: "packagesUnsinged/*.zip"
 
   - label: ":esbuild: Trigger publishing packages if any"
     key: "trigger-publish"
