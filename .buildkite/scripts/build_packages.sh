@@ -121,27 +121,31 @@ env:
   PACKAGES_UNSIGNED_FOLER: "${PACKAGES_UNSIGNED_FOLDER}"
 
 steps:
-  # # If you change 'key: sign-service' then change .buildkite/scripts/download-signed-artifacts.sh
-  # - label: Sign artifacts
-  #   trigger: unified-release-gpg-signing
-  #   key: sign-service
-  #   depends_on:
-  #     - step: "build-packages"
-  #       allow_failure: false
-  #   build:
-  #     env:
-  #       INPUT_PATH: buildkite://packages-to-sign/
+   # If you change 'key: sign-service' then change SIGNING_STEP_KEY value from trigger-publish step pipeline
+   - label: Sign artifacts
+     trigger: unified-release-gpg-signing
+     key: sign-service
+     depends_on:
+       - step: "build-packages"
+         allow_failure: false
+     build:
+       env:
+         INPUT_PATH: "buildkite://"
+         DOWNLOAD_ARTIFACTS_FILTER: "packagesUnsinged/*.zip"
 
   - label: ":esbuild: Trigger publishing packages if any"
     key: "trigger-publish"
     command: ".buildkite/scripts/trigger_publish_packages.sh"
+    env:
+      SIGNING_STEP_KEY: "sign-service"
+      ARTIFACTS_FOLDER: "packagesUnsigned/"
     agents:
       image: "${LINUX_AGENT_IMAGE}"
       cpu: "8"
       memory: "8G"
-    # depends_on:
-    #   - step: "build-packages" # TODO: to be changed by "sign-service"
-    #     allow_failure: false
+    depends_on:
+      - step: "sign-service"
+        allow_failure: false
 EOF
 
 buildkite-agent pipeline upload "${PIPELINE_FILE}"

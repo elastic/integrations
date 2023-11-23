@@ -24,18 +24,18 @@ if [ -z "$BUILDKITE_API_TOKEN" ] ; then
   exit 1
 fi
 
-# pipeline_api_url="https://api.buildkite.com/v2/organizations/elastic/pipelines"
-# query_url="${pipeline_api_url}/$pipeline_slug/builds/$pipeline_build_number"
-# build_json=$(curl -sH "Authorization: Bearer $BUILDKITE_API_TOKEN" "${query_url}")
-#
-# GPG_SIGN_BUILD_ID=$(jq -r '.jobs[] | select(.step_key == "sign-service").triggered_build.id' <<< "$build_json")
-#
-# echo "--- Download signed artifacts"
-# mkdir -p ${BUILD_PACKAGES_PATH}
-# buildkite-agent artifact download --build "$GPG_SIGN_BUILD_ID" "*.*" ${BUILD_PACKAGES_PATH}/
+pipeline_api_url="https://api.buildkite.com/v2/organizations/elastic/pipelines"
+query_url="${pipeline_api_url}/$pipeline_slug/builds/$pipeline_build_number"
+build_json=$(curl -sH "Authorization: Bearer $BUILDKITE_API_TOKEN" "${query_url}")
 
+GPG_SIGN_BUILD_ID=$(jq -r ".jobs[] | select(.step_key == \"${SIGNING_STEP_KEY}\").triggered_build.id" <<< "$build_json")
+
+echo "--- Download signed artifacts"
+buildkite-agent artifact download --build "$GPG_SIGN_BUILD_ID" "*" .
+
+exit 0
 # TODO: remove testing
-buildkite-agent artifact download "${PACKAGES_BUILDKITE_ARTIFACT_FOLDER}/*.zip" "${PACKAGES_SIGNED_FOLDER}/"
+# buildkite-agent artifact download "${PACKAGES_BUILDKITE_ARTIFACT_FOLDER}/*.zip" "${PACKAGES_SIGNED_FOLDER}/"
 
 pushd "${PACKAGES_SIGNED_FOLDER}" > /dev/null || exit 1
 
