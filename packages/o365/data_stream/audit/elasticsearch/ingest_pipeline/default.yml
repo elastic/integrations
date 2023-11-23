@@ -1090,6 +1090,43 @@ processors:
       field: o365audit.YammerNetworkId
       type: string
       ignore_missing: true
+  - json:
+      field: o365audit.Data
+      if: ctx.o365audit?.containsKey('Data')
+  - convert:
+      field: o365audit.Data.sip
+      type: ip
+      ignore_missing: true
+  - date:
+      field: o365audit.Data.at
+      target_field: o365audit.Data.at
+      formats:
+        - ISO8601
+      if: ctx.o365audit?.Data?.at != null
+  - date:
+      field: o365audit.Data.md
+      target_field: o365audit.Data.md
+      formats:
+        - ISO8601
+      if: ctx.o365audit?.Data?.md != null
+  - date:
+      field: o365audit.Data.te
+      target_field: o365audit.Data.te
+      formats:
+        - ISO8601
+      if: ctx.o365audit?.Data?.te != null
+  - date:
+      field: o365audit.Data.ts
+      target_field: o365audit.Data.ts
+      formats:
+        - ISO8601
+      if: ctx.o365audit?.Data?.ts != null
+  - date:
+      field: o365audit.Data.ttdt
+      target_field: o365audit.Data.ttdt
+      formats:
+        - ISO8601
+      if: ctx.o365audit?.Data?.ttdt != null
   - rename:
       field: o365audit
       target_field: o365.audit
