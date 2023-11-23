@@ -131,7 +131,7 @@ steps:
     build:
       env:
         INPUT_PATH: "buildkite://"
-        DOWNLOAD_ARTIFACTS_FILTER: "packagesUnsinged/*.zip"
+        DOWNLOAD_ARTIFACTS_FILTER: "packagesUnsigned/*.zip"
 
   - label: ":esbuild: Trigger publishing packages if any"
     key: "trigger-publish"
