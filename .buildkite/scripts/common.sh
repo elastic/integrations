@@ -183,13 +183,10 @@ with_jq() {
     # filename for versions <=1.6 is jq-linux64
     local binary="jq-${platform_type_lowercase}-${arch_type}"
 
-    echo "Downloading binary ${binary}"
     retry 5 curl -sL -o "${BIN_FOLDER}/jq" "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/${binary}"
 
     chmod +x "${BIN_FOLDER}/jq"
-    echo "JQ version"
     jq --version
-    echo "JQ installed"
 }
 
 ## Logging and logout from Google Cloud
