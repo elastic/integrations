@@ -182,11 +182,11 @@ with_jq() {
     create_bin_folder
     check_platform_architecture
     # filename for versions <=1.6 is jq-linux64
-    local binary="jq-linux-${arch_type}"
+    local binary="jq-${platform_type_lowercase}-${arch_type}"
 
-    retry 5 curl -sL -o "${WORKSPACE}/bin/jq" "https://github.com/stedolan/jq/releases/download/jq-${JQ_VERSION}/${binary}"
+    retry 5 curl -sL -o "${BIN_FOLDER}/jq" "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/${binary}"
 
-    chmod +x "${WORKSPACE}/bin/jq"
+    chmod +x "${BIN_FOLDER}/jq"
     jq --version
 }
 
@@ -203,9 +203,9 @@ with_github_cli() {
     retry 5 curl -sL -o "${gh_tar_full_path}" "https://github.com/cli/cli/releases/download/v${GH_CLI_VERSION}/${gh_tar_file}"
 
     # just extract the binary file from the tar.gz
-    tar -C "${WORKSPACE}/bin" -xpf "${gh_tar_full_path}" "${gh_filename}/bin/gh" --strip-components=2
+    tar -C "${BIN_FOLDER}" -xpf "${gh_tar_full_path}" "${gh_filename}/bin/gh" --strip-components=2
 
-    chmod +x "${WORKSPACE}/bin/gh"
+    chmod +x "${BIN_FOLDER}/gh"
     rm -rf "${WORKSPACE}/tmp"
 
     gh version
