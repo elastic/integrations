@@ -191,10 +191,12 @@ with_jq() {
 }
 
 with_github_cli() {
-    mkdir -p "${WORKSPACE}/bin"
+    create_bin_folder
+    check_platform_architecture
+
     mkdir -p "${WORKSPACE}/tmp"
 
-    local gh_filename="gh_${GH_CLI_VERSION}_linux_amd64"
+    local gh_filename="gh_${GH_CLI_VERSION}_${platform_type_lowercase}_${arch_type}"
     local gh_tar_file="${gh_filename}.tar.gz"
     local gh_tar_full_path="${WORKSPACE}/tmp/${gh_tar_file}"
 
