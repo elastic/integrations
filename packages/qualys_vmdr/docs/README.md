@@ -292,8 +292,8 @@ An example event for `knowledge_base` looks as following:
 {
     "@timestamp": "2023-06-29T12:20:46.000Z",
     "agent": {
-        "ephemeral_id": "b3f577ba-0fb1-49e7-a88b-9bef53396008",
-        "id": "09fa5e8b-ac5e-4ecf-a0cb-264fb54f1062",
+        "ephemeral_id": "d0eb176e-bad7-47fa-9547-c1854ad7ca2d",
+        "id": "98ba96f5-b452-4fc7-8f5a-3d37a634ce61",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.9.0"
@@ -307,7 +307,7 @@ An example event for `knowledge_base` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "09fa5e8b-ac5e-4ecf-a0cb-264fb54f1062",
+        "id": "98ba96f5-b452-4fc7-8f5a-3d37a634ce61",
         "snapshot": false,
         "version": "8.9.0"
     },
@@ -318,7 +318,7 @@ An example event for `knowledge_base` looks as following:
         ],
         "dataset": "qualys_vmdr.knowledge_base",
         "id": "11830",
-        "ingested": "2023-10-26T12:30:53Z",
+        "ingested": "2023-11-14T21:17:15Z",
         "kind": "alert",
         "type": [
             "info"
@@ -360,10 +360,9 @@ An example event for `knowledge_base` looks as following:
         "category": [
             "CGI"
         ],
-        "severity": "Low"
+        "severity": "Medium"
     }
 }
-
 ```
 
 **Exported fields**

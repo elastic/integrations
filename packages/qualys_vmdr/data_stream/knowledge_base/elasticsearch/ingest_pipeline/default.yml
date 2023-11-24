@@ -616,19 +616,35 @@ processors:
       lang: painless
       tag: script_to_set_SEVERITY_LEVEL
       description: Script to set SEVERITY_LEVEL for different ranges.
-      if: ctx.json?.SEVERITY_LEVEL != null
       source: >-
-        def floatVal = Float.parseFloat(ctx.json.SEVERITY_LEVEL);
-        if (floatVal == 0.0){
-            ctx.json.SEVERITY_LEVEL = "None";
-        } else if (floatVal > 0.0 && floatVal <=3.9){
-            ctx.json.SEVERITY_LEVEL = "Low";
-        } else if (floatVal > 3.9 && floatVal <=6.9){
-            ctx.json.SEVERITY_LEVEL = "Medium";
-        } else if (floatVal > 6.9 && floatVal <=8.9){
-            ctx.json.SEVERITY_LEVEL = "High";
-        } else if (floatVal > 8.9 && floatVal <=10.0){
-            ctx.json.SEVERITY_LEVEL = "Critical";
+        if (!(ctx.json?.SEVERITY_LEVEL instanceof String)) {
+          return;
+        }
+        def vuln_type = ctx.qualys_vmdr?.knowledge_base?.vuln_type;
+        if (!(vuln_type instanceof String)) {
+          return;
+        }
+        def level = Long.parseLong(ctx.json.SEVERITY_LEVEL);
+        if (['Potential Vulnerability', 'Vulnerability', 'Vulnerability or Potential Vulnerability'].contains(vuln_type)) {
+          if (level == 1){
+              ctx.json.SEVERITY_LEVEL = "Minimal";
+          } else if (level == 2) {
+              ctx.json.SEVERITY_LEVEL = "Medium";
+          } else if (level == 3) {
+              ctx.json.SEVERITY_LEVEL = "Serious";
+          } else if (level == 4) {
+              ctx.json.SEVERITY_LEVEL = "Critical";
+          } else if (level == 5) {
+              ctx.json.SEVERITY_LEVEL = "Urgent";
+          }
+        } else if (vuln_type == "Information Gathered") {
+          if (level == 1) {
+              ctx.json.SEVERITY_LEVEL = "Minimal";
+          } else if (level == 2) {
+              ctx.json.SEVERITY_LEVEL = "Medium";
+          } else if (level == 3) {
+              ctx.json.SEVERITY_LEVEL = "Serious";
+          }
         }
       on_failure:
         - append:
