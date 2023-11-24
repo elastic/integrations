@@ -54,7 +54,7 @@ program: |
     bytes(resp.Body).decode_json().as(body, state.with({
       "events": body.data.indicators.edges.map(e, e.node.with(
         has(state.preserve_original_event) && state.preserve_original_event ?
-          { "event": { "original": e.node } } :
+          { "event": { "original": e.node.encode_json() } } :
           {}
       )),
       "want_more": body.data.indicators.pageInfo.hasNextPage,
