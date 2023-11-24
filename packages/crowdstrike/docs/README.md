@@ -453,7 +453,6 @@ An example event for `falcon` looks as following:
         "name": "api-client-id:1234567890abcdefghijklmnopqrstuvwxyz"
     }
 }
-
 ```
 
 ### FDR
@@ -1225,5 +1224,4 @@ An example event for `fdr` looks as following:
         "scheme": "http"
     }
 }
-
 ```
