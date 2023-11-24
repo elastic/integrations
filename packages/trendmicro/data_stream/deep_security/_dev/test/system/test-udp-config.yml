@@ -1,10 +1,11 @@
-vars: ~
-service: trendmicro-log-filestream
-input: filestream
+service: trendmicro-udp
+service_notify_signal: SIGHUP
+input: udp
 data_stream:
   vars:
-    paths:
-      - "{{SERVICE_LOGS_DIR}}/trendmicro.log"
+    udp_host: 0.0.0.0
+    udp_port: 9515
+    preserve_original_event: true
     decode_trendmicro_timezone: UTC
 numeric_keyword_fields:
   - log.file.device_id
