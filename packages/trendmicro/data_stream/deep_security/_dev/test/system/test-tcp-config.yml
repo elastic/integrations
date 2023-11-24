@@ -1,10 +1,11 @@
-vars: ~
-service: trendmicro-log-filestream
-input: filestream
+service: trendmicro-tcp
+service_notify_signal: SIGHUP
+input: tcp
 data_stream:
   vars:
-    paths:
-      - "{{SERVICE_LOGS_DIR}}/trendmicro.log"
+    tcp_host: 0.0.0.0
+    tcp_port: 9514
+    preserve_original_event: true
     decode_trendmicro_timezone: UTC
 numeric_keyword_fields:
   - log.file.device_id
