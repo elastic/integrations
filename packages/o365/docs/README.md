@@ -58,7 +58,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "56df57b5-55fe-47f5-a382-b9a4b1918ce6",
@@ -150,6 +150,7 @@ An example event for `audit` looks as following:
         "version": "72.0."
     }
 }
+
 ```
 
 **Exported fields**

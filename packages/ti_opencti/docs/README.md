@@ -55,7 +55,7 @@ An example event for `indicator` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "00b6764d-580c-4a5e-bd48-b4e128e0d894",
@@ -143,6 +143,7 @@ An example event for `indicator` looks as following:
         }
     }
 }
+
 ```
 
 #### Exported fields

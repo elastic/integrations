@@ -102,6 +102,9 @@ The `elb` dataset collects logs from AWS ELBs.
 | aws.elb.tls_named_group | The TLS named group. | keyword |
 | aws.elb.trace_id | The contents of the `X-Amzn-Trace-Id` header. | keyword |
 | aws.elb.type | The type of the load balancer for v2 Load Balancers. | keyword |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -152,6 +155,9 @@ The `elb` dataset collects logs from AWS ELBs.
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
+| input.type | Input type | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.offset | Log offset | long |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
@@ -185,6 +191,13 @@ An example event for `elb` looks as following:
 ```json
 {
     "@timestamp": "2018-07-02T22:23:00.186Z",
+    "agent": {
+        "ephemeral_id": "3b412622-c69f-4cd2-9c8a-b9dfd9cae4c2",
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.10.1"
+    },
     "aws": {
         "elb": {
             "action_executed": [
@@ -223,19 +236,42 @@ An example event for `elb` looks as following:
             ],
             "trace_id": "Root=1-58337262-36d228ad5d99923122bbe354",
             "type": "http"
+        },
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-aws-bucket-61398",
+                "name": "elastic-package-aws-bucket-61398"
+            },
+            "object": {
+                "key": "alb.log"
+            }
         }
     },
     "cloud": {
-        "provider": "aws"
+        "provider": "aws",
+        "region": "us-east-1"
+    },
+    "data_stream": {
+        "dataset": "aws.elb_logs",
+        "namespace": "ep",
+        "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
+    },
+    "elastic_agent": {
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "snapshot": false,
+        "version": "8.10.1"
     },
     "event": {
+        "agent_id_status": "verified",
         "category": [
             "web"
         ],
+        "dataset": "aws.elb_logs",
         "end": "2018-07-02T22:23:00.186Z",
+        "ingested": "2023-11-06T11:04:05Z",
         "kind": "event",
         "original": "http 2018-07-02T22:23:00.186641Z app/my-loadbalancer/50dc6c495c0c9188 192.168.131.39:2817 10.0.0.1:80 0.000 0.001 0.000 200 200 34 366 \"GET http://www.example.com:80/ HTTP/1.1\" \"curl/7.46.0\" - - arn:aws:elasticloadbalancing:us-east-2:123456789012:targetgroup/my-targets/73e2d6bc24d8a067 \"Root=1-58337262-36d228ad5d99923122bbe354\" \"-\" \"-\" 0 2018-07-02T22:22:48.364000Z \"forward,redirect\" \"-\" \"-\" \"10.0.0.1:80\" \"200\" \"-\" \"-\"",
         "outcome": "success",
@@ -256,13 +292,24 @@ An example event for `elb` looks as following:
         },
         "version": "1.1"
     },
+    "input": {
+        "type": "aws-s3"
+    },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-aws-bucket-61398.s3.us-east-1.amazonaws.com/alb.log"
+        },
+        "offset": 0
+    },
     "source": {
         "address": "192.168.131.39",
         "ip": "192.168.131.39",
         "port": 2817
     },
     "tags": [
-        "preserve_original_event"
+        "preserve_original_event",
+        "forwarded",
+        "aws-elb-logs"
     ],
     "trace": {
         "id": "Root=1-58337262-36d228ad5d99923122bbe354"
