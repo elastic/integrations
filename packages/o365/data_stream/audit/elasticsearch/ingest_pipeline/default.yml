@@ -229,6 +229,24 @@ processors:
       target_field: o365audit.Parameters._raw
       if: 'ctx.o365audit?.Parameters != null && ctx.o365audit?.Parameters instanceof String'
   - script:
+      if: ctx.o365audit?.Platform != null
+      lang: painless
+      params:
+        # Based on `Aip*.md` files in
+        # https://github.com/MicrosoftDocs/office-365-management-api/tree/20763d/office-365-management-api
+        "0": "Unknown"
+        "1": "Windows"
+        "2": "MacOS"
+        "3": "iOS"
+        "4": "Android"
+        "5": "Web Browser"
+      source: >
+        def value = ctx.o365audit.Platform.toString();
+        def name = params[value];
+        if (name != null) {
+          ctx.o365audit.Platform = name;
+        }
+  - script:
       lang: painless
       if: 'ctx.o365audit?.ExtendedProperties != null && ctx.o365audit?.ExtendedProperties instanceof List'
       source: >

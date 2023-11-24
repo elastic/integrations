@@ -372,6 +372,7 @@ An example event for `audit` looks as following:
 | o365.audit.OrganizationName |  | keyword |
 | o365.audit.OriginatingServer |  | keyword |
 | o365.audit.Parameters.\* |  | object |
+| o365.audit.Platform |  | keyword |
 | o365.audit.PolicyDetails |  | flattened |
 | o365.audit.PolicyId |  | keyword |
 | o365.audit.RecordType |  | keyword |
