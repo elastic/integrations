@@ -14,7 +14,8 @@ For etcd v2, metrics are collected through the etcd v2 APIs, whereas for v3, the
 
 When using v3, datasets are bundled within `metrics` data stream, while for v2, available datasets include `leader`, `self`, and `store`.
 
-By default, etcd v2 data streams are disabled due to the discouragement of etcd v2 usage. However, it's possible to enable etcd v2 APIs while using etcd v3 by using the `--enable-v2` flag, this feature will not be available in v3.6.
+The ETCD v2 APIs are not enabled by default. However, you can enable ETCD v2 APIs when using ETCD v3 and above by utilizing the --enable-v2 flag, provided it is supported.
+
 
 ### metrics
 
