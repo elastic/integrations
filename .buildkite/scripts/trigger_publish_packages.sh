@@ -46,7 +46,7 @@ pushd "${ARTIFACTS_FOLDER}" > /dev/null || exit 1
 # done < <(find . -name "*.zip" -print0)
 # popd > /dev/null || exit 1
 
-if ls ./*.asc 2> /dev/null ; then
+if [ "$(find "${ARTIFACTS_FOLDER}" -maxdepth 1 -mindepth 1 -name "*.asc" | wc -l)" -gt 0 ] ; then
   echo "Rename asc to sig"
   for f in *.asc; do
       mv "$f" "${f%.asc}.sig"
@@ -57,8 +57,8 @@ else
 fi
 popd > /dev/null || exit 1
 
-find "${ARTIFACTS_FOLDER}" -name "*.zip"
-find "${ARTIFACTS_FOLDER}" -name "*.sig"
+find "${ARTIFACTS_FOLDER}" -maxdepth 1 -mindepth 1 -name "*.zip"
+find "${ARTIFACTS_FOLDER}" -maxdepth 1 -mindepth 1 -name "*.sig"
 
 buildkite-agent artifact upload "${ARTIFACTS_FOLDER}/*.zip"
 buildkite-agent artifact upload "${ARTIFACTS_FOLDER}/*.sig"
