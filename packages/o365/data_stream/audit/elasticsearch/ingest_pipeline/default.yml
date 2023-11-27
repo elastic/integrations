@@ -1145,6 +1145,33 @@ processors:
       formats:
         - ISO8601
       if: ctx.o365audit?.Data?.ttdt != null
+  - script:
+      lang: painless
+      if: 'ctx.o365audit?.Data != null'
+      source: >
+        def knownKeys = ['ad', 'af', 'aii', 'ail', 'alk', 'als', 'an', 'at',
+          'cid', 'cpid', 'dm', 'dpn', 'eid', 'etps', 'etype', 'f3u', 'fvs',
+          'imsgid', 'lon', 'mat', 'md', 'ms', 'od', 'op', 'ot', 'plk', 'pud',
+          'reid', 'rid', 'sev', 'sict', 'sid', 'sip', 'sitmi', 'srt', 'ssic',
+          'suid', 'tdc', 'te', 'thn', 'tht', 'tid', 'tpid', 'tpt', 'trc', 'ts',
+          'tsd', 'ttdt', 'ttr', 'upfc', 'upfv', 'ut', 'von', 'wl', 'zfh', 'zfn',
+          'zmfh', 'zmfn', 'zu'];
+        def rest = [:];
+        def iterator = ctx.o365audit.Data.keySet().iterator();
+        while (iterator.hasNext()) {
+          def key = iterator.next();
+          if (!knownKeys.contains(key)) {
+            rest[key] = ctx.o365audit.Data[key];
+            iterator.remove();
+          }
+        }
+        if (ctx.o365audit.Data.size() == 0) {
+          ctx.o365audit.remove('Data');
+        }
+        if (rest.size() > 0) {
+          ctx.o365audit.DataRest = rest;
+        }
+
   - rename:
       field: o365audit
       target_field: o365.audit

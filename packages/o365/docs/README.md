@@ -271,66 +271,66 @@ An example event for `audit` looks as following:
 | o365.audit.CorrelationId |  | keyword |
 | o365.audit.CreationTime |  | keyword |
 | o365.audit.CustomUniqueId |  | boolean |
-| o365.audit.Data |  | flattened |
-| o365.audit.Data.ad | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.af | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.aii | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.ail | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.alk | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.als | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.an | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.at | Multi-field of `o365.audit.Data`. | date |
-| o365.audit.Data.cid | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.cpid | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.dm | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.dpn | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.eid | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.etps | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.etype | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.f3u | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.fvs | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.imsgid | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.lon | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.mat | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.md | Multi-field of `o365.audit.Data`. | date |
-| o365.audit.Data.ms | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.od | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.op | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.ot | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.plk | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.pud | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.reid | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.rid | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.sev | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.sict | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.sid | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.sip | Multi-field of `o365.audit.Data`. | ip |
-| o365.audit.Data.sitmi | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.srt | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.ssic | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.suid | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.tdc | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.te | Multi-field of `o365.audit.Data`. | date |
-| o365.audit.Data.thn | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.tht | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.tid | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.tpid | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.tpt | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.trc | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.ts | Multi-field of `o365.audit.Data`. | date |
-| o365.audit.Data.tsd | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.ttdt | Multi-field of `o365.audit.Data`. | date |
-| o365.audit.Data.ttr | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.upfc | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.upfv | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.ut | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.von | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.wl | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.zfh | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.zfn | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.zmfh | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.zmfn | Multi-field of `o365.audit.Data`. | keyword |
-| o365.audit.Data.zu | Multi-field of `o365.audit.Data`. | keyword |
+| o365.audit.Data.ad |  | keyword |
+| o365.audit.Data.af |  | keyword |
+| o365.audit.Data.aii |  | keyword |
+| o365.audit.Data.ail |  | keyword |
+| o365.audit.Data.alk |  | keyword |
+| o365.audit.Data.als |  | keyword |
+| o365.audit.Data.an |  | keyword |
+| o365.audit.Data.at |  | date |
+| o365.audit.Data.cid |  | keyword |
+| o365.audit.Data.cpid |  | keyword |
+| o365.audit.Data.dm |  | keyword |
+| o365.audit.Data.dpn |  | keyword |
+| o365.audit.Data.eid |  | keyword |
+| o365.audit.Data.etps |  | keyword |
+| o365.audit.Data.etype |  | keyword |
+| o365.audit.Data.f3u |  | keyword |
+| o365.audit.Data.fvs |  | keyword |
+| o365.audit.Data.imsgid |  | keyword |
+| o365.audit.Data.lon |  | keyword |
+| o365.audit.Data.mat |  | keyword |
+| o365.audit.Data.md |  | date |
+| o365.audit.Data.ms |  | keyword |
+| o365.audit.Data.od |  | keyword |
+| o365.audit.Data.op |  | keyword |
+| o365.audit.Data.ot |  | keyword |
+| o365.audit.Data.plk |  | keyword |
+| o365.audit.Data.pud |  | keyword |
+| o365.audit.Data.reid |  | keyword |
+| o365.audit.Data.rid |  | keyword |
+| o365.audit.Data.sev |  | keyword |
+| o365.audit.Data.sict |  | keyword |
+| o365.audit.Data.sid |  | keyword |
+| o365.audit.Data.sip |  | ip |
+| o365.audit.Data.sitmi |  | keyword |
+| o365.audit.Data.srt |  | keyword |
+| o365.audit.Data.ssic |  | keyword |
+| o365.audit.Data.suid |  | keyword |
+| o365.audit.Data.tdc |  | keyword |
+| o365.audit.Data.te |  | date |
+| o365.audit.Data.thn |  | keyword |
+| o365.audit.Data.tht |  | keyword |
+| o365.audit.Data.tid |  | keyword |
+| o365.audit.Data.tpid |  | keyword |
+| o365.audit.Data.tpt |  | keyword |
+| o365.audit.Data.trc |  | keyword |
+| o365.audit.Data.ts |  | date |
+| o365.audit.Data.tsd |  | keyword |
+| o365.audit.Data.ttdt |  | date |
+| o365.audit.Data.ttr |  | keyword |
+| o365.audit.Data.upfc |  | keyword |
+| o365.audit.Data.upfv |  | keyword |
+| o365.audit.Data.ut |  | keyword |
+| o365.audit.Data.von |  | keyword |
+| o365.audit.Data.wl |  | keyword |
+| o365.audit.Data.zfh |  | keyword |
+| o365.audit.Data.zfn |  | keyword |
+| o365.audit.Data.zmfh |  | keyword |
+| o365.audit.Data.zmfn |  | keyword |
+| o365.audit.Data.zu |  | keyword |
+| o365.audit.DataRest |  | flattened |
 | o365.audit.DataType |  | keyword |
 | o365.audit.EntityType |  | keyword |
 | o365.audit.ErrorNumber |  | keyword |
