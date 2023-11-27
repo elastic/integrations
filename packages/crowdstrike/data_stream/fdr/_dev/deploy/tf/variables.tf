@@ -21,10 +21,14 @@ variable "REPO" {
   default = "unknown-repo-name"
 }
 
+variable "TEST_RUN_ID" {
+  default = "detached"
+}
+
 variable "bucket_name" {
-  default = "elastic-package-aws-logs-bucket"
+  default = "elastic-package-crowdstrike-fdr"
 }
 
 variable "queue_name" {
-  default = "elastic-package-aws-logs-queue"
+  default = "elastic-package-crowdstrike-fdr"
 }

@@ -1,7 +1,3 @@
-variable "TEST_RUN_ID" {
-  default = "detached"
-}
-
 provider "aws" {
   default_tags {
     tags = {
@@ -14,74 +10,103 @@ provider "aws" {
   }
 }
 
-output "queue_url" {
-  value = aws_sqs_queue.crowdstrike_queue.url
+resource "aws_s3_bucket" "crowdstrike_fdr" {
+  bucket = "${var.bucket_name}-${var.TEST_RUN_ID}"
 }
 
-# Common queue
-resource "aws_sqs_queue" "crowdstrike_queue" {
-  name       = "elastic-package-crowdstrike-queue-${var.TEST_RUN_ID}"
-  policy     = <<POLICY
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": "*",
-      "Action": "sqs:SendMessage",
-      "Resource": "arn:aws:sqs:*:*:elastic-package-crowdstrike-queue-${var.TEST_RUN_ID}",
-      "Condition": {
-        "ArnEquals": { "aws:SourceArn": "${aws_s3_bucket.crowdstrike_data_bucket.arn}" }
-      }
-    },
-    {
-      "Effect": "Allow",
-      "Principal": "*",
-      "Action": "sqs:SendMessage",
-      "Resource": "arn:aws:sqs:*:*:elastic-package-crowdstrike-queue-${var.TEST_RUN_ID}",
-      "Condition": {
-        "ArnEquals": { "aws:SourceArn": "${aws_s3_bucket.crowdstrike_aidmaster_bucket.arn}" }
-      }
-    }
-  ]
-}
-POLICY
-}
-
-# Log data for events
-resource "aws_s3_bucket_notification" "crowdstrike_data_bucket_notification" {
-  bucket = aws_s3_bucket.crowdstrike_data_bucket.id
-
-  queue {
-    queue_arn = aws_sqs_queue.crowdstrike_queue.arn
-    events    = ["s3:ObjectCreated:*"]
-  }
-}
-resource "aws_s3_bucket" "crowdstrike_data_bucket" {
-  bucket = "elastic-package-crowdstrike-data-bucket-${var.TEST_RUN_ID}"
-}
 resource "aws_s3_object" "crowdstrike_data" {
-  bucket = aws_s3_bucket.crowdstrike_data_bucket.id
+  bucket = aws_s3_bucket.crowdstrike_fdr.id
   key    = "data"
   source = "./files/fdr-sample.log"
-  depends_on = [aws_sqs_queue.crowdstrike_queue]
 }
 
-# Host info for enrichment
-resource "aws_s3_bucket_notification" "crowdstrike_aidmaster_bucket_notification" {
-  bucket = aws_s3_bucket.crowdstrike_aidmaster_bucket.id
-
-  queue {
-    queue_arn = aws_sqs_queue.crowdstrike_queue.arn
-    events    = ["s3:ObjectCreated:*"]
-  }
-}
-resource "aws_s3_bucket" "crowdstrike_aidmaster_bucket" {
-  bucket = "elastic-package-crowdstrike-aidmaster-bucket-${var.TEST_RUN_ID}"
-}
 resource "aws_s3_object" "crowdstrike_aidmaster" {
-  bucket = aws_s3_bucket.crowdstrike_aidmaster_bucket.id
+  bucket = aws_s3_bucket.crowdstrike_fdr.id
   key    = "fdrv2/aidmaster"
   source = "./files/fdr-0_aidmaster.log"
-  depends_on = [aws_sqs_queue.crowdstrike_queue]
+}
+
+resource "aws_sqs_queue" "crowdstrike_queue" {
+  name = "elastic-package-crowdstrike-queue-${var.TEST_RUN_ID}"
+}
+
+# IAM Policy for EventBridge Scheduler
+resource "aws_iam_policy" "sqs_access_policy" {
+  name        = "sqs-access-policy-${var.TEST_RUN_ID}"
+  description = "Policy for EventBridge Scheduler to send messages to SQS"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "sqs:ReceiveMessage",
+          "sqs:SendMessage"
+        ],
+        Effect   = "Allow"
+        Resource = aws_sqs_queue.crowdstrike_queue.arn
+      }
+    ]
+  })
+}
+
+# IAM Role for EventBridge Scheduler
+resource "aws_iam_role" "eventbridge_scheduler_iam_role" {
+  name_prefix         = "eb-scheduler-role-${var.TEST_RUN_ID}-"
+  managed_policy_arns = [aws_iam_policy.sqs_access_policy.arn]
+  path                = "/"
+  assume_role_policy  = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "scheduler.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+        }
+    ]
+}
+EOF
+}
+
+// Simulate CrowdStrike sending its notification events to SQS. CrowdStrike
+// uses a custom notification format that is different than the AWS S3 event
+// notification format.
+resource "aws_scheduler_schedule" "eventbridge_scheduler_every1minute" {
+  name       = "eventbridge_scheduler_crowdstrike_fdr_sqs-${var.TEST_RUN_ID}"
+  group_name = "default"
+
+  flexible_time_window {
+    mode = "OFF"
+  }
+
+  schedule_expression = "rate(1 minutes)"
+
+  target {
+    arn      = aws_sqs_queue.crowdstrike_queue.arn
+    role_arn = aws_iam_role.eventbridge_scheduler_iam_role.arn
+
+    input = jsonencode({
+      cid        = "ffffffff15754bcfb5f9152ec7ac90ac"
+      timestamp  = 1625677488615
+      fileCount  = 2
+      totalSize  = 117600
+      bucket     = aws_s3_bucket.crowdstrike_fdr.id
+      pathPrefix = "data/f0714ca5-3689-448d-b5cc-582a6f7a56b1"
+      "files" : [
+        {
+          "path" : aws_s3_object.crowdstrike_data.key,
+          "size" : 113186,
+          "checksum" : "5ac29ea09dd63d62e13e5b11abb1ffdb"
+        },
+        {
+          "path" : aws_s3_object.crowdstrike_aidmaster.key,
+          "size" : 4414,
+          "checksum" : "446fc9c950413527640a620863691594"
+        }
+      ]
+    })
+  }
 }
