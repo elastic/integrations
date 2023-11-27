@@ -118,7 +118,7 @@ PIPELINE_FILE="pipeline-sign-publish.yml"
 cat <<EOF > "${PIPELINE_FILE}"
 steps:
   # If you change 'key: sign-service' then change SIGNING_STEP_KEY value from trigger-publish step pipeline
-  - label: Sign artifacts
+  - label: ":key: Sign artifacts"
     trigger: unified-release-gpg-signing
     key: sign-service
     depends_on:

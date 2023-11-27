@@ -34,6 +34,7 @@ build_json=$(curl -sH "Authorization: Bearer $BUILDKITE_API_TOKEN" "${query_url}
 GPG_SIGN_BUILD_ID=$(jq -r ".jobs[] | select(.step_key == \"${SIGNING_STEP_KEY}\").triggered_build.id" <<< "$build_json")
 
 echo "Download signed artifacts"
+# TBC signature pipeline also has as artifacts the zip packages?
 buildkite-agent artifact download --build "$GPG_SIGN_BUILD_ID" "*" .
 
 echo "--- Rename *.asc to *.sig"
