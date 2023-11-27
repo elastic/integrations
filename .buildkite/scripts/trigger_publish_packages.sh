@@ -52,8 +52,9 @@ if [ "$(find "${ARTIFACTS_FOLDER}" -maxdepth 1 -mindepth 1 -name "*.asc" | wc -l
       mv "$f" "${f%.asc}.sig"
   done
 else
+  # If this step runs, signatures files must be present
   echo "No signatures found"
-  # exit 1
+  exit 1
 fi
 popd > /dev/null || exit 1
 
