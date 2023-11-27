@@ -6,26 +6,33 @@ streams:
     template_path: auditd.yml.hbs
     description: Collect auditd events
     vars:
-      - name: multicast
-        type: bool
+      - name: socket_type
         title: Multicast socket type
         show_user: true
+        required: true
         multi: false
-        default: false
+        type: select
+        options:
+          - text: auto
+            value: ''
+          - text: unicast
+            value: unicast
+          - text: multicast
+            value: multicast
+        default: ''
         description: |
-          This setting controls if the socket type used to receive events is multicast.
-          This setting should be disabled when `elastic-agent` is the primary userspace
-          daemon for receiving audit events and managing the rules. Only a single process
-          can receive audit events if this is disabled, so any other daemons should be
-          stopped (e.g. stop `auditd`).
+          This setting controls the socket type used to receive events. This setting should
+          be set to `unicast` when `elastic-agent` is the primary userspace daemon for receiving
+          audit events and managing the rules. Only a single process can receive audit events
+          when using unicast sockets, so any other daemons should be stopped (e.g. stop `auditd`).
 
-          This setting can be enabled with kernel versions 3.16 and newer. By setting it
-          `elastic-agent` will receive an audit event broadcast that is not exclusive
+          Multicast can be enabled with kernel versions 3.16 and newer. By setting it to
+          `multicast` `elastic-agent` will receive an audit event broadcast that is not exclusive
           to a single process. This is ideal for situations where `auditd` is running and
           managing the rules.
 
-          If it is set to `true`, but the kernel version is less than 3.16 it will be
-          automatically disabled.
+          If `auto` is selected, `elastic-agent` will attempt to use multicast sockets, falling
+          back to unicast if multicast is not available.
       - name: immutable
         type: bool
         title: Immutable
@@ -34,7 +41,7 @@ streams:
         default: false
         description: |
           This boolean setting sets the audit config as immutable (`-e 2`).
-          This option can only be used if `multicast` is disabled since `elastic-agent`
+          This option can only be used if socket type is not `multicast` since `elastic-agent`
           needs to manage the rules to be able to set it.
 
           Please note that with this setting enabled, after Elastic Agent restarts or
