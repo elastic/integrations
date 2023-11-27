@@ -1,6 +1,6 @@
 # Custom GCS (Google Cloud Storage) Input
 
-Use the `Google Cloud storage input` to read content from files stored in buckets that reside on your Google Cloud.
+Use the `Google Cloud Storage input` to read content from files stored in buckets that reside on your Google Cloud.
 The input can be configured to work with and without polling, though currently, if polling is disabled it will only 
 perform a one-time passthrough, list the file contents and end the process. Polling is generally recommended for most cases
 even though it can get expensive with dealing with a very large number of files.
