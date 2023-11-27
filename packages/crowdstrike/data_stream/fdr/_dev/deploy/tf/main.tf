@@ -29,7 +29,7 @@ resource "aws_sqs_queue" "crowdstrike_queue" {
       "Effect": "Allow",
       "Principal": "*",
       "Action": "sqs:SendMessage",
-      "Resource": "arn:aws:sqs:*:*:elastic-package-crowdstrike-data-queue-${var.TEST_RUN_ID}",
+      "Resource": "arn:aws:sqs:*:*:elastic-package-crowdstrike-queue-${var.TEST_RUN_ID}",
       "Condition": {
         "ArnEquals": { "aws:SourceArn": "${aws_s3_bucket.crowdstrike_data_bucket.arn}" }
       }
@@ -38,7 +38,7 @@ resource "aws_sqs_queue" "crowdstrike_queue" {
       "Effect": "Allow",
       "Principal": "*",
       "Action": "sqs:SendMessage",
-      "Resource": "arn:aws:sqs:*:*:elastic-package-crowdstrike-aidmaster-queue-${var.TEST_RUN_ID}",
+      "Resource": "arn:aws:sqs:*:*:elastic-package-crowdstrike-queue-${var.TEST_RUN_ID}",
       "Condition": {
         "ArnEquals": { "aws:SourceArn": "${aws_s3_bucket.crowdstrike_aidmaster_bucket.arn}" }
       }
