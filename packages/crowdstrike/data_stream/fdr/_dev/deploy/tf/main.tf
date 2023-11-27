@@ -32,6 +32,7 @@ resource "aws_sqs_queue" "crowdstrike_queue" {
 
 # IAM Policy for EventBridge Scheduler
 resource "aws_iam_policy" "sqs_access_policy" {
+  count       = var.eventbridge_role_arn == null ? 1 : 0
   name        = "sqs-access-policy-${var.TEST_RUN_ID}"
   description = "Policy for EventBridge Scheduler to send messages to SQS"
 
@@ -52,8 +53,9 @@ resource "aws_iam_policy" "sqs_access_policy" {
 
 # IAM Role for EventBridge Scheduler
 resource "aws_iam_role" "eventbridge_scheduler_iam_role" {
+  count               = var.eventbridge_role_arn == null ? 1 : 0
   name_prefix         = "eb-scheduler-role-${var.TEST_RUN_ID}-"
-  managed_policy_arns = [aws_iam_policy.sqs_access_policy.arn]
+  managed_policy_arns = [aws_iam_policy.sqs_access_policy.0.arn]
   path                = "/"
   assume_role_policy  = <<EOF
 {
@@ -86,7 +88,7 @@ resource "aws_scheduler_schedule" "eventbridge_scheduler_every1minute" {
 
   target {
     arn      = aws_sqs_queue.crowdstrike_queue.arn
-    role_arn = aws_iam_role.eventbridge_scheduler_iam_role.arn
+    role_arn = var.eventbridge_role_arn == null ? aws_iam_role.eventbridge_scheduler_iam_role.0.arn : var.eventbridge_role_arn
 
     input = jsonencode({
       cid        = "ffffffff15754bcfb5f9152ec7ac90ac"

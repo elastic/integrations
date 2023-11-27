@@ -32,3 +32,13 @@ variable "bucket_name" {
 variable "queue_name" {
   default = "elastic-package-crowdstrike-fdr"
 }
+
+// If testing using the elastic-siem account then add this to the env.yml file to override this variable.
+// This is needed because the elastic-siem user account do not allow IAM changes.
+//
+// TF_VAR_eventbridge_role_arn=arn:aws:iam::144492464627:role/eb-scheduler-role-20231101165501426500000001
+variable "eventbridge_role_arn" {
+  description = "ARN of the role that EventBridge should assume to send SQS notifications."
+  default     = null
+  type        = string
+}
