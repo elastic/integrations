@@ -4,6 +4,19 @@ processors:
 - set:
     field: ecs.version
     value: '8.11.0'
+
+# Detection Rules compatibility
+- set:
+    tag: set_compatibility_request_authorization
+    field: network_traffic.http.request.headers.authorization
+    copy_from: http.request.headers.authorization
+    ignore_empty_value: true
+- set:
+    tag: set_compatibility_response_type
+    field: http.response.mime_type
+    copy_from: http.response.headers.content-type
+    ignore_empty_value: true
+
 ##
 # Set host.mac to dash separated upper case value
 # as per ECS recommendation
