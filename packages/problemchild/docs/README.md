@@ -49,12 +49,12 @@ Detects potential LotL activity by identifying malicious processes.
 
 | Job | Description |
 |---|---|
-| problem_child_rare_process_by_host | Looks for a process that has been classified as malicious on a host that does not commonly manifest malicious process activity. This is an experimental job and is therefore unsupported. |
-| problem_child_high_sum_by_host | Looks for a set of one or more malicious child processes on a single host. This is an experimental job and is therefore unsupported. |
-| problem_child_rare_process_by_user | Looks for a process that has been classified as malicious where the user context is unusual and does not commonly manifest malicious process activity. This is an experimental job and is therefore unsupported.|
-| problem_child_rare_process_by_parent | Looks for rare malicious child processes spawned by a parent process. This is an experimental job and is therefore unsupported. |
-| problem_child_high_sum_by_user | Looks for a set of one or more malicious processes, started by the same user. This is an experimental job and is therefore unsupported. |
-| problem_child_high_sum_by_parent | Looks for a set of one or more malicious child processes spawned by the same parent process. This is an experimental job and is therefore unsupported. |
+| problem_child_rare_process_by_host | Looks for a process that has been classified as malicious on a host that does not commonly manifest malicious process activity. |
+| problem_child_high_sum_by_host | Looks for a set of one or more malicious child processes on a single host. |
+| problem_child_rare_process_by_user | Looks for a process that has been classified as malicious where the user context is unusual and does not commonly manifest malicious process activity. |
+| problem_child_rare_process_by_parent | Looks for rare malicious child processes spawned by a parent process. |
+| problem_child_high_sum_by_user | Looks for a set of one or more malicious processes, started by the same user. |
+| problem_child_high_sum_by_parent | Looks for a set of one or more malicious child processes spawned by the same parent process. |
 
 ## Licensing
 
