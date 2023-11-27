@@ -346,6 +346,7 @@ This data stream uses the `/attributes/restSearch` API endpoint which returns mo
 | misp.attribute.comment | Comments made to the attribute itself. | keyword |
 | misp.attribute.data | The data of the attribute | keyword |
 | misp.attribute.decay_score | Group of fields describing decay score of the attribute | flattened |
+| misp.attribute.decayed | Whether atleast one decay model indicates the attribute is decayed. | boolean |
 | misp.attribute.deleted | If the attribute has been removed. | boolean |
 | misp.attribute.disable_correlation | If correlation has been enabled on the attribute. | boolean |
 | misp.attribute.distribution | How the attribute has been distributed, represented by integer numbers. | long |

@@ -72,14 +72,17 @@ processors:
       field: misp.object.meta-category
       target_field: misp.object.meta_category
       ignore_missing: true
-  - foreach:
-      if: ctx.misp?.attribute?.decay_score != null
-      field: misp.attribute.decay_score
-      processor:
-        rename:
-          ignore_missing: true
-          field: _ingest._value.DecayingModel
-          target_field: _ingest._value.decaying_model
+# Script for calculating if attribute is decayed/expired. 
+# If majority (i.e., >= 50%) decaying models have `decayed` as true, then attribute is expired.
+  - script:
+      lang: painless
+      if: ctx.misp?.attribute?.decay_score instanceof List && ctx.misp.attribute.decay_score.size() > 0
+      source: |
+        def decayed = 
+            ctx.misp.attribute.decay_score.stream()
+            .filter(t -> t.decayed == true)
+            .count()/1.0 >= (ctx.misp.attribute.decay_score.size())/2.0 ;
+        ctx.misp.attribute.decayed = decayed;
   - date:
       if: ctx.misp?.event?.timestamp != null
       field: misp.event.timestamp
