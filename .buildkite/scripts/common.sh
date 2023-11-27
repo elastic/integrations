@@ -78,8 +78,8 @@ repo_name() {
     # Example of URL: git@github.com:acme-inc/my-project.git
     local repoUrl=$1
 
-    orgAndRepo=$(echo $repoUrl | cut -d':' -f 2)
-    echo "$(basename ${orgAndRepo} .git)"
+    orgAndRepo=$(echo "$repoUrl" | cut -d':' -f 2)
+    basename "${orgAndRepo}" .git
 }
 
 buildkite_pr_branch_build_id() {
@@ -95,7 +95,7 @@ buildkite_pr_branch_build_id() {
 
 # Helpers to install required tools
 create_bin_folder() {
-  mkdir -p ${BIN_FOLDER}
+  mkdir -p "${BIN_FOLDER}"
 }
 
 add_bin_path() {
@@ -108,13 +108,14 @@ with_go() {
   create_bin_folder
   echo "--- Setting up the Go environment..."
   check_platform_architecture
-  echo " GVM ${SETUP_GVM_VERSION} (platform ${platform_type_lowercase} arch ${arch_type}"
-  retry 5 curl -sL -o ${BIN_FOLDER}/gvm "https://github.com/andrewkroh/gvm/releases/download/${SETUP_GVM_VERSION}/gvm-${platform_type_lowercase}-${arch_type}"
-  chmod +x ${BIN_FOLDER}/gvm
-  eval "$(gvm $(cat .go-version))"
+  echo "GVM ${SETUP_GVM_VERSION} (platform ${platform_type_lowercase} arch ${arch_type}"
+  retry 5 curl -sL -o "${BIN_FOLDER}/gvm" "https://github.com/andrewkroh/gvm/releases/download/${SETUP_GVM_VERSION}/gvm-${platform_type_lowercase}-${arch_type}"
+  chmod +x "${BIN_FOLDER}/gvm"
+  eval "$(gvm "$(cat .go-version)")"
   go version
   which go
-  export PATH="${PATH}:$(go env GOPATH):$(go env GOPATH)/bin"
+  PATH="${PATH}:$(go env GOPATH):$(go env GOPATH)/bin"
+  export PATH
 }
 
 with_mage() {
@@ -139,8 +140,8 @@ with_docker_compose() {
     check_platform_architecture
 
     echo "--- Setting up the Docker-compose environment..."
-    retry 5 curl -sSL -o ${BIN_FOLDER}/docker-compose "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${platform_type_lowercase}-${hw_type}"
-    chmod +x ${BIN_FOLDER}/docker-compose
+    retry 5 curl -sSL -o "${BIN_FOLDER}/docker-compose" "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${platform_type_lowercase}-${hw_type}"
+    chmod +x "${BIN_FOLDER}/docker-compose"
     docker-compose version
 }
 
@@ -149,14 +150,14 @@ with_kubernetes() {
     check_platform_architecture
 
     echo "--- Install kind"
-    retry 5 curl -sSLo ${BIN_FOLDER}/kind "https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-${platform_type_lowercase}-${arch_type}"
-    chmod +x ${BIN_FOLDER}/kind
+    retry 5 curl -sSLo "${BIN_FOLDER}/kind" "https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-${platform_type_lowercase}-${arch_type}"
+    chmod +x "${BIN_FOLDER}/kind"
     kind version
     which kind
 
     echo "--- Install kubectl"
-    retry 5 curl -sSLo ${BIN_FOLDER}/kubectl "https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/${platform_type_lowercase}/${arch_type}/kubectl"
-    chmod +x ${BIN_FOLDER}/kubectl
+    retry 5 curl -sSLo "${BIN_FOLDER}/kubectl" "https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/${platform_type_lowercase}/${arch_type}/kubectl"
+    chmod +x "${BIN_FOLDER}/kubectl"
     kubectl version --client
     which kubectl
 }
@@ -165,60 +166,64 @@ with_yq() {
     check_platform_architecture
     local binary="yq_${platform_type_lowercase}_${arch_type}"
 
-    retry 5 curl -sSL -o ${BIN_FOLDER}/yq.tar.gz "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${binary}.tar.gz"
+    retry 5 curl -sSL -o "${BIN_FOLDER}/yq.tar.gz" "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${binary}.tar.gz"
 
-    tar -C ${BIN_FOLDER} -xpf ${BIN_FOLDER}/yq.tar.gz ./${binary}
+    tar -C "${BIN_FOLDER}" -xpf "${BIN_FOLDER}/yq.tar.gz" "./${binary}"
 
-    mv ${BIN_FOLDER}/${binary} ${BIN_FOLDER}/yq
-    chmod +x ${BIN_FOLDER}/yq
+    mv "${BIN_FOLDER}/${binary}" "${BIN_FOLDER}/yq"
+    chmod +x "${BIN_FOLDER}/yq"
     yq --version
 
-    rm -rf ${BIN_FOLDER}/yq.tar.gz
+    rm -rf "${BIN_FOLDER}/yq.tar.gz"
 }
 
 ## Logging and logout from Google Cloud
 google_cloud_upload_auth() {
-  local secretFileLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE_BASE}.XXXXXXXXX")/${GOOGLE_CREDENTIALS_FILENAME}
-  echo "${PRIVATE_INFRA_GCS_CREDENTIALS_SECRET}" > ${secretFileLocation}
-  gcloud auth activate-service-account --key-file ${secretFileLocation} 2> /dev/null
+  local secretFileLocation
+  secretFileLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE_BASE}.XXXXXXXXX")/${GOOGLE_CREDENTIALS_FILENAME}
+  echo "${PACKAGE_UPLOADER_GCS_CREDENTIALS_SECRET}" > "${secretFileLocation}"
+  gcloud auth activate-service-account --key-file "${secretFileLocation}" 2> /dev/null
   export GOOGLE_APPLICATION_CREDENTIALS=${secretFileLocation}
 }
 
 google_cloud_signing_auth() {
-  local secretFileLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE_BASE}.XXXXXXXXX")/${GOOGLE_CREDENTIALS_FILENAME}
-  echo "${SIGNING_PACKAGES_GCS_CREDENTIALS_SECRET}" > ${secretFileLocation}
-  gcloud auth activate-service-account --key-file ${secretFileLocation} 2> /dev/null
+  local secretFileLocation
+  secretFileLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE_BASE}.XXXXXXXXX")/${GOOGLE_CREDENTIALS_FILENAME}
+  echo "${SIGNING_PACKAGES_GCS_CREDENTIALS_SECRET}" > "${secretFileLocation}"
+  gcloud auth activate-service-account --key-file "${secretFileLocation}" 2> /dev/null
   export GOOGLE_APPLICATION_CREDENTIALS=${secretFileLocation}
 }
 
 google_cloud_auth_safe_logs() {
-    local gsUtilLocation=$(mktemp -d -p ${WORKSPACE} -t ${TMP_FOLDER_TEMPLATE})
+    local gsUtilLocation
+    gsUtilLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE}")
     local secretFileLocation=${gsUtilLocation}/${GOOGLE_CREDENTIALS_FILENAME}
 
-    echo "${PRIVATE_CI_GCS_CREDENTIALS_SECRET}" > ${secretFileLocation}
+    echo "${PRIVATE_CI_GCS_CREDENTIALS_SECRET}" > "${secretFileLocation}"
 
-    gcloud auth activate-service-account --key-file ${secretFileLocation} 2> /dev/null
+    gcloud auth activate-service-account --key-file "${secretFileLocation}" 2> /dev/null
     export GOOGLE_APPLICATION_CREDENTIALS=${secretFileLocation}
 }
 
 google_cloud_logout_active_account() {
-  local active_account=$(gcloud auth list --filter=status:ACTIVE --format="value(account)" 2>/dev/null)
-    if [[ -n "$active_account" && -n "${GOOGLE_APPLICATION_CREDENTIALS+x}" ]]; then
+  local active_account
+  active_account=$(gcloud auth list --filter=status:ACTIVE --format="value(account)" 2>/dev/null || true)
+  if [[ -n "$active_account" && -n "${GOOGLE_APPLICATION_CREDENTIALS+x}" ]]; then
     echo "Logging out from GCP for active account"
-    gcloud auth revoke $active_account > /dev/null 2>&1
+    gcloud auth revoke "$active_account" > /dev/null 2>&1
   else
     echo "No active GCP accounts found."
   fi
 
   if [ -n "${GOOGLE_APPLICATION_CREDENTIALS+x}" ]; then
-    rm -rf ${GOOGLE_APPLICATION_CREDENTIALS}
+    rm -rf "${GOOGLE_APPLICATION_CREDENTIALS}"
     unset GOOGLE_APPLICATION_CREDENTIALS
   fi
 }
 
 ## Helpers for integrations pipelines
 check_git_diff() {
-    cd ${WORKSPACE}
+    cd "${WORKSPACE}"
     echo "git update-index"
     git update-index --refresh
     echo "git diff-index"
@@ -228,13 +233,13 @@ check_git_diff() {
 use_elastic_package() {
     echo "--- Installing elastic-package"
     mkdir -p build
-    go build -o ${ELASTIC_PACKAGE_BIN} github.com/elastic/elastic-package
+    go build -o "${ELASTIC_PACKAGE_BIN}" github.com/elastic/elastic-package
 }
 
 is_already_published() {
     local packageZip=$1
 
-    if curl -s --head https://package-storage.elastic.co/artifacts/packages/${packageZip} | grep -q "HTTP/2 200" ; then
+    if curl -s --head "https://package-storage.elastic.co/artifacts/packages/${packageZip}" | grep -q "HTTP/2 200" ; then
         echo "- Already published ${packageZip}"
         return 0
     fi
@@ -244,7 +249,7 @@ is_already_published() {
 
 create_kind_cluster() {
     echo "--- Create kind cluster"
-    kind create cluster --config ${WORKSPACE}/kind-config.yaml --image kindest/node:${K8S_VERSION}
+    kind create cluster --config "${WORKSPACE}/kind-config.yaml" --image "kindest/node:${K8S_VERSION}"
 }
 
 
@@ -254,7 +259,8 @@ delete_kind_cluster() {
 }
 
 kibana_version_manifest() {
-    local kibana_version=$(cat manifest.yml | yq ".conditions.kibana.version")
+    local kibana_version
+    kibana_version=$(cat manifest.yml | yq ".conditions.kibana.version")
     if [ "${kibana_version}" != "null" ]; then
         echo "${kibana_version}"
         return
@@ -278,7 +284,8 @@ is_supported_capability() {
         return 0
     fi
 
-    local capabilities=$(capabilities_manifest)
+    local capabilities
+    capabilities=$(capabilities_manifest)
 
     # if no capabilities defined, it is available iavailable all projects
     if [[  "${capabilities}" == "null" ]]; then
@@ -286,7 +293,7 @@ is_supported_capability() {
     fi
 
     if [[ ${SERVERLESS_PROJECT} == "observability" ]]; then
-        if echo ${capabilities} |egrep 'apm|observability|uptime' ; then
+        if echo "${capabilities}" | grep -E 'apm|observability|uptime' ; then
             return 0
         else
             return 1
@@ -294,7 +301,7 @@ is_supported_capability() {
     fi
 
     if [[ ${SERVERLESS_PROJECT} == "security" ]]; then
-        if echo ${capabilities} |egrep 'security' ; then
+        if echo "${capabilities}" | grep -E 'security' ; then
             return 0
         else
             return 1
@@ -309,23 +316,25 @@ is_supported_stack() {
         return 0
     fi
 
-    local kibana_version=$(kibana_version_manifest)
+    local kibana_version
+    kibana_version=$(kibana_version_manifest)
     if [ "${kibana_version}" == "null" ]; then
         return 0
     fi
-    if [[ ! ${kibana_version} =~ \^7\. && ${STACK_VERSION} =~ ^7\. ]]; then
+    if [[ ! "${kibana_version}" =~ \^7\. && "${STACK_VERSION}" =~ ^7\. ]]; then
         return 1
     fi
-    if [[ ! ${kibana_version} =~ \^8\. && ${STACK_VERSION} =~ ^8\. ]]; then
+    if [[ ! "${kibana_version}" =~ \^8\. && "${STACK_VERSION}" =~ ^8\. ]]; then
         return 1
     fi
     return 0
 }
 
 oldest_supported_version() {
-    local kibana_version=$(kibana_version_manifest)
-    if [ $kibana_version != "null" ]; then
-        python3 ${SCRIPTS_BUILDKITE_PATH}/find_oldest_supported_version.py --manifest manifest.yml
+    local kibana_version
+    kibana_version=$(kibana_version_manifest)
+    if [ "$kibana_version" != "null" ]; then
+        python3 "${SCRIPTS_BUILDKITE_PATH}/find_oldest_supported_version.py" --manifest-path manifest.yml
         return
     fi
     echo "null"
@@ -344,7 +353,8 @@ prepare_stack() {
     if [ -n "${STACK_VERSION}" ]; then
         args="${args} --version ${STACK_VERSION}"
     else
-        local version=$(oldest_supported_version)
+        local version
+        version=$(oldest_supported_version)
         if [[ "${version}" != "null" ]]; then
             args="${args} --version ${version}"
         fi
@@ -382,7 +392,7 @@ prepare_serverless_stack() {
     if [[ "${BUILDKITE_PULL_REQUEST}" != "false" ]]; then
         profile_name="integrations-${BUILDKITE_PULL_REQUEST}-${BUILDKITE_BUILD_NUMBER}-${SERVERLESS_PROJECT}"
     fi
-    create_elastic_package_profile ${profile_name}
+    create_elastic_package_profile "${profile_name}"
 
     export EC_API_KEY=${EC_API_KEY_SECRET}
     export EC_HOST=${EC_HOST_SECRET}
@@ -392,17 +402,19 @@ prepare_serverless_stack() {
         -d \
         ${args} \
         --provider serverless \
-        -U stack.serverless.region=${EC_REGION_SECRET},stack.serverless.type=${SERVERLESS_PROJECT} 2>&1 | egrep -v "^Password: " # To remove password from the output
+        -U "stack.serverless.region=${EC_REGION_SECRET},stack.serverless.type=${SERVERLESS_PROJECT}" 2>&1 | grep -E -v "^Password: " # To remove password from the output
     echo ""
     ${ELASTIC_PACKAGE_BIN} stack status
     echo ""
 }
 
 is_spec_3_0_0() {
-    local pkg_spec=$(cat manifest.yml | yq '.format_version')
-    local major_version=$(echo $pkg_spec | cut -d '.' -f 1)
+    local pkg_spec
+    pkg_spec=$(cat manifest.yml | yq '.format_version')
+    local major_version
+    major_version=$(echo "$pkg_spec" | cut -d '.' -f 1)
 
-    if [ ${major_version} -ge 3 ]; then
+    if [ "${major_version}" -ge 3 ]; then
         return 0
     fi
     return 1
@@ -418,10 +430,11 @@ get_commit_from_build() {
     local state_query_param="$3"
 
     local api_url="${API_BUILDKITE_PIPELINES_URL}/${pipeline}/builds?branch=${branch}&${state_query_param}&per_page=1"
-    local previous_commit=$(curl -sH "Authorization: Bearer ${BUILDKITE_API_TOKEN}" "${api_url}" | jq -r '.[0] |.commit')
+    local previous_commit
+    previous_commit=$(retry 5 curl -sH "Authorization: Bearer ${BUILDKITE_API_TOKEN}" "${api_url}" | jq -r '.[0] |.commit')
     echoerr ">>> Commit from ${pipeline} - branch ${branch} - status: ${status} -> ${previous_commit}"
 
-    echo ${previous_commit}
+    echo "${previous_commit}"
 }
 
 get_previous_commit() {
@@ -429,16 +442,18 @@ get_previous_commit() {
     local branch="$2"
     # Not using state=finished because it implies also skip and cancelled builds https://buildkite.com/docs/pipelines/notifications#build-states
     local status="state[]=failed&state[]=passed"
-    local previous_commit=$(get_commit_from_build "${pipeline}" "${branch}" "${status}")
-    echo ${previous_commit}
+    local previous_commit
+    previous_commit=$(get_commit_from_build "${pipeline}" "${branch}" "${status}")
+    echo "${previous_commit}"
 }
 
 get_previous_successful_commit() {
     local pipeline="$1"
     local branch="$2"
     local status="state=passed"
-    local previous_commit=$(get_commit_from_build "${pipeline}" "${branch}" "${status}")
-    echo ${previous_commit}
+    local previous_commit
+    previous_commit=$(get_commit_from_build "${pipeline}" "${branch}" "${status}")
+    echo "${previous_commit}"
 }
 
 get_from_changeset() {
@@ -448,7 +463,8 @@ get_from_changeset() {
         return
     fi
 
-    local previous_commit=$(get_previous_commit ${BUILDKITE_PIPELINE_SLUG} ${BUILDKITE_BRANCH})
+    local previous_commit
+    previous_commit=$(get_previous_commit "${BUILDKITE_PIPELINE_SLUG}" "${BUILDKITE_BRANCH}")
 
     if [[ "${previous_commit}" != "null" ]] ; then
         from="${previous_commit}"
@@ -457,7 +473,8 @@ get_from_changeset() {
     fi
 
     if [[ "${BUILDKITE_BRANCH}" == "main" || ${BUILDKITE_BRANCH} =~ ^backport- ]]; then
-        local previous_successful_commit=$(get_previous_successful_commit ${BUILDKITE_PIPELINE_SLUG} ${BUILDKITE_BRANCH})
+        local previous_successful_commit
+        previous_successful_commit=$(get_previous_successful_commit "${BUILDKITE_PIPELINE_SLUG}" "${BUILDKITE_BRANCH}")
 
         from="${previous_successful_commit}"
         if [[ "${previous_successful_commit}" == "null" ]]; then
@@ -475,7 +492,7 @@ get_to_changeset() {
     if [[ "${BUILDKITE_BRANCH}" == "main" || ${BUILDKITE_BRANCH} =~ ^backport- ]]; then
         to="origin/${BUILDKITE_BRANCH}"
     fi
-    echo ${to}
+    echo "${to}"
 }
 
 is_pr_affected() {
@@ -512,12 +529,13 @@ is_pr_affected() {
     echo "[${package}]: commits: from: '${from}' - to: '${to}'"
 
     echo "[${package}] git-diff: check non-package files"
-    if git diff --name-only $(git merge-base ${from} ${to}) ${to} | egrep -v '^(packages/|.github/CODEOWNERS)' ; then
+    commit_merge=$(git merge-base "${from}" "${to}")
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|.github/CODEOWNERS)' ; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi
     echo "[${package}] git-diff: check package files"
-    if git diff --name-only $(git merge-base ${from} ${to}) ${to} | egrep "^packages/${package}/" ; then
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E "^packages/${package}/" ; then
         echo "[${package}] PR is affected: found package files"
         return 0
     fi
@@ -533,7 +551,7 @@ is_pr() {
 }
 
 kubernetes_service_deployer_used() {
-    find . -type d | egrep '_dev/deploy/k8s$'
+    find . -type d | grep -E '_dev/deploy/k8s$'
 }
 
 teardown_serverless_test_package() {
@@ -542,9 +560,9 @@ teardown_serverless_test_package() {
     local dump_directory="${build_directory}/elastic-stack-dump/${package}"
 
     echo "Collect Elastic stack logs"
-    ${ELASTIC_PACKAGE_BIN} stack dump -v --output ${dump_directory}
+    ${ELASTIC_PACKAGE_BIN} stack dump -v --output "${dump_directory}"
 
-    upload_safe_logs_from_package ${package} ${build_directory}
+    upload_safe_logs_from_package "${package}" "${build_directory}"
 }
 
 teardown_test_package() {
@@ -553,9 +571,9 @@ teardown_test_package() {
     local dump_directory="${build_directory}/elastic-stack-dump/${package}"
 
     echo "Collect Elastic stack logs"
-    ${ELASTIC_PACKAGE_BIN} stack dump -v --output ${dump_directory}
+    ${ELASTIC_PACKAGE_BIN} stack dump -v --output "${dump_directory}"
 
-    upload_safe_logs_from_package ${package} ${build_directory}
+    upload_safe_logs_from_package "${package}" "${build_directory}"
 
     echo "Take down the Elastic stack"
     ${ELASTIC_PACKAGE_BIN} stack down -v
@@ -569,6 +587,16 @@ check_package() {
     local package=$1
     echo "Check package: ${package}"
     if ! ${ELASTIC_PACKAGE_BIN} check -v ; then
+        return 1
+    fi
+    echo ""
+    return 0
+}
+
+build_zip_package() {
+    local package=$1
+    echo "Build zip package: ${package}"
+    if ! ${ELASTIC_PACKAGE_BIN} build --zip ; then
         return 1
     fi
     echo ""
@@ -623,7 +651,7 @@ test_package_in_serverless() {
 run_tests_package() {
     local package=$1
     echo "--- [${package}] format and lint"
-    if ! check_package ${package} ; then
+    if ! check_package "${package}" ; then
         return 1
     fi
 
@@ -633,16 +661,16 @@ run_tests_package() {
     fi
 
     echo "--- [${package}] test installation"
-    if ! install_package ${package} ; then
+    if ! install_package "${package}" ; then
         return 1
     fi
     echo "--- [${package}] run test suites"
     if is_serverless; then
-        if ! test_package_in_serverless ${package} ; then
+        if ! test_package_in_serverless "${package}" ; then
             return 1
         fi
     else
-        if ! test_package_in_local_stack ${package} ; then
+        if ! test_package_in_local_stack "${package}" ; then
             return 1
         fi
     fi
@@ -659,7 +687,7 @@ create_collapsed_annotation() {
     local annotation_file="tmp.annotation.md"
     echo "<details><summary>${title}</summary>" >> ${annotation_file}
     echo -e "\n\n" >> ${annotation_file}
-    cat ${file} >> ${annotation_file}
+    cat "${file}" >> ${annotation_file}
     echo "</details>" >> ${annotation_file}
 
     cat ${annotation_file} | buildkite-agent annotate --style "${style}" --context "${context}"
@@ -685,8 +713,8 @@ upload_safe_logs() {
 }
 
 clean_safe_logs() {
-    rm -rf ${WORKSPACE}/build/elastic-stack-dump
-    rm -rf ${WORKSPACE}/build/container-logs
+    rm -rf "${WORKSPACE}/build/elastic-stack-dump"
+    rm -rf "${WORKSPACE}/build/container-logs"
 }
 
 upload_safe_logs_from_package() {
@@ -724,28 +752,28 @@ process_package() {
     local exit_code=0
 
     echo "--- Package ${package}: check"
-    pushd ${package} > /dev/null
+    pushd "${package}" > /dev/null
 
     clean_safe_logs
 
     if is_serverless ; then
         if [[ "${package}" == "fleet_server" ]]; then
             echo "fleet_server not supported. Skipped"
-            echo "- [${package}] not supported" >> ${SKIPPED_PACKAGES_FILE_PATH}
+            echo "- [${package}] not supported" >> "${SKIPPED_PACKAGES_FILE_PATH}"
             popd > /dev/null
             return
         fi
         if ! is_spec_3_0_0 ; then
             echo "Not v3 spec version. Skipped"
-            echo "- [${package}] spec <3.0.0" >> ${SKIPPED_PACKAGES_FILE_PATH}
+            echo "- [${package}] spec <3.0.0" >> "${SKIPPED_PACKAGES_FILE_PATH}"
             popd > /dev/null
             return
         fi
     fi
 
-    if ! reason=$(is_pr_affected ${package} ${from} ${to}) ; then
+    if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
         echo "${reason}"
-        echo "- ${reason}" >> ${SKIPPED_PACKAGES_FILE_PATH}
+        echo "- ${reason}" >> "${SKIPPED_PACKAGES_FILE_PATH}"
         popd > /dev/null
         return
     fi
@@ -762,10 +790,10 @@ process_package() {
         fi
     fi
 
-    if ! run_tests_package ${package} ; then
+    if ! run_tests_package "${package}" ; then
         exit_code=1
         echo "[${package}] run_tests_package failed"
-        echo "- ${package}" >> ${FAILED_PACKAGES_FILE_PATH}
+        echo "- ${package}" >> "${FAILED_PACKAGES_FILE_PATH}"
     fi
 
     if ! is_serverless ; then
@@ -781,9 +809,9 @@ process_package() {
     fi
 
     if is_serverless ; then
-        teardown_serverless_test_package ${package}
+        teardown_serverless_test_package "${package}"
     else
-        if ! teardown_test_package ${package} ; then
+        if ! teardown_test_package "${package}" ; then
             exit_code=1
             echo "[${package}] teardown_test_package failed"
         fi
@@ -809,36 +837,35 @@ add_github_comment_benchmark() {
         is_full_report="true"
     fi
 
-    pushd ${WORKSPACE} > /dev/null
+    pushd "${WORKSPACE}" > /dev/null
 
-    mkdir -p ${current_benchmark_results}
-    mkdir -p ${baseline}
+    mkdir -p "${current_benchmark_results}"
+    mkdir -p "${baseline}"
 
     # download PR benchmarks
-    local bucket_uri=$(get_benchmark_bucket_uri)
     download_benchmark_results \
-        ${JOB_GCS_BUCKET} \
-        $(get_benchmark_path_prefix) \
-        ${current_benchmark_results}
+        "${JOB_GCS_BUCKET}" \
+        "$(get_benchmark_path_prefix)" \
+        "${current_benchmark_results}"
 
     # download main benchmark if any
     download_benchmark_results \
-        ${JOB_GCS_BUCKET} \
-        $(get_benchmark_path_prefix) \
+        "${JOB_GCS_BUCKET}" \
+        "$(get_benchmark_path_prefix)" \
         baseline
 
     echo "Debug: current benchmark"
-    ls -l ${current_benchmark_results}
+    ls -l "${current_benchmark_results}"
 
     echo "Debug: baseline benchmark"
-    ls -l ${baseline}
+    ls -l "${baseline}"
 
     echo "Run benchmark report"
     ${ELASTIC_PACKAGE_BIN} report benchmark \
         --fail-on-missing=false \
         --new="${current_benchmark_results}" \
         --old="${baseline}" \
-        --threshold=${BENCHMARK_THRESHOLD} \
+        --threshold="${BENCHMARK_THRESHOLD}" \
         --report-output-path="${benchmark_github_file}" \
         --full=${is_full_report}
 
@@ -859,17 +886,13 @@ stash_benchmark_results() {
     fi
 
     upload_benchmark_results \
-        ${JOB_GCS_BUCKET} \
-        ${wildcard} \
-        $(get_benchmark_path_prefix)
-}
-
-get_benchmark_bucket_uri() {
-    echo "gs://${JOB_GCS_BUCKET}/$(get_benchmark_path_prefix)"
+        "${JOB_GCS_BUCKET}" \
+        "${wildcard}" \
+        "$(get_benchmark_path_prefix)"
 }
 
 get_benchmark_path_prefix() {
-    echo "${BUILDKITE_PIPELINE_SLUG}/${buildkite_pr_branch_build_id}/benchmark-results/"
+    echo "${BUILDKITE_PIPELINE_SLUG}/$(buildkite_pr_branch_build_id)/benchmark-results/"
 }
 
 upload_benchmark_results() {
@@ -896,7 +919,7 @@ download_benchmark_results() {
 
     google_cloud_auth_safe_logs
 
-    gsutil cp "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${source}" ${target}
+    gsutil cp "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${source}" "${target}"
 
     google_cloud_logout_active_account
 }

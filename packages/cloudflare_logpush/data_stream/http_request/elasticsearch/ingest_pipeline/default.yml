@@ -509,17 +509,32 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      field: json.SecurityActions
+      target_field: cloudflare_logpush.http_request.firewall.match.action
+      ignore_missing: true
+  - rename:
       field: json.FirewallMatchesActions
       target_field: cloudflare_logpush.http_request.firewall.match.action
+      ignore_missing: true
+      if: ctx.cloudflare_logpush?.http_request?.firewall?.match?.action != null
+  - rename:
+      field: json.SecurityRuleIDs
+      target_field: cloudflare_logpush.http_request.firewall.match.rule.id
       ignore_missing: true
   - rename:
       field: json.FirewallMatchesRuleIDs
       target_field: cloudflare_logpush.http_request.firewall.match.rule.id
       ignore_missing: true
+      if: ctx.cloudflare_logpush?.http_request?.firewall?.match?.rule?.id != null
+  - rename:
+      field: json.SecuritySources
+      target_field: cloudflare_logpush.http_request.firewall.match.source
+      ignore_missing: true
   - rename:
       field: json.FirewallMatchesSources
       target_field: cloudflare_logpush.http_request.firewall.match.source
       ignore_missing: true
+      if: ctx.cloudflare_logpush?.http_request?.firewall?.match?.source != null
   - rename:
       field: json.JA3Hash
       target_field: cloudflare_logpush.http_request.ja3_hash
@@ -659,9 +674,14 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      field: json.SecurityAction
+      target_field: cloudflare_logpush.http_request.waf.action
+      ignore_missing: true
+  - rename:
       field: json.WAFAction
       target_field: cloudflare_logpush.http_request.waf.action
       ignore_missing: true
+      if: ctx.cloudflare_logpush?.http_request?.waf?.action != null
   - rename:
       field: json.WAFFlags
       target_field: cloudflare_logpush.http_request.waf.flag
@@ -675,13 +695,23 @@ processors:
       target_field: cloudflare_logpush.http_request.waf.profile
       ignore_missing: true
   - rename:
+      field: json.SecurityRuleID
+      target_field: cloudflare_logpush.http_request.waf.rule.id
+      ignore_missing: true
+  - rename:
       field: json.WAFRuleID
       target_field: cloudflare_logpush.http_request.waf.rule.id
+      ignore_missing: true
+      if: ctx.cloudflare_logpush?.http_request?.waf?.rule?.id != null
+  - rename:
+      field: json.SecurityRuleDescription
+      target_field: cloudflare_logpush.http_request.waf.rule.message
       ignore_missing: true
   - rename:
       field: json.WAFRuleMessage
       target_field: cloudflare_logpush.http_request.waf.rule.message
       ignore_missing: true
+      if: ctx.cloudflare_logpush?.http_request?.waf?.rule?.message != null
   - convert:
       field: json.WorkerCPUTime
       target_field: cloudflare_logpush.http_request.worker.cpu_time

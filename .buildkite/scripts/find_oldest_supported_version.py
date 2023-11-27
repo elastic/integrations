@@ -87,7 +87,7 @@ def handle_or(kibana_version_condition: str):
     conditions = kibana_version_condition.split("||")
     result = ""
     for cond in conditions:
-        candidate = find_oldest_supported_version(cond)
+        candidate = find_oldest_supported_version(cond.strip())
         if result == "" or candidate < result:
             result = candidate
 
@@ -220,6 +220,9 @@ class TestFindOldestSupportVersion(unittest.TestCase):
         self.assertEqual(find_oldest_supported_version("8.9.2||8.9.1||7.17.14"), "7.17.14-SNAPSHOT")
         self.assertEqual(find_oldest_supported_version(
             "~8.9.2||>=8.11.0||7.17.14"), "7.17.14-SNAPSHOT")
+
+    def test_whitespaces(self):
+        self.assertEqual(find_oldest_supported_version(" ^8.6.0 || ~8.7.0 "), "8.6.0")
 
 
 class TestRemoveOperator(unittest.TestCase):

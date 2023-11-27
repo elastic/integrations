@@ -58,24 +58,24 @@ any_package_failing=0
 
 pushd packages > /dev/null
 for package in $(list_all_directories); do
-    if ! process_package ${package} ${from} ${to}; then
+    if ! process_package "${package}" "${from}" "${to}"; then
         any_package_failing=1
     fi
 done
 popd > /dev/null
 
 if running_on_buildkite ; then
-    if [ -f ${SKIPPED_PACKAGES_FILE_PATH} ]; then
-        create_collapsed_annotation "Skipped packages in ${SERVERLESS_PROJECT}" ${SKIPPED_PACKAGES_FILE_PATH} "info" "ctx-skipped-packages-${SERVERLESS_PROJECT}"
+    if [ -f "${SKIPPED_PACKAGES_FILE_PATH}" ]; then
+        create_collapsed_annotation "Skipped packages in ${SERVERLESS_PROJECT}" "${SKIPPED_PACKAGES_FILE_PATH}" "info" "ctx-skipped-packages-${SERVERLESS_PROJECT}"
     fi
 
-    if [ -f ${FAILED_PACKAGES_FILE_PATH} ]; then
-        create_collapsed_annotation "Failed packages in ${SERVERLESS_PROJECT}" ${FAILED_PACKAGES_FILE_PATH} "error" "ctx-failed-packages-${SERVERLESS_PROJECT}"
+    if [ -f "${FAILED_PACKAGES_FILE_PATH}" ]; then
+        create_collapsed_annotation "Failed packages in ${SERVERLESS_PROJECT}" "${FAILED_PACKAGES_FILE_PATH}" "error" "ctx-failed-packages-${SERVERLESS_PROJECT}"
     fi
 fi
 
 if [ $any_package_failing -eq 1 ] ; then
     echo "These packages have failed:"
-    cat ${FAILED_PACKAGES_FILE_PATH}
+    cat "${FAILED_PACKAGES_FILE_PATH}"
     exit 1
 fi
