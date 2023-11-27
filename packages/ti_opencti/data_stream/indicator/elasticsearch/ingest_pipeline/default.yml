@@ -179,25 +179,32 @@ processors:
       field: killChainPhases
 
   - script:
-      description: Move external reference nodes to their target location
+      description: Move external reference nodes to their target location, without nulls
       lang: painless
       source: |
         ArrayList edges = ctx.externalReferences.edges;
-        if (edges != null) {
-          for (int i = 0; i < edges.length; i++) {
-            if (!ctx.opencti?.indicator?.containsKey('external_reference')) {
-              if (!ctx.containsKey('opencti')) {
-                ctx.opencti = [:];
-              }
-              if (!ctx.opencti.containsKey('indicator')) {
-                ctx.opencti.indicator = [:];
-              }
-              if (!ctx.opencti.indicator.containsKey('external_reference')) {
-                ctx.opencti.indicator.external_reference = [];
-              }
+        if (edges == null) {
+          return;
+        }
+        for (int i = 0; i < edges.length; i++) {
+          if (!ctx.opencti?.indicator?.containsKey('external_reference')) {
+            if (!ctx.containsKey('opencti')) {
+              ctx.opencti = [:];
             }
-            ctx.opencti.indicator.external_reference.add(edges[i]['node']);
+            if (!ctx.opencti.containsKey('indicator')) {
+              ctx.opencti.indicator = [:];
+            }
+            if (!ctx.opencti.indicator.containsKey('external_reference')) {
+              ctx.opencti.indicator.external_reference = [];
+            }
           }
+          def newNode = [:];
+          for (def key : edges[i]['node'].keySet()) {
+            if (edges[i]['node'][key] != null) {
+              newNode[key] = edges[i]['node'][key];
+            }
+          }
+          ctx.opencti.indicator.external_reference.add(newNode);
         }
   - remove:
       field: externalReferences
