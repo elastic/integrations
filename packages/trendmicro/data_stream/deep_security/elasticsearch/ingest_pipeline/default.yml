@@ -82,22 +82,22 @@ processors:
   - grok:
       # decode_cef sets @timestamp when deviceReceiptTime is provided.
       description: Extract timestamp from log header when deviceReceiptTime not given.
-      if: ctx?.cef?.extensions?.deviceReceiptTime == null
+      if: ctx.cef?.extensions?.deviceReceiptTime == null
       field: event.original
       patterns:
-        - "^%{SYSLOG_TIMESTAMP} "
-        - "^%{ECS_SYSLOG_PRI}%{SYSLOG_TIMESTAMP} " # RFC3164
-        - "^%{ECS_SYSLOG_PRI}%{NONNEGINT} %{SYSLOG_TIMESTAMP} " # RFC5224
+        - "^(?:%{NONNEGINT}%{SPACE})?%{SYSLOG_TIMESTAMP} "
+        - "^(?:%{NONNEGINT}%{SPACE})?%{ECS_SYSLOG_PRI}%{SYSLOG_TIMESTAMP} " # RFC3164
+        - "^(?:%{NONNEGINT}%{SPACE})?%{ECS_SYSLOG_PRI}%{NONNEGINT} %{SYSLOG_TIMESTAMP} " # RFC5224
       pattern_definitions:
         ECS_SYSLOG_PRI: "<%{NONNEGINT:log.syslog.priority:long}>"
         SYSLOG_TIMESTAMP: "(?:%{SYSLOGTIMESTAMP:_tmp.timestamp}|%{TIMESTAMP_ISO8601:_tmp.timestamp8601})"
   - date:
-      if: ctx?._tmp?.timestamp8601 != null
+      if: ctx._tmp?.timestamp8601 != null
       field: _tmp.timestamp8601
       formats:
         - ISO8601
   - date:
-      if: ctx?._tmp?.timestamp != null
+      if: ctx._tmp?.timestamp != null
       field: _tmp.timestamp
       formats:
         - MMM  d HH:mm:ss
@@ -108,7 +108,7 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_missing: true
 
 on_failure:
