@@ -28,11 +28,11 @@ An example event for `utm` looks as following:
 {
     "@timestamp": "2023-03-08T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "cc0463c4-c141-46e2-81a4-c9ffe70bf450",
-        "id": "533bdb32-d7d6-482e-a4ee-22a7c8ba474c",
+        "ephemeral_id": "1c14ef92-e910-4bef-84c4-4ceecac7a048",
+        "id": "60d18e37-b683-4bd5-a0e9-e19bb64cc7bb",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.1"
+        "version": "8.10.3"
     },
     "data_stream": {
         "dataset": "sophos.utm",
@@ -67,9 +67,9 @@ An example event for `utm` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "533bdb32-d7d6-482e-a4ee-22a7c8ba474c",
+        "id": "60d18e37-b683-4bd5-a0e9-e19bb64cc7bb",
         "snapshot": false,
-        "version": "8.8.1"
+        "version": "8.10.3"
     },
     "event": {
         "action": "pass",
@@ -79,7 +79,7 @@ An example event for `utm` looks as following:
         ],
         "dataset": "sophos.utm",
         "id": "0001",
-        "ingested": "2023-07-20T08:37:19Z",
+        "ingested": "2023-11-19T21:23:10Z",
         "kind": "event",
         "provider": "http",
         "severity": 6,
@@ -92,7 +92,8 @@ An example event for `utm` looks as following:
         "name": "testgroup"
     },
     "host": {
-        "hostname": "sophos-test-vm1"
+        "hostname": "sophos-test-vm1",
+        "name": "sophos-test-vm1"
     },
     "http": {
         "request": {
@@ -110,7 +111,7 @@ An example event for `utm` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.31.0.4:45730"
+            "address": "172.28.0.5:49278"
         }
     },
     "network": {
@@ -203,7 +204,6 @@ An example event for `utm` looks as following:
         "original": "Microsoft BITS/7.8"
     }
 }
-
 ```
 
 **Exported fields**
@@ -443,11 +443,11 @@ An example event for `xg` looks as following:
 {
     "@timestamp": "2016-12-02T18:50:20.000Z",
     "agent": {
-        "ephemeral_id": "12701a32-24a5-401a-a7f4-b8202e00f440",
-        "id": "533bdb32-d7d6-482e-a4ee-22a7c8ba474c",
+        "ephemeral_id": "244d391d-55cb-405e-baff-e091145a351c",
+        "id": "e756de30-a6b6-437a-8c56-cd75349c61bf",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.1"
+        "version": "8.10.3"
     },
     "data_stream": {
         "dataset": "sophos.xg",
@@ -458,9 +458,9 @@ An example event for `xg` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "533bdb32-d7d6-482e-a4ee-22a7c8ba474c",
+        "id": "e756de30-a6b6-437a-8c56-cd75349c61bf",
         "snapshot": false,
-        "version": "8.8.1"
+        "version": "8.10.3"
     },
     "event": {
         "action": "alert",
@@ -470,7 +470,7 @@ An example event for `xg` looks as following:
         ],
         "code": "16010",
         "dataset": "sophos.xg",
-        "ingested": "2023-07-20T08:39:24Z",
+        "ingested": "2023-11-15T05:39:21Z",
         "kind": "event",
         "outcome": "success",
         "severity": 1,
@@ -485,7 +485,7 @@ An example event for `xg` looks as following:
     "log": {
         "level": "alert",
         "source": {
-            "address": "172.31.0.4:59318"
+            "address": "192.168.32.4:40336"
         }
     },
     "observer": {
@@ -532,7 +532,6 @@ An example event for `xg` looks as following:
         "forwarded"
     ]
 }
-
 ```
 
 **Exported fields**

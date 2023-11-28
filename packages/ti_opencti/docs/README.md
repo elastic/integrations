@@ -41,13 +41,13 @@ An example event for `indicator` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-09-29T19:16:15.226Z",
+    "@timestamp": "2023-11-09T01:59:11.241Z",
     "agent": {
-        "ephemeral_id": "53f803d5-6063-4fda-b5b2-fd41bfd2ca27",
-        "id": "41e802df-9279-45d8-8c76-dbd82b415e01",
+        "ephemeral_id": "f115b31f-9c4f-4f14-a73b-3a54e25f204e",
+        "id": "00b6764d-580c-4a5e-bd48-b4e128e0d894",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.2"
+        "version": "8.10.1"
     },
     "data_stream": {
         "dataset": "ti_opencti.indicator",
@@ -58,9 +58,9 @@ An example event for `indicator` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "41e802df-9279-45d8-8c76-dbd82b415e01",
+        "id": "00b6764d-580c-4a5e-bd48-b4e128e0d894",
         "snapshot": false,
-        "version": "8.9.2"
+        "version": "8.10.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -70,8 +70,9 @@ An example event for `indicator` looks as following:
         "created": "2018-02-05T08:04:53.000Z",
         "dataset": "ti_opencti.indicator",
         "id": "d019b01c-b637-4eb2-af53-6d527be3193d",
-        "ingested": "2023-09-29T19:16:18Z",
+        "ingested": "2023-11-09T01:59:14Z",
         "kind": "enrichment",
+        "original": "{\"confidence\":15,\"created\":\"2018-02-05T08:04:53.000Z\",\"createdBy\":{\"identity_class\":\"organization\",\"name\":\"CthulhuSPRL.be\"},\"description\":\"\",\"externalReferences\":{\"edges\":[]},\"id\":\"d019b01c-b637-4eb2-af53-6d527be3193d\",\"is_inferred\":false,\"killChainPhases\":{\"edges\":[]},\"lang\":\"en\",\"modified\":\"2023-01-17T05:53:42.851Z\",\"name\":\"ec2-23-21-172-164.compute-1.amazonaws.com\",\"objectLabel\":{\"edges\":[{\"node\":{\"value\":\"information-credibility-6\"}},{\"node\":{\"value\":\"osint\"}}]},\"objectMarking\":{\"edges\":[{\"node\":{\"definition\":\"TLP:GREEN\",\"definition_type\":\"TLP\"}}]},\"observables\":{\"edges\":[{\"node\":{\"entity_type\":\"Hostname\",\"id\":\"b0a91059-5637-4050-8dce-a976a607f75c\",\"observable_value\":\"ec2-23-21-172-164.compute-1.amazonaws.com\",\"standard_id\":\"hostname--2047cd44-ffae-5b34-b912-5856add59b59\",\"value\":\"ec2-23-21-172-164.compute-1.amazonaws.com\"}}],\"pageInfo\":{\"globalCount\":1}},\"pattern\":\"[hostname:value = 'ec2-23-21-172-164.compute-1.amazonaws.com']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"revoked\":true,\"standard_id\":\"indicator--cde0a6e1-c622-52c4-b857-e9aeac56131b\",\"valid_from\":\"2018-02-05T08:04:53.000Z\",\"valid_until\":\"2019-02-05T08:04:53.000Z\",\"x_opencti_detection\":false,\"x_opencti_main_observable_type\":\"Hostname\",\"x_opencti_score\":40}",
         "type": [
             "indicator"
         ]
@@ -110,6 +111,7 @@ An example event for `indicator` looks as following:
         ]
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "opencti-indicator",
         "information-credibility-6",

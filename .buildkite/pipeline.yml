@@ -5,7 +5,7 @@ env:
   LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
   DOCKER_COMPOSE_VERSION: "v2.17.2"
   KIND_VERSION: 'v0.20.0'
-  K8S_VERSION: 'v1.27.3'
+  K8S_VERSION: 'v1.28.0'
   YQ_VERSION: 'v4.35.2'
   # Elastic package settings
   # Manage docker output/logs
@@ -27,15 +27,17 @@ steps:
       cpu: "8"
       memory: "4G"
 
-  # TODO: Pending to migrate stages from https://github.com/elastic/integrations/blob/993537b80456edf2035f2a4826031841116c2019/.ci/Jenkinsfile
-  # - label: "Publish packages - INCOMPLETE"
-  #   key: "publish-packages"
-  #   command: ".buildkite/scripts/publish_packages.sh" # TODO: missing signature and publishing loops
-  #   agents:
-  #     provider: "gcp"
-  #   depends_on:
-  #     - step: "check"
-  #       allow_failure: false
+  # TODO: Pending to migrate steps to Buildkite pipelines - still triggering Jenkins pipelines
+  - label: "Publish packages - (triggering Jenkins builds)"
+    key: "publish-packages"
+    command: ".buildkite/scripts/publish_packages.sh" # TODO: missing signature and publishing loops
+    env:
+      DRY_RUN: "true" # TODO: Avoid signing and publishing pending packages until Jenkins pipeline is replaced
+    agents:
+      provider: "gcp"
+    depends_on:
+      - step: "check"
+        allow_failure: false
 
   - label: "Trigger integrations"
     key: "test-integrations"
