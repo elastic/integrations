@@ -129,21 +129,13 @@ streams:
         show_user: false
         description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
       - name: fdr_parsing_script
-        type: yaml
+        type: textarea
         title: FDR Notification Parsing Script
         multi: false
         required: true
         show_user: false
         description: The JS script used to parse the custom format of SQS FDR notifications.
         default: |
-          if (!String.prototype.includes) {
-            Object.defineProperty(String.prototype, "includes", {
-              value: function (searchString) {
-                return this.indexOf(searchString) !== -1;
-              },
-            });
-          }
-          
           function parse(n) {
             var m = JSON.parse(n);
             var evts = [];
@@ -153,6 +145,9 @@ streams:
               return evts;
             }
             files.sort(function(a, b) {
+              var isAidmaster = function(a) {
+                return a.path && (a.path.indexOf("aidmaster") !== -1);
+              };
               var cmp = function(a, b) {
                 if (a < b) {
                   return -1;
@@ -162,11 +157,10 @@ streams:
                 }
                 return 0;
               };
-              var tag = "aidmaster";
-              if ((a.path && a.path.includes(tag) && b.path && b.path.includes(tag)) || !((a.path && a.path.includes(tag)) || (b.path && b.path.includes(tag)))){
+              if (isAidmaster(a) === isAidmaster(b)) {
                 return cmp(a.path, b.path);
               }
-              if (a.path && a.path.includes(tag)) {
+              if (isAidmaster(a)) {
                 return -1;
               }
               return 1;
