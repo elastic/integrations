@@ -3,10 +3,10 @@ name: google_cloud_storage
 title: Custom GCS (Google Cloud Storage) Input
 description: Collect JSON data from configured GCS Bucket with Elastic Agent.
 type: integration
-version: "0.9.0"
+version: 1.0.0
 conditions:
   kibana:
-    version: "^8.6.2"
+    version: "^8.11.0"
 categories:
   - custom
   - cloud
@@ -18,6 +18,34 @@ policy_templates:
       - type: gcs
         title: Custom GCS (Google Cloud Storage) Input
         description: Collect JSON data from configured GCS Bucket with Elastic Agent.
+        vars:
+          - name: project_id
+            type: text
+            title: Project ID
+            description: |
+              This attribute is required for various internal operations with respect to authentication, creating storage clients and logging which are used internally for various processing purposes.
+            multi: false
+            required: true
+            show_user: true
+            default: my-project-id
+          - name: service_account_key
+            type: password
+            title: Service Account Key
+            description: |
+              This attribute contains the json service account credentials string, which can be generated from the google cloud console, ref[Service Account Keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
+              Required if a Service Account File is not provided.
+            multi: false
+            required: false
+            show_user: true
+          - name: service_account_file
+            type: text
+            title: Service Account File
+            description: |
+              This attribute contains the service account credentials file, which can be generated from the google cloud console, ref [Service Account Keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
+              Required if a Service Account Key is not provided.
+            multi: false
+            required: false
+            show_user: true
 icons:
   - src: "/img/icon.svg"
     type: "image/svg+xml"
