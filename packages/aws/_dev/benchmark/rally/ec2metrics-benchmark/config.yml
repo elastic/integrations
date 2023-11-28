@@ -1,0 +1,138 @@
+fields:
+  - name: timestamp
+    period: 60m # one hour
+  - name: dimensionType
+    # no dimension: 2.5%, AutoScalingGroupName: 10%, ImageId: 5%, InstanceType: 2.5%, InstanceId: 80%
+    enum: ["", "AutoScalingGroupName", "AutoScalingGroupName", "AutoScalingGroupName", "AutoScalingGroupName", "ImageId", "ImageId", "InstanceType", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId", "InstanceId"]
+    # if you have multiple fields with cardinality, and you want those field to be linked (meaning that for field1/valueX you want always field2/valueY) you have to set as cardinality of each linked fields the LCM of their size.
+    # what is their size? for enum is the length of the enum list, for integer is the range, etc. where you don't have a fixed length (like text or integer with a range), you won't consider it in the calculation for the LCM:
+    # you just decide how many different values you want to have, as long as the number fits the LCM of the fields with a size, and you set this as the cardinality, or set the cardinality as the LCM.
+    # in this case we have: `dimensionType` (40), `region` (15), `instanceTypeIdx`/`InstanceType`/`instanceCoreCount`/`instanceThreadPerCore` (20),
+    # `instanceMonitoringState`/`instancePrivateDnsEmpty`/`instanceStateName` (10) and `instancePublicDnsEmpty` (5): the result is 120
+    cardinality: 120
+  - name: Region
+    enum: ["ap-south-1", "eu-north-1", "eu-west-3", "eu-west-2", "eu-west-1", "ap-northeast-3", "ap-northeast-2", "ap-northeast-1", "ap-southeast-1", "ap-southeast-2", "eu-central-1", "us-east-1", "us-east-2", "us-west-1", "us-west-2"]
+    cardinality: 120
+  - name: AutoScalingGroupName
+    cardinality: 120
+  - name: ImageId
+    cardinality: 120
+  - name: InstanceId
+    cardinality: 120
+  - name: instanceTypeIdx
+    # we generate and index for the instance type enums, so that all the information related to a given type are properly matched
+    range:
+      min: 0
+      max: 19
+    cardinality: 120
+  - name: InstanceType
+    value: ["a1.medium", "c3.2xlarge", "c4.4xlarge", "c5.9xlarge", "c5a.12xlarge", "c5ad.16xlarge", "c5d.24xlarge", "c6a.32xlarge", "g5.48xlarge", "d2.2xlarge", "d3.xlarge", "t2.medium", "t2.micro", "t2.nano", "t2.small", "t3.large", "t3.medium", "t3.micro", "t3.nano", "t3.small"]
+  - name: instanceCoreCount
+    # they map instance types
+    value: ["1", "4", "8", "18", "24", "32", "48", "64", "96", "4", "2", "2", "1", "1", "1", "1", "1", "1", "1", "1"]
+  - name: instanceThreadPerCore
+    # they map instance types
+    value: ["1", "2", "2", " 2", " 2", " 2", " 2", " 2", " 2", "2", "2", "1", "1", "1", "1", "2", "2", "2", "2", "2"]
+  - name: instanceImageId
+    cardinality: 120
+  - name: instanceMonitoringState
+    # enable: 10%, disabled: 90%
+    enum: ["enabled", "disabled", "disabled", "disabled", "disabled", "disabled", "disabled", "disabled", "disabled", "disabled"]
+    cardinality: 120
+  - name: instancePrivateIP
+    cardinality: 120
+  - name: instancePrivateDnsEmpty
+    # without private dns entry: 10%, with private dns entry: 90%
+    enum: ["empty", "fromPrivateIP", "fromPrivateIP", "fromPrivateIP", "fromPrivateIP", "fromPrivateIP", "fromPrivateIP", "fromPrivateIP", "fromPrivateIP", "fromPrivateIP"]
+    cardinality: 120
+  - name: instancePublicIP
+    cardinality: 120
+  - name: instancePublicDnsEmpty
+    # without public dns entry: 20%, with public dns entry: 80%
+    enum: ["empty", "fromPublicIP", "fromPublicIP", "fromPublicIP", "fromPublicIP"]
+    cardinality: 120
+  - name: instanceStateName
+    # terminated: 10%, running: 90%
+    enum: ["terminated", "running", "running", "running", "running", "running", "running", "running", "running", "running"]
+    cardinality: 120
+  - name: cloudInstanceName
+    cardinality: 120
+  - name: StatusCheckFailed_InstanceAvg
+    range:
+      min: 0
+      max: 10
+    fuzziness: 0.05
+  - name: StatusCheckFailed_SystemAvg
+    range:
+      min: 0
+      max: 10
+    fuzziness: 0.05
+  - name: StatusCheckFailedAvg
+    range:
+      min: 0
+      max: 10
+    fuzziness: 0.05
+  - name: CPUUtilizationAvg
+    range:
+      min: 0
+      max: 100
+    fuzziness: 0.05
+  - name: NetworkPacketsInSum
+    range:
+      min: 0
+      max: 1500000
+    fuzziness: 0.05
+  - name: NetworkPacketsOutSum
+    range:
+      min: 0
+      max: 1500000
+    fuzziness: 0.05
+  - name: CPUCreditBalanceAvg
+    range:
+      min: 0
+      max: 5000
+    fuzziness: 0.05
+  - name: CPUSurplusCreditBalanceAvg
+    range:
+      min: 0
+      max: 5000
+    fuzziness: 0.05
+  - name: CPUSurplusCreditsChargedAvg
+    range:
+      min: 0
+      max: 5000
+    fuzziness: 0.05
+  - name: CPUCreditUsageAvg
+    range:
+      min: 0
+      max: 10
+    fuzziness: 0.05
+  - name: DiskReadBytesSum
+    range:
+      min: 0
+      max: 1500000
+    fuzziness: 0.05
+  - name: DiskReadOpsSum
+    range:
+      min: 0
+      max: 1000
+    fuzziness: 0.05
+  - name: DiskWriteBytesSum
+    range:
+      min: 0
+      max: 1500000000
+    fuzziness: 0.05
+  - name: DiskWriteOpsSum
+    range:
+      min: 0
+      max: 1000
+    fuzziness: 0.05
+  - name: EventDuration
+    range:
+      min: 1
+      max: 1000
+  - name: partOfAutoScalingGroup
+    # we dived this value by 20 in the template, giving 20% chance to be part of an autoscaling group: in this case we append the related aws.tags
+    range:
+      min: 1
+      max: 100
