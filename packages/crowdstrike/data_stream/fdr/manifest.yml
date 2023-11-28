@@ -136,6 +136,14 @@ streams:
         show_user: false
         description: The JS script used to parse the custom format of SQS FDR notifications.
         default: |
+          if (!String.prototype.includes) {
+            Object.defineProperty(String.prototype, "includes", {
+              value: function (searchString) {
+                return this.indexOf(searchString) !== -1;
+              },
+            });
+          }
+          
           function parse(n) {
             var m = JSON.parse(n);
             var evts = [];
