@@ -40,23 +40,20 @@ steps:
       - step: "check"
         allow_failure: false
 
-  - group: ":outbox_tray: Publish packages"
-    key: "publish-packages-buildkite"
-    steps:
-      - label: ":package: Build packages"
-        key: "build-packages"
-        command: ".buildkite/scripts/build_packages.sh"
-        agents:
-          image: "${LINUX_AGENT_IMAGE}"
-          cpu: "8"
-          memory: "8G"
-        env:
-          ARTIFACTS_FOLDER: "." # TODO: to be changed to other folder e.g. "packagesArtifacts"
-        depends_on:
-          - step: "check"
-            allow_failure: false
-        artifact_paths:
-          - ./*.zip  # TODO: to be changed depending on the ARTIFACTS_FOLDER
+  - label: ":package: Build packages"
+    key: "build-packages"
+    command: ".buildkite/scripts/build_packages.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "8"
+      memory: "8G"
+    env:
+      ARTIFACTS_FOLDER: "." # TODO: to be changed to other folder e.g. "packagesArtifacts"
+    depends_on:
+      - step: "check"
+        allow_failure: false
+    artifact_paths:
+      - ./*.zip  # TODO: to be changed depending on the ARTIFACTS_FOLDER
 
   # force to just have the package and signature files as artifacts when signing pipeline is triggered
   - wait
