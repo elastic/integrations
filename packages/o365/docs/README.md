@@ -287,6 +287,7 @@ An example event for `audit` looks as following:
 | o365.audit.Data.etps |  | keyword |
 | o365.audit.Data.etype |  | keyword |
 | o365.audit.Data.f3u |  | keyword |
+| o365.audit.Data.flattened | The full Data document. | flattened |
 | o365.audit.Data.fvs |  | keyword |
 | o365.audit.Data.imsgid |  | keyword |
 | o365.audit.Data.lon |  | keyword |
@@ -330,7 +331,6 @@ An example event for `audit` looks as following:
 | o365.audit.Data.zmfh |  | keyword |
 | o365.audit.Data.zmfn |  | keyword |
 | o365.audit.Data.zu |  | keyword |
-| o365.audit.DataRest |  | flattened |
 | o365.audit.DataType |  | keyword |
 | o365.audit.EntityType |  | keyword |
 | o365.audit.ErrorNumber |  | keyword |
