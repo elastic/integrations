@@ -109,39 +109,42 @@ fi
 cd "${WORKSPACE}" || exit 1
 cp "${BUILD_PACKAGES_FOLDER}"/*.zip "${ARTIFACTS_FOLDER}"
 
-# triggering dynamically the steps for signing ansd publishing
-# Just allow to check whether or not this group of steps needs to be run in one script
-# just trigger signing or publish if there are any packages to be published
+# triggering dynamically the steps for signing and publishing
+# allow us to check whether or not this group of steps needs to be run in one script
+# signing and publish steps must run just if there are any packages to be published
 
 PIPELINE_FILE="pipeline-sign-publish.yml"
 
 cat <<EOF > "${PIPELINE_FILE}"
 steps:
-  # If you change 'key: sign-service' then change SIGNING_STEP_KEY value from trigger-publish step pipeline
-  - label: ":key: Sign artifacts"
-    trigger: unified-release-gpg-signing
-    key: sign-service
-    depends_on:
-      - step: "build-packages"
-        allow_failure: false
-    build:
-      env:
-        INPUT_PATH: "buildkite://"
-        DOWNLOAD_ARTIFACTS_FILTER: "*.zip"
+  - group: ":outbox_tray: Publish packages"
+    key: "publish-packages-buildkite"
+    steps:
+      # If you change 'key: sign-service' then change SIGNING_STEP_KEY value from trigger-publish step pipeline
+      - label: ":key: Sign artifacts"
+        trigger: unified-release-gpg-signing
+        key: sign-service
+        depends_on:
+          - step: "build-packages"
+            allow_failure: false
+        build:
+          env:
+            INPUT_PATH: "buildkite://"
+            DOWNLOAD_ARTIFACTS_FILTER: "*.zip"
 
-  - label: ":esbuild: Trigger publishing packages if any"
-    key: "trigger-publish"
-    command: ".buildkite/scripts/trigger_publish_packages.sh"
-    env:
-      SIGNING_STEP_KEY: "sign-service"
-      ARTIFACTS_FOLDER: "."
-    agents:
-      image: "${LINUX_AGENT_IMAGE}"
-      cpu: "8"
-      memory: "8G"
-    depends_on:
-      - step: "sign-service"
-        allow_failure: false
+      - label: ":esbuild: Trigger publishing packages if any"
+        key: "trigger-publish"
+        command: ".buildkite/scripts/trigger_publish_packages.sh"
+        env:
+          SIGNING_STEP_KEY: "sign-service"
+          ARTIFACTS_FOLDER: "."
+        agents:
+          image: "${LINUX_AGENT_IMAGE}"
+          cpu: "8"
+          memory: "8G"
+        depends_on:
+          - step: "sign-service"
+            allow_failure: false
 EOF
 
 buildkite-agent pipeline upload "${PIPELINE_FILE}"
