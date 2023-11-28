@@ -39,7 +39,7 @@ fips_enabled: {{fips_enabled}}
 proxy_url: {{proxy_url}}
 {{/if}}
 {{#if is_fdr_queue}}
-sqs.notification_parsing_script.source: {{fdr_parsing_script}}
+sqs.notification_parsing_script.source: {{escape_string fdr_parsing_script}}
 {{/if}}
 {{#if tags.length}}
 tags:
@@ -51,13 +51,48 @@ tags:
 {{#if preserve_original_event}}
   - preserve_original_event
 {{/if}}
-{{#each tags as |tag i|}}
+{{#each tags as |tag|}}
   - {{tag}}
 {{/each}}
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if processors}}
 processors:
+- add_locale: ~
+{{#if enrich_host_metadata}}
+- decode_json_fields:
+    fields: message
+    target: crowdstrike
+- if:
+    contains:
+      log.file.path: aidmaster
+  then:
+    - cache:
+        backend:
+          file:
+            id: aidmaster
+        put:
+          ttl: {{host_metadata_ttl}}
+          key_field: crowdstrike.aid
+          value_field: crowdstrike
+          ignore_missing: false
+    - drop_event:
+        when:
+          contains:
+            log.file.path: aidmaster
+  else:
+    - cache:
+        backend:
+          file:
+            id: aidmaster
+        get:
+          key_field: crowdstrike.aid
+          target_field: metadata
+          ignore_missing: false
+- drop_fields:
+    fields:
+      - crowdstrike
+{{/if}}
+{{#if processors}}
 {{processors}}
 {{/if}}

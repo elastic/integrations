@@ -13,6 +13,19 @@ processors:
       description: Decodes original JSON into `crowdstrike` field.
       field: event.original
       target_field: crowdstrike
+  - remove:
+      tag: remove-metadata-aid
+      field: metadata.aid
+      ignore_missing: true
+  - rename:
+      tag: aidmaster-metadata
+      field: metadata
+      target_field: crowdstrike.info.host
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "'{{ _ingest.on_failure_processor_tag }}' rename failed with message {{ _ingest.on_failure_message }}"
   - date:
       tag: date-timestamp-utc
       description: Parse timestamp from event.
@@ -2441,6 +2454,7 @@ processors:
         - crowdstrike.UserIsAdmin
         - crowdstrike.UTCTimestamp
         - crowdstrike.TargetDirectoryName
+        - aws
       ignore_missing: true
       ignore_failure: true
   - remove:

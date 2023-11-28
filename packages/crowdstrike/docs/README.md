@@ -960,6 +960,7 @@ and/or `session_token`.
 | crowdstrike.discovererCount |  | integer |
 | crowdstrike.discoverer_aid |  | keyword |
 | crowdstrike.eid |  | integer |
+| crowdstrike.info.host.\* | Host information enriched from aidmaster data. | object |
 | crowdstrike.localipCount |  | integer |
 | crowdstrike.name |  | keyword |
 | crowdstrike.subnet |  | keyword |
@@ -1107,11 +1108,11 @@ An example event for `fdr` looks as following:
 {
     "@timestamp": "2020-11-08T09:58:32.519Z",
     "agent": {
-        "ephemeral_id": "6b7924ba-f695-422a-a296-d1092ff909e4",
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "ephemeral_id": "880f9fe6-5a16-493d-acd6-5315c9ad19d0",
+        "id": "e249dc3d-a28d-40a5-b6e9-de9d81952432",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.11.0"
     },
     "crowdstrike": {
         "ConfigStateHash": "1763245019",
@@ -1129,6 +1130,39 @@ An example event for `fdr` looks as following:
         "ShareAccess": "5",
         "Status": "0",
         "cid": "ffffffff30a3407dae27d0503611022d",
+        "info": {
+            "host": {
+                "AgentLoadFlags": "1",
+                "AgentLocalTime": "1697735519",
+                "AgentTimeOffset": "15963.231",
+                "AgentVersion": "6.56.17010.0",
+                "BiosManufacturer": "Iris",
+                "BiosVersion": "vG17V.210105623/u64",
+                "ChassisType": "Other",
+                "City": "Chicago",
+                "ComputerName": "FEVWSN1-009",
+                "ConfigBuild": "1007.3.0017010.1",
+                "ConfigIDBuild": "17010",
+                "Continent": "North America",
+                "Country": "America",
+                "FirstSeen": "1641998107.0",
+                "HostHiddenStatus": "Visible",
+                "MachineDomain": "groot.org",
+                "OU": "UAT;CAA;VDI;Global;Offices",
+                "PointerSize": "8",
+                "ProductType": "1.0",
+                "ServicePackMajor": "0",
+                "SiteName": "BCL",
+                "SystemManufacturer": "Iris",
+                "SystemProductName": "IrOS",
+                "Time": "1697992762.221",
+                "Timezone": "America/Chicago",
+                "Version": "Windows ME",
+                "aip": "16.15.12.10",
+                "cid": "ffffffff30a3407dae27d0503611022d",
+                "event_platform": "Win"
+            }
+        },
         "name": "RansomwareOpenFileV4"
     },
     "data_stream": {
@@ -1140,9 +1174,9 @@ An example event for `fdr` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "id": "e249dc3d-a28d-40a5-b6e9-de9d81952432",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.11.0"
     },
     "event": {
         "action": "RansomwareOpenFile",
@@ -1153,7 +1187,7 @@ An example event for `fdr` looks as following:
         "created": "2020-11-08T17:07:22.091Z",
         "dataset": "crowdstrike.fdr",
         "id": "ffffffff-1111-11eb-9756-06fe7f8f682f",
-        "ingested": "2023-09-26T13:20:10Z",
+        "ingested": "2023-11-28T03:18:09Z",
         "kind": "alert",
         "original": "{\"ConfigBuild\":\"1007.3.0011603.1\",\"ConfigStateHash\":\"1763245019\",\"ContextProcessId\":\"1016182570608\",\"ContextThreadId\":\"37343520154472\",\"ContextTimeStamp\":\"1604829512.519\",\"DesiredAccess\":\"1179785\",\"EffectiveTransmissionClass\":\"3\",\"Entitlements\":\"15\",\"FileAttributes\":\"0\",\"FileIdentifier\":\"7a9c1c1610045d45a54bd6643ac12ea767a5020000000c00\",\"FileObject\":\"18446670458156489088\",\"Information\":\"1\",\"IrpFlags\":\"2180\",\"MajorFunction\":\"0\",\"MinorFunction\":\"0\",\"OperationFlags\":\"0\",\"Options\":\"16777312\",\"ShareAccess\":\"5\",\"Status\":\"0\",\"TargetFileName\":\"\\\\Device\\\\HarddiskVolume3\\\\Users\\\\user11\\\\Downloads\\\\file.pptx\",\"aid\":\"ffffffffac4148947ed68497e89f3308\",\"aip\":\"67.43.156.14\",\"cid\":\"ffffffff30a3407dae27d0503611022d\",\"event_platform\":\"Win\",\"event_simpleName\":\"RansomwareOpenFile\",\"id\":\"ffffffff-1111-11eb-9756-06fe7f8f682f\",\"name\":\"RansomwareOpenFileV4\",\"timestamp\":\"1604855242091\"}",
         "outcome": "success",
@@ -1176,11 +1210,11 @@ An example event for `fdr` looks as following:
         }
     },
     "input": {
-        "type": "log"
+        "type": "aws-s3"
     },
     "log": {
         "file": {
-            "path": "/tmp/service_logs/fdr-sample.log"
+            "path": "https://elastic-package-crowdstrike-fdr-62458.s3.us-east-1.amazonaws.com/data"
         },
         "offset": 95203
     },
