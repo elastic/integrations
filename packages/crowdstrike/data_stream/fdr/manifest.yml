@@ -40,6 +40,22 @@ streams:
         description: |
           By default the FDR queue is expected. This option must be set to `false` if you are using your own queue.
         default: true
+      - name: enrich_host_metadata
+        required: true
+        show_user: true
+        title: Enrich Host Metadata
+        description: Uses data in aidmaster to add host information to events. The aidmaster blob must contain the string "aidmaster" in its path and the FDR Notification Parsing Script must sort events so that aidmaster events appear first in the stream.
+        type: bool
+        multi: false
+        default: true
+      - name: host_metadata_ttl
+        required: true
+        show_user: true
+        title: Host Metadata TTL
+        description: The period of time that host metadata is considered valid for. Valid time units are h, m, s, ms, us/µs and ns.
+        type: text
+        multi: false
+        default: 168h
       - name: preserve_original_event
         required: true
         show_user: true
@@ -113,7 +129,7 @@ streams:
         show_user: false
         description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
       - name: fdr_parsing_script
-        type: yaml
+        type: textarea
         title: FDR Notification Parsing Script
         multi: false
         required: true
@@ -128,6 +144,27 @@ streams:
             if (!Array.isArray(files) || (files.length == 0) || bucket == null || bucket == "") {
               return evts;
             }
+            files.sort(function(a, b) {
+              var isAidmaster = function(a) {
+                return a.path && (a.path.indexOf("aidmaster") !== -1);
+              };
+              var cmp = function(a, b) {
+                if (a < b) {
+                  return -1;
+                }
+                if (a > b) {
+                  return 1;
+                }
+                return 0;
+              };
+              if (isAidmaster(a) === isAidmaster(b)) {
+                return cmp(a.path, b.path);
+              }
+              if (isAidmaster(a)) {
+                return -1;
+              }
+              return 1;
+            });
             files.forEach(function(f){
               var evt = new S3EventV2();
               evt.SetS3BucketName(bucket);
@@ -171,6 +208,22 @@ streams:
         default:
           - /var/log/falcon_data_replicator.log
         show_user: true
+      - name: enrich_host_metadata
+        required: true
+        show_user: true
+        title: Enrich Host Metadata
+        description: Uses data in aidmaster to add host information to events. The aidmaster file must be included in the paths configuration, include the string "aidmaster" in the path, and have a file path that sorts before the FDR log file paths.
+        type: bool
+        multi: false
+        default: true
+      - name: host_metadata_ttl
+        required: true
+        show_user: true
+        title: Host Metadata TTL
+        description: The period of time that host metadata is considered valid for. Valid time units are h, m, s, ms, us/µs and ns.
+        type: text
+        multi: false
+        default: 168h
       - name: preserve_original_event
         required: true
         show_user: true
