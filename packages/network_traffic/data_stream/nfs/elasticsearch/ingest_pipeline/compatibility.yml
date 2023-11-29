@@ -1,6 +1,35 @@
 ---
 description: ECS compatibility layer pipeline.
-processors: []
+processors:
+  - rename:
+      field: nfs
+      target_field: network_traffic.nfs
+      ignore_missing: true
+  - rename:
+      field: method
+      target_field: network_traffic.nfs.method
+      ignore_missing: true
+  - rename:
+      field: query
+      target_field: network_traffic.nfs.query
+      ignore_missing: true
+  - rename:
+      field: rpc
+      target_field: network_traffic.nfs.rpc
+      ignore_missing: true
+  - rename:
+      # Retained for legacy dashboard behaviour.
+      field: status
+      target_field: network_traffic.status
+      ignore_missing: true
+  # TODO: "host.hostname"
+  # Remove packetbeat fields that are handled by agent or fleet.
+  - remove:
+      field: type
+      ignore_missing: true
+  - remove:
+      field: event.dataset
+      ignore_missing: true
 
 on_failure:
   - append:

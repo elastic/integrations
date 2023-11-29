@@ -1,6 +1,18 @@
 ---
 description: ECS compatibility layer pipeline.
-processors: []
+processors:
+  # Nothing to do for tls as all fields are already in ECS.
+
+  # Remove packetbeat fields that are handled by agent or fleet.
+  - remove:
+      field: status
+      ignore_missing: true
+  - remove:
+      field: type
+      ignore_missing: true
+  - remove:
+      field: event.dataset
+      ignore_missing: true
 
 on_failure:
   - append:

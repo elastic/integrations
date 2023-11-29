@@ -1,6 +1,20 @@
 ---
 description: ECS compatibility layer pipeline.
-processors: []
+processors:
+  - rename:
+      field: dhcpv4
+      target_field: network_traffic.dhcpv4
+      ignore_missing: true
+  # Remove packetbeat fields that are handled by agent or fleet.
+  - remove:
+      field: status
+      ignore_missing: true
+  - remove:
+      field: type
+      ignore_missing: true
+  - remove:
+      field: event.dataset
+      ignore_missing: true
 
 on_failure:
   - append:

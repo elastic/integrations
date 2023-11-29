@@ -1,6 +1,52 @@
 ---
 description: ECS compatibility layer pipeline.
-processors: []
+processors:
+  - rename:
+      field: dns.additionals_count
+      target_field: network_traffic.dns.additionals_count
+      ignore_missing: true
+  - rename:
+      field: dns.answers_count
+      target_field: network_traffic.dns.answers_count
+      ignore_missing: true
+  - rename:
+      field: dns.authorities_count
+      target_field: network_traffic.dns.authorities_count
+      ignore_missing: true
+  - rename:
+      field: dns.authorities
+      target_field: network_traffic.dns.authorities
+      ignore_missing: true
+  - rename:
+      field: dns.flags
+      target_field: network_traffic.dns.flags
+      ignore_missing: true
+  - rename:
+      field: dns.question.etld_plus_one
+      target_field: network_traffic.dns.question.etld_plus_one
+      ignore_missing: true
+  - rename:
+      field: method
+      target_field: network_traffic.dns.method
+      ignore_missing: true
+  - rename:
+      field: query
+      target_field: network_traffic.dns.query
+      ignore_missing: true
+  - rename:
+      field: resource
+      target_field: network_traffic.dns.resource
+      ignore_missing: true
+  # Remove packetbeat fields that are handled by agent or fleet.
+  - remove:
+      field: status
+      ignore_missing: true
+  - remove:
+      field: type
+      ignore_missing: true
+  - remove:
+      field: event.dataset
+      ignore_missing: true
 
 on_failure:
   - append:
