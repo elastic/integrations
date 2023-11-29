@@ -45,7 +45,7 @@ The Cribl integration offers users a way to ingest logs from Cribl's Elasticsear
 
             1. Set the **Dataset** to the value identified in the step above (`cisco_asa.log` for our example). 
 
-            2. Set the **Namespace** to 'default'.
+            2. Set the **Namespace** to `default`.
 
             3. Fill in the conditional to specify the Cribl `_index` source field. 
 
@@ -59,7 +59,7 @@ The Cribl integration offers users a way to ingest logs from Cribl's Elasticsear
 
     1. Set **Bulk API URLs** to point to your Elasticsearch cluster.
 
-    2. Set **Index or Data Stream** to 'logs-cribl-default'.
+    2. Set **Index or Data Stream** to `logs-cribl-default`.
 
     3. **API key** should be a Base64 encoded Elastic API key, which can be created in Kibana by following the instructions under API Keys. If you are using an API key with “Restrict privileges”, be sure to review the Indices privileges to provide at least "auto_configure" & "write" permissions for the logs-* index, which you will be using for these Fleet integration data streams.
 
