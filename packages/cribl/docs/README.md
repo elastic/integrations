@@ -32,7 +32,7 @@ The Cribl integration offers users a way to ingest logs from Cribl's Elasticsear
 
         ![Configure Cribl Source fields](../img/cribl-source-fields.png)
 
-        See (Cribl Data Onboarding)[https://docs.cribl.io/stream/data-onboarding/] for more information on configuring sources.
+        See [Cribl Data Onboarding](https://docs.cribl.io/stream/data-onboarding/) for more information on configuring sources.
 
     3. Create custom pipeline
     
