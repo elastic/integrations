@@ -18,9 +18,6 @@ pipeline {
     rateLimitBuilds(throttle: [count: 60, durationName: 'hour', userBoost: true])
     quietPeriod(10)
   }
-  triggers {
-    cron('H H(2-5) * * *')
-  }
   stages {
     stage('Daily integration builds') {
       parallel {
@@ -39,12 +36,12 @@ pipeline {
             )
           }
         }
-        stage('with stack v8.11') {
+        stage('with stack v8.12.0') {
           steps {
             build(
               job: env.INTEGRATION_JOB,
               parameters: [
-                stringParam(name: 'stackVersion', value: '8.11-SNAPSHOT'),
+                stringParam(name: 'stackVersion', value: '8.12.0-SNAPSHOT'),
                 booleanParam(name: 'force_check_all', value: true),
                 booleanParam(name: 'skip_publishing', value: true),
               ],
