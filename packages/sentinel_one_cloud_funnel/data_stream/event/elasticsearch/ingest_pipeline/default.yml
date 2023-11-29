@@ -1539,6 +1539,10 @@ processors:
       field: json.src.process.parent.uid
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.uid
       ignore_missing: true
+  - set:
+      field: process.parent.entity_id
+      copy_from: sentinel_one_cloud_funnel.event.src.process.parent.uid
+      ignore_empty_value: true
   - rename:
       field: json.src.process.parent.userSid
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.user.sid
@@ -1864,6 +1868,10 @@ processors:
       field: json.src.process.uid
       target_field: sentinel_one_cloud_funnel.event.src.process.uid
       ignore_missing: true
+  - set:
+      field: process.entity_id
+      copy_from: sentinel_one_cloud_funnel.event.src.process.uid
+      ignore_empty_value: true
   - rename:
       field: json.packet.id
       target_field: sentinel_one_cloud_funnel.event.packet_id
@@ -2522,6 +2530,10 @@ processors:
   - rename:
       field: json.tgt.process.userSid
       target_field: sentinel_one_cloud_funnel.event.tgt.process.user.sid
+      ignore_missing: true
+  - rename:
+      field: json.tgt.process.uid
+      target_field: sentinel_one_cloud_funnel.event.tgt.process.uid
       ignore_missing: true
   - append:
       field: related.user
