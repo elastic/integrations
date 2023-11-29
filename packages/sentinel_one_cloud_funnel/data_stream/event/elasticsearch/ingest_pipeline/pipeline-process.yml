@@ -281,6 +281,10 @@ processors:
       field: json.tgt.process.name
       target_field: sentinel_one_cloud_funnel.event.tgt.process.name
       ignore_missing: true
+  - set:
+      field: process.name
+      copy_from: sentinel_one_cloud_funnel.event.tgt.process.name
+      ignore_empty_value: true
   - convert:
       field: json.tgt.process.pid
       tag: 'convert_json_tgt_process_pid'
@@ -335,6 +339,14 @@ processors:
       field: json.tgt.process.subsystem
       target_field: sentinel_one_cloud_funnel.event.tgt.process.subsystem
       ignore_missing: true
+  - set:
+      field: process.entity_id
+      copy_from: sentinel_one_cloud_funnel.event.tgt.process.uid
+      ignore_empty_value: true
+  - set:
+      field: process.parent.entity_id
+      copy_from: sentinel_one_cloud_funnel.event.src.process.uid
+      ignore_empty_value: true
   - rename:
       field: json.tgt.process.uid
       target_field: sentinel_one_cloud_funnel.event.tgt.process.uid
