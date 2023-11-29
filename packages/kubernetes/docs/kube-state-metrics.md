@@ -196,7 +196,6 @@ An example event for `state_container` looks as following:
 | kubernetes.container.cpu.request.cores | Container CPU requested cores | float |  | gauge |
 | kubernetes.container.cpu.request.nanocores | Container CPU requested nanocores | long |  | gauge |
 | kubernetes.container.id | Container id | keyword |  |  |
-| kubernetes.container.image | Kubernetes container image | keyword |  |  |
 | kubernetes.container.memory.limit.bytes | Container memory limit in bytes | long | byte | gauge |
 | kubernetes.container.memory.request.bytes | Container requested memory in bytes | long | byte | gauge |
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
@@ -222,7 +221,6 @@ An example event for `state_container` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |  |  |
 | kubernetes.pod.uid | Kubernetes pod UID | keyword |  |  |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
-| kubernetes.selectors.\* | Kubernetes Service selectors map | object |  |  |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
@@ -409,8 +407,6 @@ An example event for `state_cronjob` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
 | kubernetes.annotations.\* | Kubernetes annotations map | object |  |  |
-| kubernetes.container.image | Kubernetes container image | keyword |  |  |
-| kubernetes.container.name | Kubernetes container name | keyword |  |  |
 | kubernetes.cronjob.active.count | Number of active pods for the cronjob | long |  | gauge |
 | kubernetes.cronjob.concurrency | Concurrency policy | keyword |  |  |
 | kubernetes.cronjob.created.sec | Epoch seconds since the cronjob was created | double | s | gauge |
@@ -420,19 +416,10 @@ An example event for `state_cronjob` looks as following:
 | kubernetes.cronjob.name | Cronjob name | keyword |  |  |
 | kubernetes.cronjob.next_schedule.sec | Epoch seconds for next cronjob run | double | s | gauge |
 | kubernetes.cronjob.schedule | Cronjob schedule | keyword |  |  |
-| kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
 | kubernetes.namespace_labels.\* | Kubernetes namespace labels map | object |  |  |
 | kubernetes.namespace_uid | Kubernetes namespace UID | keyword |  |  |
-| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
-| kubernetes.node.name | Kubernetes node name | keyword |  |  |
-| kubernetes.pod.ip | Kubernetes pod IP | ip |  |  |
-| kubernetes.pod.name | Kubernetes pod name | keyword |  |  |
-| kubernetes.pod.uid | Kubernetes pod UID | keyword |  |  |
-| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
-| kubernetes.selectors.\* | Kubernetes Service selectors map | object |  |  |
-| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
@@ -602,26 +589,15 @@ An example event for `state_daemonset` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
 | kubernetes.annotations.\* | Kubernetes annotations map | object |  |
-| kubernetes.container.image | Kubernetes container image | keyword |  |
-| kubernetes.container.name | Kubernetes container name | keyword |  |
 | kubernetes.daemonset.name |  | keyword |  |
 | kubernetes.daemonset.replicas.available | The number of available replicas per DaemonSet | long | gauge |
 | kubernetes.daemonset.replicas.desired | The desired number of replicas per DaemonSet | long | gauge |
 | kubernetes.daemonset.replicas.ready | The number of ready replicas per DaemonSet | long | gauge |
 | kubernetes.daemonset.replicas.unavailable | The number of unavailable replicas per DaemonSet | long | gauge |
-| kubernetes.deployment.name | Kubernetes deployment name | keyword |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |
 | kubernetes.namespace_labels.\* | Kubernetes namespace labels map | object |  |
 | kubernetes.namespace_uid | Kubernetes namespace UID | keyword |  |
-| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |
-| kubernetes.node.name | Kubernetes node name | keyword |  |
-| kubernetes.pod.ip | Kubernetes pod IP | ip |  |
-| kubernetes.pod.name | Kubernetes pod name | keyword |  |
-| kubernetes.pod.uid | Kubernetes pod UID | keyword |  |
-| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |
-| kubernetes.selectors.\* | Kubernetes Service selectors map | object |  |
-| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
@@ -792,8 +768,6 @@ An example event for `state_deployment` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
 | kubernetes.annotations.\* | Kubernetes annotations map | object |  |
-| kubernetes.container.image | Kubernetes container image | keyword |  |
-| kubernetes.container.name | Kubernetes container name | keyword |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |
 | kubernetes.deployment.paused | Kubernetes deployment paused status | boolean |  |
 | kubernetes.deployment.replicas.available | Deployment available replicas | integer | gauge |
@@ -806,14 +780,6 @@ An example event for `state_deployment` looks as following:
 | kubernetes.namespace | Kubernetes namespace | keyword |  |
 | kubernetes.namespace_labels.\* | Kubernetes namespace labels map | object |  |
 | kubernetes.namespace_uid | Kubernetes namespace UID | keyword |  |
-| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |
-| kubernetes.node.name | Kubernetes node name | keyword |  |
-| kubernetes.pod.ip | Kubernetes pod IP | ip |  |
-| kubernetes.pod.name | Kubernetes pod name | keyword |  |
-| kubernetes.pod.uid | Kubernetes pod UID | keyword |  |
-| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |
-| kubernetes.selectors.\* | Kubernetes Service selectors map | object |  |
-| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
@@ -1010,10 +976,7 @@ An example event for `state_job` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
 | kubernetes.annotations.\* | Kubernetes annotations map | object |  |
-| kubernetes.container.image | Kubernetes container image | keyword |  |
-| kubernetes.container.name | Kubernetes container name | keyword |  |
 | kubernetes.cronjob.name | Name of the CronJob to which the Pod belongs | keyword |  |
-| kubernetes.deployment.name | Kubernetes deployment name | keyword |  |
 | kubernetes.job.completions.desired | The configured completion count for the job (Spec) | long | gauge |
 | kubernetes.job.name | Name of the Job to which the Pod belongs | keyword |  |
 | kubernetes.job.owner.is_controller | Owner is controller ("true", "false", or `"\<none\>"`) | keyword |  |
@@ -1031,18 +994,136 @@ An example event for `state_job` looks as following:
 | kubernetes.namespace | Kubernetes namespace | keyword |  |
 | kubernetes.namespace_labels.\* | Kubernetes namespace labels map | object |  |
 | kubernetes.namespace_uid | Kubernetes namespace UID | keyword |  |
-| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |
-| kubernetes.node.name | Kubernetes node name | keyword |  |
-| kubernetes.pod.ip | Kubernetes pod IP | ip |  |
-| kubernetes.pod.name | Kubernetes pod name | keyword |  |
-| kubernetes.pod.uid | Kubernetes pod UID | keyword |  |
-| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |
-| kubernetes.selectors.\* | Kubernetes Service selectors map | object |  |
-| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
+
+
+### state_namespace
+
+This is the `state_namespace` dataset of the Kubernetes package. It collects node related
+metrics from `kube_state_metrics`.
+
+An example event for `state_namespace` looks as following:
+
+```json
+{
+    "kubernetes": {
+        "namespace": "local-path-storage",
+        "state_namespace": {
+            "created": {
+                "sec": 1698661397
+            },
+            "status": {
+                "active": true,
+                "terminating": false
+            }
+        }
+    },
+    "agent": {
+        "name": "kind-control-plane",
+        "id": "9bbe4c49-2375-4d5d-b7ed-87eaec794094",
+        "ephemeral_id": "fae4af00-5533-44c9-b2f1-bb5225bc2b36",
+        "type": "metricbeat",
+        "version": "8.11.0"
+    },
+    "@timestamp": "2023-10-30T10:31:06.062Z",
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "kubernetes.state_namespace"
+    },
+    "service": {
+        "address": "http://kube-state-metrics:8080/metrics",
+        "type": "kubernetes"
+    },
+    "elastic_agent": {
+        "id": "9bbe4c49-2375-4d5d-b7ed-87eaec794094",
+        "version": "8.11.0",
+        "snapshot": true
+    },
+    "host": {
+        "hostname": "kind-control-plane",
+        "os": {
+            "kernel": "6.3.13-linuxkit",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "type": "linux",
+            "family": "debian",
+            "version": "20.04.6 LTS (Focal Fossa)",
+            "platform": "ubuntu"
+        },
+        "containerized": false,
+        "name": "kind-control-plane",
+        "id": "138690b2aa0f48758176419fc2733566",
+        "architecture": "x86_64"
+    },
+    "metricset": {
+        "period": 10000,
+        "name": "state_namespace"
+    },
+    "event": {
+        "duration": 546253,
+        "agent_id_status": "verified",
+        "ingested": "2023-10-30T10:31:07Z",
+        "module": "kubernetes",
+        "dataset": "kubernetes.state_namespace"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.instance.name | Instance name of the host machine. | keyword |  |  |
+| cloud.machine.type | Machine type of the host machine. | keyword |  |  |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host is running. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| container.image.name | Name of the image the container was built on. | keyword |  |  |
+| container.labels | Image labels. | object |  |  |
+| container.name | Container name. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| host.architecture | Operating system architecture. | keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host mac addresses. | keyword |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
+| host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| kubernetes.namespace | Kubernetes namespace | keyword |  |  |
+| kubernetes.state_namespace.created.sec | Epoch seconds since the namespace was created. | double | s | gauge |
+| kubernetes.state_namespace.status.active | Whether the namespace is active (true or false). | boolean |  |  |
+| kubernetes.state_namespace.status.terminating | Whether the namespace is terminating (true or false). | boolean |  |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
 ### state_node
@@ -1183,11 +1264,7 @@ An example event for `state_node` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
 | kubernetes.annotations.\* | Kubernetes annotations map | object |  |  |
-| kubernetes.container.image | Kubernetes container image | keyword |  |  |
-| kubernetes.container.name | Kubernetes container name | keyword |  |  |
-| kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
-| kubernetes.namespace | Kubernetes namespace | keyword |  |  |
 | kubernetes.node.cpu.allocatable.cores | Node CPU allocatable cores | float |  | gauge |
 | kubernetes.node.cpu.capacity.cores | Node CPU capacity cores | long |  | gauge |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
@@ -1203,12 +1280,6 @@ An example event for `state_node` looks as following:
 | kubernetes.node.status.pid_pressure | Node PIDPressure status (true, false or unknown) | keyword |  |  |
 | kubernetes.node.status.ready | Node ready status (true, false or unknown) | keyword |  |  |
 | kubernetes.node.status.unschedulable | Node unschedulable status | boolean |  |  |
-| kubernetes.pod.ip | Kubernetes pod IP | ip |  |  |
-| kubernetes.pod.name | Kubernetes pod name | keyword |  |  |
-| kubernetes.pod.uid | Kubernetes pod UID | keyword |  |  |
-| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
-| kubernetes.selectors.\* | Kubernetes Service selectors map | object |  |  |
-| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
@@ -1325,23 +1396,11 @@ An example event for `state_persistentvolume` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
 | kubernetes.annotations.\* | Kubernetes annotations map | object |  |  |
-| kubernetes.container.image | Kubernetes container image | keyword |  |  |
-| kubernetes.container.name | Kubernetes container name | keyword |  |  |
-| kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
-| kubernetes.namespace | Kubernetes namespace | keyword |  |  |
-| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
-| kubernetes.node.name | Kubernetes node name | keyword |  |  |
 | kubernetes.persistentvolume.capacity.bytes | Volume capacity | long | byte | gauge |
 | kubernetes.persistentvolume.name | Volume name. | keyword |  |  |
 | kubernetes.persistentvolume.phase | Volume phase according to kubernetes | keyword |  |  |
 | kubernetes.persistentvolume.storage_class | Storage class for the volume | keyword |  |  |
-| kubernetes.pod.ip | Kubernetes pod IP | ip |  |  |
-| kubernetes.pod.name | Kubernetes pod name | keyword |  |  |
-| kubernetes.pod.uid | Kubernetes pod UID | keyword |  |  |
-| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
-| kubernetes.selectors.\* | Kubernetes Service selectors map | object |  |  |
-| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
@@ -1517,27 +1576,16 @@ An example event for `state_persistentvolumeclaim` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
 | kubernetes.annotations.\* | Kubernetes annotations map | object |  |  |
-| kubernetes.container.image | Kubernetes container image | keyword |  |  |
-| kubernetes.container.name | Kubernetes container name | keyword |  |  |
-| kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
 | kubernetes.namespace_labels.\* | Kubernetes namespace labels map | object |  |  |
 | kubernetes.namespace_uid | Kubernetes namespace UID | keyword |  |  |
-| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
-| kubernetes.node.name | Kubernetes node name | keyword |  |  |
 | kubernetes.persistentvolumeclaim.access_mode | Access mode. | keyword |  |  |
 | kubernetes.persistentvolumeclaim.name | PVC name. | keyword |  |  |
 | kubernetes.persistentvolumeclaim.phase | PVC phase. | keyword |  |  |
 | kubernetes.persistentvolumeclaim.request_storage.bytes | Requested capacity. | long | byte | gauge |
 | kubernetes.persistentvolumeclaim.storage_class | Storage class for the PVC. | keyword |  |  |
 | kubernetes.persistentvolumeclaim.volume_name | Binded volume name. | keyword |  |  |
-| kubernetes.pod.ip | Kubernetes pod IP | ip |  |  |
-| kubernetes.pod.name | Kubernetes pod name | keyword |  |  |
-| kubernetes.pod.uid | Kubernetes pod UID | keyword |  |  |
-| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
-| kubernetes.selectors.\* | Kubernetes Service selectors map | object |  |  |
-| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
@@ -1702,8 +1750,6 @@ An example event for `state_pod` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | kubernetes.annotations.\* | Kubernetes annotations map | object |
-| kubernetes.container.image | Kubernetes container image | keyword |
-| kubernetes.container.name | Kubernetes container name | keyword |
 | kubernetes.cronjob.name | Name of the CronJob to which the Pod belongs | keyword |
 | kubernetes.daemonset.name | Kubernetes daemonset name | keyword |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |
@@ -1726,7 +1772,6 @@ An example event for `state_pod` looks as following:
 | kubernetes.pod.status.scheduled | Kubernetes pod scheduled status (true, false, unknown) | keyword |
 | kubernetes.pod.uid | Kubernetes pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
-| kubernetes.selectors.\* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | orchestrator.cluster.name | Name of the cluster. | keyword |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |
@@ -1904,26 +1949,17 @@ An example event for `state_replicaset` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
 | kubernetes.annotations.\* | Kubernetes annotations map | object |  |
-| kubernetes.container.image | Kubernetes container image | keyword |  |
-| kubernetes.container.name | Kubernetes container name | keyword |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |
 | kubernetes.namespace_labels.\* | Kubernetes namespace labels map | object |  |
 | kubernetes.namespace_uid | Kubernetes namespace UID | keyword |  |
-| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |
-| kubernetes.node.name | Kubernetes node name | keyword |  |
-| kubernetes.pod.ip | Kubernetes pod IP | ip |  |
-| kubernetes.pod.name | Kubernetes pod name | keyword |  |
-| kubernetes.pod.uid | Kubernetes pod UID | keyword |  |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |
 | kubernetes.replicaset.replicas.available | The number of replicas per ReplicaSet | long | gauge |
 | kubernetes.replicaset.replicas.desired | The number of replicas per ReplicaSet | long | gauge |
 | kubernetes.replicaset.replicas.labeled | The number of fully labeled replicas per ReplicaSet | long | gauge |
 | kubernetes.replicaset.replicas.observed | The generation observed by the ReplicaSet controller | long | gauge |
 | kubernetes.replicaset.replicas.ready | The number of ready replicas per ReplicaSet | long | gauge |
-| kubernetes.selectors.\* | Kubernetes Service selectors map | object |  |
-| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
@@ -2036,24 +2072,13 @@ An example event for `state_resourcequota` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
 | kubernetes.annotations.\* | Kubernetes annotations map | object |  |  |
-| kubernetes.container.image | Kubernetes container image | keyword |  |  |
-| kubernetes.container.name | Kubernetes container name | keyword |  |  |
-| kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
-| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
-| kubernetes.node.name | Kubernetes node name | keyword |  |  |
-| kubernetes.pod.ip | Kubernetes pod IP | ip |  |  |
-| kubernetes.pod.name | Kubernetes pod name | keyword |  |  |
-| kubernetes.pod.uid | Kubernetes pod UID | keyword |  |  |
-| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
 | kubernetes.resourcequota.created.sec | Epoch seconds since the ResourceQuota was created | double | s | gauge |
 | kubernetes.resourcequota.name | ResourceQuota name | keyword |  |  |
 | kubernetes.resourcequota.quota | Quota informed (hard or used) for the resource | double |  | gauge |
 | kubernetes.resourcequota.resource | Resource name the quota applies to | keyword |  |  |
 | kubernetes.resourcequota.type | Quota information type, `hard` or `used` | keyword |  |  |
-| kubernetes.selectors.\* | Kubernetes Service selectors map | object |  |  |
-| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
@@ -2200,18 +2225,11 @@ An example event for `state_service` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | kubernetes.annotations.\* | Kubernetes annotations map | object |
-| kubernetes.container.image | Kubernetes container image | keyword |
-| kubernetes.container.name | Kubernetes container name | keyword |
-| kubernetes.deployment.name | Kubernetes deployment name | keyword |
 | kubernetes.labels.\* | Kubernetes labels map | object |
 | kubernetes.namespace | Kubernetes namespace | keyword |
 | kubernetes.namespace_annotations.\* | Kubernetes namespace annotations map | object |
 | kubernetes.namespace_labels.\* | Kubernetes namespace labels map | object |
 | kubernetes.namespace_uid | Kubernetes namespace UID | keyword |
-| kubernetes.pod.ip | Kubernetes pod IP | ip |
-| kubernetes.pod.name | Kubernetes pod name | keyword |
-| kubernetes.pod.uid | Kubernetes pod UID | keyword |
-| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
 | kubernetes.selectors.\* | Kubernetes Service selectors map | object |
 | kubernetes.service.cluster_ip | Internal IP for the service. | keyword |
 | kubernetes.service.created | Service creation date | date |
@@ -2222,7 +2240,6 @@ An example event for `state_service` looks as following:
 | kubernetes.service.load_balancer_ip | Load Balancer service IP | keyword |
 | kubernetes.service.name | Service name. | keyword |
 | kubernetes.service.type | Service type | keyword |
-| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | orchestrator.cluster.name | Name of the cluster. | keyword |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
@@ -2403,20 +2420,10 @@ An example event for `state_statefulset` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
 | kubernetes.annotations.\* | Kubernetes annotations map | object |  |
-| kubernetes.container.image | Kubernetes container image | keyword |  |
-| kubernetes.container.name | Kubernetes container name | keyword |  |
-| kubernetes.deployment.name | Kubernetes deployment name | keyword |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |
 | kubernetes.namespace_labels.\* | Kubernetes namespace labels map | object |  |
 | kubernetes.namespace_uid | Kubernetes namespace UID | keyword |  |
-| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |
-| kubernetes.node.name | Kubernetes node name | keyword |  |
-| kubernetes.pod.ip | Kubernetes pod IP | ip |  |
-| kubernetes.pod.name | Kubernetes pod name | keyword |  |
-| kubernetes.pod.uid | Kubernetes pod UID | keyword |  |
-| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |
-| kubernetes.selectors.\* | Kubernetes Service selectors map | object |  |
 | kubernetes.statefulset.created | The creation timestamp (epoch) for StatefulSet | long | gauge |
 | kubernetes.statefulset.generation.desired | The desired generation per StatefulSet | long | gauge |
 | kubernetes.statefulset.generation.observed | The observed generation per StatefulSet | long | gauge |
@@ -2539,19 +2546,7 @@ An example event for `state_storageclass` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | kubernetes.annotations.\* | Kubernetes annotations map | object |
-| kubernetes.container.image | Kubernetes container image | keyword |
-| kubernetes.container.name | Kubernetes container name | keyword |
-| kubernetes.deployment.name | Kubernetes deployment name | keyword |
 | kubernetes.labels.\* | Kubernetes labels map | object |
-| kubernetes.namespace | Kubernetes namespace | keyword |
-| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
-| kubernetes.node.name | Kubernetes node name | keyword |
-| kubernetes.pod.ip | Kubernetes pod IP | ip |
-| kubernetes.pod.name | Kubernetes pod name | keyword |
-| kubernetes.pod.uid | Kubernetes pod UID | keyword |
-| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
-| kubernetes.selectors.\* | Kubernetes Service selectors map | object |
-| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | kubernetes.storageclass.created | Storage class creation date | date |
 | kubernetes.storageclass.name | Storage class name. | keyword |
 | kubernetes.storageclass.provisioner | Volume provisioner for the storage class. | keyword |

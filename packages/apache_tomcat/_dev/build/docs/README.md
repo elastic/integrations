@@ -19,7 +19,7 @@ Logs help you keep a record of events that happen on your machine. The `Log` dat
 Metrics give you insight into the statistics of the Apache Tomcat. The `Metric` data streams collected by the Apache Tomcat integration are `cache`, `connection pool`, `memory`, `request`, `session` and `thread pool`, so that the user can monitor and troubleshoot the performance of the Apache Tomcat instance.
 
 Data streams:
-- `access`: Collects information related to overall performance of Java applications.
+- `access`: Collects information related to the HTTP transactions, client IP, response code and request processing time.
 - `cache`: Collects information related to the overall cache of the Apache Tomcat instance.
 - `catalina`: Collects information related to the startup and shutdown of the Apache Tomcat application server, the deployment of new applications, or the failure of one or more subsystems.
 - `connection pool`: Collects information related to connection pool such as number of active and idle connections.
@@ -34,7 +34,7 @@ Note:
 
 ## Compatibility
 
-This integration has been tested against Apache Tomcat versions `10.1.5`, `9.0.71` and `8.5.85`, and Prometheus version `0.17.2`.
+This integration has been tested against Apache Tomcat versions `10.1.5`, `9.0.71` and `8.5.85`, and Prometheus version `0.20.0`.
 
 ## Prerequisites
 
@@ -65,13 +65,13 @@ wget https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/<
 rules:
 - pattern: ".*"
 ```
-4. Go to `/etc/systemd/system` and add the following content in `tomcat.service` file: -
+4. Go to `/etc/systemd/system` and add the following content within the `[Service]` section of the `tomcat.service` file: -
 
 ```
 Environment='JAVA_OPTS=-javaagent:<TOMCAT_HOME>/webapps/jmx_prometheus_javaagent-<prometheus_version>.jar=<prometheus_port>:/opt/tomcat/webapps/config.yml'
 ```
 
-5. Run the following commands to reload demon and restart Apache Tomcat instance: -
+5. Run the following commands to reload the systemd manager configuration and restart the Apache Tomcat service to set the updated environment variable: -
 
 ```
 systemctl daemon-reload
@@ -119,6 +119,7 @@ dd-MMM-yyyy HH:mm:ss.SSS [Severity] [Subsystem] [Message Text]
 
 Note:
 - Restarting Apache Tomcat does not affect the virtual desktops that are currently running. It will only prevent new users from logging in for the duration of the restart process (typically several seconds).
+- A user can support a new format of log by writing their own custom ingest pipelines. To facilitate the multiline parsing of catalina and localhost logs, the [multiline configuration](https://www.elastic.co/guide/en/beats/filebeat/current/multiline-examples.html) can be used to match the multiline pattern of logs.
 
 ## Configuration
 
@@ -136,6 +137,8 @@ After the integration is successfully configured, clicking on the Assets tab of 
 
 ## Troubleshooting
 
+- `apache_tomcat.access.header_forwarder` is renamed to `client.ip` in version `0.16.1` of this integration. Hence please consider changing `apache_tomcat.access.header_forwarder` to `client.ip` field where it is being used. By using the [Update By Query API](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update-by-query.html#docs-update-by-query-api-ingest-pipeline), `apache_tomcat.access.header_forwarder` can be renamed to `client.ip` field for all the documents which would help to adapt this change.
+
 - In case of data ingestion if user encounter following errors then it is because of the rate limit of Prometheus endpoint. Here there won't be any data loss but if user still want to avoid it then make sure configured Prometheus endpoint is not being accessed from multiple places.
 ```
 {
@@ -145,11 +148,13 @@ After the integration is successfully configured, clicking on the Assets tab of 
 }
 ```
 
+- If events are ingested with incorrect timestamps, kindly verify the Timezone setting for the Catalina and Localhost logs data streams on the 'Add Apache Tomcat' page.
+
 ## Logs reference
 
 ### Access
 
-This is the `Access` data stream. This data stream collects logs related to overall performance of Java applications.
+This is the `Access` data stream. This data stream collects logs related to the HTTP transactions, client IP, response code and request processing time.
 
 {{event "access"}}
 

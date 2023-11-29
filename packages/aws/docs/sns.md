@@ -125,7 +125,6 @@ An example event for `sns` looks as following:
 | aws.dimensions.Platform | Filters on platform objects for the push notification services, such as APNs and FCM. | keyword |  |
 | aws.dimensions.SMSType | Filters on the message type of SMS message. | keyword |  |
 | aws.dimensions.TopicName | Filters on Amazon SNS topic names. | keyword |  |
-| aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |
 | aws.sns.metrics.NumberOfMessagesPublished.sum | The number of messages published to your Amazon SNS topics. | long | gauge |
 | aws.sns.metrics.NumberOfNotificationsDelivered.sum | The number of messages successfully delivered from your Amazon SNS topics to subscribing endpoints. | long | gauge |
 | aws.sns.metrics.NumberOfNotificationsFailed.sum | The number of messages that Amazon SNS failed to deliver. | long | gauge |

@@ -167,7 +167,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -180,7 +180,7 @@ An example event for `log` looks as following:
         "created": "2023-03-22T14:26:54.000+05:00",
         "dataset": "infoblox_nios.log",
         "ingested": "2023-09-26T13:59:18Z",
-        "original": "\u003c29\u003eMar 22 14:26:54 10.0.0.1 httpd: 2011-10-19 12:43:47.375Z [user]: First_Login - - to=AdminConnector ip=10.0.0.2 auth=LOCAL group=admin-group apparently_via=GUI\\040first\\040login",
+        "original": "<29>Mar 22 14:26:54 10.0.0.1 httpd: 2011-10-19 12:43:47.375Z [user]: First_Login - - to=AdminConnector ip=10.0.0.2 auth=LOCAL group=admin-group apparently_via=GUI\\040first\\040login",
         "timezone": "+0500"
     },
     "host": {
@@ -231,6 +231,7 @@ An example event for `log` looks as following:
         "name": "user"
     }
 }
+
 ```
 
 **Exported fields**

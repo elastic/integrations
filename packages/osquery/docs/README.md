@@ -38,7 +38,7 @@ An example event for `result` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "eaaf0f0c-2e54-4bd7-a0cc-9968349277bc",
@@ -129,6 +129,7 @@ An example event for `result` looks as following:
         "name": "ubuntu"
     }
 }
+
 ```
 
 **Exported fields**

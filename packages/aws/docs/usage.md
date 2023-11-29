@@ -120,7 +120,6 @@ An example event for `usage` looks as following:
 | aws.dimensions.Resource | The name of the API operation. | keyword |  |
 | aws.dimensions.Service | The name of the AWS service containing the resource. | keyword |  |
 | aws.dimensions.Type | The type of resource being tracked. | keyword |  |
-| aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |
 | aws.tags | Tag key value pairs from aws resources. | flattened |  |
 | aws.usage.metrics.CallCount.sum | The number of specified API operations performed in your account. | long | gauge |
 | aws.usage.metrics.ResourceCount.sum | The number of the specified resources running in your account. The resources are defined by the dimensions associated with the metric. | long | gauge |
