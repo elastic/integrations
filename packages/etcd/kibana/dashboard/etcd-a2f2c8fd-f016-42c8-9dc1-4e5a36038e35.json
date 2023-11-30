@@ -4,37 +4,54 @@
             "chainingSystem": "HIERARCHICAL",
             "controlStyle": "oneLine",
             "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
-            "panelsJSON": "{\"239053c0-7b28-49ec-a014-24f4fc5a5dd9\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"host.hostname\",\"title\":\"Hostname\",\"singleSelect\":true,\"id\":\"239053c0-7b28-49ec-a014-24f4fc5a5dd9\",\"enhancements\":{}}}}"
+            "panelsJSON": "{\"6eb9e0c7-609d-437e-8cd1-a00349df37de\":{\"order\":0,\"width\":\"medium\",\"grow\":false,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"host.hostname\",\"title\":\"Hostname\",\"singleSelect\":true,\"id\":\"6eb9e0c7-609d-437e-8cd1-a00349df37de\",\"enhancements\":{}}}}"
         },
-        "description": "Overview dashboard for the etcd integration in Metrics",
-        "hits": 0,
+        "description": "Overview of etcd Metrics",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
-                "highlightAll": true,
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "etcd.metrics"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "etcd.metrics"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
-                },
-                "version": true
+                }
             }
         },
         "optionsJSON": {
-            "darkTheme": false,
             "hidePanelTitles": false,
             "syncColors": true,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
                             {
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
@@ -42,8 +59,10 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "2b8f22ba-7b51-4f1b-bbef-f08560edf500": {
                                             "columnOrder": [
@@ -55,10 +74,10 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Total proposals pending",
+                                                    "label": "Proposals Applied",
                                                     "operationType": "average",
                                                     "scale": "ratio",
-                                                    "sourceField": "etcd.server.proposals_pending.count"
+                                                    "sourceField": "etcd.server.proposals_applied_total"
                                                 },
                                                 "c7e85f08-723f-4c6f-a422-7dcfc0e0cc3f": {
                                                     "dataType": "date",
@@ -66,6 +85,7 @@
                                                     "label": "@timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
+                                                        "dropPartials": true,
                                                         "includeEmptyRows": true,
                                                         "interval": "auto"
                                                     },
@@ -73,12 +93,14 @@
                                                     "sourceField": "@timestamp"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
                                         }
                                     }
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -86,7 +108,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": true,
+                                    "yLeft": false,
                                     "yRight": true
                                 },
                                 "fittingFunction": "None",
@@ -149,15 +171,15 @@
                 },
                 "gridData": {
                     "h": 12,
-                    "i": "3f46a2f5-0b3b-49bc-93b8-8377253d7df2",
-                    "w": 23,
+                    "i": "b5c8b22c-6ffd-4137-aa6c-9cfe5bb6fdab",
+                    "w": 24,
                     "x": 0,
                     "y": 0
                 },
-                "panelIndex": "3f46a2f5-0b3b-49bc-93b8-8377253d7df2",
-                "title": "Total proposals pending [Metrics etcd]",
+                "panelIndex": "b5c8b22c-6ffd-4137-aa6c-9cfe5bb6fdab",
+                "title": "Proposals Applied",
                 "type": "lens",
-                "version": "8.3.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
@@ -165,18 +187,14 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "2b8f22ba-7b51-4f1b-bbef-f08560edf500": {
                                             "columnOrder": [
@@ -188,406 +206,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Total gRPC received requests",
-                                                    "operationType": "average",
-                                                    "scale": "ratio",
-                                                    "sourceField": "etcd.server.grpc_handled.count"
-                                                },
-                                                "c7e85f08-723f-4c6f-a422-7dcfc0e0cc3f": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "fittingFunction": "None",
-                                "gridlinesVisibilitySettings": {
-                                    "x": false,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "8872789d-32ab-4246-9cf8-ef5398022047"
-                                        ],
-                                        "layerId": "2b8f22ba-7b51-4f1b-bbef-f08560edf500",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "line",
-                                        "showGridlines": false,
-                                        "xAccessor": "c7e85f08-723f-4c6f-a422-7dcfc0e0cc3f",
-                                        "yConfig": [
-                                            {
-                                                "axisMode": "left",
-                                                "forAccessor": "8872789d-32ab-4246-9cf8-ef5398022047"
-                                            }
-                                        ]
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "legendSize": "auto",
-                                    "position": "bottom",
-                                    "showSingleSeries": true
-                                },
-                                "preferredSeriesType": "line",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide",
-                                "yLeftExtent": {
-                                    "mode": "full"
-                                },
-                                "yRightExtent": {
-                                    "mode": "full"
-                                }
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "ed08e927-bee2-4c64-9055-ca8bd5ee977f",
-                    "w": 25,
-                    "x": 23,
-                    "y": 0
-                },
-                "panelIndex": "ed08e927-bee2-4c64-9055-ca8bd5ee977f",
-                "title": "Total gRPC received requests [Metrics etcd]",
-                "type": "lens",
-                "version": "8.3.0"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "datasourceStates": {
-                                "indexpattern": {
-                                    "layers": {
-                                        "2b8f22ba-7b51-4f1b-bbef-f08560edf500": {
-                                            "columnOrder": [
-                                                "c7e85f08-723f-4c6f-a422-7dcfc0e0cc3f",
-                                                "8872789d-32ab-4246-9cf8-ef5398022047"
-                                            ],
-                                            "columns": {
-                                                "8872789d-32ab-4246-9cf8-ef5398022047": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Total gRPC sent bytes",
-                                                    "operationType": "average",
-                                                    "scale": "ratio",
-                                                    "sourceField": "etcd.network.client_grpc_sent.bytes"
-                                                },
-                                                "c7e85f08-723f-4c6f-a422-7dcfc0e0cc3f": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "fittingFunction": "None",
-                                "gridlinesVisibilitySettings": {
-                                    "x": false,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "8872789d-32ab-4246-9cf8-ef5398022047"
-                                        ],
-                                        "layerId": "2b8f22ba-7b51-4f1b-bbef-f08560edf500",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "line",
-                                        "showGridlines": false,
-                                        "xAccessor": "c7e85f08-723f-4c6f-a422-7dcfc0e0cc3f",
-                                        "yConfig": [
-                                            {
-                                                "axisMode": "left",
-                                                "forAccessor": "8872789d-32ab-4246-9cf8-ef5398022047"
-                                            }
-                                        ]
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "legendSize": "auto",
-                                    "position": "bottom",
-                                    "showSingleSeries": true
-                                },
-                                "preferredSeriesType": "line",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide",
-                                "yLeftExtent": {
-                                    "mode": "full"
-                                },
-                                "yRightExtent": {
-                                    "mode": "full"
-                                }
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "15c7a771-ddcb-493b-b4a5-67dfa247425f",
-                    "w": 23,
-                    "x": 0,
-                    "y": 12
-                },
-                "panelIndex": "15c7a771-ddcb-493b-b4a5-67dfa247425f",
-                "title": "Total gRPC sent bytes [Metrics etcd]",
-                "type": "lens",
-                "version": "8.3.0"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "datasourceStates": {
-                                "indexpattern": {
-                                    "layers": {
-                                        "2b8f22ba-7b51-4f1b-bbef-f08560edf500": {
-                                            "columnOrder": [
-                                                "c7e85f08-723f-4c6f-a422-7dcfc0e0cc3f",
-                                                "8872789d-32ab-4246-9cf8-ef5398022047"
-                                            ],
-                                            "columns": {
-                                                "8872789d-32ab-4246-9cf8-ef5398022047": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Total gRPC sent requests",
-                                                    "operationType": "average",
-                                                    "scale": "ratio",
-                                                    "sourceField": "etcd.server.grpc_started.count"
-                                                },
-                                                "c7e85f08-723f-4c6f-a422-7dcfc0e0cc3f": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "fittingFunction": "None",
-                                "gridlinesVisibilitySettings": {
-                                    "x": false,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "8872789d-32ab-4246-9cf8-ef5398022047"
-                                        ],
-                                        "layerId": "2b8f22ba-7b51-4f1b-bbef-f08560edf500",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "line",
-                                        "showGridlines": false,
-                                        "xAccessor": "c7e85f08-723f-4c6f-a422-7dcfc0e0cc3f",
-                                        "yConfig": [
-                                            {
-                                                "axisMode": "left",
-                                                "forAccessor": "8872789d-32ab-4246-9cf8-ef5398022047"
-                                            }
-                                        ]
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "legendSize": "auto",
-                                    "position": "bottom",
-                                    "showSingleSeries": true
-                                },
-                                "preferredSeriesType": "line",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide",
-                                "yLeftExtent": {
-                                    "mode": "full"
-                                },
-                                "yRightExtent": {
-                                    "mode": "full"
-                                }
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "61eb6374-4035-4d0b-be54-547c32109847",
-                    "w": 25,
-                    "x": 23,
-                    "y": 12
-                },
-                "panelIndex": "61eb6374-4035-4d0b-be54-547c32109847",
-                "title": "Total gRPC sent requests [Metrics etcd]",
-                "type": "lens",
-                "version": "8.3.0"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "datasourceStates": {
-                                "indexpattern": {
-                                    "layers": {
-                                        "2b8f22ba-7b51-4f1b-bbef-f08560edf500": {
-                                            "columnOrder": [
-                                                "c7e85f08-723f-4c6f-a422-7dcfc0e0cc3f",
-                                                "8872789d-32ab-4246-9cf8-ef5398022047"
-                                            ],
-                                            "columns": {
-                                                "8872789d-32ab-4246-9cf8-ef5398022047": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Total proposals failed",
+                                                    "label": "Proposals Failed",
                                                     "operationType": "average",
                                                     "scale": "ratio",
                                                     "sourceField": "etcd.server.proposals_failed.count"
@@ -611,6 +230,7 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -618,7 +238,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": true,
+                                    "yLeft": false,
                                     "yRight": true
                                 },
                                 "fittingFunction": "None",
@@ -681,15 +301,15 @@
                 },
                 "gridData": {
                     "h": 12,
-                    "i": "f1df951e-b730-41dd-b415-8233ac26ed36",
-                    "w": 16,
-                    "x": 0,
-                    "y": 24
+                    "i": "b9282ce0-a486-4231-8556-17f75e149723",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
                 },
-                "panelIndex": "f1df951e-b730-41dd-b415-8233ac26ed36",
-                "title": "Total proposals failed [Metrics etcd]",
+                "panelIndex": "b9282ce0-a486-4231-8556-17f75e149723",
+                "title": "Proposals Failed",
                 "type": "lens",
-                "version": "8.3.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
@@ -697,18 +317,14 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "2b8f22ba-7b51-4f1b-bbef-f08560edf500": {
                                             "columnOrder": [
@@ -720,7 +336,137 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Total proposals committed",
+                                                    "label": "Proposals Pending",
+                                                    "operationType": "average",
+                                                    "scale": "ratio",
+                                                    "sourceField": "etcd.server.proposals_pending.count"
+                                                },
+                                                "c7e85f08-723f-4c6f-a422-7dcfc0e0cc3f": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "hideEndzones": false,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "8872789d-32ab-4246-9cf8-ef5398022047"
+                                        ],
+                                        "layerId": "2b8f22ba-7b51-4f1b-bbef-f08560edf500",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "c7e85f08-723f-4c6f-a422-7dcfc0e0cc3f",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "8872789d-32ab-4246-9cf8-ef5398022047"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "bottom",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "2f265850-c5cd-4113-8c1d-976eb2469457",
+                    "w": 24,
+                    "x": 0,
+                    "y": 12
+                },
+                "panelIndex": "2f265850-c5cd-4113-8c1d-976eb2469457",
+                "title": "Proposals Pending ",
+                "type": "lens",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "2b8f22ba-7b51-4f1b-bbef-f08560edf500": {
+                                            "columnOrder": [
+                                                "c7e85f08-723f-4c6f-a422-7dcfc0e0cc3f",
+                                                "8872789d-32ab-4246-9cf8-ef5398022047"
+                                            ],
+                                            "columns": {
+                                                "8872789d-32ab-4246-9cf8-ef5398022047": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Proposals Committed",
                                                     "operationType": "average",
                                                     "scale": "ratio",
                                                     "sourceField": "etcd.server.proposals_committed.count"
@@ -744,6 +490,7 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -751,7 +498,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": true,
+                                    "yLeft": false,
                                     "yRight": true
                                 },
                                 "fittingFunction": "None",
@@ -814,15 +561,15 @@
                 },
                 "gridData": {
                     "h": 12,
-                    "i": "9dc7c80d-2799-4f04-8ca3-391e4b6ad287",
-                    "w": 16,
-                    "x": 16,
-                    "y": 24
+                    "i": "81c66cbb-0566-4f58-bbc6-e58ffab3d3c1",
+                    "w": 24,
+                    "x": 24,
+                    "y": 12
                 },
-                "panelIndex": "9dc7c80d-2799-4f04-8ca3-391e4b6ad287",
-                "title": "Total proposals committed [Metrics etcd]",
+                "panelIndex": "81c66cbb-0566-4f58-bbc6-e58ffab3d3c1",
+                "title": "Proposals Committed",
                 "type": "lens",
-                "version": "8.3.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
@@ -830,18 +577,14 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "2b8f22ba-7b51-4f1b-bbef-f08560edf500": {
                                             "columnOrder": [
@@ -853,8 +596,277 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Total gRPC received bytes",
+                                                    "label": "gRPC Received Requests",
                                                     "operationType": "average",
+                                                    "params": {},
+                                                    "scale": "ratio",
+                                                    "sourceField": "etcd.server.grpc_handled.count"
+                                                },
+                                                "c7e85f08-723f-4c6f-a422-7dcfc0e0cc3f": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "8872789d-32ab-4246-9cf8-ef5398022047"
+                                        ],
+                                        "layerId": "2b8f22ba-7b51-4f1b-bbef-f08560edf500",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "c7e85f08-723f-4c6f-a422-7dcfc0e0cc3f",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "8872789d-32ab-4246-9cf8-ef5398022047"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "position": "bottom",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "37146018-2dbf-4262-afb5-08f85a490bea",
+                    "w": 24,
+                    "x": 0,
+                    "y": 24
+                },
+                "panelIndex": "37146018-2dbf-4262-afb5-08f85a490bea",
+                "title": "gRPC Received Requests",
+                "type": "lens",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "2b8f22ba-7b51-4f1b-bbef-f08560edf500": {
+                                            "columnOrder": [
+                                                "c7e85f08-723f-4c6f-a422-7dcfc0e0cc3f",
+                                                "8872789d-32ab-4246-9cf8-ef5398022047"
+                                            ],
+                                            "columns": {
+                                                "8872789d-32ab-4246-9cf8-ef5398022047": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "gRPC Sent Requests",
+                                                    "operationType": "average",
+                                                    "scale": "ratio",
+                                                    "sourceField": "etcd.server.grpc_started.count"
+                                                },
+                                                "c7e85f08-723f-4c6f-a422-7dcfc0e0cc3f": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "8872789d-32ab-4246-9cf8-ef5398022047"
+                                        ],
+                                        "layerId": "2b8f22ba-7b51-4f1b-bbef-f08560edf500",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "c7e85f08-723f-4c6f-a422-7dcfc0e0cc3f",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "8872789d-32ab-4246-9cf8-ef5398022047"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "position": "bottom",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "f90fef13-c6a3-4016-aab2-08e13c46e2da",
+                    "w": 24,
+                    "x": 24,
+                    "y": 24
+                },
+                "panelIndex": "f90fef13-c6a3-4016-aab2-08e13c46e2da",
+                "title": "gRPC Sent Requests",
+                "type": "lens",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "2b8f22ba-7b51-4f1b-bbef-f08560edf500": {
+                                            "columnOrder": [
+                                                "c7e85f08-723f-4c6f-a422-7dcfc0e0cc3f",
+                                                "8872789d-32ab-4246-9cf8-ef5398022047"
+                                            ],
+                                            "columns": {
+                                                "8872789d-32ab-4246-9cf8-ef5398022047": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total gRPC Received Bytes",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "etcd.network.client_grpc_received.bytes"
                                                 },
@@ -877,6 +889,7 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -884,7 +897,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": true,
+                                    "yLeft": false,
                                     "yRight": true
                                 },
                                 "fittingFunction": "None",
@@ -947,100 +960,397 @@
                 },
                 "gridData": {
                     "h": 12,
-                    "i": "14a2996f-7233-40d9-bab0-c3f85427d466",
-                    "w": 16,
-                    "x": 32,
-                    "y": 24
+                    "i": "f01fbbef-2da7-4deb-b736-a321cd63016c",
+                    "w": 24,
+                    "x": 0,
+                    "y": 36
                 },
-                "panelIndex": "14a2996f-7233-40d9-bab0-c3f85427d466",
-                "title": "Total gRPC received bytes [Metrics etcd]",
+                "panelIndex": "f01fbbef-2da7-4deb-b736-a321cd63016c",
+                "title": "Total gRPC Received Bytes",
                 "type": "lens",
-                "version": "8.3.0"
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "2b8f22ba-7b51-4f1b-bbef-f08560edf500": {
+                                            "columnOrder": [
+                                                "c7e85f08-723f-4c6f-a422-7dcfc0e0cc3f",
+                                                "8872789d-32ab-4246-9cf8-ef5398022047"
+                                            ],
+                                            "columns": {
+                                                "8872789d-32ab-4246-9cf8-ef5398022047": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total gRPC Sent Bytes",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "etcd.network.client_grpc_sent.bytes"
+                                                },
+                                                "c7e85f08-723f-4c6f-a422-7dcfc0e0cc3f": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "8872789d-32ab-4246-9cf8-ef5398022047"
+                                        ],
+                                        "layerId": "2b8f22ba-7b51-4f1b-bbef-f08560edf500",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "c7e85f08-723f-4c6f-a422-7dcfc0e0cc3f",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "8872789d-32ab-4246-9cf8-ef5398022047"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "position": "bottom",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "50f22cf2-3027-4881-9ec2-1565f610600b",
+                    "w": 24,
+                    "x": 24,
+                    "y": 36
+                },
+                "panelIndex": "50f22cf2-3027-4881-9ec2-1565f610600b",
+                "title": "Total gRPC Sent Bytes",
+                "type": "lens",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "2b8f22ba-7b51-4f1b-bbef-f08560edf500": {
+                                            "columnOrder": [
+                                                "c7e85f08-723f-4c6f-a422-7dcfc0e0cc3f",
+                                                "8872789d-32ab-4246-9cf8-ef5398022047",
+                                                "3239ed83-9561-499e-b29d-3fb6be853c4f",
+                                                "e1c0e421-2ab3-40f4-b349-05dfe0a2c118",
+                                                "c95dcfc1-bf44-4c57-a93c-9d1f138ddf65"
+                                            ],
+                                            "columns": {
+                                                "3239ed83-9561-499e-b29d-3fb6be853c4f": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Store Writes",
+                                                    "operationType": "median",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "etcd.store.writes_total"
+                                                },
+                                                "8872789d-32ab-4246-9cf8-ef5398022047": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Store Expires",
+                                                    "operationType": "average",
+                                                    "scale": "ratio",
+                                                    "sourceField": "etcd.store.expires_total"
+                                                },
+                                                "c7e85f08-723f-4c6f-a422-7dcfc0e0cc3f": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "c95dcfc1-bf44-4c57-a93c-9d1f138ddf65": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Store Watchers",
+                                                    "operationType": "median",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "etcd.store.watchers"
+                                                },
+                                                "e1c0e421-2ab3-40f4-b349-05dfe0a2c118": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Store Reads",
+                                                    "operationType": "median",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "etcd.store.reads_total"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "8872789d-32ab-4246-9cf8-ef5398022047",
+                                            "3239ed83-9561-499e-b29d-3fb6be853c4f",
+                                            "e1c0e421-2ab3-40f4-b349-05dfe0a2c118",
+                                            "c95dcfc1-bf44-4c57-a93c-9d1f138ddf65"
+                                        ],
+                                        "layerId": "2b8f22ba-7b51-4f1b-bbef-f08560edf500",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "c7e85f08-723f-4c6f-a422-7dcfc0e0cc3f",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "8872789d-32ab-4246-9cf8-ef5398022047"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "c95dcfc1-bf44-4c57-a93c-9d1f138ddf65"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "position": "bottom",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "149bcef4-3870-4a40-82c9-06c3805e7ec4",
+                    "w": 48,
+                    "x": 0,
+                    "y": 48
+                },
+                "panelIndex": "149bcef4-3870-4a40-82c9-06c3805e7ec4",
+                "title": "Store Metrics",
+                "type": "lens",
+                "version": "8.7.0"
             }
         ],
         "timeRestore": false,
         "title": "[Metrics etcd] Overview",
         "version": 1
     },
-    "coreMigrationVersion": "8.3.0",
+    "coreMigrationVersion": "8.7.0",
+    "created_at": "2023-11-29T11:53:37.930Z",
     "id": "etcd-a2f2c8fd-f016-42c8-9dc1-4e5a36038e35",
     "migrationVersion": {
-        "dashboard": "8.3.0"
+        "dashboard": "8.7.0"
     },
     "references": [
         {
             "id": "metrics-*",
-            "name": "3f46a2f5-0b3b-49bc-93b8-8377253d7df2:indexpattern-datasource-current-indexpattern",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "3f46a2f5-0b3b-49bc-93b8-8377253d7df2:indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
+            "name": "b5c8b22c-6ffd-4137-aa6c-9cfe5bb6fdab:indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "ed08e927-bee2-4c64-9055-ca8bd5ee977f:indexpattern-datasource-current-indexpattern",
+            "name": "b9282ce0-a486-4231-8556-17f75e149723:indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "ed08e927-bee2-4c64-9055-ca8bd5ee977f:indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
+            "name": "2f265850-c5cd-4113-8c1d-976eb2469457:indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "15c7a771-ddcb-493b-b4a5-67dfa247425f:indexpattern-datasource-current-indexpattern",
+            "name": "81c66cbb-0566-4f58-bbc6-e58ffab3d3c1:indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "15c7a771-ddcb-493b-b4a5-67dfa247425f:indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
+            "name": "37146018-2dbf-4262-afb5-08f85a490bea:indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "61eb6374-4035-4d0b-be54-547c32109847:indexpattern-datasource-current-indexpattern",
+            "name": "f90fef13-c6a3-4016-aab2-08e13c46e2da:indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "61eb6374-4035-4d0b-be54-547c32109847:indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
+            "name": "f01fbbef-2da7-4deb-b736-a321cd63016c:indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "f1df951e-b730-41dd-b415-8233ac26ed36:indexpattern-datasource-current-indexpattern",
+            "name": "50f22cf2-3027-4881-9ec2-1565f610600b:indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "f1df951e-b730-41dd-b415-8233ac26ed36:indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
+            "name": "149bcef4-3870-4a40-82c9-06c3805e7ec4:indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "9dc7c80d-2799-4f04-8ca3-391e4b6ad287:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "9dc7c80d-2799-4f04-8ca3-391e4b6ad287:indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "14a2996f-7233-40d9-bab0-c3f85427d466:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "14a2996f-7233-40d9-bab0-c3f85427d466:indexpattern-datasource-layer-2b8f22ba-7b51-4f1b-bbef-f08560edf500",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "controlGroup_239053c0-7b28-49ec-a014-24f4fc5a5dd9:optionsListDataView",
+            "name": "controlGroup_6eb9e0c7-609d-437e-8cd1-a00349df37de:optionsListDataView",
             "type": "index-pattern"
         }
     ],

@@ -1,110 +1,148 @@
 - name: etcd
   type: group
   fields:
+    - name: process_start_time.sec
+      type: long
+      metric_type: gauge
+      unit: s
+      description: |
+        Start time of the process since unix epoch in seconds.
+    - name: store
+      type: group
+      fields:
+        - name: writes_total
+          type: long
+          metric_type: counter
+          description: |
+            Total number of writes (e.g. set/compareAndDelete) seen by this member.
+        - name: expires_total
+          type: long
+          metric_type: counter
+          description: |
+            Total number of expired keys.
+        - name: reads_total
+          type: long
+          metric_type: counter
+          description: |
+            Total number of reads action by (get/getRecursive), local to this member.
+        - name: watchers
+          type: long
+          metric_type: gauge
+          description: |
+            Count of currently active watchers.
     - name: disk
       type: group
       fields:
         - name: mvcc_db_total_size.bytes
           type: long
+          unit: byte
+          metric_type: gauge
           description: |
             Size of stored data at MVCC
-        - name: wal_fsync_duration.ns.bucket.*
-          type: long
+        - name: wal_fsync_duration_seconds.histogram
+          type: histogram
           description: |
             Latency for writing ahead logs to disk
-        - name: wal_fsync_duration.ns.count
-          type: long
-          description: |
-            Write ahead logs count
-        - name: wal_fsync_duration.ns.sum
-          type: long
-          description: |
-            Write ahead logs latency sum
-        - name: backend_commit_duration.ns.bucket.*
-          type: long
+        - name: backend_commit_duration_seconds.histogram
+          type: histogram
           description: |
             Latency for writing backend changes to disk
-        - name: backend_commit_duration.ns.count
-          type: long
-          description: |
-            Backend commits count
-        - name: backend_commit_duration.ns.sum
-          type: long
-          description: |
-            Backend commits latency sum
     - name: memory
       type: group
       fields:
-        - name: go_memstats_alloc
-          type: group
-          fields:
-            - name: bytes
-              type: long
-              description: |
-                Memory allocated bytes as of MemStats Go
+        - name: go_memstats_alloc.bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: |
+            Current allocated bytes as of MemStats Go
+        - name: go_memstats_alloc.total.bytes
+          type: long
+          metric_type: counter
+          unit: byte
+          description: |
+            Total allocated bytes, including released memory as of MemStats Go
     - name: network
       type: group
       fields:
-        - name: client_grpc_sent
-          type: group
-          fields:
-            - name: bytes
-              type: long
-              description: |
-                gRPC sent bytes total
-        - name: client_grpc_received
-          type: group
-          fields:
-            - name: bytes
-              type: long
-              description: |
-                gRPC received bytes total
+        - name: client_grpc_sent.bytes
+          type: long
+          metric_type: counter
+          unit: byte
+          description: |
+            gRPC sent bytes total
+        - name: client_grpc_received.bytes
+          type: long
+          metric_type: counter
+          unit: byte
+          description: |
+            gRPC received bytes total
+        - name: peer_round_trip_time_seconds.histogram
+          type: histogram
+          description: |
+            Round-Trip-Time histogram between peers.
+        - name: peer_received_bytes_total
+          type: long
+          metric_type: counter
+          unit: byte
+          description: |
+            The total number of bytes received from peers.
+        - name: peer_sent_bytes_total
+          type: long
+          metric_type: counter
+          unit: byte
+          description: |
+            The total number of bytes sent to peers.
+        - name: peer_sent_failures_total
+          type: long
+          metric_type: counter
+          description: |
+            The total number of send failures from peers.
+        - name: peer_received_failures_total
+          type: long
+          metric_type: counter
+          description: |
+            The total number of receive failures from peers.
     - name: server
       type: group
       fields:
-        - name: has_leader
-          type: byte
+        - name: has_leader.count
+          type: long
+          metric_type: gauge
           description: |
             Whether a leader exists in the cluster
-        - name: leader_changes
-          type: group
-          fields:
-            - name: count
-              type: long
-              description: |
-                Number of leader changes seen at the cluster
-        - name: proposals_committed
-          type: group
-          fields:
-            - name: count
-              type: long
-              description: |
-                Number of consensus proposals commited
-        - name: proposals_pending
-          type: group
-          fields:
-            - name: count
-              type: long
-              description: |
-                Number of consensus proposals pending
-        - name: proposals_failed
-          type: group
-          fields:
-            - name: count
-              type: long
-              description: |
-                Number of consensus proposals failed
-        - name: grpc_started
-          type: group
-          fields:
-            - name: count
-              type: long
-              description: |
-                Number of sent gRPC requests
-        - name: grpc_handled
-          type: group
-          fields:
-            - name: count
-              type: long
-              description: |
-                Number of received gRPC requests
+        - name: leader_changes.count
+          type: long
+          metric_type: counter
+          description: |
+            Number of leader changes seen at the cluster
+        - name: proposals_committed.count
+          type: long
+          metric_type: gauge
+          description: |
+            Number of consensus proposals commited
+        - name: proposals_pending.count
+          type: long
+          metric_type: gauge
+          description: |
+            Number of consensus proposals pending
+        - name: proposals_failed.count
+          type: long
+          metric_type: counter
+          description: |
+            Number of consensus proposals failed
+        - name: grpc_started.count
+          type: long
+          metric_type: counter
+          description: |
+            Number of sent gRPC requests
+        - name: grpc_handled.count
+          type: long
+          metric_type: counter
+          description: |
+            Number of received gRPC requests
+        - name: proposals_applied_total
+          type: long
+          metric_type: gauge
+          description: |
+            The total number of consensus proposals applied.

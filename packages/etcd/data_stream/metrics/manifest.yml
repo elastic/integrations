@@ -1,7 +1,9 @@
-title: etcd metrics v3
+title: etcd v3 metrics
 type: metrics
 streams:
-  - input: etcd/metrics
+  - input: prometheus/metrics
+    title: etcd v3 metrics
+    description: Collect etcd v3 metrics.
     vars:
       - name: period
         type: text
@@ -10,12 +12,17 @@ streams:
         required: true
         show_user: true
         default: 10s
-      - name: server_status_path
+      - name: metrics_path
         type: text
-        title: Server Status Path
+        title: Metrics Path
         multi: false
-        required: true
-        show_user: false
+        required: false
+        show_user: true
         default: /metrics
-    title: etcd metrics v3
-    description: Collect etcd metrics v3
+      - name: metrics_filters.include
+        type: text
+        title: Metrics Filters Include
+        multi: true
+        required: false
+        show_user: true
+        default: ["etcd_server_has_leader", "etcd_server_leader_changes_seen_total", "etcd_server_proposals_committed_total", "etcd_server_proposals_pending", "etcd_server_proposals_failed_total", "process_start_time_seconds", "grpc_server_started_total", "grpc_server_handled_total", "etcd_mvcc_db_total_size_in_bytes", "etcd_disk_wal_fsync_duration_seconds", "etcd_disk_backend_commit_duration_seconds", "go_memstats_alloc_bytes", "etcd_network_client_grpc_sent_bytes_total", "etcd_network_client_grpc_received_bytes_total", "etcd_network_peer_round_trip_time_seconds", "etcd_server_proposals_applied_total", "etcd_network_peer_received_bytes_total", "etcd_network_peer_sent_bytes_total", "etcd_network_peer_sent_failures_total", "etcd_network_peer_received_failures_total", "etcd_debugging_store_writes_total", "etcd_debugging_store_expires_total", "etcd_debugging_store_reads_total", "etcd_debugging_store_watchers"]
