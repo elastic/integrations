@@ -32,13 +32,14 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - grok:
       field: _tmp_grok
-      tag: 'grok_parse_log'
+      tag: 'grok_parse_log2'
       patterns:
         - '(?:%{IP:apache_tomcat.access.ip.local}%{SPACE})?(?:%{CONN_STATUS:apache_tomcat.access.connection_status}%{SPACE})?(?:%{NUMBER:apache_tomcat.access.response_time}%{SPACE})?\"%{DATA:http.request.referrer}\" \"%{DATA:user_agent.original}\" X-Forwarded-For=\"%{DATA:_tmp.header_forwarder}(\")*$'
         - '\"%{DATA:http.request.referrer}\" \"%{DATA:user_agent.original}(\")*$'
       pattern_definitions:
         CONN_STATUS: "[X+-]"
       ignore_missing: true
+      if: ctx._tmp_grok != null
       on_failure:
         - append:
             field: error.message
