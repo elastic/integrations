@@ -121,6 +121,8 @@ if [[ "${exit_code}" != 0 ]] ; then
 fi
 buildkite-agent artifact upload "${benchmark_github_file}"
 
+create_collapsed_annotation "Benchmark results" "${benchmark_github_file}" "info" "ctx-benchmark"
+
 if ! publish_benchmark_report_github "${benchmark_github_file}" ; then
     exit 0
 fi
