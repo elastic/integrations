@@ -227,6 +227,7 @@ The default value is 10s.
 | network_traffic.flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
 | network_traffic.flow.id | Internal flow ID based on connection meta data and address. | keyword |
 | network_traffic.flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -571,6 +572,7 @@ Fields published for AMQP packets.
 | network_traffic.amqp.timestamp | Message timestamp. | keyword |
 | network_traffic.amqp.type | Message type name. | keyword |
 | network_traffic.amqp.user-id | Creating user id. | keyword |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -995,6 +997,7 @@ Fields published for Apache Cassandra packets.
 | network_traffic.cassandra.response.result.type | Cassandra result type. | keyword |
 | network_traffic.cassandra.response.supported | Indicates which startup options are supported by the server. This message comes as a response to an OPTIONS message. | flattened |
 | network_traffic.cassandra.response.warnings | The text of the warnings, only occur when Warning flag was set. | keyword |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -1335,6 +1338,7 @@ Fields published for DHCPv4 packets.
 | network_traffic.dhcpv4.server_ip | The IP address of the DHCP server that the client should use for the next step in the bootstrap process. | ip |
 | network_traffic.dhcpv4.server_name | The name of the server sending the message. Optional. Used in DHCPOFFER or DHCPACK messages. | keyword |
 | network_traffic.dhcpv4.transaction_id | Transaction ID, a random number chosen by the client, used by the client and server to associate messages and responses between a client and a server. | keyword |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -1674,6 +1678,7 @@ Fields published for DNS packets.
 | network_traffic.dns.query | The query in a human readable format. | keyword |
 | network_traffic.dns.question.etld_plus_one | The effective top-level domain (eTLD) plus one more label. For example, the eTLD+1 for "foo.bar.golang.org." is "golang.org.". The data for determining the eTLD comes from an embedded copy of the data from http://publicsuffix.org. | keyword |
 | network_traffic.dns.resource | The logical resource that this transaction refers to. | keyword |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -2120,6 +2125,7 @@ Fields published for HTTP packets.
 | network_traffic.http.request.headers | A map containing the captured header fields from the request. Which headers to capture is configurable. If headers with the same header name are present in the message, they will be separated by commas. | flattened |
 | network_traffic.http.response.headers | A map containing the captured header fields from the response. Which headers to capture is configurable. If headers with the same header name are present in the message, they will be separated by commas. | flattened |
 | network_traffic.http.response.status_phrase | The HTTP status phrase. | keyword |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -2440,6 +2446,7 @@ Fields published for ICMP packets.
 | network_traffic.icmp.response.message | A human readable form of the response. | keyword |
 | network_traffic.icmp.response.type | The response type. | long |
 | network_traffic.icmp.version | The version of the ICMP protocol. | long |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -2814,6 +2821,7 @@ Fields published for Memcached packets.
 | network_traffic.memcache.response.value | The counter value returned by a counter operation. | long |
 | network_traffic.memcache.response.values | The list of base64 encoded values sent with the response (if present). | keyword |
 | network_traffic.memcache.response.version | The returned memcache version string. | keyword |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -3121,6 +3129,7 @@ Fields published for MongoDB packets.
 | network_traffic.mongodb.selector | A BSON document that specifies the query for selecting the document to update or delete. | keyword |
 | network_traffic.mongodb.startingFrom | Where in the cursor this reply is starting. | keyword |
 | network_traffic.mongodb.update | A BSON document that specifies the update to be performed. For information on specifying updates, see the Update Operations documentation from the MongoDB Manual. | keyword |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -3406,6 +3415,7 @@ Fields published for MySQL packets.
 | network_traffic.mysql.num_rows | If the SELECT query is successful, this field is set to the number of rows returned. | long |
 | network_traffic.mysql.path | The table name the transaction refers to. | keyword |
 | network_traffic.mysql.query | The row mysql query as read from the transaction's request. | keyword |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -3673,6 +3683,7 @@ Fields published for NFS packets.
 | network_traffic.nfs.status | NFS operation reply status. | keyword |
 | network_traffic.nfs.tag | NFS v4 COMPOUND operation tag. | keyword |
 | network_traffic.nfs.version | NFS protocol version number. | long |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | nfs.minor_version | NFS protocol minor version number. | long |
 | nfs.opcode | NFS operation name, or main operation name, in case of COMPOUND calls. | keyword |
 | nfs.status | NFS operation reply status. | keyword |
@@ -3975,6 +3986,7 @@ Fields published for PostgreSQL packets.
 | network_traffic.pgsql.num_fields | If the SELECT query if successful, this field is set to the number of fields returned. | long |
 | network_traffic.pgsql.num_rows | If the SELECT query if successful, this field is set to the number of rows returned. | long |
 | network_traffic.pgsql.query | The query in a human readable format. | keyword |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -4243,6 +4255,7 @@ Fields published for Redis packets.
 | network_traffic.redis.method | The command/verb/method of the transaction. | keyword |
 | network_traffic.redis.query | The query in a human readable format. | keyword |
 | network_traffic.redis.return_value | The return value of the Redis command in a human readable format. | keyword |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -4585,6 +4598,7 @@ Fields published for SIP packets.
 | network_traffic.sip.version | SIP protocol version. | keyword |
 | network_traffic.sip.via.original | The original Via value. | keyword |
 | network_traffic.sip.via.original.text | Multi-field of `network_traffic.sip.via.original`. | text |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -5082,6 +5096,7 @@ Fields published for Thrift packets.
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | network_traffic.thrift.exceptions | If the call resulted in exceptions, this field contains the exceptions in a human readable format. | keyword |
 | network_traffic.thrift.method | The command/verb/method of the transaction. | keyword |
 | network_traffic.thrift.params | The RPC method call parameters in a human readable format. If the IDL files are available, the parameters use names whenever possible. Otherwise, the IDs from the message are used. | keyword |
@@ -5406,6 +5421,7 @@ Fields published for TLS packets.
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
