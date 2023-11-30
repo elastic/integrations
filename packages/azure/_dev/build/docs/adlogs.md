@@ -32,7 +32,7 @@ Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for m
 
 `eventhub` :
   _string_
-It is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You can use existing Event Hubs having underscores (_) in the Event Hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the Event Hub name to create dependent Azure resources behind the scenes (e.g., the storage account container to store Event Hub consumer offsets). Elastic also recommends using a separate event hub for each log type as the field mappings of each log type differ.
+This setting expects the name of a single Event Hub (see the [difference between a namespace and an Event Hub](https://docs.elastic.co/integrations/azure#event-hub-namespace-vs-event-hub)). It is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You can use existing Event Hubs having underscores (_) in the Event Hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the Event Hub name to create dependent Azure resources behind the scenes (e.g., the storage account container to store Event Hub consumer offsets). Elastic also recommends using a separate event hub for each log type as the field mappings of each log type differ.
 Default value `insights-operational-logs`.
 
 `consumer_group` :
@@ -42,7 +42,7 @@ Default value: `$Default`
 
 `connection_string` :
 _string_
-The connection string required to communicate with Event Hubs, steps here https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string.
+The connection string required to communicate with the specified Event Hub, steps here https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string.
 
 A Blob Storage account is required in order to store/retrieve/update the offset or state of the eventhub messages. This means that after stopping the filebeat azure module it can start back up at the spot that it stopped processing messages.
 
