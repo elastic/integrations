@@ -703,11 +703,11 @@ An example event for `stats` looks as following:
                 "cpuacct": {
                     "control_group": "cgroup",
                     "usage_nanos": 56132224
-                 },
-                 "cgroup_memory": {
-                     "current_in_bytes": 60869566,
-                     "swap_current_in_bytes": 65374608
-                 }
+                },
+                "cgroup_memory": {
+                    "current_in_bytes": 60869566,
+                    "swap_current_in_bytes": 65374608
+                }
             },
             "process": {
                 "event_loop_delay": {
