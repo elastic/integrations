@@ -701,8 +701,8 @@ An example event for `stats` looks as following:
                 "platform": "linux",
                 "platformRelease": "linux-5.10.124-linuxkit",
                 "cpuacct": {
-                     "control_group": "cgroup",
-                     "usage_nanos": 56132224
+                    "control_group": "cgroup",
+                    "usage_nanos": 56132224
                  },
                  "cgroup_memory": {
                      "current_in_bytes": 60869566,
