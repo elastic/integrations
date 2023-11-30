@@ -121,8 +121,8 @@ An example event for `metrics` looks as following:
 | etcd.disk.wal_fsync_duration_seconds.histogram | Latency for writing ahead logs to disk | histogram |  |  |
 | etcd.labels.\* | etcd labels. | keyword |  |  |
 | etcd.labels.fingerprint | Unique fingerprint of the etcd labels. | keyword |  |  |
-| etcd.memory.go_memstats_alloc.bytes | Memory allocated bytes as of MemStats Go | long | byte | gauge |
-| etcd.memory.go_memstats_alloc.total.bytes | Memory allocated bytes as of MemStats Go | long | byte | counter |
+| etcd.memory.go_memstats_alloc.bytes | Current allocated bytes as of MemStats Go | long | byte | gauge |
+| etcd.memory.go_memstats_alloc.total.bytes | Total allocated bytes, including released memory as of MemStats Go | long | byte | counter |
 | etcd.network.client_grpc_received.bytes | gRPC received bytes total | long | byte | counter |
 | etcd.network.client_grpc_sent.bytes | gRPC sent bytes total | long | byte | counter |
 | etcd.network.peer_received_bytes_total | The total number of bytes received from peers. | long | byte | counter |
@@ -139,10 +139,10 @@ An example event for `metrics` looks as following:
 | etcd.server.proposals_committed.count | Number of consensus proposals commited | long |  | gauge |
 | etcd.server.proposals_failed.count | Number of consensus proposals failed | long |  | counter |
 | etcd.server.proposals_pending.count | Number of consensus proposals pending | long |  | gauge |
-| etcd.store.expires_total | Total number of writes (e.g. set/compareAndDelete) seen by this member. | long |  | counter |
+| etcd.store.expires_total | Total number of expired keys. | long |  | counter |
 | etcd.store.reads_total | Total number of reads action by (get/getRecursive), local to this member. | long |  | counter |
 | etcd.store.watchers | Count of currently active watchers. | long |  | gauge |
-| etcd.store.writes_total | Total number of expired keys. | long |  | counter |
+| etcd.store.writes_total | Total number of writes (e.g. set/compareAndDelete) seen by this member. | long |  | counter |
 | event.dataset | Event dataset | constant_keyword |  |  |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |  |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
