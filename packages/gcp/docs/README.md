@@ -1894,7 +1894,6 @@ The `firestore` dataset fetches metrics from [Firestore](https://cloud.google.co
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
-| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |
@@ -1926,7 +1925,6 @@ The `firestore` dataset fetches metrics from [Firestore](https://cloud.google.co
 | gcp.labels.resource.\* |  | object |  |
 | gcp.labels.system.\* |  | object |  |
 | gcp.labels.user.\* |  | object |  |
-| gcp.labels_fingerprint | Hashed value of the labels field. | keyword |  |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
