@@ -105,7 +105,7 @@ An example event for `securesphere` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "68d423e3-c562-46ac-aebf-08e6f6ce9e0f",

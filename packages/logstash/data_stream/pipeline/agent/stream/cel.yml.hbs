@@ -18,48 +18,76 @@ redact:
 
 
 program: |
-  get(state.url)
-  .as(resp, bytes(resp.Body)
-  .decode_json().as(body,
-    body.pipelines.map(pipeline_name, pipeline_name != ".monitoring-logstash", {"name":pipeline_name}
-      .with({
-        "elasticsearch.cluster.id":((body.pipelines[pipeline_name].vertices).as(vertices, vertices.map(each, has(each.cluster_uuid), each.cluster_uuid))),
-        "host":{
-          "name":body.name,
-          "address":body.http_address,
+  get(state.url).as(resp, bytes(resp.Body).decode_json().as(body,
+    body.pipelines.map(pipeline_name, pipeline_name != ".monitoring-logstash", {
+      "name": pipeline_name,
+      "elasticsearch.cluster.id": has(body.pipelines[pipeline_name].vertices) ?
+        body.pipelines[pipeline_name].vertices.map(vertex, has(vertex.cluster_uuid), vertex.cluster_uuid)
+      :
+        [],
+      "host":{
+        "name":body.name,
+        "address":body.http_address,
+      },
+      "total":{
+        "flow":body.pipelines[pipeline_name].flow,
+        "time":{
+          "queue_push_duration": {
+            "ms": has(body.pipelines[pipeline_name].events.queue_push_duration_in_millis) ?
+              body.pipelines[pipeline_name].events.queue_push_duration_in_millis
+            :
+              [],
+          },
+          "duration":{
+            "ms": has(body.pipelines[pipeline_name].events.duration_in_millis) ?
+              body.pipelines[pipeline_name].events.duration_in_millis
+            :
+              [],
+          },
         },
-        "total":{
-          "flow":body.pipelines[pipeline_name].flow,
-          "time":{
-            "queue_push_duration":{
-              "ms":body.pipelines[pipeline_name].events.queue_push_duration_in_millis,
-            },
-            "duration":{
-              "ms":body.pipelines[pipeline_name].events.duration_in_millis,
-            },
+        "reloads":{
+          "successes":body.pipelines[pipeline_name].reloads.successes,
+          "failures":body.pipelines[pipeline_name].reloads.failures
+        },
+        "events":{
+          "out": has(body.pipelines[pipeline_name].events.out) ?
+            body.pipelines[pipeline_name].events.out
+          :
+            [],
+          "in": has(body.pipelines[pipeline_name].events.out) ? // This deliberately uses 'out' as `has` does not accept `in`
+            body.pipelines[pipeline_name].events['in']
+          :
+            [],
+          "filtered": has(body.pipelines[pipeline_name].events.filtered) ?
+            body.pipelines[pipeline_name].events.filtered
+          :
+            [],
+        },
+        "queues":{
+          "type": has(body.pipelines[pipeline_name].queue.type) ?
+            body.pipelines[pipeline_name].queue.type
+          :
+            [],
+          "events": has(body.pipelines[pipeline_name].queue.events_count) ?
+            body.pipelines[pipeline_name].queue.events_count
+          :
+            [],
+          "current_size":{
+            "bytes": has(body.pipelines[pipeline_name].queue.queue_size_in_bytes) ?
+              body.pipelines[pipeline_name].queue.queue_size_in_bytes
+            :
+              [],
           },
-          "reloads":{
-            "successes":body.pipelines[pipeline_name].reloads.successes,
-            "failures":body.pipelines[pipeline_name].reloads.failures
-          },
-          "events":{
-            "out":body.pipelines[pipeline_name].events.out,
-            "in":body.pipelines[pipeline_name].events["in"],
-            "filtered":body.pipelines[pipeline_name].events.filtered,
-          },
-          "queues":{
-            "type":body.pipelines[pipeline_name].queue.type,
-            "events":body.pipelines[pipeline_name].queue.events_count,
-            "current_size":{
-              "bytes":body.pipelines[pipeline_name].queue.queue_size_in_bytes,
-            },
-            "max_size":{
-              "bytes":body.pipelines[pipeline_name].queue.max_queue_size_in_bytes,
-            }
+          "max_size":{
+            "bytes": has(body.pipelines[pipeline_name].queue.max_queue_size_in_bytes) ?
+              body.pipelines[pipeline_name].queue.max_queue_size_in_bytes
+            :
+              [],
           }
         }
+      }
+    }))).as(pipelines, {
+      "events": pipelines.map(pipeline, {
+        "logstash": {"pipeline":pipeline}
       })
-    )
-    ))
-    .as(pipelines, {
-      "events":pipelines.map(pipeline, {"logstash":{"pipeline":pipeline}})})
+    })
