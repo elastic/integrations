@@ -25,77 +25,79 @@ An example event for `metrics` looks as following:
 
 ```json
 {
+    "@timestamp": "2023-11-30T11:12:42.472Z",
     "agent": {
-        "name": "380a29000462",
-        "id": "6ab520e2-97a1-4ffd-83c4-4b141cb153fa",
-        "ephemeral_id": "137bf29d-a4b8-4f3e-abf5-89164e923ba8",
+        "ephemeral_id": "422daded-456e-40fe-bd1f-a2913d37b309",
+        "id": "a4b14fa0-9721-4a94-8b4b-bebf87bd1ba4",
+        "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.12.0"
     },
-    "@timestamp": "2023-11-08T21:09:29.748Z",
-    "ecs": {
-        "version": "8.0.0"
-    },
     "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "etcd.metrics"
+        "dataset": "etcd.metrics",
+        "namespace": "ep",
+        "type": "metrics"
     },
-    "service": {
-        "address": "http://etcd:2379/metrics",
-        "type": "prometheus"
+    "ecs": {
+        "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "6ab520e2-97a1-4ffd-83c4-4b141cb153fa",
-        "version": "8.12.0",
-        "snapshot": true
-    },
-    "host": {
-        "hostname": "380a29000462",
-        "os": {
-            "kernel": "5.10.102.1-microsoft-standard-WSL2",
-            "codename": "focal",
-            "name": "Ubuntu",
-            "type": "linux",
-            "family": "debian",
-            "version": "20.04.6 LTS (Focal Fossa)",
-            "platform": "ubuntu"
-        },
-        "ip": [
-            "172.25.0.4"
-        ],
-        "containerized": true,
-        "name": "380a29000462",
-        "mac": [
-            "02-42-AC-19-00-04"
-        ],
-        "architecture": "x86_64"
-    },
-    "metricset": {
-        "period": 10000,
-        "name": "collector"
-    },
-    "event": {
-        "duration": 19492282,
-        "agent_id_status": "verified",
-        "ingested": "2023-11-08T21:09:29Z",
-        "module": "etcd",
-        "dataset": "etcd.metrics"
+        "id": "a4b14fa0-9721-4a94-8b4b-bebf87bd1ba4",
+        "snapshot": true,
+        "version": "8.12.0"
     },
     "etcd": {
-        "server": {
-            "grpc_started": {
-                "count": 14
-            }
-        },
         "labels": {
-            "grpc_method": "Snapshot",
-            "grpc_type": "server_stream",
-            "instance": "etcd:2379",
-            "grpc_service": "etcdserverpb.Maintenance",
-            "fingerprint": "TkIF3QTQ+iB4SVuYV1fMrGCLYcg=",
+            "fingerprint": "oB5wpx/JWEU93sgnFX12WX4GmEk=",
+            "grpc_code": "Aborted",
+            "grpc_method": "Authenticate",
+            "grpc_service": "etcdserverpb.Auth",
+            "grpc_type": "unary",
+            "instance": "elastic-package-service-etcd-1:2379",
             "job": "prometheus"
+        },
+        "server": {
+            "grpc_handled": {
+                "count": 0
+            }
         }
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "etcd.metrics",
+        "duration": 15662716,
+        "ingested": "2023-11-30T11:12:52Z",
+        "module": "etcd"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "d03b51e638e64b05b5cf16c41d2058c0",
+        "ip": [
+            "172.18.0.7"
+        ],
+        "mac": [
+            "02-42-AC-12-00-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.102.1-microsoft-standard-WSL2",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "collector",
+        "period": 10000
+    },
+    "service": {
+        "address": "http://elastic-package-service-etcd-1:2379/metrics",
+        "type": "prometheus"
     }
 }
 ```
