@@ -15,7 +15,7 @@ fi
 echo "--- Installing tools"
 add_bin_path
 with_go
-with_jq         # containers do not have jq installe# containers do not have jq installedd
+with_jq         # containers do not have jq installed
 with_github_cli # to post comments in Pull Requests
 use_elastic_package
 
