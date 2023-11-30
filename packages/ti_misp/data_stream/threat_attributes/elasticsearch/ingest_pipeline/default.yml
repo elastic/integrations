@@ -72,10 +72,25 @@ processors:
       field: misp.object.meta-category
       target_field: misp.object.meta_category
       ignore_missing: true
+  - set:
+      field: _tmp.event_ingested
+      value: "{{{_ingest.timestamp}}}"
+  - date:
+      field: _tmp.event_ingested
+      target_field: _tmp.event_ingested
+      tag: date-misp_event_ingested
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 # Script for calculating if attribute is decayed/expired. 
 # If majority (i.e., >= 50%) decaying models have `decayed` as true, then attribute is expired.
+# Set decayed_at to 2 minute before ingest time so that transform deletes the document from destination indices using transform's retention policy.
   - script:
       lang: painless
+      tag: script-misp_decayed
       if: ctx.misp?.attribute?.decay_score instanceof List && ctx.misp.attribute.decay_score.size() > 0
       source: |
         def decayed = 
@@ -83,6 +98,13 @@ processors:
             .filter(t -> t.decayed == true)
             .count()/1.0 >= (ctx.misp.attribute.decay_score.size())/2.0 ;
         ctx.misp.attribute.decayed = decayed;
+        if (decayed == true) {
+            ctx.misp.attribute.decayed_at = ZonedDateTime.parse(ctx._tmp.event_ingested).minusMinutes(2L); 
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       if: ctx.misp?.event?.timestamp != null
       field: misp.event.timestamp

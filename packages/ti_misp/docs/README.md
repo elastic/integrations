@@ -338,6 +338,8 @@ This data stream uses the `/attributes/restSearch` API endpoint which returns mo
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
+| labels.is_ioc_transform_source | Field indicating if the document is a source for the transform. This field is not added to destination indices to facilitate easier filtering of indicators for indicator match rules. | constant_keyword |
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
@@ -347,6 +349,7 @@ This data stream uses the `/attributes/restSearch` API endpoint which returns mo
 | misp.attribute.data | The data of the attribute | keyword |
 | misp.attribute.decay_score | Group of fields describing decay score of the attribute | flattened |
 | misp.attribute.decayed | Whether atleast one decay model indicates the attribute is decayed. | boolean |
+| misp.attribute.decayed_at | Timestamp when the document is decayed. Not sent by the API. This is calculated inside the ingest pipeline. | date |
 | misp.attribute.deleted | If the attribute has been removed. | boolean |
 | misp.attribute.disable_correlation | If correlation has been enabled on the attribute. | boolean |
 | misp.attribute.distribution | How the attribute has been distributed, represented by integer numbers. | long |
