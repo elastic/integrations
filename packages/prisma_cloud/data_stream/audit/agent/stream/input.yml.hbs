@@ -19,7 +19,6 @@ state:
   password: {{password}}
   time_amount: {{time_amount}}
   time_unit: {{time_unit}}
-  state_interval: {{interval}}
 redact:
   fields:
     - password
@@ -37,17 +36,11 @@ program: |
       request("GET",
         state.url +
         "/audit/redlock?timeType=relative&timeAmount=" +
-        (has(state.cursor) && has(state.cursor.time_amount_in_minute) && state.cursor.time_amount_in_minute != null
+        (has(state.cursor) && has(state.cursor.last_updated_timestamp) && state.cursor.last_updated_timestamp != null
           ?
-            string(state.cursor.time_amount_in_minute)
+            string(int((now - timestamp(int(timestamp(0)+duration(string(int(state.cursor.last_updated_timestamp))+"ms")))).getMinutes()) + 1) + "&timeUnit=minute"
           :
-            string(state.time_amount)) +
-            "&timeUnit=" +
-            (has(state.cursor) && has(state.cursor.time_amount_in_minute) && state.cursor.time_amount_in_minute != null
-            ?
-              "minute"
-            :
-              state.time_unit)
+            string(state.time_amount) +"&timeUnit=" + state.time_unit)
       ).with({
         "Header":{
           "x-redlock-auth": [state.access_token],
@@ -57,15 +50,15 @@ program: |
             "message": e.encode_json(),
           }),
           "cursor": {
-              "time_amount_in_minute": (
+              "last_updated_timestamp": (
                 inner_body.size() > 0
                 ?
-                  (int((now() - timestamp(int(timestamp(0)+duration(string(int(inner_body.map(e, e.timestamp).max()))+"ms")))).getSeconds()) + int((duration(state.state_interval)).getSeconds()))/60
+                  inner_body.map(e, e.timestamp).max()
                 :
                   (
-                    has(state.cursor) && has(state.cursor.time_amount_in_minute)
+                    has(state.cursor) && has(state.cursor.last_updated_timestamp)
                     ?
-                      state.cursor.time_amount_in_minute
+                      state.cursor.last_updated_timestamp
                     :
                       null
                   )
