@@ -130,14 +130,13 @@ steps:
         build:
           env:
             INPUT_PATH: "buildkite://"
-            DOWNLOAD_ARTIFACTS_FILTER: "*.zip"
 
       - label: ":esbuild: Trigger publishing packages if any"
         key: "trigger-publish"
         command: ".buildkite/scripts/trigger_publish_packages.sh"
         env:
           SIGNING_STEP_KEY: "sign-service"
-          ARTIFACTS_FOLDER: "."
+          ARTIFACTS_FOLDER: "packageArtifacts"
         agents:
           image: "${LINUX_AGENT_IMAGE}"
           cpu: "8"
