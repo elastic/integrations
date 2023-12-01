@@ -17,7 +17,7 @@ processors:
       number %{}: %{vsphere.log.api.invocations}, %{}: %{user_agent.original}"
     if: ctx.message.contains('logged out')
     ignore_failure: true
-    description: logged out version1
+    description: logged out version 1
 - dissect:
     field: message
     pattern: "%{}User {Name: %{user.name}, Domain: %{user.domain}} %{}"
@@ -29,14 +29,17 @@ processors:
     pattern: 'Received %{_tmp.status} from %{client.ip} port %{client.port}:%{destination.port}:
       %{}'
     if: 'ctx.message.startsWith(''Received'') ?: false'
+    description: Received messages
 - dissect:
     field: message
     pattern: "%{_tmp.status} from %{client.ip} port %{client.port} %{}"
     if: 'ctx.message.startsWith(''Disconnected'') ?: false'
+    description: Disconnect messages
 - dissect:
     field: message
     pattern: Connection %{_tmp.status} by %{client.ip} port %{client.port} %{}
     if: 'ctx.message.startsWith(''Connection'') ?: false'
+    description: Connection messages
 - dissect:
     field: message
     pattern: '%{} Logged in user: "%{user.domain}\%{user.name}"'
@@ -53,9 +56,11 @@ processors:
     field: user.name
     pattern: "%{user.domain}\\%{user.name}"
     if: 'ctx.user?.name?.contains(''\\'') ?: false'
+    description: "Split user and domain"
 - set:
     field: event.outcome
     value: success
+    if: "ctx.user?.name != null || ctx.user?.domain != null"
     # we assume any login attempt is automatically a success, because VSPHERE
     # does not always add `successfully logged in` and instead just mentions
     # user abc logged in
