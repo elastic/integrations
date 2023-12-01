@@ -284,13 +284,13 @@ An example event for `flow` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-12-01T00:44:20.000Z",
+    "@timestamp": "2023-10-16T22:40:20.005Z",
     "agent": {
-        "ephemeral_id": "e6294318-3d1e-49e3-9fae-bfc270cf8733",
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "ephemeral_id": "005dde79-7459-4b47-ae00-972086b4f5db",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "data_stream": {
         "dataset": "network_traffic.flow",
@@ -307,9 +307,9 @@ An example event for `flow` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "snapshot": false,
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "event": {
         "action": "network_flow",
@@ -317,26 +317,31 @@ An example event for `flow` looks as following:
         "category": [
             "network"
         ],
-        "duration": 55961,
-        "end": "2023-12-01T00:43:49.844Z",
-        "ingested": "2023-12-01T00:44:21Z",
+        "dataset": "network_traffic.flow",
+        "duration": 73561,
+        "end": "2023-10-16T22:39:45.677Z",
+        "ingested": "2023-10-16T22:40:21Z",
         "kind": "event",
-        "start": "2023-12-01T00:43:49.844Z",
+        "start": "2023-10-16T22:39:45.677Z",
         "type": [
             "connection",
             "end"
         ]
     },
+    "flow": {
+        "final": true,
+        "id": "QAT///////8A////IP8AAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAUAfeMg"
+    },
     "host": {
         "architecture": "x86_64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "d7fd92f5e61644938d48518adcee73ad",
+        "id": "f91b175388d443fca5c155815dfc2279",
         "ip": [
-            "172.23.0.7"
+            "172.19.0.7"
         ],
         "mac": [
-            "02-42-AC-17-00-07"
+            "02-42-AC-13-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -346,7 +351,7 @@ An example event for `flow` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "network": {
@@ -356,19 +361,15 @@ An example event for `flow` looks as following:
         "transport": "tcp",
         "type": "ipv6"
     },
-    "network_traffic": {
-        "flow": {
-            "final": true,
-            "id": "QAT///////8A////IP8AAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAUAfeMg"
-        }
-    },
     "source": {
         "bytes": 88,
         "ip": "::1",
         "packets": 1,
         "port": 51320
-    }
+    },
+    "type": "flow"
 }
+
 ```
 
 ## Protocols
@@ -626,13 +627,23 @@ An example event for `amqp` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-12-01T00:19:14.970Z",
+    "@timestamp": "2023-10-16T22:25:39.072Z",
     "agent": {
-        "ephemeral_id": "ea83fdfc-ba82-4216-9c42-1918855021f7",
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "ephemeral_id": "0749f3ad-7bc9-4e3a-9ffc-90eaefc86763",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.11.0"
+        "version": "8.6.2"
+    },
+    "amqp": {
+        "auto-delete": false,
+        "consumer-count": 0,
+        "durable": false,
+        "exclusive": false,
+        "message-count": 0,
+        "no-wait": false,
+        "passive": false,
+        "queue": "hello"
     },
     "client": {
         "bytes": 25,
@@ -653,9 +664,9 @@ An example event for `amqp` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "snapshot": false,
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "event": {
         "action": "amqp.queue.declare",
@@ -663,11 +674,12 @@ An example event for `amqp` looks as following:
         "category": [
             "network"
         ],
-        "duration": 1240539,
-        "end": "2023-12-01T00:19:14.971Z",
-        "ingested": "2023-12-01T00:19:17Z",
+        "dataset": "network_traffic.amqp",
+        "duration": 1265764,
+        "end": "2023-10-16T22:25:39.073Z",
+        "ingested": "2023-10-16T22:25:40Z",
         "kind": "event",
-        "start": "2023-12-01T00:19:14.970Z",
+        "start": "2023-10-16T22:25:39.072Z",
         "type": [
             "connection",
             "protocol"
@@ -677,12 +689,12 @@ An example event for `amqp` looks as following:
         "architecture": "x86_64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "d7fd92f5e61644938d48518adcee73ad",
+        "id": "f91b175388d443fca5c155815dfc2279",
         "ip": [
-            "172.23.0.7"
+            "172.19.0.7"
         ],
         "mac": [
-            "02-42-AC-17-00-07"
+            "02-42-AC-13-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -692,9 +704,10 @@ An example event for `amqp` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
+    "method": "queue.declare",
     "network": {
         "bytes": 51,
         "community_id": "1:i6J4zz0FGnZMYLIy8kabND2W/XE=",
@@ -702,20 +715,6 @@ An example event for `amqp` looks as following:
         "protocol": "amqp",
         "transport": "tcp",
         "type": "ipv4"
-    },
-    "network_traffic": {
-        "amqp": {
-            "auto-delete": false,
-            "consumer-count": 0,
-            "durable": false,
-            "exclusive": false,
-            "message-count": 0,
-            "method": "queue.declare",
-            "no-wait": false,
-            "passive": false,
-            "queue": "hello"
-        },
-        "status": "OK"
     },
     "related": {
         "ip": [
@@ -731,8 +730,11 @@ An example event for `amqp` looks as following:
         "bytes": 25,
         "ip": "127.0.0.1",
         "port": 34222
-    }
+    },
+    "status": "OK",
+    "type": "amqp"
 }
+
 ```
 
 ### Cassandra
@@ -1050,13 +1052,43 @@ An example event for `cassandra` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-12-01T00:29:11.524Z",
+    "@timestamp": "2023-10-16T22:31:00.694Z",
     "agent": {
-        "ephemeral_id": "6b320ea4-3345-4bb1-9766-e4c6b9e50555",
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "ephemeral_id": "c013fddf-67ee-4638-8676-393fc70318cc",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.11.0"
+        "version": "8.6.2"
+    },
+    "cassandra": {
+        "request": {
+            "headers": {
+                "flags": "Default",
+                "length": 98,
+                "op": "QUERY",
+                "stream": 49,
+                "version": "4"
+            },
+            "query": "CREATE TABLE users (\n  user_id int PRIMARY KEY,\n  fname text,\n  lname text\n);"
+        },
+        "response": {
+            "headers": {
+                "flags": "Default",
+                "length": 39,
+                "op": "RESULT",
+                "stream": 49,
+                "version": "4"
+            },
+            "result": {
+                "schema_change": {
+                    "change": "CREATED",
+                    "keyspace": "mykeyspace",
+                    "object": "users",
+                    "target": "TABLE"
+                },
+                "type": "schemaChanged"
+            }
+        }
     },
     "client": {
         "bytes": 107,
@@ -1077,20 +1109,21 @@ An example event for `cassandra` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "snapshot": false,
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "duration": 131444561,
-        "end": "2023-12-01T00:29:11.656Z",
-        "ingested": "2023-12-01T00:29:14Z",
+        "dataset": "network_traffic.cassandra",
+        "duration": 131789052,
+        "end": "2023-10-16T22:31:00.826Z",
+        "ingested": "2023-10-16T22:31:04Z",
         "kind": "event",
-        "start": "2023-12-01T00:29:11.524Z",
+        "start": "2023-10-16T22:31:00.694Z",
         "type": [
             "connection",
             "protocol"
@@ -1100,12 +1133,12 @@ An example event for `cassandra` looks as following:
         "architecture": "x86_64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "d7fd92f5e61644938d48518adcee73ad",
+        "id": "f91b175388d443fca5c155815dfc2279",
         "ip": [
-            "172.23.0.7"
+            "172.19.0.7"
         ],
         "mac": [
-            "02-42-AC-17-00-07"
+            "02-42-AC-13-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -1115,7 +1148,7 @@ An example event for `cassandra` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "network": {
@@ -1125,39 +1158,6 @@ An example event for `cassandra` looks as following:
         "protocol": "cassandra",
         "transport": "tcp",
         "type": "ipv4"
-    },
-    "network_traffic": {
-        "cassandra": {
-            "request": {
-                "headers": {
-                    "flags": "Default",
-                    "length": 98,
-                    "op": "QUERY",
-                    "stream": 49,
-                    "version": "4"
-                },
-                "query": "CREATE TABLE users (\n  user_id int PRIMARY KEY,\n  fname text,\n  lname text\n);"
-            },
-            "response": {
-                "headers": {
-                    "flags": "Default",
-                    "length": 39,
-                    "op": "RESULT",
-                    "stream": 49,
-                    "version": "4"
-                },
-                "result": {
-                    "schema_change": {
-                        "change": "CREATED",
-                        "keyspace": "mykeyspace",
-                        "object": "users",
-                        "target": "TABLE"
-                    },
-                    "type": "schemaChanged"
-                }
-            }
-        },
-        "status": "OK"
     },
     "related": {
         "ip": [
@@ -1173,8 +1173,11 @@ An example event for `cassandra` looks as following:
         "bytes": 107,
         "ip": "127.0.0.1",
         "port": 52749
-    }
+    },
+    "status": "OK",
+    "type": "cassandra"
 }
+
 ```
 
 ### DHCP
@@ -1390,13 +1393,13 @@ An example event for `dhcpv4` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-12-01T00:30:21.636Z",
+    "@timestamp": "2023-10-16T22:31:47.648Z",
     "agent": {
-        "ephemeral_id": "5f2ffb5c-f34a-47a1-b0be-2da0781d996c",
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "ephemeral_id": "a1bdc581-8ac7-4f07-a78a-656bceaa0c91",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "client": {
         "bytes": 272,
@@ -1412,22 +1415,42 @@ An example event for `dhcpv4` looks as following:
         "ip": "255.255.255.255",
         "port": 67
     },
+    "dhcpv4": {
+        "client_mac": "00-0B-82-01-FC-42",
+        "flags": "unicast",
+        "hardware_type": "Ethernet",
+        "hops": 0,
+        "op_code": "bootrequest",
+        "option": {
+            "message_type": "discover",
+            "parameter_request_list": [
+                "Subnet Mask",
+                "Router",
+                "Domain Name Server",
+                "NTP Servers"
+            ],
+            "requested_ip_address": "0.0.0.0"
+        },
+        "seconds": 0,
+        "transaction_id": "0x00003d1d"
+    },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "snapshot": false,
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "ingested": "2023-12-01T00:30:24Z",
+        "dataset": "network_traffic.dhcpv4",
+        "ingested": "2023-10-16T22:31:48Z",
         "kind": "event",
-        "start": "2023-12-01T00:30:21.636Z",
+        "start": "2023-10-16T22:31:47.648Z",
         "type": [
             "connection",
             "protocol"
@@ -1437,12 +1460,12 @@ An example event for `dhcpv4` looks as following:
         "architecture": "x86_64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "d7fd92f5e61644938d48518adcee73ad",
+        "id": "f91b175388d443fca5c155815dfc2279",
         "ip": [
-            "172.23.0.7"
+            "172.19.0.7"
         ],
         "mac": [
-            "02-42-AC-17-00-07"
+            "02-42-AC-13-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -1452,7 +1475,7 @@ An example event for `dhcpv4` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "network": {
@@ -1462,28 +1485,6 @@ An example event for `dhcpv4` looks as following:
         "protocol": "dhcpv4",
         "transport": "udp",
         "type": "ipv4"
-    },
-    "network_traffic": {
-        "dhcpv4": {
-            "client_mac": "00-0B-82-01-FC-42",
-            "flags": "unicast",
-            "hardware_type": "Ethernet",
-            "hops": 0,
-            "op_code": "bootrequest",
-            "option": {
-                "message_type": "discover",
-                "parameter_request_list": [
-                    "Subnet Mask",
-                    "Router",
-                    "Domain Name Server",
-                    "NTP Servers"
-                ],
-                "requested_ip_address": "0.0.0.0"
-            },
-            "seconds": 0,
-            "transaction_id": "0x00003d1d"
-        },
-        "status": "OK"
     },
     "related": {
         "ip": [
@@ -1499,8 +1500,11 @@ An example event for `dhcpv4` looks as following:
         "bytes": 272,
         "ip": "0.0.0.0",
         "port": 68
-    }
+    },
+    "status": "OK",
+    "type": "dhcpv4"
 }
+
 ```
 
 ### DNS
@@ -1729,13 +1733,13 @@ An example event for `dns` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-12-01T00:39:35.899Z",
+    "@timestamp": "2023-10-16T22:36:55.594Z",
     "agent": {
-        "ephemeral_id": "afe8eb05-3424-410b-a6dc-1fa96dc3f4d0",
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "ephemeral_id": "1aa050cd-250a-42b2-88cc-25d4a1e3b123",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "client": {
         "bytes": 28,
@@ -1753,6 +1757,7 @@ An example event for `dns` looks as following:
         "port": 53
     },
     "dns": {
+        "additionals_count": 0,
         "answers": [
             {
                 "class": "IN",
@@ -1783,6 +1788,16 @@ An example event for `dns` looks as following:
                 "type": "NS"
             }
         ],
+        "answers_count": 4,
+        "authorities_count": 0,
+        "flags": {
+            "authentic_data": false,
+            "authoritative": false,
+            "checking_disabled": false,
+            "recursion_available": true,
+            "recursion_desired": true,
+            "truncated_response": false
+        },
         "header_flags": [
             "RD",
             "RA"
@@ -1791,6 +1806,7 @@ An example event for `dns` looks as following:
         "op_code": "QUERY",
         "question": {
             "class": "IN",
+            "etld_plus_one": "elastic.co",
             "name": "elastic.co",
             "registered_domain": "elastic.co",
             "top_level_domain": "co",
@@ -1803,20 +1819,21 @@ An example event for `dns` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "snapshot": false,
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "duration": 68794939,
-        "end": "2023-12-01T00:39:35.968Z",
-        "ingested": "2023-12-01T00:39:36Z",
+        "dataset": "network_traffic.dns",
+        "duration": 68791650,
+        "end": "2023-10-16T22:36:55.663Z",
+        "ingested": "2023-10-16T22:36:56Z",
         "kind": "event",
-        "start": "2023-12-01T00:39:35.899Z",
+        "start": "2023-10-16T22:36:55.594Z",
         "type": [
             "connection",
             "protocol"
@@ -1826,12 +1843,12 @@ An example event for `dns` looks as following:
         "architecture": "x86_64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "d7fd92f5e61644938d48518adcee73ad",
+        "id": "f91b175388d443fca5c155815dfc2279",
         "ip": [
-            "172.23.0.7"
+            "172.19.0.7"
         ],
         "mac": [
-            "02-42-AC-17-00-07"
+            "02-42-AC-13-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -1841,9 +1858,10 @@ An example event for `dns` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
+    "method": "QUERY",
     "network": {
         "bytes": 195,
         "community_id": "1:3P4ruI0bVlqxiTAs0WyBhnF74ek=",
@@ -1852,34 +1870,14 @@ An example event for `dns` looks as following:
         "transport": "udp",
         "type": "ipv4"
     },
-    "network_traffic": {
-        "dns": {
-            "additionals_count": 0,
-            "answers_count": 4,
-            "authorities_count": 0,
-            "flags": {
-                "authentic_data": false,
-                "authoritative": false,
-                "checking_disabled": false,
-                "recursion_available": true,
-                "recursion_desired": true,
-                "truncated_response": false
-            },
-            "method": "QUERY",
-            "query": "class IN, type NS, elastic.co",
-            "question": {
-                "etld_plus_one": "elastic.co"
-            },
-            "resource": "elastic.co"
-        },
-        "status": "OK"
-    },
+    "query": "class IN, type NS, elastic.co",
     "related": {
         "ip": [
             "192.168.238.68",
             "8.8.8.8"
         ]
     },
+    "resource": "elastic.co",
     "server": {
         "bytes": 167,
         "ip": "8.8.8.8",
@@ -1889,8 +1887,11 @@ An example event for `dns` looks as following:
         "bytes": 28,
         "ip": "192.168.238.68",
         "port": 53765
-    }
+    },
+    "status": "OK",
+    "type": "dns"
 }
+
 ```
 
 ### HTTP
@@ -2190,13 +2191,13 @@ An example event for `http` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-12-01T00:55:29.787Z",
+    "@timestamp": "2023-10-16T23:41:13.068Z",
     "agent": {
-        "ephemeral_id": "1717675e-ff2a-4b70-a682-f3ae5888193e",
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "ephemeral_id": "e4d5d369-0170-43e1-9a37-89bddea96654",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "client": {
         "bytes": 211,
@@ -2218,20 +2219,21 @@ An example event for `http` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "snapshot": false,
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "duration": 140932978,
-        "end": "2023-12-01T00:55:29.928Z",
-        "ingested": "2023-12-01T00:55:32Z",
+        "dataset": "network_traffic.http",
+        "duration": 141073381,
+        "end": "2023-10-16T23:41:13.209Z",
+        "ingested": "2023-10-16T23:41:14Z",
         "kind": "event",
-        "start": "2023-12-01T00:55:29.787Z",
+        "start": "2023-10-16T23:41:13.068Z",
         "type": [
             "connection",
             "protocol"
@@ -2241,12 +2243,12 @@ An example event for `http` looks as following:
         "architecture": "x86_64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "d7fd92f5e61644938d48518adcee73ad",
+        "id": "f91b175388d443fca5c155815dfc2279",
         "ip": [
-            "172.23.0.7"
+            "172.19.0.7"
         ],
         "mac": [
-            "02-42-AC-17-00-07"
+            "02-42-AC-13-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -2256,7 +2258,7 @@ An example event for `http` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "http": {
@@ -2286,6 +2288,7 @@ An example event for `http` looks as following:
         },
         "version": "1.1"
     },
+    "method": "POST",
     "network": {
         "bytes": 9319,
         "community_id": "1:LREAuuDqOAxXEbzF064U0QX5FBs=",
@@ -2294,12 +2297,7 @@ An example event for `http` looks as following:
         "transport": "tcp",
         "type": "ipv4"
     },
-    "network_traffic": {
-        "http": {
-            "query": "POST /register"
-        },
-        "status": "Error"
-    },
+    "query": "POST /register",
     "related": {
         "hosts": [
             "packetbeat.com"
@@ -2320,6 +2318,8 @@ An example event for `http` looks as following:
         "ip": "192.168.238.50",
         "port": 64770
     },
+    "status": "Error",
+    "type": "http",
     "url": {
         "domain": "packetbeat.com",
         "full": "http://packetbeat.com/register?address=anklamerstr.14b&telephon=8932784368&user=monica",
@@ -2331,6 +2331,7 @@ An example event for `http` looks as following:
         "original": "curl/7.37.1"
     }
 }
+
 ```
 
 ### ICMP
@@ -2500,13 +2501,13 @@ An example event for `icmp` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-12-01T01:00:59.207Z",
+    "@timestamp": "2023-10-16T23:44:40.347Z",
     "agent": {
-        "ephemeral_id": "10231987-d18b-49d0-a552-94e5309a7d85",
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "ephemeral_id": "c420a35b-6aba-40f9-a69e-19e063419439",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "client": {
         "bytes": 4,
@@ -2525,20 +2526,21 @@ An example event for `icmp` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "snapshot": false,
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "duration": 12609632,
-        "end": "2023-12-01T01:00:59.219Z",
-        "ingested": "2023-12-01T01:01:02Z",
+        "dataset": "network_traffic.icmp",
+        "duration": 13567591,
+        "end": "2023-10-16T23:44:40.360Z",
+        "ingested": "2023-10-16T23:44:44Z",
         "kind": "event",
-        "start": "2023-12-01T01:00:59.207Z",
+        "start": "2023-10-16T23:44:40.347Z",
         "type": [
             "connection"
         ]
@@ -2547,12 +2549,12 @@ An example event for `icmp` looks as following:
         "architecture": "x86_64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "d7fd92f5e61644938d48518adcee73ad",
+        "id": "f91b175388d443fca5c155815dfc2279",
         "ip": [
-            "172.23.0.7"
+            "172.19.0.7"
         ],
         "mac": [
-            "02-42-AC-17-00-07"
+            "02-42-AC-13-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -2562,8 +2564,21 @@ An example event for `icmp` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
+    },
+    "icmp": {
+        "request": {
+            "code": 0,
+            "message": "EchoRequest",
+            "type": 128
+        },
+        "response": {
+            "code": 0,
+            "message": "EchoReply",
+            "type": 129
+        },
+        "version": 6
     },
     "network": {
         "bytes": 8,
@@ -2573,23 +2588,7 @@ An example event for `icmp` looks as following:
         "transport": "ipv6-icmp",
         "type": "ipv6"
     },
-    "network_traffic": {
-        "icmp": {
-            "path": "::2",
-            "request": {
-                "code": 0,
-                "message": "EchoRequest",
-                "type": 128
-            },
-            "response": {
-                "code": 0,
-                "message": "EchoReply",
-                "type": 129
-            },
-            "version": 6
-        },
-        "status": "OK"
-    },
+    "path": "::2",
     "related": {
         "ip": [
             "::1",
@@ -2603,8 +2602,11 @@ An example event for `icmp` looks as following:
     "source": {
         "bytes": 4,
         "ip": "::1"
-    }
+    },
+    "status": "OK",
+    "type": "icmp"
 }
+
 ```
 
 ### Memcached
@@ -2874,13 +2876,13 @@ An example event for `memcached` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-12-01T02:32:46.547Z",
+    "@timestamp": "2023-10-16T23:03:48.222Z",
     "agent": {
-        "ephemeral_id": "1b63a240-3276-4b16-bd7e-11b82d31411e",
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "ephemeral_id": "7b5b07cc-deb1-4c1d-87f5-ea6f49b216fc",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "client": {
         "ip": "192.168.188.37",
@@ -2900,34 +2902,35 @@ An example event for `memcached` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "snapshot": false,
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "event": {
-        "action": "memcache.store",
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "ingested": "2023-12-01T02:32:57Z",
+        "dataset": "network_traffic.memcached",
+        "ingested": "2023-10-16T23:03:59Z",
         "kind": "event",
-        "start": "2023-12-01T02:32:46.547Z",
+        "start": "2023-10-16T23:03:48.222Z",
         "type": [
             "connection",
             "protocol"
         ]
     },
+    "event.action": "memcache.store",
     "host": {
         "architecture": "x86_64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "d7fd92f5e61644938d48518adcee73ad",
+        "id": "f91b175388d443fca5c155815dfc2279",
         "ip": [
-            "172.23.0.7"
+            "172.19.0.7"
         ],
         "mac": [
-            "02-42-AC-17-00-07"
+            "02-42-AC-13-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -2937,7 +2940,26 @@ An example event for `memcached` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
+        }
+    },
+    "memcache": {
+        "protocol_type": "binary",
+        "request": {
+            "bytes": 1024,
+            "command": "set",
+            "count_values": 1,
+            "exptime": 0,
+            "flags": 0,
+            "keys": [
+                "test_key"
+            ],
+            "opaque": 65536,
+            "opcode": "SetQ",
+            "opcode_value": 17,
+            "quiet": true,
+            "type": "Store",
+            "vbucket": 0
         }
     },
     "network": {
@@ -2947,28 +2969,6 @@ An example event for `memcached` looks as following:
         "protocol": "memcache",
         "transport": "udp",
         "type": "ipv4"
-    },
-    "network_traffic": {
-        "memcached": {
-            "protocol_type": "binary",
-            "request": {
-                "bytes": 1024,
-                "command": "set",
-                "count_values": 1,
-                "exptime": 0,
-                "flags": 0,
-                "keys": [
-                    "test_key"
-                ],
-                "opaque": 65536,
-                "opcode": "SetQ",
-                "opcode_value": 17,
-                "quiet": true,
-                "type": "Store",
-                "vbucket": 0
-            }
-        },
-        "status": "OK"
     },
     "related": {
         "ip": [
@@ -2984,8 +2984,11 @@ An example event for `memcached` looks as following:
     "source": {
         "ip": "192.168.188.37",
         "port": 65195
-    }
+    },
+    "status": "OK",
+    "type": "memcache"
 }
+
 ```
 
 ### MongoDB
@@ -3181,13 +3184,13 @@ An example event for `mongodb` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-12-01T01:33:06.894Z",
+    "@timestamp": "2023-10-16T23:10:00.771Z",
     "agent": {
-        "ephemeral_id": "3509a2f5-8bba-4a23-be51-66cdbc49126f",
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "ephemeral_id": "ba8a356f-2bd0-4dd5-927d-a149f0e78281",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "client": {
         "bytes": 50,
@@ -3208,20 +3211,21 @@ An example event for `mongodb` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "snapshot": false,
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "duration": 286243,
-        "end": "2023-12-01T01:33:06.895Z",
-        "ingested": "2023-12-01T01:33:09Z",
+        "dataset": "network_traffic.mongodb",
+        "duration": 1130257,
+        "end": "2023-10-16T23:10:00.772Z",
+        "ingested": "2023-10-16T23:10:01Z",
         "kind": "event",
-        "start": "2023-12-01T01:33:06.894Z",
+        "start": "2023-10-16T23:10:00.771Z",
         "type": [
             "connection",
             "protocol"
@@ -3231,12 +3235,12 @@ An example event for `mongodb` looks as following:
         "architecture": "x86_64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "d7fd92f5e61644938d48518adcee73ad",
+        "id": "f91b175388d443fca5c155815dfc2279",
         "ip": [
-            "172.23.0.7"
+            "172.19.0.7"
         ],
         "mac": [
-            "02-42-AC-17-00-07"
+            "02-42-AC-13-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -3246,8 +3250,17 @@ An example event for `mongodb` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
+    },
+    "method": "find",
+    "mongodb": {
+        "cursorId": 0,
+        "fullCollectionName": "test.restaurants",
+        "numberReturned": 1,
+        "numberToReturn": 1,
+        "numberToSkip": 0,
+        "startingFrom": 0
     },
     "network": {
         "bytes": 564,
@@ -3257,25 +3270,13 @@ An example event for `mongodb` looks as following:
         "transport": "tcp",
         "type": "ipv4"
     },
-    "network_traffic": {
-        "mongodb": {
-            "cursorId": 0,
-            "fullCollectionName": "test.restaurants",
-            "method": "find",
-            "numberReturned": 1,
-            "numberToReturn": 1,
-            "numberToSkip": 0,
-            "query": "test.restaurants.find().limit(1)",
-            "resource": "test.restaurants",
-            "startingFrom": 0
-        },
-        "status": "OK"
-    },
+    "query": "test.restaurants.find().limit(1)",
     "related": {
         "ip": [
             "127.0.0.1"
         ]
     },
+    "resource": "test.restaurants",
     "server": {
         "bytes": 514,
         "ip": "127.0.0.1",
@@ -3285,8 +3286,11 @@ An example event for `mongodb` looks as following:
         "bytes": 50,
         "ip": "127.0.0.1",
         "port": 57203
-    }
+    },
+    "status": "OK",
+    "type": "mongodb"
 }
+
 ```
 
 ### MySQL
@@ -3466,13 +3470,13 @@ An example event for `mysql` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-12-01T01:41:17.561Z",
+    "@timestamp": "2023-10-16T23:14:45.124Z",
     "agent": {
-        "ephemeral_id": "3b6099ee-300f-4552-b883-5673edee4b01",
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "ephemeral_id": "bfa018bc-c1e8-45ea-b4ff-e8d2436764be",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "client": {
         "bytes": 23,
@@ -3493,20 +3497,21 @@ An example event for `mysql` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "snapshot": false,
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "duration": 4668047,
-        "end": "2023-12-01T01:41:17.565Z",
-        "ingested": "2023-12-01T01:41:20Z",
+        "dataset": "network_traffic.mysql",
+        "duration": 4771069,
+        "end": "2023-10-16T23:14:45.129Z",
+        "ingested": "2023-10-16T23:14:46Z",
         "kind": "event",
-        "start": "2023-12-01T01:41:17.561Z",
+        "start": "2023-10-16T23:14:45.124Z",
         "type": [
             "connection",
             "protocol"
@@ -3516,12 +3521,12 @@ An example event for `mysql` looks as following:
         "architecture": "x86_64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "d7fd92f5e61644938d48518adcee73ad",
+        "id": "f91b175388d443fca5c155815dfc2279",
         "ip": [
-            "172.23.0.7"
+            "172.19.0.7"
         ],
         "mac": [
-            "02-42-AC-17-00-07"
+            "02-42-AC-13-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -3531,8 +3536,15 @@ An example event for `mysql` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
+    },
+    "method": "SELECT",
+    "mysql": {
+        "affected_rows": 0,
+        "insert_id": 0,
+        "num_fields": 3,
+        "num_rows": 15
     },
     "network": {
         "bytes": 3652,
@@ -3542,18 +3554,8 @@ An example event for `mysql` looks as following:
         "transport": "tcp",
         "type": "ipv4"
     },
-    "network_traffic": {
-        "mysql": {
-            "affected_rows": 0,
-            "insert_id": 0,
-            "method": "SELECT",
-            "num_fields": 3,
-            "num_rows": 15,
-            "path": "test.test",
-            "query": "select * from test"
-        },
-        "status": "OK"
-    },
+    "path": "test.test",
+    "query": "select * from test",
     "related": {
         "ip": [
             "127.0.0.1"
@@ -3568,8 +3570,11 @@ An example event for `mysql` looks as following:
         "bytes": 23,
         "ip": "127.0.0.1",
         "port": 41517
-    }
+    },
+    "status": "OK",
+    "type": "mysql"
 }
+
 ```
 
 ### NFS
@@ -3749,13 +3754,13 @@ An example event for `nfs` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-12-01T01:47:13.230Z",
+    "@timestamp": "2023-10-16T23:18:26.753Z",
     "agent": {
-        "ephemeral_id": "32d8a60e-309b-4a47-93d6-5551dbc590a9",
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "ephemeral_id": "d177e674-4168-4b25-bceb-5113c0bb88b0",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "client": {
         "bytes": 208,
@@ -3777,9 +3782,9 @@ An example event for `nfs` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "snapshot": false,
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "event": {
         "action": "nfs.CLOSE",
@@ -3787,29 +3792,28 @@ An example event for `nfs` looks as following:
         "category": [
             "network"
         ],
-        "duration": 6489377,
-        "end": "2023-12-01T01:47:13.236Z",
-        "ingested": "2023-12-01T01:47:16Z",
+        "dataset": "network_traffic.nfs",
+        "duration": 5463467,
+        "end": "2023-10-16T23:18:26.758Z",
+        "ingested": "2023-10-16T23:18:27Z",
         "kind": "event",
-        "start": "2023-12-01T01:47:13.230Z",
+        "start": "2023-10-16T23:18:26.753Z",
         "type": [
             "connection",
             "protocol"
         ]
     },
-    "group": {
-        "id": 48
-    },
+    "group.id": 48,
     "host": {
         "architecture": "x86_64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "d7fd92f5e61644938d48518adcee73ad",
+        "id": "f91b175388d443fca5c155815dfc2279",
         "ip": [
-            "172.23.0.7"
+            "172.19.0.7"
         ],
         "mac": [
-            "02-42-AC-17-00-07"
+            "02-42-AC-13-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -3819,9 +3823,10 @@ An example event for `nfs` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
+    "host.hostname": "desycloud03.desy.de",
     "network": {
         "bytes": 384,
         "community_id": "1:cd5eLXemAsSPMdXwCbdDUWWud4M=",
@@ -3830,41 +3835,32 @@ An example event for `nfs` looks as following:
         "transport": "tcp",
         "type": "ipv4"
     },
-    "network_traffic": {
-        "nfs": {
-            "host": {
-                "hostname": "desycloud03.desy.de"
-            },
-            "minor_version": 1,
-            "opcode": "CLOSE",
-            "rpc": {
-                "auth_flavor": "unix",
-                "cred": {
-                    "gid": 48,
-                    "gids": [
-                        48
-                    ],
-                    "machinename": "desycloud03.desy.de",
-                    "stamp": 4308441,
-                    "uid": 48
-                },
-                "status": "success",
-                "xid": "c3103fc1"
-            },
-            "status": "NFS_OK",
-            "tag": "",
-            "version": 4
-        },
-        "status": "OK"
+    "nfs": {
+        "minor_version": 1,
+        "opcode": "CLOSE",
+        "status": "NFS_OK",
+        "tag": "",
+        "version": 4
     },
     "related": {
-        "hosts": [
-            "desycloud03.desy.de"
-        ],
         "ip": [
             "131.169.5.156",
             "131.169.192.35"
         ]
+    },
+    "rpc": {
+        "auth_flavor": "unix",
+        "cred": {
+            "gid": 48,
+            "gids": [
+                48
+            ],
+            "machinename": "desycloud03.desy.de",
+            "stamp": 4308441,
+            "uid": 48
+        },
+        "status": "success",
+        "xid": "c3103fc1"
     },
     "server": {
         "bytes": 176,
@@ -3877,10 +3873,11 @@ An example event for `nfs` looks as following:
         "ip": "131.169.5.156",
         "port": 907
     },
-    "user": {
-        "id": 48
-    }
+    "status": "OK",
+    "type": "nfs",
+    "user.id": 48
 }
+
 ```
 
 ### PostgreSQL
@@ -4050,13 +4047,13 @@ An example event for `pgsql` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-12-01T01:53:48.971Z",
+    "@timestamp": "2023-10-16T23:22:18.142Z",
     "agent": {
-        "ephemeral_id": "2272b9a6-0edd-43ca-a4d3-05a1a07d1829",
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "ephemeral_id": "6125f32f-943d-4b83-81a2-ca5dd7152657",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "client": {
         "bytes": 34,
@@ -4077,20 +4074,21 @@ An example event for `pgsql` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "snapshot": false,
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "duration": 2511016,
-        "end": "2023-12-01T01:53:48.974Z",
-        "ingested": "2023-12-01T01:53:51Z",
+        "dataset": "network_traffic.pgsql",
+        "duration": 2454138,
+        "end": "2023-10-16T23:22:18.145Z",
+        "ingested": "2023-10-16T23:22:19Z",
         "kind": "event",
-        "start": "2023-12-01T01:53:48.971Z",
+        "start": "2023-10-16T23:22:18.142Z",
         "type": [
             "connection",
             "protocol"
@@ -4100,12 +4098,12 @@ An example event for `pgsql` looks as following:
         "architecture": "x86_64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "d7fd92f5e61644938d48518adcee73ad",
+        "id": "f91b175388d443fca5c155815dfc2279",
         "ip": [
-            "172.23.0.7"
+            "172.19.0.7"
         ],
         "mac": [
-            "02-42-AC-17-00-07"
+            "02-42-AC-13-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -4115,9 +4113,10 @@ An example event for `pgsql` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
+    "method": "SELECT",
     "network": {
         "bytes": 3220,
         "community_id": "1:WUuTzESSpZnUwZ2tuZKZtNOdHSU=",
@@ -4126,15 +4125,11 @@ An example event for `pgsql` looks as following:
         "transport": "tcp",
         "type": "ipv4"
     },
-    "network_traffic": {
-        "pgsql": {
-            "method": "SELECT",
-            "num_fields": 3,
-            "num_rows": 15,
-            "query": "select * from long_response"
-        },
-        "status": "OK"
+    "pgsql": {
+        "num_fields": 3,
+        "num_rows": 15
     },
+    "query": "select * from long_response",
     "related": {
         "ip": [
             "127.0.0.1"
@@ -4149,8 +4144,11 @@ An example event for `pgsql` looks as following:
         "bytes": 34,
         "ip": "127.0.0.1",
         "port": 34936
-    }
+    },
+    "status": "OK",
+    "type": "pgsql"
 }
+
 ```
 
 ### Redis
@@ -4315,13 +4313,13 @@ An example event for `redis` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-12-01T01:56:28.912Z",
+    "@timestamp": "2023-10-16T23:23:39.505Z",
     "agent": {
-        "ephemeral_id": "36da953a-9ec7-4be8-a0f7-a045e9861346",
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "ephemeral_id": "187d82c4-b575-4dba-83bf-4950cb7435d9",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "client": {
         "bytes": 31,
@@ -4342,9 +4340,9 @@ An example event for `redis` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "snapshot": false,
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "event": {
         "action": "redis.set",
@@ -4352,11 +4350,12 @@ An example event for `redis` looks as following:
         "category": [
             "network"
         ],
-        "duration": 1127850,
-        "end": "2023-12-01T01:56:28.913Z",
-        "ingested": "2023-12-01T01:56:31Z",
+        "dataset": "network_traffic.redis",
+        "duration": 1300522,
+        "end": "2023-10-16T23:23:39.506Z",
+        "ingested": "2023-10-16T23:23:43Z",
         "kind": "event",
-        "start": "2023-12-01T01:56:28.912Z",
+        "start": "2023-10-16T23:23:39.505Z",
         "type": [
             "connection",
             "protocol"
@@ -4366,12 +4365,12 @@ An example event for `redis` looks as following:
         "architecture": "x86_64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "d7fd92f5e61644938d48518adcee73ad",
+        "id": "f91b175388d443fca5c155815dfc2279",
         "ip": [
-            "172.23.0.7"
+            "172.19.0.7"
         ],
         "mac": [
-            "02-42-AC-17-00-07"
+            "02-42-AC-13-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -4381,9 +4380,10 @@ An example event for `redis` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
+    "method": "SET",
     "network": {
         "bytes": 36,
         "community_id": "1:GuHlyWpX6bKkMXy19YkvZSNPTS4=",
@@ -4392,13 +4392,9 @@ An example event for `redis` looks as following:
         "transport": "tcp",
         "type": "ipv4"
     },
-    "network_traffic": {
-        "redis": {
-            "method": "SET",
-            "query": "set key3 me",
-            "return_value": "OK"
-        },
-        "status": "OK"
+    "query": "set key3 me",
+    "redis": {
+        "return_value": "OK"
     },
     "related": {
         "ip": [
@@ -4415,8 +4411,11 @@ An example event for `redis` looks as following:
         "bytes": 31,
         "ip": "127.0.0.1",
         "port": 32810
-    }
+    },
+    "status": "OK",
+    "type": "redis"
 }
+
 ```
 
 ### SIP
@@ -4732,13 +4731,13 @@ An example event for `sip` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-12-01T01:59:18.969Z",
+    "@timestamp": "2023-11-13T21:54:31.038Z",
     "agent": {
-        "ephemeral_id": "c65b794b-2ac2-4f23-a9ef-a4b223bc9913",
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "ephemeral_id": "7f204077-dee0-4442-b500-1b2f6d84d15a",
+        "id": "4f93724a-6328-4803-8108-b682e5d62ad4",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "client": {
         "ip": "10.0.2.20",
@@ -4757,9 +4756,9 @@ An example event for `sip` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "id": "4f93724a-6328-4803-8108-b682e5d62ad4",
         "snapshot": false,
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "event": {
         "action": "sip-invite",
@@ -4767,12 +4766,14 @@ An example event for `sip` looks as following:
         "category": [
             "network"
         ],
+        "dataset": "network_traffic.sip",
         "duration": 0,
-        "end": "2023-12-01T01:59:18.969Z",
-        "ingested": "2023-12-01T01:59:21Z",
+        "end": "2023-11-13T21:54:31.038Z",
+        "ingested": "2023-11-13T21:54:32Z",
         "kind": "event",
+        "original": "INVITE sip:test@10.0.2.15:5060 SIP/2.0\r\nVia: SIP/2.0/UDP 10.0.2.20:5060;branch=z9hG4bK-2187-1-0\r\nFrom: \"DVI4/8000\" <sip:sipp@10.0.2.20:5060>;tag=1\r\nTo: test <sip:test@10.0.2.15:5060>\r\nCall-ID: 1-2187@10.0.2.20\r\nCSeq: 1 INVITE\r\nContact: sip:sipp@10.0.2.20:5060\r\nMax-Forwards: 70\r\nContent-Type: application/sdp\r\nContent-Length:   123\r\n\r\nv=0\r\no=- 42 42 IN IP4 10.0.2.20\r\ns=-\r\nc=IN IP4 10.0.2.20\r\nt=0 0\r\nm=audio 6000 RTP/AVP 5\r\na=rtpmap:5 DVI4/8000\r\na=recvonly\r\n",
         "sequence": 1,
-        "start": "2023-12-01T01:59:18.969Z",
+        "start": "2023-11-13T21:54:31.038Z",
         "type": [
             "info",
             "protocol"
@@ -4782,12 +4783,12 @@ An example event for `sip` looks as following:
         "architecture": "x86_64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "d7fd92f5e61644938d48518adcee73ad",
+        "id": "f91b175388d443fca5c155815dfc2279",
         "ip": [
-            "172.23.0.7"
+            "172.22.0.7"
         ],
         "mac": [
-            "02-42-AC-17-00-07"
+            "02-42-AC-16-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -4797,7 +4798,7 @@ An example event for `sip` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "network": {
@@ -4808,80 +4809,6 @@ An example event for `sip` looks as following:
         "protocol": "sip",
         "transport": "udp",
         "type": "ipv4"
-    },
-    "network_traffic": {
-        "sip": {
-            "call_id": "1-2187@10.0.2.20",
-            "contact": {
-                "display_info": "test",
-                "uri": {
-                    "host": "10.0.2.15",
-                    "original": "sip:test@10.0.2.15:5060",
-                    "port": 5060,
-                    "scheme": "sip",
-                    "username": "test"
-                }
-            },
-            "content_length": 123,
-            "content_type": "application/sdp",
-            "cseq": {
-                "code": 1,
-                "method": "INVITE"
-            },
-            "from": {
-                "display_info": "DVI4/8000",
-                "tag": "1",
-                "uri": {
-                    "host": "10.0.2.20",
-                    "original": "sip:sipp@10.0.2.20:5060",
-                    "port": 5060,
-                    "scheme": "sip",
-                    "username": "sipp"
-                }
-            },
-            "max_forwards": 70,
-            "method": "INVITE",
-            "sdp": {
-                "body": {
-                    "original": "v=0\r\no=- 42 42 IN IP4 10.0.2.20\r\ns=-\r\nc=IN IP4 10.0.2.20\r\nt=0 0\r\nm=audio 6000 RTP/AVP 5\r\na=rtpmap:5 DVI4/8000\r\na=recvonly\r\n"
-                },
-                "connection": {
-                    "address": "10.0.2.20",
-                    "info": "IN IP4 10.0.2.20"
-                },
-                "owner": {
-                    "ip": "10.0.2.20",
-                    "session_id": "42",
-                    "version": "42"
-                },
-                "version": "0"
-            },
-            "to": {
-                "display_info": "test",
-                "uri": {
-                    "host": "10.0.2.15",
-                    "original": "sip:test@10.0.2.15:5060",
-                    "port": 5060,
-                    "scheme": "sip",
-                    "username": "test"
-                }
-            },
-            "type": "request",
-            "uri": {
-                "host": "10.0.2.15",
-                "original": "sip:test@10.0.2.15:5060",
-                "port": 5060,
-                "scheme": "sip",
-                "username": "test"
-            },
-            "version": "2.0",
-            "via": {
-                "original": [
-                    "SIP/2.0/UDP 10.0.2.20:5060;branch=z9hG4bK-2187-1-0"
-                ]
-            }
-        },
-        "status": "OK"
     },
     "related": {
         "hosts": [
@@ -4901,10 +4828,83 @@ An example event for `sip` looks as following:
         "ip": "10.0.2.15",
         "port": 5060
     },
+    "sip": {
+        "call_id": "1-2187@10.0.2.20",
+        "contact": {
+            "display_info": "test",
+            "uri": {
+                "host": "10.0.2.15",
+                "original": "sip:test@10.0.2.15:5060",
+                "port": 5060,
+                "scheme": "sip",
+                "username": "test"
+            }
+        },
+        "content_length": 123,
+        "content_type": "application/sdp",
+        "cseq": {
+            "code": 1,
+            "method": "INVITE"
+        },
+        "from": {
+            "display_info": "DVI4/8000",
+            "tag": "1",
+            "uri": {
+                "host": "10.0.2.20",
+                "original": "sip:sipp@10.0.2.20:5060",
+                "port": 5060,
+                "scheme": "sip",
+                "username": "sipp"
+            }
+        },
+        "max_forwards": 70,
+        "method": "INVITE",
+        "sdp": {
+            "body": {
+                "original": "v=0\r\no=- 42 42 IN IP4 10.0.2.20\r\ns=-\r\nc=IN IP4 10.0.2.20\r\nt=0 0\r\nm=audio 6000 RTP/AVP 5\r\na=rtpmap:5 DVI4/8000\r\na=recvonly\r\n"
+            },
+            "connection": {
+                "address": "10.0.2.20",
+                "info": "IN IP4 10.0.2.20"
+            },
+            "owner": {
+                "ip": "10.0.2.20",
+                "session_id": "42",
+                "version": "42"
+            },
+            "version": "0"
+        },
+        "to": {
+            "display_info": "test",
+            "uri": {
+                "host": "10.0.2.15",
+                "original": "sip:test@10.0.2.15:5060",
+                "port": 5060,
+                "scheme": "sip",
+                "username": "test"
+            }
+        },
+        "type": "request",
+        "uri": {
+            "host": "10.0.2.15",
+            "original": "sip:test@10.0.2.15:5060",
+            "port": 5060,
+            "scheme": "sip",
+            "username": "test"
+        },
+        "version": "2.0",
+        "via": {
+            "original": [
+                "SIP/2.0/UDP 10.0.2.20:5060;branch=z9hG4bK-2187-1-0"
+            ]
+        }
+    },
     "source": {
         "ip": "10.0.2.20",
         "port": 5060
-    }
+    },
+    "status": "OK",
+    "type": "sip"
 }
 ```
 
@@ -5163,13 +5163,13 @@ An example event for `thrift` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-12-01T02:02:03.171Z",
+    "@timestamp": "2023-10-16T23:26:46.507Z",
     "agent": {
-        "ephemeral_id": "64702fb3-605d-489f-9ccb-1bafb0d42da0",
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "ephemeral_id": "69d13820-6026-4f1f-8829-05ce967ab5b7",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "client": {
         "bytes": 25,
@@ -5190,20 +5190,21 @@ An example event for `thrift` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "snapshot": false,
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "duration": 1243854,
-        "end": "2023-12-01T02:02:03.172Z",
-        "ingested": "2023-12-01T02:02:06Z",
+        "dataset": "network_traffic.thrift",
+        "duration": 1354815,
+        "end": "2023-10-16T23:26:46.508Z",
+        "ingested": "2023-10-16T23:26:50Z",
         "kind": "event",
-        "start": "2023-12-01T02:02:03.171Z",
+        "start": "2023-10-16T23:26:46.507Z",
         "type": [
             "connection",
             "protocol"
@@ -5213,12 +5214,12 @@ An example event for `thrift` looks as following:
         "architecture": "x86_64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "d7fd92f5e61644938d48518adcee73ad",
+        "id": "f91b175388d443fca5c155815dfc2279",
         "ip": [
-            "172.23.0.7"
+            "172.19.0.7"
         ],
         "mac": [
-            "02-42-AC-17-00-07"
+            "02-42-AC-13-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -5228,9 +5229,10 @@ An example event for `thrift` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
+    "method": "testByte",
     "network": {
         "bytes": 50,
         "community_id": "1:fs+HuhTN3hqKiWHtoK/DsQ0ni5Y=",
@@ -5239,16 +5241,8 @@ An example event for `thrift` looks as following:
         "transport": "tcp",
         "type": "ipv4"
     },
-    "network_traffic": {
-        "status": "OK",
-        "thrift": {
-            "method": "testByte",
-            "params": "(1: 63)",
-            "path": "",
-            "query": "testByte(1: 63)",
-            "return_value": "63"
-        }
-    },
+    "path": "",
+    "query": "testByte(1: 63)",
     "related": {
         "ip": [
             "127.0.0.1"
@@ -5263,8 +5257,15 @@ An example event for `thrift` looks as following:
         "bytes": 25,
         "ip": "127.0.0.1",
         "port": 50919
-    }
+    },
+    "status": "OK",
+    "thrift": {
+        "params": "(1: 63)",
+        "return_value": "63"
+    },
+    "type": "thrift"
 }
+
 ```
 
 ### TLS
@@ -5641,13 +5642,13 @@ An example event for `tls` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-12-01T02:03:29.350Z",
+    "@timestamp": "2023-10-16T23:27:36.939Z",
     "agent": {
-        "ephemeral_id": "d7bc55b2-4e0e-40a7-a333-ef921576dcae",
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "ephemeral_id": "5041812f-2c64-48f2-b040-7814b7a8398f",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "client": {
         "ip": "192.168.1.36",
@@ -5667,20 +5668,21 @@ An example event for `tls` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b51ae9c6-528a-4fb5-8988-bd2f78a3edb7",
+        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
         "snapshot": false,
-        "version": "8.11.0"
+        "version": "8.6.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "duration": 15559032,
-        "end": "2023-12-01T02:03:29.365Z",
-        "ingested": "2023-12-01T02:03:32Z",
+        "dataset": "network_traffic.tls",
+        "duration": 15311303,
+        "end": "2023-10-16T23:27:36.954Z",
+        "ingested": "2023-10-16T23:27:37Z",
         "kind": "event",
-        "start": "2023-12-01T02:03:29.350Z",
+        "start": "2023-10-16T23:27:36.939Z",
         "type": [
             "connection",
             "protocol"
@@ -5690,12 +5692,12 @@ An example event for `tls` looks as following:
         "architecture": "x86_64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "d7fd92f5e61644938d48518adcee73ad",
+        "id": "f91b175388d443fca5c155815dfc2279",
         "ip": [
-            "172.23.0.7"
+            "172.19.0.7"
         ],
         "mac": [
-            "02-42-AC-17-00-07"
+            "02-42-AC-13-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -5705,7 +5707,7 @@ An example event for `tls` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "network": {
@@ -5714,9 +5716,6 @@ An example event for `tls` looks as following:
         "protocol": "tls",
         "transport": "tcp",
         "type": "ipv4"
-    },
-    "network_traffic": {
-        "status": "OK"
     },
     "related": {
         "hash": [
@@ -5736,6 +5735,7 @@ An example event for `tls` looks as following:
         "ip": "192.168.1.36",
         "port": 60946
     },
+    "status": "OK",
     "tls": {
         "cipher": "TLS_AES_128_GCM_SHA256",
         "client": {
@@ -5844,8 +5844,10 @@ An example event for `tls` looks as following:
         "resumed": true,
         "version": "1.3",
         "version_protocol": "tls"
-    }
+    },
+    "type": "tls"
 }
+
 ```
 
 ## Licensing for Windows Systems
