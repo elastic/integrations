@@ -16,7 +16,7 @@ processors:
   - set:
       field: event.timezone
       value: "{{{_conf.tz_offset}}}"
-      if: ctx?._conf?.tz_offset != null && ctx?._conf?.tz_offset != 'local'
+      if: ctx._conf?.tz_offset != null && ctx._conf.tz_offset != 'local'
   - rename:
       field: message
       target_field: event.original
@@ -26,13 +26,27 @@ processors:
       field: event.original
       description: Extracts key-value pairs from original message
       patterns:
-        - '%{KEY_VALUES:_temp_.serialized_kv}'
+        - '^%{DATA:_temp_.header}%{SPACE}%{KEY_VALUES:_temp_.serialized_kv}'
       pattern_definitions:
           KEY_VALUES: 'id=.*'
       on_failure:
           - fail:
               message: 'unable to extract key-values from log message: {{{ _ingest.on_failure_message }}}'
-
+  - grok:
+      field: _temp_.header
+      patterns: 
+        - '^(?:<%{NUMBER:log.syslog.priority:long}>)?%{SYSLOGTIMESTAMP}?%{SPACE}%{DATA:_temp_.host}?$'
+  - convert:
+      field: _temp_.host
+      type: ip
+      target_field: host.ip
+      if: ctx._temp_?.host != null
+      ignore_failure: true
+  - rename:
+      field: _temp_.host
+      target_field: host.name
+      if: ctx.host?.ip == null && ctx._temp_?.host != null && ctx._temp_.host != ''
+      ignore_failure: true
   - kv:
       field: _temp_.serialized_kv
       description: Splits key-value pairs extracted from original message

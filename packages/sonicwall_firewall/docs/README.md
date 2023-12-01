@@ -80,8 +80,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2022-05-16T08:18:39.000+02:00",
     "agent": {
-        "ephemeral_id": "9c635b3a-cb8b-4d1a-891b-3f37008b59bb",
-        "id": "bb043b0c-36d1-4054-81ed-2d3f4546a433",
+        "ephemeral_id": "fb68f426-1f95-414b-8f91-86dd7b4b51f1",
+        "id": "c2bdf813-eef8-466e-a578-4cfc4712db49",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.1"
@@ -112,7 +112,7 @@ An example event for `log` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "bb043b0c-36d1-4054-81ed-2d3f4546a433",
+        "id": "c2bdf813-eef8-466e-a578-4cfc4712db49",
         "snapshot": false,
         "version": "8.8.1"
     },
@@ -124,7 +124,7 @@ An example event for `log` looks as following:
         ],
         "code": "713",
         "dataset": "sonicwall_firewall.log",
-        "ingested": "2023-07-06T18:14:01Z",
+        "ingested": "2023-11-20T22:26:19Z",
         "kind": "event",
         "outcome": "success",
         "sequence": "692",
@@ -141,7 +141,10 @@ An example event for `log` looks as following:
     "log": {
         "level": "debug",
         "source": {
-            "address": "192.168.16.4:58483"
+            "address": "192.168.16.4:53067"
+        },
+        "syslog": {
+            "priority": 135
         }
     },
     "message": "� (TCP Flag(s): RST)",
@@ -206,7 +209,6 @@ An example event for `log` looks as following:
         "name": "admin"
     }
 }
-
 ```
 
 **Exported fields**
@@ -243,6 +245,7 @@ An example event for `log` looks as following:
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
+| log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
