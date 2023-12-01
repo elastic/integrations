@@ -7,6 +7,7 @@ set -euo pipefail
 SKIP_PUBLISHING=${SKIP_PUBLISHING:-"false"}
 ARTIFACTS_FOLDER=${ARTIFACTS_FOLDER:-"packageArtifacts"}
 BUILD_PACKAGES_FOLDER="build/packages"
+DRY_RUN=${DRY_RUN:-"true"}
 
 skipPublishing() {
     if [[ "${BUILDKITE_PULL_REQUEST}" != "false" ]]; then
@@ -109,6 +110,11 @@ fi
 cd "${WORKSPACE}" || exit 1
 mkdir -p "${ARTIFACTS_FOLDER}"
 cp "${BUILD_PACKAGES_FOLDER}"/*.zip "${ARTIFACTS_FOLDER}"
+
+if [ "${DRY_RUN}" == "true" ]; then
+    echo "DRY_RUN enabled. Publish packages steps skipped."
+    exit 0
+fi
 
 # triggering dynamically the steps for signing and publishing
 # allow us to check whether or not this group of steps needs to be run in one script
