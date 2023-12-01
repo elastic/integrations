@@ -4,8 +4,6 @@ source .buildkite/scripts/common.sh
 
 set -euo pipefail
 
-# default values
-BENCHMARK_THRESHOLD=${BENCHMARK_THRESHOLD:-'15'}
 
 # used in common.sh
 SKIPPED_PACKAGES_FILE_PATH="${WORKSPACE}/skipped_packages.txt"
