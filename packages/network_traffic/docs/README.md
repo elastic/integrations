@@ -2779,48 +2779,48 @@ Fields published for Memcached packets.
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
-| network_traffic.memcache.protocol_type | The memcache protocol implementation. The value can be "binary" for binary-based, "text" for text-based, or "unknown" for an unknown memcache protocol type. | keyword |
-| network_traffic.memcache.request.automove | The automove mode in the 'slab automove' command expressed as a string. This value can be "standby"(=0), "slow"(=1), "aggressive"(=2), or the raw value if the value is unknown. | keyword |
-| network_traffic.memcache.request.bytes | The byte count of the values being transferred. | long |
-| network_traffic.memcache.request.cas_unique | The CAS (compare-and-swap) identifier if present. | long |
-| network_traffic.memcache.request.command | The memcache command being requested in the memcache text protocol. For example "set" or "get". The binary protocol opcodes are translated into memcache text protocol commands. | keyword |
-| network_traffic.memcache.request.count_values | The number of values found in the memcache request message. If the command does not send any data, this field is missing. | long |
-| network_traffic.memcache.request.delta | The counter increment/decrement delta value. | long |
-| network_traffic.memcache.request.dest_class | The destination class id in 'slab reassign' command. | long |
-| network_traffic.memcache.request.exptime | The data expiry time in seconds sent with the memcache command (if present). If the value is `\< 30` days, the expiry time is relative to "now", or else it is an absolute Unix time in seconds (32-bit). | long |
-| network_traffic.memcache.request.flags | The memcache command flags sent in the request (if present). | long |
-| network_traffic.memcache.request.initial | The counter increment/decrement initial value parameter (binary protocol only). | long |
-| network_traffic.memcache.request.keys | The list of keys sent in the store or load commands. | keyword |
-| network_traffic.memcache.request.line | The raw command line for unknown commands ONLY. | keyword |
-| network_traffic.memcache.request.noreply | Set to true if noreply was set in the request. The `memcache.response` field will be missing. | boolean |
-| network_traffic.memcache.request.opaque | The binary protocol opaque header value used for correlating request with response messages. | long |
-| network_traffic.memcache.request.opcode | The binary protocol message opcode name. | keyword |
-| network_traffic.memcache.request.opcode_value | The binary protocol message opcode value. | long |
-| network_traffic.memcache.request.quiet | Set to true if the binary protocol message is to be treated as a quiet message. | boolean |
-| network_traffic.memcache.request.raw_args | The text protocol raw arguments for the "stats ..." and "lru crawl ..." commands. | keyword |
-| network_traffic.memcache.request.sleep_us | The sleep setting in microseconds for the 'lru_crawler sleep' command. | long |
-| network_traffic.memcache.request.source_class | The source class id in 'slab reassign' command. | long |
-| network_traffic.memcache.request.type | The memcache command classification. This value can be "UNKNOWN", "Load", "Store", "Delete", "Counter", "Info", "SlabCtrl", "LRUCrawler", "Stats", "Success", "Fail", or "Auth". | keyword |
-| network_traffic.memcache.request.values | The list of base64 encoded values sent with the request (if present). | keyword |
-| network_traffic.memcache.request.vbucket | The vbucket index sent in the binary message. | long |
-| network_traffic.memcache.request.verbosity | The value of the memcache "verbosity" command. | long |
-| network_traffic.memcache.response.bytes | The byte count of the values being transferred. | long |
-| network_traffic.memcache.response.cas_unique | The CAS (compare-and-swap) identifier to be used with CAS-based updates (if present). | long |
-| network_traffic.memcache.response.command | Either the text based protocol response message type or the name of the originating request if binary protocol is used. | keyword |
-| network_traffic.memcache.response.count_values | The number of values found in the memcache response message. If the command does not send any data, this field is missing. | long |
-| network_traffic.memcache.response.error_msg | The optional error message in the memcache response (text based protocol only). | keyword |
-| network_traffic.memcache.response.flags | The memcache message flags sent in the response (if present). | long |
-| network_traffic.memcache.response.keys | The list of keys returned for the load command (if present). | keyword |
-| network_traffic.memcache.response.opaque | The binary protocol opaque header value used for correlating request with response messages. | long |
-| network_traffic.memcache.response.opcode | The binary protocol message opcode name. | keyword |
-| network_traffic.memcache.response.opcode_value | The binary protocol message opcode value. | long |
-| network_traffic.memcache.response.stats | The statistic values returned. | flattened |
-| network_traffic.memcache.response.status | The textual representation of the response error code (binary protocol only). | keyword |
-| network_traffic.memcache.response.status_code | The status code value returned in the response (binary protocol only). | long |
-| network_traffic.memcache.response.type | The memcache command classification. This value can be "UNKNOWN", "Load", "Store", "Delete", "Counter", "Info", "SlabCtrl", "LRUCrawler", "Stats", "Success", "Fail", or "Auth". The text based protocol will employ any of these, whereas the binary based protocol will mirror the request commands only (see `memcache.response.status` for binary protocol). | keyword |
-| network_traffic.memcache.response.value | The counter value returned by a counter operation. | long |
-| network_traffic.memcache.response.values | The list of base64 encoded values sent with the response (if present). | keyword |
-| network_traffic.memcache.response.version | The returned memcache version string. | keyword |
+| network_traffic.memcached.protocol_type | The memcache protocol implementation. The value can be "binary" for binary-based, "text" for text-based, or "unknown" for an unknown memcache protocol type. | keyword |
+| network_traffic.memcached.request.automove | The automove mode in the 'slab automove' command expressed as a string. This value can be "standby"(=0), "slow"(=1), "aggressive"(=2), or the raw value if the value is unknown. | keyword |
+| network_traffic.memcached.request.bytes | The byte count of the values being transferred. | long |
+| network_traffic.memcached.request.cas_unique | The CAS (compare-and-swap) identifier if present. | long |
+| network_traffic.memcached.request.command | The memcache command being requested in the memcache text protocol. For example "set" or "get". The binary protocol opcodes are translated into memcache text protocol commands. | keyword |
+| network_traffic.memcached.request.count_values | The number of values found in the memcache request message. If the command does not send any data, this field is missing. | long |
+| network_traffic.memcached.request.delta | The counter increment/decrement delta value. | long |
+| network_traffic.memcached.request.dest_class | The destination class id in 'slab reassign' command. | long |
+| network_traffic.memcached.request.exptime | The data expiry time in seconds sent with the memcache command (if present). If the value is `\< 30` days, the expiry time is relative to "now", or else it is an absolute Unix time in seconds (32-bit). | long |
+| network_traffic.memcached.request.flags | The memcache command flags sent in the request (if present). | long |
+| network_traffic.memcached.request.initial | The counter increment/decrement initial value parameter (binary protocol only). | long |
+| network_traffic.memcached.request.keys | The list of keys sent in the store or load commands. | keyword |
+| network_traffic.memcached.request.line | The raw command line for unknown commands ONLY. | keyword |
+| network_traffic.memcached.request.noreply | Set to true if noreply was set in the request. The `memcache.response` field will be missing. | boolean |
+| network_traffic.memcached.request.opaque | The binary protocol opaque header value used for correlating request with response messages. | long |
+| network_traffic.memcached.request.opcode | The binary protocol message opcode name. | keyword |
+| network_traffic.memcached.request.opcode_value | The binary protocol message opcode value. | long |
+| network_traffic.memcached.request.quiet | Set to true if the binary protocol message is to be treated as a quiet message. | boolean |
+| network_traffic.memcached.request.raw_args | The text protocol raw arguments for the "stats ..." and "lru crawl ..." commands. | keyword |
+| network_traffic.memcached.request.sleep_us | The sleep setting in microseconds for the 'lru_crawler sleep' command. | long |
+| network_traffic.memcached.request.source_class | The source class id in 'slab reassign' command. | long |
+| network_traffic.memcached.request.type | The memcache command classification. This value can be "UNKNOWN", "Load", "Store", "Delete", "Counter", "Info", "SlabCtrl", "LRUCrawler", "Stats", "Success", "Fail", or "Auth". | keyword |
+| network_traffic.memcached.request.values | The list of base64 encoded values sent with the request (if present). | keyword |
+| network_traffic.memcached.request.vbucket | The vbucket index sent in the binary message. | long |
+| network_traffic.memcached.request.verbosity | The value of the memcache "verbosity" command. | long |
+| network_traffic.memcached.response.bytes | The byte count of the values being transferred. | long |
+| network_traffic.memcached.response.cas_unique | The CAS (compare-and-swap) identifier to be used with CAS-based updates (if present). | long |
+| network_traffic.memcached.response.command | Either the text based protocol response message type or the name of the originating request if binary protocol is used. | keyword |
+| network_traffic.memcached.response.count_values | The number of values found in the memcache response message. If the command does not send any data, this field is missing. | long |
+| network_traffic.memcached.response.error_msg | The optional error message in the memcache response (text based protocol only). | keyword |
+| network_traffic.memcached.response.flags | The memcache message flags sent in the response (if present). | long |
+| network_traffic.memcached.response.keys | The list of keys returned for the load command (if present). | keyword |
+| network_traffic.memcached.response.opaque | The binary protocol opaque header value used for correlating request with response messages. | long |
+| network_traffic.memcached.response.opcode | The binary protocol message opcode name. | keyword |
+| network_traffic.memcached.response.opcode_value | The binary protocol message opcode value. | long |
+| network_traffic.memcached.response.stats | The statistic values returned. | flattened |
+| network_traffic.memcached.response.status | The textual representation of the response error code (binary protocol only). | keyword |
+| network_traffic.memcached.response.status_code | The status code value returned in the response (binary protocol only). | long |
+| network_traffic.memcached.response.type | The memcache command classification. This value can be "UNKNOWN", "Load", "Store", "Delete", "Counter", "Info", "SlabCtrl", "LRUCrawler", "Stats", "Success", "Fail", or "Auth". The text based protocol will employ any of these, whereas the binary based protocol will mirror the request commands only (see `memcache.response.status` for binary protocol). | keyword |
+| network_traffic.memcached.response.value | The counter value returned by a counter operation. | long |
+| network_traffic.memcached.response.values | The list of base64 encoded values sent with the response (if present). | keyword |
+| network_traffic.memcached.response.version | The returned memcache version string. | keyword |
 | network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
