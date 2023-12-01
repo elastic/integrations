@@ -59,19 +59,14 @@ steps:
   # TODO: Remove force to just have the package and signature files as artifacts when signing pipeline is triggered
   - wait
 
-  # TODO: remove step
-  - label: Check
-    key: check-step
-    command: echo "Test command"
-
-  # - label: "Trigger integrations"
-  #   key: "test-integrations"
-  #   command: ".buildkite/scripts/trigger_integrations_in_parallel.sh"
-  #   env:
-  #     UPLOAD_SAFE_LOGS: 1
-  #   depends_on:
-  #     - step: "check"
-  #       allow_failure: false
+  - label: "Trigger integrations"
+    key: "test-integrations"
+    command: ".buildkite/scripts/trigger_integrations_in_parallel.sh"
+    env:
+      UPLOAD_SAFE_LOGS: 1
+    depends_on:
+      - step: "check"
+        allow_failure: false
 
   - wait: ~
     continue_on_failure: true
