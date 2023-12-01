@@ -107,6 +107,7 @@ if [[ "${unpublished}" == "false" ]]; then
 fi
 
 cd "${WORKSPACE}" || exit 1
+mkdir -p "${ARTIFACTS_FOLDER}"
 cp "${BUILD_PACKAGES_FOLDER}"/*.zip "${ARTIFACTS_FOLDER}"
 
 # triggering dynamically the steps for signing and publishing
