@@ -3670,6 +3670,7 @@ Fields published for NFS packets.
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| network_traffic.nfs.host.hostname | The hostname of the NFS host. | keyword |
 | network_traffic.nfs.minor_version | NFS protocol minor version number. | long |
 | network_traffic.nfs.opcode | NFS operation name, or main operation name, in case of COMPOUND calls. | keyword |
 | network_traffic.nfs.rpc.auth_flavor | RPC authentication flavor. | keyword |
