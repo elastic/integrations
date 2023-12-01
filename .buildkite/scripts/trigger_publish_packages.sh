@@ -60,7 +60,6 @@ buildkite-agent artifact upload "${ARTIFACTS_FOLDER}/*.zip"
 buildkite-agent artifact upload "${ARTIFACTS_FOLDER}/*.sig"
 
 echo "--- Trigger publishing pipeline"
-exit 0
 # for each package trigger a publish package
 PIPELINE_FILE="packages_pipeline.yml"
 
