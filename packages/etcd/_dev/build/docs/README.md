@@ -1,17 +1,21 @@
 # etcd Integration
 
-This integration is used to collect metrics from [etcd v2 and v3 servers](https://etcd.io/).
-This integration periodically fetches metrics from [etcd monitoring server APIs](https://etcd.io/docs/v3.1/op-guide/monitoring/). 
+This integration is used to collect metrics from [etcd v2 and v3 instances](https://etcd.io/).
+
+It periodically fetches metrics from [etcd metrics APIs](https://etcd.io/docs/v3.1/op-guide/monitoring/). 
 
 ## Compatibility
 
-The etcd package was tested with etcd 3.5.1.
+The etcd package was tested with etcd `3.5.x`.
 
 ## Metrics
 
-When using etcd v2, metrics are collected using etcd v2 API. When using v3, metrics are retrieved from the /metrics endpoint.
+For etcd v2, metrics are collected through the etcd v2 APIs, whereas for v3, they are fetched from the `/metrics` endpoint.
 
-When using v3, datasets are bundled into `metrics`. When using v2, datasets available are `leader`, `self` and `store`.
+When using v3, datasets are bundled within `metrics` data stream, while for v2, available datasets include `leader`, `self`, and `store`.
+
+The ETCD v2 APIs are not enabled by default. However, you can enable ETCD v2 APIs when using ETCD v3 and above by utilizing the --enable-v2 flag, provided it is supported.
+
 
 ### metrics
 
