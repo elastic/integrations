@@ -81,12 +81,6 @@ build_packages() {
     popd > /dev/null || exit 1
 }
 
-add_bin_path
-
-with_yq
-with_go
-use_elastic_package
-
 if [ "${SKIP_PUBLISHING}" == "true" ] ; then
     echo "packageStoragePublish: skipping because skip_publishing param is ${SKIP_PUBLISHING}"
     exit 0
@@ -97,8 +91,15 @@ if skipPublishing ; then
     exit 0
 fi
 
-unpublished=false
+add_bin_path
+
+with_yq
+with_go
+use_elastic_package
+
 echo "--- Build packages"
+
+unpublished=false
 build_packages
 
 if [[ "${unpublished}" == "false" ]]; then
