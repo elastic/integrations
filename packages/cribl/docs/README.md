@@ -51,13 +51,13 @@ The Cribl integration offers users a way to ingest logs from Cribl's Elasticsear
 
             ![Reroute processor](../img/custom-pipeline-reroute-processor.png)
 
-3. Configure the Elasticsearch destination in Cribl
+3. Configure an Elastic destination in Cribl
 
-    Consult the [Cribl documentation](https://docs.cribl.io/stream/destinations-elastic/) for details on how to send data to Elasticsearch.
+    Cribl offers two options for sending data to Elastic, the Elastic Cloud ouput for cloud environments, and the Elasticsearch output for self-managed. Consult the or the [Cribl Elastic Cloud documentation](https://docs.cribl.io/stream/destinations-elastic-cloud/) or [Cribl Elasticsearch documentation](https://docs.cribl.io/stream/destinations-elastic/) for more details on how to configure.
 
     **Destination settings**
 
-    1. Set **Bulk API URLs** to point to your Elasticsearch cluster.
+    1. Set **Cloud Id** for the Cloud destination or **Bulk API URLs** for the Elasticaearch destination to point to your Elastic cluster.
 
     2. Set **Index or Data Stream** to `logs-cribl-default`.
 
