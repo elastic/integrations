@@ -163,6 +163,7 @@ with_kubernetes() {
 }
 
 with_yq() {
+    create_bin_folder
     check_platform_architecture
     local binary="yq_${platform_type_lowercase}_${arch_type}"
 
@@ -175,6 +176,39 @@ with_yq() {
     yq --version
 
     rm -rf "${BIN_FOLDER}/yq.tar.gz"
+}
+
+with_jq() {
+    create_bin_folder
+    check_platform_architecture
+    # filename for versions <=1.6 is jq-linux64
+    local binary="jq-${platform_type_lowercase}-${arch_type}"
+
+    retry 5 curl -sL -o "${BIN_FOLDER}/jq" "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/${binary}"
+
+    chmod +x "${BIN_FOLDER}/jq"
+    jq --version
+}
+
+with_github_cli() {
+    create_bin_folder
+    check_platform_architecture
+
+    mkdir -p "${WORKSPACE}/tmp"
+
+    local gh_filename="gh_${GH_CLI_VERSION}_${platform_type_lowercase}_${arch_type}"
+    local gh_tar_file="${gh_filename}.tar.gz"
+    local gh_tar_full_path="${WORKSPACE}/tmp/${gh_tar_file}"
+
+    retry 5 curl -sL -o "${gh_tar_full_path}" "https://github.com/cli/cli/releases/download/v${GH_CLI_VERSION}/${gh_tar_file}"
+
+    # just extract the binary file from the tar.gz
+    tar -C "${BIN_FOLDER}" -xpf "${gh_tar_full_path}" "${gh_filename}/bin/gh" --strip-components=2
+
+    chmod +x "${BIN_FOLDER}/gh"
+    rm -rf "${WORKSPACE}/tmp"
+
+    gh version
 }
 
 ## Logging and logout from Google Cloud
@@ -422,6 +456,18 @@ is_spec_3_0_0() {
 
 echoerr() {
     echo "$@" 1>&2
+}
+
+get_last_failed_or_successful_build() {
+    local pipeline="$1"
+    local branch="$2"
+    local state_query_param="state[]=failed&state[]=passed"
+
+    local api_url="${API_BUILDKITE_PIPELINES_URL}/${pipeline}/builds?branch=${branch}&${state_query_param}&per_page=1"
+    local build_id
+    build_id=$(retry 5 curl -sH "Authorization: Bearer ${BUILDKITE_API_TOKEN}" "${api_url}" | jq -r '.[0] |.id')
+
+    echo "${build_id}"
 }
 
 get_commit_from_build() {
@@ -798,8 +844,6 @@ process_package() {
 
     if ! is_serverless ; then
         if [[ $exit_code -eq 0 ]]; then
-            # TODO: add benchmarks support stash and comments in PR
-            # https://github.com/elastic/integrations/blob/befdc5cb752a08aaf5f79b0d9bdb68588ade9f27/.ci/Jenkinsfile#L180
             ${ELASTIC_PACKAGE_BIN} benchmark pipeline -v --report-format json --report-output file
         fi
     fi
@@ -922,4 +966,59 @@ download_benchmark_results() {
     gsutil cp "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${source}" "${target}"
 
     google_cloud_logout_active_account
+}
+
+add_or_edit_gh_pr_comment() {
+    local owner="$1"
+    local repo="$2"
+    local pr_number="$3"
+    local metadata="<!--COMMENT_GENERATED_WITH_ID_${4}-->"
+    local commentFilePath="$5"
+    local contents
+    local comment_id
+
+    contents="$(cat "${commentFilePath}")"
+    printf -v contents '%s\n%s' "${contents}" "${metadata}"
+
+    echo "Looking for messages with pattern: \"${metadata}\""
+    comment_id=$(get_comment_with_pattern "${owner}" "${repo}" "${pr_number}" "${metadata}")
+    if [[ "${comment_id}" == "" ]]; then
+        echo "Creating new comment"
+        gh pr comment \
+          "${BUILDKITE_PULL_REQUEST}" \
+          --body "${contents}"
+        return
+    fi
+
+    echo "Updating comment: ${comment_id}"
+    gh api \
+      --method PATCH \
+      -H "Accept: application/vnd.github+json" \
+      -H "X-GitHub-Api-Version: 2022-11-28" \
+      "/repos/${owner}/${repo}/issues/comments/${comment_id}" \
+      -f body="${contents}" | jq -r '.html_url'
+}
+
+# FIXME: In a Pull Request that there are more than 100 comments,
+# if the comment is older than those 100 comments, it won't be found due to pagination
+get_comment_with_pattern() {
+    local owner="$1"
+    local repo="$2"
+    local pr_number="$3"
+    local pattern="$4"
+    local comment_id=""
+
+    gh api \
+      -XGET \
+      -H "Accept: application/vnd.github+json" \
+      -H "X-GitHub-Api-Version: 2022-11-28" \
+      "/repos/${owner}/${repo}/issues/${pr_number}/comments" \
+      -F per_page=100 > response_github.json
+
+    # get the latest comment ID in case there are several posted
+    comment_id=$(cat response_github.json | jq -r ".[] | select(.body | match(\"${pattern}\")) | .id" | tail -1)
+
+    rm response_github.json
+
+    echo "${comment_id}"
 }

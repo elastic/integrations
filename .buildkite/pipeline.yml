@@ -7,6 +7,8 @@ env:
   KIND_VERSION: 'v0.20.0'
   K8S_VERSION: 'v1.28.0'
   YQ_VERSION: 'v4.35.2'
+  JQ_VERSION: '1.7'
+  GH_CLI_VERSION: "2.29.0"
   # Elastic package settings
   # Manage docker output/logs
   ELASTIC_PACKAGE_COMPOSE_DISABLE_ANSI: "true"
@@ -50,6 +52,16 @@ steps:
 
   - wait: ~
     continue_on_failure: true
+
+  - label: "Publish benchmarks"
+    key: publish-benchmarks
+    command: ".buildkite/scripts/process_benchmarks.sh"
+    env:
+      BENCHMARK_THRESHOLD: 15
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "8"
+      memory: "4G"
 
   - label: ":junit: Junit annotate"
     plugins:
