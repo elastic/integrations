@@ -35,6 +35,7 @@ PACKAGE_UPLOADER_GCS_CREDENTIALS_PATH=kv/ci-shared/platform-ingest/package_stora
 PRIVATE_CI_GCS_CREDENTIALS_PATH=kv/ci-shared/platform-ingest/private_ci_artifacts_gcs_credentials
 
 BUILDKITE_API_TOKEN_PATH=kv/ci-shared/platform-ingest/buildkite_token
+GITHUB_TOKEN_VAULT_PATH=kv/ci-shared/platform-ingest/github_token
 
 EC_TOKEN_PATH=kv/ci-shared/platform-ingest/platform-ingest-ec-qa
 EC_DATA_PATH=secret/ci/elastic-integrations/ec_data
@@ -46,36 +47,43 @@ fi
 
 if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations" ]]; then
     if [[ "${BUILDKITE_STEP_KEY}" == "publish-packages" ]]; then
-        JENKINS_USERNAME_SECRET=$(retry 5 vault kv get -field username ${JENKINS_API_TOKEN_PATH})
+        JENKINS_USERNAME_SECRET=$(retry 5 vault kv get -field username "${JENKINS_API_TOKEN_PATH}")
         export JENKINS_USERNAME_SECRET
-        JENKINS_HOST_SECRET=$(retry 5 vault kv get -field internal_ci_host ${JENKINS_API_TOKEN_PATH})
+        JENKINS_HOST_SECRET=$(retry 5 vault kv get -field internal_ci_host "${JENKINS_API_TOKEN_PATH}")
         export JENKINS_HOST_SECRET
-        JENKINS_TOKEN=$(retry 5 vault kv get -field internal_ci ${JENKINS_API_TOKEN_PATH})
+        JENKINS_TOKEN=$(retry 5 vault kv get -field internal_ci "${JENKINS_API_TOKEN_PATH}")
         export JENKINS_TOKEN
 
         # signing job
-        SIGNING_PACKAGES_GCS_CREDENTIALS_SECRET=$(retry 5 vault kv get -field value ${SIGNING_PACKAGES_GCS_CREDENTIALS_PATH})
+        SIGNING_PACKAGES_GCS_CREDENTIALS_SECRET=$(retry 5 vault kv get -field value "${SIGNING_PACKAGES_GCS_CREDENTIALS_PATH}")
         export SIGNING_PACKAGES_GCS_CREDENTIALS_SECRET
 
         # publishing job
-        PACKAGE_UPLOADER_GCS_CREDENTIALS_SECRET=$(retry 5 vault kv get -field value ${PACKAGE_UPLOADER_GCS_CREDENTIALS_PATH})
+        PACKAGE_UPLOADER_GCS_CREDENTIALS_SECRET=$(retry 5 vault kv get -field value "${PACKAGE_UPLOADER_GCS_CREDENTIALS_PATH}")
         export PACKAGE_UPLOADER_GCS_CREDENTIALS_SECRET
     fi
 fi
 
 if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations" ]]; then
     if [[ "${BUILDKITE_STEP_KEY}" == "test-integrations" ]]; then
-        BUILDKITE_API_TOKEN=$(retry 5 vault kv get -field buildkite_token ${BUILDKITE_API_TOKEN_PATH})
+        BUILDKITE_API_TOKEN=$(retry 5 vault kv get -field buildkite_token "${BUILDKITE_API_TOKEN_PATH}")
         export BUILDKITE_API_TOKEN
     fi
 
+    if [[ "${BUILDKITE_STEP_KEY}" == "publish-benchmarks" ]]; then
+        BUILDKITE_API_TOKEN=$(retry 5 vault kv get -field buildkite_token "${BUILDKITE_API_TOKEN_PATH}")
+        export BUILDKITE_API_TOKEN
+        GITHUB_TOKEN=$(retry 5 vault kv get -field token "${GITHUB_TOKEN_VAULT_PATH}")
+        export GITHUB_TOKEN
+    fi
+
     if [[ "${BUILDKITE_STEP_KEY}" =~ ^test-integrations- ]]; then
-        ELASTIC_PACKAGE_AWS_SECRET_KEY=$(retry 5 vault kv get -field secret_key ${AWS_SERVICE_ACCOUNT_SECRET_PATH})
+        ELASTIC_PACKAGE_AWS_SECRET_KEY=$(retry 5 vault kv get -field secret_key "${AWS_SERVICE_ACCOUNT_SECRET_PATH}")
         export ELASTIC_PACKAGE_AWS_SECRET_KEY
-        ELASTIC_PACKAGE_AWS_ACCESS_KEY=$(retry 5 vault kv get -field access_key ${AWS_SERVICE_ACCOUNT_SECRET_PATH})
+        ELASTIC_PACKAGE_AWS_ACCESS_KEY=$(retry 5 vault kv get -field access_key "${AWS_SERVICE_ACCOUNT_SECRET_PATH}")
         export ELASTIC_PACKAGE_AWS_ACCESS_KEY
 
-        PRIVATE_CI_GCS_CREDENTIALS_SECRET=$(retry 5 vault kv get -field plaintext ${PRIVATE_CI_GCS_CREDENTIALS_PATH})
+        PRIVATE_CI_GCS_CREDENTIALS_SECRET=$(retry 5 vault kv get -field plaintext "${PRIVATE_CI_GCS_CREDENTIALS_PATH}")
         export PRIVATE_CI_GCS_CREDENTIALS_SECRET
         export JOB_GCS_BUCKET_INTERNAL="fleet-ci-temp-internal"
 
@@ -83,19 +91,19 @@ if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations" ]]; then
         export AWS_SECRET_ACCESS_KEY=${ELASTIC_PACKAGE_AWS_SECRET_KEY}
         export AWS_ACCESS_KEY_ID=${ELASTIC_PACKAGE_AWS_ACCESS_KEY}
 
-        BUILDKITE_API_TOKEN=$(retry 5 vault kv get -field buildkite_token ${BUILDKITE_API_TOKEN_PATH})
+        BUILDKITE_API_TOKEN=$(retry 5 vault kv get -field buildkite_token "${BUILDKITE_API_TOKEN_PATH}")
         export BUILDKITE_API_TOKEN
     fi
 fi
 
 if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations-serverless" ]]; then
     if [[ "${BUILDKITE_STEP_KEY}" == "test-integrations-serverless-project" ]]; then
-        ELASTIC_PACKAGE_AWS_SECRET_KEY=$(retry 5 vault kv get -field secret_key ${AWS_SERVICE_ACCOUNT_SECRET_PATH})
+        ELASTIC_PACKAGE_AWS_SECRET_KEY=$(retry 5 vault kv get -field secret_key "${AWS_SERVICE_ACCOUNT_SECRET_PATH}")
         export ELASTIC_PACKAGE_AWS_SECRET_KEY
-        ELASTIC_PACKAGE_AWS_ACCESS_KEY=$(retry 5 vault kv get -field access_key ${AWS_SERVICE_ACCOUNT_SECRET_PATH})
+        ELASTIC_PACKAGE_AWS_ACCESS_KEY=$(retry 5 vault kv get -field access_key "${AWS_SERVICE_ACCOUNT_SECRET_PATH}")
         export ELASTIC_PACKAGE_AWS_ACCESS_KEY
 
-        PRIVATE_CI_GCS_CREDENTIALS_SECRET=$(retry 5 vault kv get -field plaintext ${PRIVATE_CI_GCS_CREDENTIALS_PATH})
+        PRIVATE_CI_GCS_CREDENTIALS_SECRET=$(retry 5 vault kv get -field plaintext "${PRIVATE_CI_GCS_CREDENTIALS_PATH}")
         export PRIVATE_CI_GCS_CREDENTIALS_SECRET
         export JOB_GCS_BUCKET_INTERNAL="fleet-ci-temp-internal"
 
@@ -103,14 +111,14 @@ if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations-serverless" ]]; then
         export AWS_SECRET_ACCESS_KEY=${ELASTIC_PACKAGE_AWS_SECRET_KEY}
         export AWS_ACCESS_KEY_ID=${ELASTIC_PACKAGE_AWS_ACCESS_KEY}
 
-        BUILDKITE_API_TOKEN=$(retry 5 vault kv get -field buildkite_token ${BUILDKITE_API_TOKEN_PATH})
+        BUILDKITE_API_TOKEN=$(retry 5 vault kv get -field buildkite_token "${BUILDKITE_API_TOKEN_PATH}")
         export BUILDKITE_API_TOKEN
 
-        EC_API_KEY_SECRET=$(retry 5 vault kv get -field apiKey ${EC_TOKEN_PATH})
+        EC_API_KEY_SECRET=$(retry 5 vault kv get -field apiKey "${EC_TOKEN_PATH}")
         export EC_API_KEY_SECRET
-        EC_HOST_SECRET=$(retry 5 vault kv get -field url ${EC_TOKEN_PATH})
+        EC_HOST_SECRET=$(retry 5 vault kv get -field url "${EC_TOKEN_PATH}")
         export EC_HOST_SECRET
-        EC_REGION_SECRET=$(retry 5 vault read -field region_qa ${EC_DATA_PATH})
+        EC_REGION_SECRET=$(retry 5 vault read -field region_qa "${EC_DATA_PATH}")
         export EC_REGION_SECRET
     fi
 fi
