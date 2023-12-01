@@ -212,8 +212,12 @@ An example event for `securesphere` looks as following:
 | imperva.securesphere.transport_protocol |  | keyword |
 | imperva.securesphere.version |  | keyword |
 | input.type | Type of filebeat input. | keyword |
-| log.file.device_id |  | long |
-| log.file.inode |  | long |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | tags | User defined tags. | keyword |
