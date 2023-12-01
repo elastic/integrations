@@ -227,7 +227,7 @@ An example event for `ioc` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "dc81497a-8431-4ec0-aeca-be9bfd9982ba",
@@ -326,6 +326,7 @@ An example event for `ioc` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
@@ -465,7 +466,7 @@ An example event for `alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "dc81497a-8431-4ec0-aeca-be9bfd9982ba",
@@ -539,6 +540,7 @@ An example event for `alert` looks as following:
         "Phishing Domain - Default Detection Rule"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -643,7 +645,7 @@ An example event for `vulnerability` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "dc81497a-8431-4ec0-aeca-be9bfd9982ba",
@@ -750,6 +752,7 @@ An example event for `vulnerability` looks as following:
         "severity": "Low"
     }
 }
+
 ```
 
 **Exported fields**

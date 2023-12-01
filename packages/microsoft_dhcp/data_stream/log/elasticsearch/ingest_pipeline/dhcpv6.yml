@@ -8,8 +8,8 @@ processors:
         - _tmp_.date
         - _tmp_.time
         - message
-        - _tmp_.host.ip
-        - host.name
+        - source.ip
+        - source.address
         - microsoft.dhcp.error_code
         - microsoft.dhcp.duid.length
         - microsoft.dhcp.duid.hex
@@ -18,16 +18,12 @@ processors:
         - microsoft.dhcp.subnet_prefix
       ignore_failure: true
   - lowercase:
-      field: host.name
-      if: "ctx.host?.name != null"
-  - grok:
-      field: host.name
-      if: 'ctx.host?.name != null && ctx.host.name.contains(".")'
-      patterns:
-        - "%{HOSTNAME}\\.%{GREEDYDATA:host.domain}"
-      pattern_definitions:
-        "HOSTNAME": "[^.]+"
-      ignore_failure: true
+      field: source.address
+      if: "ctx.source?.address != null"
+  - set:
+      field: source.domain
+      if: "ctx.source?.address != null"
+      copy_from: source.address
   - set:
       field: _tmp_.timestamp
       value: "{{{_tmp_.date}}} {{{_tmp_.time}}}"

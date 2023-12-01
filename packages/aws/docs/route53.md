@@ -267,124 +267,128 @@ An example event for `route53_resolver` looks as following:
 {
     "@timestamp": "2021-02-04T17:51:55.000Z",
     "agent": {
+        "ephemeral_id": "a2625e6f-d625-4d5f-a950-0a88bea9fb17",
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
         "name": "docker-fleet-agent",
-        "id": "c00f804f-7a02-441b-88f4-aeb9da6410d9",
         "type": "filebeat",
-        "ephemeral_id": "1cf87179-f6b3-44b0-a46f-3aa6bc0f995f",
-        "version": "8.0.0"
+        "version": "8.10.1"
     },
     "aws": {
+        "instance_id": "i-0d15cd0d3example",
         "route53": {
             "firewall": {
-                "rule_group": {
-                    "id": "rslvr-frg-01234567890abcdef"
-                },
                 "action": "BLOCK",
                 "domain_list": {
                     "id": "rslvr-fdl-01234567890abcdef"
+                },
+                "rule_group": {
+                    "id": "rslvr-frg-01234567890abcdef"
                 }
             }
         },
-        "vpc_id": "vpc-7example",
-        "instance_id": "i-0d15cd0d3example"
-    },
-    "awscloudwatch": {
-        "log_group": "test",
-        "ingestion_time": "2021-12-06T02:18:20.000Z",
-        "log_stream": "test"
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-aws-bucket-91334",
+                "name": "elastic-package-aws-bucket-91334"
+            },
+            "object": {
+                "key": "route53.log"
+            }
+        },
+        "vpc_id": "vpc-7example"
     },
     "cloud": {
+        "account": {
+            "id": "111122223333"
+        },
         "instance": {
             "id": "i-0d15cd0d3example"
         },
-        "region": "us-east-1",
         "provider": "aws",
-        "account": {
-            "id": "111122223333"
-        }
+        "region": "us-east-1"
     },
     "data_stream": {
-        "namespace": "default",
-        "type": "logs",
-        "dataset": "aws.route53_resolver_logs"
+        "dataset": "aws.route53_resolver_logs",
+        "namespace": "ep",
+        "type": "logs"
     },
     "dns": {
-        "question": {
-            "name": "15.199.16.175.in-addr.arpa",
-            "subdomain": "15.3.4",
-            "registered_domain": "32.in-addr.arpa",
-            "type": "PTR",
-            "top_level_domain": "in-addr.arpa",
-            "class": "IN"
-        },
         "answers": [
             {
+                "class": "IN",
                 "data": "203.0.113.9",
-                "type": "PTR",
-                "class": "IN"
+                "type": "PTR"
             }
         ],
+        "question": {
+            "class": "IN",
+            "name": "15.199.16.175.in-addr.arpa",
+            "type": "PTR"
+        },
         "response_code": "NOERROR"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "c00f804f-7a02-441b-88f4-aeb9da6410d9",
-        "version": "8.0.0",
-        "snapshot": true
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "snapshot": false,
+        "version": "8.10.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "ingested": "2021-12-12T00:28:02.201047005Z",
-        "original": "{\"srcaddr\":\"4.5.64.102\",\"vpc_id\":\"vpc-7example\",\"answers\":[{\"Rdata\":\"203.0.113.9\",\"Type\":\"PTR\",\"Class\":\"IN\"}],\"firewall_rule_group_id\":\"rslvr-frg-01234567890abcdef\",\"firewall_rule_action\":\"BLOCK\",\"query_name\":\"15.199.16.175.in-addr.arpa.\",\"firewall_domain_list_id\":\"rslvr-fdl-01234567890abcdef\",\"query_class\":\"IN\",\"srcids\":{\"instance\":\"i-0d15cd0d3example\"},\"rcode\":\"NOERROR\",\"query_type\":\"PTR\",\"transport\":\"UDP\",\"version\":\"1.100000\",\"account_id\":\"111122223333\",\"srcport\":\"56067\",\"query_timestamp\":\"2021-02-04T17:51:55Z\",\"region\":\"us-east-1\"}",
         "category": [
             "network"
         ],
+        "dataset": "aws.route53_resolver_logs",
+        "ingested": "2023-11-07T13:59:50Z",
+        "kind": "event",
+        "original": "{\"srcaddr\":\"81.2.69.143\",\"vpc_id\":\"vpc-7example\",\"answers\":[{\"Rdata\":\"203.0.113.9\",\"Type\":\"PTR\",\"Class\":\"IN\"}],\"firewall_rule_group_id\":\"rslvr-frg-01234567890abcdef\",\"firewall_rule_action\":\"BLOCK\",\"query_name\":\"15.199.16.175.in-addr.arpa.\",\"firewall_domain_list_id\":\"rslvr-fdl-01234567890abcdef\",\"query_class\":\"IN\",\"srcids\":{\"instance\":\"i-0d15cd0d3example\"},\"rcode\":\"NOERROR\",\"query_type\":\"PTR\",\"transport\":\"UDP\",\"version\":\"1.100000\",\"account_id\":\"111122223333\",\"srcport\":\"56067\",\"query_timestamp\":\"2021-02-04T17:51:55Z\",\"region\":\"us-east-1\"}",
+        "outcome": "success",
         "type": [
             "protocol"
-        ],
-        "kind": "event",
-        "outcome": "success",
-        "dataset": "aws.route53_resolver_logs"
+        ]
     },
     "input": {
-        "type": "aws-cloudwatch"
+        "type": "aws-s3"
     },
-    "log.file.path": "test/test",
+    "log": {
+        "file": {
+            "path": "https://elastic-package-aws-bucket-91334.s3.us-east-1.amazonaws.com/route53.log"
+        },
+        "offset": 12394
+    },
     "network": {
+        "iana_number": "17",
         "protocol": "dns",
         "transport": "udp",
-        "type": "ipv4",
-        "iana_number": "17"
+        "type": "ipv4"
     },
     "related": {
         "hosts": [
-            "15.199.16.175.in-addr.arpa"
+            "203.0.113.9"
         ],
         "ip": [
-            "4.5.64.102"
+            "81.2.69.143",
+            "175.16.199.15"
         ]
     },
     "source": {
+        "address": "81.2.69.143",
         "geo": {
-            "continent_name": "North America",
-            "country_name": "United States",
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
             "location": {
-                "lon": -97.822,
-                "lat": 37.751
+                "lat": 51.5142,
+                "lon": -0.0931
             },
-            "country_iso_code": "US"
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
         },
-        "as": {
-            "number": 3356,
-            "organization": {
-                "name": "Level 3 Parent, LLC"
-            }
-        },
-        "address": "4.5.64.102",
-        "port": 56067,
-        "ip": "4.5.64.102"
+        "ip": "81.2.69.143",
+        "port": 56067
     },
     "tags": [
         "preserve_original_event",
@@ -403,6 +407,9 @@ An example event for `route53_resolver` looks as following:
 | aws.route53.firewall.action | The action specified by the rule that matched the domain name in the query. This is populated only if DNS Firewall found a match for a rule with action set to alert or block. | keyword |
 | aws.route53.firewall.domain_list.id | The domain list used by the rule that matched the domain name in the query. This is populated only if DNS Firewall found a match for a rule with action set to alert or block. | keyword |
 | aws.route53.firewall.rule_group.id | The ID of the DNS Firewall rule group that matched the domain name in the query. This is populated only if DNS Firewall found a match for a rule with action set to alert or block. | keyword |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | aws.vpc_id | The ID of the VPC that contains the network interface for which the traffic is recorded. | keyword |
 | awscloudwatch.ingestion_time | AWS CloudWatch ingest time | date |
 | awscloudwatch.log_group | AWS CloudWatch Log Group name | keyword |
@@ -423,7 +430,12 @@ An example event for `route53_resolver` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dns.answers | An array containing an object for each answer section returned by the server. The main keys that should be present in these objects are defined by ECS. Records that have more information may contain more keys than what ECS defines. Not all DNS data sources give all details about DNS answers. At minimum, answer objects must contain the `data` key. If more information is available, map as much of it to ECS as possible, and add any additional fields to the answer objects as custom fields. | object |
+| dns.answers | An array containing an object for each answer section returned by the server. The main keys that should be present in these objects are defined by ECS. Records that have more information may contain more keys than what ECS defines. Not all DNS data sources give all details about DNS answers. At minimum, answer objects must contain the `data` key. If more information is available, map as much of it to ECS as possible, and add any additional fields to the answer objects as custom fields. | group |
+| dns.answers.class | The class of DNS data contained in this resource record. | keyword |
+| dns.answers.data | The data describing the resource. The meaning of this data depends on the type and class of the resource record. | keyword |
+| dns.answers.name | The domain name to which this resource record pertains. If a chain of CNAME is being resolved, each answer's `name` should be the one that corresponds with the answer's `data`. It should not simply be the original `question.name` repeated. | keyword |
+| dns.answers.ttl | The time interval in seconds that this resource record may be cached before it should be discarded. Zero values mean that the data should not be cached. | long |
+| dns.answers.type | The type of data contained in this resource record. | keyword |
 | dns.question.class | The class of records being queried. | keyword |
 | dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
 | dns.question.registered_domain | The highest registered domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
@@ -454,6 +466,7 @@ An example event for `route53_resolver` looks as following:
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Path to the log file. | keyword |
+| log.offset | Log offset | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |

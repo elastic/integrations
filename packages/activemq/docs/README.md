@@ -334,7 +334,6 @@ An example event for `broker` looks as following:
         "type": "activemq"
     },
     "tags": [
-        "forwarded",
         "activemq-broker"
     ]
 }
@@ -498,7 +497,6 @@ An example event for `queue` looks as following:
         "type": "activemq"
     },
     "tags": [
-        "forwarded",
         "activemq-queue"
     ]
 }
@@ -665,7 +663,6 @@ An example event for `topic` looks as following:
         "type": "activemq"
     },
     "tags": [
-        "forwarded",
         "activemq-topic"
     ]
 }

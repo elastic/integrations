@@ -1,6 +1,6 @@
 # Azure Logs Integration
 
-The Azure Logs integration collects logs for specific Azure services like Azure Active Directory (Sign-in, Audit, Identity Protection, and Provisioning logs), Azure Spring Cloud, Azure Firewall, and several others using the Activity and Platform logs.
+The Azure Logs integration collects logs for specific Azure services like Azure Active Directory (Sign-in, Audit, Identity Protection, and Provisioning logs), Azure Spring Apps, Azure Firewall, and several others using the Activity and Platform logs.
 
 You can then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference data when troubleshooting an issue.
 
@@ -16,7 +16,7 @@ fail to start due to an exceed quota limit.
 The Azure Logs integration collects logs.
 
 **Logs** help you keep a record of events that happen on your Azure account.
-Log data streams collected by the Azure Logs integration include Activity, Platform, Active Directory (Sign-in, Audit, Identity Protection, Provisioning), and Spring Cloud logs.
+Log data streams collected by the Azure Logs integration include Activity, Platform, Active Directory (Sign-in, Audit, Identity Protection, Provisioning), and Spring Apps logs.
 
 ## Requirements
 
@@ -44,7 +44,7 @@ Examples of source services:
 
 * Active Directory
 * Azure Monitor
-* Spring Cloud
+* Spring Apps
 
 The Diagnostic settings support several destination types. The Elastic Agent requires a Diagnostic setting configured with Event Hub as the destination.
 
@@ -330,7 +330,7 @@ Malformed logs can be indentified by:
 
 Known data streams that might produce malformed logs: 
 - Platform Logs
-- Spring Cloud Logs
+- Spring Apps Logs
 
 ## Reference
 
