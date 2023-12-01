@@ -74,3 +74,5 @@ steps:
         LEGACY_PACKAGE: "false"
         PACKAGE_ARTIFACTS_FOLDER: "${ARTIFACTS_FOLDER}"
 EOF
+
+buildkite-agent pipeline upload "${PIPELINE_FILE}"
