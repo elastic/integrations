@@ -146,7 +146,10 @@ processors:
       ignore_missing: true
 
   - gsub:
-      if: '!ctx.objectMarking.edges.isEmpty() && ctx.objectMarking.edges[0].node.definition_type == "TLP"'
+      if: |
+        ctx.objectMarking.edges != null &&
+        !ctx.objectMarking.edges.isEmpty() &&
+        ctx.objectMarking.edges[0].node.definition_type == "TLP"
       field: objectMarking.edges.0.node.definition
       pattern: '^TLP:'
       replacement: ''
@@ -156,6 +159,7 @@ processors:
 
   - foreach:
       field: objectLabel.edges
+      ignore_missing: true
       processor:
         append:
           field: tags
@@ -166,6 +170,7 @@ processors:
 
   - foreach:
       field: killChainPhases.edges
+      ignore_missing: true
       processor:
         append:
           field: opencti.indicator.kill_chain_phase
@@ -173,12 +178,34 @@ processors:
   - remove:
       field: killChainPhases
 
-  - foreach:
-      field: externalReferences.edges
-      processor:
-        append:
-          field: opencti.indicator.external_reference
-          value: "{{{_ingest._value.node}}}"
+  - script:
+      description: Move external reference nodes to their target location, without nulls
+      lang: painless
+      source: |
+        ArrayList edges = ctx.externalReferences.edges;
+        if (edges == null) {
+          return;
+        }
+        for (int i = 0; i < edges.length; i++) {
+          if (!ctx.opencti?.indicator?.containsKey('external_reference') == true) {
+            if (!ctx.containsKey('opencti')) {
+              ctx.opencti = [:];
+            }
+            if (!ctx.opencti.containsKey('indicator')) {
+              ctx.opencti.indicator = [:];
+            }
+            if (!ctx.opencti.indicator.containsKey('external_reference')) {
+              ctx.opencti.indicator.external_reference = [];
+            }
+          }
+          def newNode = [:];
+          for (def key : edges[i]['node'].keySet()) {
+            if (edges[i]['node'][key] != null) {
+              newNode[key] = edges[i]['node'][key];
+            }
+          }
+          ctx.opencti.indicator.external_reference.add(newNode);
+        }
   - remove:
       field: externalReferences
 
@@ -389,7 +416,7 @@ processors:
             return obj;
           }
         }
-        if (ctx.opencti?.containsKey('observable')) {
+        if (ctx.opencti?.containsKey('observable') == true) {
           ctx.opencti.observable = dropNulls(ctx.opencti.observable);
           for (def key : ctx.opencti.observable.keySet()) {
             if (ctx.opencti.observable[key].size() == 0) {
@@ -754,6 +781,7 @@ processors:
   ##############################################
   # Restructure to avoid non-leaf lists, under #
   # - opencti.observable.*                     #
+  # - opencti.indicator.external_reference     #
   # - threat.indicator.as                      #
   # - threat.indicator.file                    #
   # - threat.indicator.registry                #
@@ -795,10 +823,13 @@ processors:
           }
           return merged;
         }
-        if (ctx.opencti?.containsKey('observable')) {
+        if (ctx.opencti?.containsKey('observable') == true) {
           for (def key : ctx.opencti.observable.keySet()) {
             ctx.opencti.observable[key] = mergeListOfMaps(ctx.opencti.observable[key]);
           }
+        }
+        if (ctx.opencti?.indicator?.containsKey('external_reference') == true) {
+          ctx.opencti.indicator.external_reference = mergeListOfMaps(ctx.opencti.indicator.external_reference);
         }
         if (ctx.threat.indicator.containsKey('file')) {
           ctx.threat.indicator.file = mergeListOfMaps(ctx.threat.indicator.file);
