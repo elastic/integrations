@@ -34,12 +34,6 @@ processors:
   - json:
       field: event.original
       target_field: misp.attribute
-  - fingerprint:
-      fields:
-        - misp.attribute.uuid
-        - misp.attribute.Event.uuid
-      target_field: "_id"
-      ignore_missing: true
   - set:
       field: threat.indicator.provider
       value: misp
@@ -109,6 +103,7 @@ processors:
 # Calculate max(misp.attribute.timestamp, misp.attribute.last_seen) as _tmp_max_time
 # Add default decayed_at to expire all IOCs after duration `ioc_expiration_duration` from `_tmp_max_time`. 
 # If user-provided value of `ioc_expiration_duration` is not in d, h, or m, default to 90d.
+# Set `decayed` as true if decayed_at is before ingest time i.e., already expired during ingestion.
   - script:
       lang: painless
       tag: script-default-decayed_at
@@ -117,6 +112,7 @@ processors:
         Add default decayed_at
       source: >
         def dur = ctx._conf.ioc_expiration_duration;
+        ZonedDateTime _tmp_decayed_at;
         ZonedDateTime _tmp_timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(ctx.misp.attribute.timestamp) * 1000L), ZoneId.of('Z'));
         ZonedDateTime _tmp_max_time = _tmp_timestamp;
         if (ctx.misp.attribute.last_seen != null) {
@@ -129,15 +125,17 @@ processors:
           Character time_unit = dur.charAt(dur.length() - 1);
           String time_value = dur.substring(0, dur.length());
           if (time_unit == 'd') {
-            ctx.misp.attribute.decayed_at = _tmp_max_time.plusDays(Long.parseLong(time_value));
+            _tmp_decayed_at = _tmp_max_time.plusDays(Long.parseLong(time_value));
           } else if (time_unit == 'h') {
-            ctx.misp.attribute.decayed_at = _tmp_max_time.plusHours(Long.parseLong(time_value));
+            _tmp_decayed_at = _tmp_max_time.plusHours(Long.parseLong(time_value));
           } else if (time_unit == 'm') {
-            ctx.misp.attribute.decayed_at = _tmp_max_time.plusMinutes(Long.parseLong(time_value));
+            _tmp_decayed_at = _tmp_max_time.plusMinutes(Long.parseLong(time_value));
           } else {
-            ctx.misp.attribute.decayed_at = _tmp_max_time.plusDays(90L);
-          }        
+            _tmp_decayed_at = _tmp_max_time.plusDays(90L);
+          }
+          ctx.misp.attribute.decayed_at = _tmp_decayed_at;
         }
+        ctx.misp.attribute.decayed = _tmp_decayed_at.isBefore(ZonedDateTime.parse(ctx._tmp.event_ingested))? true : false;
       on_failure:
         - append:
             field: error.message
@@ -498,6 +496,7 @@ processors:
         - misp.event.analysis
         - _tmp
         - json
+        - _conf
       ignore_missing: true
 
 on_failure:
