@@ -590,10 +590,10 @@ is_pr_affected() {
 }
 
 is_pr() {
-    if [[ "${BUILDKITE_PULL_REQUEST}" == "false" || "${BUILDKITE_TAG}" == "" ]]; then
-        return 0
+    if [[ "${BUILDKITE_PULL_REQUEST}" == "false" && "${BUILDKITE_TAG}" == "" ]]; then
+        return 1
     fi
-    return 1
+    return 0
 }
 
 kubernetes_service_deployer_used() {
