@@ -1,6 +1,6 @@
 # Cribl
 
-The Cribl integration offers users a way to ingest logs from Cribl's Elasticsearch output into Elastic's Fleet integration data streams. This enables Cribl users to leverage the power of the Elastic Common Schema to unlock predefined dashboards, alerts and more.
+The Cribl integration offers users a way to ingest logs from either of Cribl's Elastic outputs into Elastic's Fleet integration data streams. This enables Cribl users to leverage the power of the Elastic Common Schema to unlock predefined dashboards, alerts and more.
 
 ## Instructions
 
