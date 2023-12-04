@@ -1,0 +1,48 @@
+{{- $timestamp := generate "timestamp" }}
+{{- $ip := generate "aws.ec2.ip_address" }}
+{{- $pname := generate "process.name" }}
+{{- $logstream := generate "aws.cloudwatch.log_stream" }}
+{{- $hostname := generate "host.name" }}
+{{- $agentId := generate "agent.id" }}
+{
+  "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.999999Z07:00" }}",
+  "aws.cloudwatch": {
+    "log_stream": "{{$logstream}}",
+    "ingestion_time": "{{ $timestamp | date "2006-01-02T15:04:05.000Z" }}",
+    "log_group": "/var/log/messages"
+  },
+  "cloud": {
+    "region": "{{ generate "cloud.region" }}"
+  },
+  "log.file.path": "/var/log/messages/{{$logstream}}",
+  "input": {
+    "type": "aws-cloudwatch"
+  },
+  "data_stream": {
+    "namespace": "ep",
+    "type": "logs",
+    "dataset": "aws.ec2_logs"
+  },
+  "process": {
+    "name": "{{ $pname }}"
+  },
+  "message": "{{$timestamp | date "2006-01-02T15:04:05.000Z"}} {{$timestamp | date "Jan"}} {{$timestamp | date "02"}} {{$timestamp | date "15:04:05"}} {{printf "ip-%s" ($ip | splitList "." | join "-")}} {{$pname}}: {{generate "message"}}",
+  "event": {
+    "id": "{{ generate "event.id" }}",
+    "ingested": "{{ generate "event.ingested" | date "2006-01-02T15:04:05.000000000Z" }}",
+    "dataset": "aws.ec2_logs"
+  },
+  "host": {
+    "name": "{{$hostname}}"
+  },
+  "agent": {
+    "id": "{{$agentId}}",
+    "name": "{{$hostname}}",
+    "type": "filebeat",
+    "version": "8.8.0",
+    "ephemeral_id": "{{$agentId}}"
+  },
+  "tags": [
+    "preserve_original_event"
+  ]
+}
