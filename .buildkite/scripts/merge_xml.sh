@@ -12,3 +12,9 @@ for file in ${sourceFolder}/*.xml; do
 done
 
 echo '</coverage>' >> "${mergedCoverageFileName}"
+
+file_to_copy=$(find ${sourceFolder} -maxdepth 1 -type f -name "coverage-.xml" | head -n 1)
+cp "$file_to_copy" coverage-reports/
+
+ls ${sourceFolder}
+ls coverage-reports
