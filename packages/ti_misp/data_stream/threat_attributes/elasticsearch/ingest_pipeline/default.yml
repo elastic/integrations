@@ -85,8 +85,8 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-# Script for calculating if attribute is decayed/expired. 
-# If majority (i.e., >= 50%) decaying models have `decayed` as true, then attribute is expired.
+# Script for calculating if attribute is decayed/expired based on decaying models. 
+# If majority (i.e., >= 50%) decaying models have `decayed` property as true, then attribute is expired.
 # Set decayed_at to 2 minute before ingest time so that transform deletes the document from destination indices using transform's retention policy.
   - script:
       lang: painless
@@ -100,6 +100,43 @@ processors:
         ctx.misp.attribute.decayed = decayed;
         if (decayed == true) {
             ctx.misp.attribute.decayed_at = ZonedDateTime.parse(ctx._tmp.event_ingested).minusMinutes(2L); 
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+# Script to set default expiration to delete lingering orphaned indicators in the destination indices.
+# Calculate max(misp.attribute.timestamp, misp.attribute.last_seen) as _tmp_max_time
+# Add default decayed_at to expire all IOCs after duration `ioc_expiration_duration` from `_tmp_max_time`. 
+# If user-provided value of `ioc_expiration_duration` is not in d, h, or m, default to 90d.
+  - script:
+      lang: painless
+      tag: script-default-decayed_at
+      if: (ctx.misp?.attribute?.decayed_at == null && ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != '')
+      description: >
+        Add default decayed_at
+      source: >
+        def dur = ctx._conf.ioc_expiration_duration;
+        ZonedDateTime _tmp_timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(ctx.misp.attribute.timestamp) * 1000L), ZoneId.of('Z'));
+        ZonedDateTime _tmp_max_time = _tmp_timestamp;
+        if (ctx.misp.attribute.last_seen != null) {
+            ZonedDateTime _tmp_last_seen = ZonedDateTime.ofInstant(Instant.ofEpochMilli((ctx.misp.attribute.last_seen)/1000), ZoneId.of('Z'));
+            if (_tmp_max_time.isBefore(_tmp_last_seen)) {
+                _tmp_max_time = _tmp_last_seen;
+            }
+        }
+        if (dur instanceof String){
+          Character time_unit = dur.charAt(dur.length() - 1);
+          String time_value = dur.substring(0, dur.length());
+          if (time_unit == 'd') {
+            ctx.misp.attribute.decayed_at = _tmp_max_time.plusDays(Long.parseLong(time_value));
+          } else if (time_unit == 'h') {
+            ctx.misp.attribute.decayed_at = _tmp_max_time.plusHours(Long.parseLong(time_value));
+          } else if (time_unit == 'm') {
+            ctx.misp.attribute.decayed_at = _tmp_max_time.plusMinutes(Long.parseLong(time_value));
+          } else {
+            ctx.misp.attribute.decayed_at = _tmp_max_time.plusDays(90L);
+          }        
         }
       on_failure:
         - append:
