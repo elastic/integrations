@@ -8,7 +8,7 @@ set -euo pipefail
 BENCHMARK_THRESHOLD=${BENCHMARK_THRESHOLD:-'15'}
 
 if ! is_pr ; then
-    echo "[benchmarks] Pull request build. Skip procesing benchmarks."
+    echo "[benchmarks] Not a pull request build. Skip procesing benchmarks."
     exit 0
 fi
 
