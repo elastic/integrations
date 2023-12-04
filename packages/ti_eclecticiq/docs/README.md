@@ -146,7 +146,7 @@ An example event for `outgoing_feed` looks as following:
         }
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.10.0"
     },
     "event": {
         "category": [

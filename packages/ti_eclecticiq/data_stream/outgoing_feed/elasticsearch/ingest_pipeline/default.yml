@@ -4,7 +4,7 @@ processors:
   # hard coded fields
   - set:
       field: ecs.version
-      value: 8.9.0
+      value: 8.10.0
   - set:
       field: event.kind
       value: enrichment
@@ -19,6 +19,8 @@ processors:
   - rename:
       field: message
       target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       tag: 'json_decoding'
@@ -36,27 +38,33 @@ processors:
   - dot_expander:
       path: json
       field: source.names
+      if: "ctx.json.source?.names != null"
   - dot_expander:
       path: json
       field: meta.tags
+      if: "ctx.json.meta?.tags != null"
   - dot_expander:
       path: json
       field: meta.estimated_observed_time
+      if: "ctx.json.meta?.estimated_observed_time != null"
   - dot_expander:
       path: json
       field: meta.estimated_threat_start_time
+      if: "ctx.json.meta?.estimated_threat_start_time != null"
   - dot_expander:
       path: json
       field: meta.estimated_threat_end_time
+      if: "ctx.json.meta?.estimated_threat_end_time != null"
   - dot_expander:
       path: json
       field: meta.ingest_time
+      if: "ctx.json.meta?.ingest_time != null"
 
   # base event fields
   - set:
       field: event.provider
       value: '{{{json.source.names}}}'
-      if: "ctx.json.source?.names != null && ctx.json.source?.names != ''"
+      if: "ctx.json.source?.names != null && ctx.json.source.names != ''"
   - set:
       field: event.url
       value: '{{{json.value_url}}}'
@@ -68,7 +76,7 @@ processors:
         - "yyyy-MM-dd HH:mm:ssz"
         - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSz"
         - "yyyy-MM-dd'T'HH:mm:ssz"
-      if: "ctx.json.meta?.ingest_time != null && ctx.json.meta?.ingest_time != ''"
+      if: "ctx.json.meta?.ingest_time != null && ctx.json.meta.ingest_time != ''"
   - date:
       field: json.meta.estimated_threat_start_time
       target_field: event.start
@@ -77,7 +85,7 @@ processors:
         - "yyyy-MM-dd HH:mm:ssz"
         - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSz"
         - "yyyy-MM-dd'T'HH:mm:ssz"
-      if: "ctx.json.meta?.estimated_threat_start_time != null && ctx.json.meta?.estimated_threat_start_time != ''"
+      if: "ctx.json.meta?.estimated_threat_start_time != null && ctx.json.meta.estimated_threat_start_time != ''"
   - date:
       field: json.meta.estimated_threat_end_time
       target_field: event.end
@@ -86,7 +94,7 @@ processors:
         - "yyyy-MM-dd HH:mm:ssz"
         - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSz"
         - "yyyy-MM-dd'T'HH:mm:ssz"
-      if: "ctx.json.meta?.estimated_threat_end_time != null && ctx.json.meta?.estimated_threat_end_time != ''"
+      if: "ctx.json.meta?.estimated_threat_end_time != null && ctx.json.meta.estimated_threat_end_time != ''"
   - date:
       field: json.timestamp
       target_field: "@timestamp"
@@ -100,7 +108,7 @@ processors:
       target_field: tags
       separator: ';'
       preserve_trailing: false
-      if: 'ctx.json.meta.tags != ""'
+      if: 'ctx.json?.meta?.tags != null && ctx.json.meta.tags != ""'
 
   # populate threat.indicator fields
   - set:
@@ -114,7 +122,7 @@ processors:
         - "yyyy-MM-dd HH:mm:ssz"
         - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSz"
         - "yyyy-MM-dd'T'HH:mm:ssz"
-      if: "ctx.json.meta?.estimated_observed_time != null && ctx.json.meta?.estimated_observed_time != ''"
+      if: "ctx.json.meta?.estimated_observed_time != null && ctx.json.meta.estimated_observed_time != ''"
 
   # map extract classification and confidence to threat.indicator.confidence
   - set:
