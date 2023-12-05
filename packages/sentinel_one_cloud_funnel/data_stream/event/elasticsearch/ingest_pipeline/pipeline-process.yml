@@ -289,11 +289,12 @@ processors:
       field: process.name
       copy_from: sentinel_one_cloud_funnel.event.tgt.process.name
       ignore_empty_value: true
-  - rename:
+  - convert:
       field: json.tgt.process.pid
       tag: 'convert_json_tgt_process_pid'
       target_field: sentinel_one_cloud_funnel.event.tgt.process.pid
       ignore_missing: true
+      type: long
       if: ctx.json?.tgt?.process?.pid != ''
       on_failure:
         - append:
@@ -357,6 +358,21 @@ processors:
       field: process
       target_field: process.parent
   - set:
+      field: process.pid
+      copy_from: sentinel_one_cloud_funnel.event.tgt.process.pid
+      ignore_empty_value: true
+  - convert:
+      field: json.tgt.process.pid
+      tag: 'convert_json_tgt_process_pid'
+      target_field: sentinel_one_cloud_funnel.event.tgt.process.pid
+      ignore_missing: true
+      type: string
+      if: ctx.json?.tgt?.process?.pid != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
       field: process.entity_id
       copy_from: sentinel_one_cloud_funnel.event.tgt.process.uid
       ignore_empty_value: true
@@ -391,10 +407,6 @@ processors:
   - set:
       field: process.title
       copy_from: sentinel_one_cloud_funnel.event.tgt.process.display_name
-      ignore_empty_value: true
-  - set:
-      field: process.pid
-      copy_from: sentinel_one_cloud_funnel.event.tgt.process.pid
       ignore_empty_value: true
   - set:
       field: process.user.id
