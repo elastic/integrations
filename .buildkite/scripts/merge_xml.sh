@@ -3,19 +3,22 @@
 set -euox pipefail
 
 sourceFolder="build/test-coverage"
-mergedCoverageFileName="${sourceFolder}/coverage_merged.xml"
+mergedCoverageFileName="coverage_merged.xml"
+
+pushd "${sourceFolder}" > /dev/null
 echo '<coverage>' > "${mergedCoverageFileName}"
 
-for file in ${sourceFolder}/*.xml; do
+for file in *.xml; do
   [ "$file" = "${mergedCoverageFileName}" ] && continue
   sed '1d;$d' "$file" | awk '/<package /,/<\/package>/' >> "${mergedCoverageFileName}"
 done
 
 echo '</coverage>' >> "${mergedCoverageFileName}"
 
-file_to_copy=$(find ${sourceFolder}/ -maxdepth 1 -type f -name "coverage-.xml" | head -n 1 | xargs basename)
-echo "Copy file ${file_to_copy} to the 'coverage-reports' folder"
-cp ${file_to_copy} coverage-reports/
+mkdir -p coverage-report
+cp "$(find . -name 'coverage-*.xml' | head -n 1)" coverage-report/
 
-ls ${sourceFolder}
-ls coverage-reports
+popd > /dev/null
+
+ls -la $sourceFolder
+ls -la $sourceFolder/coverage-report
