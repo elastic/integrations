@@ -21,9 +21,6 @@ collects one type of data streams: logs.
 are collections of threat intelligence observables
 ingested from the connected EclecticIQ Intelligence Center outgoing feed.
 
-Log data streams collected by the {name} integration include {sample data stream(s)} and more. See more details in the [Logs](#logs-reference).
-
-
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
@@ -99,6 +96,12 @@ filter results with:
 _index : logs-ti_eclecticiq_latest.observables-1 and threat.indicator.type : *
 ```
 
+Or
+
+```
+NOT labels.is_ioc_transform_source: * AND and threat.feed.name: "EclecticIQ"
+```
+
 ### Update strategies
 
 You must set the **same** _Update strategy_ for
@@ -115,8 +118,8 @@ its configured datasets when it runs:
   since the last run.
 - **(Not recommended)**
   _Replace_ packs _all_ the data currently in the feed's datasets
-  each time it runs. Records that already exist on Elasticsearch will
-  be deuplicated, but records that are outdated or removed from the feeds' datasets
+  each time it runs. Records that already exist on Elasticsearch are
+  de-duplicated, but records that are outdated or removed from the feeds' datasets
   will not be correspondingly removed from Elasticsearch.
 
   **Known issue with _Replace_:**
@@ -198,6 +201,7 @@ An example event for `outgoing_feed` looks as following:
 | email.subject.text | Multi-field of `email.subject`. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.end | `event.end` contains the date when the event ended or when the activity was last observed. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
@@ -222,6 +226,7 @@ An example event for `outgoing_feed` looks as following:
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | server.mac | MAC address of the server. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| threat.feed.name | Display friendly feed name | constant_keyword |
 | threat.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. | keyword |
 | threat.indicator.email.address | Identifies a threat indicator as an email address (irrespective of direction). | keyword |

@@ -21,9 +21,6 @@ collects one type of data streams: logs.
 are collections of threat intelligence observables
 ingested from the connected EclecticIQ Intelligence Center outgoing feed.
 
-Log data streams collected by the {name} integration include {sample data stream(s)} and more. See more details in the [Logs](#logs-reference).
-
-
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
@@ -99,6 +96,12 @@ filter results with:
 _index : logs-ti_eclecticiq_latest.observables-1 and threat.indicator.type : *
 ```
 
+Or
+
+```
+NOT labels.is_ioc_transform_source: * AND and threat.feed.name: "EclecticIQ"
+```
+
 ### Update strategies
 
 You must set the **same** _Update strategy_ for
@@ -115,8 +118,8 @@ its configured datasets when it runs:
   since the last run.
 - **(Not recommended)**
   _Replace_ packs _all_ the data currently in the feed's datasets
-  each time it runs. Records that already exist on Elasticsearch will
-  be deuplicated, but records that are outdated or removed from the feeds' datasets
+  each time it runs. Records that already exist on Elasticsearch are
+  de-duplicated, but records that are outdated or removed from the feeds' datasets
   will not be correspondingly removed from Elasticsearch.
 
   **Known issue with _Replace_:**
