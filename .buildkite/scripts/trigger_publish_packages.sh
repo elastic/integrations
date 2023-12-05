@@ -17,11 +17,6 @@ echo "--- Downloading artifacts"
 pipeline_slug="${BUILDKITE_PIPELINE_SLUG}"
 pipeline_build_number="${BUILDKITE_BUILD_NUMBER}"
 
-if [ -n "$BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG" ] ; then
-  pipeline_slug="$BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG"
-  pipeline_build_number="$BUILDKITE_TRIGGERED_FROM_BUILD_NUMBER"
-fi
-
 ## Fail if no token
 if [ -z "$BUILDKITE_API_TOKEN" ] ; then
   echo "Token could not be loaded from vault. Please review .buildkite/hooks/pre-command"
