@@ -347,18 +347,20 @@ processors:
       field: json.tgt.process.uid
       target_field: sentinel_one_cloud_funnel.event.tgt.process.uid
       ignore_missing: true
-  - set:
-      field: process.entity_id
-      copy_from: sentinel_one_cloud_funnel.event.tgt.process.uid
-      ignore_empty_value: true
-  - set:
-      field: process.parent.entity_id
-      copy_from: sentinel_one_cloud_funnel.event.src.process.uid
-      ignore_empty_value: true
   - rename:
       field: json.tgt.process.verifiedStatus
       target_field: sentinel_one_cloud_funnel.event.tgt.process.verified_status
       ignore_missing: true
+  - remove:
+      field:
+      - process.parent
+  - rename:
+      field: process
+      target_field: process.parent
+  - set:
+      field: process.entity_id
+      copy_from: sentinel_one_cloud_funnel.event.tgt.process.uid
+      ignore_empty_value: true
   - set:
       field: process.command_line
       copy_from: sentinel_one_cloud_funnel.event.tgt.process.cmd_line
@@ -375,62 +377,10 @@ processors:
       field: process.hash.sha256
       copy_from: sentinel_one_cloud_funnel.event.tgt.process.image.sha256
       ignore_empty_value: true
-  - set:
-      field: process.parent.command_line
-      copy_from: sentinel_one_cloud_funnel.event.tgt.process.parent.cmd_line
-      ignore_empty_value: true
-  - set:
-      field: process.parent.hash.md5
-      copy_from: sentinel_one_cloud_funnel.event.os_src_process.image.md5
-      ignore_empty_value: true
-  - set:
-      field: process.parent.hash.sha1
-      copy_from: sentinel_one_cloud_funnel.event.src.process.image.sha1
-      ignore_empty_value: true
-  - set:
-      field: process.parent.hash.sha256
-      copy_from: sentinel_one_cloud_funnel.event.src.process.image.sha256
-      ignore_empty_value: true
-  - set:
-      field: process.parent.name
-      copy_from: sentinel_one_cloud_funnel.event.src.process.name
-      ignore_empty_value: true
-  - set:
-      field: process.parent.pid
-      copy_from: sentinel_one_cloud_funnel.event.src.process.pid
-      ignore_empty_value: true
-  - set:
-      field: process.parent.real_user.id
-      copy_from: sentinel_one_cloud_funnel.event.src.process.r_user.uid
-      ignore_empty_value: true
-  - set:
-      field: process.parent.real_user.name
-      copy_from: sentinel_one_cloud_funnel.event.src.process.r_user.name
-      ignore_empty_value: true
-  - set:
-      field: process.parent.start
-      copy_from: sentinel_one_cloud_funnel.event.src.process.start_time
-      ignore_empty_value: true
-  - set:
-      field: process.parent.title
-      copy_from: sentinel_one_cloud_funnel.event.src.process.display_name
-      ignore_empty_value: true
-  - set:
-      field: process.parent.user.id
-      copy_from: sentinel_one_cloud_funnel.event.src.process.e_user.uid
-      ignore_empty_value: true
-  - set:
-      field: process.parent.user.name
-      copy_from: sentinel_one_cloud_funnel.event.src.process.e_user.name
-      ignore_empty_value: true
-  - set:
-      field: process.parent.user.name
-      copy_from: sentinel_one_cloud_funnel.event.src.process.user.name
-      ignore_empty_value: true
-  - set:
-      field: process.pid
-      copy_from: sentinel_one_cloud_funnel.event.tgt.process.pid
-      ignore_empty_value: true
+#  - set:
+#      field: process.pid
+#      copy_from: sentinel_one_cloud_funnel.event.tgt.process.pid
+#      ignore_empty_value: true
   - set:
       field: process.real_user.id
       copy_from: sentinel_one_cloud_funnel.event.tgt.process.r_user.uid
