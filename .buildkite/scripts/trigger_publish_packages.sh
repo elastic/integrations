@@ -10,6 +10,7 @@ with_jq
 
 ARTIFACTS_FOLDER="${ARTIFACTS_FOLDER:-"packageArtifacts"}"
 SIGNING_PIPELINE_SLUG="unified-release-gpg-signing"
+DRY_RUN=${DRY_RUN-"true"}
 
 echo "--- Downloading artifacts"
 ## Support main pipeline and downstream pipelines

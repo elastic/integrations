@@ -143,6 +143,7 @@ steps:
         command: ".buildkite/scripts/trigger_publish_packages.sh"
         env:
           ARTIFACTS_FOLDER: "packageArtifacts"
+          DRY_RUN: "${DRY_RUN}"
         agents:
           image: "${LINUX_AGENT_IMAGE}"
           cpu: "8"
