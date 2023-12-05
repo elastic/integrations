@@ -13,7 +13,7 @@ done
 
 echo '</coverage>' >> "${mergedCoverageFileName}"
 
-file_to_copy=$(find ${sourceFolder} -maxdepth 1 -type f -name "coverage-.xml" | head -n 1 | xargs basename)
+file_to_copy=$(find ${sourceFolder}/ -maxdepth 1 -type f -name "coverage-.xml" | head -n 1 | xargs basename)
 echo "Copy file ${file_to_copy} to the 'coverage-reports' folder"
 cp ${file_to_copy} coverage-reports/
 
