@@ -1,0 +1,38 @@
+{
+    "id": "4a130791-cdb3-5524-b45d-1f3df79e2452",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/azure/app-service/web-sites-configure#general-settings\n2. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-posture-vulnerability-management#pv-7-rapidly-and-automatically-remediate-software-vulnerabilities\n3. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-posture-vulnerability-management#pv-3-establish-secure-configurations-for-compute-resources",
+            "id": "4a130791-cdb3-5524-b45d-1f3df79e2452",
+            "name": "Ensure that 'HTTP Version' is the Latest, if Used to Run the Web App",
+            "profile_applicability": "* Level 1",
+            "description": "Periodically, newer versions are released for HTTP either due to security flaws or to include additional functionality.\nUsing the latest HTTP version for web apps to take advantage of security fixes, if any, and/or new functionalities of the newer version.",
+            "rationale": "Newer versions may contain security enhancements and additional functionality.\nUsing the latest version is recommended in order to take advantage of enhancements and new capabilities.\nWith each software installation, organizations need to determine if a given update meets their requirements.\nThey must also verify the compatibility and support provided for any additional software against the update revision that is selected.\n\nHTTP 2.0 has additional performance improvements on the head-of-line blocking problem of old HTTP version, header compression, and prioritization of requests.\nHTTP 2.0 no longer supports HTTP 1.1's chunked transfer encoding mechanism, as it provides its own, more efficient, mechanisms for data streaming.",
+            "audit": "**From Azure Portal**\n\n1. Login to Azure Portal using https://portal.azure.com \n2. Go to `App Services`\n3. Click on each App\n4. Under `Setting` section, Click on `Configuration`\n5. Ensure that `HTTP Version` set to `2.0` version under `General settings`\n\nNOTE: Most modern browsers support HTTP 2.0 protocol over TLS only, while non-encrypted traffic continues to use HTTP 1.1.\nTo ensure that client browsers connect to your app with HTTP/2, either buy an App Service Certificate for your app's custom domain or bind a third party certificate.\n\n**From Azure CLI**\n\nTo check HTTP 2.0 version status for an existing app, run the following command,\n```\naz webapp config show --resource-group <RESOURCE_GROUP_NAME> --name <APP_NAME> --query http20Enabled\n```\n\nThe output should return `true` if HTTPS 2.0 traffic value is set to `On`.\n\n**From PowerShell**\n\nFor each application, run the following command:\n```\nGet-AzWebApp -ResourceGroupName <app resource group> -Name <app name> |Select-Object -ExpandProperty SiteConfig\n```\n\nIf the value of the **Http20Enabled** setting is **true**, the application is compliant.\nOtherwise if the value of the **Http20Enabled** setting is **false**, the application is non-compliant.",
+            "remediation": "**From Azure Portal**\n\n1. Login to Azure Portal using https://portal.azure.com \n2. Go to `App Services`\n3. Click on each App\n4. Under `Setting` section, Click on `Configuration`\n5. Set `HTTP version` to `2.0` under `General settings`\n\nNOTE: Most modern browsers support HTTP 2.0 protocol over TLS only, while non-encrypted traffic continues to use HTTP 1.1.\nTo ensure that client browsers connect to your app with HTTP/2, either buy an App Service Certificate for your app's custom domain or bind a third party certificate.\n\n**From Azure CLI**\n\nTo set HTTP 2.0 version for an existing app, run the following command:\n```\naz webapp config set --resource-group <RESOURCE_GROUP_NAME> --name <APP_NAME> --http20-enabled true\n```\n\n**From PowerShell**\n\nTo enable HTTP 2.0 version support, run the following command:\n```\nSet-AzWebApp -ResourceGroupName <app resource group> -Name <app name> -Http20Enabled $true\n```",
+            "section": "AppService",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 9.9",
+                "AppService"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "9.9",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_9_9"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

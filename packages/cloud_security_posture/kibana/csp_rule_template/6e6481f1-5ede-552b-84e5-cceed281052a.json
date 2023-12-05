@@ -1,0 +1,38 @@
+{
+    "id": "6e6481f1-5ede-552b-84e5-cceed281052a",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/azure/app-service/app-service-web-tutorial-custom-ssl#enforce-tls-versions\n2. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-data-protection#dp-3-encrypt-sensitive-data-in-transit\n3. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-network-security#ns-8-detect-and-disable-insecure-services-and--protocols\n4. https://docs.microsoft.com/en-us/powershell/module/az.websites/set-azwebapp?view=azps-8.1.0",
+            "id": "6e6481f1-5ede-552b-84e5-cceed281052a",
+            "name": "Ensure Web App is using the latest version of TLS encryption",
+            "profile_applicability": "* Level 1",
+            "description": "The TLS (Transport Layer Security) protocol secures transmission of data over the internet using standard encryption technology.\nEncryption should be set with the latest version of TLS.\nApp service allows TLS 1.2 by default, which is the recommended TLS level by industry standards such as PCI DSS.",
+            "rationale": "App service currently allows the web app to set TLS versions 1.0, 1.1 and 1.2.\nIt is highly recommended to use the latest TLS 1.2 version for web app secure connections.",
+            "audit": "**From Azure Portal**\n\n1. Login to Azure Portal using https://portal.azure.com \n2. Go to `App Services`\n3. Click on each App\n4. Under `Setting` section, Click on `TLS/SSL settings`\n5. Under the `Bindings` pane, ensure that `Minimum TLS Version` set to `1.2` under `Protocol Settings`\n\n**From Azure CLI**\n\nTo check TLS Version for an existing app, run the following command,\n```\naz webapp config show --resource-group <RESOURCE_GROUP_NAME> --name <APP_NAME> --query minTlsVersion\n```\n\nThe output should return `1.2` if TLS Version is set to `1.2` (Which is currently the latest version).\n\n**From PowerShell**\n\nList all web apps.\n\n```\nGet-AzWebApp\n```\n\nFor each web app run the following command.\n\n```\nGet-AzWebApp -ResourceGroupName <RESOURCE_GROUP_NAME> -Name <APP_NAME> |Select-Object -ExpandProperty SiteConfig\n```\n\nMake sure the `minTlsVersion` is set to at least `1.2`.",
+            "remediation": "**From Azure Portal**\n\n1. Login to Azure Portal using https://portal.azure.com \n2. Go to `App Services`\n3. Click on each App\n4. Under `Setting` section, Click on `SSL settings`\n5. Under the `Bindings` pane, set `Minimum TLS Version` to `1.2` under `Protocol Settings` section\n\n**From Azure CLI**\n\nTo set TLS Version for an existing app, run the following command:\n```\naz webapp config set --resource-group <RESOURCE_GROUP_NAME> --name <APP_NAME> --min-tls-version 1.2\n```\n\n**From PowerShell**\n\n```\nSet-AzWebApp -ResourceGroupName <RESOURCE_GROUP_NAME> -Name <APP_NAME> -MinTlsVersion 1.2\n```",
+            "section": "AppService",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 9.3",
+                "AppService"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "9.3",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_9_3"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

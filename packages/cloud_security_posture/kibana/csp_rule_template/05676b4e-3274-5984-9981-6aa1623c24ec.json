@@ -1,0 +1,38 @@
+{
+    "id": "05676b4e-3274-5984-9981-6aa1623c24ec",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Subscriptions will need to be handled by Administrators with permissions.",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/azure/billing/billing-add-change-azure-subscription-administrator\n2. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-governance-strategy#gs-2-define-enterprise-segmentation-strategy\n3. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-governance-strategy#gs-6-define-identity-and-privileged-access-strategy\n4. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-privileged-access#pa-1-protect-and-limit-highly-privileged-users\n5. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-privileged-access#pa-5-automate-entitlement-management\n6. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-privileged-access#pa-2-restrict-administrative-access-to-business-critical-systems\n7. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-governance-strategy#gs-2-define-enterprise-segmentation-strategy\n8. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-governance-strategy#gs-6-define-identity-and-privileged-access-strategy\n9. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-privileged-access#pa-7-follow-just-enough-administration-least-privilege-principle",
+            "id": "05676b4e-3274-5984-9981-6aa1623c24ec",
+            "name": "Ensure That No Custom Subscription Administrator Roles Exist",
+            "profile_applicability": "* Level 1",
+            "description": "The principle of least privilege should be followed and only necessary privileges should be assigned instead of allowing full administrative access.",
+            "rationale": "Classic subscription admin roles offer basic access management and include Account Administrator, Service Administrator, and Co-Administrators.\nIt is recommended the least necessary permissions be given initially.\nPermissions can be added as needed by the account holder.\nThis ensures the account holder cannot perform actions which were not intended.",
+            "audit": "**From Azure Portal**\n\n1. From Azure Home select the Portal Menu.\n2. Select `Subscriptions`.\n3. Select `Access control (IAM)`.\n4. Select `Roles`.\n5. Click `Type` and select `CustomRole` from the drop down menu.\n6. Select `View` next to a role.\n7. Select `JSON`.\n8. Check for `assignableScopes` set to `/` or the subscription, and `actions` set to `*`.\n9. Repeat steps 6-8 for each custom role.\n\n**From Azure CLI**\n\nList custom roles:\n\n```\naz role definition list --custom-role-only True\n```\n\nCheck for entries with `assignableScope` of `/` or the `subscription`, and an action of `*`\n\n**From PowerShell**\n\n```\nConnect-AzAccount\nGet-AzRoleDefinition |Where-Object {($_.IsCustom -eq $true) -and ($_.Actions.contains('*'))}\n```\n\nCheck the output for `AssignableScopes` value set to '/' or the subscription.",
+            "remediation": "**From Azure Portal**\n\n1. From Azure Home select the Portal Menu.\n2. Select `Subscriptions`.\n3. Select `Access control (IAM)`.\n4. Select `Roles`.\n5. Click `Type` and select `CustomRole` from the drop down menu.\n6. Check the box next to each role which grants subscription administrator privileges.\n7. Select `Remove`.\n8. Select `Yes`.\n\n**From Azure CLI**\n\nList custom roles:\n\n```\naz role definition list --custom-role-only True\n```\n\nCheck for entries with `assignableScope` of `/` or the `subscription`, and an action of `*`.\n\nTo remove a violating role:\n\n```\naz role definition delete --name <role name>\n```\n\nNote that any role assignments must be removed before a custom role can be deleted.\nEnsure impact is assessed before deleting a custom role granting subscription administrator privileges.",
+            "section": "Identity and Access Management",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 1.23",
+                "Identity and Access Management"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "1.23",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_1_23"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

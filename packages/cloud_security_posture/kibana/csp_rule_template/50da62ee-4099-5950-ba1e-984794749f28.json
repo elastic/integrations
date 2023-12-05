@@ -1,0 +1,38 @@
+{
+    "id": "50da62ee-4099-5950-ba1e-984794749f28",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-gb/azure/app-service/app-service-web-tutorial-connect-msi\n2. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-identity-management#im-1-use-centralized-identity-and-authentication-system",
+            "id": "50da62ee-4099-5950-ba1e-984794749f28",
+            "name": "Ensure that Register with Azure Active Directory is enabled on App Service",
+            "profile_applicability": "* Level 1",
+            "description": "Managed service identity in App Service provides more security by eliminating secrets from the app, such as credentials in the connection strings.\nWhen registering with Azure Active Directory in App Service, the app will connect to other Azure services securely without the need for usernames and passwords.",
+            "rationale": "App Service provides a highly scalable, self-patching web hosting service in Azure.\nIt also provides a managed identity for apps, which is a turn-key solution for securing access to Azure SQL Database and other Azure services.",
+            "audit": "**From Azure Portal**\n\n1. From Azure Portal open the Portal Menu in the top left\n2. Go to `App Services`\n3. Click on each App\n4. Under the `Setting` section, Click on `Identity`\n5. Under the `System assigned` pane, ensure that `Status` set to `On`\n\n**From Azure CLI**\n\nTo check Register with Azure Active Directory feature status for an existing app, run the following command,\n```\naz webapp identity show --resource-group <RESOURCE_GROUP_NAME> --name <APP_NAME> --query principalId\n```\n\nThe output should return unique Principal ID.\n\nIf no output for the above command then Register with Azure Active Directory is not set.\n\n**From PowerShell**\n\nList the web apps.\n\n```\nGet-AzWebApp\n```\n\nFor each web app run the following command.\n\n```\nGet-AzWebapp -ResourceGroupName <app resource group> -Name <app name>\n```\n\nMake sure the `Identity` setting contains a unique Principal ID",
+            "remediation": "**From Azure Portal**\n\n1. Login to Azure Portal using https://portal.azure.com \n2. Go to `App Services`\n3. Click on each App\n4. Under `Setting` section, Click on `Identity`\n5. Under the `System assigned` pane, set `Status` to `On`\n\n**From Azure CLI**\n\nTo set Register with Azure Active Directory feature for an existing app, run the following command:\n\n```\naz webapp identity assign --resource-group <RESOURCE_GROUP_NAME> --name <APP_NAME>\n```\n\n**From PowerShell**\n\nTo register with Azure Active Directory feature for an existing app, run the following command:\n\n```\nSet-AzWebApp -AssignIdentity $True -ResourceGroupName <resource_Group_Name> -Name <App_Name>\n```",
+            "section": "AppService",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 9.5",
+                "AppService"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "9.5",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_9_5"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
