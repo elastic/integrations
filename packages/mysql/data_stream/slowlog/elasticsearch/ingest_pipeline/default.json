@@ -57,6 +57,15 @@
       }
     },
     {
+      "rename": {
+        "field": "message",
+        "taget_field": "event.original",
+        "ignore_missing": true,
+        "if": "ctx.event?.original == null",
+        "description": "Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document."
+      }
+    },
+    {
       "remove": {
         "field": "message"
       }
@@ -128,6 +137,14 @@
       "append": {
         "field": "event.type",
         "value": "info"
+      }
+    },
+    {
+      "remove": {
+        "field": "event.original",
+        "if": "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))",
+        "ignore_failure": true,
+        "ignore_missing": true
       }
     }
   ],
