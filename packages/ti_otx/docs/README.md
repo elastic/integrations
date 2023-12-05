@@ -72,6 +72,7 @@ Retrieves all the related indicators over time, related to your pulse subscripti
 | otx.title | Title describing the indicator. | keyword |
 | otx.type | The indicator type, can for example be "domain, email, FileHash-SHA256". | keyword |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
 | tags | List of keywords used to tag each event. | keyword |
 | threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
 | threat.feed.name | Display friendly feed name | constant_keyword |
