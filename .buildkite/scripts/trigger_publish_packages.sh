@@ -9,15 +9,17 @@ add_bin_path
 with_jq
 
 ARTIFACTS_FOLDER="${ARTIFACTS_FOLDER:-"packageArtifacts"}"
-SIGNING_PIPELINE_SLUG="unified-release-gpg-signing"
+SIGNING_STEP_KEY="${SIGNING_STEP_KEY:-"sign-service"}"
 DRY_RUN=${DRY_RUN-"true"}
 
 echo "--- Downloading artifacts"
 ## Support main pipeline and downstream pipelines
-build_id="${BUILDKITE_BUILD_ID}"
+pipeline_slug="${BUILDKITE_PIPELINE_SLUG}"
+pipeline_build_number="${BUILDKITE_BUILD_NUMBER}"
 
 if [ -n "$BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG" ] ; then
-  build_id="${BUILDKITE_TRIGGERED_FROM_BUILD_ID}"
+  pipeline_slug="$BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG"
+  pipeline_build_number="$BUILDKITE_TRIGGERED_FROM_BUILD_NUMBER"
 fi
 
 ## Fail if no token
@@ -27,17 +29,11 @@ if [ -z "$BUILDKITE_API_TOKEN" ] ; then
 fi
 
 pipeline_api_url="https://api.buildkite.com/v2/organizations/elastic/pipelines"
-query_url="${pipeline_api_url}/$SIGNING_PIPELINE_SLUG/builds?triggered_from_build=${build_id}"
+query_url="${pipeline_api_url}/$pipeline_slug/builds/$pipeline_build_number"
 echo "Query URL: ${query_url}"
 build_json=$(curl -sH "Authorization: Bearer $BUILDKITE_API_TOKEN" "${query_url}")
 
-number_signing_builds=$(echo "$build_json" | jq -r '.[] | length')
-if [[ "${number_signing_builds}" != "1" ]]; then
-  echo "Just one signing pipeline should be triggered from Build ID: ${build_id}"
-  exit 1
-fi
-
-GPG_SIGN_BUILD_ID=$(echo "$build_json" | jq -r '.[0].id')
+GPG_SIGN_BUILD_ID=$(jq -r ".jobs[] | select(.step_key == \"${SIGNING_STEP_KEY}\").triggered_build.id" <<< "$build_json")
 
 echo "Download signed artifacts"
 mkdir -p "${ARTIFACTS_FOLDER}"

@@ -128,6 +128,7 @@ steps:
   - group: ":outbox_tray: Publish packages"
     key: "publish-packages-buildkite"
     steps:
+      # If you change 'key: sign-service' then change SIGNING_STEP_KEY value from trigger-publish step pipeline
       - label: ":key: Sign artifacts"
         trigger: unified-release-gpg-signing
         key: sign-service
@@ -142,6 +143,7 @@ steps:
         key: "trigger-publish"
         command: ".buildkite/scripts/trigger_publish_packages.sh"
         env:
+          SIGNING_STEP_KEY: "sign-service"
           ARTIFACTS_FOLDER: "packageArtifacts"
           DRY_RUN: "${DRY_RUN}"
         agents:
