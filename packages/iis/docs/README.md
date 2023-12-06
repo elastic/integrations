@@ -48,7 +48,7 @@ This data stream will collect and parse access IIS logs. The supported log forma
 The IIS ships logs with few fields by default and if the user is interested in customizing the selection, the IIS Manager provides ability to add new fields for logging.
 
 IIS integration offers certain field combinations shipped automatically into Elasticsearch using ingest pipelines. 
-Please check the IIS log format configuration as it must match with any one of the formats below,
+Please check the IIS log format configuration as it must match any one of the formats below
 
 #### Default Logging:
 
