@@ -1,6 +1,11 @@
 ---
 description: Pipeline for parsing GCP CloudSQL PostgreSQL metrics.
 processors:
+  - fingerprint:
+      fields:
+        - gcp.labels
+      target_field: gcp.labels_fingerprint
+      ignore_missing: true
   - drop:
       description: Drop if database is not PostgreSQL.
       if: "ctx?.gcp?.labels?.cloudsql?.name != 'postgres'"
