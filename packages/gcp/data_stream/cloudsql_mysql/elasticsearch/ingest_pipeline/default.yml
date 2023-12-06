@@ -1,6 +1,11 @@
 ---
 description: Pipeline for parsing GCP CloudSQL MySQL metrics.
 processors:
+  - fingerprint:
+      fields:
+        - gcp.labels
+      target_field: gcp.labels_fingerprint
+      ignore_missing: true
   - drop:
       description: Drop if database is not MySQL.
       if: "ctx?.gcp?.labels?.cloudsql?.name != 'mysql'"

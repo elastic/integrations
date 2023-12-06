@@ -1588,6 +1588,7 @@ The `compute` dataset is designed to fetch metrics for [Compute Engine](https://
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |
@@ -1635,6 +1636,7 @@ The `compute` dataset is designed to fetch metrics for [Compute Engine](https://
 | gcp.labels.resource.\* |  | object |  |
 | gcp.labels.system.\* |  | object |  |
 | gcp.labels.user.\* |  | object |  |
+| gcp.labels_fingerprint | Hashed value of the labels field. | keyword |  |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
@@ -1754,6 +1756,7 @@ The `dataproc` dataset is designed to fetch metrics from [Dataproc](https://clou
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |
@@ -1804,6 +1807,7 @@ The `dataproc` dataset is designed to fetch metrics from [Dataproc](https://clou
 | gcp.labels.resource.\* |  | object |  |
 | gcp.labels.system.\* |  | object |  |
 | gcp.labels.user.\* |  | object |  |
+| gcp.labels_fingerprint | Hashed value of the labels field. | keyword |  |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
@@ -2011,6 +2015,7 @@ The `gke` dataset is designed to fetch metrics from [GKE](https://cloud.google.c
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |
@@ -2079,6 +2084,7 @@ The `gke` dataset is designed to fetch metrics from [GKE](https://cloud.google.c
 | gcp.labels.resource.\* |  | object |  |
 | gcp.labels.system.\* |  | object |  |
 | gcp.labels.user.\* |  | object |  |
+| gcp.labels_fingerprint | Hashed value of the labels field. | keyword |  |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
@@ -2165,6 +2171,7 @@ The `loadbalancing_metrics` dataset is designed to fetch HTTPS, HTTP, and Layer 
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |
@@ -2193,6 +2200,7 @@ The `loadbalancing_metrics` dataset is designed to fetch HTTPS, HTTP, and Layer 
 | gcp.labels.resource.\* |  | object |  |
 | gcp.labels.system.\* |  | object |  |
 | gcp.labels.user.\* |  | object |  |
+| gcp.labels_fingerprint | Hashed value of the labels field. | keyword |  |
 | gcp.loadbalancing_metrics.https.backend_latencies.value | A distribution of the latency calculated from when the request was sent by the proxy to the backend until the proxy received from the backend the last byte of response. | object |  |
 | gcp.loadbalancing_metrics.https.backend_request.bytes | Delta of the number of bytes sent as requests from HTTP/S load balancer to backends. | long | gauge |
 | gcp.loadbalancing_metrics.https.backend_request.count | Delta of the number of requests served by backends of HTTP/S load balancer. | long | gauge |
@@ -2314,6 +2322,7 @@ The `redis` dataset is designed to fetch metrics from [GCP Memorystore](https://
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |  |
@@ -2342,6 +2351,7 @@ The `redis` dataset is designed to fetch metrics from [GCP Memorystore](https://
 | gcp.labels.resource.\* |  | object |  |  |
 | gcp.labels.system.\* |  | object |  |  |
 | gcp.labels.user.\* |  | object |  |  |
+| gcp.labels_fingerprint | Hashed value of the labels field. | keyword |  |  |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |  |
 | gcp.redis.clients.blocked.count | Number of blocked clients. | long |  | gauge |
 | gcp.redis.clients.connected.count | Number of client connections. | long |  | gauge |
@@ -2457,6 +2467,7 @@ The `storage` dataset fetches metrics from [Storage](https://cloud.google.com/st
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |
@@ -2485,6 +2496,7 @@ The `storage` dataset fetches metrics from [Storage](https://cloud.google.com/st
 | gcp.labels.resource.\* |  | object |  |
 | gcp.labels.system.\* |  | object |  |
 | gcp.labels.user.\* |  | object |  |
+| gcp.labels_fingerprint | Hashed value of the labels field. | keyword |  |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |
 | gcp.storage.api.request.count | Delta count of API calls, grouped by the API method name and response code. | long | gauge |
 | gcp.storage.authz.acl_based_object_access.count | Delta count of requests that result in an object being granted access solely due to object ACLs. | long | gauge |
