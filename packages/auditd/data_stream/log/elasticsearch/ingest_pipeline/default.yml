@@ -106,10 +106,7 @@ processors:
 
         // processFieldValue processes the value for the field, and returns
         // the processed value if it is valid, otherwise null.
-        def processFieldValue(String k, def v) {
-            def possibleHexKeys = ["exe", "cmd", "data", "path", "comm", "file", "name", "watch", "cwd", "acct", "dir", "vm", "old-chardev", "new-chardev", "old-disk", "new-disk", "old-fs", "new-fs", "old-net", "new-net", "device", "cgroup", "apparmor", "operation", "denied_mask", "info", "profile", "requested_mask", "old-rng", "new-rng", "ocomm", "grp", "new_group", "invalid_context", "sw", "root_dir", "proctitle"];
-            def possibleBooleanKeys = ["success", "key_enforce"];
-
+        def processFieldValue(String k, def v, def possibleHexKeys, def possibleBooleanKeys) {
             // Remove entries whose value is ?
             if (v == "?" || v == "(null)" || v == "") {
                 return null;
@@ -149,7 +146,7 @@ processors:
             if (v instanceof List) {
                 int j = 0;
                 for (int i = 0; i < v.length; i++) {
-                    v[j] = processFieldValue(k, v[i]);
+                    v[j] = processFieldValue(k, v[i], params.possibleHexKeys, params.possibleBooleanKeys);
                     if (v[j] != null) {
                         j++;
                     }
@@ -164,13 +161,55 @@ processors:
                 continue;
             }
 
-            v = processFieldValue(k, v);
+            v = processFieldValue(k, v, params.possibleHexKeys, params.possibleBooleanKeys);
             if (v == null) {
                 entries.remove();
             } else {
                 audit.put(k, v)
             }
         }
+      params:
+        possibleHexKeys:
+          - exe
+          - cmd
+          - data
+          - path
+          - comm
+          - file
+          - name
+          - watch
+          - cwd
+          - acct
+          - dir
+          - vm
+          - old-chardev
+          - new-chardev
+          - old-disk
+          - new-disk
+          - old-fs
+          - new-fs
+          - old-net
+          - new-net
+          - device
+          - cgroup
+          - apparmor
+          - operation
+          - denied_mask
+          - info
+          - profile
+          - requested_mask
+          - old-rng
+          - new-rng
+          - ocomm
+          - grp
+          - new_group
+          - invalid_context
+          - sw
+          - root_dir
+          - proctitle
+        possibleBooleanKeys:
+          - success
+          - key_enforce
   - convert:
       field: auditd.log.sequence
       type: long
