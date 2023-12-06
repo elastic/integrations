@@ -1,0 +1,56 @@
+title: Benchmark output
+type: logs
+streams:
+  - input: benchmark
+    description: Generate sample events and benchmark output
+    title: Generate sample events and benchmark output
+    template_path: benchmark.yml.hbs
+    vars:
+      - name: message
+        type: text
+        title: Message text
+        description: contents of the "message" field
+        show_user: true
+        required: true
+        default: sample text
+      - name: threads
+        type: integer
+        title: Threads
+        description: Number of threads to generate events. Range 1 to 255.
+        show_user: true
+        required: true
+        default: 1
+      - name: count
+        type: integer
+        title: Number of events
+        description: Number of events to send, 0 means infinite. Range 0 to 18446744073709551615. Incompatible with "Events per second".
+        show_user: true
+        required: false
+      - name: eps
+        type: integer
+        title: Events per second
+        description: Number of events to send per second, 0 is as fast as possible.  Range 0 to 18446744073709551615.  Incompatible with "Number of events".
+        show_user: true
+        required: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event
+        required: false
+        multi: true
+        show_user: false
+      - name: pipeline
+        type: text
+        title: Ingest Pipeline
+        description: |
+          The Ingest Node pipeline ID to be used by the integration.
+        required: false
+        show_user: false
