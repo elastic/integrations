@@ -47,14 +47,14 @@ This data stream will collect and parse access IIS logs. The supported log forma
 
 The IIS ships logs with few fields by default and if the user is interested in customizing the selection, the IIS Manager provides ability to add new fields for logging.
 
-IIS integration offers certain field combinations shipped automatically into Elasticsearch using ingest pipelines. 
-Please check the IIS log format configuration as it must match any one of the formats below
+IIS integration automatically ships certain field combinations into Elasticsearch using ingest pipelines.
+Please ensure that the IIS log format configuration matches one of the formats below:
 
-#### Default Logging:
+#### Default Logging
 
     - Fields: date time s-ip cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs(User-Agent) cs(Referer) sc-status sc-substatus sc-win32-status time-taken
 
-#### Custom Logging:
+#### Custom Logging
 
     - Fields: date time s-sitename cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs(User-Agent) cs(cookie) cs(Referer) cs-host sc-status sc-substatus sc-win32-status time-taken
 
@@ -72,8 +72,7 @@ Please check the IIS log format configuration as it must match any one of the fo
 
 `X-Forwarded-For` is an optional field which can be added with the above log formats.
 
-#### Note
-    If the provided log format doesn't match with any of the above formats, then create a custom ingest pipeline processor in Kibana to process the logs.
+>Note: If the provided log format doesn't match with any of the above formats, then create a custom ingest pipeline processor in Kibana to process the logs.
 
 {{event "access"}}
 
