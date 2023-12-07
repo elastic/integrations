@@ -16,7 +16,7 @@ done
 echo '</coverage>' >> "${mergedCoverageFileName}"
 
 mkdir -p coverage-report
-cp "$(find . -name 'coverage-*.xml' | head -n 1)" coverage-report/
+cp "$(find . -name 'coverage-*.xml' | head -n 1)" coverage-report/coverage.xml
 
 popd > /dev/null
 
