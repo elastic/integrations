@@ -1,0 +1,32 @@
+---
+description: ECS compatibility layer pipeline.
+processors:
+  - rename:
+      field: icmp
+      target_field: network_traffic.icmp
+      ignore_missing: true
+  - rename:
+      field: path
+      target_field: network_traffic.icmp.path
+      ignore_missing: true
+  - rename:
+      # Retained for legacy dashboard behaviour.
+      field: status
+      target_field: network_traffic.status
+      ignore_missing: true
+  # Remove packetbeat fields that are handled by agent or fleet.
+  - remove:
+      field: type
+      ignore_missing: true
+  - remove:
+      field: event.dataset
+      ignore_missing: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+          Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error
