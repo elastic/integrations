@@ -1385,7 +1385,7 @@ This is the `Event` dataset.
 | ocsf.lease_dur | This represents the length of the DHCP lease in seconds. This is present in DHCP Ack events. (activity_id = 1) | long |
 | ocsf.logon_type | The logon type, normalized to the caption of the logon_type_id value. In the case of 'Other', it is defined by the event source. | keyword |
 | ocsf.logon_type_id | The normalized logon type identifier | keyword |
-| ocsf.malware.classification_ids | The list of normalized identifiers of the malware classifications. | keyword |
+| ocsf.malware.classification_ids | The list of normalized identifiers of the malware classifications. | integer |
 | ocsf.malware.classifications | The list of malware classifications, normalized to the captions of the classification_id values. In the case of 'Other', they are defined by the event source. | keyword |
 | ocsf.malware.cves.created_time | The Record Creation Date identifies when the CVE ID was issued to a CVE Numbering Authority (CNA) or the CVE Record was published on the CVE List. Note that the Record Creation Date does not necessarily indicate when this vulnerability was discovered, shared with the affected vendor, publicly disclosed, or updated in CVE. | date |
 | ocsf.malware.cves.created_time_dt | The Record Creation Date identifies when the CVE ID was issued to a CVE Numbering Authority (CNA) or the CVE Record was published on the CVE List. Note that the Record Creation Date does not necessarily indicate when this vulnerability was discovered, shared with the affected vendor, publicly disclosed, or updated in CVE. | date |
