@@ -27,6 +27,9 @@ request.ssl: {{ssl}}
 {{/if}}
 request.transforms:
   - set:
+      target: url.params.$format
+      value: 'Json'
+  - set:
       target: url.params.$filter
       value: StartDate eq datetime'[[.cursor.last_execution_datetime]]' and EndDate eq datetime'[[(formatDate (now) "RFC3339")]]'
       default: StartDate eq datetime'[[(formatDate (now (parseDuration "-{{initial_interval}}")) "RFC3339")]]' and EndDate eq datetime'[[(formatDate (now) "RFC3339")]]'
@@ -56,6 +59,9 @@ publisher_pipeline.disable_host: true
 response.split:
   target: body.value
 response.pagination:
+  - set:
+      target: url.params.$format
+      value: 'Json'
   - set:
       target: url.params.$filter
       value: '[[.last_response.url.params.Get "$filter"]]'

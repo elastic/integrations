@@ -53,7 +53,7 @@ available in your organization. They are usually under the sections [Accepted Do
 - The default `Polling Interval` and `Initial Interval` values are configured to `1h`, you can however change these to your required values. The look-back 
   value of `Initial Interval` should not exceed `200 hours` as this might cause unexpected errors with the API.
 
-- The default value of `Batch Size` is set to 1000. This means for every request Httpjson will paginate with a value of 1000 results per page. The 
+- The default value of `Batch Size` is set to 1000. This means for every request Httpjson will paginate with a value of 100 results per page. The 
    maximum page size supported by the Message Trace API is `2000`. The API will return an empty `value` array when there are no more logs to pull and the
    pagination will terminate with an error that can be ignored.
 
