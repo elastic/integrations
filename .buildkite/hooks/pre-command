@@ -28,10 +28,7 @@ export TMP_FOLDER_TEMPLATE="${TMP_FOLDER_TEMPLATE_BASE}.XXXXXXXXX"
 REPO_BUILD_TAG="${REPO_NAME}/$(buildkite_pr_branch_build_id)"
 export REPO_BUILD_TAG
 
-JENKINS_API_TOKEN_PATH=kv/ci-shared/platform-ingest/jenkins_api_tokens
 AWS_SERVICE_ACCOUNT_SECRET_PATH=kv/ci-shared/platform-ingest/aws_account_auth
-SIGNING_PACKAGES_GCS_CREDENTIALS_PATH=kv/ci-shared/platform-ingest/signing_packages_gcs_artifacts_credentials
-PACKAGE_UPLOADER_GCS_CREDENTIALS_PATH=kv/ci-shared/platform-ingest/package_storage_uploader
 PRIVATE_CI_GCS_CREDENTIALS_PATH=kv/ci-shared/platform-ingest/private_ci_artifacts_gcs_credentials
 
 BUILDKITE_API_TOKEN_PATH=kv/ci-shared/platform-ingest/buildkite_token
@@ -46,25 +43,11 @@ if [ -n "${ELASTIC_PACKAGE_LINKS_FILE_PATH+x}" ]; then
 fi
 
 if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations" ]]; then
-    if [[ "${BUILDKITE_STEP_KEY}" == "publish-packages" ]]; then
-        JENKINS_USERNAME_SECRET=$(retry 5 vault kv get -field username "${JENKINS_API_TOKEN_PATH}")
-        export JENKINS_USERNAME_SECRET
-        JENKINS_HOST_SECRET=$(retry 5 vault kv get -field internal_ci_host "${JENKINS_API_TOKEN_PATH}")
-        export JENKINS_HOST_SECRET
-        JENKINS_TOKEN=$(retry 5 vault kv get -field internal_ci "${JENKINS_API_TOKEN_PATH}")
-        export JENKINS_TOKEN
-
-        # signing job
-        SIGNING_PACKAGES_GCS_CREDENTIALS_SECRET=$(retry 5 vault kv get -field value "${SIGNING_PACKAGES_GCS_CREDENTIALS_PATH}")
-        export SIGNING_PACKAGES_GCS_CREDENTIALS_SECRET
-
-        # publishing job
-        PACKAGE_UPLOADER_GCS_CREDENTIALS_SECRET=$(retry 5 vault kv get -field value "${PACKAGE_UPLOADER_GCS_CREDENTIALS_PATH}")
-        export PACKAGE_UPLOADER_GCS_CREDENTIALS_SECRET
+    if [[ "${BUILDKITE_STEP_KEY}" == "trigger-publish" ]]; then
+        BUILDKITE_API_TOKEN=$(retry 5 vault kv get -field buildkite_token ${BUILDKITE_API_TOKEN_PATH})
+        export BUILDKITE_API_TOKEN
     fi
-fi
 
-if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations" ]]; then
     if [[ "${BUILDKITE_STEP_KEY}" == "test-integrations" ]]; then
         BUILDKITE_API_TOKEN=$(retry 5 vault kv get -field buildkite_token "${BUILDKITE_API_TOKEN_PATH}")
         export BUILDKITE_API_TOKEN

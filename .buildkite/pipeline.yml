@@ -29,17 +29,21 @@ steps:
       cpu: "8"
       memory: "4G"
 
-  # TODO: Pending to migrate steps to Buildkite pipelines - still triggering Jenkins pipelines
-  - label: "Publish packages - (triggering Jenkins builds)"
-    key: "publish-packages"
-    command: ".buildkite/scripts/publish_packages.sh" # TODO: missing signature and publishing loops
-    env:
-      DRY_RUN: "true" # TODO: Avoid signing and publishing pending packages until Jenkins pipeline is replaced
+  - label: ":package: Build packages"
+    key: "build-packages"
+    command: ".buildkite/scripts/build_packages.sh"
     agents:
-      provider: "gcp"
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "8"
+      memory: "8G"
+    env:
+      ARTIFACTS_FOLDER: "artifacts-to-sign"
+      DRY_RUN: "true"  # TODO: to be set as false
     depends_on:
       - step: "check"
         allow_failure: false
+    artifact_paths:
+      - artifacts-to-sign/*.zip
 
   - label: "Trigger integrations"
     key: "test-integrations"
