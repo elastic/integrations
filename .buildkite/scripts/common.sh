@@ -212,22 +212,6 @@ with_github_cli() {
 }
 
 ## Logging and logout from Google Cloud
-google_cloud_upload_auth() {
-  local secretFileLocation
-  secretFileLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE_BASE}.XXXXXXXXX")/${GOOGLE_CREDENTIALS_FILENAME}
-  echo "${PACKAGE_UPLOADER_GCS_CREDENTIALS_SECRET}" > "${secretFileLocation}"
-  gcloud auth activate-service-account --key-file "${secretFileLocation}" 2> /dev/null
-  export GOOGLE_APPLICATION_CREDENTIALS=${secretFileLocation}
-}
-
-google_cloud_signing_auth() {
-  local secretFileLocation
-  secretFileLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE_BASE}.XXXXXXXXX")/${GOOGLE_CREDENTIALS_FILENAME}
-  echo "${SIGNING_PACKAGES_GCS_CREDENTIALS_SECRET}" > "${secretFileLocation}"
-  gcloud auth activate-service-account --key-file "${secretFileLocation}" 2> /dev/null
-  export GOOGLE_APPLICATION_CREDENTIALS=${secretFileLocation}
-}
-
 google_cloud_auth_safe_logs() {
     local gsUtilLocation
     gsUtilLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE}")
@@ -863,109 +847,6 @@ process_package() {
 
     popd > /dev/null
     return $exit_code
-}
-
-## TODO: Benchmark helpers
-add_github_comment_benchmark() {
-    if ! is_pr ; then
-        return
-    fi
-
-    local benchmark_github_file="report.md"
-    local benchmark_results="benchmark-results"
-    local current_benchmark_results="build/${benchmark_results}"
-    local baseline="build/${BUILDKITE_PULL_REQUEST_BASE_BRANCH}/${benchmark_results}"
-    local is_full_report="false"
-
-    if [[ "${GITHUB_PR_TRIGGER_COMMENT}" =~ benchmark\ fullreport ]]; then
-        is_full_report="true"
-    fi
-
-    pushd "${WORKSPACE}" > /dev/null
-
-    mkdir -p "${current_benchmark_results}"
-    mkdir -p "${baseline}"
-
-    # download PR benchmarks
-    download_benchmark_results \
-        "${JOB_GCS_BUCKET}" \
-        "$(get_benchmark_path_prefix)" \
-        "${current_benchmark_results}"
-
-    # download main benchmark if any
-    download_benchmark_results \
-        "${JOB_GCS_BUCKET}" \
-        "$(get_benchmark_path_prefix)" \
-        baseline
-
-    echo "Debug: current benchmark"
-    ls -l "${current_benchmark_results}"
-
-    echo "Debug: baseline benchmark"
-    ls -l "${baseline}"
-
-    echo "Run benchmark report"
-    ${ELASTIC_PACKAGE_BIN} report benchmark \
-        --fail-on-missing=false \
-        --new="${current_benchmark_results}" \
-        --old="${baseline}" \
-        --threshold="${BENCHMARK_THRESHOLD}" \
-        --report-output-path="${benchmark_github_file}" \
-        --full=${is_full_report}
-
-
-    if [ ! -f ${benchmark_github_file} ]; then
-        echo "add_github_comment_benchmark: it was not possible to send the message"
-        return
-    fi
-    # TODO: write github comment in PR
-    popd > /dev/null
-}
-
-stash_benchmark_results() {
-    local wildcard="build/benchmark-results/*.json"
-    if ! ls ${wildcard} ; then
-        echo "isBenchmarkResultsPresent: benchmark files not found, report won't be stashed"
-        return 0
-    fi
-
-    upload_benchmark_results \
-        "${JOB_GCS_BUCKET}" \
-        "${wildcard}" \
-        "$(get_benchmark_path_prefix)"
-}
-
-get_benchmark_path_prefix() {
-    echo "${BUILDKITE_PIPELINE_SLUG}/$(buildkite_pr_branch_build_id)/benchmark-results/"
-}
-
-upload_benchmark_results() {
-    local bucket="$1"
-    local source="$2"
-    local target="$3"
-
-    if ! ls ${source} 2>&1 > /dev/null ; then
-        echo "upload_benchmark_results: artifacts files not found, nothing will be archived"
-        return
-    fi
-
-    google_cloud_auth_safe_logs
-
-    gsutil cp ${source} "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${target}"
-
-    google_cloud_logout_active_account
-}
-
-download_benchmark_results() {
-    local bucket="$1"
-    local source="$2"
-    local target="$3"
-
-    google_cloud_auth_safe_logs
-
-    gsutil cp "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${source}" "${target}"
-
-    google_cloud_logout_active_account
 }
 
 add_or_edit_gh_pr_comment() {
