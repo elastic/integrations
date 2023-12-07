@@ -224,6 +224,10 @@ The default value is 10s.
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| network_traffic.flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
+| network_traffic.flow.id | Internal flow ID based on connection meta data and address. | keyword |
+| network_traffic.flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -528,6 +532,47 @@ Fields published for AMQP packets.
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| network_traffic.amqp.app-id | Creating application id. | keyword |
+| network_traffic.amqp.arguments | Optional additional arguments passed to some methods. Can be of various types. | flattened |
+| network_traffic.amqp.auto-delete | If set, auto-delete queue when unused. | boolean |
+| network_traffic.amqp.class-id | Failing method class. | long |
+| network_traffic.amqp.consumer-count | The number of consumers of a queue. | long |
+| network_traffic.amqp.consumer-tag | Identifier for the consumer, valid within the current channel. | keyword |
+| network_traffic.amqp.content-encoding | MIME content encoding. | keyword |
+| network_traffic.amqp.content-type | MIME content type. | keyword |
+| network_traffic.amqp.correlation-id | Application correlation identifier. | keyword |
+| network_traffic.amqp.delivery-mode | Non-persistent (1) or persistent (2). | keyword |
+| network_traffic.amqp.delivery-tag | The server-assigned and channel-specific delivery tag. | long |
+| network_traffic.amqp.durable | If set, request a durable exchange/queue. | boolean |
+| network_traffic.amqp.exchange | Name of the exchange. | keyword |
+| network_traffic.amqp.exchange-type | Exchange type. | keyword |
+| network_traffic.amqp.exclusive | If set, request an exclusive queue. | boolean |
+| network_traffic.amqp.expiration | Message expiration specification. | keyword |
+| network_traffic.amqp.headers | Message header field table. | object |
+| network_traffic.amqp.if-empty | Delete only if empty. | boolean |
+| network_traffic.amqp.if-unused | Delete only if unused. | boolean |
+| network_traffic.amqp.immediate | Request immediate delivery. | boolean |
+| network_traffic.amqp.mandatory | Indicates mandatory routing. | boolean |
+| network_traffic.amqp.message-count | The number of messages in the queue, which will be zero for newly-declared queues. | long |
+| network_traffic.amqp.message-id | Application message identifier. | keyword |
+| network_traffic.amqp.method | The command/verb/method of the transaction. For HTTP, this is the method name (GET, POST, PUT, and so on), for SQL this is the verb (SELECT, UPDATE, DELETE, and so on). | keyword |
+| network_traffic.amqp.method-id | Failing method ID. | long |
+| network_traffic.amqp.multiple | Acknowledge multiple messages. | boolean |
+| network_traffic.amqp.no-ack | If set, the server does not expect acknowledgements for messages. | boolean |
+| network_traffic.amqp.no-local | If set, the server will not send messages to the connection that published them. | boolean |
+| network_traffic.amqp.no-wait | If set, the server will not respond to the method. | boolean |
+| network_traffic.amqp.passive | If set, do not create exchange/queue. | boolean |
+| network_traffic.amqp.priority | Message priority, 0 to 9. | long |
+| network_traffic.amqp.queue | The queue name identifies the queue within the vhost. | keyword |
+| network_traffic.amqp.redelivered | Indicates that the message has been previously delivered to this or another client. | boolean |
+| network_traffic.amqp.reply-code | AMQP reply code to an error, similar to http reply-code | long |
+| network_traffic.amqp.reply-text | Text explaining the error. | keyword |
+| network_traffic.amqp.reply-to | Address to reply to. | keyword |
+| network_traffic.amqp.routing-key | Message routing key. | keyword |
+| network_traffic.amqp.timestamp | Message timestamp. | keyword |
+| network_traffic.amqp.type | Message type name. | keyword |
+| network_traffic.amqp.user-id | Creating user id. | keyword |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -881,6 +926,78 @@ Fields published for Apache Cassandra packets.
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| network_traffic.cassandra.no_request | Indicates that there is no request because this is a PUSH message. | boolean |
+| network_traffic.cassandra.request.headers.flags | Flags applying to this frame. | keyword |
+| network_traffic.cassandra.request.headers.length | A integer representing the length of the body of the frame (a frame is limited to 256MB in length). | long |
+| network_traffic.cassandra.request.headers.op | An operation type that distinguishes the actual message. | keyword |
+| network_traffic.cassandra.request.headers.stream | A frame has a stream id.  If a client sends a request message with the stream id X, it is guaranteed that the stream id of the response to that message will be X. | keyword |
+| network_traffic.cassandra.request.headers.version | The version of the protocol. | keyword |
+| network_traffic.cassandra.request.query | The CQL query which client send to cassandra. | keyword |
+| network_traffic.cassandra.response.authentication.class | Indicates the full class name of the IAuthenticator in use | keyword |
+| network_traffic.cassandra.response.error.code | The error code of the Cassandra response. | long |
+| network_traffic.cassandra.response.error.details.alive | Representing the number of replicas that were known to be alive when the request had been processed (since an unavailable exception has been triggered). | long |
+| network_traffic.cassandra.response.error.details.arg_types | One string for each argument type (as CQL type) of the failed function. | keyword |
+| network_traffic.cassandra.response.error.details.blockfor | Representing the number of replicas whose acknowledgement is required to achieve consistency level. | long |
+| network_traffic.cassandra.response.error.details.data_present | It means the replica that was asked for data had responded. | boolean |
+| network_traffic.cassandra.response.error.details.function | The name of the failed function. | keyword |
+| network_traffic.cassandra.response.error.details.keyspace | The keyspace of the failed function. | keyword |
+| network_traffic.cassandra.response.error.details.num_failures | Representing the number of nodes that experience a failure while executing the request. | keyword |
+| network_traffic.cassandra.response.error.details.read_consistency | Representing the consistency level of the query that triggered the exception. | keyword |
+| network_traffic.cassandra.response.error.details.received | Representing the number of nodes having acknowledged the request. | long |
+| network_traffic.cassandra.response.error.details.required | Representing the number of nodes that should be alive to respect consistency level. | long |
+| network_traffic.cassandra.response.error.details.stmt_id | Representing the unknown ID. | keyword |
+| network_traffic.cassandra.response.error.details.table | The keyspace of the failed function. | keyword |
+| network_traffic.cassandra.response.error.details.write_type | Describe the type of the write that timed out. | keyword |
+| network_traffic.cassandra.response.error.msg | The error message of the Cassandra response. | keyword |
+| network_traffic.cassandra.response.error.type | The error type of the Cassandra response. | keyword |
+| network_traffic.cassandra.response.event.change | The message corresponding respectively to the type of change followed by the address of the new/removed node. | keyword |
+| network_traffic.cassandra.response.event.host | Representing the node ip. | keyword |
+| network_traffic.cassandra.response.event.port | Representing the node port. | long |
+| network_traffic.cassandra.response.event.schema_change.args | One string for each argument type (as CQL type). | keyword |
+| network_traffic.cassandra.response.event.schema_change.change | Representing the type of changed involved. | keyword |
+| network_traffic.cassandra.response.event.schema_change.keyspace | This describes which keyspace has changed. | keyword |
+| network_traffic.cassandra.response.event.schema_change.name | The function/aggregate name. | keyword |
+| network_traffic.cassandra.response.event.schema_change.object | This describes the name of said affected object (either the table, user type, function, or aggregate name). | keyword |
+| network_traffic.cassandra.response.event.schema_change.table | This describes which table has changed. | keyword |
+| network_traffic.cassandra.response.event.schema_change.target | Target could be "FUNCTION" or "AGGREGATE", multiple arguments. | keyword |
+| network_traffic.cassandra.response.event.type | Representing the event type. | keyword |
+| network_traffic.cassandra.response.headers.flags | Flags applying to this frame. | keyword |
+| network_traffic.cassandra.response.headers.length | A integer representing the length of the body of the frame (a frame is limited to 256MB in length). | long |
+| network_traffic.cassandra.response.headers.op | An operation type that distinguishes the actual message. | keyword |
+| network_traffic.cassandra.response.headers.stream | A frame has a stream id.  If a client sends a request message with the stream id X, it is guaranteed that the stream id of the response to that message will be X. | keyword |
+| network_traffic.cassandra.response.headers.version | The version of the protocol. | keyword |
+| network_traffic.cassandra.response.result.keyspace | Indicating the name of the keyspace that has been set. | keyword |
+| network_traffic.cassandra.response.result.prepared.prepared_id | Representing the prepared query ID. | keyword |
+| network_traffic.cassandra.response.result.prepared.req_meta.col_count | Representing the number of columns selected by the query that produced this result. | long |
+| network_traffic.cassandra.response.result.prepared.req_meta.flags | Provides information on the formatting of the remaining information. | keyword |
+| network_traffic.cassandra.response.result.prepared.req_meta.keyspace | Only present after set Global_tables_spec, the keyspace name. | keyword |
+| network_traffic.cassandra.response.result.prepared.req_meta.paging_state | The paging_state is a bytes value that should be used in QUERY/EXECUTE to continue paging and retrieve the remainder of the result for this query. | keyword |
+| network_traffic.cassandra.response.result.prepared.req_meta.pkey_columns | Representing the PK columns index and counts. | long |
+| network_traffic.cassandra.response.result.prepared.req_meta.table | Only present after set Global_tables_spec, the table name. | keyword |
+| network_traffic.cassandra.response.result.prepared.resp_meta.col_count | Representing the number of columns selected by the query that produced this result. | long |
+| network_traffic.cassandra.response.result.prepared.resp_meta.flags | Provides information on the formatting of the remaining information. | keyword |
+| network_traffic.cassandra.response.result.prepared.resp_meta.keyspace | Only present after set Global_tables_spec, the keyspace name. | keyword |
+| network_traffic.cassandra.response.result.prepared.resp_meta.paging_state | The paging_state is a bytes value that should be used in QUERY/EXECUTE to continue paging and retrieve the remainder of the result for this query. | keyword |
+| network_traffic.cassandra.response.result.prepared.resp_meta.pkey_columns | Representing the PK columns index and counts. | long |
+| network_traffic.cassandra.response.result.prepared.resp_meta.table | Only present after set Global_tables_spec, the table name. | keyword |
+| network_traffic.cassandra.response.result.rows.meta.col_count | Representing the number of columns selected by the query that produced this result. | long |
+| network_traffic.cassandra.response.result.rows.meta.flags | Provides information on the formatting of the remaining information. | keyword |
+| network_traffic.cassandra.response.result.rows.meta.keyspace | Only present after set Global_tables_spec, the keyspace name. | keyword |
+| network_traffic.cassandra.response.result.rows.meta.paging_state | The paging_state is a bytes value that should be used in QUERY/EXECUTE to continue paging and retrieve the remainder of the result for this query. | keyword |
+| network_traffic.cassandra.response.result.rows.meta.pkey_columns | Representing the PK columns index and counts. | long |
+| network_traffic.cassandra.response.result.rows.meta.table | Only present after set Global_tables_spec, the table name. | keyword |
+| network_traffic.cassandra.response.result.rows.num_rows | Representing the number of rows present in this result. | long |
+| network_traffic.cassandra.response.result.schema_change.args | One string for each argument type (as CQL type). | keyword |
+| network_traffic.cassandra.response.result.schema_change.change | Representing the type of changed involved. | keyword |
+| network_traffic.cassandra.response.result.schema_change.keyspace | This describes which keyspace has changed. | keyword |
+| network_traffic.cassandra.response.result.schema_change.name | The function/aggregate name. | keyword |
+| network_traffic.cassandra.response.result.schema_change.object | This describes the name of said affected object (either the table, user type, function, or aggregate name). | keyword |
+| network_traffic.cassandra.response.result.schema_change.table | This describes which table has changed. | keyword |
+| network_traffic.cassandra.response.result.schema_change.target | Target could be "FUNCTION" or "AGGREGATE", multiple arguments. | keyword |
+| network_traffic.cassandra.response.result.type | Cassandra result type. | keyword |
+| network_traffic.cassandra.response.supported | Indicates which startup options are supported by the server. This message comes as a response to an OPTIONS message. | flattened |
+| network_traffic.cassandra.response.warnings | The text of the warnings, only occur when Warning flag was set. | keyword |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -1187,6 +1304,41 @@ Fields published for DHCPv4 packets.
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| network_traffic.dhcpv4.assigned_ip | The IP address that the DHCP server is assigning to the client. This field is also known as "your" IP address. | ip |
+| network_traffic.dhcpv4.client_ip | The current IP address of the client. | ip |
+| network_traffic.dhcpv4.client_mac | The client's MAC address (layer two). | keyword |
+| network_traffic.dhcpv4.flags | Flags are set by the client to indicate how the DHCP server should its reply -- either unicast or broadcast. | keyword |
+| network_traffic.dhcpv4.hardware_type | The type of hardware used for the local network (Ethernet, LocalTalk, etc). | keyword |
+| network_traffic.dhcpv4.hops | The number of hops the DHCP message went through. | long |
+| network_traffic.dhcpv4.op_code | The message op code (bootrequest or bootreply). | keyword |
+| network_traffic.dhcpv4.option.boot_file_name | This option is used to identify a bootfile when the 'file' field in the DHCP header has been used for DHCP options. | keyword |
+| network_traffic.dhcpv4.option.broadcast_address | This option specifies the broadcast address in use on the client's subnet. | ip |
+| network_traffic.dhcpv4.option.class_identifier | This option is used by DHCP clients to optionally identify the vendor type and configuration of a DHCP client. Vendors may choose to define specific vendor class identifiers to convey particular configuration or other identification information about a client.  For example, the identifier may encode the client's hardware configuration. | keyword |
+| network_traffic.dhcpv4.option.dns_servers | The domain name server option specifies a list of Domain Name System servers available to the client. | ip |
+| network_traffic.dhcpv4.option.domain_name | This option specifies the domain name that client should use when resolving hostnames via the Domain Name System. | keyword |
+| network_traffic.dhcpv4.option.hostname | This option specifies the name of the client. | keyword |
+| network_traffic.dhcpv4.option.ip_address_lease_time_sec | This option is used in a client request (DHCPDISCOVER or DHCPREQUEST) to allow the client to request a lease time for the IP address.  In a server reply (DHCPOFFER), a DHCP server uses this option to specify the lease time it is willing to offer. | long |
+| network_traffic.dhcpv4.option.max_dhcp_message_size | This option specifies the maximum length DHCP message that the client is willing to accept. | long |
+| network_traffic.dhcpv4.option.message | This option is used by a DHCP server to provide an error message to a DHCP client in a DHCPNAK message in the event of a failure. A client may use this option in a DHCPDECLINE message to indicate the why the client declined the offered parameters. | text |
+| network_traffic.dhcpv4.option.message_type | The specific type of DHCP message being sent (e.g. discover, offer, request, decline, ack, nak, release, inform). | keyword |
+| network_traffic.dhcpv4.option.ntp_servers | This option specifies a list of IP addresses indicating NTP servers available to the client. | ip |
+| network_traffic.dhcpv4.option.parameter_request_list | This option is used by a DHCP client to request values for specified configuration parameters. | keyword |
+| network_traffic.dhcpv4.option.rebinding_time_sec | This option specifies the time interval from address assignment until the client transitions to the REBINDING state. | long |
+| network_traffic.dhcpv4.option.renewal_time_sec | This option specifies the time interval from address assignment until the client transitions to the RENEWING state. | long |
+| network_traffic.dhcpv4.option.requested_ip_address | This option is used in a client request (DHCPDISCOVER) to allow the client to request that a particular IP address be assigned. | ip |
+| network_traffic.dhcpv4.option.router | The router option specifies a list of IP addresses for routers on the client's subnet. | ip |
+| network_traffic.dhcpv4.option.server_identifier | IP address of the individual DHCP server which handled this message. | ip |
+| network_traffic.dhcpv4.option.subnet_mask | The subnet mask that the client should use on the currnet network. | ip |
+| network_traffic.dhcpv4.option.time_servers | The time server option specifies a list of RFC 868 time servers available to the client. | ip |
+| network_traffic.dhcpv4.option.utc_time_offset_sec | The time offset field specifies the offset of the client's subnet in seconds from Coordinated Universal Time (UTC). | long |
+| network_traffic.dhcpv4.option.vendor_identifying_options.data | Additional vendor data, encoded in hexadecimal format. | keyword |
+| network_traffic.dhcpv4.option.vendor_identifying_options.id | Device identifier. | keyword |
+| network_traffic.dhcpv4.relay_ip | The relay IP address used by the client to contact the server (i.e. a DHCP relay server). | ip |
+| network_traffic.dhcpv4.seconds | Number of seconds elapsed since client began address acquisition or renewal process. | long |
+| network_traffic.dhcpv4.server_ip | The IP address of the DHCP server that the client should use for the next step in the bootstrap process. | ip |
+| network_traffic.dhcpv4.server_name | The name of the server sending the message. Optional. Used in DHCPOFFER or DHCPACK messages. | keyword |
+| network_traffic.dhcpv4.transaction_id | Transaction ID, a random number chosen by the client, used by the client and server to associate messages and responses between a client and a server. | keyword |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -1499,6 +1651,34 @@ Fields published for DNS packets.
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| network_traffic.dns.additionals | An array containing a dictionary for each additional section from the answer. | flattened |
+| network_traffic.dns.additionals.class | The class of DNS data contained in this resource record. | keyword |
+| network_traffic.dns.additionals.data | The data describing the resource. The meaning of this data depends on the type and class of the resource record. | keyword |
+| network_traffic.dns.additionals.name | The domain name to which this resource record pertains. | keyword |
+| network_traffic.dns.additionals.ttl | The time interval in seconds that this resource record may be cached before it should be discarded. Zero values mean that the data should not be cached. | long |
+| network_traffic.dns.additionals.type | The type of data contained in this resource record. | keyword |
+| network_traffic.dns.additionals_count | The number of resource records contained in the `dns.additionals` field. The `dns.additionals` field may or may not be included depending on the configuration of Packetbeat. | long |
+| network_traffic.dns.answers_count | The number of resource records contained in the `dns.answers` field. | long |
+| network_traffic.dns.authorities | An array containing a dictionary for each authority section from the answer. | flattened |
+| network_traffic.dns.authorities.class | The class of DNS data contained in this resource record. | keyword |
+| network_traffic.dns.authorities.name | The domain name to which this resource record pertains. | keyword |
+| network_traffic.dns.authorities.type | The type of data contained in this resource record. | keyword |
+| network_traffic.dns.authorities_count | The number of resource records contained in the `dns.authorities` field. The `dns.authorities` field may or may not be included depending on the configuration of Packetbeat. | long |
+| network_traffic.dns.flags.authentic_data | A DNS flag specifying that the recursive server considers the response authentic. | boolean |
+| network_traffic.dns.flags.authoritative | A DNS flag specifying that the responding server is an authority for the domain name used in the question. | boolean |
+| network_traffic.dns.flags.checking_disabled | A DNS flag specifying that the client disables the server signature validation of the query. | boolean |
+| network_traffic.dns.flags.recursion_available | A DNS flag specifying whether recursive query support is available in the name server. | boolean |
+| network_traffic.dns.flags.recursion_desired | A DNS flag specifying that the client directs the server to pursue a query recursively. Recursive query support is optional. | boolean |
+| network_traffic.dns.flags.truncated_response | A DNS flag specifying that only the first 512 bytes of the reply were returned. | boolean |
+| network_traffic.dns.method | The command/verb/method of the transaction. | keyword |
+| network_traffic.dns.opt.do | If set, the transaction uses DNSSEC. | boolean |
+| network_traffic.dns.opt.ext_rcode | Extended response code field. | keyword |
+| network_traffic.dns.opt.udp_size | Requestor's UDP payload size (in bytes). | long |
+| network_traffic.dns.opt.version | The EDNS version. | keyword |
+| network_traffic.dns.query | The query in a human readable format. | keyword |
+| network_traffic.dns.question.etld_plus_one | The effective top-level domain (eTLD) plus one more label. For example, the eTLD+1 for "foo.bar.golang.org." is "golang.org.". The data for determining the eTLD comes from an embedded copy of the data from http://publicsuffix.org. | keyword |
+| network_traffic.dns.resource | The logical resource that this transaction refers to. | keyword |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -1941,7 +2121,11 @@ Fields published for HTTP packets.
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| network_traffic.http.query | The query in a human readable format, be something like `GET /users/_search?name=test`. | keyword |
 | network_traffic.http.request.headers | A map containing the captured header fields from the request. Which headers to capture is configurable. If headers with the same header name are present in the message, they will be separated by commas. | flattened |
+| network_traffic.http.response.headers | A map containing the captured header fields from the response. Which headers to capture is configurable. If headers with the same header name are present in the message, they will be separated by commas. | flattened |
+| network_traffic.http.response.status_phrase | The HTTP status phrase. | keyword |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -2254,6 +2438,15 @@ Fields published for ICMP packets.
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| network_traffic.icmp.path | The path the transaction refers to. | keyword |
+| network_traffic.icmp.request.code | The request code. | long |
+| network_traffic.icmp.request.message | A human readable form of the request. | keyword |
+| network_traffic.icmp.request.type | The request type. | long |
+| network_traffic.icmp.response.code | The response code. | long |
+| network_traffic.icmp.response.message | A human readable form of the response. | keyword |
+| network_traffic.icmp.response.type | The response type. | long |
+| network_traffic.icmp.version | The version of the ICMP protocol. | long |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -2586,6 +2779,49 @@ Fields published for Memcached packets.
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| network_traffic.memcached.protocol_type | The memcache protocol implementation. The value can be "binary" for binary-based, "text" for text-based, or "unknown" for an unknown memcache protocol type. | keyword |
+| network_traffic.memcached.request.automove | The automove mode in the 'slab automove' command expressed as a string. This value can be "standby"(=0), "slow"(=1), "aggressive"(=2), or the raw value if the value is unknown. | keyword |
+| network_traffic.memcached.request.bytes | The byte count of the values being transferred. | long |
+| network_traffic.memcached.request.cas_unique | The CAS (compare-and-swap) identifier if present. | long |
+| network_traffic.memcached.request.command | The memcache command being requested in the memcache text protocol. For example "set" or "get". The binary protocol opcodes are translated into memcache text protocol commands. | keyword |
+| network_traffic.memcached.request.count_values | The number of values found in the memcache request message. If the command does not send any data, this field is missing. | long |
+| network_traffic.memcached.request.delta | The counter increment/decrement delta value. | long |
+| network_traffic.memcached.request.dest_class | The destination class id in 'slab reassign' command. | long |
+| network_traffic.memcached.request.exptime | The data expiry time in seconds sent with the memcache command (if present). If the value is `\< 30` days, the expiry time is relative to "now", or else it is an absolute Unix time in seconds (32-bit). | long |
+| network_traffic.memcached.request.flags | The memcache command flags sent in the request (if present). | long |
+| network_traffic.memcached.request.initial | The counter increment/decrement initial value parameter (binary protocol only). | long |
+| network_traffic.memcached.request.keys | The list of keys sent in the store or load commands. | keyword |
+| network_traffic.memcached.request.line | The raw command line for unknown commands ONLY. | keyword |
+| network_traffic.memcached.request.noreply | Set to true if noreply was set in the request. The `memcache.response` field will be missing. | boolean |
+| network_traffic.memcached.request.opaque | The binary protocol opaque header value used for correlating request with response messages. | long |
+| network_traffic.memcached.request.opcode | The binary protocol message opcode name. | keyword |
+| network_traffic.memcached.request.opcode_value | The binary protocol message opcode value. | long |
+| network_traffic.memcached.request.quiet | Set to true if the binary protocol message is to be treated as a quiet message. | boolean |
+| network_traffic.memcached.request.raw_args | The text protocol raw arguments for the "stats ..." and "lru crawl ..." commands. | keyword |
+| network_traffic.memcached.request.sleep_us | The sleep setting in microseconds for the 'lru_crawler sleep' command. | long |
+| network_traffic.memcached.request.source_class | The source class id in 'slab reassign' command. | long |
+| network_traffic.memcached.request.type | The memcache command classification. This value can be "UNKNOWN", "Load", "Store", "Delete", "Counter", "Info", "SlabCtrl", "LRUCrawler", "Stats", "Success", "Fail", or "Auth". | keyword |
+| network_traffic.memcached.request.values | The list of base64 encoded values sent with the request (if present). | keyword |
+| network_traffic.memcached.request.vbucket | The vbucket index sent in the binary message. | long |
+| network_traffic.memcached.request.verbosity | The value of the memcache "verbosity" command. | long |
+| network_traffic.memcached.response.bytes | The byte count of the values being transferred. | long |
+| network_traffic.memcached.response.cas_unique | The CAS (compare-and-swap) identifier to be used with CAS-based updates (if present). | long |
+| network_traffic.memcached.response.command | Either the text based protocol response message type or the name of the originating request if binary protocol is used. | keyword |
+| network_traffic.memcached.response.count_values | The number of values found in the memcache response message. If the command does not send any data, this field is missing. | long |
+| network_traffic.memcached.response.error_msg | The optional error message in the memcache response (text based protocol only). | keyword |
+| network_traffic.memcached.response.flags | The memcache message flags sent in the response (if present). | long |
+| network_traffic.memcached.response.keys | The list of keys returned for the load command (if present). | keyword |
+| network_traffic.memcached.response.opaque | The binary protocol opaque header value used for correlating request with response messages. | long |
+| network_traffic.memcached.response.opcode | The binary protocol message opcode name. | keyword |
+| network_traffic.memcached.response.opcode_value | The binary protocol message opcode value. | long |
+| network_traffic.memcached.response.stats | The statistic values returned. | flattened |
+| network_traffic.memcached.response.status | The textual representation of the response error code (binary protocol only). | keyword |
+| network_traffic.memcached.response.status_code | The status code value returned in the response (binary protocol only). | long |
+| network_traffic.memcached.response.type | The memcache command classification. This value can be "UNKNOWN", "Load", "Store", "Delete", "Counter", "Info", "SlabCtrl", "LRUCrawler", "Stats", "Success", "Fail", or "Auth". The text based protocol will employ any of these, whereas the binary based protocol will mirror the request commands only (see `memcache.response.status` for binary protocol). | keyword |
+| network_traffic.memcached.response.value | The counter value returned by a counter operation. | long |
+| network_traffic.memcached.response.values | The list of base64 encoded values sent with the response (if present). | keyword |
+| network_traffic.memcached.response.version | The returned memcache version string. | keyword |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -2880,6 +3116,20 @@ Fields published for MongoDB packets.
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| network_traffic.mongodb.cursorId | The cursor identifier returned in the OP_REPLY. This must be the value that was returned from the database. | keyword |
+| network_traffic.mongodb.error | If the MongoDB request has resulted in an error, this field contains the error message returned by the server. | keyword |
+| network_traffic.mongodb.fullCollectionName | The full collection name. The full collection name is the concatenation of the database name with the collection name, using a dot (.) for the concatenation. For example, for the database foo and the collection bar, the full collection name is foo.bar. | keyword |
+| network_traffic.mongodb.method | The command/verb/method of the transaction. | keyword |
+| network_traffic.mongodb.numberReturned | The number of documents in the reply. | long |
+| network_traffic.mongodb.numberToReturn | The requested maximum number of documents to be returned. | long |
+| network_traffic.mongodb.numberToSkip | Sets the number of documents to omit - starting from the first document in the resulting dataset - when returning the result of the query. | long |
+| network_traffic.mongodb.query | A JSON document that represents the query. The query will contain one or more elements, all of which must match for a document to be included in the result set. Possible elements include $query, $orderby, $hint, $explain, and $snapshot. | keyword |
+| network_traffic.mongodb.resource | The logical resource that this transaction refers to. | keyword |
+| network_traffic.mongodb.returnFieldsSelector | A JSON document that limits the fields in the returned documents. The returnFieldsSelector contains one or more elements, each of which is the name of a field that should be returned, and the integer value 1. | keyword |
+| network_traffic.mongodb.selector | A BSON document that specifies the query for selecting the document to update or delete. | keyword |
+| network_traffic.mongodb.startingFrom | Where in the cursor this reply is starting. | keyword |
+| network_traffic.mongodb.update | A BSON document that specifies the update to be performed. For information on specifying updates, see the Update Operations documentation from the MongoDB Manual. | keyword |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -3156,6 +3406,16 @@ Fields published for MySQL packets.
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| network_traffic.mysql.affected_rows | If the MySQL command is successful, this field contains the affected number of rows of the last statement. | long |
+| network_traffic.mysql.error_code | The error code returned by MySQL. | long |
+| network_traffic.mysql.error_message | The error info message returned by MySQL. | keyword |
+| network_traffic.mysql.insert_id | If the INSERT query is successful, this field contains the id of the newly inserted row. | keyword |
+| network_traffic.mysql.method | The command/verb/method of the transaction. | keyword |
+| network_traffic.mysql.num_fields | If the SELECT query is successful, this field is set to the number of fields returned. | long |
+| network_traffic.mysql.num_rows | If the SELECT query is successful, this field is set to the number of rows returned. | long |
+| network_traffic.mysql.path | The table name the transaction refers to. | keyword |
+| network_traffic.mysql.query | The row mysql query as read from the transaction's request. | keyword |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -3410,6 +3670,21 @@ Fields published for NFS packets.
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| network_traffic.nfs.host.hostname | The hostname of the NFS host. | keyword |
+| network_traffic.nfs.minor_version | NFS protocol minor version number. | long |
+| network_traffic.nfs.opcode | NFS operation name, or main operation name, in case of COMPOUND calls. | keyword |
+| network_traffic.nfs.rpc.auth_flavor | RPC authentication flavor. | keyword |
+| network_traffic.nfs.rpc.cred.gid | RPC caller's group id, in case of auth-unix. | long |
+| network_traffic.nfs.rpc.cred.gids | RPC caller's secondary group ids, in case of auth-unix. | long |
+| network_traffic.nfs.rpc.cred.machinename | The name of the caller's machine. | keyword |
+| network_traffic.nfs.rpc.cred.stamp | Arbitrary ID which the caller machine may generate. | long |
+| network_traffic.nfs.rpc.cred.uid | RPC caller's user id, in case of auth-unix. | long |
+| network_traffic.nfs.rpc.status | RPC message reply status. | keyword |
+| network_traffic.nfs.rpc.xid | RPC message transaction identifier. | keyword |
+| network_traffic.nfs.status | NFS operation reply status. | keyword |
+| network_traffic.nfs.tag | NFS v4 COMPOUND operation tag. | keyword |
+| network_traffic.nfs.version | NFS protocol version number. | long |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | nfs.minor_version | NFS protocol minor version number. | long |
 | nfs.opcode | NFS operation name, or main operation name, in case of COMPOUND calls. | keyword |
 | nfs.status | NFS operation reply status. | keyword |
@@ -3705,6 +3980,14 @@ Fields published for PostgreSQL packets.
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| network_traffic.pgsql.error_code | The PostgreSQL error code. | keyword |
+| network_traffic.pgsql.error_message | The PostgreSQL error message. | keyword |
+| network_traffic.pgsql.error_severity | The PostgreSQL error severity. | keyword |
+| network_traffic.pgsql.method | The command/verb/method of the transaction. | keyword |
+| network_traffic.pgsql.num_fields | If the SELECT query if successful, this field is set to the number of fields returned. | long |
+| network_traffic.pgsql.num_rows | If the SELECT query if successful, this field is set to the number of rows returned. | long |
+| network_traffic.pgsql.query | The query in a human readable format. | keyword |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -3969,6 +4252,11 @@ Fields published for Redis packets.
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| network_traffic.redis.error | If the Redis command has resulted in an error, this field contains the error message returned by the Redis server. | keyword |
+| network_traffic.redis.method | The command/verb/method of the transaction. | keyword |
+| network_traffic.redis.query | The query in a human readable format. | keyword |
+| network_traffic.redis.return_value | The return value of the Redis command in a human readable format. | keyword |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -4237,6 +4525,81 @@ Fields published for SIP packets.
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| network_traffic.sip.accept | Accept header value. | keyword |
+| network_traffic.sip.allow | Allowed methods. | keyword |
+| network_traffic.sip.auth.realm | Auth realm | keyword |
+| network_traffic.sip.auth.scheme | Auth scheme | keyword |
+| network_traffic.sip.auth.uri.host | Auth URI host | keyword |
+| network_traffic.sip.auth.uri.original | Auth original URI | keyword |
+| network_traffic.sip.auth.uri.original.text | Multi-field of `network_traffic.sip.auth.uri.original`. | text |
+| network_traffic.sip.auth.uri.port | Auth URI port | long |
+| network_traffic.sip.auth.uri.scheme | Auth URI scheme | keyword |
+| network_traffic.sip.call_id | Call ID. | keyword |
+| network_traffic.sip.code | Response status code. | long |
+| network_traffic.sip.contact.display_info | Contact display info | keyword |
+| network_traffic.sip.contact.expires | Contact expires | keyword |
+| network_traffic.sip.contact.line | Contact line | keyword |
+| network_traffic.sip.contact.q | Contact Q | keyword |
+| network_traffic.sip.contact.transport | Contact transport | keyword |
+| network_traffic.sip.contact.uri.host | Contact URI host | keyword |
+| network_traffic.sip.contact.uri.original | Contact original URI | keyword |
+| network_traffic.sip.contact.uri.original.text | Multi-field of `network_traffic.sip.contact.uri.original`. | text |
+| network_traffic.sip.contact.uri.port | Contact URI port | long |
+| network_traffic.sip.contact.uri.scheme | Contat URI scheme | keyword |
+| network_traffic.sip.contact.uri.username | Contact URI user name | keyword |
+| network_traffic.sip.content_length |  | long |
+| network_traffic.sip.content_type |  | keyword |
+| network_traffic.sip.cseq.code | Sequence code. | long |
+| network_traffic.sip.cseq.method | Sequence method. | keyword |
+| network_traffic.sip.from.display_info | From display info | keyword |
+| network_traffic.sip.from.tag | From tag | keyword |
+| network_traffic.sip.from.uri.host | From URI host | keyword |
+| network_traffic.sip.from.uri.original | From original URI | keyword |
+| network_traffic.sip.from.uri.original.text | Multi-field of `network_traffic.sip.from.uri.original`. | text |
+| network_traffic.sip.from.uri.port | From URI port | long |
+| network_traffic.sip.from.uri.scheme | From URI scheme | keyword |
+| network_traffic.sip.from.uri.username | From URI user name | keyword |
+| network_traffic.sip.max_forwards |  | long |
+| network_traffic.sip.method | Request method. | keyword |
+| network_traffic.sip.private.uri.host | Private URI host. | keyword |
+| network_traffic.sip.private.uri.original | Private original URI. | keyword |
+| network_traffic.sip.private.uri.original.text | Multi-field of `network_traffic.sip.private.uri.original`. | text |
+| network_traffic.sip.private.uri.port | Private URI port. | long |
+| network_traffic.sip.private.uri.scheme | Private URI scheme. | keyword |
+| network_traffic.sip.private.uri.username | Private URI user name. | keyword |
+| network_traffic.sip.sdp.body.original | SDP original body | keyword |
+| network_traffic.sip.sdp.body.original.text | Multi-field of `network_traffic.sip.sdp.body.original`. | text |
+| network_traffic.sip.sdp.connection.address | SDP connection address | keyword |
+| network_traffic.sip.sdp.connection.info | SDP connection info | keyword |
+| network_traffic.sip.sdp.owner.ip | SDP owner IP | ip |
+| network_traffic.sip.sdp.owner.session_id | SDP owner session ID | keyword |
+| network_traffic.sip.sdp.owner.username | SDP owner user name | keyword |
+| network_traffic.sip.sdp.owner.version | SDP owner version | keyword |
+| network_traffic.sip.sdp.session.name | SDP session name | keyword |
+| network_traffic.sip.sdp.version | SDP version | keyword |
+| network_traffic.sip.status | Response status phrase. | keyword |
+| network_traffic.sip.supported | Supported methods. | keyword |
+| network_traffic.sip.to.display_info | To display info | keyword |
+| network_traffic.sip.to.tag | To tag | keyword |
+| network_traffic.sip.to.uri.host | To URI host | keyword |
+| network_traffic.sip.to.uri.original | To original URI | keyword |
+| network_traffic.sip.to.uri.original.text | Multi-field of `network_traffic.sip.to.uri.original`. | text |
+| network_traffic.sip.to.uri.port | To URI port | long |
+| network_traffic.sip.to.uri.scheme | To URI scheme | keyword |
+| network_traffic.sip.to.uri.username | To URI user name | keyword |
+| network_traffic.sip.type | Either request or response. | keyword |
+| network_traffic.sip.uri.host | The URI host. | keyword |
+| network_traffic.sip.uri.original | The original URI. | keyword |
+| network_traffic.sip.uri.original.text | Multi-field of `network_traffic.sip.uri.original`. | text |
+| network_traffic.sip.uri.port | The URI port. | long |
+| network_traffic.sip.uri.scheme | The URI scheme. | keyword |
+| network_traffic.sip.uri.username | The URI user name. | keyword |
+| network_traffic.sip.user_agent.original |  | keyword |
+| network_traffic.sip.user_agent.original.text | Multi-field of `network_traffic.sip.user_agent.original`. | text |
+| network_traffic.sip.version | SIP protocol version. | keyword |
+| network_traffic.sip.via.original | The original Via value. | keyword |
+| network_traffic.sip.via.original.text | Multi-field of `network_traffic.sip.via.original`. | text |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -4734,6 +5097,14 @@ Fields published for Thrift packets.
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
+| network_traffic.thrift.exceptions | If the call resulted in exceptions, this field contains the exceptions in a human readable format. | keyword |
+| network_traffic.thrift.method | The command/verb/method of the transaction. | keyword |
+| network_traffic.thrift.params | The RPC method call parameters in a human readable format. If the IDL files are available, the parameters use names whenever possible. Otherwise, the IDs from the message are used. | keyword |
+| network_traffic.thrift.path | The path the transaction refers to. | keyword |
+| network_traffic.thrift.query | The query in a human readable format. | keyword |
+| network_traffic.thrift.return_value | The value returned by the Thrift-RPC call. This is encoded in a human readable format. | keyword |
+| network_traffic.thrift.service | The name of the Thrift-RPC service as defined in the IDL files. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
@@ -5051,6 +5422,7 @@ Fields published for TLS packets.
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |

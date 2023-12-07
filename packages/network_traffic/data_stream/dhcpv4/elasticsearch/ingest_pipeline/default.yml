@@ -4,6 +4,13 @@ processors:
 - set:
     field: ecs.version
     value: '8.11.0'
+
+# ECS compatibility pipeline
+- pipeline:
+    if: ctx._conf?.map_to_ecs != null && ctx._conf.map_to_ecs
+    name: '{{ IngestPipeline "compatibility" }}'
+    tag: compatibility_pipeline_processor
+
 ##
 # Set host.mac to dash separated upper case value
 # as per ECS recommendation
@@ -68,7 +75,7 @@ on_failure:
   - append:
       field: error.message
       value: |-
-          Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+          Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.kind
       value: pipeline_error
