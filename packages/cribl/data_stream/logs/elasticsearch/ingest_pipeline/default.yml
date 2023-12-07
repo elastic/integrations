@@ -1,0 +1,15 @@
+---
+description: Pipeline for rerouting log streams from Cribl.
+processors:
+  - set:
+      field: ecs.version
+      value: 8.11.0
+  - append:
+      field: tags
+      value: 
+        - cribl
+      allow_duplicates: false
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
