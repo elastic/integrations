@@ -1,0 +1,67 @@
+---
+description: ECS compatibility layer pipeline.
+processors:
+  - rename:
+      field: nfs
+      target_field: network_traffic.nfs
+      ignore_missing: true
+  - rename:
+      field: method
+      target_field: network_traffic.nfs.method
+      ignore_missing: true
+  - rename:
+      field: query
+      target_field: network_traffic.nfs.query
+      ignore_missing: true
+  - rename:
+      field: rpc
+      target_field: network_traffic.nfs.rpc
+      ignore_missing: true
+  - dot_expander:
+      field: group.id
+  - dot_expander:
+      field: user.id
+  - script:
+      description: dot_expander with a destination path for host.hostname
+      lang: painless
+      source: |
+        if (ctx['host.hostname'] == null) {
+          return;
+        }
+        if (ctx.network_traffic == null) {
+          ctx.network_traffic = new HashMap();
+        }
+        if (ctx.network_traffic.nfs == null) {
+          ctx.network_traffic.nfs = new HashMap();
+        }
+        if (ctx.network_traffic.nfs.host == null) {
+          ctx.network_traffic.nfs.host = new HashMap();
+        }
+        ctx.network_traffic.nfs.host['hostname'] = ctx['host.hostname'];
+        ctx.remove('host.hostname');
+  - append:
+      field: related.hosts
+      value: "{{{network_traffic.nfs.host.hostname}}}"
+      if: ctx.network_traffic?.nfs?.host?.hostname != null && ctx.network_traffic.nfs.host.hostname != ''
+      allow_duplicates: false
+  - rename:
+      # Retained for legacy dashboard behaviour.
+      field: status
+      target_field: network_traffic.status
+      ignore_missing: true
+  # Remove packetbeat fields that are handled by agent or fleet.
+  - remove:
+      field: type
+      ignore_missing: true
+  - remove:
+      field: event.dataset
+      ignore_missing: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+          Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error
