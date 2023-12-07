@@ -108,7 +108,7 @@ fi
 
 cd "${WORKSPACE}" || exit 1
 mkdir -p "${ARTIFACTS_FOLDER}"
-cp "${BUILD_PACKAGES_FOLDER}"/*.zip "${ARTIFACTS_FOLDER}"
+cp "${BUILD_PACKAGES_FOLDER}"/*.zip "${ARTIFACTS_FOLDER}"/
 
 if [ "${DRY_RUN}" == "true" ]; then
     echo "DRY_RUN enabled. Publish packages steps skipped."
