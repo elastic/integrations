@@ -50,6 +50,7 @@ processors:
       field: auditd.log.old-ses
       target_field: auditd.log.old_ses
   - script:
+      tag: script_process_fields
       lang: painless
       source: |
         String trimQuotes(def singleQuote, def doubleQuote, def v) {
@@ -103,8 +104,37 @@ processors:
             return value == "yes" || value == "true" || value == "1";
         }
 
-        def possibleHexKeys = ["exe", "cmd", "data", "path", "comm", "file", "name", "watch", "cwd", "acct", "dir", "vm", "old-chardev", "new-chardev", "old-disk", "new-disk", "old-fs", "new-fs", "old-net", "new-net", "device", "cgroup", "apparmor", "operation", "denied_mask", "info", "profile", "requested_mask", "old-rng", "new-rng", "ocomm", "grp", "new_group", "invalid_context", "sw", "root_dir", "proctitle"];
-        def possibleBooleanKeys = ["success", "key_enforce"];
+        // processFieldValue processes the value for the field, and returns
+        // the processed value if it is valid, otherwise null.
+        def processFieldValue(String k, def v, def possibleHexKeys, def possibleBooleanKeys) {
+            // Remove entries whose value is ?
+            if (v == "?" || v == "(null)" || v == "") {
+                return null;
+            }
+
+            // Convert hex values to ASCII.
+            if (possibleHexKeys.contains(k) && isHexAscii(v)) {
+                v = convertHexToString(v);
+            }
+
+            // Convert string values to boolean.
+            if (possibleBooleanKeys.contains(k) && v instanceof String) {
+                v = convertStringToBoolean(v);
+            }
+
+            // Trim quotes.
+            if (v instanceof String) {
+                v = trimQuotes("'", "\"", v);
+            }
+
+            // Convert arch.
+            if (k == "arch" && v == "c000003e") {
+                v = "x86_64";
+            }
+
+            return v;
+        }
+
         def audit = ctx.auditd.get("log");
         Iterator entries = audit.entrySet().iterator();
 
@@ -113,38 +143,73 @@ processors:
             def k = e.getKey();
             def v = e.getValue();
 
-            // Remove entries whose value is ?
-            if (v == "?" || v == "(null)" || v == "") {
-                entries.remove();
+            if (v instanceof List) {
+                int j = 0;
+                for (int i = 0; i < v.length; i++) {
+                    v[j] = processFieldValue(k, v[i], params.possibleHexKeys, params.possibleBooleanKeys);
+                    if (v[j] != null) {
+                        j++;
+                    }
+                }
+                if (j < v.length) {
+                    if (j == 0) {
+                        entries.remove();
+                        continue;
+                    }
+                    audit.put(k, v.subList(0, j));
+                }
                 continue;
             }
 
-            // Convert hex values to ASCII.
-            if (possibleHexKeys.contains(k) && isHexAscii(v)) {
-                v = convertHexToString(v);
+            v = processFieldValue(k, v, params.possibleHexKeys, params.possibleBooleanKeys);
+            if (v == null) {
+                entries.remove();
+            } else {
                 audit.put(k, v);
-            }
-
-            // Convert string values to boolean.
-            if (possibleBooleanKeys.contains(k) && v instanceof String) {
-                v = convertStringToBoolean(v);
-                audit.put(k, v);
-            }
-
-            // Trim quotes.
-            if (v instanceof String) {
-                v = trimQuotes(params.single_quote, params.double_quote, v);
-                audit.put(k, v);
-            }
-
-            // Convert arch.
-            if (k == "arch" && v == "c000003e") {
-                audit.put(k, "x86_64");
             }
         }
       params:
-        single_quote: "'"
-        double_quote: "\""
+        possibleHexKeys:
+          - exe
+          - cmd
+          - data
+          - path
+          - comm
+          - file
+          - name
+          - watch
+          - cwd
+          - acct
+          - dir
+          - vm
+          - old-chardev
+          - new-chardev
+          - old-disk
+          - new-disk
+          - old-fs
+          - new-fs
+          - old-net
+          - new-net
+          - device
+          - cgroup
+          - apparmor
+          - operation
+          - denied_mask
+          - info
+          - profile
+          - requested_mask
+          - old-rng
+          - new-rng
+          - ocomm
+          - grp
+          - new_group
+          - invalid_context
+          - sw
+          - root_dir
+          - proctitle
+        possibleBooleanKeys:
+          - success
+          - key_enforce
   - convert:
       field: auditd.log.sequence
       type: long
@@ -181,6 +246,7 @@ processors:
       field: event.kind
       value: event
   - script:
+      tag: script_ecs_mapping
       lang: painless
       ignore_failure: true
       # Auditd record type to ECS mappings
@@ -2084,7 +2150,8 @@ processors:
       field: auditd.log.argc
       target_field: process.args_count
   - script:
-      if: "ctx?.process?.args != null"
+      tag: script_process_args
+      if: ctx.process?.args != null
       lang: painless
       source: >-
         if (ctx.process.args instanceof List) {
@@ -2134,9 +2201,10 @@ processors:
    # It handles the common case of a complete record: Contains argc=N and a0 to aN-1,
    # and the truncated case: Contains aI, aI+1, ..., aN-1, for I>0, and no argc.
   - script:
+      tag: script_execve_process_args
       lang: painless
       description: Extracts process arguments from EXECVE calls.
-      if: 'ctx.auditd?.log?.record_type == "EXECVE"'
+      if: ctx.auditd?.log?.record_type == "EXECVE"
       source: >-
          /* Want to capture all aNN fields, including aN_len and aN[x] */
          Pattern argRegex = /^a([0-9]+)(.*)$/;
@@ -2243,4 +2311,4 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
