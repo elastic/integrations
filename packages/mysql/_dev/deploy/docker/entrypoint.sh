@@ -9,7 +9,7 @@ chown mysql:mysql /var/log/mysql/*.log
 chmod a+wx /var/log/mysql
 chmod a+r -R /var/log/mysql
 
-if [[ "$IMAGE" == "percona:8.0.13-4" ]]; then
+if [[ "$IMAGE" == "percona:8.0.34-26" ]]; then
 # Write "test.cnf" config
 cat << EOF > /etc/my.cnf.d/test.cnf
 [mysqld]
@@ -30,7 +30,7 @@ EOF
 exec bash /docker-entrypoint.sh mysqld
 fi
 
-if [[ "$IMAGE" == "mysql:8.0.13" ]]; then
+if [[ "$IMAGE" == "mysql:8.0.35" ]]; then
 # Write "test.cnf" config
 cat << EOF > /etc/mysql/conf.d/test.cnf
 [mysqld]
