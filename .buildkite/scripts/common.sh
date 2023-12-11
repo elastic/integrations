@@ -560,7 +560,7 @@ is_pr_affected() {
 
     echo "[${package}] git-diff: check non-package files"
     commit_merge=$(git merge-base "${from}" "${to}")
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|.github/CODEOWNERS)' ; then
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|.github/CODEOWNERS|.ci/Jenkinsfile|.buildkite/|catalog-info.yaml)' ; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi
