@@ -117,6 +117,11 @@ if [ "${DRY_RUN}" == "true" ]; then
     exit 0
 fi
 
+if [[ "$BUILDKITE_RETRY_COUNT" != "0" ]]; then
+    echo "Please, trigger a new build to avoid issues publishing packages duplicating the artifacts in this build."
+    exit 1
+fi
+
 # triggering dynamically the steps for signing and publishing
 # allow us to check whether or not this group of steps needs to be run in one script
 # signing and publish steps must run just if there are any packages to be published

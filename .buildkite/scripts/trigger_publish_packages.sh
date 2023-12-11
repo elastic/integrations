@@ -12,6 +12,11 @@ ARTIFACTS_FOLDER="${ARTIFACTS_FOLDER:-"packageArtifacts"}"
 SIGNING_STEP_KEY="${SIGNING_STEP_KEY:-"sign-service"}"
 DRY_RUN=${DRY_RUN-"true"}
 
+if [[ "$BUILDKITE_RETRY_COUNT" != "0" ]]; then
+    echo "Please, trigger a new build to avoid issues publishing packages duplicating the artifacts in this build."
+    exit 1
+fi
+
 echo "--- Downloading artifacts"
 ## Support main pipeline and downstream pipelines
 pipeline_slug="${BUILDKITE_PIPELINE_SLUG}"
