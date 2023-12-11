@@ -99,6 +99,11 @@ with_yq
 with_go
 use_elastic_package
 
+if [[ "$BUILDKITE_RETRY_COUNT" != "0" ]]; then
+    echo "Please, trigger a new build to avoid issues publishing packages duplicating the artifacts in this build. Please trigger a new build"
+    exit 1
+fi
+
 echo "--- Build packages"
 
 unpublished=false
@@ -115,11 +120,6 @@ cp "${BUILD_PACKAGES_FOLDER}"/*.zip "${ARTIFACTS_FOLDER}"/
 if [ "${DRY_RUN}" == "true" ]; then
     echo "DRY_RUN enabled. Publish packages steps skipped."
     exit 0
-fi
-
-if [[ "$BUILDKITE_RETRY_COUNT" != "0" ]]; then
-    echo "Please, trigger a new build to avoid issues publishing packages duplicating the artifacts in this build."
-    exit 1
 fi
 
 # triggering dynamically the steps for signing and publishing
