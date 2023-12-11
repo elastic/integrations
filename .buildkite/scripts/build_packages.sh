@@ -99,6 +99,11 @@ use_elastic_package
 
 echo "--- Build packages"
 
+if [[ "$BUILDKITE_RETRY_COUNT" != "0" ]]; then
+    echo "Please, trigger a new build to avoid issues publishing packages duplicating the artifacts in this build."
+    exit 1
+fi
+
 unpublished=false
 build_packages
 
