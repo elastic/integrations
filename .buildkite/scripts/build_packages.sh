@@ -99,12 +99,12 @@ with_yq
 with_go
 use_elastic_package
 
+echo "--- Build packages"
+
 if [[ "$BUILDKITE_RETRY_COUNT" != "0" ]]; then
     echo "Please, trigger a new build to avoid issues publishing packages duplicating the artifacts in this build. Please trigger a new build"
     exit 1
 fi
-
-echo "--- Build packages"
 
 unpublished=false
 build_packages
