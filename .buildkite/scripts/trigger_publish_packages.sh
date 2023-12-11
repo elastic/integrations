@@ -76,5 +76,4 @@ steps:
         PACKAGE_ARTIFACTS_FOLDER: "${ARTIFACTS_FOLDER}"
 EOF
 
-exit 0
 buildkite-agent pipeline upload "${PIPELINE_FILE}"
