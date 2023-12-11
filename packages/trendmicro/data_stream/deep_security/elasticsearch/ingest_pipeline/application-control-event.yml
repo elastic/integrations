@@ -4,6 +4,19 @@ processors:
   - set:
       field: trendmicro.event.category
       value: "app-control"
+  - set:
+      field: event.category
+      value: [intrusion_detection,package]
+  - append:
+      field: event.type
+      value: info
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: denied
+      allow_duplicates: false
+      if: ctx.trendmicro?.event?.signature_id != null && !['6002100','6002200'].contains(ctx.trendmicro.event.signature_id)
+  
   - script:
       lang: painless
       params:

@@ -4,6 +4,20 @@ processors:
   - set:
       field: trendmicro.event.category
       value: "web-reputation"
+  - set:
+      field: event.category
+      value: [network]
+  - append:
+      field: event.type
+      value: info
+      allow_duplicates: false
+      if: ctx.trendmicro?.event?.signature_id != null && ctx.trendmicro.event.signature_id == '5000000'
+  - append:
+      field: event.type
+      value: denied
+      allow_duplicates: false
+      if: ctx.trendmicro?.event?.signature_id != null && ctx.trendmicro.event.signature_id == '5000001'
+
   - script:
       lang: painless
       params:
