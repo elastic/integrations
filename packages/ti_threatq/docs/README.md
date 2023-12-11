@@ -59,6 +59,8 @@ By default the indicators will be collected every 1 minute, and deduplication is
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
+| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
@@ -92,9 +94,14 @@ By default the indicators will be collected every 1 minute, and deduplication is
 | threatq.adversaries | Adversaries that are linked to the object | keyword |
 | threatq.attributes | These provide additional context about an object | flattened |
 | threatq.created_at | Object creation time | date |
-| threatq.expires_at | Expiration time | date |
+| threatq.expired_at | Expiration time given by the API. Either `expires_at` or `expired_at` are present in the data. | date |
+| threatq.expires_at | Expiration time given by the API. Either `expires_at` or `expired_at` are present in the data. | date |
 | threatq.expires_calculated_at | Expiration calculation time | date |
+| threatq.id | Indicator ID. `id`, `indicator_id` or both could be present in the dataset. | long |
+| threatq.indicator_id | Indicator ID. `id`, `indicator_id` or both could be present in the dataset. | long |
 | threatq.indicator_value | Original indicator value | keyword |
+| threatq.ioc_expiration_reason | Reason why the indicator is expired. Set inside the ingest pipeline. | keyword |
+| threatq.ioc_expired_at | Expiration time calculated by the integration needed for the transform. | date |
 | threatq.published_at | Object publication time | date |
 | threatq.status | Object status within the Threat Library | keyword |
 | threatq.updated_at | Last modification time | date |
@@ -104,13 +111,13 @@ An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-10-01T18:36:03.000Z",
+    "@timestamp": "2020-11-15T00:00:02.000Z",
     "agent": {
-        "ephemeral_id": "37eb63bd-5e42-4366-be2e-c82dfceae102",
-        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "ephemeral_id": "cdf3d2d7-76f7-4e04-8b05-4897e8fb8368",
+        "id": "0551e46b-9026-42fd-b087-b247d242ad8f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.1"
+        "version": "8.11.0"
     },
     "data_stream": {
         "dataset": "ti_threatq.threat",
@@ -121,20 +128,20 @@ An example event for `threat` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "id": "0551e46b-9026-42fd-b087-b247d242ad8f",
         "snapshot": false,
-        "version": "8.9.1"
+        "version": "8.11.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "threat"
         ],
-        "created": "2023-08-29T13:46:54.929Z",
+        "created": "2023-12-11T11:00:47.643Z",
         "dataset": "ti_threatq.threat",
-        "ingested": "2023-08-29T13:46:57Z",
+        "ingested": "2023-12-11T11:00:48Z",
         "kind": "enrichment",
-        "original": "{\"adversaries\":[],\"attributes\":[{\"attribute_id\":5,\"created_at\":\"2021-10-01 18:36:06\",\"id\":4893068,\"indicator_id\":106767,\"name\":\"Contact\",\"touched_at\":\"2021-10-24 18:36:10\",\"updated_at\":\"2021-10-24 18:36:10\",\"value\":\"email:Quetzalcoatl_relays[]protonmail.com url:https://quetzalcoatl-relays.org proof:uri-rsa hoster:frantech.ca\"},{\"attribute_id\":9,\"created_at\":\"2021-10-01 18:36:06\",\"id\":4893069,\"indicator_id\":106767,\"name\":\"Router Port\",\"touched_at\":\"2021-10-24 18:36:10\",\"updated_at\":\"2021-10-24 18:36:10\",\"value\":\"9000\"},{\"attribute_id\":6,\"created_at\":\"2021-10-01 18:36:06\",\"id\":4893070,\"indicator_id\":106767,\"name\":\"Flags\",\"touched_at\":\"2021-10-02 18:36:08\",\"updated_at\":\"2021-10-02 18:36:08\",\"value\":\"ERDV\"}],\"class\":\"network\",\"created_at\":\"2021-10-01 18:36:03\",\"expires_calculated_at\":\"2021-10-23 18:40:17\",\"hash\":\"69beef49fdbd1f54eef3cab324c7b6cf\",\"id\":106767,\"published_at\":\"2021-10-01 18:36:03\",\"score\":0,\"sources\":[{\"created_at\":\"2021-10-01 18:36:06\",\"creator_source_id\":12,\"id\":3699669,\"indicator_id\":106767,\"indicator_status_id\":1,\"indicator_type_id\":15,\"name\":\"www.dan.me.uk Tor Node List\",\"published_at\":\"2021-10-01 18:36:06\",\"reference_id\":37,\"source_id\":12,\"source_type\":\"connectors\",\"updated_at\":\"2021-10-24 18:36:10\"}],\"status\":{\"description\":\"Poses a threat and is being exported to detection tools.\",\"id\":1,\"name\":\"Active\"},\"status_id\":1,\"touched_at\":\"2021-10-24 18:36:10\",\"type\":{\"class\":\"network\",\"id\":15,\"name\":\"IP Address\"},\"type_id\":15,\"updated_at\":\"2021-10-01 18:36:03\",\"value\":\"107.189.1.90\"}",
+        "original": "{\"adversaries\":[],\"attributes\":[{\"attribute_id\":7,\"created_at\":\"2020-09-11 14:35:53\",\"id\":1889,\"indicator_id\":338,\"name\":\"AlienVault Threat Level\",\"touched_at\":\"2020-10-15 14:36:00\",\"updated_at\":\"2020-10-15 14:36:00\",\"value\":\"2\"},{\"attribute_id\":4,\"created_at\":\"2020-09-11 14:35:53\",\"id\":1890,\"indicator_id\":338,\"name\":\"Country\",\"touched_at\":\"2020-10-15 14:36:00\",\"updated_at\":\"2020-10-15 14:36:00\",\"value\":\"US\"},{\"attribute_id\":3,\"created_at\":\"2020-09-11 14:35:53\",\"id\":1891,\"indicator_id\":338,\"name\":\"Description\",\"touched_at\":\"2020-10-15 14:36:00\",\"updated_at\":\"2020-10-15 14:36:00\",\"value\":\"Malicious Host\"},{\"attribute_id\":6,\"created_at\":\"2020-09-11 14:35:53\",\"id\":1892,\"indicator_id\":338,\"name\":\"AlienVault Revision\",\"touched_at\":\"2020-10-15 14:36:00\",\"updated_at\":\"2020-10-15 14:36:00\",\"value\":\"3\"},{\"attribute_id\":5,\"created_at\":\"2020-09-11 14:35:53\",\"id\":1893,\"indicator_id\":338,\"name\":\"City\",\"touched_at\":\"2020-10-15 14:36:00\",\"updated_at\":\"2020-10-15 14:36:00\",\"value\":\"New York\"},{\"attribute_id\":8,\"created_at\":\"2020-09-11 14:35:53\",\"id\":1894,\"indicator_id\":338,\"name\":\"AlienVault Reliability\",\"touched_at\":\"2020-10-15 14:36:00\",\"updated_at\":\"2020-10-15 14:36:00\",\"value\":\"4\"}],\"class\":\"network\",\"created_at\":\"2020-09-11 14:35:51\",\"expired_at\":\"2020-11-15 00:00:02\",\"expires_calculated_at\":\"2020-10-15 14:40:03\",\"hash\":\"a9c6773919112627495d87c51fe89b15\",\"id\":338,\"published_at\":\"2020-09-11 14:35:51\",\"score\":4,\"sources\":[{\"created_at\":\"2020-09-11 14:35:53\",\"creator_source_id\":12,\"id\":338,\"indicator_id\":338,\"indicator_status_id\":2,\"indicator_type_id\":15,\"name\":\"AlienVault OTX\",\"published_at\":\"2020-09-11 14:35:53\",\"reference_id\":1,\"source_expire_days\":\"30\",\"source_id\":12,\"source_score\":1,\"source_type\":\"connectors\",\"updated_at\":\"2020-10-15 14:36:00\"}],\"status\":{\"description\":\"No longer poses a serious threat.\",\"id\":2,\"name\":\"Expired\"},\"status_id\":2,\"touched_at\":\"2021-06-07 19:47:27\",\"type\":{\"class\":\"network\",\"id\":15,\"name\":\"IP Address\"},\"type_id\":15,\"updated_at\":\"2020-11-15 00:00:02\",\"value\":\"89.160.20.156\"}",
         "type": [
             "indicator"
         ]
@@ -149,29 +156,41 @@ An example event for `threat` looks as following:
     ],
     "threat": {
         "indicator": {
-            "confidence": "None",
-            "ip": "107.189.1.90",
+            "confidence": "Low",
+            "ip": "89.160.20.156",
             "type": "ipv4-addr"
         }
     },
     "threatq": {
         "attributes": {
-            "contact": [
-                "email:Quetzalcoatl_relays[]protonmail.com url:https://quetzalcoatl-relays.org proof:uri-rsa hoster:frantech.ca"
+            "alienvault_reliability": [
+                "4"
             ],
-            "flags": [
-                "ERDV"
+            "alienvault_revision": [
+                "3"
             ],
-            "router_port": [
-                "9000"
+            "alienvault_threat_level": [
+                "2"
+            ],
+            "city": [
+                "New York"
+            ],
+            "country": [
+                "US"
+            ],
+            "description": [
+                "Malicious Host"
             ]
         },
-        "created_at": "2021-10-01T18:36:03.000Z",
-        "expires_calculated_at": "2021-10-23T18:40:17.000Z",
-        "indicator_value": "107.189.1.90",
-        "published_at": "2021-10-01T18:36:03.000Z",
-        "status": "Active"
+        "created_at": "2020-09-11T14:35:51.000Z",
+        "expired_at": "2020-11-15T00:00:02.000Z",
+        "expires_calculated_at": "2020-10-15T14:40:03.000Z",
+        "id": 338,
+        "indicator_value": "89.160.20.156",
+        "ioc_expiration_reason": "Expiration set by ThreatQ from expired_at field",
+        "ioc_expired_at": "2020-11-15T00:00:02.000Z",
+        "published_at": "2020-09-11T14:35:51.000Z",
+        "status": "Expired"
     }
 }
-
 ```
