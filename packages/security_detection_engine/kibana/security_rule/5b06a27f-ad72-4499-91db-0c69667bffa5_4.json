@@ -11,7 +11,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "SUID/SGUID Enumeration Detected",
-        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"exec\" and \nprocess.name == \"find\" and process.args : \"-perm\" and process.args : (\n  \"/6000\", \"-6000\", \"/4000\", \"-4000\", \"/2000\", \"-2000\", \"/u=s\", \"-u=s\", \"/g=s\", \"-g=s\", \"/u=s,g=s\", \"/g=s,u=s\"\n) and not (\n  user.Ext.real.id == \"0\" or group.Ext.real.id == \"0\" or process.args_count \u003e= 12 or \n  (process.args : \"/usr/bin/pkexec\" and process.args : \"-xdev\" and process.args_count == 7)\n)\n",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"exec\" and \nprocess.name == \"find\" and process.args : \"-perm\" and process.args : (\n  \"/6000\", \"-6000\", \"/4000\", \"-4000\", \"/2000\", \"-2000\", \"/u=s\", \"-u=s\", \"/g=s\", \"-g=s\", \"/u=s,g=s\", \"/g=s,u=s\"\n) and not (\n  user.Ext.real.id == \"0\" or group.Ext.real.id == \"0\" or process.args_count >= 12 or \n  (process.args : \"/usr/bin/pkexec\" and process.args : \"-xdev\" and process.args_count == 7)\n)\n",
         "related_integrations": [
             {
                 "package": "endpoint",
@@ -74,7 +74,7 @@
         ],
         "threat": [
             {
-                "framework": "MITRE ATT\u0026CK",
+                "framework": "MITRE ATT&CK",
                 "tactic": {
                     "id": "TA0007",
                     "name": "Discovery",
@@ -89,7 +89,7 @@
                 ]
             },
             {
-                "framework": "MITRE ATT\u0026CK",
+                "framework": "MITRE ATT&CK",
                 "tactic": {
                     "id": "TA0004",
                     "name": "Privilege Escalation",
@@ -111,7 +111,7 @@
                 ]
             },
             {
-                "framework": "MITRE ATT\u0026CK",
+                "framework": "MITRE ATT&CK",
                 "tactic": {
                     "id": "TA0003",
                     "name": "Persistence",
