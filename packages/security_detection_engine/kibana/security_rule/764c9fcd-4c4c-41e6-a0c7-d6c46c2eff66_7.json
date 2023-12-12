@@ -13,7 +13,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Access to a Sensitive LDAP Attribute",
-        "note": "The 'Audit Directory Service Access' logging policy must be configured for (Success, Failure).\nSteps to implement the logging policy with Advanced Audit Configuration:\n\n```\nComputer Configuration \u003e\nPolicies \u003e\nWindows Settings \u003e\nSecurity Settings \u003e\nAdvanced Audit Policies Configuration \u003e\nAudit Policies \u003e\nDS Access \u003e\nAudit Directory Service Access (Success,Failure)\n```",
+        "note": "The 'Audit Directory Service Access' logging policy must be configured for (Success, Failure).\nSteps to implement the logging policy with Advanced Audit Configuration:\n\n```\nComputer Configuration >\nPolicies >\nWindows Settings >\nSecurity Settings >\nAdvanced Audit Policies Configuration >\nAudit Policies >\nDS Access >\nAudit Directory Service Access (Success,Failure)\n```",
         "query": "any where event.action == \"Directory Service Access\" and event.code == \"4662\" and\n\n  not winlog.event_data.SubjectUserSid : \"S-1-5-18\" and\n\n  winlog.event_data.Properties : (\n   /* unixUserPassword */\n  \"*612cb747-c0e8-4f92-9221-fdd5f15b550d*\",\n\n  /* ms-PKI-AccountCredentials */\n  \"*b8dfa744-31dc-4ef1-ac7c-84baf7ef9da7*\",\n\n  /*  ms-PKI-DPAPIMasterKeys */\n  \"*b3f93023-9239-4f7c-b99c-6745d87adbc2*\",\n\n  /* msPKI-CredentialRoamingTokens */\n  \"*b7ff5a38-0818-42b0-8110-d3d154c97f24*\"\n  ) and\n\n  /*\n   Excluding noisy AccessMasks\n   0x0 undefined and 0x100 Control Access\n   https://learn.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4662\n   */\n  not winlog.event_data.AccessMask in (\"0x0\", \"0x100\")\n",
         "references": [
             "https://www.mandiant.com/resources/blog/apt29-windows-credential-roaming",
@@ -71,7 +71,7 @@
         ],
         "threat": [
             {
-                "framework": "MITRE ATT\u0026CK",
+                "framework": "MITRE ATT&CK",
                 "tactic": {
                     "id": "TA0006",
                     "name": "Credential Access",

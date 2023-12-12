@@ -11,7 +11,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Potential Protocol Tunneling via Chisel Server",
-        "query": "sequence by host.id, process.entity_id with maxspan=1m\n  [process where host.os.type == \"linux\" and event.action == \"exec\" and event.type == \"start\" and \n   process.args == \"server\" and process.args in (\"--port\", \"-p\", \"--reverse\", \"--backend\", \"--socks5\") and \n   process.args_count \u003e= 3 and process.parent.name in (\"bash\", \"dash\", \"ash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\")]\n  [network where host.os.type == \"linux\" and event.action == \"connection_accepted\" and event.type == \"start\" and \n   destination.ip != null and destination.ip != \"127.0.0.1\" and destination.ip != \"::1\" and \n   not process.name : (\n     \"python*\", \"php*\", \"perl\", \"ruby\", \"lua*\", \"openssl\", \"nc\", \"netcat\", \"ncat\", \"telnet\", \"awk\", \"java\", \"telnet\",\n     \"ftp\", \"socat\", \"curl\", \"wget\", \"dpkg\", \"docker\", \"dockerd\", \"yum\", \"apt\", \"rpm\", \"dnf\", \"ssh\", \"sshd\", \"hugo\")]\n",
+        "query": "sequence by host.id, process.entity_id with maxspan=1m\n  [process where host.os.type == \"linux\" and event.action == \"exec\" and event.type == \"start\" and \n   process.args == \"server\" and process.args in (\"--port\", \"-p\", \"--reverse\", \"--backend\", \"--socks5\") and \n   process.args_count >= 3 and process.parent.name in (\"bash\", \"dash\", \"ash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\")]\n  [network where host.os.type == \"linux\" and event.action == \"connection_accepted\" and event.type == \"start\" and \n   destination.ip != null and destination.ip != \"127.0.0.1\" and destination.ip != \"::1\" and \n   not process.name : (\n     \"python*\", \"php*\", \"perl\", \"ruby\", \"lua*\", \"openssl\", \"nc\", \"netcat\", \"ncat\", \"telnet\", \"awk\", \"java\", \"telnet\",\n     \"ftp\", \"socat\", \"curl\", \"wget\", \"dpkg\", \"docker\", \"dockerd\", \"yum\", \"apt\", \"rpm\", \"dnf\", \"ssh\", \"sshd\", \"hugo\")]\n",
         "references": [
             "https://blog.bitsadmin.com/living-off-the-foreign-land-windows-as-offensive-platform",
             "https://book.hacktricks.xyz/generic-methodologies-and-resources/tunneling-and-port-forwarding"
@@ -71,7 +71,7 @@
         ],
         "threat": [
             {
-                "framework": "MITRE ATT\u0026CK",
+                "framework": "MITRE ATT&CK",
                 "tactic": {
                     "id": "TA0011",
                     "name": "Command and Control",
