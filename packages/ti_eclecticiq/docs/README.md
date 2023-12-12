@@ -158,7 +158,7 @@ An example event for `outgoing_feed` looks as following:
         "created": "2023-06-08T12:00:30.187Z",
         "id": "XugasX/Bvu/150lNyQjzIGR0zZ8=",
         "kind": "enrichment",
-        "original": "{\"calculated.relevancy\": \"0.68\", \"calculated.source_reliability\": \"A\", \"calculated.tlp\": \"GREEN\", \"diff\": \"add\", \"entity.id\": \"5e814485-012d-423d-b769-026bfed0f451\", \"entity.title\": \"Example\", \"entity.type\": \"malware\", \"meta.classification\": \"\", \"meta.confidence\": \"\", \"meta.entity_url\": \"https://test.com/entity/5e814485-012d-423d-b769-026bfed0f451\", \"meta.estimated_observed_time\": \"2019-07-09T17:42:44.777000+00:00\", \"meta.estimated_threat_end_time\": \"\", \"meta.estimated_threat_start_time\": \"2022-05-11T14:00:00.188000+00:00\", \"meta.ingest_time\": \"2023-06-08T12:00:30.187097+00:00\", \"meta.relevancy\": \"0.68\", \"meta.source_reliability\": \"A\", \"meta.tags\": \"tag1;tag2\", \"meta.taxonomy\": \"\", \"meta.terms_of_use\": \"\", \"meta.tlp\": \"GREEN\", \"source.ids\": \"47ec245c-9e7b-467e-a016-77a22ff12dd5\", \"source.names\": \"Test Source\", \"timestamp\": \"2023-06-20 18:06:10.126780+00:00\", \"type\": \"domain\", \"value\": \"unit42.test.com\", \"value_url\": \"https://test.com/main/extracts/domain/test\"}",
+        "original": "{\"calculated.relevancy\": \"0.68\", \"calculated.source_reliability\": \"A\", \"calculated.tlp\": \"GREEN\", \"diff\": \"add\", \"entity.id\": \"5e814485-012d-423d-b769-026bfed0f451\", \"entity.title\": \"Example\", \"entity.type\": \"malware\", \"meta.classification\": \"\", \"meta.confidence\": \"\", \"meta.entity_url\": \"https://test.com/entity/5e814485-012d-423d-b769-026bfed0f451\", \"meta.estimated_observed_time\": \"2019-07-09T17:42:44.777000+00:00\", \"meta.estimated_threat_end_time\": \"\", \"meta.estimated_threat_start_time\": \"2022-05-11T14:00:00.188000+00:00\", \"meta.ingest_time\": \"2023-06-08T12:00:30.187097+00:00\", \"meta.relevancy\": \"0.68\", \"meta.source_reliability\": \"A\", \"meta.tags\": \"tag1;tag2\", \"meta.taxonomy\": \"\", \"meta.terms_of_use\": \"\", \"meta.tlp\": \"GREEN\", \"source.ids\": \"47ec245c-9e7b-467e-a016-77a22ff12dd5\", \"source.names\": \"Test Source\", \"timestamp\": \"2023-06-20 18:06:10.126780+00:00\", \"type\": \"domain\", \"value\": \"example.com\", \"value_url\": \"https://test.com/main/extracts/domain/test\"}",
         "provider": "Test Source",
         "start": "2022-05-11T14:00:00.188Z",
         "type": [
@@ -176,10 +176,10 @@ An example event for `outgoing_feed` looks as following:
             "marking": {
                 "tlp": "GREEN"
             },
-            "name": "unit42.test.com",
+            "name": "example.com",
             "type": "domain-name",
             "url": {
-                "domain": "unit42.test.com"
+                "domain": "example.com"
             }
         }
     }
