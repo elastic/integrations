@@ -2977,9 +2977,9 @@ An example event for `http_request` looks as following:
 | cloudflare_logpush.http_request.edge.server.ip | IP of the edge server making a request to the origin. | ip |
 | cloudflare_logpush.http_request.edge.start_time | Timestamp at which the edge received request from the client. | date |
 | cloudflare_logpush.http_request.edge.time_to_first_byte.ms | Total view of Time To First Byte as measured at Cloudflare edge. | long |
-| cloudflare_logpush.http_request.firewall.matches.action | Array of actions the Cloudflare firewall products performed on this request. | nested |
-| cloudflare_logpush.http_request.firewall.matches.rule_id | Array of RuleIDs of the firewall product that has matched the request. | nested |
-| cloudflare_logpush.http_request.firewall.matches.sources | The firewall products that matched the request. | nested |
+| cloudflare_logpush.http_request.firewall.matches.action | Array of actions the Cloudflare firewall products performed on this request. | keyword |
+| cloudflare_logpush.http_request.firewall.matches.rule_id | Array of RuleIDs of the firewall product that has matched the request. | keyword |
+| cloudflare_logpush.http_request.firewall.matches.sources | The firewall products that matched the request. | keyword |
 | cloudflare_logpush.http_request.ja3_hash | The MD5 hash of the JA3 fingerprint used to profile SSL/TLS clients. | keyword |
 | cloudflare_logpush.http_request.origin.dns_response_time.ms | Time taken to receive a DNS response for an origin name. | long |
 | cloudflare_logpush.http_request.origin.ip | IP of the origin server. | ip |
