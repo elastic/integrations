@@ -838,7 +838,7 @@ An example event for `connection_pool` looks as following:
 | apache_tomcat.connection_pool.connection.rollback_on_return | The pool can terminate the transaction by calling rollback on the connection. | boolean |  |  |
 | apache_tomcat.connection_pool.connection.test_on_return | The indication of whether objects will be validated before being returned to the pool. | boolean |  |  |
 | apache_tomcat.connection_pool.connection.test_while_idle | Introspected attribute testWhileIdle. | boolean |  |  |
-| apache_tomcat.connection_pool.connection.time_betwen_eviction_run.time.ms | The number of milliseconds to sleep between runs of the idle connection validation/cleaner thread. | double | ms | gauge |
+| apache_tomcat.connection_pool.connection.time_betwen_eviction_run.time.ms | The total amount of time in milliseconds to sleep between runs of the idle connection validation/cleaner thread. | double | ms | gauge |
 | apache_tomcat.connection_pool.connection.validate | Validate connections from this pool. | double |  | gauge |
 | apache_tomcat.connection_pool.lifo | Last In First Out connections. | boolean |  |  |
 | apache_tomcat.connection_pool.max.total | Maximum total of connection pool. | double |  | gauge |
