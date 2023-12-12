@@ -1413,15 +1413,15 @@ This data should be available without elevated permissions.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
-| system.diskio.io.time | The total number of of milliseconds spent doing I/Os. | long |  | counter |
+| system.diskio.io.time | The total amount of time in milliseconds spent doing I/Os. | long |  | counter |
 | system.diskio.name | The disk name. | keyword |  |  |
 | system.diskio.read.bytes | The total number of bytes read successfully. On Linux this is the number of sectors read multiplied by an assumed sector size of 512. | long | byte | counter |
 | system.diskio.read.count | The total number of reads completed successfully. | long |  | counter |
-| system.diskio.read.time | The total number of milliseconds spent by all reads. | long |  | counter |
+| system.diskio.read.time | The total amount of time in milliseconds spent by all reads. | long |  | counter |
 | system.diskio.serial_number | The disk's serial number. This may not be provided by all operating systems. | keyword |  |  |
 | system.diskio.write.bytes | The total number of bytes written successfully. On Linux this is the number of sectors written multiplied by an assumed sector size of 512. | long | byte | counter |
 | system.diskio.write.count | The total number of writes completed successfully. | long |  | counter |
-| system.diskio.write.time | The total number of milliseconds spent by all writes. | long |  | counter |
+| system.diskio.write.time | The total amount of time in milliseconds spent by all writes. | long |  | counter |
 
 
 ### Filesystem
