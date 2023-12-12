@@ -808,11 +808,11 @@ An example event for `statement` looks as following:
 | postgresql.statement.query.memory.temp.written | Total number of temp block cache written by the query. | long | counter |
 | postgresql.statement.query.rows | Total number of rows returned by query. | long | counter |
 | postgresql.statement.query.text | Query text | keyword |  |
-| postgresql.statement.query.time.max.ms | Maximum number of milliseconds spent running query. | float | gauge |
-| postgresql.statement.query.time.mean.ms | Mean number of milliseconds spent running query. | long | gauge |
-| postgresql.statement.query.time.min.ms | Minimum number of milliseconds spent running query. | float | gauge |
+| postgresql.statement.query.time.max.ms | Maximum amount of time in milliseconds spent running query. | float | gauge |
+| postgresql.statement.query.time.mean.ms | Mean amount of time in milliseconds spent running query. | long | gauge |
+| postgresql.statement.query.time.min.ms | Minimum amount of time in milliseconds spent running query. | float | gauge |
 | postgresql.statement.query.time.stddev.ms | Population standard deviation of time spent running query, in milliseconds. | long | gauge |
-| postgresql.statement.query.time.total.ms | Total number of milliseconds spent running query. | float | gauge |
+| postgresql.statement.query.time.total.ms | The total amount of time in milliseconds spent running query. | float | gauge |
 | postgresql.statement.user.id | OID of the user logged into the backend that ran the query. | long |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
