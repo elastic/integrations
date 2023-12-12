@@ -1571,7 +1571,7 @@ The fields reported are:
 | mongodb.status.background_flushing.flushes | A counter that collects the number of times the database has flushed all writes to disk. | long | counter |
 | mongodb.status.background_flushing.last.ms | The amount of time, in milliseconds, that the last flush operation took to complete. | long | gauge |
 | mongodb.status.background_flushing.last_finished | A timestamp of the last completed flush operation. | date |  |
-| mongodb.status.background_flushing.total.ms | The total number of milliseconds (ms) that the mongod processes have spent writing (i.e. flushing) data to disk. Because this is an absolute value, consider the value of `flushes` and `average_ms` to provide better context for this datum. | long | gauge |
+| mongodb.status.background_flushing.total.ms | The total amount of time in milliseconds that the mongod processes have spent writing (i.e. flushing) data to disk. Because this is an absolute value, consider the value of `flushes` and `average_ms` to provide better context for this datum. | long | gauge |
 | mongodb.status.connections.available | The number of unused available incoming connections the database can provide. | long | gauge |
 | mongodb.status.connections.current | The number of connections to the database server from clients. This number includes the current shell session. Consider the value of `available` to add more context to this datum. | long | gauge |
 | mongodb.status.connections.total_created | A count of all incoming connections created to the server. This number includes connections that have since closed. | long | counter |
