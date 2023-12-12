@@ -398,6 +398,7 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.domain |  | keyword |
 | cisco_secure_email_gateway.log.dropped_messages | Dropped Messages. | long |
 | cisco_secure_email_gateway.log.email |  | keyword |
+| cisco_secure_email_gateway.log.email_participants | All the participants in the email. | keyword |
 | cisco_secure_email_gateway.log.email_tracker_header | Header consisting of (but not typically displaying) critical information for efficient email tracking and delivery. | keyword |
 | cisco_secure_email_gateway.log.encrypted_hash |  | keyword |
 | cisco_secure_email_gateway.log.encryption_queue | Messages in the Encryption Queue. | long |
