@@ -1,6 +1,6 @@
-# EclecticIQ Outgoing Feeds Integration
+# EclecticIQ Integration
 
-The EclecticIQ Outgoing Feeds integration
+The EclecticIQ integration
 allows you to ingest threat intelligence
 [observables](https://docs.eclecticiq.com/ic/current/work-with-intelligence/observables/)
 from an outgoing feeds on your
@@ -14,7 +14,7 @@ in Kibana.
 
 ## Data streams
 
-The EclecticIQ Outgoing Feeds integration
+The EclecticIQ integration
 collects one type of data streams: logs.
 
 **Logs** collected from this integration
@@ -105,7 +105,7 @@ NOT labels.is_ioc_transform_source: * AND and threat.feed.name: "EclecticIQ"
 ### Update strategies
 
 You must set the **same** _Update strategy_ for
-both the EclecticIQ Outgoing Feeds Integration instance
+both the EclecticIQ Integration instance
 and the EclecticIQ Intelligence Center outgoing feed it retrieves data from.
 
 Update strategies are how a feed decides to pack data from
