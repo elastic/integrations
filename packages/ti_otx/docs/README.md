@@ -72,6 +72,7 @@ Retrieves all the related indicators over time, related to your pulse subscripti
 | otx.title | Title describing the indicator. | keyword |
 | otx.type | The indicator type, can for example be "domain, email, FileHash-SHA256". | keyword |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
 | tags | List of keywords used to tag each event. | keyword |
 | threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
 | threat.feed.name | Display friendly feed name | constant_keyword |
@@ -115,7 +116,7 @@ An example event for `threat` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "ce0bce5a-6e51-4f74-abca-79147f80e169",
@@ -154,6 +155,7 @@ An example event for `threat` looks as following:
         }
     }
 }
+
 ```
 
 ### Pulses Subscribed (Recommended)
@@ -301,7 +303,7 @@ An example event for `pulses_subscribed` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "600a00f7-4847-4076-8fc2-91c18ea2bc86",
@@ -379,4 +381,5 @@ An example event for `pulses_subscribed` looks as following:
         }
     }
 }
+
 ```

@@ -13,7 +13,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "WMI Incoming Lateral Movement",
-        "query": "sequence by host.id with maxspan = 2s\n\n /* Accepted Incoming RPC connection by Winmgmt service */\n\n  [network where host.os.type == \"windows\" and process.name : \"svchost.exe\" and network.direction : (\"incoming\", \"ingress\") and\n   source.ip != \"127.0.0.1\" and source.ip != \"::1\" and source.port \u003e= 49152 and destination.port \u003e= 49152\n  ]\n\n  /* Excluding Common FPs Nessus and SCCM */\n\n  [process where host.os.type == \"windows\" and event.type == \"start\" and process.parent.name : \"WmiPrvSE.exe\" and \n   not process.Ext.token.integrity_level_name : \"system\" and not user.id : (\"S-1-5-18\", \"S-1-5-19\", \"S-1-5-20\") and \n   not process.executable : \n               (\"?:\\\\Program Files\\\\HPWBEM\\\\Tools\\\\hpsum_swdiscovery.exe\", \n                \"?:\\\\Windows\\\\CCM\\\\Ccm32BitLauncher.exe\", \n                \"?:\\\\Windows\\\\System32\\\\wbem\\\\mofcomp.exe\", \n                \"?:\\\\Windows\\\\Microsoft.NET\\\\Framework*\\\\csc.exe\", \n                \"?:\\\\Windows\\\\System32\\\\powercfg.exe\") and \n   not (process.executable : \"?:\\\\Windows\\\\System32\\\\msiexec.exe\" and process.args : \"REBOOT=ReallySuppress\") and \n   not (process.executable : \"?:\\\\Windows\\\\System32\\\\inetsrv\\\\appcmd.exe\" and process.args : \"uninstall\")\n   ]\n",
+        "query": "sequence by host.id with maxspan = 2s\n\n /* Accepted Incoming RPC connection by Winmgmt service */\n\n  [network where host.os.type == \"windows\" and process.name : \"svchost.exe\" and network.direction : (\"incoming\", \"ingress\") and\n   source.ip != \"127.0.0.1\" and source.ip != \"::1\" and source.port >= 49152 and destination.port >= 49152\n  ]\n\n  /* Excluding Common FPs Nessus and SCCM */\n\n  [process where host.os.type == \"windows\" and event.type == \"start\" and process.parent.name : \"WmiPrvSE.exe\" and \n   not process.Ext.token.integrity_level_name : \"system\" and not user.id : (\"S-1-5-18\", \"S-1-5-19\", \"S-1-5-20\") and \n   not process.executable : \n               (\"?:\\\\Program Files\\\\HPWBEM\\\\Tools\\\\hpsum_swdiscovery.exe\", \n                \"?:\\\\Windows\\\\CCM\\\\Ccm32BitLauncher.exe\", \n                \"?:\\\\Windows\\\\System32\\\\wbem\\\\mofcomp.exe\", \n                \"?:\\\\Windows\\\\Microsoft.NET\\\\Framework*\\\\csc.exe\", \n                \"?:\\\\Windows\\\\System32\\\\powercfg.exe\") and \n   not (process.executable : \"?:\\\\Windows\\\\System32\\\\msiexec.exe\" and process.args : \"REBOOT=ReallySuppress\") and \n   not (process.executable : \"?:\\\\Windows\\\\System32\\\\inetsrv\\\\appcmd.exe\" and process.args : \"uninstall\")\n   ]\n",
         "related_integrations": [
             {
                 "package": "endpoint",
@@ -103,7 +103,7 @@
         ],
         "threat": [
             {
-                "framework": "MITRE ATT\u0026CK",
+                "framework": "MITRE ATT&CK",
                 "tactic": {
                     "id": "TA0008",
                     "name": "Lateral Movement",
@@ -118,7 +118,7 @@
                 ]
             },
             {
-                "framework": "MITRE ATT\u0026CK",
+                "framework": "MITRE ATT&CK",
                 "tactic": {
                     "id": "TA0002",
                     "name": "Execution",

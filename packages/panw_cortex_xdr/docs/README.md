@@ -28,7 +28,7 @@ An example event for `alerts` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "6245802f-8bd9-4634-b1db-411601495ab1",
@@ -125,6 +125,7 @@ An example event for `alerts` looks as following:
         "panw_cortex_xdr"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -372,7 +373,7 @@ An example event for `incidents` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "6245802f-8bd9-4634-b1db-411601495ab1",
@@ -459,7 +460,7 @@ An example event for `incidents` looks as following:
         "EG:win-server-ex-ransomeware_report"
     ],
     "threat": {
-        "framework": "MITRE ATT\u0026CK",
+        "framework": "MITRE ATT&CK",
         "tactic": {
             "id": [
                 "TA0010"
@@ -478,6 +479,7 @@ An example event for `incidents` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
