@@ -12,7 +12,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Interactive Terminal Spawned via Python",
-        "query": "process where host.os.type == \"linux\" and event.action in (\"exec\", \"exec_event\") and\n(\n  (process.parent.name : \"python*\" and process.name : \"*sh\" and process.parent.args_count \u003e= 3 and\n   process.parent.args : \"*pty.spawn*\" and process.parent.args : \"-c\") or\n  (process.parent.name : \"python*\" and process.name : \"*sh\" and process.args : \"*sh\" and process.args_count == 1\n   and process.parent.args_count == 1)\n)\n",
+        "query": "process where host.os.type == \"linux\" and event.action in (\"exec\", \"exec_event\") and\n(\n  (process.parent.name : \"python*\" and process.name : \"*sh\" and process.parent.args_count >= 3 and\n   process.parent.args : \"*pty.spawn*\" and process.parent.args : \"-c\") or\n  (process.parent.name : \"python*\" and process.name : \"*sh\" and process.args : \"*sh\" and process.args_count == 1\n   and process.parent.args_count == 1)\n)\n",
         "related_integrations": [
             {
                 "package": "endpoint",
@@ -74,7 +74,7 @@
         ],
         "threat": [
             {
-                "framework": "MITRE ATT\u0026CK",
+                "framework": "MITRE ATT&CK",
                 "tactic": {
                     "id": "TA0002",
                     "name": "Execution",

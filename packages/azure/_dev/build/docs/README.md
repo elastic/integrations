@@ -230,25 +230,21 @@ Select the **subscription** and the **event hub namespace** you previously creat
 
 ### Create a Storage account container
 
-The Elastic Agent stores the consumer group information (state, position, or offset) in a Storage account container. Making this information available to all agents allows them to share the logs processing and resume from the last processed logs after a restart.
+The Elastic Agent stores the consumer group information (state, position, or offset) in a storage account container. Making this information available to all agents allows them to share the logs processing and resume from the last processed logs after a restart.
 
-To create the Storage account:
+NOTE: Use the storage account as a checkpoint store only.
 
-1. Sign in to the [Azure Portal](https://portal.azure.com/).
-1. Search for and select **Storage accounts**.
-1. Under **Project details**, select a subscription and a resource group.
-1. Under **Instance details**, enter a **Storage account name**.
-1. Select **Create**.
+To create the storage account:
 
-Take note of the **Storage account name**, which you will use later when specifying the **storage_account** in the integration settings.
+1. Sign in to the [Azure Portal](https://portal.azure.com/) and create your storage account.
+1. While configuring your project details, make sure you select the following recommended default settings:
+   - Hierarchical namespace: disabled
+   - Minimum TLS version: Version 1.2
+   - Access tier: Hot
+   - Enable soft delete for blobs: disabled
+   - Enable soft delete for containers: disabled
 
-When the new Storage account is ready, you can look for the access keys:
-
-1. Select the Storage account.
-1. In **Security + networking** select **Access keys**.
-1. In the **key1** section, click on the **Show** button and copy the **Key** value.
-
-Take note of the **Key** value, which you will use later when specifying the **storage_account_key** in the integration settings.
+1. When the new storage account is ready, you need to take note of the storage account name and the storage account access keys, as you will use them later to authenticate your Elastic application’s requests to this storage account.
 
 This is the final diagram of the a setup for collecting Activity logs from the Azure Monitor service.
 

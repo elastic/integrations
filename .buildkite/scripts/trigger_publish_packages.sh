@@ -71,7 +71,7 @@ steps:
     trigger: "package-storage-infra-publishing"
     build:
       env:
-        DRY_RUN: "true"    # TODO to be changed as DRY_RUN: "${DRY_RUN}"
+        DRY_RUN: "${DRY_RUN}"
         LEGACY_PACKAGE: "false"
         PACKAGE_ARTIFACTS_FOLDER: "${ARTIFACTS_FOLDER}"
 EOF
