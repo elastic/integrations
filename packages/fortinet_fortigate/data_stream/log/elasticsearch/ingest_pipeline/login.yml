@@ -8,13 +8,11 @@ processors:
     field: "event.action"
     value: "login"
     override: false
-    if: "ctx.message instanceof String && ctx.message.toLowerCase().contains('login')"
 - append:
     field: "event.category"
     value:
     - "authentication"
 - set:
-    ignore_failure: true
     field: "user.name"
     value: "{{ source.user.name }}"
     if: ctx.source?.user?.name != null
@@ -22,29 +20,49 @@ processors:
     field: "user.roles"
     value: "{{ fortinet.firewall.adminprof }}"
     if: ctx.fortinet?.firewall?.adminprof != null
+- append:
+    field: "source.user.roles"
+    value: "{{ fortinet.firewall.adminprof }}"
+    if: ctx.fortinet?.firewall?.adminprof != null
 - dissect:
     field: "fortinet.firewall.userfrom"
+    tag: "userfrom"
     pattern: "JSON(%{source.ip})"
     if: "ctx.fortinet?.firewall?.userfrom != null && ctx.fortinet.firewall.userfrom.startsWith('JSON(')"
-    ignore_failure: true
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
     description: "JSON(192.168.0.10)"
 - dissect:
     field: "fortinet.firewall.desc"
     pattern: "User login/logout %{event.outcome}"
     if: "ctx.message != null && ctx.message.startsWith('user')"
-    ignore_failure: true
+    tag: "event outcome"
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
     description: "User login/logout successful"
 - dissect:
     field: "message"
+    tag: "ssh login 1"
     pattern: "Login from ssh: %{event.outcome} for %{user.name} from %{source.ip} port %{source.port}"
     if: "ctx.message != null && ctx.message.startsWith('Login from ssh:')"
-    ignore_failure: true
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
     description: "Login from ssh: Failed for philipp from 192.168.0.10 port 38654"
 - dissect:
     field: "message"
+    tag: "ssh login 2"
     pattern: "%{_tmp.user.roles} %{user.name} login %{event.outcome} from ssh(%{source.ip}) %{}"
     if: "ctx.message != null && ctx.message.startsWith('Administrator')"
-    ignore_failure: true
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
     description: "Administrator philipp login failed from ssh(192.168.0.10) because of invalid ssh key"
 - set:
     field: "event.outcome"
@@ -71,6 +89,12 @@ processors:
     ignore_failure: true
 - append:
     field: user.roles
+    value: "{{ _tmp.user.roles }}"
+    if: ctx._tmp?.user?.roles != null
+    ignore_failure: true
+    allow_duplicates: false
+- append:
+    field: source.user.roles
     value: "{{ _tmp.user.roles }}"
     if: ctx._tmp?.user?.roles != null
     ignore_failure: true
