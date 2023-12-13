@@ -790,6 +790,7 @@ An example event for `log` looks as following:
 | source.user.group.name | Name of the group. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
 | source.user.name.text | Multi-field of `source.user.name`. | match_only_text |
+| source.user.roles | Array of user roles at the time of the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | threat.feed.name | The name of the threat feed in UI friendly format. | keyword |
 | tls.cipher | String indicating the cipher used during the current connection. | keyword |

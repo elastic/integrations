@@ -76,39 +76,42 @@ processors:
     field: "fortinet.firewall.log_id"
     target_field: "event.id"
     ignore_missing: true
-    ignore_failure: true
 - rename:
     field: "fortinet.firewall.pri"
     target_field: "log.level"
     ignore_missing: true
-    ignore_failure: true
 - rename:
     field: "fortinet.firewall.device_id"
     target_field: "observer.serial_number"
     ignore_missing: true
-    ignore_failure: true
 - append:
     field: user.roles
     value: "{{ _tmp.user.roles }}"
     if: ctx._tmp?.user?.roles != null
-    ignore_failure: true
     allow_duplicates: false
 - append:
     field: source.user.roles
     value: "{{ _tmp.user.roles }}"
     if: ctx._tmp?.user?.roles != null
-    ignore_failure: true
     allow_duplicates: false
 - convert:
     field: source.port
     type: long
-    ignore_missing: true
-    ignore_failure: true
+    tag: convert source.port
+    if: ctx.source?.port != null
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
     field: fortinet.firewall.valid
     type: long
-    ignore_missing: true
-    ignore_failure: true
+    tag: convert fortinet.firewall.valid
+    if: ctx.fortinet?.firewall?.valid != null
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - remove:
     field:
     - "fortinet.firewall.adminprof"
