@@ -62,6 +62,8 @@ Follow these detailed steps to release a fix for a given package version:
 
    This branch must be pushed to the upstream repository https://github.com/elastic/integrations.git in order to run the required CI pipelines.
 
+   If you don't have permissions to create the branch, contact the ecosystem team, providing them with the package name, version and commit to use as base for the branch. There is an open issue to automate this step (see https://github.com/elastic/integrations/issues/8721).
+
 3. **Create a PR for the bug fix**
 
    Create a new branch in your own remote (it is advised **not using** a branch name starting with `backport-`), and apply bugfixes there.
