@@ -52,10 +52,11 @@ processors:
       field: _tmp.grok
       tag: 'grok_parse_log2'
       patterns:
-        - '^([0-9] )*\"%{DATA:http.request.referrer}\" \"%{DATA:user_agent.original}(\")*$'
+        - '^([0-9] )*"%{DATA:http.request.referrer}" "%{DATA_NOQUOTE:user_agent.original}(")*$'
       pattern_definitions:
-        CONN_STATUS: "[X+-]"
+        DATA_NOQUOTE: '[^"]*'
       ignore_missing: true
+      ignore_failure: true
       if: ctx._tmp?.grok != null
       on_failure:
         - append:
@@ -69,7 +70,7 @@ processors:
       pattern_definitions:
         CONN_STATUS: "[X+-]"
       ignore_missing: true
-      if: ctx._tmp?.grok != null && ctx.http?.request?.referrer != null
+      if: ctx._tmp?.grok != null && ctx.http?.request?.referrer == null
       on_failure:
         - append:
             field: error.message
