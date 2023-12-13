@@ -283,7 +283,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "0949f27e-3199-48ba-af2b-55e717cda399",
@@ -324,6 +324,7 @@ An example event for `log` looks as following:
         "cisco_secure_email_gateway-log"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -397,6 +398,7 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.domain |  | keyword |
 | cisco_secure_email_gateway.log.dropped_messages | Dropped Messages. | long |
 | cisco_secure_email_gateway.log.email |  | keyword |
+| cisco_secure_email_gateway.log.email_participants | All the participants in the email. | keyword |
 | cisco_secure_email_gateway.log.email_tracker_header | Header consisting of (but not typically displaying) critical information for efficient email tracking and delivery. | keyword |
 | cisco_secure_email_gateway.log.encrypted_hash |  | keyword |
 | cisco_secure_email_gateway.log.encryption_queue | Messages in the Encryption Queue. | long |
@@ -453,6 +455,7 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.global_unsubscribe_hits | Global Unsubscribe Hits. | long |
 | cisco_secure_email_gateway.log.hard_bounce_recipients | Hard Bounced Recipients. | long |
 | cisco_secure_email_gateway.log.helo |  | keyword |
+| cisco_secure_email_gateway.log.host | The hostname or serial of the host sending the log. Configured in the Cisco Secure Email Gateway log subscription dashboard. | keyword |
 | cisco_secure_email_gateway.log.injected.bytes | Total Injected Message Size in Bytes. | long |
 | cisco_secure_email_gateway.log.injected.messages | Injected Messages. | long |
 | cisco_secure_email_gateway.log.injected.recipients | Injected Recipients. | long |

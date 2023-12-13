@@ -2435,6 +2435,14 @@ processors:
             ctx.user.target.put("domain", ctx.winlog.event_data.TargetDomainName);
           }
         }
+# split member name into parts based on comma ignoring escaped commas
+# https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ldap/distinguished-names
+  - split:
+      if: ctx.winlog?.event_data?.MemberName != null
+      field: winlog.event_data.MemberName
+      target_field: _temp.MemberNameParts
+      separator: "(?<!\\\\),"
+      ignore_missing: true
   - script:
       lang: painless
       ignore_failure: false
@@ -2449,7 +2457,7 @@ processors:
           return;
         }
         if (ctx?.winlog?.event_data?.MemberName != null) {
-          def memberNameParts = ctx.winlog.event_data.MemberName.splitOnToken(",");
+          def memberNameParts = ctx._temp.MemberNameParts;
           def memberName = memberNameParts[0].replace("CN=","").replace("cn=","");
           if (ctx?.related == null) {
             HashMap hm = new HashMap();
@@ -3282,6 +3290,12 @@ processors:
             value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
         - fail:
             message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+
+  #Cleanup _temp fields as it is not needed anymore
+  - remove:
+      field: _temp
+      ignore_missing: true
+      ignore_failure: true
 
 on_failure:
   - set:

@@ -19,7 +19,7 @@ Logs help you keep a record of events that happen on your machine. The `Log` dat
 Metrics give you insight into the statistics of the Apache Tomcat. The `Metric` data streams collected by the Apache Tomcat integration are `cache`, `connection pool`, `memory`, `request`, `session` and `thread pool`, so that the user can monitor and troubleshoot the performance of the Apache Tomcat instance.
 
 Data streams:
-- `access`: Collects information related to overall performance of Java applications.
+- `access`: Collects information related to the HTTP transactions, client IP, response code and request processing time.
 - `cache`: Collects information related to the overall cache of the Apache Tomcat instance.
 - `catalina`: Collects information related to the startup and shutdown of the Apache Tomcat application server, the deployment of new applications, or the failure of one or more subsystems.
 - `connection pool`: Collects information related to connection pool such as number of active and idle connections.
@@ -154,7 +154,7 @@ After the integration is successfully configured, clicking on the Assets tab of 
 
 ### Access
 
-This is the `Access` data stream. This data stream collects logs related to overall performance of Java applications.
+This is the `Access` data stream. This data stream collects logs related to the HTTP transactions, client IP, response code and request processing time.
 
 An example event for `access` looks as following:
 
@@ -838,7 +838,7 @@ An example event for `connection_pool` looks as following:
 | apache_tomcat.connection_pool.connection.rollback_on_return | The pool can terminate the transaction by calling rollback on the connection. | boolean |  |  |
 | apache_tomcat.connection_pool.connection.test_on_return | The indication of whether objects will be validated before being returned to the pool. | boolean |  |  |
 | apache_tomcat.connection_pool.connection.test_while_idle | Introspected attribute testWhileIdle. | boolean |  |  |
-| apache_tomcat.connection_pool.connection.time_betwen_eviction_run.time.ms | The number of milliseconds to sleep between runs of the idle connection validation/cleaner thread. | double | ms | gauge |
+| apache_tomcat.connection_pool.connection.time_betwen_eviction_run.time.ms | The total amount of time in milliseconds to sleep between runs of the idle connection validation/cleaner thread. | double | ms | gauge |
 | apache_tomcat.connection_pool.connection.validate | Validate connections from this pool. | double |  | gauge |
 | apache_tomcat.connection_pool.lifo | Last In First Out connections. | boolean |  |  |
 | apache_tomcat.connection_pool.max.total | Maximum total of connection pool. | double |  | gauge |

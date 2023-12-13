@@ -13,6 +13,19 @@ processors:
       description: Decodes original JSON into `crowdstrike` field.
       field: event.original
       target_field: crowdstrike
+  - remove:
+      tag: remove-metadata-aid
+      field: metadata.aid
+      ignore_missing: true
+  - rename:
+      tag: aidmaster-metadata
+      field: metadata
+      target_field: crowdstrike.info.host
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "'{{ _ingest.on_failure_processor_tag }}' rename failed with message {{ _ingest.on_failure_message }}"
   - date:
       tag: date-timestamp-utc
       description: Parse timestamp from event.
@@ -193,7 +206,7 @@ processors:
   ## ECS fields.
   - set:
       field: ecs.version
-      value: '8.10.0'
+      value: '8.11.0'
 
   ## Categorization.
   - script:
@@ -1467,7 +1480,7 @@ processors:
       field: observer.ip
       processor:
         append:
-          field: related.hosts
+          field: related.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
 
@@ -2005,7 +2018,7 @@ processors:
       field: crowdstrike.LocalAddressIP4
       processor:
         append:
-          field: related.hosts
+          field: related.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
@@ -2013,16 +2026,16 @@ processors:
       field: crowdstrike.LocalAddressIP6
       processor:
         append:
-          field: related.hosts
+          field: related.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - append:
-      field: related.hosts
+      field: related.ip
       value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx.source?.ip != null && ctx.source.ip != ""
   - append:
-      field: related.hosts
+      field: related.ip
       value: "{{{destination.ip}}}"
       allow_duplicates: false
       if: ctx.destination?.ip != null && ctx.destination.ip != ""
@@ -2441,6 +2454,7 @@ processors:
         - crowdstrike.UserIsAdmin
         - crowdstrike.UTCTimestamp
         - crowdstrike.TargetDirectoryName
+        - aws
       ignore_missing: true
       ignore_failure: true
   - remove:
