@@ -416,11 +416,14 @@ prepare_serverless_stack() {
     export EC_HOST=${EC_HOST_SECRET}
 
     echo "Boot up the Elastic stack"
-    ${ELASTIC_PACKAGE_BIN} stack up \
+    # grep command required to remove password from the output
+    if ! ${ELASTIC_PACKAGE_BIN} stack up \
         -d \
         ${args} \
         --provider serverless \
-        -U "stack.serverless.region=${EC_REGION_SECRET},stack.serverless.type=${SERVERLESS_PROJECT}" 2>&1 | grep -E -v "^Password: " # To remove password from the output
+        -U "stack.serverless.region=${EC_REGION_SECRET},stack.serverless.type=${SERVERLESS_PROJECT}" 2>&1 | grep -E -v "^Password: " ; then
+        return 1
+    fi
     echo ""
     ${ELASTIC_PACKAGE_BIN} stack status
     echo ""
@@ -687,7 +690,9 @@ run_tests_package() {
 
     # For non serverless, each Elastic stack is boot up checking each package manifest
     if ! is_serverless ; then
-        prepare_stack
+        if ! prepare_stack ; then
+            return 1
+        fi
     fi
 
     echo "--- [${package}] test installation"
