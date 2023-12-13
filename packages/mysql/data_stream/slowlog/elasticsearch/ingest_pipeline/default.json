@@ -66,6 +66,14 @@
       }
     },
     {
+      "remove": {
+        "field": "message",
+        "ignore_missing": true,
+        "if": "ctx.event?.original != null",
+        "description": "The `message` field is no longer required if the document has an `event.original` field."
+      }
+    },
+    {
       "script": {
         "lang": "painless",
         "source": "for (field in params.fields) { def v = ctx.mysql.slowlog.get(field); if (v != null) { ctx.mysql.slowlog.put(field, params.mapping.get(v)) } }",
