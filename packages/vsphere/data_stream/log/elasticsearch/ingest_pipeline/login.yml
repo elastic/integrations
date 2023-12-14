@@ -121,6 +121,12 @@ processors:
     field: destination.port
     type: long
     if: ctx.destination?.port != null
+- gsub:
+    field: vsphere.log.api.invocations
+    pattern: ",|\\."
+    replacement: ""
+    description: "The vsphere log contains either , or . as a thousand seperator. Thus 37,133 api invocations are 37133 for the long convert"
+    if: ctx.vsphere?.log?.api?.invocations instanceof String && ctx.vsphere.log.api.invocations.contains(',')
 - convert:
     field: vsphere.log.api.invocations
     type: long
