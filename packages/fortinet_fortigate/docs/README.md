@@ -4,7 +4,7 @@ This integration is for Fortinet FortiGate logs sent in the syslog format.
 
 ## Compatibility
 
-This integration has been tested against FortiOS version 6.0.x and 6.2.x. Versions above this are expected to work but have not been tested.
+This integration has been tested against FortiOS versions 6.x and 7.x up to 7.4.1. Newer versions are expected to work but have not been tested.
 
 ## Note
 
@@ -12,7 +12,7 @@ This integration has been tested against FortiOS version 6.0.x and 6.2.x. Versio
 
 ### Log
 
-The `log` dataset collects JFortinet FortiGate logs.
+The `log` dataset collects Fortinet FortiGate logs.
 
 An example event for `log` looks as following:
 
