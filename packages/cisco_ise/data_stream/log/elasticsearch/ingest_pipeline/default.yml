@@ -30,9 +30,18 @@ processors:
       pattern_definitions:
         NOTCOLON: '[^:]*?'
       on_failure:
-        - append:
-            field: error.message
-            value: '{{{ _ingest.on_failure_processor_tag }}}: {{{_ingest.on_failure_message}}}'
+        - grok:
+            description: "Events like: 'INFO: Satellite Authorization Renewal success'"
+            field: _tmp.message
+            tag: grok_message_details_fallback
+            if: ctx._tmp?.message != null
+            patterns:
+                - '^%{WORD:cisco_ise.log.log_severity_level}: %{GREEDYDATA:message}'
+                - '^%{GREEDYDATA:message}'
+            on_failure:
+                - append:
+                    field: error.message
+                    value: '{{{ _ingest.on_failure_processor_tag }}}: {{{_ingest.on_failure_message}}}'
   - trim:
       field: message
       ignore_failure: true
@@ -141,6 +150,9 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline_alarm" }}'
       if: ctx.cisco_ise?.log?.category?.name == "CISE_Alarm"
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_monitoring_data_purge_audit" }}'
+      if: ctx.cisco_ise?.log?.category?.name == "CISE_MONITORING_DATA_PURGE_AUDIT"
   - set:
       field: host.ip
       value: ['{{{host.ip}}}']
