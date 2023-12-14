@@ -175,8 +175,8 @@ body of the event.
 
 ## Example
 
-{{event "outgoing_feed"}}
+{{event "threat"}}
 
 ## Exported fields
 
-{{fields "outgoing_feed"}}
+{{fields "threat"}}
