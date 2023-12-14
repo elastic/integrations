@@ -11,16 +11,19 @@ processors:
       ignore_missing: true
       if: ctx.event?.original == null
   - grok:
+      tag: grok_audit_original
       field: event.original
       pattern_definitions:
         AUDIT_TYPE: "type=%{NOTSPACE:auditd.log.record_type}"
         AUDIT_NODE: "node=%{IPORHOST:auditd.log.node} "
         AUDIT_PREFIX: "^(?:%{AUDIT_NODE})?%{AUDIT_TYPE} msg=audit\\(%{NUMBER:auditd.log.epoch}:%{NUMBER:auditd.log.sequence}\\):(%{DATA})?"
         AUDIT_KEY_VALUES: "%{WORD}=%{GREEDYDATA}"
+        GS: '\x1d'
         ANY: ".*"
       patterns:
         - "%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} old auid=%{NUMBER:auditd.log.old_auid} new auid=%{NUMBER:auditd.log.new_auid} old ses=%{NUMBER:auditd.log.old_ses} new ses=%{NUMBER:auditd.log.new_ses}"
         - "%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} msg=['\"]([^=]*\\s)?%{ANY:auditd.log.sub_kv}['\"]"
+        - "%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv}%{GS}%{WORD:auditd.log.original_field}={ %{AUDIT_KEY_VALUES:auditd.log.sub_kv} }"
         - "%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv}"
         - "%{AUDIT_PREFIX}"
         - "%{AUDIT_TYPE} %{AUDIT_KEY_VALUES:auditd.log.kv}"
@@ -41,6 +44,9 @@ processors:
       formats:
         - UNIX
       ignore_failure: true
+  - lowercase:
+      field: auditd.log.original_field
+      ignore_missing: true
   - rename:
       ignore_failure: true
       field: auditd.log.old-auid

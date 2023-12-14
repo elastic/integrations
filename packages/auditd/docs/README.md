@@ -143,6 +143,7 @@ An example event for `log` looks as following:
 | auditd.log.old_pp |  | keyword |
 | auditd.log.old_ses | For login events this is the old session ID used for the user prior to this login. | keyword |
 | auditd.log.op |  | keyword |
+| auditd.log.original_field | The original field name if the event was parsed from an enriched format auditd log. | keyword |
 | auditd.log.pfs |  | keyword |
 | auditd.log.proctitle |  | keyword |
 | auditd.log.rdev |  | keyword |
@@ -152,6 +153,7 @@ An example event for `log` looks as following:
 | auditd.log.root_dir |  | keyword |
 | auditd.log.rport |  | long |
 | auditd.log.saddr |  | keyword |
+| auditd.log.saddr_fam |  | keyword |
 | auditd.log.selected-context |  | keyword |
 | auditd.log.sequence | The audit event sequence number. | long |
 | auditd.log.ses |  | keyword |
