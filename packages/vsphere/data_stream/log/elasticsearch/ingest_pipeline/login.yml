@@ -1,0 +1,133 @@
+---
+description: "Parse login and logout events from VMware vSphere/vCenter"
+processors:
+- dissect:
+    field: message
+    pattern: "%{} user %{user.name}@%{user.domain}"
+    if: 'ctx.message?.contains(''Authenticated user'') ?: false'
+    description: Authenticated user
+- dissect:
+    field: message
+    pattern: "%{}User %{user.name}@%{client.ip} %{_tmp.event} as %{user_agent.original}"
+    if: 'ctx.message?.contains(''logged in as'') ?: false'
+    description: logged in as
+- dissect:
+    field: message
+    pattern: "%{}User %{user.name}@%{client.ip} %{_tmp.event} out (login time: %{event.start},
+      number %{}: %{vsphere.log.api.invocations}, %{}: %{user_agent.original}"
+    if: 'ctx.message?.contains(''logged out'') ?: false'
+    ignore_failure: true
+    description: logged out version 1
+- dissect:
+    field: message
+    pattern: "%{}User {Name: %{user.name}, Domain: %{user.domain}} %{}"
+    if: 'ctx.message?.contains(''logged out'') ?: false'
+    ignore_failure: true
+    description: logged out version 2
+- dissect:
+    field: message
+    pattern: "[%{}] [] [%{}] [%{event.outcome} login %{user.name} from %{client.ip} %{}"
+    if: 'ctx.message?.contains(''Failed login'') ?: false'
+    ignore_failure: true
+    description: failed login
+- dissect:
+    field: message
+    pattern: 'Received %{_tmp.status} from %{client.ip} port %{client.port}:%{destination.port}:
+      %{}'
+    if: 'ctx.message?.startsWith(''Received'') ?: false'
+    description: Received messages
+- dissect:
+    field: message
+    pattern: "%{_tmp.status} from %{client.ip} port %{client.port} %{}"
+    if: 'ctx.message?.startsWith(''Disconnected'') ?: false'
+    description: Disconnect messages
+- dissect:
+    field: message
+    pattern: Connection %{_tmp.status} by %{client.ip} port %{client.port} %{}
+    if: 'ctx.message?.startsWith(''Connection'') ?: false'
+    description: Connection messages
+- dissect:
+    field: message
+    pattern: '%{} Logged in user: "%{user.domain}\%{user.name}"'
+    if: 'ctx.message?.contains(''Logged in user:'') ?: false'
+    ignore_failure: true
+    description: 'Logged in user:'
+- dissect:
+    field: message
+    pattern: "%{} User {Name: %{user.name}, Domain: %{user.domain}} %{}"
+    if: 'ctx?.message?.contains(''logged in successfully'') ?: false'
+    ignore_failure: true
+    description: logged in successfully
+- dissect:
+    field: user.name
+    pattern: "%{user.domain}\\%{user.name}"
+    if: 'ctx.user?.name?.contains(''\\'') ?: false'
+    description: "Split user and domain"
+- set:
+    field: event.outcome
+    value: success
+    if: "ctx.event.outcome == null && (ctx.user?.name != null || ctx.user?.domain != null)"
+    # we assume any login attempt is automatically a success, because VSPHERE
+    # does not always add `successfully logged in` and instead just mentions
+    # user abc logged in
+- set:
+    field: event.outcome
+    value: failure
+    if: 'ctx.event?.outcome?.toLowerCase()?.startsWith(''f'') ?: false'
+- grok:
+    field: user_agent.original
+    patterns:
+    - "%{DATA:user_agent.original}(?:\\]|\\)+)"
+    if: ctx.user_agent?.original != null && (ctx.user_agent.original.contains(')')
+      || ctx.user_agent.original.contains(']'))
+- user_agent:
+    field: user_agent.original
+    if: ctx.user_agent?.original != null
+- set:
+    field: event.end
+    value: "{{@timestamp}}"
+    if: ctx.event?.start != null
+- date:
+    field: event.start
+    target_field: event.start
+    if: ctx.event?.start != null
+    formats:
+    - EEEE, dd MMMM, yyyy hh:mm:ss a
+- script:
+    source: |-
+      ZonedDateTime start = ZonedDateTime.parse(ctx.event.start);
+       ZonedDateTime end = ZonedDateTime.parse(ctx.event.end);
+       ctx.event.duration= ChronoUnit.NANOS.between(start, end);
+    if: ctx.event?.end != null && ctx.event?.start != null
+- set:
+    field: event.action
+    value: login
+    if: 'ctx.message?.toLowerCase().contains(''logged in'') ?: false'
+- set:
+    field: event.action
+    value: logout
+    if: 'ctx.message?.toLowerCase().contains(''logged out'') ?: false'
+- append:
+    field: event.type
+    value: info
+- append:
+    field: event.category
+    value: authentication
+- convert:
+    field: client.port
+    type: long
+    if: ctx.client?.port != null
+- convert:
+    field: destination.port
+    type: long
+    if: ctx.destination?.port != null
+- gsub:
+    field: vsphere.log.api.invocations
+    pattern: ",|\\."
+    replacement: ""
+    description: "The vsphere log contains either , or . as a thousand seperator. Thus 37,133 api invocations are 37133 for the long convert"
+    if: ctx.vsphere?.log?.api?.invocations instanceof String && ctx.vsphere.log.api.invocations.contains(',')
+- convert:
+    field: vsphere.log.api.invocations
+    type: long
+    if: ctx.vsphere?.log?.api?.invocations != null

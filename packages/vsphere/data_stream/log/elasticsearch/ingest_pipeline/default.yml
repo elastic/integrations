@@ -1,79 +1,142 @@
 ---
-description: Pipeline for processing sample logs
-processors:  
-  - set:
-      field: ecs.version
-      value: '8.8.0'
-  - rename:
-      field: message
-      target_field: event.original
-      ignore_missing: true
-      if: 'ctx.event?.original == null'
-  - grok:
-      description: Parse syslog header
-      field: event.original
-      patterns:
-        - '^(%{ECS_SYSLOG_PRI})?%{TIMESTAMP_ISO8601:_tmp.timestamp}%{SPACE}%{HOST}%{SPACE}%{NOTSPACE:process.name} (%{POSINT:process.pid:long}|-) - -%{SPACE}%{GREEDYDATA:message}'
-      pattern_definitions:
-        ECS_SYSLOG_PRI: '<%{NONNEGINT:log.syslog.priority:long}>(\d )?'
-        TIMESTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:event.timezone}?'
-        HOST: '(?:%{IP:host.ip}|%{HOSTNAME:host.name})'
-      on_failure:
-        - drop:
-            ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - '^%{EVENT1}'
-        - '^%{EVENT2}'
-        - '^%{GREEDYDATA:message}'
-      pattern_definitions:
-        EVENT1: "%{TIMESTAMP_ISO8601}(( '%{NOTSPACE:event.action}' %{POSINT})|:) %{LOGLEVEL:log.level} %{GREEDYDATA:message}"
-        EVENT2: 'Event \[%{POSINT:event.id}\] %{NOTSPACE} \[%{TIMESTAMP_ISO8601}\] \[%{JAVACLASS:log.logger}\] \[%{LOGLEVEL:log.level}\] \[%{VSPHERE_USER}\] \[(%{NOTSPACE:vsphere.log.datacenter}|)\] \[(%{POSINT}|)\]'
-        VSPHERE_USER: '((%{HOSTNAME:user.domain}\\)?%{USERNAME:user.name}|)'
-  - date:
-      field: _tmp.timestamp
-      target_field: '@timestamp'
-      formats:
-      - ISO8601
-  - remove:
-      field:
-        - _tmp
-      ignore_failure: true
-  - script:
-      lang: painless
-      description: This script processor iterates over the whole document to remove fields with null values.
-      source: |
-        void handleMap(Map map) {
-          for (def x : map.values()) {
-            if (x instanceof Map) {
-                handleMap(x);
-            } else if (x instanceof List) {
-                handleList(x);
-            }
-          }
-          map.values().removeIf(v -> v == null);
-        }
-        void handleList(List list) {
-          for (def x : list) {
-              if (x instanceof Map) {
-                  handleMap(x);
-              } else if (x instanceof List) {
-                  handleList(x);
-              }
-          }
-        }
-        handleMap(ctx);
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
+processors:
+- set:
+    field: ecs.version
+    value: 8.10.0
+- rename:
+    field: message
+    target_field: event.original
+    ignore_missing: true
+    if: 'ctx.event?.original == null'
+- grok:
+    description: Parse syslog header
+    field: event.original
+    patterns:
+    - "^(%{ECS_SYSLOG_PRIORITY})?%{TIMESTAMP_ISO8601:_tmp.timestamp}%{SPACE}%{HOST}%{SPACE}%{NOTSPACE:process.name}
+      (%{POSINT:process.pid:long}|-) - -%{SPACE}%{GREEDYDATA:message}"
+    - "^(%{ECS_SYSLOG_PRIORITY})?%{TIMESTAMP_ISO8601:_tmp.timestamp}%{SPACE}%{HOST}%{SPACE}%{DATA:process.name}(?:\\[%{POSINT:process.pid:long}\\])?\\:
+      %{GREEDYDATA:message}"
+    - "^ \\(%{TIMESTAMP_ISO8601:_tmp.timestamp} %{GREEDYDATA:message}\\)%{GREEDYDATA:_tmp.drop}"
+    pattern_definitions:
+      ECS_SYSLOG_PRIORITY: "<%{NONNEGINT:log.syslog.priority:long}>(\\d )?"
+      HOST: "(?:%{IP:host.ip}|%{HOSTNAME:host.name})"
+- script:
+    description: Translate log.syslog.priority to log.syslog.severity.code and log.syslog.facility.code
+    lang: painless
+    source: |
+      if (ctx.log?.syslog?.priority != null) {
+        def severity = new HashMap();
+        severity['code'] = ctx.log.syslog.priority&0x7;
+        ctx.log.syslog['severity'] = severity;
+        def facility = new HashMap();
+        facility['code'] = ctx.log.syslog.priority>>3;
+        ctx.log.syslog['facility'] = facility;
+      }
+- script:
+    description: Translate log.syslog.facility.code to log.syslog.facility.name
+    lang: painless
+    params:
+      '0': Kernel
+      '1': User
+      '2': Mail
+      '3': System
+      '4': Security
+      '5': Syslog
+      '6': Line printer
+      '7': Network news
+      '8': UUCP
+      '9': Clock
+      '10': Security
+      '11': FTPd
+      '12': NTPd
+      '13': Log audit
+      '14': Log alert
+      '15': Clock daemon
+      '16': Local 0
+      '17': Local 1
+      '18': Local 2
+      '19': Local 3
+      '20': Local 4
+      '21': Local 5
+      '22': Local 6
+      '23': Local 7
+    source: |-
+      if (ctx.log?.syslog?.facility?.code == null || !params.containsKey((ctx.log.syslog.facility.code).toString())) {
+        return;
+      }
+      ctx.log.syslog.facility.name = params[(ctx.log.syslog.facility.code).toString()];
+- script:
+    description: Translate log.syslog.severity.code to log.syslog.severity.name
+    lang: painless
+    params:
+      '0': Emergency
+      '1': Alert
+      '2': Critical
+      '3': Error
+      '4': Warning
+      '5': Notice
+      '6': Informational
+      '7': Debug
+    source: |-
+      if (ctx.log?.syslog?.severity?.code == null || !params.containsKey((ctx.log.syslog.severity.code).toString())) {
+        return;
+      }
+      ctx.log.syslog.severity.name = params[(ctx.log.syslog.severity.code).toString()];
+- grok:
+    field: message
+    patterns:
+    - "^%{EVENT1}"
+    - "^%{EVENT2}"
+    - "^%{GREEDYDATA:message}"
+    pattern_definitions:
+      EVENT1: "%{TIMESTAMP_ISO8601}(( '%{NOTSPACE:event.action}' %{POSINT})|:) %{LOGLEVEL:log.level}
+        %{GREEDYDATA:message}"
+      EVENT2: Event \[%{POSINT:event.id}\] %{NOTSPACE} \[%{TIMESTAMP_ISO8601}\] \[%{JAVACLASS:log.logger}\]
+        \[%{LOGLEVEL:log.level}\] %{GREEDYDATA:message}
+- date:
+    field: _tmp.timestamp
+    target_field: "@timestamp"
+    formats:
+    - ISO8601
+- pipeline:
+    name: '{{ IngestPipeline "dns" }}'
+    if: "ctx.process?.name == 'dnsmasq'"
+- pipeline:
+    name: '{{ IngestPipeline "login" }}'
+    if: "(ctx.message != null && (ctx.message.contains('logged') || ctx.message.toLowerCase().contains('login'))) || (ctx.log?.logger != null && ['vim.event.UserLogoutSessionEvent', 'vim.event.UserLogoutSessionEvent'].contains(ctx.log.logger)) || ctx.process?.name == 'sshd'"
+- pipeline:
+    name: '{{ IngestPipeline "file" }}'
+    if: "ctx.message?.contains('Upload') ?: false"
+- set:
+    field: event.kind
+    value: event
+- remove:
+    field:
+    - _tmp
+    ignore_failure: true
+- script:
+    lang: painless
+    description: This script processor iterates over the whole document to remove
+      fields with null values.
+    source: "void handleMap(Map map) {\n                for (def x : map.values())
+      {\n                  if (x instanceof Map) {\n                    handleMap(x);\n
+      \                 } else if (x instanceof List) {\n                    handleList(x);\n
+      \                 }\n                }\n                map.values().removeIf(v
+      -> v == null);\n              }\n              void handleList(List list) {\n
+      \               for (def x : list) {\n                  if (x instanceof Map)
+      {\n                    handleMap(x);\n                  } else if (x instanceof
+      List) {\n                    handleList(x);\n                  }\n                }\n
+      \             }\n              handleMap(ctx);\n              "
+- remove:
+    field: event.original
+    if: ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))
+    ignore_failure: true
+    ignore_missing: true
 on_failure:
-  - remove:
-      field:
-        - _tmp
-      ignore_failure: true
-  - append:
-      field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+- remove:
+    field:
+    - _tmp
+    ignore_failure: true
+- append:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"
