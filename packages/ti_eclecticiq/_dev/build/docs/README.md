@@ -128,6 +128,43 @@ its configured datasets when it runs:
   with all the data packed from a given feed's datasets.
   Currently, this is not supported by the integration.
 
+### Supported EclecticIQ observables
+
+The following is a list of EclecticIQ observables supported by this integration.
+For information about how these observables are mapped, see [Exported fields](#exported-fields).
+
+- `asn`
+- `domain`
+- `email`
+- `file`
+- `file-size`
+- `hash-md5`
+- `hash-md5`
+- `hash-sha1`
+- `hash-sha256`
+- `hash-sha384`
+- `hash-sha512`
+- `hash-ssdeep`
+- `ipv4`
+- `ipv4-cidr`
+- `ipv6`
+- `ipv6-cidr`
+- `mac-48`
+- `mutex`
+- `port`
+- `process`
+- `process-name`
+- `uri`
+- `winregistry`
+- `certificate-serial-number`
+- `malware`
+- `rule`
+- `user-agent`
+- `organization`
+- `email-subject`
+- `host`
+- `cve`
+
 ### Known issues
 
 Certain threat intelligence observables in the
@@ -138,6 +175,8 @@ body of the event.
 
 ## Example
 
-{{event "threat"}}
+{{event "outgoing_feed"}}
 
-{{fields "threat"}}
+## Exported fields
+
+{{fields "outgoing_feed"}}
