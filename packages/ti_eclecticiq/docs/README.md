@@ -155,6 +155,7 @@ An example event for `threat` looks as following:
         "category": [
             "threat"
         ],
+        "dataset": "ti_eclecticiq.threat",
         "created": "2023-06-08T12:00:30.187Z",
         "id": "XugasX/Bvu/150lNyQjzIGR0zZ8=",
         "kind": "enrichment",
@@ -164,7 +165,7 @@ An example event for `threat` looks as following:
         "type": [
             "indicator"
         ],
-        "url": "https://test.com/main/extracts/domain/test"
+        "url": "https://www.test.com/"
     },
     "tags": [
         "tag1",
