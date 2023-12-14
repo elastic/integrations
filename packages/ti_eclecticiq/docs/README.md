@@ -138,13 +138,13 @@ body of the event.
 
 ## Example
 
-An example event for `outgoing_feed` looks as following:
+An example event for `threat` looks as following:
 
 ```json
 {
     "@timestamp": "2023-06-20T18:06:10.126Z",
     "eclecticiq": {
-        "outgoing_feed": {
+        "threat": {
             "observable_id": "AyGp2BbK9uP5CeLPYv/uuQlDxC8="
         }
     },
@@ -194,8 +194,8 @@ An example event for `outgoing_feed` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| eclecticiq.outgoing_feed.deleted_at | Date when observable was removed from dataset | date |
-| eclecticiq.outgoing_feed.observable_id | The ID of the observable, based on kind and value. | keyword |
+| eclecticiq.threat.deleted_at | Date when observable was removed from dataset | date |
+| eclecticiq.threat.observable_id | The ID of the observable, based on kind and value. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | email.subject | A brief summary of the topic of the message. | keyword |
 | email.subject.text | Multi-field of `email.subject`. | match_only_text |

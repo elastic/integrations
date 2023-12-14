@@ -138,6 +138,6 @@ body of the event.
 
 ## Example
 
-{{event "outgoing_feed"}}
+{{event "threat"}}
 
-{{fields "outgoing_feed"}}
+{{fields "threat"}}
