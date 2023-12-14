@@ -287,8 +287,9 @@ An example event for `log` looks as following:
 | fortinet.firewall.auditreporttype | The audit report type | keyword |
 | fortinet.firewall.auditscore | The Audit Score | keyword |
 | fortinet.firewall.audittime | The time of the audit | long |
-| fortinet.firewall.authgrp | Authorization Group | keyword |
+| fortinet.firewall.authgrp | Authorization group | keyword |
 | fortinet.firewall.authid | Authentication ID | keyword |
+| fortinet.firewall.authmsg | Authentication message | keyword |
 | fortinet.firewall.authproto | The protocol that initiated the authentication | keyword |
 | fortinet.firewall.authserver | Authentication server | keyword |
 | fortinet.firewall.bandwidth | Bandwidth | keyword |
@@ -407,6 +408,7 @@ An example event for `log` looks as following:
 | fortinet.firewall.exchange | Mail Exchanges from DNS response answer section | keyword |
 | fortinet.firewall.expectedsignature | Expected SSL signature | keyword |
 | fortinet.firewall.expiry | FortiGuard override expiry timestamp | keyword |
+| fortinet.firewall.extrainfo |  | keyword |
 | fortinet.firewall.fams_pause | Fortinet Analysis and Management Service Pause | integer |
 | fortinet.firewall.fazlograte | FortiAnalyzer Logging Rate | long |
 | fortinet.firewall.fctemssn | FortiClient Endpoint SSN | keyword |
@@ -680,6 +682,7 @@ An example event for `log` looks as following:
 | fortinet.firewall.used_for_type | Connection for the type | integer |
 | fortinet.firewall.utmaction | Security action performed by UTM | keyword |
 | fortinet.firewall.utmref | UTM reference | keyword |
+| fortinet.firewall.valid |  | integer |
 | fortinet.firewall.vap | Virtual AP | keyword |
 | fortinet.firewall.vapmode | Virtual AP mode | keyword |
 | fortinet.firewall.vcluster | virtual cluster id | integer |
@@ -787,6 +790,7 @@ An example event for `log` looks as following:
 | source.user.group.name | Name of the group. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
 | source.user.name.text | Multi-field of `source.user.name`. | match_only_text |
+| source.user.roles | Array of user roles at the time of the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | threat.feed.name | The name of the threat feed in UI friendly format. | keyword |
 | tls.cipher | String indicating the cipher used during the current connection. | keyword |
@@ -812,6 +816,9 @@ An example event for `log` looks as following:
 | tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.path | Path of the request, such as "/search". | wildcard |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
+| user.roles | Array of user roles at the time of the event. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
 | user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
 | vulnerability.category | The type of system or architecture that the vulnerability affects. These may be platform-specific (for example, Debian or SUSE) or general (for example, Database or Firewall). For example (https://qualysguard.qualys.com/qwebhelp/fo_portal/knowledgebase/vulnerability_categories.htm[Qualys vulnerability categories]) This field must be an array. | keyword |
