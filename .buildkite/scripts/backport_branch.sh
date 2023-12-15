@@ -104,7 +104,7 @@ if [ ! isPackagePublished "${FULL_ZIP_PACKAGE_NAME}" ]; then
 fi
 
 echo "Check if commit exists."
-if [[ "$BASE_COMMIT" != "" ]] && [[ ! isCommitExist "${BASE_COMMIT}" ]]; then
+if [[ "$BASE_COMMIT" != "" ]] && [[ "$(git branch --contains $BASE_COMMIT | grep $SOURCE_BRANCH | awk '{print $2}')" != "$SOURCE_BRANCH" ]]; then
   buildkite-agent annotate "The entered commit wasn't found in the **main** branch" --style "warning"
   exit 1
 fi
