@@ -90,8 +90,6 @@ processFifes() {
   local JENKINS_FOLDER_PATH=".ci"
   git checkout $BACKPORT_BRANCH_NAME
   ls -la                                                                        #TODO remove after tests
-  ls -la $BUILDKITE_FOLDER_PATH                                                 #TODO remove after tests
-  ls -la $JENKINS_FOLDER_PATH                                                   #TODO remove after tests
   echo "Copying $BUILDKITE_FOLDER_PATH..."
   git checkout $SOURCE_BRANCH -- $BUILDKITE_FOLDER_PATH
   echo "Copying $JENKINS_FOLDER_PATH..."
@@ -107,7 +105,8 @@ processFifes() {
   fi
 
   echo "Commiting and pushing..."
-  # git add .
+  # git add $BUILDKITE_FOLDER_PATH
+  # git add $JENKINS_FOLDER_PATH
   # git commit -m "Add $BUILDKITE_FOLDER_PATH and $JENKINSFILE_PATH to backport branch: $BACKPORT_BRANCH_NAME"
   # git push origin $BACKPORT_BRANCH_NAME
 }
