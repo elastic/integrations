@@ -71,7 +71,7 @@ createLocalBackportBranch() {
   if git checkout -b $branch_name $source_commit; then
     echo "The branch $branch_name has created."
   else
-    buildkite-agent annotate "The backport branch $BACKPORT_BRANCH_NAME wasn't created." --style "warning"
+    buildkite-agent annotate "The backport branch **$BACKPORT_BRANCH_NAME** wasn't created." --style "warning"
     exit 1
   fi
 }
@@ -93,9 +93,9 @@ processFifes() {
   git checkout $SOURCE_BRANCH -- $BUILDKITE_FOLDER_PATH
   echo "Copying $JENKINS_FOLDER_PATH..."
   git checkout $SOURCE_BRANCH -- $JENKINS_FOLDER_PATH
-  ls -la $BUILDKITE_FOLDER_PATH
-  ls -la $JENKINS_FOLDER_PATH
-  ls -la
+  ls -la                                                                        #TODO remove after tests
+  ls -la $BUILDKITE_FOLDER_PATH                                                 #TODO remove after tests
+  ls -la $JENKINS_FOLDER_PATH                                                   #TODO remove after tests
 
   if [ "${REMOVE_ALL_PACKAGES}" == "true" ]; then
     echo "Removing all packages from $PACKAGES_FOLDER_PATH folder"
@@ -111,7 +111,7 @@ processFifes() {
 
 echo "Check if the package has published"
 if ! isPackagePublished "${FULL_ZIP_PACKAGE_NAME}"; then
-  buildkite-agent annotate "The package version: $FULL_PACKAGE_NAME hasn't published yet." --style "warning"
+  buildkite-agent annotate "The package version: **$FULL_PACKAGE_NAME** hasn't published yet." --style "warning"
   exit 1
 fi
 
@@ -129,4 +129,4 @@ createLocalBackportBranch "${BACKPORT_BRANCH_NAME}" "${BASE_COMMIT}"
 echo "Adding CI files into the branch"
 processFifes
 
-buildkite-agent annotate "The backport branch: **$BACKPORT_BRANCH_NAME** has created. Folders **.buildkite** and **.ci** have added into the branch." --style "info"
+buildkite-agent annotate "The backport branch: **$BACKPORT_BRANCH_NAME** has created. Folders **.buildkite** and **.ci** have added into the branch." --style "success"
