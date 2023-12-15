@@ -54,7 +54,7 @@ isCommitExist() {
   local branch=$2
   git checkout $branch
   local searchResult="$(git branch --contains $commit_sha | grep $branch | awk '{print $2}')"
-  echp "${searchResult}"
+  echo "${searchResult}"
   git checkout $BUILDKITE_BRANCH
   if [ "${searchResult}" == "${branch}" ]; then
     echo "The commit $commit_sha exists in the branch $branch"
