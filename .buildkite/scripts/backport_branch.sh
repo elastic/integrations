@@ -92,7 +92,7 @@ processFifes() {
   echo "Copying $BUILDKITE_FOLDER_PATH..."
   git checkout $SOURCE_BRANCH -- $BUILDKITE_FOLDER_PATH
   echo "Copying $JENKINSFILE_PATH..."
-  git checkout $SOURCE_BRANCH $JENKINSFILE_PATH
+  git checkout $SOURCE_BRANCH -- $JENKINSFILE_PATH
   ls -la $BUILDKITE_FOLDER_PATH
   ls -la
 
