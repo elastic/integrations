@@ -100,6 +100,7 @@ processFifes() {
   if [ "${REMOVE_ALL_PACKAGES}" == "true" ]; then
     echo "Removing all packages from $PACKAGES_FOLDER_PATH folder"
     removeAllPackages
+    ls -la $PACKAGES_FOLDER_PATH
   fi
 
   echo "Commiting and pushing..."
@@ -128,4 +129,4 @@ createLocalBackportBranch "${BACKPORT_BRANCH_NAME}" "${BASE_COMMIT}"
 echo "Adding CI files to the branch"
 processFifes
 
-buildkite-agent annotate "The backport branch: $BACKPORT_BRANCH_NAME has created. Folders **.buildkite** and **.ci** have added into the branch." --style "info"
+buildkite-agent annotate "The backport branch: **$BACKPORT_BRANCH_NAME** has created. Folders **.buildkite** and **.ci** have added into the branch." --style "info"
