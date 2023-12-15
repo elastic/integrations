@@ -126,7 +126,7 @@ fi
 echo "Creating local backport-branch"
 createLocalBackportBranch "${BACKPORT_BRANCH_NAME}" "${BASE_COMMIT}"
 
-echo "Adding CI files to the branch"
+echo "Adding CI files into the branch"
 processFifes
 
 buildkite-agent annotate "The backport branch: **$BACKPORT_BRANCH_NAME** has created. Folders **.buildkite** and **.ci** have added into the branch." --style "info"
