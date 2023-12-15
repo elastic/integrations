@@ -65,11 +65,13 @@ isCommitExist() {
   fi
 }
 
-createBackportBranch() {
-  if [ git checkout -b $BACKPORT_BRANCH_NAME $BASE_COMMIT ]; then
-    echo "The branch $BACKPORT_BRANCH_NAME has created."
+createLocalBackportBranch() {
+  local branch_name=$1
+  local source_commit=$2
+  if git checkout -b $branch_name $source_commit; then
+    echo "The branch $branch_name has created."
   else
-    buildkite-agent annotate "The backport branch $backport_branch_name wasn't created." --style "warning"
+    buildkite-agent annotate "The backport branch $BACKPORT_BRANCH_NAME wasn't created." --style "warning"
     exit 1
   fi
 }
@@ -120,7 +122,7 @@ if ! -z "$BASE_COMMIT"; then
 fi
 
 echo "Creating local backport-branch"
-createBackportBranch "${PACKAGE_NAME}" "${PACKAGE_VERSION}" "${BASE_COMMIT}"
+createLocalBackportBranch "${BACKPORT_BRANCH_NAME}" "${BASE_COMMIT}"
 
 echo "Adding CI files to the branch"
 processFifes
