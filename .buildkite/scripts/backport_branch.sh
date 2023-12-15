@@ -91,7 +91,7 @@ processFifes() {
   git checkout $BACKPORT_BRANCH_NAME
   echo "Copying $BUILDKITE_FOLDER_PATH..."
   git checkout $SOURCE_BRANCH -- $BUILDKITE_FOLDER_PATH
-  echo "Copying $JENKINSFILE_PATH..."
+  echo "Copying $JENKINS_FOLDER_PATH..."
   git checkout $SOURCE_BRANCH -- $JENKINS_FOLDER_PATH
   ls -la $BUILDKITE_FOLDER_PATH
   ls -la $JENKINS_FOLDER_PATH
