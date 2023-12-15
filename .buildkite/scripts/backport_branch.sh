@@ -87,13 +87,14 @@ removeAllPackages() {
 
 processFifes() {
   local BUILDKITE_FOLDER_PATH=".buildkite"
-  local JENKINSFILE_PATH=".ci\Jenkinsfile"
+  local JENKINS_FOLDER_PATH=".ci"
   git checkout $BACKPORT_BRANCH_NAME
   echo "Copying $BUILDKITE_FOLDER_PATH..."
   git checkout $SOURCE_BRANCH -- $BUILDKITE_FOLDER_PATH
   echo "Copying $JENKINSFILE_PATH..."
-  git checkout $SOURCE_BRANCH -- $JENKINSFILE_PATH
+  git checkout $SOURCE_BRANCH -- $JENKINS_FOLDER_PATH
   ls -la $BUILDKITE_FOLDER_PATH
+  ls -la $JENKINS_FOLDER_PATH
   ls -la
 
   if [ "${REMOVE_ALL_PACKAGES}" == "true" ]; then
