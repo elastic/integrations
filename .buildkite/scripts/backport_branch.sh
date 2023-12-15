@@ -50,7 +50,13 @@ isPackagePublished() {
 }
 
 isCommitExist() {
-  if [ "$(git branch --contains $BASE_COMMIT | grep $SOURCE_BRANCH | awk '{print $2}')" == "$SOURCE_BRANCH" ]; then
+  local commit_sha=$1
+  local branch=$2
+  git checkout $branch
+  local searchResult="$(git branch --contains $commit_sha | grep $branch | awk '{print $2}')"
+  echp "${searchResult}"
+  git checkout $BUILDKITE_BRANCH
+  if [ "${searchResult}" == "${branch}" ]; then
     return 0
   else
     return 1
@@ -98,14 +104,16 @@ processFifes() {
 }
 
 echo "Check if the package has published"
-if [ ! isPackagePublished "${FULL_ZIP_PACKAGE_NAME}" ]; then
+if ! isPackagePublished "${FULL_ZIP_PACKAGE_NAME}"; then
   buildkite-agent annotate "The package version: $FULL_PACKAGE_NAME hasn't published yet." --style "warning"
   exit 1
 fi
 
 echo "Check if commit exists."
-if [[ "$BASE_COMMIT" != "" ]] && [[ "$(git branch --contains $BASE_COMMIT | grep $SOURCE_BRANCH | awk '{print $2}')" != "$SOURCE_BRANCH" ]]; then
-  buildkite-agent annotate "The entered commit wasn't found in the **main** branch" --style "warning"
+git branch
+
+if [[ ! -z "$BASE_COMMIT" ]] && [[ isCommitExist "$BASE_COMMIT" "$SOURCE_BRANCH" ]]; then
+  buildkite-agent annotate "The entered commit hasn't found in the **$SOURCE_BRANCH** branch" --style "warning"
   exit 1
 fi
 
