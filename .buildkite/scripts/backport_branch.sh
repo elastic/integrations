@@ -120,9 +120,9 @@ if ! -z "$BASE_COMMIT"; then
 fi
 
 echo "Creating local backport-branch"
-createBackportBranch "${PACKAGE_NAME}" "${VERSION}" "${BASE_COMMIT}"
+createBackportBranch "${PACKAGE_NAME}" "${PACKAGE_VERSION}" "${BASE_COMMIT}"
 
 echo "Adding CI files to the branch"
 processFifes
 
-buildkite-agent annotate "The backport branch: $BACKPORT_BRANCH_NAME has created. $BUILDKITE_FOLDER_PATH and $JENKINSFILE_PATH have added to the branch." --style "info"
+buildkite-agent annotate "The backport branch: $BACKPORT_BRANCH_NAME has created. $BUILDKITE_FOLDER_PATH and $JENKINSFILE_PATH have added into the branch." --style "info"
