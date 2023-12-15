@@ -53,7 +53,7 @@ isCommitExist() {
   local commit_sha=$1
   local branch=$2
   git checkout $branch
-  local searchResult="$(git branch --contains $commit_sha | grep -q $branch | awk '{print $2}')"
+  local searchResult="$(git branch --contains $commit_sha | grep $branch | awk '{print $2}')"
   echp "${searchResult}"
   git checkout $BUILDKITE_BRANCH
   if [ "${searchResult}" == "${branch}" ]; then
@@ -112,8 +112,8 @@ if ! isPackagePublished "${FULL_ZIP_PACKAGE_NAME}"; then
 fi
 
 echo "Check if commit exists."
-if [[ ! -z "$BASE_COMMIT" ]] ; then
-  if [[ isCommitExist "$BASE_COMMIT" "$SOURCE_BRANCH" ]]; then
+if ! -z "$BASE_COMMIT"; then
+  if isCommitExist "$BASE_COMMIT" "$SOURCE_BRANCH"; then
     buildkite-agent annotate "The entered commit hasn't found in the **$SOURCE_BRANCH** branch" --style "warning"
     exit 1
   fi
