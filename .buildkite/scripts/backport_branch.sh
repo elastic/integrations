@@ -63,6 +63,7 @@ createBackportBranch() {
   else
     buildkite-agent annotate "The backport branch $backport_branch_name wasn't created." --style "warning"
     exit 1
+  fi
 }
 
 removeAllPackages() {
