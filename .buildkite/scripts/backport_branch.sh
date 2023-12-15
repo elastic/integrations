@@ -113,7 +113,7 @@ fi
 
 echo "Check if commit exists."
 if ! -z "$BASE_COMMIT"; then
-  if isCommitExist "$BASE_COMMIT" "$SOURCE_BRANCH"; then
+  if ! isCommitExist "$BASE_COMMIT" "$SOURCE_BRANCH"; then
     buildkite-agent annotate "The entered commit hasn't found in the **$SOURCE_BRANCH** branch" --style "warning"
     exit 1
   fi
