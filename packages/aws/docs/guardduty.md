@@ -87,11 +87,11 @@ An example event for `guardduty` looks as following:
 {
     "@timestamp": "2022-11-22T12:22:20.938Z",
     "agent": {
-        "ephemeral_id": "869cd846-8c49-4002-94b9-891ba6f9cd85",
-        "id": "a7b5ed34-8788-4a63-9ec2-cfb7e7c091d3",
+        "ephemeral_id": "7b37f535-5ec4-4b95-a393-f3852061d4ac",
+        "id": "9e5875f3-d206-43b3-b24e-5a5096e50846",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.11.0"
     },
     "aws": {
         "guardduty": {
@@ -229,12 +229,12 @@ An example event for `guardduty` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.10.0"
     },
     "elastic_agent": {
-        "id": "a7b5ed34-8788-4a63-9ec2-cfb7e7c091d3",
+        "id": "9e5875f3-d206-43b3-b24e-5a5096e50846",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.11.0"
     },
     "event": {
         "action": "KUBERNETES_API_CALL",
@@ -243,7 +243,7 @@ An example event for `guardduty` looks as following:
         "dataset": "aws.guardduty",
         "end": "2022-11-22T12:22:20.000Z",
         "id": "e0c22973b012f3af67ac593443e920ff",
-        "ingested": "2023-01-18T05:29:38Z",
+        "ingested": "2023-12-14T11:38:35Z",
         "kind": [
             "event"
         ],
