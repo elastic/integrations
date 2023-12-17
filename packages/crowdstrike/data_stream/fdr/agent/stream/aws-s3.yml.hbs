@@ -59,7 +59,7 @@ publisher_pipeline.disable_host: true
 {{/contains}}
 processors:
 - add_locale: ~
-{{#if enrich_host_metadata}}
+{{#if enrich_metadata}}
 - decode_json_fields:
     fields: message
     target: crowdstrike
@@ -72,25 +72,53 @@ processors:
           file:
             id: aidmaster
         put:
-          ttl: {{host_metadata_ttl}}
+          ttl: {{metadata_ttl}}
           key_field: crowdstrike.aid
           value_field: crowdstrike
-          ignore_missing: false
-{{#unless keep_aidmaster}}
+          ignore_missing: true
+{{#unless keep_metadata}}
     - drop_event:
         when:
           contains:
             log.file.path: aidmaster
 {{/unless}}
   else:
-    - cache:
-        backend:
-          file:
-            id: aidmaster
-        get:
-          key_field: crowdstrike.aid
-          target_field: metadata
-          ignore_missing: false
+    - if:
+        contains:
+          log.file.path: userinfo
+      then:
+        - cache:
+            backend:
+              file:
+                id: userinfo
+            put:
+              ttl: {{metadata_ttl}}
+              key_field: crowdstrike.UserSid_readable
+              value_field: crowdstrike
+              ignore_missing: true
+{{#unless keep_metadata}}
+        - drop_event:
+            when:
+              contains:
+                log.file.path: userinfo
+{{/unless}}
+      else:
+        - cache:
+            backend:
+              file:
+                id: aidmaster
+            get:
+              key_field: crowdstrike.aid
+              target_field: metadata.host
+              ignore_missing: true
+        - cache:
+            backend:
+              file:
+                id: userinfo
+            get:
+              key_field: crowdstrike.UserSid
+              target_field: metadata.user
+              ignore_missing: true
 - drop_fields:
     fields:
       - crowdstrike
