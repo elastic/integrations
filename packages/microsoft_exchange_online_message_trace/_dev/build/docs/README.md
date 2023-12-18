@@ -53,8 +53,8 @@ available in your organization. They are usually under the sections [Accepted Do
 - The default `Polling Interval` and `Initial Interval` values are configured to `1h`, you can however change these to your required values. The look-back 
   value of `Initial Interval` should not exceed `200 hours` as this might cause unexpected errors with the API.
 
-- The default `Additional Look-back Time` value is configured for to `1h`. 
-  This is intended to allow for catching events that were not initially present because of eventual consistency.
+- The default `Additional Look-back Time` value is configured for `1h`. 
+  This is intended to capture events that may not have been initially present due to eventual consistency.
   This value does not need to exceed [`24h`](https://learn.microsoft.com/en-us/previous-versions/office/developer/o365-enterprise-developers/jj984335(v=office.15)#data-granularity-persistence-and-availability).
     - Note: The larger this value is, the less likely events will be missed, however, this will cause the integration to take longer to pull all events, making newer events take longer to become present.
 
