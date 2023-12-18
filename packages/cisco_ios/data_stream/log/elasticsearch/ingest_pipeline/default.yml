@@ -215,8 +215,7 @@ processors:
       field: message
       tag: grok_badauth
       patterns:
-        - '^No MD5 digest from %{DATA:source.address}(\(%{INT:source.port}\)|\:%{INT:source.port}) to %{DATA:destination.address}(\(%{INT:destination.port}\)|\:%{INT:destination.port}) \(RST\) ((tableid - %{DATA:cisco.ios.tableid})|(%{GREEDYDATA:_temp_.rst}))$'
-        - '^No MD5 digest from %{DATA:source.address}(\(%{INT:source.port}\)|\:%{INT:source.port}) to %{DATA:destination.address}(\(%{INT:destination.port}\)|\:%{INT:destination.port})$'
+        - '^No MD5 digest from %{DATA:source.address}(\(%{INT:source.port}\)|\:%{INT:source.port}) to %{DATA:destination.address}(\(%{INT:destination.port}\)|\:%{INT:destination.port})(?: \(RST\) ((tableid - %{DATA:cisco.ios.tableid})|(%{GREEDYDATA:_temp_.rst})))?$'
       ignore_missing: true
       if: ctx.event?.code == 'BADAUTH'
   - grok:
