@@ -71,9 +71,9 @@ isCommitExist() {
 isBranchExist() {
   local branch=$1
   local searchResult=""
-  searchResult="$(git branch | grep $branch | awk '{print $2}')"
+  searchResult="$(git ls-remote --exit-code origin "$branch" >/dev/null 2>&1)"
   echo "${searchResult}"
-  if [ "${searchResult}" == "${branch}" ]; then
+  if [ "${searchResult}" == "0" ]; then
     echo "The backport branch $branch already exist"
     return 0
   else
