@@ -3,7 +3,7 @@ description: Mapping of Menlo Web Proxy Fields from API into ECS fields.
 processors:
   - set:
       field: ecs.version
-      value: 8.8.0
+      value: 8.11.0
   - rename:
       field: message
       target_field: event.original
@@ -73,7 +73,7 @@ processors:
   - rename:
       field: "json.event.soph_dlp_ref"
       target_field: "event.reference"
-      if: ctx?.json?.event?.soph_dlp_ref != "NA"
+      if: ctx.json?.event?.soph_dlp_ref != "NA"
       ignore_missing: true
   - rename:
       field: "json.event.risk_score"
@@ -81,7 +81,7 @@ processors:
       ignore_missing: true
   - append:
       field: "dns.answers.data"
-      value: "{{{json.event.dst}}}"
+      value: "{{{json.event.dst}}}'
       allow_duplicates: false
   - rename:
       field: "json.event.product"
@@ -130,13 +130,13 @@ processors:
       field: "json.event.file_size"
       type: long
       target_field: "file.size"
-      if: ctx?.json?.event?.file_size != "NA"
+      if: ctx.json?.event?.file_size != "NA"
       ignore_missing: true
   - append:
       field: "observer.ip"
-      value: "{{{json.event.egress_ip}}}"
+      value: "{{{json.event.egress_ip}}}'
       allow_duplicates: false
-      if: ctx?.json?.event?.egress_ip != "NA"
+      if: ctx.json?.event?.egress_ip != "NA"
   - set:
       field: "destination"
       copy_from: "server"
@@ -195,7 +195,7 @@ processors:
       field: "json.event.filename"
       target_field: "file.name"
       ignore_missing: true
-      if: ctx?.json?.event?.filename != "NA"
+      if: ctx.json?.event?.filename != "NA"
   - rename:
       field: "json.event.sha256"
       target_field: "file.hash.sha256"
@@ -287,12 +287,12 @@ processors:
   - append:
       field: "related.ip"
       value: '{{source.ip}}'
-      if: ctx?.source?.ip != null
+      if: ctx.source?.ip != null
       allow_duplicates: false
   - append:
       field: "related.ip"
       value: '{{destination.ip}}'
-      if: ctx?.destination?.ip != null
+      if: ctx.destination?.ip != null
       allow_duplicates: false
   - remove:
       field:
@@ -309,4 +309,4 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
+      value: Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
