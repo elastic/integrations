@@ -22,10 +22,10 @@ else
   PACKAGE_VERSION="${PACKAGE_VERSION:-""}"
 fi
 
-if buildkite-agent meta-data exists REMOVE_ALL_PACKAGES; then
-  REMOVE_ALL_PACKAGES="$(buildkite-agent meta-data get REMOVE_ALL_PACKAGES)"
+if buildkite-agent meta-data exists REMOVE_OTHER_PACKAGES; then
+  REMOVE_OTHER_PACKAGES="$(buildkite-agent meta-data get REMOVE_OTHER_PACKAGES)"
 else
-  REMOVE_ALL_PACKAGES="${REMOVE_ALL_PACKAGES:-"false"}"
+  REMOVE_OTHER_PACKAGES="${REMOVE_OTHER_PACKAGES:-"false"}"
 fi
 
 if [[ -z "$PACKAGE_NAME" ]] || [[ -z "$PACKAGE_VERSION" ]]; then
@@ -53,7 +53,8 @@ isCommitExist() {
   local commit_sha=$1
   local branch=$2
   git checkout $branch
-  local searchResult="$(git branch --contains $commit_sha | grep $branch | awk '{print $2}')"
+  local searchResult=""
+  searchResult="$(git branch --contains $commit_sha | grep $branch | awk '{print $2}')"
   echo "${searchResult}"
   git checkout $BUILDKITE_BRANCH
   if [ "${searchResult}" == "${branch}" ]; then
@@ -81,7 +82,7 @@ isBranchExist() {
 createLocalBackportBranch() {
   local branch_name=$1
   local source_commit=$2
-  if git checkout -b $branch_name $source_commit; then
+  if git checkout -b "$branch_name" "$source_commit"; then
     echo "The branch $branch_name has created."
   else
     buildkite-agent annotate "The backport branch **$BACKPORT_BRANCH_NAME** hasn't created." --style "warning"
@@ -98,20 +99,20 @@ removeAllPackages() {
   done
 }
 
-processFifes() {
+updateBackportBranch() {
   local BUILDKITE_FOLDER_PATH=".buildkite"
   local JENKINS_FOLDER_PATH=".ci"
   git checkout $BACKPORT_BRANCH_NAME
   ls -la                                                                        #TODO remove after tests
-  echo "Copying $BUILDKITE_FOLDER_PATH..."
+  echo "Copying $BUILDKITE_FOLDER_PATH from $SOURCE_BRANCH..."
   git checkout $SOURCE_BRANCH -- $BUILDKITE_FOLDER_PATH
-  echo "Copying $JENKINS_FOLDER_PATH..."
+  echo "Copying $JENKINS_FOLDER_PATH from $SOURCE_BRANCH..."
   git checkout $SOURCE_BRANCH -- $JENKINS_FOLDER_PATH
   ls -la                                                                        #TODO remove after tests
   ls -la $BUILDKITE_FOLDER_PATH                                                 #TODO remove after tests
   ls -la $JENKINS_FOLDER_PATH                                                   #TODO remove after tests
 
-  if [ "${REMOVE_ALL_PACKAGES}" == "true" ]; then
+  if [ "${REMOVE_OTHER_PACKAGES}" == "true" ]; then
     echo "Removing all packages from $PACKAGES_FOLDER_PATH folder"
     removeAllPackages
     ls -la $PACKAGES_FOLDER_PATH
@@ -126,12 +127,12 @@ processFifes() {
 
 echo "Check if the package has published"
 if ! isPackagePublished "${FULL_ZIP_PACKAGE_NAME}"; then
-  buildkite-agent annotate "The package version: **$FULL_PACKAGE_NAME** hasn't published yet." --style "warning"
+  buildkite-agent annotate "The package version: **$FULL_PACKAGE_NAME** hasn't neen published yet." --style "warning"
   exit 1
 fi
 
-echo "Check if commit exists."
-if ! -z "$BASE_COMMIT"; then
+echo "Check if base commit exists."
+if [ ! -z "$BASE_COMMIT" ]; then
   if ! isCommitExist "$BASE_COMMIT" "$SOURCE_BRANCH"; then
     buildkite-agent annotate "The entered commit hasn't found in the **$SOURCE_BRANCH** branch" --style "warning"
     exit 1
@@ -144,6 +145,6 @@ if ! isBranchExist "${BACKPORT_BRANCH_NAME}"; then
 fi
 
 echo "Adding CI files into the branch"
-processFifes
+updateBackportBranch
 
 buildkite-agent annotate "The backport branch: **$BACKPORT_BRANCH_NAME** has created. Folders **.buildkite** and **.ci** have added into the branch." --style "success"
