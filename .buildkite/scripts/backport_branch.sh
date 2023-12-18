@@ -71,7 +71,7 @@ isCommitExist() {
 isBranchExist() {
   local branch=$1
   if git ls-remote --exit-code origin "$branch" >/dev/null 2>&1; then
-    echo "The backport branch $branch already exist"
+    echo "The backport branch $branch already exists"
     return 0
   else
     echo "The backport branch $branch does not exist"
@@ -141,11 +141,16 @@ if [ ! -z "$BASE_COMMIT" ]; then
 fi
 
 echo "Check if backport-branch exists"
+MSG=""
 if ! isBranchExist "$BACKPORT_BRANCH_NAME"; then
+  MSG="The backport branch: **$BACKPORT_BRANCH_NAME** has been created."
   createLocalBackportBranch "$BACKPORT_BRANCH_NAME" "$BASE_COMMIT"
+else
+  MSG="The backport branch: **$BACKPORT_BRANCH_NAME** has been updated."
 fi
 
-echo "Adding CI files into the branch"
+echo "Adding CI files into the branch $BACKPORT_BRANCH_NAME"
 updateBackportBranch
 
-buildkite-agent annotate "The backport branch: **$BACKPORT_BRANCH_NAME** has been created. Folders **.buildkite** and **.ci** are updated in the branch." --style "success"
+
+buildkite-agent annotate "$MSG" --style "success"
