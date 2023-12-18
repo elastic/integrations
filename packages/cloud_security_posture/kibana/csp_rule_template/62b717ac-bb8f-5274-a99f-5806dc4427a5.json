@@ -1,0 +1,38 @@
+{
+    "id": "62b717ac-bb8f-5274-a99f-5806dc4427a5",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/azure/azure-monitor/platform/diagnostic-settings\n2. https://docs.microsoft.com/en-us/azure/azure-monitor/samples/resource-manager-diagnostic-settings\n3. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-logging-threat-detection#lt-3-enable-logging-for-security-investigation\n4. https://learn.microsoft.com/en-us/cli/azure/monitor/diagnostic-settings?view=azure-cli-latest\n5. https://learn.microsoft.com/en-us/powershell/module/az.monitor/new-azsubscriptiondiagnosticsetting?view=azps-9.2.0",
+            "id": "62b717ac-bb8f-5274-a99f-5806dc4427a5",
+            "name": "Ensure Diagnostic Setting captures appropriate categories",
+            "profile_applicability": "* Level 1",
+            "description": "**Prerequisite**: A Diagnostic Setting must exist.\nIf a Diagnostic Setting does not exist, the navigation and options within this recommendation will not be available.\nPlease review the recommendation at the beginning of this subsection titled: \"Ensure that a 'Diagnostic Setting' exists.\"\n\nThe diagnostic setting should be configured to log the appropriate activities from the control/management plane.",
+            "rationale": "A diagnostic setting controls how the diagnostic log is exported.\nCapturing the diagnostic setting categories for appropriate control/management plane activities allows proper alerting.",
+            "audit": "**From Azure Portal**\n\n1. Go to `Azure Monitor`\n2. Click `Activity log`\n3. Click on `Export Activity Logs`\n4. Select the appropriate `Subscription`\n5. If there is no `Diagnostic Settings` listed, generate a finding.\n6. Otherwise, click on `Edit Settings`\n7. Ensure that the following categories are checked: `Administrative, Alert, Policy, and Security`\n\n**From Azure CLI**\n\nEnsure the categories `'Administrative', 'Alert', 'Policy', and 'Security'` set to: 'enabled: true'\n\n```\naz monitor diagnostic-settings subscription list --subscription <subscription ID>\n```\n\n**From Powershell**\n\nEnsure the categories Administrative, Alert, Policy, and Security are set to Enabled:True \n\n```\nGet-AzSubscriptionDiagnosticSetting -Subscription <subscriptionID>\n```",
+            "remediation": "**From Azure Portal**\n\n1. Go to `Azure Monitor`\n2. Click `Activity log`\n3. Click on `Export Activity Logs`\n4. Select the `Subscription` from the drop down menu\n5. Click on `Add diagnostic setting` \n6. Enter a name for your new Diagnostic Setting\n7. Check the following categories: `Administrative, Alert, Policy, and Security`\n8. Choose the destination details according to your organization's needs.\n\n**From Az CLI**\n\n```\naz monitor diagnostic-settings subscription create --subscription <subscription id> --name <diagnostic settings name> --location <location> <[--event-hub <event hub ID> --event-hub-auth-rule <event hub auth rule ID>] [--storage-account <storage account ID>] [--workspace <log analytics workspace ID>] --logs \"[{category:Security,enabled:true},{category:Administrative,enabled:true},{category:Alert,enabled:true},{category:Policy,enabled:true}]\"\n```\n\n**From PowerShell**\n\n```\n$logCategories = @();\n$logCategories += New-AzDiagnosticSettingSubscriptionLogSettingsObject -Category Administrative -Enabled $true\n$logCategories += New-AzDiagnosticSettingSubscriptionLogSettingsObject -Category Security -Enabled $true\n$logCategories += New-AzDiagnosticSettingSubscriptionLogSettingsObject -Category Alert -Enabled $true\n$logCategories += New-AzDiagnosticSettingSubscriptionLogSettingsObject -Category Policy -Enabled $true\n\nNew-AzSubscriptionDiagnosticSetting -SubscriptionId <subscription ID> -Name <Diagnostic settings name> <[-EventHubAuthorizationRule <event hub auth rule ID> -EventHubName <event hub name>] [-StorageAccountId <storage account ID>] [-WorkSpaceId <log analytics workspace ID>] [-MarketplacePartner ID <full ARM Marketplace resource ID>]> -Log $logCategories\n```",
+            "section": "Configuring Diagnostic Settings",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 5.1.2",
+                "Configuring Diagnostic Settings"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "5.1.2",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_5_1_2"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

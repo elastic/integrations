@@ -4,13 +4,35 @@
             "chainingSystem": "HIERARCHICAL",
             "controlStyle": "oneLine",
             "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
-            "panelsJSON": "{\"7d4e0607-ddac-4d00-bfd2-71165b734e21\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"title\":\"Database Name\",\"fieldName\":\"mssql.metrics.database_name\",\"id\":\"7d4e0607-ddac-4d00-bfd2-71165b734e21\",\"selectedOptions\":[],\"enhancements\":{}}}}"
+            "panelsJSON": "{\"7d4e0607-ddac-4d00-bfd2-71165b734e21\":{\"order\":1,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"title\":\"Database Name\",\"fieldName\":\"mssql.metrics.database_name\",\"id\":\"7d4e0607-ddac-4d00-bfd2-71165b734e21\",\"selectedOptions\":[],\"enhancements\":{}}},\"2169afc5-9d87-4cdf-a884-a3cfd5b5995d\":{\"type\":\"optionsListControl\",\"order\":0,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"2169afc5-9d87-4cdf-a884-a3cfd5b5995d\",\"fieldName\":\"service.address\",\"title\":\"Host Name\",\"grow\":true,\"width\":\"medium\",\"singleSelect\":true,\"enhancements\":{}}}}"
         },
         "description": "An overview of the transaction log of each database in a Microsoft SQL Server instance",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "microsoft_sqlserver.transaction_log"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "microsoft_sqlserver.transaction_log"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -18,14 +40,17 @@
             }
         },
         "optionsJSON": {
-            "darkTheme": false,
             "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "metrics-*",
@@ -34,8 +59,9 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "546ebd5c-8f7d-490e-8c93-2a203368d318": {
                                             "columnOrder": [
@@ -68,7 +94,7 @@
                                                     "label": "@timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
-                                                        "dropPartials": false,
+                                                        "dropPartials": true,
                                                         "includeEmptyRows": true,
                                                         "interval": "auto"
                                                     },
@@ -82,19 +108,9 @@
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
-                                                        "orderAgg": {
-                                                            "dataType": "number",
-                                                            "isBucketed": false,
-                                                            "label": "Count of records",
-                                                            "operationType": "count",
-                                                            "params": {
-                                                                "emptyAsNull": true
-                                                            },
-                                                            "scale": "ratio",
-                                                            "sourceField": "___records___"
-                                                        },
                                                         "orderBy": {
-                                                            "type": "custom"
+                                                            "columnId": "410be693-b644-4afe-9550-6e6b7e706afa",
+                                                            "type": "column"
                                                         },
                                                         "orderDirection": "desc",
                                                         "otherBucket": false,
@@ -113,6 +129,7 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -143,10 +160,10 @@
                                         "layerId": "546ebd5c-8f7d-490e-8c93-2a203368d318",
                                         "layerType": "data",
                                         "palette": {
-                                            "name": "positive",
+                                            "name": "default",
                                             "type": "palette"
                                         },
-                                        "seriesType": "area_stacked",
+                                        "seriesType": "area",
                                         "splitAccessor": "ff66eb24-9714-45aa-a17a-1b6a68cb6768",
                                         "xAccessor": "6382ac37-a4bb-43c0-8998-3b1c95c18bde",
                                         "yConfig": [
@@ -160,12 +177,13 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "large",
                                     "maxLines": 1,
                                     "position": "right",
                                     "shouldTruncate": true,
                                     "showSingleSeries": true
                                 },
-                                "preferredSeriesType": "bar_stacked",
+                                "preferredSeriesType": "area",
                                 "tickLabelsVisibilitySettings": {
                                     "x": true,
                                     "yLeft": true,
@@ -199,11 +217,12 @@
                 "panelIndex": "033d2eb9-9d99-4c61-9d87-5410f2fa6607",
                 "title": "Total Log Space Usage [Metrics Microsoft SqlServer]",
                 "type": "lens",
-                "version": "8.4.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "metrics-*",
@@ -212,8 +231,9 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "d49b6b51-2fc8-4a1f-8754-82bfb771fbb1": {
                                             "columnOrder": [
@@ -225,17 +245,22 @@
                                                 "049505e0-9f76-40f3-8e8f-4f3ca5b304a3": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"mssql.metrics.used_log_space_pct\": *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Percentage of Used Space [Metrics Microsoft SqlServer]",
-                                                    "operationType": "average",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
-                                                            "id": "percent",
+                                                            "id": "number",
                                                             "params": {
-                                                                "decimals": 2
+                                                                "decimals": 2,
+                                                                "suffix": "%"
                                                             }
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "mssql.metrics.used_log_space_pct"
@@ -247,19 +272,9 @@
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
-                                                        "orderAgg": {
-                                                            "dataType": "number",
-                                                            "isBucketed": false,
-                                                            "label": "Count of records",
-                                                            "operationType": "count",
-                                                            "params": {
-                                                                "emptyAsNull": true
-                                                            },
-                                                            "scale": "ratio",
-                                                            "sourceField": "___records___"
-                                                        },
                                                         "orderBy": {
-                                                            "type": "custom"
+                                                            "columnId": "049505e0-9f76-40f3-8e8f-4f3ca5b304a3",
+                                                            "type": "column"
                                                         },
                                                         "orderDirection": "desc",
                                                         "otherBucket": false,
@@ -277,7 +292,7 @@
                                                     "label": "@timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
-                                                        "dropPartials": false,
+                                                        "dropPartials": true,
                                                         "includeEmptyRows": true,
                                                         "interval": "auto"
                                                     },
@@ -291,6 +306,7 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -321,10 +337,10 @@
                                         "layerId": "d49b6b51-2fc8-4a1f-8754-82bfb771fbb1",
                                         "layerType": "data",
                                         "palette": {
-                                            "name": "positive",
+                                            "name": "default",
                                             "type": "palette"
                                         },
-                                        "seriesType": "area_stacked",
+                                        "seriesType": "area",
                                         "splitAccessor": "c00346f4-75a7-4451-b4bd-71a0ba29c86a",
                                         "xAccessor": "ebaa706a-205c-465b-85b4-b36a236d5c4d",
                                         "yConfig": [
@@ -338,12 +354,13 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "large",
                                     "maxLines": 1,
                                     "position": "right",
                                     "shouldTruncate": true,
                                     "showSingleSeries": true
                                 },
-                                "preferredSeriesType": "bar_stacked",
+                                "preferredSeriesType": "area",
                                 "tickLabelsVisibilitySettings": {
                                     "x": true,
                                     "yLeft": true,
@@ -377,11 +394,12 @@
                 "panelIndex": "ecca4f7b-5846-4659-a8a3-844276779869",
                 "title": "Percentage of Used Space [Metrics Microsoft SqlServer]",
                 "type": "lens",
-                "version": "8.4.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "metrics-*",
@@ -390,8 +408,9 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "b32179ab-959f-42df-8a95-01abd487239d": {
                                             "columnOrder": [
@@ -403,17 +422,21 @@
                                                 "1a4ae7bf-61a8-400b-8d21-26d510efeb73": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"mssql.metrics.used_log_space_bytes\": *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Used log space [Metrics Microsoft SqlServer]",
-                                                    "operationType": "average",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "bytes",
                                                             "params": {
                                                                 "decimals": 1
                                                             }
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "mssql.metrics.used_log_space_bytes"
@@ -425,19 +448,9 @@
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
-                                                        "orderAgg": {
-                                                            "dataType": "number",
-                                                            "isBucketed": false,
-                                                            "label": "Count of records",
-                                                            "operationType": "count",
-                                                            "params": {
-                                                                "emptyAsNull": true
-                                                            },
-                                                            "scale": "ratio",
-                                                            "sourceField": "___records___"
-                                                        },
                                                         "orderBy": {
-                                                            "type": "custom"
+                                                            "columnId": "1a4ae7bf-61a8-400b-8d21-26d510efeb73",
+                                                            "type": "column"
                                                         },
                                                         "orderDirection": "desc",
                                                         "otherBucket": false,
@@ -455,7 +468,7 @@
                                                     "label": "@timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
-                                                        "dropPartials": false,
+                                                        "dropPartials": true,
                                                         "includeEmptyRows": true,
                                                         "interval": "auto"
                                                     },
@@ -469,6 +482,7 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -499,10 +513,10 @@
                                         "layerId": "b32179ab-959f-42df-8a95-01abd487239d",
                                         "layerType": "data",
                                         "palette": {
-                                            "name": "positive",
+                                            "name": "default",
                                             "type": "palette"
                                         },
-                                        "seriesType": "area_stacked",
+                                        "seriesType": "area",
                                         "splitAccessor": "67c7b773-53f9-4b63-9cdb-187ed053a50b",
                                         "xAccessor": "7e4b0d77-d044-482e-aa52-6e09f62b2f3b",
                                         "yConfig": [
@@ -516,12 +530,13 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "large",
                                     "maxLines": 1,
                                     "position": "right",
                                     "shouldTruncate": true,
                                     "showSingleSeries": true
                                 },
-                                "preferredSeriesType": "bar_stacked",
+                                "preferredSeriesType": "area",
                                 "tickLabelsVisibilitySettings": {
                                     "x": true,
                                     "yLeft": true,
@@ -555,11 +570,12 @@
                 "panelIndex": "41b881a5-df21-4ef0-90c6-9906a0107f5e",
                 "title": "Used Space [Metrics Microsoft SqlServer]",
                 "type": "lens",
-                "version": "8.4.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "metrics-*",
@@ -568,8 +584,9 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "1cee5162-2ac3-4517-971a-2f4fa6cc7bb6": {
                                             "columnOrder": [
@@ -585,19 +602,9 @@
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
-                                                        "orderAgg": {
-                                                            "dataType": "number",
-                                                            "isBucketed": false,
-                                                            "label": "Count of records",
-                                                            "operationType": "count",
-                                                            "params": {
-                                                                "emptyAsNull": true
-                                                            },
-                                                            "scale": "ratio",
-                                                            "sourceField": "___records___"
-                                                        },
                                                         "orderBy": {
-                                                            "type": "custom"
+                                                            "columnId": "77ed4a40-d200-4ebe-aced-dd7f34701309",
+                                                            "type": "column"
                                                         },
                                                         "orderDirection": "desc",
                                                         "otherBucket": false,
@@ -615,7 +622,7 @@
                                                     "label": "@timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
-                                                        "dropPartials": false,
+                                                        "dropPartials": true,
                                                         "includeEmptyRows": true,
                                                         "interval": "auto"
                                                     },
@@ -625,17 +632,21 @@
                                                 "77ed4a40-d200-4ebe-aced-dd7f34701309": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"mssql.metrics.log_space_in_bytes_since_last_backup\": *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Log space size since last backup [Metrics Microsoft SqlServer]",
-                                                    "operationType": "average",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "bytes",
                                                             "params": {
                                                                 "decimals": 1
                                                             }
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "mssql.metrics.log_space_in_bytes_since_last_backup"
@@ -647,6 +658,7 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -677,10 +689,10 @@
                                         "layerId": "1cee5162-2ac3-4517-971a-2f4fa6cc7bb6",
                                         "layerType": "data",
                                         "palette": {
-                                            "name": "positive",
+                                            "name": "default",
                                             "type": "palette"
                                         },
-                                        "seriesType": "area_stacked",
+                                        "seriesType": "area",
                                         "splitAccessor": "2352f754-d427-42dc-a3a6-bf7d5103826c",
                                         "xAccessor": "2eed6a0c-510c-497f-a224-04c6be925030",
                                         "yConfig": [
@@ -694,12 +706,13 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "large",
                                     "maxLines": 1,
                                     "position": "right",
                                     "shouldTruncate": true,
                                     "showSingleSeries": true
                                 },
-                                "preferredSeriesType": "bar_stacked",
+                                "preferredSeriesType": "area",
                                 "tickLabelsVisibilitySettings": {
                                     "x": true,
                                     "yLeft": true,
@@ -733,11 +746,12 @@
                 "panelIndex": "d065062d-1b53-4cd1-80db-462b58e97632",
                 "title": "Log Space Since Last Backup [Metrics Microsoft SqlServer]",
                 "type": "lens",
-                "version": "8.4.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "metrics-*",
@@ -746,8 +760,9 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "e87ffeb5-6de4-4224-844b-2e7c052502d0": {
                                             "columnOrder": [
@@ -763,19 +778,9 @@
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
-                                                        "orderAgg": {
-                                                            "dataType": "number",
-                                                            "isBucketed": false,
-                                                            "label": "Count of records",
-                                                            "operationType": "count",
-                                                            "params": {
-                                                                "emptyAsNull": true
-                                                            },
-                                                            "scale": "ratio",
-                                                            "sourceField": "___records___"
-                                                        },
                                                         "orderBy": {
-                                                            "type": "custom"
+                                                            "columnId": "e8867ed4-2470-45a5-9c99-c75227d26182",
+                                                            "type": "column"
                                                         },
                                                         "orderDirection": "desc",
                                                         "otherBucket": false,
@@ -793,7 +798,7 @@
                                                     "label": "@timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
-                                                        "dropPartials": false,
+                                                        "dropPartials": true,
                                                         "includeEmptyRows": true,
                                                         "interval": "auto"
                                                     },
@@ -803,17 +808,21 @@
                                                 "e8867ed4-2470-45a5-9c99-c75227d26182": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"mssql.metrics.log_recovery_size\": *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Recovery size [Metrics Microsoft SqlServer]",
-                                                    "operationType": "average",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "bytes",
                                                             "params": {
                                                                 "decimals": 1
                                                             }
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "mssql.metrics.log_recovery_size"
@@ -825,6 +834,7 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -855,7 +865,7 @@
                                         "layerId": "e87ffeb5-6de4-4224-844b-2e7c052502d0",
                                         "layerType": "data",
                                         "palette": {
-                                            "name": "positive",
+                                            "name": "default",
                                             "type": "palette"
                                         },
                                         "seriesType": "area",
@@ -872,6 +882,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "large",
                                     "maxLines": 1,
                                     "position": "right",
                                     "shouldTruncate": true,
@@ -911,11 +922,12 @@
                 "panelIndex": "ed535f03-9d86-4021-9d47-c315a012aceb",
                 "title": "Recovery Size [Metrics Microsoft SqlServer]",
                 "type": "lens",
-                "version": "8.4.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "metrics-*",
@@ -924,8 +936,9 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "0ceb1963-5186-4db8-97fb-2efbcea5cdbd": {
                                             "columnOrder": [
@@ -940,7 +953,7 @@
                                                     "label": "@timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
-                                                        "dropPartials": false,
+                                                        "dropPartials": true,
                                                         "includeEmptyRows": true,
                                                         "interval": "auto"
                                                     },
@@ -954,19 +967,9 @@
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
-                                                        "orderAgg": {
-                                                            "dataType": "number",
-                                                            "isBucketed": false,
-                                                            "label": "Count of records",
-                                                            "operationType": "count",
-                                                            "params": {
-                                                                "emptyAsNull": true
-                                                            },
-                                                            "scale": "ratio",
-                                                            "sourceField": "___records___"
-                                                        },
                                                         "orderBy": {
-                                                            "type": "custom"
+                                                            "columnId": "f64c156c-a15f-457e-b542-c26738771d9e",
+                                                            "type": "column"
                                                         },
                                                         "orderDirection": "desc",
                                                         "otherBucket": false,
@@ -981,17 +984,21 @@
                                                 "f64c156c-a15f-457e-b542-c26738771d9e": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"mssql.metrics.log_since_last_checkpoint\": *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Transaction log size since last checkpoint [Metrics Microsoft SqlServer]",
-                                                    "operationType": "average",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "bytes",
                                                             "params": {
                                                                 "decimals": 1
                                                             }
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "mssql.metrics.log_since_last_checkpoint"
@@ -1003,6 +1010,7 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1033,7 +1041,7 @@
                                         "layerId": "0ceb1963-5186-4db8-97fb-2efbcea5cdbd",
                                         "layerType": "data",
                                         "palette": {
-                                            "name": "positive",
+                                            "name": "default",
                                             "type": "palette"
                                         },
                                         "seriesType": "area",
@@ -1050,6 +1058,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "large",
                                     "maxLines": 1,
                                     "position": "right",
                                     "shouldTruncate": true,
@@ -1089,11 +1098,12 @@
                 "panelIndex": "1c270f8b-8e64-410d-a5e4-a4cc45c4fa2c",
                 "title": "Log Size Since Last Checkpoint [Metrics Microsoft SqlServer]",
                 "type": "lens",
-                "version": "8.4.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "metrics-*",
@@ -1102,8 +1112,9 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "b9565f37-3d56-41dd-87a0-a7e6e0280d39": {
                                             "columnOrder": [
@@ -1119,19 +1130,9 @@
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
-                                                        "orderAgg": {
-                                                            "dataType": "number",
-                                                            "isBucketed": false,
-                                                            "label": "Count of records",
-                                                            "operationType": "count",
-                                                            "params": {
-                                                                "emptyAsNull": true
-                                                            },
-                                                            "scale": "ratio",
-                                                            "sourceField": "___records___"
-                                                        },
                                                         "orderBy": {
-                                                            "type": "custom"
+                                                            "columnId": "cdd68bb9-4dd9-419c-a5c9-dbcb8b0a51fc",
+                                                            "type": "column"
                                                         },
                                                         "orderDirection": "desc",
                                                         "otherBucket": false,
@@ -1149,7 +1150,7 @@
                                                     "label": "@timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
-                                                        "dropPartials": false,
+                                                        "dropPartials": true,
                                                         "includeEmptyRows": true,
                                                         "interval": "auto"
                                                     },
@@ -1181,6 +1182,7 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1211,7 +1213,7 @@
                                         "layerId": "b9565f37-3d56-41dd-87a0-a7e6e0280d39",
                                         "layerType": "data",
                                         "palette": {
-                                            "name": "positive",
+                                            "name": "default",
                                             "type": "palette"
                                         },
                                         "seriesType": "area",
@@ -1228,6 +1230,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "large",
                                     "maxLines": 1,
                                     "position": "right",
                                     "shouldTruncate": true,
@@ -1267,19 +1270,23 @@
                 "panelIndex": "af6dc077-868f-460c-bc8a-11019b087898",
                 "title": "Active Log Size [Metrics Microsoft SqlServer]",
                 "type": "lens",
-                "version": "8.4.0"
+                "version": "8.10.2"
             }
         ],
         "timeRestore": false,
         "title": "[Metrics Microsoft SQL Server] Transaction log",
         "version": 1
     },
-    "coreMigrationVersion": "8.4.0",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-11-10T10:41:08.548Z",
     "id": "microsoft_sqlserver-18d66970-1fb4-11e9-8a4d-eb34d2834f6b",
-    "migrationVersion": {
-        "dashboard": "8.4.0"
-    },
+    "managed": false,
     "references": [
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
         {
             "id": "metrics-*",
             "name": "033d2eb9-9d99-4c61-9d87-5410f2fa6607:indexpattern-datasource-layer-546ebd5c-8f7d-490e-8c93-2a203368d318",
@@ -1319,7 +1326,15 @@
             "id": "metrics-*",
             "name": "controlGroup_7d4e0607-ddac-4d00-bfd2-71165b734e21:optionsListDataView",
             "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_2169afc5-9d87-4cdf-a884-a3cfd5b5995d:optionsListDataView",
+            "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "migrationVersion": {
+        "dashboard": "8.9.0"
+    }
 }
