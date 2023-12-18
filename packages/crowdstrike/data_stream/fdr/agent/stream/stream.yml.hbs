@@ -41,10 +41,12 @@ processors:
           key_field: crowdstrike.aid
           value_field: crowdstrike
           ignore_missing: false
+{{#unless keep_aidmaster}}
     - drop_event:
         when:
           contains:
             log.file.path: aidmaster
+{{/unless}}
   else:
     - cache:
         backend:
