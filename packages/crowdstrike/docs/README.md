@@ -1117,7 +1117,7 @@ An example event for `fdr` looks as following:
 {
     "@timestamp": "2020-10-01T09:58:32.519Z",
     "agent": {
-        "ephemeral_id": "4425a102-81c9-49bd-bef6-a39dee6768a1",
+        "ephemeral_id": "ea19fa42-bc7b-4504-9153-b8e5d9f37c65",
         "id": "96a6843b-0843-4420-ab87-e5cfc16d378c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -1156,7 +1156,6 @@ An example event for `fdr` looks as following:
                 "BiosVersion": "vG17V.21040423/z64",
                 "ChassisType": "Other",
                 "City": "Chicago",
-                "ComputerName": "FEVWSN1-234",
                 "ConfigBuild": "1007.3.0017312.1",
                 "ConfigIDBuild": "13922",
                 "Continent": "North America",
@@ -1175,7 +1174,6 @@ An example event for `fdr` looks as following:
                 "Time": "1697992719.22",
                 "Timezone": "America/Chicago",
                 "Version": "Windows Server 2021",
-                "aip": "16.15.12.10",
                 "cid": "ffffffff30a3407dae27d0503611022d",
                 "event_platform": "Win"
             },
@@ -1190,7 +1188,6 @@ An example event for `fdr` looks as following:
                 "User": "DOMAIN\\BRADLEYA",
                 "UserIsAdmin": "0",
                 "UserLogonFlags_decimal": "0",
-                "UserName": "Alan-One",
                 "_time": "1702546168.576",
                 "cid": "ffffffff15754bcfb5f9152ec7ac90ac",
                 "event_platform": "Win",
@@ -1221,7 +1218,7 @@ An example event for `fdr` looks as following:
         "created": "2020-10-01T09:58:32.519Z",
         "dataset": "crowdstrike.fdr",
         "id": "ffffffff-1111-11eb-8462-02ade3b2f949",
-        "ingested": "2023-12-18T06:04:39Z",
+        "ingested": "2023-12-18T07:11:33Z",
         "kind": "event",
         "original": "{\"AuthenticationId\":\"3783389\",\"CommandLine\":\"\\\"C:\\\\WINDOWS\\\\system32\\\\backgroundTaskHost.exe\\\" -ServerName:App.AppXnme9zjyebb2xnyygh6q9ev6p5d234br2.mca\",\"ConfigBuild\":\"1007.3.0012309.1\",\"ConfigStateHash\":\"3998263252\",\"EffectiveTransmissionClass\":\"3\",\"Entitlements\":\"15\",\"ImageFileName\":\"\\\\Device\\\\HarddiskVolume3\\\\Windows\\\\System32\\\\backgroundTaskHost.exe\",\"ImageSubsystem\":\"2\",\"IntegrityLevel\":\"4096\",\"MD5HashData\":\"50d5fd1290d94d46acca0585311e74d5\",\"ParentAuthenticationId\":\"3783389\",\"ParentBaseFileName\":\"svchost.exe\",\"ParentProcessId\":\"2439558094566\",\"ProcessCreateFlags\":\"525332\",\"ProcessEndTime\":\"\",\"ProcessParameterFlags\":\"16385\",\"ProcessStartTime\":\"1604855181.648\",\"ProcessSxsFlags\":\"1600\",\"RawProcessId\":\"22272\",\"RpcClientProcessId\":\"2439558094566\",\"SHA1HashData\":\"0000000000000000000000000000000000000000\",\"SHA256HashData\":\"b8e176fe76a1454a00c4af0f8bf8870650d9c33d3e333239a59445c5b35c9a37\",\"SessionId\":\"1\",\"SourceProcessId\":\"2439558094566\",\"SourceThreadId\":\"77538684027214\",\"Tags\":\"41, 12094627905582, 12094627906234\",\"TargetProcessId\":\"2450046082233\",\"TokenType\":\"2\",\"UserSid\":\"S-1-12-1-3697283754-1083485977-2164330645-2516515886\",\"WindowFlags\":\"128\",\"aid\":\"ffffffff655344736aca58d17fb570f0\",\"aip\":\"67.43.156.14\",\"cid\":\"ffffffff30a3407dae27d0503611022d\",\"event_platform\":\"Win\",\"event_simpleName\":\"ProcessRollup2\",\"id\":\"ffffffff-1111-11eb-8462-02ade3b2f949\",\"name\":\"ProcessRollup2V18\",\"timestamp\":\"1601546312519\"}",
         "outcome": "success",
@@ -1231,6 +1228,10 @@ An example event for `fdr` looks as following:
         ]
     },
     "host": {
+        "ip": [
+            "16.15.12.10"
+        ],
+        "name": "FEVWSN1-234",
         "os": {
             "type": "windows"
         }
@@ -1240,7 +1241,7 @@ An example event for `fdr` looks as following:
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-crowdstrike-fdr-83810.s3.us-east-1.amazonaws.com/data"
+            "path": "https://elastic-package-crowdstrike-fdr-90399.s3.us-east-1.amazonaws.com/data"
         },
         "offset": 107991
     },
@@ -1292,8 +1293,16 @@ An example event for `fdr` looks as following:
             "b8e176fe76a1454a00c4af0f8bf8870650d9c33d3e333239a59445c5b35c9a37",
             "3998263252"
         ],
+        "hosts": [
+            "FEVWSN1-234"
+        ],
         "ip": [
-            "67.43.156.14"
+            "67.43.156.14",
+            "16.15.12.10"
+        ],
+        "user": [
+            "Alan-One",
+            "DOMAIN\\BRADLEYA"
         ]
     },
     "tags": [
@@ -1305,7 +1314,8 @@ An example event for `fdr` looks as following:
         "scheme": "http"
     },
     "user": {
-        "id": "S-1-12-1-3697283754-1083485977-2164330645-2516515886"
+        "id": "S-1-12-1-3697283754-1083485977-2164330645-2516515886",
+        "name": "Alan-One"
     }
 }
 ```
