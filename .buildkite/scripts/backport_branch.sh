@@ -33,10 +33,11 @@ if [[ -z "$PACKAGE_NAME" ]] || [[ -z "$PACKAGE_VERSION" ]]; then
   exit 1
 fi
 
-FULL_PACKAGE_NAME="${PACKAGE_NAME}-${PACKAGE_VERSION}"
 FULL_ZIP_PACKAGE_NAME="${PACKAGE_NAME}-${PACKAGE_VERSION}.zip"
+TRIMED_PACKAGE_VERSION=""
+TRIMED_PACKAGE_VERSION="$(echo "$PACKAGE_VERSION" | cut -d '.' -f -2)"
 SOURCE_BRANCH="main"
-BACKPORT_BRANCH_NAME="backport-${PACKAGE_NAME}-${PACKAGE_VERSION}"
+BACKPORT_BRANCH_NAME="backport-${PACKAGE_NAME}-${TRIMED_PACKAGE_VERSION}"
 PACKAGES_FOLDER_PATH="packages"
 
 isPackagePublished() {
@@ -73,10 +74,10 @@ isBranchExist() {
   searchResult="$(git branch | grep $branch | awk '{print $2}')"
   echo "${searchResult}"
   if [ "${searchResult}" == "${branch}" ]; then
-    echo "The backport branch $branch has already exist"
+    echo "The backport branch $branch already exist"
     return 0
   else
-    echo "The backport branch $branch hasn't exist"
+    echo "The backport branch $branch does not exist"
     return 1
   fi
 }
@@ -130,7 +131,7 @@ updateBackportBranch() {
 
 echo "Check if the package has published"
 if ! isPackagePublished "$FULL_ZIP_PACKAGE_NAME"; then
-  buildkite-agent annotate "The package version: **$FULL_PACKAGE_NAME** hasn't neen published yet." --style "warning"
+  buildkite-agent annotate "The package version: **${PACKAGE_NAME}-${PACKAGE_VERSION}** hasn't neen published yet." --style "warning"
   exit 1
 fi
 
@@ -150,4 +151,4 @@ fi
 echo "Adding CI files into the branch"
 updateBackportBranch
 
-buildkite-agent annotate "The backport branch: **$BACKPORT_BRANCH_NAME** has created. Folders **.buildkite** and **.ci** have added into the branch." --style "success"
+buildkite-agent annotate "The backport branch: **$BACKPORT_BRANCH_NAME** has been created. Folders **.buildkite** and **.ci** are updated in the branch." --style "success"
