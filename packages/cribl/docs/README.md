@@ -28,11 +28,11 @@ The Cribl integration offers users a way to ingest logs from either of Cribl's E
 
     2. Add informational field to Cribl Source
 
-        Configure the Cribl Source to specify the source of the data in the `_index` field.
+        Configure the Cribl Source to specify the source of the data in the `datatype` field.
 
         ![Configure Cribl Source fields](../img/cribl-source-fields.png)
 
-        See [Cribl Data Onboarding](https://docs.cribl.io/stream/data-onboarding/) for more information on configuring sources.
+        See [Cribl Data Onboarding](https://docs.cribl.io/stream/data-onboarding/) for more information on configuring sources, and [Cribl datatype](https://docs.cribl.io/search/datatypes/#) for more information on data types.
 
     3. Create custom pipeline
     
@@ -47,7 +47,7 @@ The Cribl integration offers users a way to ingest logs from either of Cribl's E
 
             2. Set the **Namespace** to `default`.
 
-            3. Fill in the conditional to specify the Cribl `_index` source field. 
+            3. Fill in the conditional to specify the Cribl `datatype` source field. 
 
             ![Reroute processor](../img/custom-pipeline-reroute-processor.png)
 
