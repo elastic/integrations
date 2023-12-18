@@ -41,7 +41,8 @@ PACKAGES_FOLDER_PATH="packages"
 
 isPackagePublished() {
   local packageZip=$1
-  local responseCode=$(curl -s -o /dev/null -w "%{http_code}" "https://package-storage.elastic.co/artifacts/packages/${packageZip}")
+  local responseCode
+  responseCode=$(curl -s -o /dev/null -w "%{http_code}" "https://package-storage.elastic.co/artifacts/packages/${packageZip}")
   if [[ $responseCode == "200" ]]; then
     return 0
   else
@@ -68,7 +69,8 @@ isCommitExist() {
 
 isBranchExist() {
   local branch=$1
-  local searchResult="$(git branch | grep $branch | awk '{print $2}')"
+  local searchResult=""
+  searchResult="$(git branch | grep $branch | awk '{print $2}')"
   echo "${searchResult}"
   if [ "${searchResult}" == "${branch}" ]; then
     echo "The backport branch $branch has already exist"
@@ -90,8 +92,9 @@ createLocalBackportBranch() {
   fi
 }
 
-removeAllPackages() {
-  for dir in "$PACKAGES_FOLDER_PATH"/*; do
+removeOtherPackages() {
+  local sourceFolder=$1
+  for dir in "$sourceFolder"/*; do
     if [[ -d "$dir" ]] && [[ "$(basename "$dir")" != "$PACKAGE_NAME" ]]; then
       echo "Removing directory: $dir"
       rm -rf "$dir"
@@ -114,7 +117,7 @@ updateBackportBranch() {
 
   if [ "${REMOVE_OTHER_PACKAGES}" == "true" ]; then
     echo "Removing all packages from $PACKAGES_FOLDER_PATH folder"
-    removeAllPackages
+    removeOtherPackages "$PACKAGES_FOLDER_PATH"
     ls -la $PACKAGES_FOLDER_PATH
   fi
 
@@ -126,7 +129,7 @@ updateBackportBranch() {
 }
 
 echo "Check if the package has published"
-if ! isPackagePublished "${FULL_ZIP_PACKAGE_NAME}"; then
+if ! isPackagePublished "$FULL_ZIP_PACKAGE_NAME"; then
   buildkite-agent annotate "The package version: **$FULL_PACKAGE_NAME** hasn't neen published yet." --style "warning"
   exit 1
 fi
@@ -140,8 +143,8 @@ if [ ! -z "$BASE_COMMIT" ]; then
 fi
 
 echo "Check if backport-branch exists"
-if ! isBranchExist "${BACKPORT_BRANCH_NAME}"; then
-  createLocalBackportBranch "${BACKPORT_BRANCH_NAME}" "${BASE_COMMIT}"
+if ! isBranchExist "$BACKPORT_BRANCH_NAME"; then
+  createLocalBackportBranch "$BACKPORT_BRANCH_NAME" "$BASE_COMMIT"
 fi
 
 echo "Adding CI files into the branch"
