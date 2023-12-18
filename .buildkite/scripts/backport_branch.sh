@@ -65,13 +65,26 @@ isCommitExist() {
   fi
 }
 
+isBranchExist() {
+  local branch=$1
+  local searchResult="$(git branch | grep $branch | awk '{print $2}')"
+  echo "${searchResult}"
+  if [ "${searchResult}" == "${branch}" ]; then
+    echo "The backport branch $branch has already exist"
+    return 0
+  else
+    echo "The backport branch $branch hasn't exist"
+    return 1
+  fi
+}
+
 createLocalBackportBranch() {
   local branch_name=$1
   local source_commit=$2
   if git checkout -b $branch_name $source_commit; then
     echo "The branch $branch_name has created."
   else
-    buildkite-agent annotate "The backport branch **$BACKPORT_BRANCH_NAME** wasn't created." --style "warning"
+    buildkite-agent annotate "The backport branch **$BACKPORT_BRANCH_NAME** hasn't created." --style "warning"
     exit 1
   fi
 }
@@ -107,7 +120,7 @@ processFifes() {
   echo "Commiting and pushing..."
   # git add $BUILDKITE_FOLDER_PATH
   # git add $JENKINS_FOLDER_PATH
-  # git commit -m "Add $BUILDKITE_FOLDER_PATH and $JENKINSFILE_PATH to backport branch: $BACKPORT_BRANCH_NAME"
+  # git commit -m "Add $BUILDKITE_FOLDER_PATH and $JENKINSFILE_PATH to backport branch: $BACKPORT_BRANCH_NAME from the $SOURCE_BRANCH branch"
   # git push origin $BACKPORT_BRANCH_NAME
 }
 
@@ -125,8 +138,10 @@ if ! -z "$BASE_COMMIT"; then
   fi
 fi
 
-echo "Creating local backport-branch"
-createLocalBackportBranch "${BACKPORT_BRANCH_NAME}" "${BASE_COMMIT}"
+echo "Check if backport-branch exists"
+if ! isBranchExist "${BACKPORT_BRANCH_NAME}"; then
+  createLocalBackportBranch "${BACKPORT_BRANCH_NAME}" "${BASE_COMMIT}"
+fi
 
 echo "Adding CI files into the branch"
 processFifes
