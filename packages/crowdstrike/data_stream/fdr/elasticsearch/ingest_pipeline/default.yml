@@ -6,11 +6,26 @@ processors:
       tag: message-to-original
       field: message
       target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       tag: json-decoding
       description: Decodes original JSON into `crowdstrike` field.
       field: event.original
       target_field: crowdstrike
+  - remove:
+      tag: remove-metadata-aid
+      field: metadata.aid
+      ignore_missing: true
+  - rename:
+      tag: aidmaster-metadata
+      field: metadata
+      target_field: crowdstrike.info.host
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "'{{ _ingest.on_failure_processor_tag }}' rename failed with message {{ _ingest.on_failure_message }}"
   - date:
       tag: date-timestamp-utc
       description: Parse timestamp from event.
@@ -191,7 +206,7 @@ processors:
   ## ECS fields.
   - set:
       field: ecs.version
-      value: '8.9.0'
+      value: '8.11.0'
 
   ## Categorization.
   - script:
@@ -1465,7 +1480,7 @@ processors:
       field: observer.ip
       processor:
         append:
-          field: related.hosts
+          field: related.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
 
@@ -1513,25 +1528,25 @@ processors:
   
   ## OS fields.
   - set:
-      field: os.type
+      field: host.os.type
       value: linux
       if: ctx.crowdstrike?.event_platform != null && ctx.crowdstrike?.event_platform == "Lin"
   - set:
-      field: os.type
+      field: host.os.type
       value: macos
       if: ctx.crowdstrike?.event_platform != null && ctx.crowdstrike?.event_platform == "Mac"
   - set:
-      field: os.type
+      field: host.os.type
       value: windows
       if: ctx.crowdstrike?.event_platform != null && ctx.crowdstrike?.event_platform == "Win"
   - rename:
       field: crowdstrike.OSVersionString
-      target_field: os.version
+      target_field: host.os.version
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: crowdstrike.Version
-      target_field: os.version
+      target_field: host.os.version
       ignore_missing: true
       ignore_failure: true
 
@@ -1544,7 +1559,7 @@ processors:
       tag: split-command-line
       description: Implements Windows-like SplitCommandLine
       lang: painless
-      if: ctx.process?.command_line != null && ctx.process.command_line != "" && ctx.os?.type != null
+      if: ctx.process?.command_line != null && ctx.process.command_line != "" && ctx.host?.os?.type != null
       source: |-
         // appendBSBytes appends n '\\' bytes to b and returns the resulting slice.
         def appendBSBytes(StringBuilder b, int n) {
@@ -2003,7 +2018,7 @@ processors:
       field: crowdstrike.LocalAddressIP4
       processor:
         append:
-          field: related.hosts
+          field: related.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
@@ -2011,16 +2026,16 @@ processors:
       field: crowdstrike.LocalAddressIP6
       processor:
         append:
-          field: related.hosts
+          field: related.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - append:
-      field: related.hosts
+      field: related.ip
       value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx.source?.ip != null && ctx.source.ip != ""
   - append:
-      field: related.hosts
+      field: related.ip
       value: "{{{destination.ip}}}"
       allow_duplicates: false
       if: ctx.destination?.ip != null && ctx.destination.ip != ""
@@ -2426,7 +2441,7 @@ processors:
       field: crowdstrike.event_platform
       ignore_missing: true
       ignore_failure: true
-      if: ctx.os?.type != null
+      if: ctx.host?.os?.type != null
   - remove:
       field:
         - _temp
@@ -2439,6 +2454,7 @@ processors:
         - crowdstrike.UserIsAdmin
         - crowdstrike.UTCTimestamp
         - crowdstrike.TargetDirectoryName
+        - aws
       ignore_missing: true
       ignore_failure: true
   - remove:

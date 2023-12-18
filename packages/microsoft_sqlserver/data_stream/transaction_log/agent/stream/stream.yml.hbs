@@ -1,19 +1,30 @@
 metricsets: ["query"]
-# Specify hosts in the below format. TODO:hosts need to be updated to support multiple entries.
+# Specify hosts in the below format. TODO: hosts need to be updated to support multiple entries.
 hosts:
     - sqlserver://{{username}}:{{password}}@{{hosts}}
 period: {{period}}
 driver: mssql
 raw_data.enabled: true
-# Collect the transaction logs from the system database
+fetch_from_all_databases: {{fetch_from_all_databases}}
+
+# Collect the transaction logs from the database(s)
 sql_queries:
-{{#if databases}}
-{{#each databases as |database_name i|}}
-  - query: "SELECT @@servername AS server_name, @@servicename AS instance_name, name As 'database_name', database_id FROM sys.databases WHERE name='{{database_name}}';"
-    response_format: table
-  - query: "SELECT @@servername AS server_name, @@servicename AS instance_name, name As 'database_name', l.database_id, l.total_log_size_mb, l.active_log_size_mb,l.log_backup_time,l.log_since_last_log_backup_mb,l.log_since_last_checkpoint_mb,l.log_recovery_size_mb from sys.dm_db_log_stats(DB_ID('{{database_name}}')) l INNER JOIN sys.databases s ON l.database_id = s.database_id WHERE s.database_id = DB_ID('{{database_name}}') ;"
-    response_format: table
-  - query: "USE [{{database_name}}] ; SELECT @@servername AS server_name, @@servicename AS instance_name, name As 'database_name', l.database_id, l.total_log_size_in_bytes As total_log_size_bytes, l.used_log_space_in_bytes As used_log_space_bytes, l.used_log_space_in_percent As used_log_space_pct, l.log_space_in_bytes_since_last_backup from sys.dm_db_log_space_usage l INNER JOIN sys.databases s ON l.database_id = s.database_id WHERE s.database_id = DB_ID('{{database_name}}') ;"
-    response_format: table
-{{/each}}
+{{#if fetch_from_all_databases}}
+- query: "SELECT @@servername AS server_name, @@servicename AS instance_name, DB_NAME() AS 'database_name', DB_ID() AS database_id;"
+  response_format: table
+- query: "SELECT @@servername AS server_name, @@servicename AS instance_name, DB_NAME() AS 'database_name', l.database_id, l.total_log_size_mb, l.active_log_size_mb,l.log_backup_time,l.log_since_last_log_backup_mb,l.log_since_last_checkpoint_mb,l.log_recovery_size_mb from sys.dm_db_log_stats(DB_ID()) l INNER JOIN sys.databases s ON l.database_id = s.database_id WHERE s.database_id = DB_ID();"
+  response_format: table
+- query: "SELECT @@servername AS server_name, @@servicename AS instance_name, name As 'database_name', l.database_id, l.total_log_size_in_bytes As total_log_size_bytes, l.used_log_space_in_bytes As used_log_space_bytes, l.used_log_space_in_percent As used_log_space_pct, l.log_space_in_bytes_since_last_backup from sys.dm_db_log_space_usage l INNER JOIN sys.databases s ON l.database_id = s.database_id WHERE s.database_id = DB_ID();"
+  response_format: table
+{{else}}
+  {{#if databases}}
+    {{#each databases as |database_name i|}}
+      - query: "SELECT @@servername AS server_name, @@servicename AS instance_name, name As 'database_name', database_id FROM sys.databases WHERE name='{{database_name}}';"
+        response_format: table
+      - query: "SELECT @@servername AS server_name, @@servicename AS instance_name, name As 'database_name', l.database_id, l.total_log_size_mb, l.active_log_size_mb,l.log_backup_time,l.log_since_last_log_backup_mb,l.log_since_last_checkpoint_mb,l.log_recovery_size_mb from sys.dm_db_log_stats(DB_ID('{{database_name}}')) l INNER JOIN sys.databases s ON l.database_id = s.database_id WHERE s.database_id = DB_ID('{{database_name}}') ;"
+        response_format: table
+      - query: "USE [{{database_name}}]; SELECT @@servername AS server_name, @@servicename AS instance_name, name As 'database_name', l.database_id, l.total_log_size_in_bytes As total_log_size_bytes, l.used_log_space_in_bytes As used_log_space_bytes, l.used_log_space_in_percent As used_log_space_pct, l.log_space_in_bytes_since_last_backup from sys.dm_db_log_space_usage l INNER JOIN sys.databases s ON l.database_id = s.database_id WHERE s.database_id = DB_ID('{{database_name}}') ;"
+        response_format: table
+    {{/each}}
+  {{/if}}
 {{/if}}

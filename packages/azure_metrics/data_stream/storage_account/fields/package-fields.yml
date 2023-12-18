@@ -4,6 +4,7 @@
   fields:
     - name: timegrain
       type: keyword
+      dimension: true
       description: >
         The Azure metric timegrain
 
@@ -25,6 +26,7 @@
 
         - name: id
           type: keyword
+          dimension: true
           description: >
             The id of the resource
 
@@ -42,6 +44,7 @@
 
     - name: namespace
       type: keyword
+      dimension: true
       description: >
         The namespace selected
 
@@ -55,12 +58,41 @@
       description: >
         The application ID
 
-    - name: dimensions.*
-      type: object
-      object_type: keyword
-      object_type_mapping_type: "*"
-      description: >
-        Azure metric dimensions.
+    - name: dimensions
+      type: group
+      fields:
+        - name: response_type
+          type: keyword
+          dimension: true
+          description: Transaction response type like Success, ClientOtherError, etc.
+        - name: api_name
+          type: keyword
+          dimension: true
+          description: The name of operation.
+        - name: geo_type
+          type: keyword
+          dimension: true
+          description: Transaction from Primary or Secondary cluster. The available values include Primary and Secondary.
+        - name: authentication
+          type: keyword
+          dimension: true
+          description: Authentication type used in transactions like OAuth.
+        - name: blob_type
+          type: keyword
+          dimension: true
+          description: Specifies the type of a blob.
+        - name: tier
+          type: keyword
+          dimension: true
+          description: Specifies access tier.
+        - name: file_share
+          type: keyword
+          dimension: true
+          description: Specifies file share.
+        - name: transaction_type
+          type: keyword
+          dimension: true
+          description: Type of transaction. The available values include User and System.
 
     - name: metrics.*.*
       type: object

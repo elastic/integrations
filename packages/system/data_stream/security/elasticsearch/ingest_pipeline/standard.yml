@@ -105,6 +105,14 @@ processors:
           type:
             - change
           action: registry-value-modified
+        "4662":
+          category:
+            - iam
+            - configuration
+          type:
+            - admin
+            - change
+          action: object-operation-performed
         "4670":
           category:
             - iam
@@ -743,6 +751,14 @@ processors:
           type:
             - end
           action: windows-firewall-driver-error
+        "5136":
+          category:
+            - iam
+            - configuration
+          type:
+            - admin
+            - change
+          action: directory-service-object-modified
         "5379":
           category:
             - iam
@@ -859,30 +875,30 @@ processors:
       tag: Set User Account Control
       description: Set User Account Control
       # User Account Control Attributes Table
-      # https://support.microsoft.com/es-us/help/305144/how-to-use-useraccountcontrol-to-manipulate-user-account-properties
+      # https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-samr/4df07fab-1bbc-452f-8e92-7853a3c7e380
       params:
-        "0x00000001": SCRIPT
-        "0x00000002": ACCOUNTDISABLE
-        "0x00000008": HOMEDIR_REQUIRED
-        "0x00000010": LOCKOUT
-        "0x00000020": PASSWD_NOTREQD
-        "0x00000040": PASSWD_CANT_CHANGE
-        "0x00000080": ENCRYPTED_TEXT_PWD_ALLOWED
-        "0x00000100": TEMP_DUPLICATE_ACCOUNT
-        "0x00000200": NORMAL_ACCOUNT
-        "0x00000800": INTERDOMAIN_TRUST_ACCOUNT
-        "0x00001000": WORKSTATION_TRUST_ACCOUNT
-        "0x00002000": SERVER_TRUST_ACCOUNT
-        "0x00010000": DONT_EXPIRE_PASSWORD
-        "0x00020000": MNS_LOGON_ACCOUNT
-        "0x00040000": SMARTCARD_REQUIRED
-        "0x00080000": TRUSTED_FOR_DELEGATION
-        "0x00100000": NOT_DELEGATED
-        "0x00200000": USE_DES_KEY_ONLY
-        "0x00400000": DONT_REQ_PREAUTH
-        "0x00800000": PASSWORD_EXPIRED
-        "0x01000000": TRUSTED_TO_AUTH_FOR_DELEGATION
-        "0x04000000": PARTIAL_SECRETS_ACCOUNT
+        "0x00000001": USER_ACCOUNT_DISABLED
+        "0x00000002": USER_HOME_DIRECTORY_REQUIRED
+        "0x00000004": USER_PASSWORD_NOT_REQUIRED
+        "0x00000008": USER_TEMP_DUPLICATE_ACCOUNT
+        "0x00000010": USER_NORMAL_ACCOUNT
+        "0x00000020": USER_MNS_LOGON_ACCOUNT
+        "0x00000040": USER_INTERDOMAIN_TRUST_ACCOUNT
+        "0x00000080": USER_WORKSTATION_TRUST_ACCOUNT
+        "0x00000100": USER_SERVER_TRUST_ACCOUNT
+        "0x00000200": USER_DONT_EXPIRE_PASSWORD
+        "0x00000400": USER_ACCOUNT_AUTO_LOCKED
+        "0x00000800": USER_ENCRYPTED_TEXT_PASSWORD_ALLOWED
+        "0x00001000": USER_SMARTCARD_REQUIRED
+        "0x00002000": USER_TRUSTED_FOR_DELEGATION
+        "0x00004000": USER_NOT_DELEGATED
+        "0x00008000": USER_USE_DES_KEY_ONLY
+        "0x00010000": USER_DONT_REQUIRE_PREAUTH
+        "0x00020000": USER_PASSWORD_EXPIRED
+        "0x00040000": USER_TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION
+        "0x00080000": USER_NO_AUTH_DATA_REQUIRED
+        "0x00100000": USER_PARTIAL_SECRETS_ACCOUNT
+        "0x00200000": USER_USE_AES_KEYS
       source: |-
         if (ctx.winlog?.event_data == null) {
           return;
@@ -2687,7 +2703,7 @@ processors:
               "4750", "4751", "4752", "4753", "4754", "4755", "4756", "4757",
               "4758", "4759", "4760", "4761", "4762", "4763", "4764", "4767",
               "4781", "4798", "4799", "4817", "4904", "4905", "4907", "4912",
-              "4648", "4797", "5140", "5145", "5379", "5380", "5381", "5382"].contains(ctx.event.code)) {
+              "4648", "4797", "5140", "5145", "5379", "5380", "5381", "5382", "5136", "4662"].contains(ctx.event.code)) {
           return;
         }
         if (ctx.winlog?.event_data?.SubjectUserSid != null) {

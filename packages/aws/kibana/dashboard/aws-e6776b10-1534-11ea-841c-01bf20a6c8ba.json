@@ -87,16 +87,16 @@
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Total Estimated Charges ($)",
-                                                    "operationType": "sum",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": false,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
                                                                 "decimals": 2,
                                                                 "suffix": ""
                                                             }
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "reducedTimeRange": "12h",
                                                     "scale": "ratio",
@@ -167,11 +167,15 @@
                                             "columns": {
                                                 "05b1916d-7ebc-40ae-8a8b-d5a8503d2672": {
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.billing.EstimatedCharges: *"
+                                                    },
                                                     "isBucketed": false,
-                                                    "label": "Sum of aws.billing.EstimatedCharges",
-                                                    "operationType": "sum",
+                                                    "label": "Last value of aws.billing.EstimatedCharges",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "aws.billing.EstimatedCharges"
@@ -182,6 +186,7 @@
                                                     "label": "Top 10 values of aws.billing.ServiceName",
                                                     "operationType": "terms",
                                                     "params": {
+                                                        "accuracyMode": true,
                                                         "exclude": [],
                                                         "excludeIsRegex": false,
                                                         "include": [],
@@ -189,11 +194,15 @@
                                                         "missingBucket": false,
                                                         "orderAgg": {
                                                             "dataType": "number",
+                                                            "filter": {
+                                                                "language": "kuery",
+                                                                "query": "aws.billing.EstimatedCharges: *"
+                                                            },
                                                             "isBucketed": false,
-                                                            "label": "Average of aws.billing.EstimatedCharges",
-                                                            "operationType": "average",
+                                                            "label": "Last value of aws.billing.EstimatedCharges",
+                                                            "operationType": "last_value",
                                                             "params": {
-                                                                "emptyAsNull": true
+                                                                "sortField": "@timestamp"
                                                             },
                                                             "scale": "ratio",
                                                             "sourceField": "aws.billing.EstimatedCharges"
@@ -326,17 +335,17 @@
                                                         "query": ""
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "avg(aws.billing.EstimatedCharges)",
-                                                    "operationType": "sum",
+                                                    "label": "aws.billing.EstimatedCharges",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": false,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
                                                                 "decimals": 2,
                                                                 "suffix": "$"
                                                             }
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "aws.billing.EstimatedCharges",
@@ -397,7 +406,7 @@
                                     "yRight": true
                                 },
                                 "curveType": "LINEAR",
-                                "emphasizeFitting": false,
+                                "emphasizeFitting": true,
                                 "endValue": "Zero",
                                 "fillOpacity": 0,
                                 "fittingFunction": "Linear",
@@ -485,7 +494,7 @@
         "version": 1
     },
     "coreMigrationVersion": "8.7.0",
-    "created_at": "2023-07-18T08:47:59.330Z",
+    "created_at": "2023-09-15T12:40:34.129Z",
     "id": "aws-e6776b10-1534-11ea-841c-01bf20a6c8ba",
     "migrationVersion": {
         "dashboard": "8.7.0"

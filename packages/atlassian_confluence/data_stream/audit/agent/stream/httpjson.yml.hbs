@@ -3,6 +3,7 @@ interval: {{interval}}
 request.method: "GET"
 {{#if enable_request_tracer}}
 request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
 {{/if}}
 
 {{#if ssl}}
@@ -50,16 +51,18 @@ response.split:
 
 response.pagination:
   - set:
-      target: url.value
-      value: >
-        [[sprintf "%s/wiki/rest/api/audit?endDate=%s&startDate=%s&start=%d&limit=%s"
-        "{{api_url}}"
-        (.last_response.url.params.Get "endDate")
-        (.last_response.url.params.Get "startDate")
-        (add (toInt .last_response.body.start) (toInt .last_response.body.limit))
-        "{{ limit }}"]]
+      target: url.params.endDate
+      value: '[[.last_response.url.params.Get "endDate"]]'
+  - set:
+      target: url.params.startDate
+      value: '[[.last_response.url.params.Get "startDate"]]'
+  - set:
+      target: url.params.start
+      value: '[[if (ne (len .last_response.body.results) 0)]][[add (toInt .last_response.body.start) (toInt .last_response.body.limit)]][[end]]'
       fail_on_template_error: true
-
+  - set:
+      target: url.params.limit
+      value: '{{limit}}'
 cursor:
   last_timestamp:
     value: '[[(toInt .first_event.creationDate)]]'

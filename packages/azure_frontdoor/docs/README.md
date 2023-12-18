@@ -96,14 +96,6 @@ Users can also use this in case of a Hybrid Cloud model, where one may define th
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
 | destination.as.organization.name.text | Multi-field of `destination.as.organization.name`. | match_only_text |
-| destination.geo.city_name | City name. | keyword |
-| destination.geo.continent_name | Name of the continent. | keyword |
-| destination.geo.country_iso_code | Country ISO code. | keyword |
-| destination.geo.country_name | Country name. | keyword |
-| destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
-| destination.geo.region_iso_code | Region ISO code. | keyword |
-| destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -116,11 +108,6 @@ Users can also use this in case of a Hybrid Cloud model, where one may define th
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.mime_type | MIME type should identify the format of the file or stream of bytes using https://www.iana.org/assignments/media-types/media-types.xhtml[IANA official types], where possible. When more than one type is applicable, the most specific type should be used. | keyword |
 | file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
-| geo.city_name | City name. | keyword |
-| geo.continent_name | Name of the continent. | keyword |
-| geo.country_iso_code | Country ISO code. | keyword |
-| geo.country_name | Country name. | keyword |
-| geo.location | Longitude and latitude. | geo_point |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -228,14 +215,6 @@ Users can also use this in case of a Hybrid Cloud model, where one may define th
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
 | destination.as.organization.name.text | Multi-field of `destination.as.organization.name`. | match_only_text |
-| destination.geo.city_name | City name. | keyword |
-| destination.geo.continent_name | Name of the continent. | keyword |
-| destination.geo.country_iso_code | Country ISO code. | keyword |
-| destination.geo.country_name | Country name. | keyword |
-| destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
-| destination.geo.region_iso_code | Region ISO code. | keyword |
-| destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -248,11 +227,6 @@ Users can also use this in case of a Hybrid Cloud model, where one may define th
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.mime_type | MIME type should identify the format of the file or stream of bytes using https://www.iana.org/assignments/media-types/media-types.xhtml[IANA official types], where possible. When more than one type is applicable, the most specific type should be used. | keyword |
 | file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
-| geo.city_name | City name. | keyword |
-| geo.continent_name | Name of the continent. | keyword |
-| geo.country_iso_code | Country ISO code. | keyword |
-| geo.country_name | Country name. | keyword |
-| geo.location | Longitude and latitude. | geo_point |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |

@@ -1,0 +1,73 @@
+- name: cloudflare_logpush.dns_firewall
+  type: group
+  description: Integration for parsing Cloudflare Logpush DNS Firewall logs.
+  fields:
+    - name: cluster_id
+      type: keyword
+      description: The ID of the cluster which handled this request.
+    - name: colo.code
+      type: keyword
+      description: IATA airport code of data center that received the request.
+    - name: edns
+      type: group
+      fields:
+        - name: subnet
+          type: ip
+          description: EDNS Client Subnet (IPv4 or IPv6).
+        - name: subnet_length
+          type: long
+          description: EDNS Client Subnet length.
+    - name: question
+      type: group
+      fields:
+        - name: dnssec_ok
+          type: boolean
+          description: Indicates if the client is capable of handling a signed response (DNSSEC answer OK).
+        - name: name
+          type: keyword
+          description: Name of the query that was sent.
+        - name: recursion_desired
+          type: boolean
+          description: Indicates if the client means a recursive query (Recursion Desired).
+        - name: size
+          type: long
+          description: The size of the query sent from the client in bytes.
+        - name: tcp
+          type: boolean
+          description: Indicates if the query from the client was made via TCP (if false, then UDP).
+        - name: type
+          type: long
+          description: Integer value of query type.
+    - name: response
+      type: group
+      fields:
+        - name: code
+          type: keyword
+          description: DNS response code.
+        - name: cached
+          type: boolean
+          description: Whether the response was cached or not.
+        - name: cached_stale
+          type: boolean
+          description: Whether the response was cached stale. In other words, the TTL had expired and the upstream nameserver was not reachable.
+    - name: source.ip
+      type: ip
+      description: The source IP address of the request.
+    - name: timestamp
+      type: date
+      description: Timestamp at which the query occurred.
+    - name: upstream
+      type: group
+      fields:
+        - name: ip
+          type: ip
+          description: IP of the upstream nameserver (IPv4 or IPv6).
+        - name: response_code
+          type: keyword
+          description: Response code from the upstream nameserver.
+        - name: response_time_ms
+          type: long
+          description: Upstream response time in milliseconds.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.

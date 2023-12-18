@@ -1,0 +1,513 @@
+{
+    "attributes": {
+        "description": "Dashboard providing statistics about Domain Names indicators from the Alienvault OTX integration",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "threat.indicator.type",
+                            "negate": false,
+                            "params": {
+                                "query": "url"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "threat.indicator.type": "url"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "ti_otx.pulses_subscribed"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "ti_otx.pulses_subscribed"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "labels.is_ioc_transform_source",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
+                            "key": "labels.is_ioc_transform_source",
+                            "negate": true,
+                            "type": "exists"
+                        },
+                        "query": {
+                            "exists": {
+                                "field": "labels.is_ioc_transform_source"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "**Navigation**\n\n[OTX Overview](/app/dashboards#/view/ti_otx-7da241a0-71f3-11ec-9910-d1ceb8a1734b)  \n[OTX Files](/app/dashboards#/view/ti_otx-83b01770-71f3-11ec-9910-d1ceb8a1734b)  \n[OTX URLs](/app/dashboards#/view/ti_otx-8957ff80-71f3-11ec-9910-d1ceb8a1734b)  \n**[OTX Domains (This Page)](/app/dashboards#/view/ti_otx-b8cff1d0-5bc3-11ee-b268-039dec835103)**  \n\n[Integrations Page](/app/integrations/detail/ti_otx/overview)\n\n\n**Overview**\n\nThis dashboard is an overview of the different threat intelligence indicators with a **threat.indicator.type: url**.  \n\nThe dashboard is made to provide general statistics and show the health of your indicators like popular domains, file extensions, statistics about how many unique indicators are ingested and other relevant information.",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 39,
+                    "i": "4c3ed6e1-8b4e-4eab-8d84-70ed4f506216",
+                    "w": 7,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "4c3ed6e1-8b4e-4eab-8d84-70ed4f506216",
+                "title": "Files Navigation Textbox [Logs OTX]",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-901a8fcd-f178-46cb-8b09-65ba8c086346",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "901a8fcd-f178-46cb-8b09-65ba8c086346": {
+                                            "columnOrder": [
+                                                "fcf5b4ac-b6dc-48fe-b884-6cfc9217e6ec"
+                                            ],
+                                            "columns": {
+                                                "fcf5b4ac-b6dc-48fe-b884-6cfc9217e6ec": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Unique Domains",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "threat.indicator.url.domain"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "901a8fcd-f178-46cb-8b09-65ba8c086346",
+                                "layerType": "data",
+                                "metricAccessor": "fcf5b4ac-b6dc-48fe-b884-6cfc9217e6ec"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "4739ab43-0d87-4805-8a2c-fdde56e121e3",
+                    "w": 18,
+                    "x": 7,
+                    "y": 0
+                },
+                "panelIndex": "4739ab43-0d87-4805-8a2c-fdde56e121e3",
+                "title": "Unique Domains [Logs OTX]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-43ed4ef9-cd4f-456c-9ea4-dcaedbc7996a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "43ed4ef9-cd4f-456c-9ea4-dcaedbc7996a": {
+                                            "columnOrder": [
+                                                "68e05809-fb61-47f8-b393-f3163576c145",
+                                                "c63f9594-1dea-42d5-847d-0d38ea0959ba"
+                                            ],
+                                            "columns": {
+                                                "68e05809-fb61-47f8-b393-f3163576c145": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of threat.indicator.url.domain",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "c63f9594-1dea-42d5-847d-0d38ea0959ba",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "threat.indicator.url.domain"
+                                                },
+                                                "c63f9594-1dea-42d5-847d-0d38ea0959ba": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Indicators",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "c63f9594-1dea-42d5-847d-0d38ea0959ba"
+                                        ],
+                                        "layerId": "43ed4ef9-cd4f-456c-9ea4-dcaedbc7996a",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_stacked",
+                                        "showGridlines": false,
+                                        "xAccessor": "68e05809-fb61-47f8-b393-f3163576c145"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 19,
+                    "i": "d8c150ce-6c19-4ae8-85ea-2896e8ef0886",
+                    "w": 23,
+                    "x": 25,
+                    "y": 0
+                },
+                "panelIndex": "d8c150ce-6c19-4ae8-85ea-2896e8ef0886",
+                "title": "Popular Domains [Logs OTX]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-43ed4ef9-cd4f-456c-9ea4-dcaedbc7996a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "43ed4ef9-cd4f-456c-9ea4-dcaedbc7996a": {
+                                            "columnOrder": [
+                                                "68e05809-fb61-47f8-b393-f3163576c145",
+                                                "c63f9594-1dea-42d5-847d-0d38ea0959ba"
+                                            ],
+                                            "columns": {
+                                                "68e05809-fb61-47f8-b393-f3163576c145": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of threat.indicator.url.domain",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "c63f9594-1dea-42d5-847d-0d38ea0959ba",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "threat.indicator.url.domain"
+                                                },
+                                                "c63f9594-1dea-42d5-847d-0d38ea0959ba": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Indicators",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "emptySizeRatio": 0.54,
+                                        "layerId": "43ed4ef9-cd4f-456c-9ea4-dcaedbc7996a",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "c63f9594-1dea-42d5-847d-0d38ea0959ba"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "percentDecimals": 1,
+                                        "primaryGroups": [
+                                            "68e05809-fb61-47f8-b393-f3163576c145"
+                                        ],
+                                        "truncateLegend": false
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "a6c68ffb-c8fc-44c8-a50d-54d552418767",
+                    "w": 18,
+                    "x": 7,
+                    "y": 5
+                },
+                "panelIndex": "a6c68ffb-c8fc-44c8-a50d-54d552418767",
+                "title": "% Share of Popular Domains [Logs OTX]",
+                "type": "lens"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Logs OTX] Domains",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-09-25T17:11:11.089Z",
+    "id": "ti_otx-b8cff1d0-5bc3-11ee-b268-039dec835103",
+    "managed": true,
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "4739ab43-0d87-4805-8a2c-fdde56e121e3:indexpattern-datasource-layer-901a8fcd-f178-46cb-8b09-65ba8c086346",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "d8c150ce-6c19-4ae8-85ea-2896e8ef0886:indexpattern-datasource-layer-43ed4ef9-cd4f-456c-9ea4-dcaedbc7996a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "a6c68ffb-c8fc-44c8-a50d-54d552418767:indexpattern-datasource-layer-43ed4ef9-cd4f-456c-9ea4-dcaedbc7996a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "ti_otx-6bc35230-71fd-11ec-9910-d1ceb8a1734b",
+            "name": "tag-ref-ti_otx-6bc35230-71fd-11ec-9910-d1ceb8a1734b",
+            "type": "tag"
+        },
+        {
+            "id": "ti_otx-security-solution-default",
+            "name": "tag-ref-ti_otx-security-solution-default",
+            "type": "tag"
+        },
+        {
+            "id": "ti_otx-security-solution-default",
+            "name": "tag-ref-security-solution-default",
+            "type": "tag"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
+}

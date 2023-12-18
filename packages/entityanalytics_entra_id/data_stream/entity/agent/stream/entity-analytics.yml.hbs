@@ -6,10 +6,35 @@ tenant_id: {{tenant_id}}
 secret: {{secret}}
 login_endpoint: {{login_endpoint}}
 api_endpoint: {{api_endpoint}}
+dataset: {{dataset}}
 login_scopes:
 {{#each login_scopes as |login_scope|}}
   - {{login_scope}}
 {{/each}}
 {{#if custom_options}}
 {{custom_options}}
+{{/if}}
+{{#if proxy_url}}
+proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+timeout: {{http_client_timeout}}
+{{/if}}
+tags:
+  - {{dataset}}-entities
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
 {{/if}}

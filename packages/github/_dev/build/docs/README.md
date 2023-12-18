@@ -11,7 +11,7 @@ The GitHub audit log records all events related to the GitHub organization. See 
 To use this integration, the following prerequisites must be met:
  - You must be an organization owner.
  - You must be using Github Enterprise Cloud.
- - You must use an Personal Access Token with the `admin:org` and `read:audit_log` scope.
+ - You must use a Personal Access Token with `read:audit_log` scope.
 
 *This integration is not compatible with GitHub Enterprise server.*
 

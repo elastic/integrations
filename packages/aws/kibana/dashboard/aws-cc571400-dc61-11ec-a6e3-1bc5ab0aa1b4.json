@@ -4,10 +4,45 @@
         "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": [
+                                "aws.securityhub_findings",
+                                "aws.securityhub_insights"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "aws.securityhub_findings"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "aws.securityhub_insights"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
-                    "query": "data_stream.dataset : \"aws.securityhub_findings\" or data_stream.dataset : \"aws.securityhub_insights\""
+                    "query": ""
                 }
             }
         },

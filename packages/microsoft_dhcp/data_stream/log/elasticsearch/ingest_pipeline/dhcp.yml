@@ -9,9 +9,9 @@ processors:
         - _tmp_.date
         - _tmp_.time
         - message
-        - _tmp_.host.ip
-        - host.name
-        - _tmp_.mac
+        - source.ip
+        - source.address
+        - _tmp_.source.mac
         - user.name
         - microsoft.dhcp.transaction_id
         - microsoft.dhcp.result
@@ -26,16 +26,12 @@ processors:
         - microsoft.dhcp.dns_error_code
       ignore_failure: true
   - lowercase:
-      field: host.name
-      if: "ctx.host?.name != null"
-  - grok:
-      field: host.name
-      if: 'ctx.host?.name != null && ctx.host.name.contains(".")'
-      patterns:
-        - "%{HOSTNAME}\\.%{GREEDYDATA:host.domain}"
-      pattern_definitions:
-        "HOSTNAME": "[^.]+"
-      ignore_failure: true
+      field: source.address
+      if: "ctx.source?.address != null"
+  - set:
+      field: source.domain
+      if: "ctx.source?.address != null"
+      copy_from: source.address
   - set:
       field: _tmp_.timestamp
       value: "{{{_tmp_.date}}} {{{_tmp_.time}}}"
@@ -401,21 +397,17 @@ processors:
       value: '{{{event.reason}}}'
       if: ctx.event?.reasson != null
   - uppercase:
-      field: _tmp_.mac
+      field: _tmp_.source.mac
       ignore_missing: true
-  - set:
-      if: ctx._tmp_?.mac != null
-      field: host.id
-      copy_from: _tmp_.mac
   - gsub:
-      field: _tmp_.mac
+      field: _tmp_.source.mac
       pattern: '(..)(?!$)'
       replacement: '$1-'
       ignore_missing: true
-  - append:
-      if: 'ctx.host?.id != null && ctx.host?.id.length() == 12'
-      field: host.mac
-      value: '{{{_tmp_.mac}}}'
+  - set:
+      if: ctx._tmp_?.source?.mac != null
+      field: source.mac
+      copy_from: _tmp_.source.mac
 on_failure:
   - set:
       field: event.kind

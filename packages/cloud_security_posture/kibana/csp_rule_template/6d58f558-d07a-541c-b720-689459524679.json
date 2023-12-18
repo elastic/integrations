@@ -1,0 +1,38 @@
+{
+    "id": "6d58f558-d07a-541c-b720-689459524679",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "There are additional costs per transaction to run and store network data. For high-volume networks these charges will add up quickly.",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/azure/network-watcher/network-watcher-monitoring-overview\n2. https://docs.azure.cn/zh-cn/cli/network/watcher?view=azure-cli-latest#az_network_watcher_list\n3. https://docs.azure.cn/zh-cn/cli/network/watcher?view=azure-cli-latest#az_network_watcher_configure\n4. https://docs.microsoft.com/en-us/azure/network-watcher/network-watcher-create\n5. https://docs.microsoft.com/en-us/azure/security/benchmarks/security-controls-v2-logging-threat-detection#lt-3-enable-logging-for-azure-network-activities\n6. https://azure.microsoft.com/en-ca/pricing/details/network-watcher/",
+            "id": "6d58f558-d07a-541c-b720-689459524679",
+            "name": "Ensure that Network Watcher is 'Enabled'",
+            "profile_applicability": "* Level 2",
+            "description": "Enable Network Watcher for Azure subscriptions.",
+            "rationale": "Network diagnostic and visualization tools available with Network Watcher help users understand, diagnose, and gain insights to the network in Azure.",
+            "audit": "**From Azure Portal**\n\n1. Go to `Network Watcher`\n2. Ensure that the `STATUS` is set to `Enabled`\n\n**From Azure CLI**\n\n```\naz network watcher list\n```\nThis will list all regions where `provisioningState` is `Succeeded`.\n\n\nThen run\n```\naz account list-locations\n```\nThis will list all regions that exist in the subscription.\nCompare this list to the previous one to ensure that for all regions, `provisioningState` is set to `Succeeded`.\n\n**From PowerShell**\n\nGet a list of Network Watchers\n\n```\nGet-AzNetworkWatcher\n```\n\nMake sure each watcher is set with the `ProvisioningState` setting set to `Succeeded` and all `Locations` are set with a watcher.",
+            "remediation": "Opting out of Network Watcher automatic enablement is a permanent change.\nOnce you opt-out you cannot opt-in without contacting support.",
+            "section": "Networking",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 6.6",
+                "Networking"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "6.6",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_6_6"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

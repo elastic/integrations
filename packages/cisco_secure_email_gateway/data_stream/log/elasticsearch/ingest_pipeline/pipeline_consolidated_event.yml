@@ -14,14 +14,14 @@ processors:
           \\|%{DATA:cisco_secure_email_gateway.log.event_class_id}\
           \\|%{DATA:cisco_secure_email_gateway.log.event.name}\
           \\|%{WORD:event.severity}\
-          \\|%{GREEDYDATA:_tmp.details} endTime=%{DATA:event.end}%{SPACE}\
+          \\|%{GREEDYDATA:_tmp.details} %{ENDTIME}=%{DATA:event.end}%{SPACE}\
           (?:ESADKIMVerdict=%{WORD:cisco_secure_email_gateway.log.esa.dkim_verdict} )?\
           (?:ESADLPVerdict=%{WORD:cisco_secure_email_gateway.log.esa.dlp_verdict} )?\
           (?:dvc=%{IP:cisco_secure_email_gateway.log.data.ip} )?\
           (?:ESAAttachmentDetails=%{DATA:cisco_secure_email_gateway.log.esa.attachment_details} )?\
           (?:ESAFriendlyFrom=%{DATA:cisco_secure_email_gateway.log.esa.friendly_from} )?\
           (?:ESAGMVerdict=%{WORD:cisco_secure_email_gateway.log.esa.graymail_verdict} )?\
-          startTime=%{DATA:event.start}%{SPACE}\
+          %{STARTTIME}=%{DATA:event.start}%{SPACE}\
           (?:(deviceInboundInterface||deviceOutboundInterface)=%{WORD:cisco_secure_email_gateway.log.listener.name} )?\
           (?:deviceDirection=%{DATA:cisco_secure_email_gateway.log.device_direction} )?\
           (?:ESAMailFlowPolicy=%{WORD:cisco_secure_email_gateway.log.esa.mail_flow_policy} )?\
@@ -49,11 +49,16 @@ processors:
           (?:cs6Label=%{DATA:cisco_secure_email_gateway.log.cs6_label} )?\
           (?:cs6=%{DATA:cisco_secure_email_gateway.log.cs6} )?\
           (?:ESASPFVerdict=%{DATA:cisco_secure_email_gateway.log.esa.spf_verdict} )?\
-          (?:sourceHostName=%{DATA:source.domain} )?\
+          (?:%{SOURCEHOSTNAME}=%{DATA:source.domain} )?\
           (?:ESASenderGroup=%{DATA:cisco_secure_email_gateway.log.esa.sender_group} )?\
-          (?:sourceAddress=%{IP:source.ip} )?\
+          (?:%{SOURCEADDRESS}=%{IP:source.ip} )?\
           msg=%{GREEDYDATA:_tmp.msg}$"
         - ^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$
+      pattern_definitions:
+        STARTTIME: '(startTime|start)'
+        ENDTIME: '(endTime|end)'
+        SOURCEADDRESS: '(sourceAddress|src)'
+        SOURCEHOSTNAME: '(sourceHostName|shost)'
   - grok:
       field: _tmp.msg
       if: ctx._tmp?.msg != null
@@ -193,6 +198,76 @@ processors:
               - MMM dd HH:mm:ss
               - MMM d HH:mm:ss
             on_failure:
+              - append:
+                  field: error.message
+                  value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: event.start
+      target_field: event.start
+      timezone: '{{{event.timezone}}}'
+      if: ctx.event?.start != null
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+      on_failure:
+        # Try to re-parse as UTC to catch when TZ is invalid or unknown.
+        - remove:
+            field: event.timezone
+            ignore_missing: true
+        - date:
+            field: event.start
+            target_field: event.start
+            if: ctx.event?.start != null
+            formats:
+              - E MMM dd HH:mm:ss yyyy
+              - E MMM  d HH:mm:ss yyyy
+              - E MMM d HH:mm:ss yyyy
+              - MMM  d HH:mm:ss
+              - MMM dd HH:mm:ss
+              - MMM d HH:mm:ss
+            on_failure:
+              - remove:
+                  field: event.start
+                  ignore_missing: true
+              - append:
+                  field: error.message
+                  value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: event.end
+      target_field: event.end
+      timezone: '{{{event.timezone}}}'
+      if: ctx.event?.end != null
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+      on_failure:
+        # Try to re-parse as UTC to catch when TZ is invalid or unknown.
+        - remove:
+            field: event.timezone
+            ignore_missing: true
+        - date:
+            field: event.end
+            target_field: event.end
+            if: ctx.event?.end != null
+            formats:
+              - E MMM dd HH:mm:ss yyyy
+              - E MMM  d HH:mm:ss yyyy
+              - E MMM d HH:mm:ss yyyy
+              - MMM  d HH:mm:ss
+              - MMM dd HH:mm:ss
+              - MMM d HH:mm:ss
+            on_failure:
+              - remove:
+                  field: event.end
+                  ignore_missing: true
               - append:
                   field: error.message
                   value: '{{{_ingest.on_failure_message}}}'

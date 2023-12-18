@@ -103,8 +103,12 @@ processors:
       ignore_empty_value: true
   - geoip:
       field: aws.s3access.remote_ip
-      target_field: geo
+      target_field: client.geo
       if: ctx?.aws?.s3access?.remote_ip != null
+  - set:
+      field: geo
+      copy_from: client.geo
+      ignore_empty_value: true
   - set:
       field: client.user.id
       value: '{{aws.s3access.requester}}'

@@ -102,6 +102,9 @@ The `elb` dataset collects logs from AWS ELBs.
 | aws.elb.tls_named_group | The TLS named group. | keyword |
 | aws.elb.trace_id | The contents of the `X-Amzn-Trace-Id` header. | keyword |
 | aws.elb.type | The type of the load balancer for v2 Load Balancers. | keyword |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -124,11 +127,11 @@ The `elb` dataset collects logs from AWS ELBs.
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Event dataset | constant_keyword |
-| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.end | `event.end` contains the date when the event ended or when the activity was last observed. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
-| event.start | event.start contains the date when the event started or when the activity was first observed. | date |
+| event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -136,7 +139,7 @@ The `elb` dataset collects logs from AWS ELBs.
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -152,6 +155,9 @@ The `elb` dataset collects logs from AWS ELBs.
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
+| input.type | Input type | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.offset | Log offset | long |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
@@ -185,6 +191,13 @@ An example event for `elb` looks as following:
 ```json
 {
     "@timestamp": "2018-07-02T22:23:00.186Z",
+    "agent": {
+        "ephemeral_id": "3b412622-c69f-4cd2-9c8a-b9dfd9cae4c2",
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.10.1"
+    },
     "aws": {
         "elb": {
             "action_executed": [
@@ -223,17 +236,42 @@ An example event for `elb` looks as following:
             ],
             "trace_id": "Root=1-58337262-36d228ad5d99923122bbe354",
             "type": "http"
+        },
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-aws-bucket-61398",
+                "name": "elastic-package-aws-bucket-61398"
+            },
+            "object": {
+                "key": "alb.log"
+            }
         }
     },
     "cloud": {
-        "provider": "aws"
+        "provider": "aws",
+        "region": "us-east-1"
+    },
+    "data_stream": {
+        "dataset": "aws.elb_logs",
+        "namespace": "ep",
+        "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
+    },
+    "elastic_agent": {
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "snapshot": false,
+        "version": "8.10.1"
     },
     "event": {
-        "category": "web",
+        "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
+        "dataset": "aws.elb_logs",
         "end": "2018-07-02T22:23:00.186Z",
+        "ingested": "2023-11-06T11:04:05Z",
         "kind": "event",
         "original": "http 2018-07-02T22:23:00.186641Z app/my-loadbalancer/50dc6c495c0c9188 192.168.131.39:2817 10.0.0.1:80 0.000 0.001 0.000 200 200 34 366 \"GET http://www.example.com:80/ HTTP/1.1\" \"curl/7.46.0\" - - arn:aws:elasticloadbalancing:us-east-2:123456789012:targetgroup/my-targets/73e2d6bc24d8a067 \"Root=1-58337262-36d228ad5d99923122bbe354\" \"-\" \"-\" 0 2018-07-02T22:22:48.364000Z \"forward,redirect\" \"-\" \"-\" \"10.0.0.1:80\" \"200\" \"-\" \"-\"",
         "outcome": "success",
@@ -254,13 +292,24 @@ An example event for `elb` looks as following:
         },
         "version": "1.1"
     },
+    "input": {
+        "type": "aws-s3"
+    },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-aws-bucket-61398.s3.us-east-1.amazonaws.com/alb.log"
+        },
+        "offset": 0
+    },
     "source": {
         "address": "192.168.131.39",
         "ip": "192.168.131.39",
         "port": 2817
     },
     "tags": [
-        "preserve_original_event"
+        "preserve_original_event",
+        "forwarded",
+        "aws-elb-logs"
     ],
     "trace": {
         "id": "Root=1-58337262-36d228ad5d99923122bbe354"
@@ -338,7 +387,7 @@ An example event for `elb` looks as following:
         ],
         "name": "docker-fleet-agent",
         "mac": [
-            "02:42:c0:a8:60:07"
+            "02-42-C0-A8-60-07"
         ],
         "architecture": "x86_64"
     },
@@ -447,8 +496,7 @@ An example event for `elb` looks as following:
 | aws.networkelb.metrics.TCP_Target_Reset_Count.sum | The total number of reset (RST) packets sent from a target to a client. | long | gauge |
 | aws.networkelb.metrics.TargetTLSNegotiationErrorCount.sum | The total number of TLS handshakes that failed during negotiation between a TLS listener and a target. | long | gauge |
 | aws.networkelb.metrics.UnHealthyHostCount.max | The number of targets that are considered unhealthy. | long | gauge |
-| aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |
-| aws.tags.\* | Tag key value pairs from aws resources. | object |  |
+| aws.tags | Tag key value pairs from aws resources. | flattened |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |
@@ -479,7 +527,7 @@ An example event for `elb` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
 | host.ip | Host ip addresses. | ip |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |

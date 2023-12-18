@@ -1,12 +1,17 @@
 # TSDB Guideline for Integration Developers
 
+Important related resources:
+
+- Meta [issue](https://github.com/elastic/integrations/issues/5233) with all migrated packages
+- TSDB [test](https://github.com/elastic/TSDB-migration-test-kit) migration kit.
+
+In this document you can find:
+
 * [Background](#background)
 * [Steps for migrating an existing package](#migration-steps)
 * [Testing](#testing)
 * [Best practices](#best-practices)
 * [Troubleshooting](#troubleshooting)
-* [Known issues](#known-issues)
-* [Reference to existing package already migrated](#existing-migrated-packages)
 
 
 # <a id="background"></a> Background
@@ -19,68 +24,70 @@ Integration is one of the biggest sources of input data to elasticsearch. Enabli
 # <a id="migration-steps"></a> Steps for migrating an existing package
 
 
-1. **Datastream having type `logs` are excluded from TSDB migration.**
-2. **Modify the `kibana.version` to 8.8.0 within the manifest.yml file of the package.**
-   ```
-   conditions:
-     kibana.version: "^8.8.0"
-   ```
-2. **Add the changes to the manifest.yml file of the datastream as below to enable the timeseries index mode**
-    ```
-    elasticsearch:
-      index_mode: "time_series"
-    ```
-    Should your datastream contain an increased count of dimension fields, you have the option to adjust this restriction by altering the index.mapping.dimension_fields.limit value as indicated below. The default [maximum limit](https://github.com/elastic/elasticsearch/blob/6417a4f80f32ace48b8ad682ad46b19b57e49d60/server/src/main/java/org/elasticsearch/index/mapper/MapperService.java#L114) stands at 21. 
-    ```
-    elasticsearch:
-      index_mode: "time_series"
-      index_template:
-       settings:
-         # Defaults to 21
-         index.mapping.dimension_fields.limit: 32
-    ```
+> **Warning**: Datastream having type `logs` are excluded from TSDB migration.
+
     
-3. **Identifying the dimensions in the datastream.** 
+### Step 1: Set the dimension fields
 
-    Read about dimension fields [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds.html#time-series-dimension). It is important that dimensions or a set of dimensions that are part of a datastream uniquely identify a timeseries. Dimensions are used to form _tsid which then is used for routing and index sorting. Read about the ways to add field a dimension [here](https://github.com/elastic/integrations/blob/main/docs/generic_guidelines.md#specify-dimensions])
+Each field belonging to the set of fields that uniquely identify a document is a dimension. You can read more details about dimensions [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds.html#time-series-dimension).
 
-    A field having type [flattened](https://www.elastic.co/guide/en/elasticsearch/reference/current/flattened.html) cannot be selected as a dimension field. If the field that you are choosing as a dimension is too long or is of type flattened , consider the option of hashing the value of this field, creating a new dimension field to hold this value  . [Fingerprint processor](https://www.elastic.co/guide/en/elasticsearch/reference/current/fingerprint-processor.html) can be used for this purpose.  
+To set a field as dimension simply add `dimension: true` to its mapping:
+
+```yaml
+- name: ApiId
+  type: keyword
+  dimension: true
+```
+
+> **Note**: A field having type [flattened](https://www.elastic.co/guide/en/elasticsearch/reference/current/flattened.html) cannot be selected as a dimension field. If the field that you are choosing as a dimension is too long or is of type flattened, consider hashing the value of this field and using the result as a dimension. [Fingerprint processor](https://www.elastic.co/guide/en/elasticsearch/reference/current/fingerprint-processor.html) can be used for this purpose.
+>
+> You can find an example in [Oracle Integration TSDB Enablement Example](https://github.com/elastic/integrations/blob/8a57d6ba96d391afc33da20c80ec51280d22f009/packages/oracle/data_stream/performance/elasticsearch/ingest_pipeline/default.yml#LL127C4-L131C29)  
+
+Important considerations:
+- There is a limit on how many dimension fields a datastream can have. By default, this value is [21](https://github.com/elastic/elasticsearch/blob/6417a4f80f32ace48b8ad682ad46b19b57e49d60/server/src/main/java/org/elasticsearch/index/mapper/MapperService.java#L114)). You can adjust this restriction by altering the `index.mapping.dimension_fields.limit`:
+```yaml
+elasticsearch:
+  index_template:
+    settings:
+      index.mapping.dimension_fields.limit: 32 # Defaults to 21
+```
+- Dimension _keys_ have a hard limit of 512b. Documents are rejected if this limit is reached.
+- Dimension _values_ have a hard limit of 1024b. Documents are rejected if this limit is reached.
+
+#### ECS fiels
+There are fields that are part of every package, and they are potential candidates of becoming dimension fields:
+
+* `host.name`
+* `service.address`
+* `agent.id`
+* `container.id`
     
-    Reference :  [Oracle Integration TSDB Enablement Example](https://github.com/elastic/integrations/blob/8a57d6ba96d391afc33da20c80ec51280d22f009/packages/oracle/data_stream/performance/elasticsearch/ingest_pipeline/default.yml#LL127C4-L131C29)  
+For products that are capable of running both on-premise and in a public cloud environment (by being deployed on public cloud virtual machines), it is recommended to annotate the ECS fields listed below as dimension fields:
+* `host.name`
+* `service.address`
+* `container.id`
+* `cloud.account.id`
+* `cloud.provider`
+* `cloud.region`
+* `cloud.availability_zone`
+* `agent.id`
+* `cloud.instance.id`
 
-3. **Annotating the ECS fields as dimension.**
+For products operating as managed services within cloud providers like AWS, Azure, and GCP, it is advised to label the fields listed below as dimension fields.
+* `cloud.account.id`
+* `cloud.region`
+* `cloud.availability_zone`
+* `cloud.provider`
+* `agent.id `
 
-    From the context of integrations that are related to products that are deployed on-premise, there exist certain fields that are part of every package and they are potential candidates of becoming dimension fields
-
-    * `host.name`
-    * `service.address`
-    * `agent.id`
-    * `container.id`
-    
-    For products that are capable of running both on-premise and in a public cloud environment (by being deployed on public cloud virtual machines), it is recommended to annotate the ECS fields listed below as dimension fields.
-    * `host.name`
-    * `service.address`
-    * `container.id`
-    * `cloud.account.id`
-    * `cloud.provider`
-    * `cloud.region`
-    * `cloud.availability_zone`
-    * `agent.id`
-    * `cloud.instance.id`
-
-    For products operating as managed services within cloud providers like AWS, Azure, and GCP, it is advised to label the fields listed below as dimension fields.
-    * `cloud.account.id`
-    * `cloud.region`
-    * `cloud.availability_zone`
-    * `cloud.provider`
-    * `agent.id ` 
+Note that for some packages some of these fields do not hold any value, so make sure to only use the needed ones.
     
 
-4. **Annotating the integration specific fields as dimension**
+#### Integration specific fields
 
-    `files.yml` file has the field mappings specific to a datastream of an integration. This step is needed when the dimension fields in ECS is not sufficient enough to create a unique [_tsid](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds.html#tsid) value for the documents stored in elasticsearch. Annotate the field with `dimension: true` to tag the field as dimension field. 
+`files.yml` file has the field mappings specific to a datastream of an integration. Some of these fields might need to be set as dimension if the set of dimension fields in ECS is not enough to create a unique [_tsid](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds.html#tsid).
 
-    Adding an inline comment prior to the dimension annotation is advised, detailing the rationale behind the choice of a particular field as a dimension field.
+Adding an inline comment prior to the dimension annotation is advised, detailing the rationale behind the choice of a particular field as a dimension field.
 
     ```
     - name: wait_class
@@ -89,41 +96,45 @@ Integration is one of the biggest sources of input data to elasticsearch. Enabli
       dimension: true
       description: Every wait event belongs to a class of wait events.
     ```
-    *Notes:*
-    * *There exists a limit on how many dimension fields can have. By default this value is [21](https://github.com/elastic/elasticsearch/blob/6417a4f80f32ace48b8ad682ad46b19b57e49d60/server/src/main/java/org/elasticsearch/index/mapper/MapperService.java#L114)).*
-    * *Dimension keys have a hard limit of 512b. Documents are rejected if this limit is reached.*
-    * *Dimension values have a hard limit of 1024b. Documents are rejected if this limit is reached*  
 
-    **Warning:** Choosing an insufficient number of dimension fields may lead to data loss
+### Step 2: Set type for metric fields
 
-    **Hint:** Fields having type [keyword](https://www.elastic.co/guide/en/elasticsearch/reference/current/keyword.html#keyword-field-type) in your datastream are very good candidates of becoming dimension fields
+Metrics are fields that contain numeric measurements, as well as aggregations and/or down sampling values based off of those measurements. Annotate each metric with the correct metric type. The [currently supported](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds.html#time-series-metric) values are `gauge`, `counter` and `null`.
 
-5. **Annotating Metric Types values for all applicable fields** 
+Example of adding a metric type to a field: 
 
-    Metrics are fields that contain numeric measurements, as well as aggregations and/or downsampling values based off of those measurements. 
+```yaml
+- name: compactions_failed
+  type: double
+  metric_type: counter
+  description: |
+    Counter of TSM compactions by level that have failed due to error.
+```
+> **Note**: Some of the aggregation functions are not supported for certain metric_type. In such a scenario, please revisit to see if the selection of metric_type you made is indeed correct for that field. If valid, please create an issue under elastic/elasticsearch explaining the use case.
 
-    Annotate fields using appropriate metric_type wherever applicable. `counter` and `gauge` are the currently supported values for [metric_type](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping-field-meta.html).  
+### Step 3: Update Kibana version
 
-    More details regarding metric_type can be found [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds.html#time-series-metric)
+Modify the `kibana.version` to at least `8.8.0` within the `manifest.yml` file of the package:
+```yaml
+conditions:
+ kibana.version: "^8.8.0"
+```
 
-    Example on adding metric_type to field mapping. 
+### Step 4: Enable `time_series` index mode
 
-    ```
-    - name: compactions_failed
-      type: double
-      metric_type: counter
-      description: |
-        Counter of TSM compactions by level that have failed due to error.
-    ```
-    *Note: It may be possible that some of the aggregation functions are not supported for certain metric_type. In such a scenario, please revisit to see if the selection of metric_type you made is indeed correct for that field. If valid, please create an issue under elastic/elasticsearch explaining the use case.*  
+Add the changes to the `manifest.yml` file of the datastream as below to enable the timeseries index mode:
+```yaml
+elasticsearch:
+  index_mode: "time_series"
+```
+
+
 
 # <a id="testing"></a> Testing
+
+- If the number of dimensions is insufficient, we will have loss of data. Consider testing this using the [TSDB migration test kit](https://github.com/elastic/TSDB-migration-test-kit).
  
-- After migration, verify if the dashboard is rendering the data properly. If certain visualisation do not work, consider migrating to [Lens](https://www.elastic.co/guide/en/kibana/current/lens.html)
-
-  Certain aggregation functions are not supported when a field is having a metric_type `counter`. Example `avg()`. Replace such aggregation functions with a supported aggregation type such as `max()` or `min()`. 
-
-- It is recommended to compare the number of documents within a certain time frame before enabling the TSDB and after enabling TSDB index mode. If the count differs, please check if there exists a field that is not annotated as dimension field.  
+- Verify the dashboard is rendering the data properly. If certain visualisation do not work, consider migrating to [Lens](https://www.elastic.co/guide/en/kibana/current/lens.html). Remember that certain aggregation functions are not supported when a field has metric type `counter`. Example `avg()`. Replace such aggregation functions with a supported aggregation type such as `max()` or `min()`.
 
 
 # <a id="best-practices"></a> Best practices
@@ -132,33 +143,42 @@ Integration is one of the biggest sources of input data to elasticsearch. Enabli
 
 - Always assess the number of unique values the field that is selected to be dimension would hold, especially if it is a numeric field.  
 A field that holds millions of unique values may not be an ideal candidate for becoming a dimension field.
+
 - If the dimension field value length is very long (max limit is 1024B), consider transforming the value to hash value representation. [Fingerprint processor](https://www.elastic.co/guide/en/elasticsearch/reference/current/fingerprint-processor.html) can be used for this purpose.
-- In the field mapping files above each dimension field, add in-line comments stating the reason for selecting the field as a dimension field, especially when the field description does not cover enough details that explains the reason why the field must be a dimension field.  
-- As part of TSDB migration testing, you may discover other errors which may be un-related to TSDB migration. Keep the PR for TSDB migration free from such changes. This helps in obtaining quick PR approval.
+
+- In the field mapping files above each dimension field, add in-line comments stating the reason for selecting the field as a dimension field.
+
+- As part of TSDB migration testing, you may discover other errors which may be unrelated to TSDB migration. Keep the PR for TSDB migration free from such changes. This helps in obtaining quick PR approval.
 
 
 # <a id="troubleshooting"></a> Troubleshooting
 
-**Identification of Write Index**: When mappings are modified for a datastream, index rollover happens and a new index is created under the datastream. Even if there exists a new index, the data continues to go to the old index until the timestamp matches `index.time_series.start_time` of the newly created index.  
+### Conflicting field type
 
-An enhancement [request](https://github.com/elastic/kibana/issues/150549) for Kibana is created to indicate the write index. Until then, refer to the index.time_series.start_time of indices and compare with the current time to identify the write index. 
+Fields having conflicting field type will not be considered as dimension. Resolve the field type ambiguity before defining a field as dimension field.
 
-*Hint: In the Index Management UI, against a specific index, if the  docs count column values regularly increase for an Index, it can be considered as the write index*
+### Identification of write index
 
-**Conflicting Field Type** : Fields having conflicting field type will not be considered as dimension. Resolve the field type ambiguity before defining a field as dimension field.
+When mappings are modified for a datastream, index rollover happens and a new index is created under the datastream. Even if there exists a new index, the data continues to go to the old index until the timestamp matches `index.time_series.start_time` of the newly created index.  
 
-# <a id="known-issues"></a> Known issues
+An enhancement [request](https://github.com/elastic/kibana/issues/150549) for Kibana is created to indicate the write index. Until then, refer to the `index.time_series.start_time` of indices and compare with the current time to identify the write index. 
 
-- Lens visualization fails if a field is having a metric_type value as ‘counter’ and certain aggregation functions are applied over it.  
-Reference : https://github.com/elastic/elasticsearch/issues/93539
+If you find this error (references [this issue](https://github.com/elastic/integrations/issues/7345) and [this PR](https://github.com/elastic/elasticsearch/pull/98518)):
 
-- Currently, there are several limits around the number of dimensions.  
- Reference : https://github.com/elastic/elasticsearch/issues/93564
+```console
+... (status=400): {"type":"illegal_argument_exception","reason":"the document timestamp [2023-08-07T00:00:00.000Z] is outside of ranges of currently writable indices [[2023-08-07T08:55:38.000Z,2023-08-07T12:55:38.000Z]]"}, dropping event!
+```
 
-- Other known issues: https://github.com/elastic/integrations/issues/5233. Refer the section - New Issues Identified, TSDB Issues reported earlier.
+Consider:
+1. Defining the `look_ahead` or `look_back_time` for each data stream. Example:
+```yaml
+elasticsearch:
+  index_mode: "time_series"
+  index_template:
+    settings:
+      index.look_ahead_time: "10h"
+```
+> **Note**: Updating the package with this does not cause an automatic rollover on the data stream. You have to do that manually. 
+2. Updating the `timestamp` of the document being rejected.
+3. Finding a fix to receive the document without a delay.
 
-# <a id="existing-migrated-packages"></a> Reference to existing package already migrated
-
-- [Oracle integration](https://github.com/elastic/integrations/tree/main/packages/oracle)
-- [Redis integrations](https://github.com/elastic/integrations/tree/main/packages/redis)
-- [AWS Redshift integration](https://github.com/elastic/integrations/tree/main/packages/aws/data_stream/redshift)

@@ -1,0 +1,55 @@
+- name: cloudflare_logpush.magic_ids
+  type: group
+  description: Integration for parsing Cloudflare Logpush Magic IDS logs.
+  fields:
+    - name: action
+      type: keyword
+      description: What action was taken on the packet. Possible values are pass | block.
+    - name: colo
+      type: group
+      fields:
+        - name: code
+          type: keyword
+          description: The IATA airport code corresponding to where the detection occurred.
+        - name: city
+          type: keyword
+          description: The city where the detection occurred.
+    - name: destination
+      type: group
+      fields:
+        - name: ip
+          type: ip
+          description: The destination IP of the packet which triggered the detection.
+        - name: port
+          type: long
+          description: The destination port of the packet which triggered the detection. It is set to 0 if the protocol field is set to any.
+    - name: transport
+      type: keyword
+      description: The layer 4 protocol of the packet which triggered the detection. Possible values are tcp | udp | any. Variant any means a detection occurred at a lower layer (such as IP).
+    - name: source
+      type: group
+      fields:
+        - name: ip
+          type: ip
+          description: The source IP of packet which triggered the detection.
+        - name: port
+          type: long
+          description: The source port of the packet which triggered the detection. It is set to 0 if the protocol field is set to any.
+    - name: signature
+      type: group
+      fields:
+        - name: id
+          type: long
+          description: The signature ID of the detection.
+        - name: message
+          type: keyword
+          description: The signature message of the detection. Describes what the packet is attempting to do.
+        - name: revision
+          type: long
+          description: The signature revision of the detection.
+    - name: timestamp
+      type: date
+      description: A timestamp of when the detection occurred.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.
