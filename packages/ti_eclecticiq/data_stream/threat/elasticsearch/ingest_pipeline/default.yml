@@ -1,0 +1,431 @@
+---
+description: Pipeline for processing Device logs.
+processors:
+  # hard coded fields
+  - set:
+      field: ecs.version
+      value: 8.10.0
+  - set:
+      field: event.kind
+      value: enrichment
+  - set:
+      field: event.category
+      value: [threat]
+  - set:
+      field: event.type
+      value: [indicator]
+
+  # pre-processing
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - json:
+      field: event.original
+      tag: 'json_decoding'
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - drop:
+      description: Drop if extract type is not mapped.
+      if: "!['asn', 'domain', 'email', 'file', 'file-size', 'hash-md5', 'hash-md5', 'hash-sha1', 'hash-sha256', 'hash-sha384', 'hash-sha512', 'hash-ssdeep', 'ipv4', 'ipv4-cidr', 'ipv6', 'ipv6-cidr', 'mac-48', 'mutex', 'port', 'process', 'process-name', 'uri', 'winregistry', 'certificate-serial-number', 'malware', 'rule', 'user-agent', 'organization', 'email-subject', 'host', 'cve'].contains(ctx.json.type)"
+
+  # expand collapsed fields
+  - dot_expander:
+      path: json
+      field: source.names
+      if: "ctx.json.source?.names != null"
+  - dot_expander:
+      path: json
+      field: meta.tags
+      if: "ctx.json.meta?.tags != null"
+  - dot_expander:
+      path: json
+      field: meta.estimated_observed_time
+      if: "ctx.json.meta?.estimated_observed_time != null"
+  - dot_expander:
+      path: json
+      field: meta.estimated_threat_start_time
+      if: "ctx.json.meta?.estimated_threat_start_time != null"
+  - dot_expander:
+      path: json
+      field: meta.estimated_threat_end_time
+      if: "ctx.json.meta?.estimated_threat_end_time != null"
+  - dot_expander:
+      path: json
+      field: meta.ingest_time
+      if: "ctx.json.meta?.ingest_time != null"
+
+  # base event fields
+  - set:
+      field: event.provider
+      value: '{{{json.source.names}}}'
+      if: "ctx.json.source?.names != null && ctx.json.source.names != ''"
+  - set:
+      field: event.url
+      value: '{{{json.value_url}}}'
+  - date:
+      field: json.meta.ingest_time
+      target_field: event.created
+      formats:
+        - "yyyy-MM-dd HH:mm:ss.SSSSSSz"
+        - "yyyy-MM-dd HH:mm:ssz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSz"
+        - "yyyy-MM-dd'T'HH:mm:ssz"
+      if: "ctx.json.meta?.ingest_time != null && ctx.json.meta.ingest_time != ''"
+  - date:
+      field: json.meta.estimated_threat_start_time
+      target_field: event.start
+      formats:
+        - "yyyy-MM-dd HH:mm:ss.SSSSSSz"
+        - "yyyy-MM-dd HH:mm:ssz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSz"
+        - "yyyy-MM-dd'T'HH:mm:ssz"
+      if: "ctx.json.meta?.estimated_threat_start_time != null && ctx.json.meta.estimated_threat_start_time != ''"
+  - date:
+      field: json.meta.estimated_threat_end_time
+      target_field: event.end
+      formats:
+        - "yyyy-MM-dd HH:mm:ss.SSSSSSz"
+        - "yyyy-MM-dd HH:mm:ssz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSz"
+        - "yyyy-MM-dd'T'HH:mm:ssz"
+      if: "ctx.json.meta?.estimated_threat_end_time != null && ctx.json.meta.estimated_threat_end_time != ''"
+  - date:
+      field: json.timestamp
+      target_field: "@timestamp"
+      formats:
+        - "yyyy-MM-dd HH:mm:ss.SSSSSSz"
+        - "yyyy-MM-dd HH:mm:ssz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSz"
+        - "yyyy-MM-dd'T'HH:mm:ssz"
+  - split:
+      field: json.meta.tags
+      target_field: tags
+      separator: ';'
+      preserve_trailing: false
+      if: 'ctx.json?.meta?.tags != null && ctx.json.meta.tags != ""'
+
+  # populate threat.indicator fields
+  - set:
+      field: threat.indicator.name
+      value: '{{{json.value}}}'
+  - date:
+      field: json.meta.estimated_observed_time
+      target_field: threat.indicator.first_seen
+      formats:
+        - "yyyy-MM-dd HH:mm:ss.SSSSSSz"
+        - "yyyy-MM-dd HH:mm:ssz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSz"
+        - "yyyy-MM-dd'T'HH:mm:ssz"
+      if: "ctx.json.meta?.estimated_observed_time != null && ctx.json.meta.estimated_observed_time != ''"
+
+  # map extract classification and confidence to threat.indicator.confidence
+  - set:
+      field: threat.indicator.confidence
+      value: Not Specified
+      if: 'ctx.json["meta.classification"] == "unknown"'
+  - set:
+      field: threat.indicator.confidence
+      value: None
+      if: 'ctx.json["meta.classification"] == "good"'
+  - set:
+      field: event.severity
+      value: 1
+      if: 'ctx.json["meta.classification"] == "good"'
+  - set:
+      field: threat.indicator.confidence
+      value: Low
+      if: 'ctx.json["meta.confidence"] == "low"'
+  - set:
+      field: event.severity
+      value: 2
+      if: 'ctx.json["meta.confidence"] == "low"'
+  - set:
+      field: threat.indicator.confidence
+      value: Medium
+      if: 'ctx.json["meta.confidence"] == "medium"'
+  - set:
+      field: event.severity
+      value: 3
+      if: 'ctx.json["meta.confidence"] == "medium"'
+  - set:
+      field: threat.indicator.confidence
+      value: High
+      if: 'ctx.json["meta.confidence"] == "high"'
+  - set:
+      field: event.severity
+      value: 4
+      if: 'ctx.json["meta.confidence"] == "high"'
+
+  # map extract TLP to threat.indicator.marking.tlp
+  - set:
+      field: threat.indicator.marking.tlp
+      value: WHITE
+      if: 'ctx.json["meta.tlp"] == "WHITE"'
+  - set:
+      field: threat.indicator.marking.tlp
+      value: CLEAR
+      if: 'ctx.json["meta.tlp"] == "NONE"'
+  - set:
+      field: threat.indicator.marking.tlp
+      value: GREEN
+      if: 'ctx.json["meta.tlp"] == "GREEN"'
+  - set:
+      field: threat.indicator.marking.tlp
+      value: AMBER
+      if: 'ctx.json["meta.tlp"] == "AMBER"'
+  - set:
+      field: threat.indicator.marking.tlp
+      value: RED
+      if: 'ctx.json["meta.tlp"] == "RED"'
+
+  # map extract type and value to threat.indicator fields
+  - set:
+      field: threat.indicator.type
+      value: autonomous-system
+      if: 'ctx.json.type == "asn"'
+  - set:
+      field: threat.indicator.as.number
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "asn"'
+  - convert:
+      field: threat.indicator.as.number
+      type: long
+      if: 'ctx.json.type == "asn"'
+  - set:
+      field: threat.indicator.type
+      value: domain-name
+      if: 'ctx.json.type == "domain"'
+  - set:
+      field: threat.indicator.url.domain
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "domain"'
+  - set:
+      field: threat.indicator.type
+      value: email-addr
+      if: 'ctx.json.type == "email"'
+  - set:
+      field: threat.indicator.email.address
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "email"'
+  - set:
+      field: threat.indicator.type
+      value: file
+      if: 'ctx.json.type == "file" || ctx.json.type == "file-size" || ctx.json.type == "hash-md5" || ctx.json.type == "hash-sha1" || ctx.json.type == "hash-sha256" || ctx.json.type == "hash-sha384" || ctx.json.type == "hash-sha512" || ctx.json.type == "hash-ssdeep"'
+  - set:
+      field: threat.indicator.file.path
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "file"'
+  - set:
+      field: threat.indicator.file.size
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "file-size"'
+  - convert:
+      field: threat.indicator.file.size
+      type: long
+      if: 'ctx.json.type == "file-size"'
+  - set:
+      field: threat.indicator.file.hash.md5
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "hash-md5"'
+  - set:
+      field: threat.indicator.file.hash.sha1
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "hash-sha1"'
+  - set:
+      field: threat.indicator.file.hash.sha256
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "hash-sha256"'
+  - set:
+      field: threat.indicator.file.hash.sha384
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "hash-sha384"'
+  - set:
+      field: threat.indicator.file.hash.sha512
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "hash-sha512"'
+  - set:
+      field: threat.indicator.file.hash.ssdeep
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "hash-ssdeep"'
+  - set:
+      field: threat.indicator.type
+      value: ipv4-addr
+      if: 'ctx.json.type == "ipv4" || ctx.json.type == "ipv4-cidr"'
+  - set:
+      field: threat.indicator.type
+      value: ipv6-addr
+      if: 'ctx.json.type == "ipv6" || ctx.json.type == "ipv6-cidr"'
+  - set:
+      field: threat.indicator.ip
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "ipv4" || ctx.json.type == "ipv6"'
+  - set:
+      field: threat.indicator.type
+      value: mac-addr
+      if: 'ctx.json.type == "mac-48"'
+  - set:
+      field: threat.indicator.type
+      value: mutex
+      if: 'ctx.json.type == "mutex"'
+  - set:
+      field: threat.indicator.type
+      value: port
+      if: 'ctx.json.type == "port"'
+  - set:
+      field: threat.indicator.url.port
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "port"'
+  - convert:
+      field: threat.indicator.url.port
+      type: long
+      if: 'ctx.json.type == "port"'
+  - set:
+      field: threat.indicator.type
+      value: process
+      if: 'ctx.json.type == "process"'
+  - set:
+      field: threat.indicator.type
+      value: process
+      if: 'ctx.json.type == "process-name"'
+  - set:
+      field: threat.indicator.type
+      value: url
+      if: 'ctx.json.type == "uri"'
+  - set:
+      field: threat.indicator.url.full
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "uri"'
+  - set:
+      field: threat.indicator.type
+      value: windows-registry-key
+      if: 'ctx.json.type == "winregistry"'
+  - set:
+      field: threat.indicator.registry.value
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "winregistry"'
+  - set:
+      field: threat.indicator.type
+      value: x509-certificate
+      if: 'ctx.json.type == "certificate-serial-number"'
+  - set:
+      field: threat.indicator.x509.serial_number
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "certificate-serial-number"'
+
+  # related fields
+  - append:
+      field: related.hash
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "file" || ctx.json.type == "file-size" || ctx.json.type == "hash-md5" || ctx.json.type == "hash-sha1" || ctx.json.type == "hash-sha256" || ctx.json.type == "hash-sha384" || ctx.json.type == "hash-sha512" || ctx.json.type == "hash-ssdeep"'
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "host"'
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "ipv4" || ctx.json.type == "ipv6"'
+      allow_duplicates: false
+
+  # custom fields used for transformation
+  - fingerprint:
+      target_field: eclecticiq.threat.observable_id
+      fields:
+        - json.type
+        - json.value
+  # if observable is deleted from outgoing feed dataset, set deleted_at to anything to exclude it from transform result
+  - date:
+      field: json.timestamp
+      target_field: eclecticiq.threat.deleted_at
+      formats:
+        - "yyyy-MM-dd HH:mm:ss.SSSSSSz"
+        - "yyyy-MM-dd HH:mm:ssz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSz"
+        - "yyyy-MM-dd'T'HH:mm:ssz"
+      if: "ctx.json.diff == 'del'"
+
+  # other
+  - set:
+      field: threat.software.name
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "malware"'
+  - set:
+      field: threat.software.type
+      value: Malware
+      if: 'ctx.json.type == "malware"'
+  - set:
+      field: server.mac
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "mac-48"'
+  - gsub:
+      field: server.mac
+      pattern: ":"
+      replacement: "-"
+      if: 'ctx.json.type == "mac-48"'
+  - uppercase:
+      field: server.mac
+      if: 'ctx.json.type == "mac-48"'
+  - set:
+      field: rule.name
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "rule"'
+  - set:
+      field: user_agent.original
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "user-agent"'
+  - set:
+      field: organization.name
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "organization"'
+  - set:
+      field: process.command_line
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "process"'
+  - set:
+      field: process.name
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "process-name"'
+  - set:
+      field: email.subject
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "email-subject"'
+  - set:
+      field: host.hostname
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "host"'
+  - set:
+      field: vulnerability.id
+      value: '{{{json.value}}}'
+      if: 'ctx.json.type == "cve"'
+  - fingerprint:
+      target_field: event.id
+      fields:
+        - json.type
+        - json.value
+        - json.timestamp
+  - set:
+      field: _id
+      value: "{{ event.id }}"
+  - remove:
+      field: threat.indicator
+      if: 'ctx.threat.indicator?.type == null'
+  - remove:
+      field: threat
+      if: 'ctx.threat.indicator == null && ctx.threat.software == null'
+  - remove:
+      field: json
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

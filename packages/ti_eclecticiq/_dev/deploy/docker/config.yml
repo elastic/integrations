@@ -1,0 +1,31 @@
+rules:
+  - path: /private/outgoing-feed-download/1
+    methods: [GET]
+    request_headers:
+      Authorization: "Bearer testing_token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "data": {
+              "content_blocks": [
+                "/private/outgoing-feed-download/1/runs/1/content-blocks/1"
+              ]
+            }
+          }
+  - path: /private/outgoing-feed-download/1/runs/1/content-blocks/1
+    methods: [GET]
+    request_headers:
+      Authorization: "Bearer testing_token"
+      Content-Type: "text/csv"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/csv"
+        body: |-
+          diff,value,type,value_url,timestamp,source.ids,source.names,entity.id,entity.type,entity.title,meta.tlp,meta.terms_of_use,meta.ingest_time,meta.estimated_observed_time,meta.estimated_threat_start_time,meta.estimated_threat_end_time,meta.relevancy,meta.tags,meta.taxonomy,meta.source_reliability,meta.entity_url,calculated.tlp,calculated.relevancy,calculated.source_reliability,meta.classification,meta.confidence
+          add,example.com,domain,https://www.test.com/,2023-01-01 00:00:00.000000+00:00,47ec245c-9e7b-467e-a016-77a22ff12dd5,Test,d983be9e-307c-4bdb-8bda-c3238fb22c6d,exploit-target,CVE-2000-10000,GREEN,,2023-06-08T12:00:30.028887+00:00,2021-12-19T00:27:19.108045+00:00,2021-12-19T00:27:19.108045+00:00,,0.12,,,A,https://www.test.com/d983be9e-307c-4bdb-8bda-c3238fb22c6d,GREEN,0.12,A,,
