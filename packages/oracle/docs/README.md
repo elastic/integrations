@@ -24,7 +24,7 @@ Oracle Instant Client enables development and deployment of applications that co
 
 The OCI library install few Client Shared Libraries that must be referenced on the machine where Metricbeat is installed. Please follow the [Oracle Client Installation link](https://docs.oracle.com/en/database/oracle/oracle-database/21/lacli/install-instant-client-using-zip.html#GUID-D3DCB4FB-D3CA-4C25-BE48-3A1FB5A22E84) link for OCI Instant Client set up. The OCI Instant Client is available with the Oracle Universal Installer, RPM file or ZIP file. Download links can be found at the [Oracle Instant Client Download page](https://www.oracle.com/database/technologies/instant-client/downloads.html).
 
-If the Elastic Agent is running as a systemd service and there are limitations in running ldconfig, you can set the library search path using an alternate method. Follow the steps below to achieve this.
+If the Elastic Agent is running as a systemd service and there are limitations in running `ldconfig` command, you can set the library search path using an alternate method. Follow the steps below to achieve this.
 
 Prerequisites: Ensure that you have administrative privileges to make changes to the Elastic Agent systemd service configuration.
 
