@@ -10,13 +10,13 @@ processors:
   - set:
       field: ecs.version
       value: '8.11.0'
-  # Drop "null" event
-  - drop:
-      if: ctx.event.original == "{\"odata.metadata\":\"https://reports.office365.com/ecp/ReportingWebService/Reporting.svc/$metadata#MessageTrace\",\"value\":[]}"
   # Parsing of payload json
   - json:
       field: event.original
       target_field: microsoft.online_message_trace
+  # Drop "null" event
+  - drop:
+      if: ctx.microsoft?.online_message_trace?.value != null
   - set:
       field: event.outcome
       copy_from: microsoft.online_message_trace.Status
