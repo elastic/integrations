@@ -124,8 +124,17 @@ updateBackportBranch() {
   # git push origin $BACKPORT_BRANCH_NAME
 }
 
+installYQ() {
+  echo "Installing the yq tool for parsing manifest.yml"
+  sudo add-apt-repository ppa:rmescandon/yq
+  sudo apt update
+  sudo apt install yq -y
+}
+
+installYQ
+
 echo "Check the version and PACKAGE_VERSION are equal"
-version=$(cat packages/${PACKAGE_NAME}/manifest.yml | jq -r .version)
+version=$(cat packages/${PACKAGE_NAME}/manifest.yml | yq -r .version)
 if [[ ${version} != ${PACKAGE_NAME} ]]; then
   buildkite-agent annotate "Unexpected version found in packages/${PACKAGE_NAME}/manifest.yml" --style "warning"
   exit 1
