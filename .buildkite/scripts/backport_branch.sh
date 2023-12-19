@@ -126,13 +126,26 @@ updateBackportBranch() {
   # git push origin $BACKPORT_BRANCH_NAME
 }
 
+echo "Check the version and PACKAGE_VERSION are equal"
+version=$(cat packages/${PACKAGE_NAME}/manifest.yml | yq -r .version)
+if [[ ${version} != ${PACKAGE_NAME} ]]; then
+  buildkite-agent annotate "Unexpected version found in packages/${PACKAGE_NAME}/manifest.yml" --style "warning"
+  exit 1
+fi
+
+echo "Check that this changeset is the one creating the version $PACKAGE_NAME"
+if ! git show -p ${BASE_COMMIT} packages/${PACKAGE_NAME}/manifest.yml | grep -E "^\+version: ${PACKAGE_VERSION}" ; then
+  buildkite-agent annotate "This changeset does not creates the version ${PACKAGE_VERSION}" --style "warning"
+  exit 1
+fi
+
 echo "Check if the package has published"
 if ! isPackagePublished "$FULL_ZIP_PACKAGE_NAME"; then
   buildkite-agent annotate "The package version: **${PACKAGE_NAME}-${PACKAGE_VERSION}** hasn't neen published yet." --style "warning"
   exit 1
 fi
 
-echo "Check if base commit exists."
+echo "Check if the base commit exists."
 if [ ! -z "$BASE_COMMIT" ]; then
   if ! isCommitExist "$BASE_COMMIT" "$SOURCE_BRANCH"; then
     buildkite-agent annotate "The entered commit hasn't found in the **$SOURCE_BRANCH** branch" --style "warning"
@@ -140,7 +153,7 @@ if [ ! -z "$BASE_COMMIT" ]; then
   fi
 fi
 
-echo "Check if backport-branch exists"
+echo "Check if the backport-branch exists"
 MSG=""
 if ! isBranchExist "$BACKPORT_BRANCH_NAME"; then
   MSG="The backport branch: **$BACKPORT_BRANCH_NAME** has been created."
@@ -151,6 +164,5 @@ fi
 
 echo "Adding CI files into the branch $BACKPORT_BRANCH_NAME"
 updateBackportBranch
-
 
 buildkite-agent annotate "$MSG" --style "success"
