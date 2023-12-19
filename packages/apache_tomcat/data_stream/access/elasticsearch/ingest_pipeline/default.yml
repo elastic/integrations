@@ -21,11 +21,28 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
-  - grok:
+  - dissect:
       field: event.original
-      tag: 'grok_parse_log'
+      tag: 'dissect_event_original'
+      pattern: '%{_tmp.sourceorusername} %{apache_tomcat.access.http.ident} %{apache_tomcat.access.http.useragent} [%{_tmp.timestamp}] "%{http.request.method} %{url.original} HTTP/%{http.version}" %{_tmp.dissectgrok}'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - grok:
+      field: _tmp.sourceorusername
+      tag: 'grok_parse_log_sourceoruser'
       patterns:
-        - '^(%{IP:source.ip}|%{DATA:source.user.name}) %{DATA:apache_tomcat.access.http.ident} %{DATA:apache_tomcat.access.http.useragent} \[%{DATA:_tmp.timestamp}\] \"%{DATA:http.request.method} %{DATA:url.original} HTTP\/%{DATA:http.version}\" %{NUMBER:http.response.status_code} %{POSINT:destination.bytes}( %{GREEDYDATA:_tmp.grok})?$'
+        - '^(%{IP:source.ip}|%{DATA:source.user.name})$'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - grok:
+      field: _tmp.dissectgrok
+      tag: 'grok_parse_log_dissectgrok'
+      patterns:
+        - '^%{NUMBER:http.response.status_code} %{POSINT:destination.bytes}( %{GREEDYDATA:_tmp.grok})?$'
       on_failure:
         - append:
             field: error.message
