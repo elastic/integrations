@@ -28,7 +28,7 @@ The Cribl integration offers users a way to ingest logs from either of Cribl's E
 
     2. Add informational field to Cribl Source
 
-        Configure the Cribl Source to specify the source of the data in the `_index` field.
+        Configure the Cribl Source to specify the source of the data in the `_dataId` field.
 
         ![Configure Cribl Source fields](../img/cribl-source-fields.png)
 
@@ -47,7 +47,7 @@ The Cribl integration offers users a way to ingest logs from either of Cribl's E
 
             2. Set the **Namespace** to `default`.
 
-            3. Fill in the conditional to specify the Cribl `_index` source field. 
+            3. Fill in the conditional to specify the Cribl `_dataId` source field. 
 
             ![Reroute processor](../img/custom-pipeline-reroute-processor.png)
 
