@@ -94,7 +94,11 @@ An example event for `log` looks as following:
 | auditd.log.a0 | The first argument to the system call. | keyword |
 | auditd.log.addr |  | ip |
 | auditd.log.audit_failure |  | keyword |
+| auditd.log.avc.action |  | keyword |
+| auditd.log.avc.request |  | keyword |
+| auditd.log.capability |  | keyword |
 | auditd.log.cipher |  | keyword |
+| auditd.log.context |  | keyword |
 | auditd.log.data |  | keyword |
 | auditd.log.default-context |  | keyword |
 | auditd.log.dev |  | keyword |
@@ -111,6 +115,7 @@ An example event for `log` looks as following:
 | auditd.log.hostname |  | keyword |
 | auditd.log.id |  | keyword |
 | auditd.log.img-ctx |  | keyword |
+| auditd.log.ino |  | keyword |
 | auditd.log.inode |  | keyword |
 | auditd.log.item | The item field indicates which item out of the total number of items. This number is zero-based; a value of 0 means it is the first item. | keyword |
 | auditd.log.items | The number of items in an event. | keyword |
@@ -144,16 +149,21 @@ An example event for `log` looks as following:
 | auditd.log.old_ses | For login events this is the old session ID used for the user prior to this login. | keyword |
 | auditd.log.op |  | keyword |
 | auditd.log.original_field | The original field name if the event was parsed from an enriched format auditd log. | keyword |
+| auditd.log.path |  | keyword |
+| auditd.log.permissive |  | keyword |
 | auditd.log.pfs |  | keyword |
 | auditd.log.proctitle |  | keyword |
 | auditd.log.rdev |  | keyword |
 | auditd.log.reason |  | keyword |
 | auditd.log.record_type |  | keyword |
+| auditd.log.request |  | keyword |
 | auditd.log.reset |  | keyword |
 | auditd.log.root_dir |  | keyword |
 | auditd.log.rport |  | long |
 | auditd.log.saddr |  | keyword |
 | auditd.log.saddr_fam |  | keyword |
+| auditd.log.sauid |  | keyword |
+| auditd.log.scontext |  | keyword |
 | auditd.log.selected-context |  | keyword |
 | auditd.log.sequence | The audit event sequence number. | long |
 | auditd.log.ses |  | keyword |
@@ -166,6 +176,8 @@ An example event for `log` looks as following:
 | auditd.log.sw_type |  | keyword |
 | auditd.log.syscall |  | keyword |
 | auditd.log.table |  | keyword |
+| auditd.log.tclass |  | keyword |
+| auditd.log.tcontext |  | keyword |
 | auditd.log.tty |  | keyword |
 | auditd.log.uid |  | keyword |
 | auditd.log.unit |  | keyword |
@@ -174,6 +186,7 @@ An example event for `log` looks as following:
 | auditd.log.virt |  | keyword |
 | auditd.log.vm |  | keyword |
 | auditd.log.vm-ctx |  | keyword |
+| auditd.log.xdevice |  | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
