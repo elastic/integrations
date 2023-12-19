@@ -1,7 +1,5 @@
 #!/bin/bash
 
-source .buildkite/scripts/common.sh
-
 set -euo pipefail
 
 if buildkite-agent meta-data exists BASE_COMMIT; then
