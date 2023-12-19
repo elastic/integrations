@@ -104,14 +104,10 @@ updateBackportBranch() {
   local BUILDKITE_FOLDER_PATH=".buildkite"
   local JENKINS_FOLDER_PATH=".ci"
   git checkout $BACKPORT_BRANCH_NAME
-  ls -la                                                                        #TODO remove after tests
   echo "Copying $BUILDKITE_FOLDER_PATH from $SOURCE_BRANCH..."
   git checkout $SOURCE_BRANCH -- $BUILDKITE_FOLDER_PATH
   echo "Copying $JENKINS_FOLDER_PATH from $SOURCE_BRANCH..."
   git checkout $SOURCE_BRANCH -- $JENKINS_FOLDER_PATH
-  ls -la                                                                        #TODO remove after tests
-  ls -la $BUILDKITE_FOLDER_PATH                                                 #TODO remove after tests
-  ls -la $JENKINS_FOLDER_PATH                                                   #TODO remove after tests
 
   if [ "${REMOVE_OTHER_PACKAGES}" == "true" ]; then
     echo "Removing all packages from $PACKAGES_FOLDER_PATH folder"
@@ -122,7 +118,6 @@ updateBackportBranch() {
   echo "Setting up git environment..."
   git config --global user.name "${GITHUB_USERNAME_SECRET}"
   git config --global user.email "${GITHUB_EMAIL_SECRET}"
-  # git config remote.origin.url "https://${GITHUB_USERNAME_SECRET}:${GITHUB_TOKEN_SECRET}@github.com/elastic/integrations.git"
 
   echo "Commiting and pushing..."
   git add $BUILDKITE_FOLDER_PATH
