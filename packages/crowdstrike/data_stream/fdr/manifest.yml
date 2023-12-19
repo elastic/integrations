@@ -40,27 +40,27 @@ streams:
         description: |
           By default the FDR queue is expected. This option must be set to `false` if you are using your own queue.
         default: true
-      - name: enrich_host_metadata
+      - name: enrich_metadata
         required: true
         show_user: true
-        title: Enrich Host Metadata
-        description: Uses data in aidmaster to add host information to events. The aidmaster blob must contain the string "aidmaster" in its path and the FDR Notification Parsing Script must sort events so that aidmaster events appear first in the stream.
+        title: Enrich Host and User Metadata
+        description: Uses data in aidmaster and userinfo to add host and user information to events. The aidmaster blob must contain the string "aidmaster" in its path and the userinfo blob path must contain "userinfo", and the FDR Notification Parsing Script must sort events so that aidmaster and userinfo events appear first in the stream.
         type: bool
         multi: false
         default: true
-      - name: keep_aidmaster
+      - name: keep_metadata
         required: true
         show_user: false
-        title: Keep Original Host Metadata
-        description: Keep the aidmaster document after it has been used for event host enrichment.
+        title: Keep Original Host and User Metadata
+        description: Keep the aidmaster and userinfo documents after they have been used for event enrichment.
         type: bool
         multi: false
         default: false
-      - name: host_metadata_ttl
+      - name: metadata_ttl
         required: true
         show_user: true
-        title: Host Metadata TTL
-        description: The period of time that host metadata is considered valid for. Valid time units are h, m, s, ms, us/µs and ns.
+        title: Metadata TTL
+        description: The period of time that metadata is considered valid for. Valid time units are h, m, s, ms, us/µs and ns.
         type: text
         multi: false
         default: 168h
@@ -153,8 +153,8 @@ streams:
               return evts;
             }
             files.sort(function(a, b) {
-              var isAidmaster = function(a) {
-                return a.path && (a.path.indexOf("aidmaster") !== -1);
+              var isMetadata = function(a) {
+                return a.path && ((a.path.indexOf("aidmaster") !== -1) || (a.path.indexOf("userinfo") !== -1));
               };
               var cmp = function(a, b) {
                 if (a < b) {
@@ -165,10 +165,10 @@ streams:
                 }
                 return 0;
               };
-              if (isAidmaster(a) === isAidmaster(b)) {
+              if (isMetadata(a) === isMetadata(b)) {
                 return cmp(a.path, b.path);
               }
-              if (isAidmaster(a)) {
+              if (isMetadata(a)) {
                 return -1;
               }
               return 1;
@@ -219,23 +219,23 @@ streams:
       - name: enrich_host_metadata
         required: true
         show_user: true
-        title: Enrich Host Metadata
-        description: Uses data in aidmaster to add host information to events. The aidmaster file must be included in the paths configuration, include the string "aidmaster" in the path, and have a file path that sorts before the FDR log file paths.
+        title: Enrich Host and User Metadata
+        description: Uses data in aidmaster and userinfo to add host and user information to events. The aidmaster file must be included in the paths configuration, include the string "aidmaster" in the path host information file path and "userinfo" in the user information file bath, and have a file paths that sorts before the FDR log file paths.
         type: bool
         multi: false
         default: true
-      - name: keep_aidmaster
+      - name: keep_metadata
         required: true
         show_user: false
-        title: Keep Original Host Metadata
-        description: Keep the aidmaster document after it has been used for event host enrichment.
+        title: Keep Original Host and User Metadata
+        description: Keep the aidmaster and userinfo documents after they have been used for event enrichment.
         type: bool
         multi: false
         default: false
-      - name: host_metadata_ttl
+      - name: metadata_ttl
         required: true
         show_user: true
-        title: Host Metadata TTL
+        title: Metadata TTL
         description: The period of time that host metadata is considered valid for. Valid time units are h, m, s, ms, us/µs and ns.
         type: text
         multi: false
