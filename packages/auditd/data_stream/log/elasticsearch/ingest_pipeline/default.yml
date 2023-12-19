@@ -14,28 +14,30 @@ processors:
       tag: grok_audit_original
       field: event.original
       pattern_definitions:
-        AUDIT_TYPE: "type=%{NOTSPACE:auditd.log.record_type}"
-        AUDIT_NODE: "node=%{IPORHOST:auditd.log.node} "
-        AUDIT_PREFIX: "^(?:%{AUDIT_NODE})?%{AUDIT_TYPE} msg=audit\\(%{NUMBER:auditd.log.epoch}:%{NUMBER:auditd.log.sequence}\\):(%{DATA})?"
-        AUDIT_KEY_VALUES: "%{WORD}=%{GREEDYDATA}"
+        AUDIT_TYPE: 'type=%{NOTSPACE:auditd.log.record_type}'
+        AUDIT_NODE: 'node=%{IPORHOST:auditd.log.node} '
+        AUDIT_PREFIX: '^(?:%{AUDIT_NODE})?%{AUDIT_TYPE} msg=audit\(%{NUMBER:auditd.log.epoch}:%{NUMBER:auditd.log.sequence}\):(%{DATA})?'
+        AUDIT_KEY_VALUES: '%{WORD}=%{GREEDYDATA}'
+        AVC_PREFIX: 'avc:%{SPACE}%{WORD:auditd.log.avc.action}%{SPACE}{%{SPACE}%{WORD:auditd.log.avc.request}%{SPACE}}%{SPACE}for%{SPACE}'
+        MESSAGE: "(?:'(?:%{AVC_PREFIX}|[^=]*\\s)?%{ANY:auditd.log.sub_kv}'|\"([^=]*\\s)?%{ANY:auditd.log.sub_kv}\")"
         GS: '\x1d'
         ANY: ".*"
       patterns:
-        - "%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} old auid=%{NUMBER:auditd.log.old_auid} new auid=%{NUMBER:auditd.log.new_auid} old ses=%{NUMBER:auditd.log.old_ses} new ses=%{NUMBER:auditd.log.new_ses}"
-        - "%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} msg=['\"]([^=]*\\s)?%{ANY:auditd.log.sub_kv}['\"]"
-        - "%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv}%{GS}%{WORD:auditd.log.original_field}={ %{AUDIT_KEY_VALUES:auditd.log.sub_kv} }"
-        - "%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv}"
-        - "%{AUDIT_PREFIX}"
-        - "%{AUDIT_TYPE} %{AUDIT_KEY_VALUES:auditd.log.kv}"
+        - '%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} old auid=%{NUMBER:auditd.log.old_auid} new auid=%{NUMBER:auditd.log.new_auid} old ses=%{NUMBER:auditd.log.old_ses} new ses=%{NUMBER:auditd.log.new_ses}'
+        - '%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} msg=%{MESSAGE}'
+        - '%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv}%{GS}%{WORD:auditd.log.original_field}={ %{AUDIT_KEY_VALUES:auditd.log.sub_kv} }'
+        - '%{AUDIT_PREFIX} %{AVC_PREFIX}?%{AUDIT_KEY_VALUES:auditd.log.kv}'
+        - '%{AUDIT_PREFIX}'
+        - '%{AUDIT_TYPE} %{AUDIT_KEY_VALUES:auditd.log.kv}'
   - kv:
       field: auditd.log.kv
-      field_split: '\s(?![\w\"]+?(\s+|$))'
+      field_split: '\s+(?![\w\"]+?(\s+|$))'
       value_split: '(?<!\\)='
       target_field: auditd.log
   - kv:
       field: auditd.log.sub_kv
-      field_split: "\\s+(?=[^\\s]+=)"
-      value_split: "="
+      field_split: '\s+(?=[^\s]+=)'
+      value_split: '='
       target_field: auditd.log
       ignore_missing: true
   - date:
@@ -2202,6 +2204,18 @@ processors:
       field: event.outcome
       value: "unknown"
       ignore_failure: true
+  - set:
+      field: event.outcome
+      value: unknown
+      if: ctx.auditd?.log?.avc?.action != null && ctx.event?.outcome == null
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.auditd?.log?.avc?.action == 'granted'
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.auditd?.log?.avc?.action == 'denied'
    # The processor below populates process.args list from argN fields.
    #
    # It handles the common case of a complete record: Contains argc=N and a0 to aN-1,
