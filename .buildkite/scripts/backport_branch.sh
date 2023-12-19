@@ -119,6 +119,11 @@ updateBackportBranch() {
     ls -la $PACKAGES_FOLDER_PATH
   fi
 
+  echo "Setting up git environment..."
+  git config --global user.name "${GITHUB_USERNAME_SECRET}"
+  git config --global user.email "${GITHUB_EMAIL_SECRET}"
+  # git config remote.origin.url "https://${GITHUB_USERNAME_SECRET}:${GITHUB_TOKEN_SECRET}@github.com/elastic/integrations.git"
+
   echo "Commiting and pushing..."
   git add $BUILDKITE_FOLDER_PATH
   git add $JENKINS_FOLDER_PATH
