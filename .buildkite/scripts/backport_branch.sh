@@ -125,7 +125,7 @@ updateBackportBranch() {
 }
 
 echo "Check the version and PACKAGE_VERSION are equal"
-version=$(cat packages/${PACKAGE_NAME}/manifest.yml | yq -r .version)
+version=$(cat packages/${PACKAGE_NAME}/manifest.yml | jq -r .version)
 if [[ ${version} != ${PACKAGE_NAME} ]]; then
   buildkite-agent annotate "Unexpected version found in packages/${PACKAGE_NAME}/manifest.yml" --style "warning"
   exit 1
