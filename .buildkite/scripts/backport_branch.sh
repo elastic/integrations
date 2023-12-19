@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source .buildkite/scripts/common.sh
+
 set -euo pipefail
 
 if buildkite-agent meta-data exists BASE_COMMIT; then
@@ -124,14 +126,7 @@ updateBackportBranch() {
   # git push origin $BACKPORT_BRANCH_NAME
 }
 
-installYQ() {
-  echo "Installing the yq tool for parsing manifest.yml"
-  sudo add-apt-repository ppa:rmescandon/yq
-  sudo apt update
-  sudo apt install yq -y
-}
-
-installYQ
+with_yq
 
 echo "Check the version and PACKAGE_VERSION are equal"
 version=$(cat packages/${PACKAGE_NAME}/manifest.yml | yq -r .version)
