@@ -2,7 +2,7 @@
 
 source .buildkite/scripts/common.sh
 
-set -euxo pipefail
+set -euo pipefail
 
 if buildkite-agent meta-data exists BASE_COMMIT; then
   BASE_COMMIT="$(buildkite-agent meta-data get BASE_COMMIT)"
@@ -127,7 +127,7 @@ updateBackportBranch() {
 }
 
 if ! [[ $PACKAGE_VERSION =~ ^[0-9]+(\.[0-9]+){2}$ ]]; then
-  buildkite-agent annotate "The entered package version $PACKAGE_VERSION doesn't match the pattern X.Y.Z" --style "warning"
+  buildkite-agent annotate "The entered package version ${PACKAGE_VERSION} doesn't match the pattern X.Y.Z" --style "error"
   exit 1
 fi
 
@@ -138,26 +138,26 @@ with_yq
 echo "Check the entered version and PACKAGE_VERSION are equal"
 version="$(cat packages/${PACKAGE_NAME}/manifest.yml | yq -r .version)"
 if [[ "${version}" != "${PACKAGE_VERSION}" ]]; then
-  buildkite-agent annotate "Unexpected version found in packages/${PACKAGE_NAME}/manifest.yml" --style "warning"
+  buildkite-agent annotate "Unexpected version found in packages/${PACKAGE_NAME}/manifest.yml" --style "error"
   exit 1
 fi
 
 echo "Check that this changeset is the one creating the version $PACKAGE_NAME"
 if ! git show -p ${BASE_COMMIT} packages/${PACKAGE_NAME}/manifest.yml | grep -E "^\+version: ${PACKAGE_VERSION}" ; then
-  buildkite-agent annotate "This changeset does not creates the version ${PACKAGE_VERSION}" --style "warning"
+  buildkite-agent annotate "This changeset does not creates the version ${PACKAGE_VERSION}" --style "error"
   exit 1
 fi
 
 echo "Check if the package has published"
 if ! isPackagePublished "$FULL_ZIP_PACKAGE_NAME"; then
-  buildkite-agent annotate "The package version: **${PACKAGE_NAME}-${PACKAGE_VERSION}** hasn't neen published yet." --style "warning"
+  buildkite-agent annotate "The package version: **${PACKAGE_NAME}-${PACKAGE_VERSION}** hasn't neen published yet." --style "error"
   exit 1
 fi
 
 echo "Check if the base commit exists."
 if [ ! -z "$BASE_COMMIT" ]; then
   if ! isCommitExist "$BASE_COMMIT" "$SOURCE_BRANCH"; then
-    buildkite-agent annotate "The entered commit hasn't found in the **$SOURCE_BRANCH** branch" --style "warning"
+    buildkite-agent annotate "The entered commit hasn't found in the **${SOURCE_BRANCH}** branch" --style "error"
     exit 1
   fi
 fi
@@ -171,7 +171,7 @@ else
   MSG="The backport branch: **$BACKPORT_BRANCH_NAME** has been updated."
 fi
 
-echo "Adding CI files into the branch $BACKPORT_BRANCH_NAME"
+echo "Adding CI files into the branch ${BACKPORT_BRANCH_NAME}"
 updateBackportBranch
 
 buildkite-agent annotate "$MSG" --style "success"
