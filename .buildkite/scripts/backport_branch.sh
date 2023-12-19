@@ -126,6 +126,8 @@ updateBackportBranch() {
   # git push origin $BACKPORT_BRANCH_NAME
 }
 
+add_bin_path
+
 with_yq
 
 echo "Check the version and PACKAGE_VERSION are equal"
