@@ -143,7 +143,7 @@ processors:
     # If the indicator is not expired, set default expiration time to delete indicators after a certain duration. 
     # This is configurable using _conf.ioc_expiration_duration (default: 90d). Default expiration is required to avoid lingering orphaned indicators in the destination indices. 
     # If user-provided value of `ioc_expiration_duration` is not in d, h, or m, default to 90d.
-# 2. Sets `threatq.ioc_expiration_reason` indicating the reason for expiry. Possible values are in the scipt params.
+# 2. Sets `threatq.ioc_expiration_reason` indicating the reason for expiry. Possible values are in the script params.
   - script:
       lang: painless
       tag: script-expired_ioc
@@ -154,13 +154,13 @@ processors:
         expired_status: "Expiration set by Elastic when threatq.status is 'Expired'"
         expired_default: "Expiration set by Elastic from the integration's parameter `IOC Expiration Duration`"
       source: |
-        if (ctx.threatq?.ioc_expired_at == null) {
+        if (ctx.threatq.ioc_expired_at == null) {
+          ZonedDateTime ioc_expired_at;
           if (ctx.threatq.status == 'Expired') {
-            ctx.threatq.ioc_expired_at = ZonedDateTime.parse(ctx['@timestamp']);
+            ioc_expired_at = ZonedDateTime.parse(ctx['@timestamp']);
           }
           else {
             def dur = ctx._conf.ioc_expiration_duration;
-            ZonedDateTime ioc_expired_at;
             ZonedDateTime updated_at = ZonedDateTime.parse(ctx.json.updated_at.concat("Z"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssX"));
             if (dur instanceof String){
               Character time_unit = dur.charAt(dur.length() - 1);
@@ -178,8 +178,8 @@ processors:
             else {
               ioc_expired_at = updated_at.plusDays(90L);
             }
-            ctx.threatq.ioc_expired_at = ioc_expired_at;
           }
+          ctx.threatq.ioc_expired_at = ioc_expired_at;
         }
 
         // Set threatq.ioc_expiration_reason
