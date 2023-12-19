@@ -120,19 +120,24 @@ updateBackportBranch() {
   fi
 
   echo "Commiting and pushing..."
-  # git add $BUILDKITE_FOLDER_PATH
-  # git add $JENKINS_FOLDER_PATH
-  # git commit -m "Add $BUILDKITE_FOLDER_PATH and $JENKINSFILE_PATH to backport branch: $BACKPORT_BRANCH_NAME from the $SOURCE_BRANCH branch"
+  git add $BUILDKITE_FOLDER_PATH
+  git add $JENKINS_FOLDER_PATH
+  git commit -m "Add $BUILDKITE_FOLDER_PATH and $JENKINSFILE_PATH to backport branch: $BACKPORT_BRANCH_NAME from the $SOURCE_BRANCH branch"
   # git push origin $BACKPORT_BRANCH_NAME
 }
+
+if ! [[ $PACKAGE_VERSION =~ ^[0-9]+(\.[0-9]+){2}$ ]]; then
+  buildkite-agent annotate "The entered package version $PACKAGE_VERSION doesn't match the pattern X.Y.Z" --style "warning"
+  exit 1
+fi
 
 add_bin_path
 
 with_yq
 
 echo "Check the version and PACKAGE_VERSION are equal"
-version=$(cat packages/${PACKAGE_NAME}/manifest.yml | yq -r .version)
-if [[ ${version} != ${PACKAGE_NAME} ]]; then
+version="$(cat packages/${PACKAGE_NAME}/manifest.yml | yq -r .version)"
+if [[ "${version}" != "${PACKAGE_VERSION}" ]]; then
   buildkite-agent annotate "Unexpected version found in packages/${PACKAGE_NAME}/manifest.yml" --style "warning"
   exit 1
 fi
