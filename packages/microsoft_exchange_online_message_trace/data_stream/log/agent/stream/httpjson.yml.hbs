@@ -28,7 +28,7 @@ request.ssl: {{ssl}}
 request.transforms:
   - set:
       target: url.params.$filter
-      value: StartDate eq datetime'[[(formatDate (.cursor.last_execution_datetime (parseDuration "-{{additional_look_back}}")) "RFC3339")]]' and EndDate eq datetime'[[(formatDate (now) "RFC3339")]]'
+      value: StartDate eq datetime'[[(formatDate ((parseDate (.cursor.last_execution_datetime) "RFC3339") (parseDuration "-{{additional_look_back}}")) "RFC3339")]]' and EndDate eq datetime'[[(formatDate (now) "RFC3339")]]'
       default: StartDate eq datetime'[[(formatDate (now (parseDuration "-{{initial_interval}}")) "RFC3339")]]' and EndDate eq datetime'[[(formatDate (now) "RFC3339")]]'
   - set:
       target: url.params.$top
@@ -66,7 +66,7 @@ response.pagination:
       fail_on_template_error: true
   - set:
       target: url.params.$skiptoken
-      value: '[[if (ne (len .last_response.body.value) 0)]][[(add (toInt (.last_response.url.params.Get "$skiptoken")) (toInt {{batch_size}}))]][[else]][[.last_response.terminate_pagination]][[end]]'
+      value: '[[if (lt (len .last_response.body.value) (toInt {{batch_size}}))]][[.last_response.terminate_pagination]][[else]][[(add (toInt (.last_response.url.params.Get "$skiptoken")) (toInt {{batch_size}}))]][[end]]'
       fail_on_template_error: true
 cursor:
   last_execution_datetime:
