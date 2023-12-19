@@ -2,7 +2,7 @@
 
 source .buildkite/scripts/common.sh
 
-set -euo pipefail
+set -euxo pipefail
 
 if buildkite-agent meta-data exists BASE_COMMIT; then
   BASE_COMMIT="$(buildkite-agent meta-data get BASE_COMMIT)"
@@ -135,7 +135,7 @@ add_bin_path
 
 with_yq
 
-echo "Check the version and PACKAGE_VERSION are equal"
+echo "Check the entered version and PACKAGE_VERSION are equal"
 version="$(cat packages/${PACKAGE_NAME}/manifest.yml | yq -r .version)"
 if [[ "${version}" != "${PACKAGE_VERSION}" ]]; then
   buildkite-agent annotate "Unexpected version found in packages/${PACKAGE_NAME}/manifest.yml" --style "warning"
