@@ -51,7 +51,7 @@ isPackagePublished() {
   fi
 }
 
-isCommitExist() {
+commitExists() {
   local commit_sha=$1
   local branch=$2
   git checkout $branch
@@ -68,7 +68,7 @@ isCommitExist() {
   fi
 }
 
-isBranchExist() {
+branchExist() {
   local branch=$1
   if git ls-remote --exit-code origin "$branch" >/dev/null 2>&1; then
     echo "The backport branch $branch already exists"
@@ -100,7 +100,7 @@ removeOtherPackages() {
   done
 }
 
-updateBackportBranch() {
+updateBackportBranchContents() {
   local BUILDKITE_FOLDER_PATH=".buildkite"
   local JENKINS_FOLDER_PATH=".ci"
   git checkout $BACKPORT_BRANCH_NAME
@@ -126,8 +126,8 @@ updateBackportBranch() {
   git push origin $BACKPORT_BRANCH_NAME
 }
 
-if ! [[ $PACKAGE_VERSION =~ ^[0-9]+(\.[0-9]+){2}$ ]]; then
-  buildkite-agent annotate "The entered package version ${PACKAGE_VERSION} doesn't match the pattern: X.Y.Z" --style "error"
+if ! [[ $PACKAGE_VERSION =~ ^[0-9]+(\.[0-9]+){2}(\-.*)?$ ]]; then
+  buildkite-agent annotate "The entered package version ${PACKAGE_VERSION} doesn't match the pattern" --style "error"
   exit 1
 fi
 
@@ -148,15 +148,15 @@ if ! git show -p ${BASE_COMMIT} packages/${PACKAGE_NAME}/manifest.yml | grep -E 
   exit 1
 fi
 
-echo "Check if the package has published"
+echo "Check if the package is published"
 if ! isPackagePublished "$FULL_ZIP_PACKAGE_NAME"; then
-  buildkite-agent annotate "The package version: **${PACKAGE_NAME}-${PACKAGE_VERSION}** hasn't neen published yet." --style "error"
+  buildkite-agent annotate "The package version: **${PACKAGE_NAME}-${PACKAGE_VERSION}** hasn't been published yet." --style "error"
   exit 1
 fi
 
 echo "Check if the base commit exists."
 if [ ! -z "$BASE_COMMIT" ]; then
-  if ! isCommitExist "$BASE_COMMIT" "$SOURCE_BRANCH"; then
+  if ! commitExists "$BASE_COMMIT" "$SOURCE_BRANCH"; then
     buildkite-agent annotate "The entered commit hasn't found in the **${SOURCE_BRANCH}** branch" --style "error"
     exit 1
   fi
@@ -164,7 +164,7 @@ fi
 
 echo "Check if the backport-branch exists"
 MSG=""
-if ! isBranchExist "$BACKPORT_BRANCH_NAME"; then
+if ! branchExist "$BACKPORT_BRANCH_NAME"; then
   MSG="The backport branch: **$BACKPORT_BRANCH_NAME** has been created."
   createLocalBackportBranch "$BACKPORT_BRANCH_NAME" "$BASE_COMMIT"
 else
@@ -172,6 +172,6 @@ else
 fi
 
 echo "Adding CI files into the branch ${BACKPORT_BRANCH_NAME}"
-updateBackportBranch
+updateBackportBranchContents
 
 buildkite-agent annotate "$MSG" --style "success"
