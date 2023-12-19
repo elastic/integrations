@@ -122,12 +122,12 @@ updateBackportBranch() {
   echo "Commiting and pushing..."
   git add $BUILDKITE_FOLDER_PATH
   git add $JENKINS_FOLDER_PATH
-  git commit -m "Add $BUILDKITE_FOLDER_PATH and $JENKINSFILE_PATH to backport branch: $BACKPORT_BRANCH_NAME from the $SOURCE_BRANCH branch"
+  git commit -m "Add $BUILDKITE_FOLDER_PATH and $JENKINS_FOLDER_PATH to backport branch: $BACKPORT_BRANCH_NAME from the $SOURCE_BRANCH branch"
   # git push origin $BACKPORT_BRANCH_NAME
 }
 
 if ! [[ $PACKAGE_VERSION =~ ^[0-9]+(\.[0-9]+){2}$ ]]; then
-  buildkite-agent annotate "The entered package version ${PACKAGE_VERSION} doesn't match the pattern X.Y.Z" --style "error"
+  buildkite-agent annotate "The entered package version ${PACKAGE_VERSION} doesn't match the pattern: X.Y.Z" --style "error"
   exit 1
 fi
 
