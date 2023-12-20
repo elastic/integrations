@@ -1,6 +1,6 @@
 ---
 description: Pipeline for processing API Activity category.
-# API Activity class docs: https://schema.ocsf.io/1.0.0-rc.3/class/graph/api_activity
+# API Activity class docs: https://schema.ocsf.io/1.0.0/categories/application?extensions=
 processors:
   - foreach:
       field: ocsf.resources
@@ -72,6 +72,87 @@ processors:
           tag: append_resources_owner_uid_into_related_user
           value: '{{{_ingest._value.owner.uid}}}'
           allow_duplicates: false
+  - foreach:
+      field: ocsf.web_resources
+      if: ctx.ocsf?.web_resources instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: package.description
+          tag: append_web_resources_desc_into_package_description
+          value: '{{{_ingest._value.desc}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ocsf.web_resources
+      if: ctx.ocsf?.web_resources instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: package.name
+          tag: append_web_resources_name_into_package_description
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ocsf.web_resources
+      if: ctx.ocsf?.web_resources instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: package.type
+          tag: append_web_resources_desc_into_package_description
+          value: '{{{_ingest._value.type}}}'
+          allow_duplicates: false
+  - convert:
+      field: ocsf.http_response.code
+      tag: convert_http_response_code_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.http_response.code
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.response.status_code
+      tag: set_http_response_status_code
+      copy_from: ocsf.http_response.code
+      ignore_empty_value: true  
+  - convert:
+      field: ocsf.http_response.length
+      tag: convert_http_response_length_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.http_response.length
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.response.body.bytes
+      tag: set_http_response_body_bytes
+      copy_from: ocsf.http_response.length
+      ignore_empty_value: true  
+  - convert:
+      field: ocsf.http_response.latency
+      tag: convert_http_response_latency_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.http_response.latency
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.response.body.content
+      tag: set_http_response_body_content
+      copy_from: ocsf.http_response.message
+      ignore_empty_value: true  
 on_failure:
   - append:
       field: error.message

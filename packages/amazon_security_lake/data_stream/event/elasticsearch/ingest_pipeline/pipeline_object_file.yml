@@ -1,0 +1,613 @@
+---
+description: Pipeline for processing File object.
+# File object docs: https://schema.ocsf.io/1.0.0/objects/file?extensions=
+processors:
+  - remove:
+      field:
+        - file.accessed
+        - file.created
+        - file.x509.serial_number
+        - file.x509.not_after
+        - file.x509.issuer.distinguished_name
+        - file.x509.subject.distinguished_name
+        - file.x509.version_number
+        - file.hash.*
+        - file.mime_type
+        - file.mtime
+        - file.name
+        - file.owner
+        - file.uid
+        - file.directory
+        - file.path
+        - file.size
+        - file.type
+        - file.inode
+      ignore_missing: true
+      tag: remove_file_fields
+  - date:
+      field: ocsf.file.accessed_time_dt
+      target_field: ocsf.file.accessed_time_dt
+      tag: date_file_accessed_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.file?.accessed_time_dt != null && ctx.ocsf.file.accessed_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.file.accessed_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.accessed
+      tag: set_file_accessed_from_file_accessed_time_dt
+      copy_from: ocsf.file.accessed_time_dt
+      ignore_empty_value: true
+  - date:
+      field: ocsf.file.accessed_time
+      target_field: ocsf.file.accessed_time
+      tag: date_file_accessed_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.file?.accessed_time != null && ctx.ocsf.file.accessed_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.file.accessed_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.accessed
+      tag: set_file_accessed_from_file_accessed_time
+      copy_from: ocsf.file.accessed_time
+      ignore_empty_value: true
+  - date:
+      field: ocsf.file.created_time_dt
+      target_field: ocsf.file.created_time_dt
+      tag: date_file_created_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.file?.created_time_dt != null && ctx.ocsf.file.created_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.file.created_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.created
+      tag: set_file_created_from_file_created_time_dt
+      copy_from: ocsf.file.created_time_dt
+      ignore_empty_value: true
+  - date:
+      field: ocsf.file.created_time
+      target_field: ocsf.file.created_time
+      tag: date_file_created_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.file?.created_time != null && ctx.ocsf.file.created_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.file.created_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.created
+      tag: set_file_created_from_file_created_time
+      copy_from: ocsf.file.created_time
+      ignore_empty_value: true
+  - set:
+      field: file.directory
+      tag: set_file_directory
+      copy_from: ocsf.file.parent_folder
+      ignore_empty_value: true
+  - script:
+      description: Set value for file.hash.*.
+      if: ctx.ocsf?.file?.hashes != null
+      tag: script_file_hash_*
+      lang: painless
+      params:
+        MD5: md5
+        SHA-1: sha1
+        SHA-256: sha256
+        SHA-512: sha512
+        CTPH: ssdeep
+        TLSH: tlsh
+      source: |-
+        if (ctx.file == null) {
+          ctx.file = new HashMap();
+        }
+        if (ctx.file.hash == null) {
+          ctx.file.hash = new HashMap();
+        }
+        Map map = new HashMap();
+        def hashes = ctx.ocsf.file.get('hashes');
+        for (def hash: hashes) {
+          def hashAlgorithm = params.get(hash.get('algorithm'));
+          if (hashAlgorithm == null) {
+            continue;
+          }
+          if (map.containsKey(hashAlgorithm)) {
+            map[hashAlgorithm].add(hash.get('value'));
+          } else {
+            Set set = new HashSet();
+            set.add(hash.get('value'));
+            map.put(hashAlgorithm, set);
+          }
+        }
+        ctx.file.hash = map;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ocsf.file.hashes
+      if: ctx.ocsf?.file?.hashes instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.hash
+          tag: append_file_hashes_value_into_related_hash
+          value: '{{{_ingest._value.value}}}'
+          allow_duplicates: false
+  - set:
+      field: file.inode
+      tag: set_file_inode
+      copy_from: ocsf.file.uid
+      ignore_empty_value: true
+  - set:
+      field: file.mime_type
+      tag: set_file_mime_type
+      copy_from: ocsf.file.mime_type
+      ignore_empty_value: true
+  - date:
+      field: ocsf.file.modified_time_dt
+      target_field: ocsf.file.modified_time_dt
+      tag: date_file_modified_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.file?.modified_time_dt != null && ctx.ocsf.file.modified_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.file.modified_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.mtime
+      tag: set_file_mtime_from_file_modified_time_dt
+      copy_from: ocsf.file.modified_time_dt
+      ignore_empty_value: true
+  - date:
+      field: ocsf.file.modified_time
+      target_field: ocsf.file.modified_time
+      tag: date_file_modified_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.file?.modified_time != null && ctx.ocsf.file.modified_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.file.modified_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.mtime
+      tag: set_file_mtime_from_file_modified_time
+      copy_from: ocsf.file.modified_time
+      ignore_empty_value: true
+  - set:
+      field: file.name
+      tag: set_file_name
+      copy_from: ocsf.file.name
+      ignore_empty_value: true
+  - set:
+      field: file.owner
+      tag: set_file_owner
+      copy_from: ocsf.file.owner.name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_file_owner_name_into_related_user
+      value: '{{{ocsf.file.owner.name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.file?.owner?.name != null
+  - set:
+      field: file.path
+      tag: set_file_path
+      copy_from: ocsf.file.path
+      ignore_empty_value: true
+  - convert:
+      field: ocsf.file.size
+      tag: convert_file_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.file.size
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.size
+      tag: set_file_size
+      copy_from: ocsf.file.size
+      ignore_empty_value: true
+  - set:
+      field: file.type
+      tag: set_file_type
+      copy_from: ocsf.file.type
+      ignore_empty_value: true
+  - set:
+      field: file.uid
+      tag: set_file_uid
+      copy_from: ocsf.file.owner.uid
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_file_owner_uid_into_related_user
+      value: '{{{ocsf.file.owner.uid}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.file?.owner?.uid != null
+  - set:
+      field: file.x509.issuer.distinguished_name
+      tag: set_file_x509_issuer_distinguished_name
+      copy_from: ocsf.file.signature.certificate.issuer
+      ignore_empty_value: true
+  - date:
+      field: ocsf.file.signature.certificate.expiration_time_dt
+      target_field: ocsf.file.signature.certificate.expiration_time_dt
+      tag: date_file_signature_certificate_expiration_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.file?.signature?.certificate?.expiration_time_dt != null && ctx.ocsf.file.signature.certificate.expiration_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.file.signature.certificate.expiration_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.x509.not_after
+      tag: set_file_x509_not_after_from_file_signature_certificate_expiration_time_dt
+      copy_from: ocsf.file.signature.certificate.expiration_time_dt
+      ignore_empty_value: true
+  - date:
+      field: ocsf.file.signature.certificate.expiration_time
+      target_field: ocsf.file.signature.certificate.expiration_time
+      tag: date_file_signature_certificate_expiration_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.file?.signature?.certificate?.expiration_time != null && ctx.ocsf.file.signature.certificate.expiration_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.file.signature.certificate.expiration_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.x509.not_after
+      tag: set_file_x509_not_after_from_file_signature_certificate_expiration_time
+      copy_from: ocsf.file.signature.certificate.expiration_time
+      ignore_empty_value: true
+  - set:
+      field: file.x509.serial_number
+      tag: set_file_x509_serial_number
+      copy_from: ocsf.file.signature.certificate.serial_number
+      ignore_empty_value: true
+  - set:
+      field: file.x509.subject.distinguished_name
+      tag: set_file_x509_subject_distinguished_name
+      copy_from: ocsf.file.signature.certificate.subject
+      ignore_empty_value: true
+  - set:
+      field: file.x509.version_number
+      tag: set_file_x509_version_number
+      copy_from: ocsf.file.signature.certificate.version
+      ignore_empty_value: true
+  - convert:
+      field: ocsf.file.accessor.account.type_id
+      tag: convert_file_accessor_account_type_id_to_string
+      type: string
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_file_accessor_uid_alt_into_related_user
+      value: '{{{ocsf.file.accessor.uid_alt}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.file?.accessor?.uid_alt != null
+  - append:
+      field: related.user
+      tag: append_file_accessor_email_addr_into_related_user
+      value: '{{{ocsf.file.accessor.email_addr}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.file?.accessor?.email_addr != null
+  - append:
+      field: related.user
+      tag: append_file_accessor_full_name_into_related_user
+      value: '{{{ocsf.file.accessor.full_name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.file?.accessor?.full_name != null
+  - append:
+      field: related.user
+      tag: append_file_accessor_name_into_related_user
+      value: '{{{ocsf.file.accessor.name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.file?.accessor?.name != null
+  - append:
+      field: related.user
+      tag: append_file_accessor_uid_into_related_user
+      value: '{{{ocsf.file.accessor.uid}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.file?.accessor?.uid != null
+  - convert:
+      field: ocsf.file.accessor.type_id
+      tag: convert_file_accessor_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.file.attributes
+      tag: convert_file_attributes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.file.attributes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.file.confidentiality_id
+      tag: convert_file_confidentiality_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.file.creator.account.type_id
+      tag: convert_file_creator_account_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.file.creator.type_id
+      tag: convert_file_creator_type_id_to_string
+      type: string
+      ignore_missing: true
+  - foreach:
+      field: ocsf.file.signature.certificate.fingerprints
+      if: ctx.ocsf?.file?.signature?.certificate?.fingerprints instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.algorithm_id
+          tag: convert_file_signature_certificate_fingerprints_algorithm_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: ocsf.file.signature.certificate.fingerprints
+      if: ctx.ocsf?.file?.signature?.certificate?.fingerprints instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.hash
+          tag: append_file_signature_certificate_fingerprints_value_into_related_hash
+          value: '{{{_ingest._value.value}}}'
+          allow_duplicates: false
+  - convert:
+      field: ocsf.file.signature.algorithm_id
+      tag: convert_file_signature_algorithm_id_to_string
+      type: string
+      ignore_missing: true
+  - append:
+      field: related.hash
+      tag: append_file_signature_value_into_related_hash
+      value: '{{{ocsf.file.signature.value}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.file?.signature?.value != null
+  - date:
+      field: ocsf.file.signature.certificate.created_time_dt
+      target_field: ocsf.file.signature.certificate.created_time_dt
+      tag: date_file_signature_certificate_created_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.file?.signature?.certificate?.created_time_dt != null && ctx.ocsf.file.signature.certificate.created_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.file.signature.certificate.created_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.file.signature.certificate.created_time
+      target_field: ocsf.file.signature.certificate.created_time
+      tag: date_file_signature_certificate_created_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.file?.signature?.certificate?.created_time != null && ctx.ocsf.file.signature.certificate.created_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.file.signature.certificate.created_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.file.signature.created_time_dt
+      target_field: ocsf.file.signature.created_time_dt
+      tag: date_file_signature_created_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.file?.signature?.created_time_dt != null && ctx.ocsf.file.signature.created_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.file.signature.created_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.file.signature.created_time
+      target_field: ocsf.file.signature.created_time
+      tag: date_file_signature_created_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.file?.signature?.created_time != null && ctx.ocsf.file.signature.created_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.file.signature.created_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.file.signature.digest.algorithm_id
+      tag: convert_file_signature_digest_algorithm_id_to_string
+      type: string
+      ignore_missing: true
+  - append:
+      field: related.hash
+      tag: append_file_signature_digest_value_into_related_hash
+      value: '{{{ocsf.file.signature.digest.value}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.file?.signature?.digest?.value != null
+  - foreach:
+      field: ocsf.file.hashes
+      if: ctx.ocsf?.file?.hashes instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.algorithm_id
+          tag: convert_file_hashes_algorithm_id_to_string
+          type: string
+          ignore_missing: true
+  - convert:
+      field: ocsf.file.modifier.account.type_id
+      tag: convert_file_modifier_account_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.file.modifier.type_id
+      tag: convert_file_modifier_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.file.owner.account.type_id
+      tag: convert_file_owner_account_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.file.owner.type_id
+      tag: convert_file_owner_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.file.is_system
+      tag: convert_file_is_system_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.file.is_system
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.file.type_id
+      tag: convert_file_type_id_to_string
+      type: string
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_file_creator_uid_alt_into_related_user
+      value: '{{{ocsf.file.creator.uid_alt}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.file?.creator?.uid_alt != null
+  - append:
+      field: related.user
+      tag: append_file_creator_email_addr_into_related_user
+      value: '{{{ocsf.file.creator.email_addr}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.file?.creator?.email_addr != null
+  - append:
+      field: related.user
+      tag: append_file_creator_full_name_into_related_user
+      value: '{{{ocsf.file.creator.full_name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.file?.creator?.full_name != null
+  - append:
+      field: related.user
+      tag: append_file_creator_name_into_related_user
+      value: '{{{ocsf.file.creator.name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.file?.creator?.name != null
+  - append:
+      field: related.user
+      tag: append_file_creator_uid_into_related_user
+      value: '{{{ocsf.file.creator.uid}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.file?.creator?.uid != null
+  - append:
+      field: related.user
+      tag: append_file_modifier_uid_alt_into_related_user
+      value: '{{{ocsf.file.modifier.uid_alt}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.file?.modifier?.uid_alt != null
+  - append:
+      field: related.user
+      tag: append_file_modifier_email_addr_into_related_user
+      value: '{{{ocsf.file.modifier.email_addr}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.file?.modifier?.email_addr != null
+  - append:
+      field: related.user
+      tag: append_file_modifier_full_name_into_related_user
+      value: '{{{ocsf.file.modifier.full_name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.file?.modifier?.full_name != null
+  - append:
+      field: related.user
+      tag: append_file_modifier_name_into_related_user
+      value: '{{{ocsf.file.modifier.name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.file?.modifier?.name != null
+  - append:
+      field: related.user
+      tag: append_file_modifier_uid_into_related_user
+      value: '{{{ocsf.file.modifier.uid}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.file?.modifier?.uid != null
+  - append:
+      field: related.user
+      tag: append_file_owner_uid_alt_into_related_user
+      value: '{{{ocsf.file.owner.uid_alt}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.file?.owner?.uid_alt != null
+  - append:
+      field: related.user
+      tag: append_file_owner_email_addr_into_related_user
+      value: '{{{ocsf.file.owner.email_addr}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.file?.owner?.email_addr != null
+  - append:
+      field: related.user
+      tag: append_file_owner_full_name_into_related_user
+      value: '{{{ocsf.file.owner.full_name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.file?.owner?.full_name != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

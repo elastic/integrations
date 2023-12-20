@@ -1,6 +1,6 @@
 ---
 description: Pipeline for processing Amazon Security Lake Events.
-# Base Event docs: https://schema.ocsf.io/1.0.0-rc.3/base_event
+# Base Event docs: https://schema.ocsf.io/1.0.0/base_event?extensions=
 processors:
   - set:
       field: ecs.version
@@ -28,7 +28,7 @@ processors:
   - set:
       field: event.kind
       tag: set_event_kind
-      if: ctx.ocsf?.class_uid != null && ['3001','3002','4001','4003','6003'].contains(ctx.ocsf.class_uid)
+      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1004','1005','1006','1007','3001','3002','3003','3005','3006','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','4011','4012','5001','5002','6001','6002','6003','6004'].contains(ctx.ocsf.class_uid)
       value: event
   - set:
       field: event.kind
@@ -52,7 +52,7 @@ processors:
       tag: append_iam_into_event_category
       value: iam
       allow_duplicates: false
-      if: ctx.ocsf?.class_uid != null && ['3001'].contains(ctx.ocsf.class_uid)
+      if: ctx.ocsf?.class_uid != null && ['3001','3005','3006'].contains(ctx.ocsf.class_uid)
   - append:
       field: event.category
       tag: append_authentication_into_event_category
@@ -61,64 +61,154 @@ processors:
       if: ctx.ocsf?.class_uid != null && ['3002'].contains(ctx.ocsf.class_uid)
   - append:
       field: event.category
+      tag: append_session_into_event_category
+      value: session
+      allow_duplicates: false
+      if: ctx.ocsf?.class_uid != null && ['3003'].contains(ctx.ocsf.class_uid)
+  - append:
+      field: event.category
       tag: append_network_into_event_category
       value: network
       allow_duplicates: false
-      if: ctx.ocsf?.class_uid != null && ['4001','4003'].contains(ctx.ocsf.class_uid)
+      if: ctx.ocsf?.class_uid != null && ['4001','4003','4004','4005','4007','4008','4010'].contains(ctx.ocsf.class_uid)
+  - append:
+      field: event.category
+      tag: append_api_into_event_category
+      value: api
+      allow_duplicates: false
+      if: ctx.ocsf?.class_uid != null && ['4002','4006'].contains(ctx.ocsf.class_uid)
+  - append:
+      field: event.category
+      tag: append_file_into_event_category
+      value: file
+      allow_duplicates: false
+      if: ctx.ocsf?.class_uid != null && ['1001','4006','4008','4010','4011'].contains(ctx.ocsf.class_uid)
+  - append:
+      field: event.category
+      tag: append_email_into_event_category
+      value: email
+      allow_duplicates: false
+      if: ctx.ocsf?.class_uid != null && ['4009','4011','4012'].contains(ctx.ocsf.class_uid)
   - append:
       field: event.category
       tag: append_web_into_event_category
       value: web
       allow_duplicates: false
-      if: ctx.ocsf?.class_uid != null && ['6003'].contains(ctx.ocsf.class_uid)
+      if: ctx.ocsf?.class_uid != null && ['6003','6004'].contains(ctx.ocsf.class_uid)
+  - append:
+      field: event.category
+      tag: append_package_into_event_category
+      value: package
+      allow_duplicates: false
+      if: ctx.ocsf?.class_uid != null && ['6002'].contains(ctx.ocsf.class_uid)
+  - append:
+      field: event.category
+      tag: append_configuration_into_event_category
+      value: configuration
+      allow_duplicates: false
+      if: ctx.ocsf?.class_uid != null && ['5002'].contains(ctx.ocsf.class_uid)
+  - append:
+      field: event.category
+      tag: append_driver_into_event_category
+      value: driver
+      allow_duplicates: false
+      if: ctx.ocsf?.class_uid != null && ['1002','1003'].contains(ctx.ocsf.class_uid)
+  - append:
+      field: event.category
+      tag: append_process_into_event_category
+      value: process
+      allow_duplicates: false
+      if: ctx.ocsf?.class_uid != null && ['1007'].contains(ctx.ocsf.class_uid)
   - append:
       field: event.type
       tag: append_info_into_event_type
       value: info
       allow_duplicates: false
-      if: ctx.ocsf?.class_uid != null && ['2001','3001','3002','4001','4003','6003'].contains(ctx.ocsf.class_uid)
+      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1007','2001','3001','3002','3003','3005','3006','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','4011','4012','5001','5002','6002','6003','6004'].contains(ctx.ocsf.class_uid)
   - append:
       field: event.type
       tag: append_user_into_event_type
       value: user
       allow_duplicates: false
-      if: ctx.ocsf?.class_uid != null && ['3001'].contains(ctx.ocsf.class_uid)
+      if: ctx.ocsf?.class_uid != null && ['3001','3006'].contains(ctx.ocsf.class_uid)
+  - append:
+      field: event.type
+      tag: append_group_into_event_type
+      value: group
+      allow_duplicates: false
+      if: ctx.ocsf?.class_uid != null && ['3005'].contains(ctx.ocsf.class_uid)
   - append:
       field: event.type
       tag: append_protocol_into_event_type
       value: protocol
       allow_duplicates: false
-      if: ctx.ocsf?.class_uid != null && ['4003'].contains(ctx.ocsf.class_uid)
+      if: ctx.ocsf?.class_uid != null && ['4003','4004','4005','4007','4008'].contains(ctx.ocsf.class_uid)
   - append:
       field: event.type
       tag: append_creation_into_event_type
       value: creation
       allow_duplicates: false
-      if: ctx.ocsf?.class_uid != null && ['3001'].contains(ctx.ocsf.class_uid) && ctx.ocsf.activity_name == 'Create'
+      if: ctx.ocsf?.class_uid != null && ['1001','3001','4006','5002'].contains(ctx.ocsf.class_uid) && ['Create','File Create','Log'].contains(ctx.ocsf.activity_name)
+  - append:
+      field: event.type
+      tag: append_access_into_event_type
+      value: access
+      allow_duplicates: false
+      if: ctx.ocsf?.class_uid != null && ['1001','4006','4010','5002','6004'].contains(ctx.ocsf.class_uid) && ['Read','File Open','Preview','Open','Access Grant','Access Deny','Access Revoke','Access Error','Log'].contains(ctx.ocsf.activity_name)
   - append:
       field: event.type
       tag: append_deletion_into_event_type
       value: deletion
       allow_duplicates: false
-      if: ctx.ocsf?.class_uid != null && ['3001'].contains(ctx.ocsf.class_uid) && ctx.ocsf.activity_name == 'Delete'
+      if: ctx.ocsf?.class_uid != null && ['1001','3001','4010','6002'].contains(ctx.ocsf.class_uid) && ['Delete','Remove'].contains(ctx.ocsf.activity_name)
   - append:
       field: event.type
       tag: append_start_into_event_type
       value: start
       allow_duplicates: false
-      if: ctx.ocsf?.class_uid != null && ['3002','4001'].contains(ctx.ocsf.class_uid) && ['Logon','Open'].contains(ctx.ocsf.activity_name)
+      if: ctx.ocsf?.class_uid != null && ['1007','3002','4001','4007','6002'].contains(ctx.ocsf.class_uid) && ['Launch','Logon','Open','Start'].contains(ctx.ocsf.activity_name)
   - append:
       field: event.type
       tag: append_end_into_event_type
       value: end
       allow_duplicates: false
-      if: ctx.ocsf?.class_uid != null && ['3002','4001'].contains(ctx.ocsf.class_uid) && ['Logoff','Close'].contains(ctx.ocsf.activity_name)
+      if: ctx.ocsf?.class_uid != null && ['1007','3002','4001','4007','6002'].contains(ctx.ocsf.class_uid) && ['Terminate','Logoff','Close','Stop'].contains(ctx.ocsf.activity_name)
   - append:
       field: event.type
       tag: append_denied_into_event_type
       value: denied
       allow_duplicates: false
-      if: ctx.ocsf?.class_uid != null && ['4001','4003'].contains(ctx.ocsf.class_uid) && ['Refuse'].contains(ctx.ocsf.activity_name)
+      if: ctx.ocsf?.class_uid != null && ['4001','4003','4004','4007'].contains(ctx.ocsf.class_uid) && ['Refuse','Decline'].contains(ctx.ocsf.activity_name)
+  - append:
+      field: event.type
+      tag: append_allowed_into_event_type
+      value: allowed
+      allow_duplicates: false
+      if: ctx.ocsf?.class_uid != null && ['4004'].contains(ctx.ocsf.class_uid) && ['Ack'].contains(ctx.ocsf.activity_name)
+  - append:
+      field: event.type
+      tag: append_change_into_event_type
+      value: change
+      allow_duplicates: false
+      if: ctx.ocsf?.class_uid != null && ['1001','4006','4010'].contains(ctx.ocsf.class_uid) && ['Update','File Supersede','File Overwrite','Update','Rename'].contains(ctx.ocsf.activity_name)
+  - append:
+      field: event.type
+      tag: append_connection_into_event_type
+      value: connection
+      allow_duplicates: false
+      if: ctx.ocsf?.class_uid != null && ['4005'].contains(ctx.ocsf.class_uid) && ['Connect Request','Connect Response'].contains(ctx.ocsf.activity_name)
+  - append:
+      field: event.type
+      tag: append_installation_into_event_type
+      value: installation
+      allow_duplicates: false
+      if: ctx.ocsf?.class_uid != null && ['6002'].contains(ctx.ocsf.class_uid) && ['Install'].contains(ctx.ocsf.activity_name)
+  - append:
+      field: event.type
+      tag: append_error_into_event_type
+      value: error
+      allow_duplicates: false
+      if: ctx.ocsf?.class_uid != null && ['6004'].contains(ctx.ocsf.class_uid) && ['Access Error'].contains(ctx.ocsf.activity_name)
   - set:
       field: cloud.account.id
       tag: set_cloud_account_uid
@@ -609,63 +699,78 @@ processors:
             ignore_missing: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_actor" }}'
-      if: ctx.ocsf?.class_uid != null && ['3001','3002','4001','4003','6003'].contains(ctx.ocsf.class_uid) && ctx.ocsf.actor != null
+      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1004','1005','1006','1007','3001','3002','3003','3004','3005','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','4011','4012','5001','5002','6001','6002','6003','6004'].contains(ctx.ocsf.class_uid) && ctx.ocsf.actor != null
       tag: pipeline_object_actor
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_attack" }}'
-      if: ctx.ocsf?.class_uid != null && ['2001','4001','4003'].contains(ctx.ocsf.class_uid) && ctx.ocsf.attacks != null
+      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1004','1005','1006','1007','2001','4001','4002','4003','4005','4006','4007','4008','4009','4011','4012'].contains(ctx.ocsf.class_uid) && ctx.ocsf.attacks != null
       tag: pipeline_object_attack
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_network_connection_info" }}'
-      if: ctx.ocsf?.class_uid != null && ['4001','4003'].contains(ctx.ocsf.class_uid) && ctx.ocsf.connection_info != null
+      if: ctx.ocsf?.class_uid != null && ['4001','4002','4003','4005','4006','4007','4008'].contains(ctx.ocsf.class_uid) && ctx.ocsf.connection_info != null
       tag: pipeline_object_network_connection_info
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_device" }}'
-      if: ctx.ocsf?.class_uid != null && ['3001','3002','4001','4003'].contains(ctx.ocsf.class_uid) && ctx.ocsf.device != null
+      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1004','1005','1006','1007','3001','3002','3003','3004','3005','4001','4002','4003','4004','4005','4006','4007','4008','4009','4011','4012','5001','5002','6001','6002','6004'].contains(ctx.ocsf.class_uid) && ctx.ocsf.device != null
       tag: pipeline_object_device
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_http_request" }}'
-      if: ctx.ocsf?.class_uid != null && ['3001','3002','6003'].contains(ctx.ocsf.class_uid) && ctx.ocsf.http_request != null
+      if: ctx.ocsf?.class_uid != null && ['3001','3002','4002','6003','6004'].contains(ctx.ocsf.class_uid) && ctx.ocsf.http_request != null
       tag: pipeline_object_http_request
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_malware" }}'
-      if: ctx.ocsf?.class_uid != null && ['2001','4001','4003'].contains(ctx.ocsf.class_uid) && ctx.ocsf.malware != null
+      if: ctx.ocsf?.class_uid != null && ['2001','4001','4002','4003','4005','4006','4007','4008','4009','4011','4012'].contains(ctx.ocsf.class_uid) && ctx.ocsf.malware != null
       tag: pipeline_object_malware
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_network_endpoint" }}'
-      if: ctx.ocsf?.class_uid != null && ['3001','3002','4001','4003','6003'].contains(ctx.ocsf.class_uid) && (ctx.ocsf.dst_endpoint != null || ctx.ocsf.src_endpoint != null)
+      if: ctx.ocsf?.class_uid != null && ['3001','3002','3003','3005','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','6001','6003','6004'].contains(ctx.ocsf.class_uid) && (ctx.ocsf.dst_endpoint != null || ctx.ocsf.src_endpoint != null)
       tag: pipeline_object_network_endpoint
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_process" }}'
-      if: ctx.ocsf?.class_uid != null && ['2001'].contains(ctx.ocsf.class_uid) && ctx.ocsf.process != null
+      if: ctx.ocsf?.class_uid != null && ['1004','1007','2001'].contains(ctx.ocsf.class_uid) && ctx.ocsf.process != null
       tag: pipeline_object_process
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_proxy" }}'
-      if: ctx.ocsf?.class_uid != null && ['4001','4003'].contains(ctx.ocsf.class_uid) && ctx.ocsf.proxy != null
+      if: ctx.ocsf?.class_uid != null && ['4001','4002','4003','4005','4006','4007','4008'].contains(ctx.ocsf.class_uid) && ctx.ocsf.proxy != null
       tag: pipeline_object_proxy
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_tls" }}'
-      if: ctx.ocsf?.class_uid != null && ['4001','4003'].contains(ctx.ocsf.class_uid) && ctx.ocsf.tls != null
+      if: ctx.ocsf?.class_uid != null && ['4001','4002','4003','4005','4006','4007','4008'].contains(ctx.ocsf.class_uid) && ctx.ocsf.tls != null
       tag: pipeline_object_tls
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_traffic" }}'
-      if: ctx.ocsf?.class_uid != null && ['4001','4003'].contains(ctx.ocsf.class_uid) && ctx.ocsf.traffic != null
+      if: ctx.ocsf?.class_uid != null && ['4001','4002','4003','4005','4006','4007','4008'].contains(ctx.ocsf.class_uid) && ctx.ocsf.traffic != null
       tag: pipeline_object_traffic
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_user" }}'
-      if: ctx.ocsf?.class_uid != null && ['3001','3002'].contains(ctx.ocsf.class_uid) && ctx.ocsf.user != null
+      if: ctx.ocsf?.class_uid != null && ['3001','3002','3003','3005','3006'].contains(ctx.ocsf.class_uid) && ctx.ocsf.user != null
       tag: pipeline_object_user
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_file" }}'
+      if: ctx.ocsf?.class_uid != null && ['1001','4006','4010','4011'].contains(ctx.ocsf.class_uid)
+      tag: pipeline_object_file
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_system_activity_helper" }}'
+      if: ctx.ocsf?.class_uid != null && ['1002','1005','1006'].contains(ctx.ocsf.class_uid)
+      tag: pipeline_object_system_activity_helper
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_category_system_activity" }}'
+      if: ctx.ocsf?.category_uid != null && ctx.ocsf.category_uid == '1'
+      tag: pipeline_category_system_activity
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_category_findings" }}'
@@ -686,6 +791,11 @@ processors:
       name: '{{ IngestPipeline "pipeline_category_application_activity" }}'
       if: ctx.ocsf?.category_uid != null && ctx.ocsf.category_uid == '6'
       tag: pipeline_category_application_activity
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_category_discovery" }}'
+      if: ctx.ocsf?.category_uid != null && ctx.ocsf.category_uid == '5'
+      tag: pipeline_category_discovery
       ignore_missing_pipeline: true
   - foreach:
       field: ocsf.process.user.groups
@@ -745,6 +855,18 @@ processors:
             - _ingest._value.uid
             - _ingest._value.name
           tag: remove_duplicate_custom_fields_from_actor_user_groups_array
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - foreach:
+      field: ocsf.job.user.groups
+      if: ctx.ocsf?.job?.user?.groups instanceof List
+      ignore_failure: true
+      processor:
+        remove:
+          field:
+            - _ingest._value.uid
+            - _ingest._value.name
+          tag: remove_duplicate_custom_fields_from_job_user_groups_array
           ignore_missing: true
           if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - foreach:
@@ -840,6 +962,19 @@ processors:
             - _ingest._value.type
             - _ingest._value.ttl
           tag: remove_duplicate_custom_fields_from_answers_array
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - foreach:
+      field: ocsf.web_resources
+      if: ctx.ocsf?.web_resources instanceof List
+      ignore_failure: true
+      processor:
+        remove:
+          field:
+            - _ingest._value.desc
+            - _ingest._value.name
+            - _ingest._value.type
+          tag: remove_duplicate_custom_fields_from_web_resources_array
           ignore_missing: true
           if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - foreach:
@@ -1092,6 +1227,113 @@ processors:
         - ocsf.service.name
         - ocsf.service.uid
         - ocsf.service.version
+        - ocsf.group.name
+        - ocsf.group.uid
+        - ocsf.file.accessed_time
+        - ocsf.file.created_time
+        - ocsf.file.mime_type
+        - ocsf.file.modified_time
+        - ocsf.file.name
+        - ocsf.file.owner.name
+        - ocsf.file.owner.uid
+        - ocsf.file.parent_folder
+        - ocsf.file.path
+        - ocsf.file.signature.certificate.expiration_time
+        - ocsf.file.signature.certificate.issuer
+        - ocsf.file.signature.certificate.serial_number
+        - ocsf.file.signature.certificate.subject
+        - ocsf.file.signature.certificate.version
+        - ocsf.file.size
+        - ocsf.file.type
+        - ocsf.file.uid
+        - ocsf.driver.file.accessed_time
+        - ocsf.driver.file.created_time
+        - ocsf.driver.file.mime_type
+        - ocsf.driver.file.modified_time
+        - ocsf.driver.file.name
+        - ocsf.driver.file.owner.name
+        - ocsf.driver.file.owner.uid
+        - ocsf.driver.file.parent_folder
+        - ocsf.driver.file.path
+        - ocsf.driver.file.signature.certificate.expiration_time
+        - ocsf.driver.file.signature.certificate.issuer
+        - ocsf.driver.file.signature.certificate.serial_number
+        - ocsf.driver.file.signature.certificate.subject
+        - ocsf.driver.file.signature.certificate.version
+        - ocsf.driver.file.size
+        - ocsf.driver.file.type
+        - ocsf.driver.file.uid
+        - ocsf.module.file.accessed_time
+        - ocsf.module.file.created_time
+        - ocsf.module.file.mime_type
+        - ocsf.module.file.modified_time
+        - ocsf.module.file.name
+        - ocsf.module.file.owner.name
+        - ocsf.module.file.owner.uid
+        - ocsf.module.file.parent_folder
+        - ocsf.module.file.path
+        - ocsf.module.file.signature.certificate.expiration_time
+        - ocsf.module.file.signature.certificate.issuer
+        - ocsf.module.file.signature.certificate.serial_number
+        - ocsf.module.file.signature.certificate.subject
+        - ocsf.module.file.signature.certificate.version
+        - ocsf.module.file.size
+        - ocsf.module.file.type
+        - ocsf.module.file.uid
+        - ocsf.job.file.accessed_time
+        - ocsf.job.file.created_time
+        - ocsf.job.file.mime_type
+        - ocsf.job.file.modified_time
+        - ocsf.job.file.name
+        - ocsf.job.file.owner.name
+        - ocsf.job.file.owner.uid
+        - ocsf.job.file.parent_folder
+        - ocsf.job.file.path
+        - ocsf.job.file.signature.certificate.expiration_time
+        - ocsf.job.file.signature.certificate.issuer
+        - ocsf.job.file.signature.certificate.serial_number
+        - ocsf.job.file.signature.certificate.subject
+        - ocsf.job.file.signature.certificate.version
+        - ocsf.job.file.size
+        - ocsf.job.file.type
+        - ocsf.job.file.uid
+        - ocsf.job.user.domain
+        - ocsf.job.user.email_addr
+        - ocsf.job.user.full_name
+        - ocsf.job.user.name
+        - ocsf.job.user.uid
+        - ocsf.exit_code
+        - ocsf.cis_benchmark_result.rule.category
+        - ocsf.cis_benchmark_result.rule.desc
+        - ocsf.cis_benchmark_result.rule.name
+        - ocsf.cis_benchmark_result.rule.uid
+        - ocsf.cis_benchmark_result.rule.version
+        - ocsf.http_response.code
+        - ocsf.http_response.length
+        - ocsf.http_response.message
+        - ocsf.relay.hostname
+        - ocsf.relay.ip
+        - ocsf.relay.mac
+        - ocsf.relay.name
+        - ocsf.relay.type
+        - ocsf.request.uid
+        - ocsf.response.code
+        - ocsf.certificate_chain
+        - ocsf.email.cc
+        - ocsf.email.uid
+        - ocsf.email.from
+        - ocsf.email.message_uid
+        - ocsf.email.reply_to
+        - ocsf.email.subject
+        - ocsf.email.to
+        - ocsf.email_uid
+        - ocsf.url.query_string
+        - ocsf.url.hostname
+        - ocsf.url.path
+        - ocsf.url.port
+        - ocsf.url.scheme
+        - ocsf.url.subdomain
+        - ocsf.url.url_string
       tag: remove_duplicate_custom_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))

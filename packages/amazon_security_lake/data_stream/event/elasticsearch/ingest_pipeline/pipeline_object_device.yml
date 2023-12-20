@@ -1,6 +1,6 @@
 ---
 description: Pipeline for processing Device object.
-# Device object docs: https://schema.ocsf.io/1.0.0-rc.3/objects/device
+# Device object docs: https://schema.ocsf.io/1.0.0/objects/device?extensions=
 processors:
   - set:
       field: host.domain
@@ -592,12 +592,12 @@ processors:
           tag: uppercase_device_network_interfaces_mac
           ignore_missing: true
           on_failure:
-              - remove:
-                  field: _ingest._value.mac
-                  ignore_missing: true
-              - append:
-                  field: error.message
-                  value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            - remove:
+                field: _ingest._value.mac
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ocsf.device.network_interfaces
       if: ctx.ocsf?.device?.network_interfaces instanceof List
@@ -608,6 +608,23 @@ processors:
           tag: convert_device_network_interfaces_type_id_to_string
           type: string
           ignore_missing: true
+  - foreach:
+      field: ocsf.device.network_interfaces
+      if: ctx.ocsf?.device?.network_interfaces instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.subnet_prefix
+          tag: convert_device_network_interfaces_subnet_prefix_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.subnet_prefix
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.device.os.cpu_bits
       tag: convert_device_os_cpu_bits_to_long
