@@ -61,8 +61,17 @@ The primary aggregation value will be retrieved for all the metrics contained in
 
 ## Guest metrics
 
-For more insight into the state of the virtual machines, users can collect guest-level metrics, logs and other diagnostic data using the Guest-Level Diagnostics feature.
-Once this monitoring feature is enabled in the Diagnostic Settings area (Performance Counters tab for Windows VM's and Metrics tab for Linux VM's), a diagnostics agent is installed on the selected virtual machine and a set of extended metrics are added to collect usage data at each interval specified in the configuration.
+To collect monitoring data from the guest operating system of your virtual machine, you can configure a diagnostic agent, which is an [Azure Diagnostics extension](https://learn.microsoft.com/en-us/azure/azure-monitor/agents/diagnostics-extension-overview). The monitoring data is collected into an Azure storage account and can be viewed from the Azure Monitor. 
+
+IMPORTANT: Before you continue, make sure you have a storage account to store the metrics you collect. The storage account must be in the same region as your virtual machine.
+
+To enable the diagnostic agent:
+
+1. Sign in to the [Azure Portal](https://portal.azure.com/) and select your virtual machine.
+1. From **Monitoring** > **Diagnostic settings** configure the diagnostic agent and select the storage account you want to use to collect your data.
+1. From the **Sinks** tab, check **Enable Azure Monitor** to view your data from Azure Monitor dashboards.
+
+For more information on sending guest OS metrics to Azure Monitor, check the [Microsoft documentation](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/collect-custom-metrics-guestos-resource-manager-vm).
 
 ## Additional notes about metrics and costs
 
