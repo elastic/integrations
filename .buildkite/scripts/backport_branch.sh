@@ -109,7 +109,7 @@ removeOtherPackages() {
 updateBackportBranchContents() {
   local BUILDKITE_FOLDER_PATH=".buildkite"
   local JENKINS_FOLDER_PATH=".ci"
-  git checkout origin $SOURCE_BRANCH
+  git checkout $SOURCE_BRANCH
   if [[ -d "$JENKINS_FOLDER_PATH" ]]; then
     git checkout $BACKPORT_BRANCH_NAME
     echo "Copying $BUILDKITE_FOLDER_PATH from $SOURCE_BRANCH..."
