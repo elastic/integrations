@@ -154,19 +154,6 @@ add_bin_path
 
 with_yq
 
-echo "Check the entered version and PACKAGE_VERSION are equal"
-version="$(cat packages/${PACKAGE_NAME}/manifest.yml | yq -r .version)"
-if [[ "${version}" != "${PACKAGE_VERSION}" ]]; then
-  buildkite-agent annotate "Unexpected version found in packages/${PACKAGE_NAME}/manifest.yml" --style "error"
-  exit 1
-fi
-
-echo "Check that this changeset is the one creating the version $PACKAGE_NAME"
-if ! git show -p ${BASE_COMMIT} packages/${PACKAGE_NAME}/manifest.yml | grep -E "^\+version: ${PACKAGE_VERSION}" ; then
-  buildkite-agent annotate "This changeset does not creates the version ${PACKAGE_VERSION}" --style "error"
-  exit 1
-fi
-
 echo "Check if the package is published"
 if ! isPackagePublished "$FULL_ZIP_PACKAGE_NAME"; then
   buildkite-agent annotate "The package version: **${PACKAGE_NAME}-${PACKAGE_VERSION}** hasn't been published yet." --style "error"
@@ -184,8 +171,20 @@ fi
 echo "Check if the backport-branch exists"
 MSG=""
 if ! branchExist "$BACKPORT_BRANCH_NAME"; then
-  MSG="The backport branch: **$BACKPORT_BRANCH_NAME** has been created."
+  echo "Check the entered version and PACKAGE_VERSION are equal"
+  version="$(cat packages/${PACKAGE_NAME}/manifest.yml | yq -r .version)"
+  if [[ "${version}" != "${PACKAGE_VERSION}" ]]; then
+    buildkite-agent annotate "Unexpected version found in packages/${PACKAGE_NAME}/manifest.yml" --style "error"
+    exit 1
+  fi
+
+  echo "Check that this changeset is the one creating the version $PACKAGE_NAME"
+  if ! git show -p ${BASE_COMMIT} packages/${PACKAGE_NAME}/manifest.yml | grep -E "^\+version: ${PACKAGE_VERSION}" ; then
+    buildkite-agent annotate "This changeset does not creates the version ${PACKAGE_VERSION}" --style "error"
+    exit 1
+  fi
   createLocalBackportBranch "$BACKPORT_BRANCH_NAME" "$BASE_COMMIT"
+  MSG="The backport branch: **$BACKPORT_BRANCH_NAME** has been created."
 else
   MSG="The backport branch: **$BACKPORT_BRANCH_NAME** has been updated."
 fi
