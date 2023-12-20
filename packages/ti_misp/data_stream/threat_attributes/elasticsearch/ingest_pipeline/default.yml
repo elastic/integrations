@@ -87,13 +87,14 @@ processors:
       tag: script-misp_decayed
       if: ctx.misp?.attribute?.decay_score instanceof List && ctx.misp.attribute.decay_score.size() > 0
       source: |
-        def decayed = 
+        def decayed_count = 
             ctx.misp.attribute.decay_score.stream()
             .filter(t -> t.decayed == true)
-            .count()/1.0 >= (ctx.misp.attribute.decay_score.size())/2.0 ;
+            .count();
+        def decayed = ((float) decayed_count >= (ctx.misp.attribute.decay_score.size())/2.0);
         ctx.misp.attribute.decayed = decayed;
         if (decayed == true) {
-            ctx.misp.attribute.decayed_at = ZonedDateTime.parse(ctx._tmp.event_ingested).minusMinutes(2L); 
+            ctx.misp.attribute.decayed_at = ZonedDateTime.parse(ctx._tmp.event_ingested).minusMinutes(2L);
         }
       on_failure:
         - append:
