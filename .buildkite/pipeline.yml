@@ -7,6 +7,8 @@ env:
   KIND_VERSION: 'v0.20.0'
   K8S_VERSION: 'v1.28.0'
   YQ_VERSION: 'v4.35.2'
+  JQ_VERSION: '1.7'
+  GH_CLI_VERSION: "2.29.0"
   # Elastic package settings
   # Manage docker output/logs
   ELASTIC_PACKAGE_COMPOSE_DISABLE_ANSI: "true"
@@ -27,17 +29,21 @@ steps:
       cpu: "8"
       memory: "4G"
 
-  # TODO: Pending to migrate steps to Buildkite pipelines - still triggering Jenkins pipelines
-  - label: "Publish packages - (triggering Jenkins builds)"
-    key: "publish-packages"
-    command: ".buildkite/scripts/publish_packages.sh" # TODO: missing signature and publishing loops
-    env:
-      DRY_RUN: "true" # TODO: Avoid signing and publishing pending packages until Jenkins pipeline is replaced
+  - label: ":package: Build packages"
+    key: "build-packages"
+    command: ".buildkite/scripts/build_packages.sh"
     agents:
-      provider: "gcp"
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "8"
+      memory: "8G"
+    env:
+      ARTIFACTS_FOLDER: "artifacts-to-sign"
+      DRY_RUN: "false"
     depends_on:
       - step: "check"
         allow_failure: false
+    artifact_paths:
+      - artifacts-to-sign/*.zip
 
   - label: "Trigger integrations"
     key: "test-integrations"
@@ -50,6 +56,16 @@ steps:
 
   - wait: ~
     continue_on_failure: true
+
+  - label: "Publish benchmarks"
+    key: publish-benchmarks
+    command: ".buildkite/scripts/process_benchmarks.sh"
+    env:
+      BENCHMARK_THRESHOLD: 15
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "8"
+      memory: "4G"
 
   - label: ":junit: Junit annotate"
     plugins:
