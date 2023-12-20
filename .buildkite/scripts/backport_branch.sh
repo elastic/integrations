@@ -4,6 +4,12 @@ source .buildkite/scripts/common.sh
 
 set -euo pipefail
 
+if buildkite-agent meta-data exists DRY_RUN; then
+  DRY_RUN="$(buildkite-agent meta-data get DRY_RUN)"
+else
+  DRY_RUN=${DRY_RUN:-"true"}
+fi
+
 if buildkite-agent meta-data exists BASE_COMMIT; then
   BASE_COMMIT="$(buildkite-agent meta-data get BASE_COMMIT)"
 else
@@ -103,11 +109,20 @@ removeOtherPackages() {
 updateBackportBranchContents() {
   local BUILDKITE_FOLDER_PATH=".buildkite"
   local JENKINS_FOLDER_PATH=".ci"
-  git checkout $BACKPORT_BRANCH_NAME
-  echo "Copying $BUILDKITE_FOLDER_PATH from $SOURCE_BRANCH..."
-  git checkout $SOURCE_BRANCH -- $BUILDKITE_FOLDER_PATH
-  echo "Copying $JENKINS_FOLDER_PATH from $SOURCE_BRANCH..."
-  git checkout $SOURCE_BRANCH -- $JENKINS_FOLDER_PATH
+  git checkout origin $SOURCE_BRANCH
+  if [[ -d "$JENKINS_FOLDER_PATH" ]]; then
+    git checkout $BACKPORT_BRANCH_NAME
+    echo "Copying $BUILDKITE_FOLDER_PATH from $SOURCE_BRANCH..."
+    git checkout $SOURCE_BRANCH -- $BUILDKITE_FOLDER_PATH
+    echo "Copying $JENKINS_FOLDER_PATH from $SOURCE_BRANCH..."
+    git checkout $SOURCE_BRANCH -- $JENKINS_FOLDER_PATH
+  else
+    git checkout $BACKPORT_BRANCH_NAME
+    echo "Copying $BUILDKITE_FOLDER_PATH from $SOURCE_BRANCH..."
+    git checkout $SOURCE_BRANCH -- $BUILDKITE_FOLDER_PATH
+    echo "Romoveing $JENKINS_FOLDER_PATH from $BACKPORT_BRANCH_NAME..."
+    rm -rf "$JENKINS_FOLDER_PATH"
+  fi
 
   if [ "${REMOVE_OTHER_PACKAGES}" == "true" ]; then
     echo "Removing all packages from $PACKAGES_FOLDER_PATH folder"
@@ -119,11 +134,15 @@ updateBackportBranchContents() {
   git config --global user.name "${GITHUB_USERNAME_SECRET}"
   git config --global user.email "${GITHUB_EMAIL_SECRET}"
 
-  echo "Commiting and pushing..."
-  git add $BUILDKITE_FOLDER_PATH
-  git add $JENKINS_FOLDER_PATH
-  git commit -m "Add $BUILDKITE_FOLDER_PATH and $JENKINS_FOLDER_PATH to backport branch: $BACKPORT_BRANCH_NAME from the $SOURCE_BRANCH branch"
-  git push origin $BACKPORT_BRANCH_NAME
+  if [ "$DRY_RUN" == "true" ];then
+    echo "DRY_RUN mode, nothing will be pushed."
+    git diff $SOURCE_BRANCH...$BACKPORT_BRANCH_NAME
+  else
+    echo "Commiting and pushing..."
+    git add .
+    git commit -m "Add $BUILDKITE_FOLDER_PATH and $JENKINS_FOLDER_PATH to backport branch: $BACKPORT_BRANCH_NAME from the $SOURCE_BRANCH branch"
+    git push origin $BACKPORT_BRANCH_NAME
+  fi
 }
 
 if ! [[ $PACKAGE_VERSION =~ ^[0-9]+(\.[0-9]+){2}(\-.*)?$ ]]; then
