@@ -183,7 +183,7 @@ if ! branchExist "$BACKPORT_BRANCH_NAME"; then
     exit 1
   fi
   createLocalBackportBranch "$BACKPORT_BRANCH_NAME" "$BASE_COMMIT"
-  MSG="The backport branch: **$BACKPORT_BRANCH_NAME** has been created."
+  MSG="The backport branch: **$BACKPORT_BRANCH_NAME** is already created."
 else
   MSG="The backport branch: **$BACKPORT_BRANCH_NAME** has been updated."
 fi
