@@ -187,10 +187,11 @@ processors:
       type: long
       target_field: "http.response.status_code"
       ignore_missing: true
-  - rename:
-      field: "json.event.region"
-      target_field: "cloud.region"
-      ignore_missing: true
+  - set:
+      copy_from: "json.event.region"
+      tag: set_cloud_region
+      field: "cloud.region"
+      ignore_empty_value: true
   - rename:
       field: "json.event.filename"
       target_field: "file.name"
