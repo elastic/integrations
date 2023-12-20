@@ -1,7 +1,6 @@
 ---
 description: Pipeline for processing Identity & Access Management category.
-# Account Change Class docs: https://schema.ocsf.io/1.0.0-rc.3/classes/account_change
-# Authentication Class docs: https://schema.ocsf.io/1.0.0-rc.3/classes/authentication
+# Category docs: https://schema.ocsf.io/1.0.0/categories/iam?extensions=
 processors:
   - set:
       field: user.changes.domain
@@ -1725,6 +1724,56 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: group.name
+      tag: set_group_name
+      copy_from: ocsf.group.name
+      ignore_empty_value: true
+  - set:
+      field: group.id
+      tag: set_group_id
+      copy_from: ocsf.group.uid
+      ignore_empty_value: true
+  - convert:
+      field: ocsf.resource.owner.account.type_id
+      tag: convert_resource_owner_account_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.resource.owner.type_id
+      tag: convert_resource_owner_type_id_to_string
+      type: string
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_resource_owner_uid_alt_into_related_user
+      value: '{{{ocsf.resource.owner.uid_alt}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.resource?.owner?.uid_alt != null
+  - append:
+      field: related.user
+      tag: append_resources_owner_email_addr_into_related_user
+      value: '{{{ocsf.resource.owner.email_addr}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.resource?.owner?.email_addr != null
+  - append:
+      field: related.user
+      tag: append_resources_owner_full_name_into_related_user
+      value: '{{{ocsf.resource.owner.full_name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.resource?.owner?.full_name != null
+  - append:
+      field: related.user
+      tag: append_resources_owner_name_into_related_user
+      value: '{{{ocsf.resource.owner.name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.resource?.owner?.name != null
+  - append:
+      field: related.user
+      tag: append_resources_owner_uid_into_related_user
+      value: '{{{ocsf.resource.owner.uid}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.resource?.owner?.uid != null
 on_failure:
   - append:
       field: error.message
