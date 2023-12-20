@@ -23,6 +23,7 @@ processors:
       ignore_failure: true
   - date:
       field: _tmp.timestamp
+      target_field: event.created
       timezone: '{{{event.timezone}}}'
       if: ctx.event?.timezone != null
       formats:
@@ -35,7 +36,7 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
-      field: event.created
+      field: _tmp.timestamp
       if: ctx.event?.timezone == null
       target_field: event.created
       formats:
@@ -71,10 +72,18 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline_dns" }}'
       if: ctx.infoblox_nios?.log?.type == 'DNS'
+  # `override: true` is required since @timestamp could've been present if logstash output is used early in the pipeline.
   - set:
       field: '@timestamp'
       value: '{{{event.created}}}'
-      if: "ctx['@timestamp'] == null && ctx.event?.created != null"
+      if: "ctx.event?.created != null"
+      override: true
+  # `override: true` is required if independent pipelines has its own timestamp. This makes @timestamp < event.created conforming to ECS.
+  - set:
+      field: '@timestamp'
+      value: '{{{_tmp.sub_timestamp}}}'
+      if: "ctx._tmp?.sub_timestamp != null"
+      override: true
   - convert:
       field: _tmp.host.ip
       if: ctx._tmp?.host?.ip != null && ctx._tmp.host.ip != ''
