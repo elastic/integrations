@@ -183,12 +183,13 @@ processors:
       target_field: threat.indicator.url
       keep_original: true
       remove_if_successful: true
-      if: ctx.threat?.indicator?.type == 'url' && ctx.misp?.attribute?.type != 'uri'
+      if: ctx.threat?.indicator?.type == 'url'
+      ignore_failure: true
   - set:
       field: threat.indicator.url.full
       value: "{{{threat.indicator.url.original}}}"
       ignore_empty_value: true
-      if: "ctx.threat?.indicator?.type == 'url' && ctx.misp?.attribute?.type != 'uri'"
+      if: ctx.threat?.indicator?.type == 'url' && ctx.threat?.indicator?.url?.original != null
 
   ## Regkey indicator operations
   - set:
