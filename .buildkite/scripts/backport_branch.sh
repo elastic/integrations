@@ -62,7 +62,7 @@ commitExists() {
   local branch=$2
   git checkout $branch
   local searchResult=""
-  searchResult="$(git branch --contains $commit_sha | grep $branch | awk '{print $2}')"
+  searchResult="$(git branch --contains $commit_sha --format=%(refname:short) | grep -E ^${branch}$)"
   echo "${searchResult}"
   git checkout $BUILDKITE_BRANCH
   if [ "${searchResult}" == "${branch}" ]; then
@@ -89,9 +89,9 @@ createLocalBackportBranch() {
   local branch_name=$1
   local source_commit=$2
   if git checkout -b "$branch_name" "$source_commit"; then
-    echo "The branch $branch_name has created."
+    echo "The branch $branch_name has been created."
   else
-    buildkite-agent annotate "The backport branch **$BACKPORT_BRANCH_NAME** hasn't created." --style "warning"
+    buildkite-agent annotate "The backport branch **$BACKPORT_BRANCH_NAME** could not be created." --style "warning"
     exit 1
   fi
 }
@@ -109,8 +109,7 @@ removeOtherPackages() {
 updateBackportBranchContents() {
   local BUILDKITE_FOLDER_PATH=".buildkite"
   local JENKINS_FOLDER_PATH=".ci"
-  git checkout $SOURCE_BRANCH
-  if [[ -d "$JENKINS_FOLDER_PATH" ]]; then
+  if git ls-tree -d --name-only main:.ci >/dev/null 2>&1; then
     git checkout $BACKPORT_BRANCH_NAME
     echo "Copying $BUILDKITE_FOLDER_PATH from $SOURCE_BRANCH..."
     git checkout $SOURCE_BRANCH -- $BUILDKITE_FOLDER_PATH
@@ -120,7 +119,7 @@ updateBackportBranchContents() {
     git checkout $BACKPORT_BRANCH_NAME
     echo "Copying $BUILDKITE_FOLDER_PATH from $SOURCE_BRANCH..."
     git checkout $SOURCE_BRANCH -- $BUILDKITE_FOLDER_PATH
-    echo "Romoveing $JENKINS_FOLDER_PATH from $BACKPORT_BRANCH_NAME..."
+    echo "Romoving $JENKINS_FOLDER_PATH from $BACKPORT_BRANCH_NAME..."
     rm -rf "$JENKINS_FOLDER_PATH"
   fi
 
