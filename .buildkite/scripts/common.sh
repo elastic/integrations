@@ -825,6 +825,8 @@ process_package() {
         fi
     fi
 
+    eval "$(${ELASTIC_PACKAGE_BIN} stack shellinit)"
+
     if ! run_tests_package "${package}" ; then
         exit_code=1
         echo "[${package}] run_tests_package failed"
