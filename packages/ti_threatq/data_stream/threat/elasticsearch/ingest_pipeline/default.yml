@@ -27,12 +27,14 @@ processors:
   - json:
       field: event.original
       target_field: json
-  - fingerprint:
-      fields:
-        - json.id
-        - json.indicator_id
-      target_field: "_id"
-      ignore_missing: true
+  - rename:
+      field: json.id
+      target_field: threatq.id
+      if: ctx.json?.id != null
+  - rename:
+      field: json.indicator_id
+      target_field: threatq.indicator_id
+      if: ctx.json?.indicator_id != null
   - date:
       target_field: "@timestamp"
       field: "json.updated_at"
@@ -53,6 +55,13 @@ processors:
       formats:
         - "yyyy-MM-dd HH:mm:ss"
       if: "ctx.json.expires_at != null"
+      ignore_failure: true
+  - date:
+      target_field: "threatq.expired_at"
+      field: "json.expired_at"
+      formats:
+        - "yyyy-MM-dd HH:mm:ss"
+      if: "ctx.json.expired_at != null"
       ignore_failure: true
   - date:
       target_field: "threatq.expires_calculated_at"
@@ -111,6 +120,82 @@ processors:
       field: json.value
       target_field: threatq.indicator_value
       ignore_missing: true
+
+  ##################
+  # IOC Expiration #
+  ##################
+
+# Set threatq.ioc_expired_at from threatq.expires_at or threatq.expired_at (if present). Either `expires_at` or `expired_at` are available in the data.
+# When the datetime threatq.ioc_expired_at is reached, the indicator is deleted using transform's retention policy in the destination index.
+  - set:
+      field: threatq.ioc_expired_at
+      copy_from: threatq.expires_at
+      if: ctx.threatq?.expires_at != null
+  - set:
+      field: threatq.ioc_expired_at
+      copy_from: threatq.expired_at
+      if: ctx.threatq?.expired_at != null
+      override: true
+# In case threatq.ioc_expired_at is not set at this point, then based on the `threatq.status`, the indicator is assumed to be Active/Expired.
+# Below script checks if indicator is expired based on the value of `threatq.status`. If `threatq.status` == 'Expired', then indicator is expired.
+# The script:
+# 1. Sets `threatq.ioc_expired_at` to `threatq.updated_at` (@timestamp) to delete the indicator using transform's retention policy in destination index.
+    # If the indicator is not expired, set default expiration time to delete indicators after a certain duration. 
+    # This is configurable using _conf.ioc_expiration_duration (default: 90d). Default expiration is required to avoid lingering orphaned indicators in the destination indices. 
+    # If user-provided value of `ioc_expiration_duration` is not in d, h, or m, default to 90d.
+# 2. Sets `threatq.ioc_expiration_reason` indicating the reason for expiry. Possible values are in the script params.
+  - script:
+      lang: painless
+      tag: script-expired_ioc
+      if: (ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != '')
+      params:
+        expires_at: "Expiration set by ThreatQ from expires_at field"
+        expired_at: "Expiration set by ThreatQ from expired_at field"
+        expired_status: "Expiration set by Elastic when threatq.status is 'Expired'"
+        expired_default: "Expiration set by Elastic from the integration's parameter `IOC Expiration Duration`"
+      source: |
+        if (ctx.threatq.ioc_expired_at == null) {
+          ZonedDateTime ioc_expired_at;
+          if (ctx.threatq.status == 'Expired') {
+            ioc_expired_at = ZonedDateTime.parse(ctx['@timestamp']);
+          }
+          else {
+            def dur = ctx._conf.ioc_expiration_duration;
+            ZonedDateTime updated_at = ZonedDateTime.parse(ctx.json.updated_at.concat("Z"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssX"));
+            if (dur instanceof String){
+              Character time_unit = dur.charAt(dur.length() - 1);
+              String time_value = dur.substring(0, dur.length());
+              if (time_unit == 'd') {
+                ioc_expired_at = updated_at.plusDays(Long.parseLong(time_value));
+              } else if (time_unit == 'h') {
+                ioc_expired_at = updated_at.plusHours(Long.parseLong(time_value));
+              } else if (time_unit == 'm') {
+                ioc_expired_at = updated_at.plusMinutes(Long.parseLong(time_value));
+              } else {
+                ioc_expired_at = updated_at.plusDays(90L);
+              }
+            }
+            else {
+              ioc_expired_at = updated_at.plusDays(90L);
+            }
+          }
+          ctx.threatq.ioc_expired_at = ioc_expired_at;
+        }
+
+        // Set threatq.ioc_expiration_reason
+        if (ctx.threatq.expires_at != null && ctx.threatq.expired_at == null) {
+          ctx.threatq.ioc_expiration_reason = params.expires_at;
+        } else if (ctx.threatq.expired_at != null) {
+          ctx.threatq.ioc_expiration_reason = params.expired_at;
+        } else if (ctx.threatq.status == 'Expired') {
+          ctx.threatq.ioc_expiration_reason = params.expired_status;
+        } else {
+          ctx.threatq.ioc_expiration_reason = params.expired_default;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   #########################################
   # Map indicator types and values to ECS #
@@ -340,6 +425,7 @@ processors:
       field:
         - json
         - message
+        - _conf
       ignore_missing: true
 on_failure:
   - set:
