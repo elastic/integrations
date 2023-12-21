@@ -102,7 +102,7 @@ An example event for `asset_host_detection` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "50e7e437-d3fc-4872-8bd1-0da718796b4a",
@@ -182,6 +182,7 @@ An example event for `asset_host_detection` looks as following:
         "qualys_vmdr-asset_host_detection"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -303,7 +304,7 @@ An example event for `knowledge_base` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "09fa5e8b-ac5e-4ecf-a0cb-264fb54f1062",
@@ -362,6 +363,7 @@ An example event for `knowledge_base` looks as following:
         "severity": "Low"
     }
 }
+
 ```
 
 **Exported fields**

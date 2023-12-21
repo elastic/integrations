@@ -432,7 +432,7 @@ so the `period` for `container_registry` should be `300s` or multiples of `300s`
 | @timestamp | Event timestamp. | date |  |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | azure.application_id | The application ID | keyword |  |  |
-| azure.container_registry.agent_pool_cpu_time.total | AgentPool CPU Time in seconds | float |  | gauge |
+| azure.container_registry.agent_pool_cpu_time.total | AgentPool CPU Time in seconds | float | s | gauge |
 | azure.container_registry.run_duration.total | ACR tasks run duration in milliseconds | float | ms | gauge |
 | azure.container_registry.storage_used.avg | The amount of storage used by the container registry. For a registry account, it's the sum of capacity used by all the repositories within a registry. It's sum of capacity used by shared layers, manifest files, and replica copies in each of its repositories. | float | byte | gauge |
 | azure.container_registry.successful_pull_count.total | Number of successful image pulls | float |  | gauge |

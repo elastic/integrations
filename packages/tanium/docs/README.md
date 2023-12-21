@@ -87,7 +87,7 @@ An example event for `action_history` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "2cc42030-c8c1-410b-8cef-c2db3ff157ec",
@@ -106,7 +106,7 @@ An example event for `action_history` looks as following:
         "kind": [
             "event"
         ],
-        "original": "{\"Issuer\": \"tanium\",\"SourceId\": 10,\"Expiration\": \"2022-10-04T17:38:42\",\"ActionName\": \"Deploy Client Configuration and Support [Mac](universal)\",\"Command\": \"/bin/sh -c 'chmod u+x TaniumCX \u0026\u0026 ./TaniumCX bootstrap --zip bootstrap.zip'\",\"Approver\": \"tanium\",\"Status\": \"Closed\",\"DistributeOver\": \"1 minutes\",\"PackageName\": \"Client Configuration and Support [Mac](universal)\",\"Comment\": \"\",\"StartTime\": \"2022-10-04T16:38:42\",\"InsertTime\": \"2022-10-04T16:38:48\",\"ActionId\": 6058}",
+        "original": "{\"Issuer\": \"tanium\",\"SourceId\": 10,\"Expiration\": \"2022-10-04T17:38:42\",\"ActionName\": \"Deploy Client Configuration and Support [Mac](universal)\",\"Command\": \"/bin/sh -c 'chmod u+x TaniumCX && ./TaniumCX bootstrap --zip bootstrap.zip'\",\"Approver\": \"tanium\",\"Status\": \"Closed\",\"DistributeOver\": \"1 minutes\",\"PackageName\": \"Client Configuration and Support [Mac](universal)\",\"Comment\": \"\",\"StartTime\": \"2022-10-04T16:38:42\",\"InsertTime\": \"2022-10-04T16:38:48\",\"ActionId\": 6058}",
         "provider": "tanium",
         "start": "2022-10-04T16:38:42.000Z",
         "type": [
@@ -122,7 +122,7 @@ An example event for `action_history` looks as following:
         }
     },
     "process": {
-        "command_line": "/bin/sh -c 'chmod u+x TaniumCX \u0026\u0026 ./TaniumCX bootstrap --zip bootstrap.zip'"
+        "command_line": "/bin/sh -c 'chmod u+x TaniumCX && ./TaniumCX bootstrap --zip bootstrap.zip'"
     },
     "tags": [
         "preserve_original_event",
@@ -137,7 +137,7 @@ An example event for `action_history` looks as following:
                 "name": "Deploy Client Configuration and Support [Mac](universal)"
             },
             "approver": "tanium",
-            "command": "/bin/sh -c 'chmod u+x TaniumCX \u0026\u0026 ./TaniumCX bootstrap --zip bootstrap.zip'",
+            "command": "/bin/sh -c 'chmod u+x TaniumCX && ./TaniumCX bootstrap --zip bootstrap.zip'",
             "distribute_over": "1 minutes",
             "expiration": "2022-10-04T17:38:42.000Z",
             "insert_time": "2022-10-04T16:38:48.000Z",
@@ -149,6 +149,7 @@ An example event for `action_history` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
@@ -206,7 +207,7 @@ An example event for `client_status` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "2cc42030-c8c1-410b-8cef-c2db3ff157ec",
@@ -253,6 +254,7 @@ An example event for `client_status` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
@@ -309,7 +311,7 @@ An example event for `discover` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "c43758c9-08d7-42f2-b258-f39e4373d45a",
@@ -356,6 +358,7 @@ An example event for `discover` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
@@ -429,7 +432,7 @@ An example event for `endpoint_config` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "7ac2bc6a-9f9b-4289-82db-ee2a0a7e6ef8",
@@ -490,6 +493,7 @@ An example event for `endpoint_config` looks as following:
         "id": "1"
     }
 }
+
 ```
 
 **Exported fields**
@@ -551,7 +555,7 @@ An example event for `reporting` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "2cc42030-c8c1-410b-8cef-c2db3ff157ec",
@@ -611,6 +615,7 @@ An example event for `reporting` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
@@ -663,7 +668,7 @@ An example event for `threat_response` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "7ac2bc6a-9f9b-4289-82db-ee2a0a7e6ef8",
@@ -955,6 +960,7 @@ An example event for `threat_response` looks as following:
         "domain": "xyz"
     }
 }
+
 ```
 
 **Exported fields**

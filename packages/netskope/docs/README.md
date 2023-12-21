@@ -611,7 +611,7 @@ An example event for `alerts` looks as following:
         "ip": "81.2.69.143"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
@@ -760,6 +760,7 @@ An example event for `alerts` looks as following:
         }
     }
 }
+
 ```
 
 ### Events
@@ -1192,7 +1193,7 @@ An example event for `events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
@@ -1236,4 +1237,5 @@ An example event for `events` looks as following:
         "netskope-events"
     ]
 }
+
 ```
