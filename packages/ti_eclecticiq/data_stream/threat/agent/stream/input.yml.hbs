@@ -1,0 +1,62 @@
+config_version: 2
+interval: {{interval}}
+resource.timeout: 60s
+resource.url: {{url}}
+
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+{{/if}}
+
+state:
+  url: {{url}}
+  token: {{token}}
+  outgoing_feed_id: {{outgoing_feed_id}}
+  update_strategy: {{update_strategy}}
+redact:
+  fields:
+    - token
+program: |
+  request("GET",
+    state.update_strategy == "replace"
+    ?
+      state.url + "/private/outgoing-feed-download/" + string(state.outgoing_feed_id) + "/runs/latest"
+    :
+      state.url + "/private/outgoing-feed-download/" + string(state.outgoing_feed_id)
+  ).with({
+    "Header":{"Authorization": ["Bearer " + state.token]}
+  }).do_request().as(og_feed_response,
+    bytes(og_feed_response.Body).decode_json().data.content_blocks.as(block_paths,
+       block_paths.map(block_path,
+        state.update_strategy == "replace" || !has(state.cursor) || int(block_path.split("/")[size(block_path.split('/'))-1]) > state.cursor["last_block_id"]
+        ?
+          request("GET", state.url + block_path).with({
+            "Header": {
+              "Authorization": ["Bearer " + state.token],
+              "Content-Type": ["text/csv"]
+             }
+          }).do_request().as(block_response,
+            bytes(block_response.Body).mime("text/csv; header=present")
+          )
+        :
+          []
+      ).as(observables,
+        {
+          "observables": observables,
+          "last_block_id": int(block_paths[size(block_paths)-1].split("/")[size(block_paths[size(block_paths)-1].split('/'))-1])
+        }
+      )
+    )
+  ).as(event_data,
+    {
+      "events": event_data["observables"].map(events, events.map(e, {
+        "message": e.encode_json()
+      })).flatten(),
+      "url": state.url,
+      "token": state.token,
+      "outgoing_feed_id": state.outgoing_feed_id,
+      "update_strategy": state.update_strategy,
+      "cursor": {
+        "last_block_id": event_data["last_block_id"]
+      }
+    }
+  )

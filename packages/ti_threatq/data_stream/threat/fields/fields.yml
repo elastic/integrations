@@ -4,6 +4,16 @@
     Fields for ThreatQ indicators
 
   fields:
+    - name: id
+      type: long
+      description: >
+        Indicator ID. `id`, `indicator_id` or both could be present in the dataset.
+
+    - name: indicator_id
+      type: long
+      description: >
+        Indicator ID. `id`, `indicator_id` or both could be present in the dataset.
+
     - name: updated_at
       type: date
       description: >
@@ -17,12 +27,27 @@
     - name: expires_at
       type: date
       description: >
-        Expiration time
+        Expiration time given by the API. Either `expires_at` or `expired_at` are present in the data.
+
+    - name: expired_at
+      type: date
+      description: >
+        Expiration time given by the API. Either `expires_at` or `expired_at` are present in the data.
 
     - name: expires_calculated_at
       type: date
       description: >
         Expiration calculation time
+
+    - name: ioc_expired_at
+      type: date
+      description: >
+        Expiration time calculated by the integration needed for the transform.
+
+    - name: ioc_expiration_reason
+      type: keyword
+      description: >
+        Reason why the indicator is expired. Set inside the ingest pipeline.
 
     - name: published_at
       type: date
@@ -49,3 +74,7 @@
       description: >
         These provide additional context about an object
 
+- name: labels.is_ioc_transform_source
+  type: constant_keyword
+  value: "true"
+  description: Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators.
