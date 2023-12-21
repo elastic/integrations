@@ -30,12 +30,9 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 ## Setup
 
-<!-- Any prerequisite instructions -->
-
 For step-by-step instructions on how to set up an integration, see the
 {{ url "getting-started-observability" "Getting started" }} guide.
 
-<!-- Additional set up instructions -->
 For more information on configuring IIS logging, refer to the [Microsoft documentation](https://learn.microsoft.com/en-us/iis/manage/provisioning-and-managing-iis/configure-logging-in-iis).
 
 ## Logs
@@ -50,13 +47,14 @@ This data stream will collect and parse access IIS logs. The supported log forma
 
 The IIS ships logs with few fields by default and if the user is interested in customizing the selection, the IIS Manager provides ability to add new fields for logging.
 
-IIS integration offers certain field combinations shipped automatically into Elasticsearch using ingest pipelines. The supported formats are listed below,
+IIS integration automatically ships certain field combinations into Elasticsearch using ingest pipelines.
+Please ensure that the IIS log format configuration matches one of the formats below:
 
-#### Default Logging:
+#### Default Logging
 
     - Fields: date time s-ip cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs(User-Agent) cs(Referer) sc-status sc-substatus sc-win32-status time-taken
 
-#### Custom Logging:
+#### Custom Logging
 
     - Fields: date time s-sitename cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs(User-Agent) cs(cookie) cs(Referer) cs-host sc-status sc-substatus sc-win32-status time-taken
 
@@ -71,6 +69,10 @@ IIS integration offers certain field combinations shipped automatically into Ela
     - Fields: date time s-ip cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs(User-Agent) cs(cookie) cs(Referer) sc-status sc-substatus sc-win32-status sc-bytes, cs-bytes time-taken
 
     - Fields: date time s-computername s-ip cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs(User-Agent) sc-status sc-substatus sc-win32-status sc-bytes, cs-bytes time-taken
+
+`X-Forwarded-For` is an optional field which can be added with the above log formats.
+
+>Note: If the provided log format doesn't match with any of the above formats, then create a custom ingest pipeline processor in Kibana to process the logs.
 
 {{event "access"}}
 
