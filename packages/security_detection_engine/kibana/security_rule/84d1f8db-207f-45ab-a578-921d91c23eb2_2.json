@@ -12,7 +12,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Potential Upgrade of Non-interactive Shell",
-        "query": "process where host.os.type == \"linux\" and event.action in (\"exec\", \"exec_event\") and event.type == \"start\" and (\n  (process.name == \"stty\" and process.args == \"raw\" and process.args == \"-echo\" and process.args_count \u003e= 3) or\n  (process.name == \"script\" and process.args in (\"-qc\", \"-c\") and process.args == \"/dev/null\" and \n   process.args_count == 4)\n)\n",
+        "query": "process where host.os.type == \"linux\" and event.action in (\"exec\", \"exec_event\") and event.type == \"start\" and (\n  (process.name == \"stty\" and process.args == \"raw\" and process.args == \"-echo\" and process.args_count >= 3) or\n  (process.name == \"script\" and process.args in (\"-qc\", \"-c\") and process.args == \"/dev/null\" and \n   process.args_count == 4)\n)\n",
         "related_integrations": [
             {
                 "package": "endpoint",
@@ -65,7 +65,7 @@
         ],
         "threat": [
             {
-                "framework": "MITRE ATT\u0026CK",
+                "framework": "MITRE ATT&CK",
                 "tactic": {
                     "id": "TA0002",
                     "name": "Execution",
