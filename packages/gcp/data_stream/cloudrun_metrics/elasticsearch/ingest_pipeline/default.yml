@@ -1,6 +1,11 @@
 ---
 description: Pipeline for parsing GCP Cloud Run metrics.
 processors:
+  - fingerprint:
+      fields:
+        - gcp.labels
+      target_field: gcp.labels_fingerprint
+      ignore_missing: true
   - rename:
       field: gcp.metrics.container.billable_instance_time.value
       target_field: gcp.cloudrun_metrics.container.billable_instance_time
