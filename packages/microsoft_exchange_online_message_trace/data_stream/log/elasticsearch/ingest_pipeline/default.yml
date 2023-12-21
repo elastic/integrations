@@ -14,6 +14,9 @@ processors:
   - json:
       field: event.original
       target_field: microsoft.online_message_trace
+  # Drop "null" event
+  - drop:
+      if: ctx.microsoft?.online_message_trace?.value instanceof List && ctx.microsoft.online_message_trace.value.length == 0 
   - set:
       field: event.outcome
       copy_from: microsoft.online_message_trace.Status
