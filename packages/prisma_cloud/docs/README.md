@@ -125,8 +125,8 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2023-09-06T12:30:41.966Z",
     "agent": {
-        "ephemeral_id": "7a1c5441-4384-4ef1-a6d3-079ed7052a4c",
-        "id": "f2974986-16b8-49d0-803d-316e0e9f4e94",
+        "ephemeral_id": "748799a0-a545-468b-9b86-764414774225",
+        "id": "47449736-bd61-40ad-89a6-41d7f7acc093",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.10.1"
@@ -149,7 +149,7 @@ An example event for `alert` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f2974986-16b8-49d0-803d-316e0e9f4e94",
+        "id": "47449736-bd61-40ad-89a6-41d7f7acc093",
         "snapshot": false,
         "version": "8.10.1"
     },
@@ -161,7 +161,7 @@ An example event for `alert` looks as following:
         "dataset": "prisma_cloud.alert",
         "end": "2023-09-06T12:30:41.966Z",
         "id": "N-3910",
-        "ingested": "2023-11-03T06:29:20Z",
+        "ingested": "2023-11-27T09:08:39Z",
         "kind": "alert",
         "original": "{\"alertAdditionalInfo\":{\"scannerVersion\":\"CS_2.0\"},\"alertAttribution\":{\"attributionEventList\":[{\"event\":\"first_event\",\"event_ts\":1694003441966,\"username\":\"alex123\"}],\"resourceCreatedBy\":\"string\",\"resourceCreatedOn\":0},\"alertRules\":[],\"alertTime\":1694003441966,\"firstSeen\":1694003441966,\"history\":[{\"modifiedBy\":\"alex123\",\"modifiedOn\":\"1694003441966\",\"reason\":\"Reason1\",\"status\":\"OPEN\"}],\"id\":\"N-3910\",\"investigateOptions\":{\"alertId\":\"N-3910\"},\"lastSeen\":1694003441966,\"lastUpdated\":1694003441966,\"metadata\":null,\"policy\":{\"complianceMetadata\":[{\"complianceId\":\"qwer345bv\",\"customAssigned\":true,\"policyId\":\"werf435tr\",\"requirementDescription\":\"Description of policy compliance.\",\"requirementId\":\"req-123-xyz\",\"requirementName\":\"rigidity\",\"sectionDescription\":\"Description of section.\",\"sectionId\":\"sect-453-abc\",\"sectionLabel\":\"label-1\",\"standardDescription\":\"Description of standard.\",\"standardId\":\"stand-543-pqr\",\"standardName\":\"Class 1\"}],\"deleted\":false,\"description\":\"This policy identifies AWS EC2 instances that are internet reachable with unrestricted access (0.0.0.0/0). EC2 instances with unrestricted access to the internet may enable bad actors to use brute force on a system to gain unauthorised access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit the access to known hosts, services, or specific entities.\",\"findingTypes\":[],\"labels\":[\"Prisma_Cloud\",\"Attack Path Rule\"],\"lastModifiedBy\":\"template@redlock.io\",\"lastModifiedOn\":1687474999057,\"name\":\"AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0)\",\"policyId\":\"ad23603d-754e-4499-8988-b8017xxxx98\",\"policyType\":\"network\",\"recommendation\":\"The following steps are recommended to restrict unrestricted access from the Internet:\\n1. Visit the Network path Analysis from Source to Destination and review the network path components that allow internet access.\\n2. Identify the network component on which restrictive rules can be implemented.\\n3. Implement the required changes and make sure no other resources have been impacted due to these changes:\\n a) The overly permissive Security Group rules can be made more restrictive.\\n b) Move the instance inside a restrictive subnet if the instance does not need to be publicly accessible.\\n c) Define a NAT rule to restrict traffic coming from the Internet to the respective instance.\",\"remediable\":false,\"remediation\":{\"actions\":[{\"operation\":\"buy\",\"payload\":\"erefwsdf\"}],\"cliScriptTemplate\":\"temp1\",\"description\":\"Description of CLI Script Template.\"},\"severity\":\"high\",\"systemDefault\":true},\"policyId\":\"ad23603d-754e-4499-8988-b801xxx85898\",\"reason\":\"NEW_ALERT\",\"resource\":{\"account\":\"AWS Cloud Account\",\"accountId\":\"710002259376\",\"additionalInfo\":null,\"cloudAccountGroups\":[\"Default Account Group\"],\"cloudServiceName\":\"Amazon EC2\",\"cloudType\":\"aws\",\"data\":null,\"id\":\"i-04578exxxx8100947\",\"name\":\"IS-37133\",\"region\":\"AWS Virginia\",\"regionId\":\"us-east-1\",\"resourceApiName\":\"aws-ec2-describe-instances\",\"resourceConfigJsonAvailable\":false,\"resourceDetailsAvailable\":true,\"resourceTs\":1694003441915,\"resourceType\":\"INSTANCE\",\"rrn\":\"rrn:aws:instance:us-east-1:710000059376:e7ddce5a1ffcb47bxxxxxerf2635a3b4d9da3:i-04578e0008100947\",\"unifiedAssetId\":\"66c543b6261c4d9edxxxxxb42e15f4\",\"url\":\"https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#Instances:instanceId=i-0457xxxxx00947\"},\"status\":\"open\"}",
         "start": "2023-09-06T12:30:41.966Z",
@@ -494,8 +494,8 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2023-09-13T08:40:39.068Z",
     "agent": {
-        "ephemeral_id": "15be3105-9474-4419-9495-3ba7d5eddf5b",
-        "id": "f2974986-16b8-49d0-803d-316e0e9f4e94",
+        "ephemeral_id": "748799a0-a545-468b-9b86-764414774225",
+        "id": "47449736-bd61-40ad-89a6-41d7f7acc093",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.10.1"
@@ -509,7 +509,7 @@ An example event for `audit` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f2974986-16b8-49d0-803d-316e0e9f4e94",
+        "id": "47449736-bd61-40ad-89a6-41d7f7acc093",
         "snapshot": false,
         "version": "8.10.1"
     },
@@ -520,7 +520,7 @@ An example event for `audit` looks as following:
             "authentication"
         ],
         "dataset": "prisma_cloud.audit",
-        "ingested": "2023-11-03T06:30:33Z",
+        "ingested": "2023-11-27T09:09:44Z",
         "kind": "event",
         "original": "{\"action\":\"'john.user@google.com'(with role 'System Admin':'System Admin') logged in via access key.\",\"actionType\":\"LOGIN\",\"ipAddress\":\"81.2.69.192\",\"resourceName\":\"john.user@google.com\",\"resourceType\":\"Login\",\"result\":\"Successful\",\"timestamp\":1694594439068,\"user\":\"john.user@google.com\"}",
         "outcome": "success",

@@ -66,30 +66,10 @@ processors:
       value: '{{{file.hash.sha1}}}'
       allow_duplicates: false
       if: ctx.file?.hash?.sha1 != null
-  - convert:
-      field: json.src.process.tid
-      tag: 'convert_json_src_process_tid'
-      target_field: sentinel_one_cloud_funnel.event.src.process.tid
-      type: long
-      ignore_missing: true
-      if: ctx.json?.src?.process?.tid != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: process.thread.id
-      copy_from: sentinel_one_cloud_funnel.event.src.process.tid
-      ignore_empty_value: true
   - rename:
       field: json.tgt.process.user
       target_field: sentinel_one_cloud_funnel.event.tgt.process.user.name
       ignore_missing: true
-  - append:
-      field: process.user.name
-      value: '{{{sentinel_one_cloud_funnel.event.tgt.process.user.name}}}'
-      allow_duplicates: false
-      if: ctx.sentinel_one_cloud_funnel?.event?.tgt?.process?.user?.name != null
   - append:
       field: related.user
       value: '{{{sentinel_one_cloud_funnel.event.tgt.process.user.name}}}'
@@ -281,17 +261,6 @@ processors:
       field: json.tgt.process.name
       target_field: sentinel_one_cloud_funnel.event.tgt.process.name
       ignore_missing: true
-  - convert:
-      field: json.tgt.process.pid
-      tag: 'convert_json_tgt_process_pid'
-      target_field: sentinel_one_cloud_funnel.event.tgt.process.pid
-      type: string
-      ignore_missing: true
-      if: ctx.json?.tgt?.process?.pid != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.tgt.process.publisher
       target_field: sentinel_one_cloud_funnel.event.tgt.process.publisher
@@ -343,6 +312,74 @@ processors:
       field: json.tgt.process.verifiedStatus
       target_field: sentinel_one_cloud_funnel.event.tgt.process.verified_status
       ignore_missing: true
+  - remove:
+      field:
+      - process.parent
+  - rename:
+      field: process
+      target_field: process.parent
+  - append:
+      field: process.user.name
+      value: '{{{sentinel_one_cloud_funnel.event.tgt.process.user.name}}}'
+      allow_duplicates: false
+      if: ctx.sentinel_one_cloud_funnel?.event?.tgt?.process?.user?.name != null
+  - set:
+      field: process.name
+      copy_from: sentinel_one_cloud_funnel.event.tgt.process.name
+      ignore_empty_value: true
+  - convert:
+      field: sentinel_one_cloud_funnel.event.tgt.process.pid
+      target_field: process.pid
+      type: long
+      ignore_missing: true
+  - set:
+      field: process.thread.id
+      copy_from: sentinel_one_cloud_funnel.event.tgt.process.tid
+      ignore_empty_value: true
+  - set:
+      field: process.entity_id
+      copy_from: sentinel_one_cloud_funnel.event.tgt.process.uid
+      ignore_empty_value: true
+  - set:
+      field: process.command_line
+      copy_from: sentinel_one_cloud_funnel.event.tgt.process.cmd_line
+      ignore_empty_value: true
+  - set:
+      field: process.hash.md5
+      copy_from: sentinel_one_cloud_funnel.event.tgt.process.image.md5
+      ignore_empty_value: true
+  - set:
+      field: process.hash.sha1
+      copy_from: sentinel_one_cloud_funnel.event.tgt.process.image.sha1
+      ignore_empty_value: true
+  - set:
+      field: process.hash.sha256
+      copy_from: sentinel_one_cloud_funnel.event.tgt.process.image.sha256
+      ignore_empty_value: true
+  - set:
+      field: process.real_user.id
+      copy_from: sentinel_one_cloud_funnel.event.tgt.process.r_user.uid
+      ignore_empty_value: true
+  - set:
+      field: process.real_user.name
+      copy_from: sentinel_one_cloud_funnel.event.tgt.process.r_user.name
+      ignore_empty_value: true
+  - set:
+      field: process.start
+      copy_from: sentinel_one_cloud_funnel.event.tgt.process.start_time
+      ignore_empty_value: true
+  - set:
+      field: process.title
+      copy_from: sentinel_one_cloud_funnel.event.tgt.process.display_name
+      ignore_empty_value: true
+  - set:
+      field: process.user.id
+      copy_from: sentinel_one_cloud_funnel.event.tgt.process.e_user.uid
+      ignore_empty_value: true
+  - set:
+      field: process.user.name
+      copy_from: sentinel_one_cloud_funnel.event.tgt.process.user.name
+      ignore_empty_value: true
 on_failure:
   - append:
       field: error.message
