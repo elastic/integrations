@@ -1,0 +1,33 @@
+{{- $timestamp := generate "timestamp" }}
+{{- $ip := generate "client.ip" }}
+{{- $hostname := generate "host.name" }}
+{{- $agentId := generate "agent.id" }}
+{{- $processPid := generate "process.pid" }}
+{{- $processThreadId := generate "process.thread.id" }}
+{
+  "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.999999Z07:00" }}",
+  "log.file.path": "/var/log/nginx/error.log",
+  "data_stream": {
+    "namespace": "ep",
+    "type": "logs",
+    "dataset": "nginx.error"
+  },
+  "message": "{{$timestamp | date "2006/01/02 15:04:05"}} [error] {{$processPid}}#{{$processThreadId}}: *1 open() \"/usr/local/Cellar/nginx/1.10.2_1/html/favicon.ico\" failed (2: No such file or directory), client: {{$ip}}, server: localhost, request: \"GET /favicon.ico HTTP/1.1\", host: \"localhost:8080\", referrer: \"http://localhost:8080/\"",
+  "event": {
+    "dataset": "nginx.error",
+    "timezone": "CET"
+  },
+  "host": {
+    "name": "{{$hostname}}"
+  },
+  "agent": {
+    "id": "{{$agentId}}",
+    "name": "{{$hostname}}",
+    "type": "filebeat",
+    "version": "8.8.0",
+    "ephemeral_id": "{{$agentId}}"
+  },
+  "tags": [
+    "preserve_original_event"
+  ]
+}
