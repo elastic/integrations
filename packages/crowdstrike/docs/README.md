@@ -30,6 +30,13 @@ Current supported event types are:
 - FirewallMatchEvent
 - RemoteResponseSessionStartEvent
 - RemoteResponseSessionEndEvent
+- CSPM Streaming events
+- CSPM Search events
+- IDP Incidents
+- IDP Summary events
+- Mobile Detection events
+- Recon Notification events
+- XDR Detection events
 
 **Exported fields**
 
@@ -586,6 +593,7 @@ and/or `session_token`.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| crowdstrike.AccountType |  | keyword |
 | crowdstrike.AgentIdString |  | keyword |
 | crowdstrike.AgentLoadFlags |  | keyword |
 | crowdstrike.AgentLocalTime |  | date |
@@ -723,17 +731,20 @@ and/or `session_token`.
 | crowdstrike.IsTransactedFile |  | keyword |
 | crowdstrike.KernelTime |  | long |
 | crowdstrike.LastDiscoveredBy |  | keyword |
+| crowdstrike.LastLoggedOnHost |  | keyword |
 | crowdstrike.LfoUploadFlags |  | keyword |
 | crowdstrike.LightningLatencyState |  | keyword |
 | crowdstrike.Line |  | keyword |
 | crowdstrike.LocalAddressIP4 |  | ip |
 | crowdstrike.LocalAddressIP6 |  | ip |
+| crowdstrike.LocalAdminAccess |  | keyword |
 | crowdstrike.LocalIP |  | ip |
 | crowdstrike.LogicalCoreCount |  | long |
 | crowdstrike.LoginSessionId |  | keyword |
 | crowdstrike.LogoffTime |  | date |
 | crowdstrike.LogonDomain |  | keyword |
 | crowdstrike.LogonId |  | keyword |
+| crowdstrike.LogonInfo |  | keyword |
 | crowdstrike.LogonServer |  | keyword |
 | crowdstrike.LogonTime |  | date |
 | crowdstrike.LogonType |  | keyword |
@@ -895,15 +906,18 @@ and/or `session_token`.
 | crowdstrike.UnixMode |  | keyword |
 | crowdstrike.UnsignedModuleLoadCount |  | long |
 | crowdstrike.UploadId |  | keyword |
+| crowdstrike.User |  | keyword |
 | crowdstrike.UserFlags |  | keyword |
 | crowdstrike.UserGroupsBitmask |  | keyword |
 | crowdstrike.UserLogoffType |  | keyword |
 | crowdstrike.UserLogonFlags |  | keyword |
+| crowdstrike.UserLogonFlags_decimal |  | keyword |
 | crowdstrike.UserMemoryAllocateExecutableCount |  | long |
 | crowdstrike.UserMemoryAllocateExecutableRemoteCount |  | long |
 | crowdstrike.UserMemoryProtectExecutableCount |  | long |
 | crowdstrike.UserMemoryProtectExecutableRemoteCount |  | long |
 | crowdstrike.UserSid |  | keyword |
+| crowdstrike.UserSid_readable |  | keyword |
 | crowdstrike.UserTime |  | long |
 | crowdstrike.VerifiedCertificate |  | keyword |
 | crowdstrike.VnodeModificationType |  | keyword |
@@ -953,7 +967,10 @@ and/or `session_token`.
 | crowdstrike.discovererCount |  | integer |
 | crowdstrike.discoverer_aid |  | keyword |
 | crowdstrike.eid |  | integer |
+| crowdstrike.info.host.\* | Host information enriched from aidmaster data. | object |
+| crowdstrike.info.user.\* | User information enriched from userinfo data. | object |
 | crowdstrike.localipCount |  | integer |
+| crowdstrike.monthsincereset |  | keyword |
 | crowdstrike.name |  | keyword |
 | crowdstrike.subnet |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
@@ -1098,31 +1115,86 @@ An example event for `fdr` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-11-08T09:58:32.519Z",
+    "@timestamp": "2020-10-01T09:58:32.519Z",
     "agent": {
-        "ephemeral_id": "6b7924ba-f695-422a-a296-d1092ff909e4",
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "ephemeral_id": "9eabd9f1-861b-4007-80d9-7ca2e4b6bb03",
+        "id": "8e3dcae6-8d1c-46c1-bed0-bf69fdde05e5",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.11.1"
     },
     "crowdstrike": {
-        "ConfigStateHash": "1763245019",
-        "DesiredAccess": "1179785",
+        "AuthenticationId": "3783389",
+        "ConfigStateHash": "3998263252",
         "EffectiveTransmissionClass": "3",
         "Entitlements": "15",
-        "FileAttributes": "0",
-        "FileObject": "18446670458156489088",
-        "Information": "1",
-        "IrpFlags": "2180",
-        "MajorFunction": "0",
-        "MinorFunction": "0",
-        "OperationFlags": "0",
-        "Options": "16777312",
-        "ShareAccess": "5",
-        "Status": "0",
+        "ImageSubsystem": "2",
+        "IntegrityLevel": "4096",
+        "ParentAuthenticationId": "3783389",
+        "ProcessCreateFlags": "525332",
+        "ProcessParameterFlags": "16385",
+        "ProcessSxsFlags": "1600",
+        "RpcClientProcessId": "2439558094566",
+        "SessionId": "1",
+        "SourceProcessId": "2439558094566",
+        "SourceThreadId": "77538684027214",
+        "Tags": [
+            "41",
+            "12094627905582",
+            "12094627906234"
+        ],
+        "TokenType": "2",
+        "WindowFlags": "128",
         "cid": "ffffffff30a3407dae27d0503611022d",
-        "name": "RansomwareOpenFileV4"
+        "info": {
+            "host": {
+                "AgentLoadFlags": "1",
+                "AgentLocalTime": "1697775225",
+                "AgentTimeOffset": "15889.017",
+                "AgentVersion": "7.01.13922.0",
+                "BiosManufacturer": "Iris",
+                "BiosVersion": "vG17V.21040423/z64",
+                "ChassisType": "Other",
+                "City": "Chicago",
+                "ConfigBuild": "1007.3.0017312.1",
+                "ConfigIDBuild": "13922",
+                "Continent": "North America",
+                "Country": "United States of America",
+                "FalconGroupingTags": "'FalconGroupingTags/AMERICA'",
+                "FirstSeen": "1628678052.0",
+                "HostHiddenStatus": "Visible",
+                "MachineDomain": "groot.org",
+                "OU": "Servers;America;Offices",
+                "PointerSize": "8",
+                "ProductType": "3.0",
+                "ServicePackMajor": "0",
+                "SiteName": "BCL",
+                "SystemManufacturer": "Iris",
+                "SystemProductName": "IrOS",
+                "Time": "1697992719.22",
+                "Timezone": "America/Chicago",
+                "Version": "Windows Server 2021",
+                "cid": "ffffffff30a3407dae27d0503611022d",
+                "event_platform": "Win"
+            },
+            "user": {
+                "AccountType": "Domain User",
+                "LastLoggedOnHost": "COMPUTER1",
+                "LocalAdminAccess": "No",
+                "LogonInfo": "Domain User Logon",
+                "LogonTime": "1702546155.197",
+                "LogonType": "Interactive",
+                "PasswordLastSet": "1699971198.062",
+                "User": "DOMAIN\\BRADLEYA",
+                "UserIsAdmin": "0",
+                "UserLogonFlags_decimal": "0",
+                "_time": "1702546168.576",
+                "cid": "ffffffff15754bcfb5f9152ec7ac90ac",
+                "event_platform": "Win",
+                "monthsincereset": "1.0"
+            }
+        },
+        "name": "ProcessRollup2V18"
     },
     "data_stream": {
         "dataset": "crowdstrike.fdr",
@@ -1133,49 +1205,45 @@ An example event for `fdr` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "id": "8e3dcae6-8d1c-46c1-bed0-bf69fdde05e5",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.11.1"
     },
     "event": {
-        "action": "RansomwareOpenFile",
+        "action": "ProcessRollup2",
         "agent_id_status": "verified",
         "category": [
-            "file"
+            "process"
         ],
-        "created": "2020-11-08T17:07:22.091Z",
+        "created": "2020-10-01T09:58:32.519Z",
         "dataset": "crowdstrike.fdr",
-        "id": "ffffffff-1111-11eb-9756-06fe7f8f682f",
-        "ingested": "2023-09-26T13:20:10Z",
-        "kind": "alert",
-        "original": "{\"ConfigBuild\":\"1007.3.0011603.1\",\"ConfigStateHash\":\"1763245019\",\"ContextProcessId\":\"1016182570608\",\"ContextThreadId\":\"37343520154472\",\"ContextTimeStamp\":\"1604829512.519\",\"DesiredAccess\":\"1179785\",\"EffectiveTransmissionClass\":\"3\",\"Entitlements\":\"15\",\"FileAttributes\":\"0\",\"FileIdentifier\":\"7a9c1c1610045d45a54bd6643ac12ea767a5020000000c00\",\"FileObject\":\"18446670458156489088\",\"Information\":\"1\",\"IrpFlags\":\"2180\",\"MajorFunction\":\"0\",\"MinorFunction\":\"0\",\"OperationFlags\":\"0\",\"Options\":\"16777312\",\"ShareAccess\":\"5\",\"Status\":\"0\",\"TargetFileName\":\"\\\\Device\\\\HarddiskVolume3\\\\Users\\\\user11\\\\Downloads\\\\file.pptx\",\"aid\":\"ffffffffac4148947ed68497e89f3308\",\"aip\":\"67.43.156.14\",\"cid\":\"ffffffff30a3407dae27d0503611022d\",\"event_platform\":\"Win\",\"event_simpleName\":\"RansomwareOpenFile\",\"id\":\"ffffffff-1111-11eb-9756-06fe7f8f682f\",\"name\":\"RansomwareOpenFileV4\",\"timestamp\":\"1604855242091\"}",
+        "id": "ffffffff-1111-11eb-8462-02ade3b2f949",
+        "ingested": "2023-12-19T11:18:43Z",
+        "kind": "event",
+        "original": "{\"AuthenticationId\":\"3783389\",\"CommandLine\":\"\\\"C:\\\\WINDOWS\\\\system32\\\\backgroundTaskHost.exe\\\" -ServerName:App.AppXnme9zjyebb2xnyygh6q9ev6p5d234br2.mca\",\"ConfigBuild\":\"1007.3.0012309.1\",\"ConfigStateHash\":\"3998263252\",\"EffectiveTransmissionClass\":\"3\",\"Entitlements\":\"15\",\"ImageFileName\":\"\\\\Device\\\\HarddiskVolume3\\\\Windows\\\\System32\\\\backgroundTaskHost.exe\",\"ImageSubsystem\":\"2\",\"IntegrityLevel\":\"4096\",\"MD5HashData\":\"50d5fd1290d94d46acca0585311e74d5\",\"ParentAuthenticationId\":\"3783389\",\"ParentBaseFileName\":\"svchost.exe\",\"ParentProcessId\":\"2439558094566\",\"ProcessCreateFlags\":\"525332\",\"ProcessEndTime\":\"\",\"ProcessParameterFlags\":\"16385\",\"ProcessStartTime\":\"1604855181.648\",\"ProcessSxsFlags\":\"1600\",\"RawProcessId\":\"22272\",\"RpcClientProcessId\":\"2439558094566\",\"SHA1HashData\":\"0000000000000000000000000000000000000000\",\"SHA256HashData\":\"b8e176fe76a1454a00c4af0f8bf8870650d9c33d3e333239a59445c5b35c9a37\",\"SessionId\":\"1\",\"SourceProcessId\":\"2439558094566\",\"SourceThreadId\":\"77538684027214\",\"Tags\":\"41, 12094627905582, 12094627906234\",\"TargetProcessId\":\"2450046082233\",\"TokenType\":\"2\",\"UserSid\":\"S-1-12-1-3697283754-1083485977-2164330645-2516515886\",\"WindowFlags\":\"128\",\"aid\":\"ffffffff655344736aca58d17fb570f0\",\"aip\":\"67.43.156.14\",\"cid\":\"ffffffff30a3407dae27d0503611022d\",\"event_platform\":\"Win\",\"event_simpleName\":\"ProcessRollup2\",\"id\":\"ffffffff-1111-11eb-8462-02ade3b2f949\",\"name\":\"ProcessRollup2V18\",\"timestamp\":\"1601546312519\"}",
         "outcome": "success",
         "timezone": "+00:00",
         "type": [
-            "access"
+            "start"
         ]
     },
-    "file": {
-        "directory": "\\Device\\HarddiskVolume3\\Users\\user11\\Downloads",
-        "extension": "pptx",
-        "inode": "7a9c1c1610045d45a54bd6643ac12ea767a5020000000c00",
-        "name": "file.pptx",
-        "path": "\\Device\\HarddiskVolume3\\Users\\user11\\Downloads\\file.pptx",
-        "type": "file"
-    },
     "host": {
+        "ip": [
+            "16.15.12.10"
+        ],
+        "name": "FEVWSN1-234",
         "os": {
             "type": "windows"
         }
     },
     "input": {
-        "type": "log"
+        "type": "aws-s3"
     },
     "log": {
         "file": {
-            "path": "/tmp/service_logs/fdr-sample.log"
+            "path": "https://elastic-package-crowdstrike-fdr-12701.s3.us-east-1.amazonaws.com/data"
         },
-        "offset": 95203
+        "offset": 107991
     },
     "observer": {
         "address": [
@@ -1193,26 +1261,49 @@ An example event for `fdr` looks as following:
         "ip": [
             "67.43.156.14"
         ],
-        "serial_number": "ffffffffac4148947ed68497e89f3308",
+        "serial_number": "ffffffff655344736aca58d17fb570f0",
         "type": "agent",
         "vendor": "crowdstrike",
-        "version": "1007.3.0011603.1"
+        "version": "1007.3.0012309.1"
     },
     "process": {
-        "entity_id": "1016182570608",
-        "thread": {
-            "id": 37343520154472
-        }
+        "args": [
+            "C:\\WINDOWS\\system32\\backgroundTaskHost.exe",
+            "-ServerName:App.AppXnme9zjyebb2xnyygh6q9ev6p5d234br2.mca"
+        ],
+        "args_count": 2,
+        "command_line": "\"C:\\WINDOWS\\system32\\backgroundTaskHost.exe\" -ServerName:App.AppXnme9zjyebb2xnyygh6q9ev6p5d234br2.mca",
+        "entity_id": "2450046082233",
+        "executable": "\\Device\\HarddiskVolume3\\Windows\\System32\\backgroundTaskHost.exe",
+        "hash": {
+            "md5": "50d5fd1290d94d46acca0585311e74d5",
+            "sha256": "b8e176fe76a1454a00c4af0f8bf8870650d9c33d3e333239a59445c5b35c9a37"
+        },
+        "name": "backgroundTaskHost.exe",
+        "parent": {
+            "entity_id": "2439558094566",
+            "name": "svchost.exe"
+        },
+        "pid": 22272,
+        "start": "2020-11-08T17:06:21.648Z"
     },
     "related": {
         "hash": [
-            "1763245019"
+            "50d5fd1290d94d46acca0585311e74d5",
+            "b8e176fe76a1454a00c4af0f8bf8870650d9c33d3e333239a59445c5b35c9a37",
+            "3998263252"
         ],
         "hosts": [
-            "67.43.156.14"
+            "FEVWSN1-234",
+            "COMPUTER1"
         ],
         "ip": [
-            "67.43.156.14"
+            "67.43.156.14",
+            "16.15.12.10"
+        ],
+        "user": [
+            "Alan-One",
+            "DOMAIN\\BRADLEYA"
         ]
     },
     "tags": [
@@ -1222,6 +1313,10 @@ An example event for `fdr` looks as following:
     ],
     "url": {
         "scheme": "http"
+    },
+    "user": {
+        "id": "S-1-12-1-3697283754-1083485977-2164330645-2516515886",
+        "name": "Alan-One"
     }
 }
 ```
