@@ -117,19 +117,19 @@ processors:
         ZonedDateTime _tmp_timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(ctx.misp.attribute.timestamp) * 1000L), ZoneId.of('Z'));
         ZonedDateTime _tmp_max_time = _tmp_timestamp;
         if (ctx.misp.attribute.last_seen != null) {
-            ZonedDateTime _tmp_last_seen = ZonedDateTime.ofInstant(Instant.ofEpochMilli((ctx.misp.attribute.last_seen)/1000), ZoneId.of('Z'));
+            ZonedDateTime _tmp_last_seen = ZonedDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(ctx.misp.attribute.last_seen)/1000L), ZoneId.of('Z'));
             if (_tmp_max_time.isBefore(_tmp_last_seen)) {
                 _tmp_max_time = _tmp_last_seen;
             }
         }
         if (dur instanceof String){
-          Character time_unit = dur.charAt(dur.length() - 1);
-          String time_value = dur.substring(0, dur.length());
-          if (time_unit == 'd') {
+          char time_unit = dur.charAt(dur.length() - 1);
+          String time_value = dur.substring(0, dur.length() - 1);
+          if (time_unit == (char)'d') {
             _tmp_decayed_at = _tmp_max_time.plusDays(Long.parseLong(time_value));
-          } else if (time_unit == 'h') {
+          } else if (time_unit == (char)'h') {
             _tmp_decayed_at = _tmp_max_time.plusHours(Long.parseLong(time_value));
-          } else if (time_unit == 'm') {
+          } else if (time_unit == (char)'m') {
             _tmp_decayed_at = _tmp_max_time.plusMinutes(Long.parseLong(time_value));
           } else {
             _tmp_decayed_at = _tmp_max_time.plusDays(90L);
