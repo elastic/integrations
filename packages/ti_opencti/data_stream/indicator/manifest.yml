@@ -1,0 +1,73 @@
+title: "Indicator"
+type: logs
+streams:
+  - input: cel
+    title: Indicator
+    description: Collect indicators from OpenCTI.
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: Duration between requests to the OpenCTI. NOTE:- Supported units for this parameter are h/m/s.
+        default: 5m
+        multi: false
+        required: true
+        show_user: true
+      - name: page_size
+        type: integer
+        title: Page Size
+        description: Page size for the response from OpenCTI. The maximum supported page size value is 100.
+        default: 50
+        multi: false
+        required: true
+        show_user: true
+      - name: max_executions
+        type: integer
+        title: Maximum executions
+        description: The maximum number of pages to fetch before waiting for an interval to pass.
+        default: 1000
+        multi: false
+        required: true
+        show_user: false
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. NOTE:- Valid time units are ns, us, ms, s, m, h.
+        default: 30s
+        multi: false
+        required: true
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        default:
+          - forwarded
+          - opencti-indicator
+        multi: true
+        required: true
+        show_user: false
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original indicator data, added to the field `event.original`.
+        default: false
+        multi: false
+        required: true
+        show_user: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
+        multi: false
+        required: false
+        show_user: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        multi: false
+        required: false
+        show_user: false

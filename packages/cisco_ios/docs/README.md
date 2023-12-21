@@ -44,7 +44,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f00ff835-626e-4a18-a8a2-0bb3ebb7503f",
@@ -59,7 +59,7 @@ An example event for `log` looks as following:
         "code": "CONFIG_I",
         "dataset": "cisco_ios.log",
         "ingested": "2023-07-13T09:20:48Z",
-        "original": "\u003c189\u003e2360957: Jan  6 2022 20:52:12.861: %SYS-5-CONFIG_I: Configured from console by akroh on vty0 (10.100.11.10)",
+        "original": "<189>2360957: Jan  6 2022 20:52:12.861: %SYS-5-CONFIG_I: Configured from console by akroh on vty0 (10.100.11.10)",
         "provider": "firewall",
         "sequence": 2360957,
         "severity": 5,
@@ -92,6 +92,7 @@ An example event for `log` looks as following:
         "forwarded"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -110,6 +111,7 @@ An example event for `log` looks as following:
 | cisco.ios.sequence | Sequence number provided by the device when the device's service sequence-numbers global configuration is set. | keyword |
 | cisco.ios.session.number | Session ID | integer |
 | cisco.ios.session.type | Session type | keyword |
+| cisco.ios.tableid | The tableid associated with badauth errors | keyword |
 | cisco.ios.uptime | The uptime for the device. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |

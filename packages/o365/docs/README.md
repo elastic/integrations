@@ -4,11 +4,31 @@ This integration is for [Microsoft Office 365](https://docs.microsoft.com/en-us/
 
 ## Setup
 
-To use this package you need to enable _Audit Log Search_ and register an application in Azure AD.
+To use this package you need to [enable `Audit Log`](https://learn.microsoft.com/en-us/purview/audit-log-enable-disable) and register an application in [Microsoft Entra ID (formerly known as Azure Active Directory)](https://www.microsoft.com/en-us/security/business/identity-access/microsoft-entra-id).
 
-Once this application is registered, note the _Application (client) ID_ and the _Directory (tenant) ID._ Then configure the authentication in the _Certificates & Secrets_ section.
+Once the application is registered, configure and/or note the following to setup O365 Elastic integration:
+1. Note `Application (client) ID` and the `Directory (tenant) ID` in the registered application's `Overview` page. 
+2. Create a new secret to configure the authentication of your application. 
+    - Navigate to `Certificates & Secrets` section.
+    - Click `New client secret` and provide some description to create new secret.
+    - Note the `Value` which is required for the integration setup.
+3. Add permissions to your registered application. Please check [O365 Management API permissions](https://learn.microsoft.com/en-us/office/office-365-management-api/get-started-with-office-365-management-apis#specify-the-permissions-your-app-requires-to-access-the-office-365-management-apis) for more details.
+    - Navigate to `API permissions` page and click `Add a permission`
+    - Select `Office 365 Management APIs` tile from the listed tiles.
+    - Click `Application permissions`.
+    - Under `ActivityFeed`, select `ActivityFeed.Read` permission. This is minimum required permissions to read audit logs of your organization as [provided in the documentation](https://learn.microsoft.com/en-us/office/office-365-management-api/office-365-management-activity-api-reference). Optionally, select `ActivityFeed.ReadDlp` to read DLP policy events.
+    - Click `Add permissions`. 
+    - If `User.Read` permission under `Microsoft.Graph` tile is not added by default, add this permission.
+    - After the permissions are added, the admin has to grant consent for these permissions.
 
-To use client-secret authentication, add your secret to the _Client Secret_ field.
+Once the secret is created and permissions are granted by admin, setup Elastic Agent's O365 integration:
+- Click `Add Microsoft 365`.
+- Enable `Collect Office 365 audit logs via Management Activity API using CEL Input`.
+- Add `Directory (tenant) ID` noted in Step 1 into `Directory (tenant) ID` parameter. This is required field.
+- Add `Application (client) ID` noted in Step 1 into `Application (client) ID` parameter. This is required field.
+- Add the secret `Value` noted in Step 2 into `Client Secret` parameter. This is required field.
+- Modify any other parameters as necessary.
+
 
 **NOTE:** As Microsoft is no longer supporting Azure Active Directory Authentication Library (ADAL), the existing o365audit input is being deprecated in favor of new [CEL](https://www.elastic.co/guide/en/beats/filebeat/8.6/filebeat-input-cel.html) input in version `1.18.0`. Hence for versions `>= 1.18.0`, certificate based authentication (provided by earlier o365audit input) is no longer supported. 
 
@@ -42,11 +62,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-02-07T16:43:53.000Z",
     "agent": {
-        "ephemeral_id": "79788e62-6885-49cb-b397-b329ddb0f349",
-        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
+        "ephemeral_id": "91cd5dfa-317b-4703-978a-b833a6f2b714",
+        "id": "56df57b5-55fe-47f5-a382-b9a4b1918ce6",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.0"
+        "version": "8.10.1"
     },
     "client": {
         "address": "213.97.47.133",
@@ -58,12 +78,12 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
+        "id": "56df57b5-55fe-47f5-a382-b9a4b1918ce6",
         "snapshot": false,
-        "version": "8.9.0"
+        "version": "8.10.1"
     },
     "event": {
         "action": "PageViewed",
@@ -74,8 +94,9 @@ An example event for `audit` looks as following:
         "code": "SharePoint",
         "dataset": "o365.audit",
         "id": "99d005e6-a4c6-46fd-117c-08d7abeceab5",
-        "ingested": "2023-07-27T16:10:06Z",
+        "ingested": "2023-11-06T19:08:33Z",
         "kind": "event",
+        "original": "{Site=d5180cfc-3479-44d6-b410-8c985ac894e3, ObjectId=https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/_layouts/15/onedrive.aspx, ItemType=Page, UserKey=i:0h.f|membership|1003200096971f55@live.com, OrganizationId=b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd, Operation=PageViewed, ClientIP=213.97.47.133, Workload=OneDrive, EventSource=SharePoint, RecordType=4, Version=1, WebId=8c5c94bb-8396-470c-87d7-8999f440cd30, UserId=asr@testsiem.onmicrosoft.com, CreationTime=2020-02-07T16:43:53, UserAgent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:72.0) Gecko/20100101 Firefox/72.0, CustomUniqueId=true, CorrelationId=622b339f-4000-a000-f25f-92b3478c7a25, Id=99d005e6-a4c6-46fd-117c-08d7abeceab5, UserType=0, ListItemUniqueId=59a8433d-9bb8-cfef-6edc-4c0fc8b86875}",
         "outcome": "success",
         "provider": "OneDrive",
         "type": [
@@ -149,6 +170,7 @@ An example event for `audit` looks as following:
         "version": "72.0."
     }
 }
+
 ```
 
 **Exported fields**
@@ -228,10 +250,12 @@ An example event for `audit` looks as following:
 | o365.audit.ActorIpAddress |  | keyword |
 | o365.audit.ActorUserId |  | keyword |
 | o365.audit.ActorYammerUserId |  | keyword |
+| o365.audit.AdditionalInfo.\* |  | object |
 | o365.audit.AlertEntityId |  | keyword |
 | o365.audit.AlertId |  | keyword |
 | o365.audit.AlertLinks |  | flattened |
 | o365.audit.AlertType |  | keyword |
+| o365.audit.AppAccessContext.\* |  | object |
 | o365.audit.AppId |  | keyword |
 | o365.audit.ApplicationDisplayName |  | keyword |
 | o365.audit.ApplicationId |  | keyword |

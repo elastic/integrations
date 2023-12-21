@@ -3,7 +3,7 @@ description: Pipeline for processing Event logs.
 processors:
   - set:
       field: ecs.version
-      value: 8.10.0
+      value: 8.11.0
   - set:
       field: event.kind
       value: event
@@ -20,6 +20,7 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       tag: 'json_event_original'
@@ -462,6 +463,17 @@ processors:
       field: process.pid
       copy_from: sentinel_one_cloud_funnel.event.src.process.pid
       ignore_empty_value: true
+  - convert:
+      field: json.tgt.process.pid
+      tag: 'convert_json_tgt_process_pid'
+      target_field: sentinel_one_cloud_funnel.event.tgt.process.pid
+      ignore_missing: true
+      type: string
+      if: ctx.json?.tgt?.process?.pid != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.src.process.rUserUid
       tag: 'convert_json_src_process_rUserUid'
@@ -1538,6 +1550,10 @@ processors:
       field: json.src.process.parent.uid
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.uid
       ignore_missing: true
+  - set:
+      field: process.parent.entity_id
+      copy_from: sentinel_one_cloud_funnel.event.src.process.parent.uid
+      ignore_empty_value: true
   - rename:
       field: json.src.process.parent.userSid
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.user.sid
@@ -1645,6 +1661,21 @@ processors:
       value: '{{{sentinel_one_cloud_funnel.event.tgt.process.r_user.uid}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.tgt?.process?.r_user?.uid != null
+  - convert:
+      field: json.src.process.tid
+      tag: 'convert_json_src_process_tid'
+      target_field: sentinel_one_cloud_funnel.event.src.process.tid
+      type: long
+      ignore_missing: true
+      if: ctx.json?.src?.process?.tid != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: process.thread.id
+      copy_from: sentinel_one_cloud_funnel.event.src.process.tid
+      ignore_empty_value: true
   - date:
       field: json.timestamp
       tag: 'date_json_timestamp'
@@ -1863,6 +1894,10 @@ processors:
       field: json.src.process.uid
       target_field: sentinel_one_cloud_funnel.event.src.process.uid
       ignore_missing: true
+  - set:
+      field: process.entity_id
+      copy_from: sentinel_one_cloud_funnel.event.src.process.uid
+      ignore_empty_value: true
   - rename:
       field: json.packet.id
       target_field: sentinel_one_cloud_funnel.event.packet_id
@@ -2522,6 +2557,10 @@ processors:
       field: json.tgt.process.userSid
       target_field: sentinel_one_cloud_funnel.event.tgt.process.user.sid
       ignore_missing: true
+  - rename:
+      field: json.tgt.process.uid
+      target_field: sentinel_one_cloud_funnel.event.tgt.process.uid
+      ignore_missing: true
   - append:
       field: related.user
       value: '{{{sentinel_one_cloud_funnel.event.tgt.process.user.sid}}}'
@@ -2562,7 +2601,7 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline-command-script" }}'
       tag: 'pipeline-command-script'
-      if:  ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('command')
+      if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('command')
       on_failure:
         - append:
             field: error.message
@@ -2570,7 +2609,7 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline-cross-process" }}'
       tag: 'pipeline-cross-process'
-      if:  ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('cross')
+      if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('cross')
       on_failure:
         - append:
             field: error.message
@@ -2578,7 +2617,7 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline-dns" }}'
       tag: 'pipeline-dns'
-      if:  ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('dns')
+      if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('dns')
       on_failure:
         - append:
             field: error.message
@@ -2586,7 +2625,7 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline-file" }}'
       tag: 'pipeline-file'
-      if:  ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('file')
+      if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('file')
       on_failure:
         - append:
             field: error.message
@@ -2594,7 +2633,7 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline-indicator" }}'
       tag: 'pipeline-indicator'
-      if:  ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('indicator') && !(ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('threat'))
+      if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('indicator') && !(ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('threat'))
       on_failure:
         - append:
             field: error.message
@@ -2602,7 +2641,7 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline-login" }}'
       tag: 'pipeline-login'
-      if:  ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('login')
+      if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('login')
       on_failure:
         - append:
             field: error.message
@@ -2610,7 +2649,7 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline-module" }}'
       tag: 'pipeline-module'
-      if:  ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('module')
+      if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('module')
       on_failure:
         - append:
             field: error.message
@@ -2618,7 +2657,7 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline-network-action" }}'
       tag: 'pipeline-network-action'
-      if:  ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('ip') && !(ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('command'))
+      if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('ip') && !(ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('command'))
       on_failure:
         - append:
             field: error.message
@@ -2626,7 +2665,7 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline-process" }}'
       tag: 'pipeline_process'
-      if:  ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('process') && !(ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('cross'))
+      if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('process') && !(ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('cross'))
       on_failure:
         - append:
             field: error.message
@@ -2634,7 +2673,7 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline-registry" }}'
       tag: 'pipeline-registry'
-      if:  ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('registry')
+      if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('registry')
       on_failure:
         - append:
             field: error.message
@@ -2642,7 +2681,7 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline-scheduled-task" }}'
       tag: 'pipeline-scheduled-task'
-      if:  ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('schedule')
+      if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('schedule')
       on_failure:
         - append:
             field: error.message
@@ -2650,7 +2689,7 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline-threat-intelligence-indicator" }}'
       tag: 'pipeline-threat-intelligence-indicator'
-      if:  ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('threat')
+      if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('threat')
       on_failure:
         - append:
             field: error.message
@@ -2658,7 +2697,7 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline-url" }}'
       tag: 'pipeline-url'
-      if:  ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('url')
+      if: ctx.sentinel_one_cloud_funnel?.event?.category != null && ctx.sentinel_one_cloud_funnel.event.category.toLowerCase().contains('url')
       on_failure:
         - append:
             field: error.message

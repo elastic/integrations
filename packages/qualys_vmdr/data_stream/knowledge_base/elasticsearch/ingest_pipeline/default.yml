@@ -4,7 +4,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: 8.10.0
+      value: 8.11.0
   - set:
       field: event.kind
       tag: set_event_kind_1
@@ -12,11 +12,16 @@ processors:
   - set:
       field: event.category
       tag: set_event_catgeory
-      value: [host]
+      value: [vulnerability]
   - set:
       field: event.type
       tag: set_event_type
       value: [info]
+  - rename:
+      field: error
+      tag: rename_error
+      target_field: qualys_vmdr.knowledge_base.error
+      ignore_missing: true
   - json:
       field: message
       tag: json_message
@@ -150,9 +155,16 @@ processors:
       ignore_missing: true
   - rename:
       field: json.CVSS.BASE
-      tag: rename_CVSS.BASE
+      tag: rename_CVSS_BASE
       target_field: qualys_vmdr.knowledge_base.cvss.base
       ignore_missing: true
+      if: ctx.json?.CVSS?.BASE instanceof String
+  - rename:
+      field: json.CVSS.BASE
+      tag: rename_CVSS_BASE
+      target_field: qualys_vmdr.knowledge_base.cvss.base_obj
+      ignore_missing: true
+      if: ctx.json?.CVSS?.BASE instanceof Object
   - rename:
       field: json.CVSS.TEMPORAL
       tag: rename_CVSS_TEMPORAL
@@ -604,19 +616,35 @@ processors:
       lang: painless
       tag: script_to_set_SEVERITY_LEVEL
       description: Script to set SEVERITY_LEVEL for different ranges.
-      if: ctx.json?.SEVERITY_LEVEL != null
       source: >-
-        def floatVal = Float.parseFloat(ctx.json.SEVERITY_LEVEL);
-        if (floatVal == 0.0){
-            ctx.json.SEVERITY_LEVEL = "None";
-        } else if (floatVal > 0.0 && floatVal <=3.9){
-            ctx.json.SEVERITY_LEVEL = "Low";
-        } else if (floatVal > 3.9 && floatVal <=6.9){
-            ctx.json.SEVERITY_LEVEL = "Medium";
-        } else if (floatVal > 6.9 && floatVal <=8.9){
-            ctx.json.SEVERITY_LEVEL = "High";
-        } else if (floatVal > 8.9 && floatVal <=10.0){
-            ctx.json.SEVERITY_LEVEL = "Critical";
+        if (!(ctx.json?.SEVERITY_LEVEL instanceof String)) {
+          return;
+        }
+        def vuln_type = ctx.qualys_vmdr?.knowledge_base?.vuln_type;
+        if (!(vuln_type instanceof String)) {
+          return;
+        }
+        def level = Long.parseLong(ctx.json.SEVERITY_LEVEL);
+        if (['Potential Vulnerability', 'Vulnerability', 'Vulnerability or Potential Vulnerability'].contains(vuln_type)) {
+          if (level == 1){
+              ctx.json.SEVERITY_LEVEL = "Minimal";
+          } else if (level == 2) {
+              ctx.json.SEVERITY_LEVEL = "Medium";
+          } else if (level == 3) {
+              ctx.json.SEVERITY_LEVEL = "Serious";
+          } else if (level == 4) {
+              ctx.json.SEVERITY_LEVEL = "Critical";
+          } else if (level == 5) {
+              ctx.json.SEVERITY_LEVEL = "Urgent";
+          }
+        } else if (vuln_type == "Information Gathered") {
+          if (level == 1) {
+              ctx.json.SEVERITY_LEVEL = "Minimal";
+          } else if (level == 2) {
+              ctx.json.SEVERITY_LEVEL = "Medium";
+          } else if (level == 3) {
+              ctx.json.SEVERITY_LEVEL = "Serious";
+          }
         }
       on_failure:
         - append:
