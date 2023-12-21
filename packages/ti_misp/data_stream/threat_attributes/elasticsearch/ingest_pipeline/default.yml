@@ -34,12 +34,6 @@ processors:
   - json:
       field: event.original
       target_field: misp.attribute
-  - fingerprint:
-      fields:
-        - misp.attribute.uuid
-        - misp.attribute.Event.uuid
-      target_field: "_id"
-      ignore_missing: true
   - set:
       field: threat.indicator.provider
       value: misp
@@ -72,14 +66,92 @@ processors:
       field: misp.object.meta-category
       target_field: misp.object.meta_category
       ignore_missing: true
-  - foreach:
-      if: ctx.misp?.attribute?.decay_score != null
-      field: misp.attribute.decay_score
-      processor:
-        rename:
-          ignore_missing: true
-          field: _ingest._value.DecayingModel
-          target_field: _ingest._value.decaying_model
+  - set:
+      field: _tmp.event_ingested
+      value: "{{{_ingest.timestamp}}}"
+  - date:
+      field: _tmp.event_ingested
+      target_field: _tmp.event_ingested
+      tag: date-misp_event_ingested
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+# Script for calculating if attribute is decayed/expired based on decaying models. 
+# If majority (i.e., >= 50%) decaying models have `decayed` property as true, then attribute is expired.
+# Set decayed_at to 2 minute before ingest time so that transform deletes the document from destination indices using transform's retention policy.
+  - script:
+      lang: painless
+      tag: script-misp_decayed
+      if: ctx.misp?.attribute?.decay_score instanceof List && ctx.misp.attribute.decay_score.size() > 0
+      source: |
+        def decayed_count = 
+            ctx.misp.attribute.decay_score.stream()
+            .filter(t -> t.decayed == true)
+            .count();
+        def decayed = ((float) decayed_count >= (ctx.misp.attribute.decay_score.size())/2.0);
+        ctx.misp.attribute.decayed = decayed;
+        if (decayed == true) {
+            ctx.misp.attribute.decayed_at = ZonedDateTime.parse(ctx._tmp.event_ingested).minusMinutes(2L);
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+# Script to set default expiration to delete lingering orphaned indicators in the destination indices.
+# Calculate max(misp.attribute.timestamp, misp.attribute.last_seen) as _tmp_max_time
+# Add default decayed_at to expire all IOCs after duration `ioc_expiration_duration` from `_tmp_max_time`. 
+# If user-provided value of `ioc_expiration_duration` is not in d, h, or m, default to 90d.
+# Set `decayed` as true if decayed_at is before ingest time i.e., already expired during ingestion.
+  - script:
+      lang: painless
+      tag: script-default-decayed_at
+      if: (ctx.misp?.attribute?.decayed_at == null && ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != '')
+      description: >
+        Add default decayed_at
+      source: >
+        def dur = ctx._conf.ioc_expiration_duration;
+        ZonedDateTime _tmp_decayed_at;
+        ZonedDateTime _tmp_timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(ctx.misp.attribute.timestamp) * 1000L), ZoneId.of('Z'));
+        ZonedDateTime _tmp_max_time = _tmp_timestamp;
+        if (ctx.misp.attribute.last_seen != null) {
+            ZonedDateTime _tmp_last_seen = ZonedDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(ctx.misp.attribute.last_seen)/1000L), ZoneId.of('Z'));
+            if (_tmp_max_time.isBefore(_tmp_last_seen)) {
+                _tmp_max_time = _tmp_last_seen;
+            }
+        }
+        if (dur instanceof String){
+          char time_unit;
+          String time_value;
+          if (dur.length() != 0){
+            time_unit = dur.charAt(dur.length() - 1);
+            time_value = dur.substring(0, dur.length() - 1);
+          }
+          if (time_unit == (char)'d') {
+            _tmp_decayed_at = _tmp_max_time.plusDays(Long.parseLong(time_value));
+          } else if (time_unit == (char)'h') {
+            _tmp_decayed_at = _tmp_max_time.plusHours(Long.parseLong(time_value));
+          } else if (time_unit == (char)'m') {
+            _tmp_decayed_at = _tmp_max_time.plusMinutes(Long.parseLong(time_value));
+          } else {
+            _tmp_decayed_at = _tmp_max_time.plusDays(90L);
+            if (ctx.error == null) {
+              ctx.error = new HashMap();
+            }
+            if (ctx.error.message == null) {
+              ctx.error.message = new ArrayList();
+            }
+            ctx.error.message.add('invalid ioc_expiration_duration: using default 90 days');
+          }
+          ctx.misp.attribute.decayed_at = _tmp_decayed_at;
+        }
+        ctx.misp.attribute.decayed = _tmp_decayed_at.isBefore(ZonedDateTime.parse(ctx._tmp.event_ingested))? true : false;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       if: ctx.misp?.event?.timestamp != null
       field: misp.event.timestamp
@@ -437,6 +509,7 @@ processors:
         - misp.event.analysis
         - _tmp
         - json
+        - _conf
       ignore_missing: true
 
 on_failure:
