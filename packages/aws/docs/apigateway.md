@@ -235,27 +235,71 @@ An example event for `apigateway` looks as following:
 
 ```json
 {
-    "data_stream": {
-        "namespace": "default",
-        "type": "logs",
-        "dataset": "aws.apigateway_logs"
-    },
-    "@timestamp": "2020-02-20T07:01:01.000Z",
-    "ecs": {
-        "version": "8.0.0"
-    },
-    "event": {
-        "ingested": "2021-07-19T21:47:04.871450600Z",
-        "original": "2020-02-20T07:01:01.000Z Feb 20 07:01:01 ip-172-31-81-156 systemd: Stopping User Slice of root."
+    "@timestamp": "2023-11-03T12:14:48.824Z",
+    "agent": {
+        "ephemeral_id": "a7f85c70-ab76-4ff6-a2a8-ba4e33cb211d",
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.10.1"
     },
     "aws": {
         "apigateway": {
-            "ip_address": "172.31.81.156"
+            "http_method": "GET",
+            "ip_address": "1.128.0.0",
+            "protocol": "HTTP/1.1",
+            "request_id": "GQIVriFLIAMEMsA=",
+            "request_time": "2023-06-09T12:54:08.000Z",
+            "response_length": 47140,
+            "route_key": "GET /",
+            "status": 200
+        },
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-aws-bucket-89651",
+                "name": "elastic-package-aws-bucket-89651"
+            },
+            "object": {
+                "key": "api-gateway-http"
+            }
         }
     },
-    "message": "Stopping User Slice of root.",
+    "cloud": {
+        "provider": "",
+        "region": "us-east-1"
+    },
+    "data_stream": {
+        "dataset": "aws.apigateway_logs",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "snapshot": false,
+        "version": "8.10.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "aws.apigateway_logs",
+        "ingested": "2023-11-03T12:14:50Z",
+        "original": "{\"requestId\":\"GQIVriFLIAMEMsA=\",\"ip\":\"1.128.0.0\",\"requestTime\":\"09/Jun/2023:12:54:08 +0000\",\"httpMethod\":\"GET\",\"routeKey\":\"GET /\",\"status\":\"200\",\"protocol\":\"HTTP/1.1\",\"responseLength\":\"47140\"}"
+    },
+    "input": {
+        "type": "aws-s3"
+    },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-aws-bucket-89651.s3.us-east-1.amazonaws.com/api-gateway-http"
+        },
+        "offset": 0
+    },
     "tags": [
-        "preserve_original_event"
+        "preserve_original_event",
+        "forwarded",
+        "aws-apigateway-logs"
     ]
 }
 ```
@@ -322,5 +366,8 @@ An example event for `apigateway` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Input type | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.offset | Log offset | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
