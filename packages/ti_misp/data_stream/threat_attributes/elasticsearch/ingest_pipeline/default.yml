@@ -133,6 +133,13 @@ processors:
             _tmp_decayed_at = _tmp_max_time.plusMinutes(Long.parseLong(time_value));
           } else {
             _tmp_decayed_at = _tmp_max_time.plusDays(90L);
+            if (ctx.error == null) {
+              ctx.error = new HashMap();
+            }
+            if (ctx.error.message == null) {
+              ctx.error.message = new ArrayList();
+            }
+            ctx.error.message.add('invalid ioc_expiration_duration: using default 90 days');
           }
           ctx.misp.attribute.decayed_at = _tmp_decayed_at;
         }
