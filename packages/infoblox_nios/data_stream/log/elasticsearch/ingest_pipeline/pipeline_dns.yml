@@ -14,36 +14,38 @@ processors:
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} %{DATA:network.transport}: %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA:client.domain}\\): transfer of '%{DATA:dns.question.name}/%{DATA:dns.question.class}': %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*CEF:0\\|Infoblox\\|NIOS\\|%{GREEDYDATA:infoblox_nios.log.dns.version}\\|RPZ-%{DATA:dns.answers.type}\\|%{DATA:infoblox_nios.log.dns.answers_policy}\\|\\d+\\|app=DNS dst=%{IP:server.ip} src=%{IP:client.ip} spt=%{NUMBER:client.port:long} view=%{DATA:infoblox_nios.log.dns.view_name} qtype=%{WORD:dns.question.type} msg=%{GREEDYDATA:infoblox_nios.log.dns.message}$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{GREEDYDATA:timestamp} %{CLIENT} %{DATA:network.transport}: %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags} %{GREEDYDATA:repeat_message}$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{GREEDYDATA:timestamp} %{CLIENT} %{DATA:network.transport}: %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{GREEDYDATA:_tmp.timestamp} %{CLIENT} %{DATA:network.transport}: %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags} %{GREEDYDATA:repeat_message}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{GREEDYDATA:_tmp.timestamp} %{CLIENT} %{DATA:network.transport}: %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^%{GREEDYDATA:infoblox_nios.log.dns.message}$"
       pattern_definitions:
         CLIENT: 'client (?:%{DATA} )?%{IP:client.ip}#%{NUMBER:client.port:long}:?'
         VIEW: 'view %{DATA:infoblox_nios.log.view}: '
   - date:
-      field: timestamp
-      if: ctx.timestamp != null && ctx.event?.timezone != null
+      field: _tmp.timestamp
+      target_field: _tmp.timestamp
+      if: ctx._tmp?.timestamp != null && ctx.event?.timezone != null
       timezone: '{{{event.timezone}}}'
       formats:
         - dd-MMM-yyyy HH:mm:ss.SSS
         - yyyy-MM-dd HH:mm:ss.SSS'Z'
       on_failure:
         - remove:
-            field: timestamp
+            field: _tmp.timestamp
             ignore_missing: true
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
-      field: timestamp
-      if: ctx.timestamp != null && ctx.event?.timezone == null
+      field: _tmp.timestamp
+      target_field: _tmp.timestamp
+      if: ctx._tmp?.timestamp != null && ctx.event?.timezone == null
       formats:
         - dd-MMM-yyyy HH:mm:ss.SSS
         - yyyy-MM-dd HH:mm:ss.SSS'Z'
       on_failure:
         - remove:
-            field: timestamp
+            field: _tmp.timestamp
             ignore_missing: true
         - append:
             field: error.message
@@ -249,7 +251,6 @@ processors:
       if: ctx.dns?.question != null
   - remove:
       field:
-        - timestamp
         - repeat_message
         - dns.question.domain
       ignore_missing: true
