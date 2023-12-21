@@ -94,21 +94,18 @@ processors:
 
         for (def i = 0; i < arr?.length; i++) {
           def response = splitUnquoted(arr[i], " ");
-          map['name'].add(response[0]);
-          map['ttl'].add(response[1]);
-          map['class'].add(response[2]);
-          map['type'].add(response[3]);
-          map['data'].addAll(response.subList(4, response.length));
+          if (response.size() >= 4) {
+            map['name'].add(response[0]);
+            map['ttl'].add(response[1]);
+            map['class'].add(response[2]);
+            map['type'].add(response[3]);
+            map['data'].addAll(response.subList(4, response.length));
+          }
         }
-
         ctx.dns.answers = map;
   - convert:
       field: dns.answers.ttl
       type: long
-      ignore_missing: true
-      ignore_failure: true
-  - lowercase:
-      field: network.transport
       ignore_missing: true
       ignore_failure: true
   - script:
@@ -244,7 +241,6 @@ processors:
           ctx.put('dns', hm);
         }
         ctx.dns.put('header_flags', hf);
-
   - registered_domain: 
       field: "dns.question.name"
       target_field: "dns.question"
