@@ -286,8 +286,17 @@ An example event for `threat` looks as following:
 
 ### Threat Attributes
 
-The MISP integration configuration allows to set the polling interval, how far back it should look initially, and optionally any filters used to filter the results.
-This data stream uses the `/attributes/restSearch` API endpoint which returns more granular information regarding MISP attributes and additional information.
+The MISP integration configuration allows to set the polling interval, how far back it should look initially, and optionally any filters used to filter the results. This datastream supports expiration of indicators of compromise (IOC).
+This data stream uses the `/attributes/restSearch` API endpoint which returns more granular information regarding MISP attributes and additional information such as `decay_score`. Using `decay_score`, the integration makes the attribute as decayed/expired if `>= 50%` of the decaying models consider the attribute to be decayed. Inside the document, the field `decayed` is set to `true` if the attribute is considered decayed. More information on decaying models can be found [here](https://www.misp-project.org/2019/09/12/Decaying-Of-Indicators.html/#:~:text=Endpoint%3A%20attribute/restSearch).
+
+#### Expiration of Indicators of Compromise (IOCs)
+The ingested IOCs expire after certain duration which is indicated by the `decayed` field. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to faciliate only active IOCs be available to the end users. This transform creates destination indices named `logs-ti_misp_latest.dest_threat_attributes-*` which only contains active and unexpired IOCs. The latest destination index also has an alias named `logs-ti_misp_latest.threat_attributes`. When querying for active indicators or setting up indicator match rules, only use the latest destination indices or the alias to avoid false positives from expired IOCs. Dashboards for `Threat Attributes` datastream are also pointing to the latest destination indices containing active IoCs. Please read [ILM Policy](#ilm-policy) below which is added to avoid unbounded growth on source datastream `.ds-logs-ti_misp.threat_attributes-*` indices.
+
+#### Handling Orphaned IOCs
+Some IOCs may never get decayed/expired and will continue to stay in the latest destination indices `logs-ti_misp_latest.dest_threat_attributes-*`. To avoid any false positives from such orphaned IOCs, users are allowed to configure `IOC Expiration Duration` parameter while setting up the integration. This parameter deletes all data inside the destination indices `logs-ti_misp_latest.dest_threat_attributes-*` after this specified duration is reached, defaults to `90d` after attribute's `max(last_seen, timestamp)`. Note that `IOC Expiration Duration` parameter only exists to add a fail-safe default expiration in case IOCs never expire.
+
+#### ILM Policy
+To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_misp.threat_attributes-*` are allowed to contain duplicates from each polling interval. ILM policy is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date. 
 
 **Exported fields**
 
@@ -338,6 +347,8 @@ This data stream uses the `/attributes/restSearch` API endpoint which returns mo
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
+| labels.is_ioc_transform_source | Field indicating if the document is a source for the transform. This field is not added to destination indices to facilitate easier filtering of indicators for indicator match rules. | constant_keyword |
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
@@ -346,6 +357,8 @@ This data stream uses the `/attributes/restSearch` API endpoint which returns mo
 | misp.attribute.comment | Comments made to the attribute itself. | keyword |
 | misp.attribute.data | The data of the attribute | keyword |
 | misp.attribute.decay_score | Group of fields describing decay score of the attribute | flattened |
+| misp.attribute.decayed | Whether atleast one decay model indicates the attribute is decayed. | boolean |
+| misp.attribute.decayed_at | Timestamp when the document is decayed. Not sent by the API. This is calculated inside the ingest pipeline. | date |
 | misp.attribute.deleted | If the attribute has been removed. | boolean |
 | misp.attribute.disable_correlation | If correlation has been enabled on the attribute. | boolean |
 | misp.attribute.distribution | How the attribute has been distributed, represented by integer numbers. | long |

@@ -26,6 +26,15 @@ streams:
         show_user: true
         default: 120h
         description: How far back to look for indicators the first time the agent is started. Supported units for this parameter are h/m/s.
+      - name: ioc_expiration_duration
+        type: text
+        title: IOC Expiration Duration
+        multi: false
+        required: true
+        show_user: true
+        default: "90d"
+        description: >-
+          Enforces all IOCs to expire after this duration. This setting is required to avoid "orphaned" IOCs that never expire. Use [Elasticsearch time units](https://www.elastic.co/guide/en/elasticsearch/reference/current/api-conventions.html#time-units) in days, hours, or minutes (e.g 10d)
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout
@@ -48,6 +57,7 @@ streams:
           #tags:
           #  NOT:
           #  - tlp-red
+          #decayingModel: 2
         description: Filters documented at [MISP API Documentation](https://www.circl.lu/doc/misp/automation/#search) is supported.
       - name: proxy_url
         type: text
@@ -79,7 +89,7 @@ streams:
         required: false
         show_user: false
         default: |
-          #verification_mode: none
+          # verification_mode: none
       - name: tags
         type: text
         title: Tags
