@@ -1,0 +1,38 @@
+{
+    "id": "bb264405-de3e-5b91-9654-2056f905fc67",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. Express Route: https://docs.microsoft.com/en-us/azure/expressroute/:Site-to-Site VPN: https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-howto-site-to-site-resource-manager-portal:Point-to-Site VPN: https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-howto-point-to-site-resource-manager-portal\n2. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-network-security#ns-1-establish-network-segmentation-boundaries",
+            "id": "bb264405-de3e-5b91-9654-2056f905fc67",
+            "name": "Ensure that HTTP(S) access from the Internet is evaluated and restricted",
+            "profile_applicability": "* Level 1",
+            "description": "Network security groups should be periodically evaluated for port misconfigurations.\nWhere certain ports and protocols may be exposed to the Internet, they should be evaluated for necessity and restricted wherever they are not explicitly required and narrowly configured.",
+            "rationale": "The potential security problem with using HTTP(S) over the Internet is that attackers can use various brute force techniques to gain access to Azure resources.\nOnce the attackers gain access, they can use the resource as a launch point for compromising other resources within the Azure tenant.",
+            "audit": "**From Azure Portal**\n\n1. For each VM, open the Networking blade\n2. Verify that the INBOUND PORT RULES does not have a rule for HTTP such as\n - port = `80`,\n - protocol = `TCP`,\n - Source = `Any` OR `Internet`\n\n**From Azure CLI**\n\nList Network security groups with corresponding non-default Security rules:\n```\naz network nsg list --query [*].[name,securityRules]\n```\n\nEnsure that none of the NSGs have security rule as below\n```\n\"access\" : \"Allow\"\n\"destinationPortRange\" : \"80\" or \"*\" or \"[port range containing 80]\"\n\"direction\" : \"Inbound\"\n\"protocol\" : \"TCP\"\n\"sourceAddressPrefix\" : \"*\" or \"0.0.0.0\" or \"<nw>/0\" or \"/0\" or \"internet\" or \"any\"\n```",
+            "remediation": "Where HTTP(S) is not explicitly required and narrowly configured for resources attached to the Network Security Group, Internet-level access to your Azure resources should be restricted or eliminated.\n\n\nFor internal access to relevant resources, configure an encrypted network tunnel such as:\n\n[ExpressRoute](https://docs.microsoft.com/en-us/azure/expressroute/)\n\n[Site-to-site VPN](https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-howto-site-to-site-resource-manager-portal)\n\n[Point-to-site VPN](https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-howto-point-to-site-resource-manager-portal)",
+            "section": "Networking",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 6.4",
+                "Networking"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "6.4",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_6_4"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
