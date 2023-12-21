@@ -5,33 +5,34 @@ processors:
       field: message
       if: ctx.message.contains('Created') || ctx.message.contains('Modified') || ctx.message.contains('Deleted')
       patterns:
-        - "^%{GREEDYDATA:timestamp} \\[%{DATA:user.name}\\]: %{DATA:event.action} %{DATA:infoblox_nios.log.audit.object.name} %{DATA:infoblox_nios.log.audit.object.value}:? %{GREEDYDATA:infoblox_nios.log.audit.message}$"
-        - "^%{GREEDYDATA:timestamp} \\[%{DATA:user.name}\\]: %{DATA:event.action} %{GREEDYDATA:infoblox_nios.log.audit.message}$"
+        - "^%{GREEDYDATA:_tmp.timestamp} \\[%{DATA:user.name}\\]: %{DATA:event.action} %{DATA:infoblox_nios.log.audit.object.name} %{DATA:infoblox_nios.log.audit.object.value}:? %{GREEDYDATA:infoblox_nios.log.audit.message}$"
+        - "^%{GREEDYDATA:_tmp.timestamp} \\[%{DATA:user.name}\\]: %{DATA:event.action} %{GREEDYDATA:infoblox_nios.log.audit.message}$"
         - "^%{GREEDYDATA:infoblox_nios.log.audit.message}$"
   - grok:
       field: message
       if: ctx.message.contains('Called')
       patterns:
-        - "^%{GREEDYDATA:timestamp} \\[%{DATA:user.name}\\]: %{DATA:event.action} - %{WORD:infoblox_nios.log.audit.object.name}:? %{GREEDYDATA:infoblox_nios.log.audit.message}$"
-        - "^%{GREEDYDATA:timestamp} \\[%{DATA:user.name}\\]: %{DATA:event.action} - %{GREEDYDATA:infoblox_nios.log.audit.message}$"
+        - "^%{GREEDYDATA:_tmp.timestamp} \\[%{DATA:user.name}\\]: %{DATA:event.action} - %{WORD:infoblox_nios.log.audit.object.name}:? %{GREEDYDATA:infoblox_nios.log.audit.message}$"
+        - "^%{GREEDYDATA:_tmp.timestamp} \\[%{DATA:user.name}\\]: %{DATA:event.action} - %{GREEDYDATA:infoblox_nios.log.audit.message}$"
         - "^%{GREEDYDATA:infoblox_nios.log.audit.message}$"
   - grok:
       field: message
       if: ctx.event?.action == null
       patterns:
-        - "^%{GREEDYDATA:timestamp} \\[%{DATA:user.name}\\]: %{DATA:event.action} - - %{GREEDYDATA:details}$"
-        - "^%{GREEDYDATA:timestamp} \\[%{DATA:user.name}\\]: %{DATA:event.action} %{GREEDYDATA:infoblox_nios.log.audit.message}$"
-        - "^%{GREEDYDATA:timestamp} %{GREEDYDATA:infoblox_nios.log.audit.message}$"
+        - "^%{GREEDYDATA:_tmp.timestamp} \\[%{DATA:user.name}\\]: %{DATA:event.action} - - %{GREEDYDATA:details}$"
+        - "^%{GREEDYDATA:_tmp.timestamp} \\[%{DATA:user.name}\\]: %{DATA:event.action} %{GREEDYDATA:infoblox_nios.log.audit.message}$"
+        - "^%{GREEDYDATA:_tmp.timestamp} %{GREEDYDATA:infoblox_nios.log.audit.message}$"
         - "^%{GREEDYDATA:infoblox_nios.log.audit.message}$"
   - date:
-      field: timestamp
-      if: ctx.timestamp != null
+      field: _tmp.timestamp
+      target_field: _tmp.timestamp
+      if: ctx._tmp?.timestamp != null
       formats:
         - dd-MMM-yyyy HH:mm:ss.SSS
         - yyyy-MM-dd HH:mm:ss.SSS'Z'
       on_failure:
         - remove:
-            field: timestamp
+            field: _tmp.timestamp
             ignore_missing: true
         - append:
             field: error.message
@@ -129,7 +130,6 @@ processors:
       field:
         - details
         - audit
-        - timestamp
       ignore_missing: true
   - append:
       field: related.user
