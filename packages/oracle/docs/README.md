@@ -45,7 +45,7 @@ Steps:
      `systemctl restart elastic-agent.service`
 
 
-> Note: Ensure that you replace `/opt/oracle/instantclient_21_1` with the actual path to the directory where your required libraries (`libclntsh.so`) are located. This will set the library search path for the Elastic Agent service to include the specified directory, allowing it to locate the required libraries.
+> Note: Ensure that you replace `/opt/oracle/instantclient_21_1` with the actual path to the directory where  required libraries (`libclntsh.so`) are located. This will set the library search path for the Elastic Agent service to include the specified directory, allowing it to locate the required libraries.
 
 ####  Enable Listener
 
@@ -69,8 +69,6 @@ The supported configuration takes one of the forms
 Examples of supported configurations are as below:
 - `oracle://sys:Oradoc_db1@0.0.0.0:1521/ORCLCDB.localdomain?sysdba=1`
 - `sys:Oradoc_db1@0.0.0.0:1521/ORCLCDB.localdomain?sysdba=1`
-
-
 
 ## Compatibility
 
