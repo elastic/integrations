@@ -24,7 +24,7 @@ Oracle Instant Client enables development and deployment of applications that co
 
 The OCI library install few Client Shared Libraries that must be referenced on the machine where Metricbeat is installed. Please follow the [Oracle Client Installation link](https://docs.oracle.com/en/database/oracle/oracle-database/21/lacli/install-instant-client-using-zip.html#GUID-D3DCB4FB-D3CA-4C25-BE48-3A1FB5A22E84) link for OCI Instant Client set up. The OCI Instant Client is available with the Oracle Universal Installer, RPM file or ZIP file. Download links can be found at the [Oracle Instant Client Download page](https://www.oracle.com/database/technologies/instant-client/downloads.html).
 
-If Elastic Agent is running as a systemd service and using `ldconfig` is not an option to update the links to the shared libraries, you can use the `LD_LIBRARY_PATH` environment variable instead. Follow these steps to ensure Elastic Agent and its spawned processes respect the `LD_LIBRARY_PATH` environment variable.
+If Elastic Agent is running as a systemd service and not using `ldconfig` is an option, to update the links to the shared libraries, you can use the `LD_LIBRARY_PATH` environment variable instead. Follow these steps to ensure Elastic Agent and its spawned processes respect the `LD_LIBRARY_PATH` environment variable.
 
 > Prerequisites: Ensure that you have administrative privileges to modify the Elastic Agent systemd service configuration.
 
@@ -42,10 +42,10 @@ Steps:
 4. Save the changes made to the configured `EnvironmentFile`.
 
 5. Restart the Elastic Agent systemd service to apply the changes by running the following command:
-     `systemctl restart elastic-agent.service`
 
+      `systemctl restart elastic-agent.service`
 
-> Note: Ensure that you replace `/opt/oracle/instantclient_21_1` with the actual path to the directory where  required libraries (`libclntsh.so`) are located. This will set the library search path for the Elastic Agent service to include the specified directory, allowing it to locate the required libraries.
+> Note: Ensure that you replace `/opt/oracle/instantclient_21_1` with the actual path to the directory where the required libraries (`libclntsh.so`) are located. This will set the library search path for the Elastic Agent service to include the specified directory, allowing it to locate the required libraries.
 
 ####  Enable Listener
 
