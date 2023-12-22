@@ -3,14 +3,37 @@
 This integration is for [CrowdStrike](https://www.crowdstrike.com/resources/?cs_query=type=5) products. It includes the
 following datasets for receiving logs:
 
+- `alert` dataset: retrieves all the alerts matching the given input query. It is supported through the REST API.
 - `falcon` dataset: consists of endpoint data and Falcon platform audit data forwarded from [Falcon SIEM Connector](https://www.crowdstrike.com/blog/tech-center/integrate-with-your-siem/).
 - `fdr` dataset: consists of logs forwarded using the [Falcon Data Replicator](https://github.com/CrowdStrike/FDR).
+- `host` dataset: retrieves all the hosts in your environment. It is supported through the REST API.
 
 ## Compatibility
 
 This integration supports CrowdStrike Falcon SIEM-Connector-v2.0.
+For Rest API support, this module has been tested against the **CrowdStrike API Version v1/v2**.
+
+The minimum **kibana.version** required is **8.10.1**.
+
+## Setup
+### To collect data from CrowdStrike REST API, the following parameters from your CrowdStrike instance are required:
+
+1. Client ID
+2. Client Secret
+3. Token url
+4. API Endpoint url
 
 ## Logs
+
+### Alert
+
+This is the `Alert` dataset.
+
+#### Example
+
+{{event "alert"}}
+
+{{fields "alert"}}
 
 ### Falcon
 
@@ -37,6 +60,7 @@ Current supported event types are:
 - Mobile Detection events
 - Recon Notification events
 - XDR Detection events
+- Scheduled Report Notification events
 
 {{fields "falcon"}}
 
@@ -171,3 +195,13 @@ and/or `session_token`.
 {{fields "fdr"}}
 
 {{event "fdr"}}
+
+### Host
+
+This is the `Host` dataset.
+
+#### Example
+
+{{event "host"}}
+
+{{fields "host"}}

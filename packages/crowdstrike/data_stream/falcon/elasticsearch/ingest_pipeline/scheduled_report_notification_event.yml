@@ -1,0 +1,60 @@
+---
+description: Pipeline for processing Scheduled Report Notification Event.
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - date:
+      field: crowdstrike.event.ExecutionMetadata.ExecutionStart
+      timezone: UTC
+      formats:
+        - UNIX_MS
+      tag: date_utc_timestamp
+      if: 'ctx.crowdstrike?.event?.ExecutionMetadata?.ExecutionStart != null && String.valueOf(ctx.crowdstrike.event.ExecutionMetadata.ExecutionStart).length() >= 12'
+  - date:
+      field: crowdstrike.event.ExecutionMetadata.SearchWindowStart
+      timezone: UTC
+      formats:
+        - UNIX_MS
+      tag: date_utc_timestamp
+      if: 'ctx.crowdstrike?.event?.ExecutionMetadata?.SearchWindowStart != null && String.valueOf(ctx.crowdstrike.event.ExecutionMetadata.SearchWindowStart).length() >= 12'
+  - date:
+      field: crowdstrike.event.ExecutionMetadata.SearchWindowEnd
+      timezone: UTC
+      formats:
+        - UNIX_MS
+      tag: date_utc_timestamp
+      if: 'ctx.crowdstrike?.event?.ExecutionMetadata?.SearchWindowEnd != null && String.valueOf(ctx.crowdstrike.event.ExecutionMetadata.SearchWindowEnd).length() >= 12'
+  - convert:
+      field: crowdstrike.event.ExecutionMetadata.ExecutionDuration
+      type: long
+      tag: convert_ExecutionDuration
+      ignore_missing: true
+  - convert:
+      field: crowdstrike.event.ExecutionMetadata.ResultCount
+      type: long
+      tag: convert_ResultCount
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.event.UserID
+      target_field: user.id
+      ignore_missing: true
+      tag: rename_userID
+  - dissect:
+      if: ctx.user?.id != null && ctx.user.id.contains('@')
+      tag: dissect_user_id
+      field: user.id
+      pattern: '%{user.name}@%{user.domain}'
+  - convert:
+      field: crowdstrike.event.Status
+      type: string
+      tag: convert_Status
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
