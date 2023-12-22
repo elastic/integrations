@@ -19,6 +19,7 @@
         "optionsJSON": {
             "hidePanelTitles": false,
             "syncColors": false,
+            "syncCursor": true,
             "syncTooltips": false,
             "useMargins": true
         },
@@ -100,7 +101,7 @@
                 "panelIndex": "fccef14a-39c2-4c48-958e-c7d35b573c59",
                 "title": "Active Session Count [Metrics Oracle]",
                 "type": "lens",
-                "version": "8.6.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
@@ -179,7 +180,7 @@
                 "panelIndex": "83525479-b533-4868-ba6f-462969f55c31",
                 "title": "InActive Session Count [Metrics Oracle]",
                 "type": "lens",
-                "version": "8.6.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
@@ -256,7 +257,7 @@
                 "panelIndex": "3dfe5e91-0cdf-4a6b-95c8-d91c0f3326ef",
                 "title": "User Transactions per second [Metrics Oracle]",
                 "type": "lens",
-                "version": "8.6.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
@@ -330,7 +331,7 @@
                 "panelIndex": "438cfc7d-6aca-4ae5-a0dc-e20025cc1488",
                 "title": "Current opened cursors [Metrics Oracle]",
                 "type": "lens",
-                "version": "8.6.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
@@ -479,7 +480,7 @@
                 "panelIndex": "4b465607-cfa3-463d-b9ad-1f4c1ee62c3d",
                 "title": "Shared Pool Free Percentage [Metrics Oracle]",
                 "type": "lens",
-                "version": "8.6.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
@@ -553,7 +554,7 @@
                 "panelIndex": "2c913f00-88a4-4846-afa1-4bc687a2f610",
                 "title": "Cache Buffer Hit Ratio [Metrics Oracle]",
                 "type": "lens",
-                "version": "8.6.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
@@ -632,11 +633,12 @@
                 "panelIndex": "8ad2c774-0180-4600-8162-b562315e7282",
                 "title": "InActive Session Count \u003e 1hr [Metrics Oracle]",
                 "type": "lens",
-                "version": "8.6.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "metrics-*",
@@ -671,6 +673,13 @@
                                                     "label": "Sorts (Memory)",
                                                     "operationType": "formula",
                                                     "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        },
                                                         "formula": "normalize_by_unit(differences(max(oracle.system_statistics.sorts_memory)), unit=m) * 5",
                                                         "isFormulaBroken": false
                                                     },
@@ -775,6 +784,13 @@
                                                     "label": "Sorts (Disk)",
                                                     "operationType": "formula",
                                                     "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        },
                                                         "formula": "normalize_by_unit(differences(max(oracle.system_statistics.sorts_disk)), unit=m) * 5",
                                                         "isFormulaBroken": false
                                                     },
@@ -977,7 +993,7 @@
                 "panelIndex": "454c3a56-4b8b-47a9-832b-33a1991ed934",
                 "title": "Parse count - Sorts Memory vs Sorts Disk [Metrics Oracle]",
                 "type": "lens",
-                "version": "8.6.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
@@ -1166,7 +1182,7 @@
                 "panelIndex": "920ebc93-000f-4859-a8d1-971fed50afe4",
                 "title": "Wait Time Percentage [Metrics Oracle]",
                 "type": "lens",
-                "version": "8.6.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
@@ -1353,7 +1369,7 @@
                 "panelIndex": "aa6a165c-9840-424b-8439-579b0060b57d",
                 "title": "Response Time (Centi-Second) per transaction [Metrics Oracle]",
                 "type": "lens",
-                "version": "8.6.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
@@ -1558,11 +1574,12 @@
                 "panelIndex": "e78668fc-df19-4c94-a855-12ba59b19f0f",
                 "title": "Wait Time Request Percentage [Metrics Oracle]",
                 "type": "lens",
-                "version": "8.6.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "metrics-*",
@@ -1601,7 +1618,15 @@
                                                     "label": "Cache Hit Percentage",
                                                     "operationType": "average",
                                                     "params": {
-                                                        "emptyAsNull": true
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "oracle.memory.pga.cache_hit_pct"
@@ -1704,11 +1729,12 @@
                 "panelIndex": "c01e27f8-3cac-49c2-b040-00217e983743",
                 "title": "Cache Hit Percentage [Metrics Oracle]",
                 "type": "lens",
-                "version": "8.6.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "metrics-*",
@@ -1756,6 +1782,13 @@
                                                     "label": "Parse Count Hard",
                                                     "operationType": "formula",
                                                     "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        },
                                                         "formula": "normalize_by_unit(differences(max(oracle.system_statistics.parse_count_hard)), unit=m) * 5",
                                                         "isFormulaBroken": false
                                                     },
@@ -2049,7 +2082,7 @@
                 "panelIndex": "7dfa318b-a0e2-4a1f-bd54-e7362935548d",
                 "title": "Parse count - Total vs Hard [Metrics Oracle]",
                 "type": "lens",
-                "version": "8.6.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
@@ -2084,6 +2117,13 @@
                                                     "label": "Host CPU Utilization (%)",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "%"
+                                                            }
+                                                        },
                                                         "showArrayValues": false,
                                                         "sortField": "@timestamp"
                                                     },
@@ -2234,9 +2274,9 @@
                     "y": 37
                 },
                 "panelIndex": "8ff3ea00-57e4-426d-9968-3b497ddcafb3",
-                "title": "Host CPU Utilization (%) [Metrics Oracle]",
+                "title": "Host CPU Utilization Percentage [Metrics Oracle]",
                 "type": "lens",
-                "version": "8.6.0"
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
@@ -2458,19 +2498,17 @@
                 "panelIndex": "7d8c17b6-bae8-4d50-bbe6-10ff2e3f02ad",
                 "title": "Shared Pool Free Percentage [Metrics Oracle]",
                 "type": "lens",
-                "version": "8.6.0"
+                "version": "8.10.2"
             }
         ],
         "timeRestore": false,
         "title": "[Metrics Oracle] Performance Metrics",
         "version": 1
     },
-    "coreMigrationVersion": "8.6.0",
-    "created_at": "2023-03-30T13:01:03.880Z",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-31T13:13:23.924Z",
     "id": "oracle-6b4866c0-1599-11ed-9607-2ba0819b3835",
-    "migrationVersion": {
-        "dashboard": "8.6.0"
-    },
+    "managed": false,
     "references": [
         {
             "id": "metrics-*",
@@ -2563,5 +2601,6 @@
             "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }
