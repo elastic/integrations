@@ -1,0 +1,240 @@
+---
+description: Pipeline for processing System Activity category.
+# System Activity Class docs: https://schema.ocsf.io/1.0.0/categories/system?extensions=
+processors:
+  - convert:
+      field: ocsf.access_mask
+      tag: convert_access_mask_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.access_mask
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.disposition_id
+      tag: convert_disposition_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.kernel.is_system
+      tag: convert_kernel_is_system_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.kernel.is_system
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.kernel.type_id
+      tag: convert_kernel_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.actual_permissions
+      tag: convert_actual_permissions_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.actual_permissions
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.requested_permissions
+      tag: convert_requested_permissions_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.requested_permissions
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ocsf.module.load_type_id
+      tag: convert_module_load_type_id_to_string
+      type: string
+      ignore_missing: true
+  - date:
+      field: ocsf.job.created_time
+      target_field: ocsf.job.created_time
+      tag: date_job_created_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.job?.created_time != null && ctx.ocsf.job.created_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.job.created_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.job.created_time_dt
+      target_field: ocsf.job.created_time_dt
+      tag: date_job_created_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.job?.created_time_dt != null && ctx.ocsf.job.created_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.job.created_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.job.last_run_time
+      target_field: ocsf.job.last_run_time
+      tag: date_job_last_run_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.job?.last_run_time != null && ctx.ocsf.job.last_run_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.job.last_run_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.job.last_run_time_dt
+      target_field: ocsf.job.last_run_time_dt
+      tag: date_job_last_run_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.job?.last_run_time_dt != null && ctx.ocsf.job.last_run_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.job.last_run_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.job.next_run_time
+      target_field: ocsf.job.next_run_time
+      tag: date_job_next_run_time
+      formats:
+        - UNIX_MS
+      if: ctx.ocsf?.job?.next_run_time != null && ctx.ocsf.job.next_run_time != ''
+      on_failure:
+        - remove:
+            field: ocsf.job.next_run_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ocsf.job.next_run_time_dt
+      target_field: ocsf.job.next_run_time_dt
+      tag: date_job_next_run_time_dt
+      formats:
+        - ISO8601
+      if: ctx.ocsf?.job?.next_run_time_dt != null && ctx.ocsf.job.next_run_time_dt != ''
+      on_failure:
+        - remove:
+            field: ocsf.job.next_run_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.target.domain
+      tag: set_job_user_target_domain
+      copy_from: ocsf.job.user.domain
+      ignore_empty_value: true
+  - set:
+      field: user.target.email
+      tag: set_job_user_target_email
+      copy_from: ocsf.job.user.email_addr
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_job_user_email_addr_into_related_user
+      value: '{{{ocsf.job.user.email_addr}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.job?.user?.email_addr != null
+  - set:
+      field: user.target.full_name
+      tag: set_job_user_target_full_name
+      copy_from: ocsf.job.user.full_name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_user_full_name_into_related_user
+      value: '{{{ocsf.job.user.full_name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.job?.user?.full_name != null
+  - foreach:
+      field: ocsf.job.user.groups
+      if: ctx.ocsf?.job?.user?.groups instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: user.target.group.id
+          tag: append_job_user_target_group_id
+          value: '{{{_ingest._value.uid}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ocsf.job.user.groups
+      if: ctx.ocsf?.job?.user?.groups instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: user.target.group.name
+          tag: append_job_user_target_group_name
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - set:
+      field: user.target.id
+      tag: set_job_user_target_id
+      copy_from: ocsf.job.user.uid
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_job_user_uid_into_related_user
+      value: '{{{ocsf.job.user.uid}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.job?.user?.uid != null
+  - set:
+      field: user.target.name
+      tag: set_job_user_target_name
+      copy_from: ocsf.job.user.name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_job_user_name_into_related_user
+      value: '{{{ocsf.job.user.name}}}'
+      allow_duplicates: false
+      if: ctx.ocsf?.job?.user?.name != null
+  - convert:
+      field: ocsf.job.run_state_id
+      tag: convert_job_run_state_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ocsf.exit_code
+      tag: convert_exit_code_to_string
+      type: string
+      ignore_missing: true
+  - set:
+      field: process.exit_code
+      tag: set_process_exit_code
+      copy_from: ocsf.exit_code
+      ignore_empty_value: true 
+  - convert:
+      field: ocsf.injection_type_id
+      tag: convert_injection_type_id_to_string
+      type: string
+      ignore_missing: true

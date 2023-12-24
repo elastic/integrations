@@ -3,44 +3,52 @@ description: Pipeline for parsing Linux auditd logs
 processors:
   - set:
       field: ecs.version
-      value: '8.10.0'
+      value: '8.11.0'
   - rename:
       field: message
       target_field: event.original
       ignore_failure: true
+      ignore_missing: true
+      if: ctx.event?.original == null
   - grok:
+      tag: grok_audit_original
       field: event.original
       pattern_definitions:
-        AUDIT_TYPE: "type=%{NOTSPACE:auditd.log.record_type}"
-        AUDIT_NODE: "node=%{IPORHOST:auditd.log.node} "
-        AUDIT_PREFIX: "^(?:%{AUDIT_NODE})?%{AUDIT_TYPE} msg=audit\\(%{NUMBER:auditd.log.epoch}:%{NUMBER:auditd.log.sequence}\\):(%{DATA})?"
-        AUDIT_KEY_VALUES: "%{WORD}=%{GREEDYDATA}"
+        AUDIT_TYPE: 'type=%{NOTSPACE:auditd.log.record_type}'
+        AUDIT_NODE: 'node=%{IPORHOST:auditd.log.node} '
+        AUDIT_PREFIX: '^(?:%{AUDIT_NODE})?%{AUDIT_TYPE} msg=audit\(%{NUMBER:auditd.log.epoch}:%{NUMBER:auditd.log.sequence}\):(%{DATA})?'
+        AUDIT_KEY_VALUES: '%{WORD}=%{GREEDYDATA}'
+        AVC_PREFIX: 'avc:%{SPACE}%{WORD:auditd.log.avc.action}%{SPACE}{%{SPACE}%{WORD:auditd.log.avc.request}%{SPACE}}%{SPACE}for%{SPACE}'
+        MESSAGE: "(?:'(?:%{AVC_PREFIX}|[^=]*\\s)?%{ANY:auditd.log.sub_kv}'|\"([^=]*\\s)?%{ANY:auditd.log.sub_kv}\")"
+        GS: '\x1d'
         ANY: ".*"
       patterns:
-      - "%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} old auid=%{NUMBER:auditd.log.old_auid}
-        new auid=%{NUMBER:auditd.log.new_auid} old ses=%{NUMBER:auditd.log.old_ses}
-        new ses=%{NUMBER:auditd.log.new_ses}"
-      - "%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} msg=['\"]([^=]*\\s)?%{ANY:auditd.log.sub_kv}['\"]"
-      - "%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv}"
-      - "%{AUDIT_PREFIX}"
-      - "%{AUDIT_TYPE} %{AUDIT_KEY_VALUES:auditd.log.kv}"
+        - '%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} old auid=%{NUMBER:auditd.log.old_auid} new auid=%{NUMBER:auditd.log.new_auid} old ses=%{NUMBER:auditd.log.old_ses} new ses=%{NUMBER:auditd.log.new_ses}'
+        - '%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} msg=%{MESSAGE}'
+        - '%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv}%{GS}%{WORD:auditd.log.original_field}={ %{AUDIT_KEY_VALUES:auditd.log.sub_kv} }'
+        - '%{AUDIT_PREFIX} %{AVC_PREFIX}?%{AUDIT_KEY_VALUES:auditd.log.kv}'
+        - '%{AUDIT_PREFIX}'
+        - '%{AUDIT_TYPE} %{AUDIT_KEY_VALUES:auditd.log.kv}'
   - kv:
       field: auditd.log.kv
-      field_split: '\s(?![\w\"]+?(\s+|$))'
+      field_split: '\s+(?![\w\"]+?(\s+|$))'
       value_split: '(?<!\\)='
       target_field: auditd.log
   - kv:
       field: auditd.log.sub_kv
-      field_split: "\\s+(?=[^\\s]+=)"
-      value_split: "="
+      field_split: '\s+(?=[^\s]+=)'
+      value_split: '='
       target_field: auditd.log
       ignore_missing: true
   - date:
       field: auditd.log.epoch
       target_field: "@timestamp"
       formats:
-      - UNIX
+        - UNIX
       ignore_failure: true
+  - lowercase:
+      field: auditd.log.original_field
+      ignore_missing: true
   - rename:
       ignore_failure: true
       field: auditd.log.old-auid
@@ -50,101 +58,166 @@ processors:
       field: auditd.log.old-ses
       target_field: auditd.log.old_ses
   - script:
+      tag: script_process_fields
       lang: painless
       source: |
-          String trimQuotes(def singleQuote, def doubleQuote, def v) {
-              if (v.startsWith(singleQuote) || v.startsWith(doubleQuote)) {
-                  v = v.substring(1, v.length());
-              }
-              if (v.endsWith(singleQuote) || v.endsWith(doubleQuote)) {
-                  v = v.substring(0, v.length()-1);
-              }
-              return v;
-          }
+        String trimQuotes(def singleQuote, def doubleQuote, def v) {
+            if (v.startsWith(singleQuote) || v.startsWith(doubleQuote)) {
+                v = v.substring(1, v.length());
+            }
+            if (v.endsWith(singleQuote) || v.endsWith(doubleQuote)) {
+                v = v.substring(0, v.length()-1);
+            }
+            return v;
+        }
 
-          boolean isHexAscii(String v) {
-              def len = v.length();
+        boolean isHexAscii(String v) {
+            def len = v.length();
 
-              if (len == 0 || len % 2 != 0) {
-                  return false;
-              }
+            if (len == 0 || len % 2 != 0) {
+                return false;
+            }
 
-              for (int i = 0 ; i < len ; i++) {
-                  if (Character.digit(v.charAt(i), 16) == -1) {
-                      return false;
-                  }
-              }
-              return true;
-          }
+            for (int i = 0 ; i < len ; i++) {
+                if (Character.digit(v.charAt(i), 16) == -1) {
+                    return false;
+                }
+            }
+            return true;
+        }
 
-          String convertHexToString(String hex) {
-              StringBuilder sb = new StringBuilder();
-              boolean needed_encoding = false;
+        String convertHexToString(String hex) {
+            StringBuilder sb = new StringBuilder();
+            boolean needed_encoding = false;
 
-              for (int i=0; i < hex.length() - 1; i+=2) {
-                  int cp = Integer.parseInt(hex.substring(i, (i +2)), 16);
-                  if (cp < 33 || cp == 34 || cp == 127) {
-                      needed_encoding = true;
-                  }
-                  if (cp < 32 || cp == 127) {
-                      sb.append('^');
-                      cp ^= 64;
-                  }
-                  sb.append((char)cp);
-              }
-              if (needed_encoding) {
-                  return sb.toString();
-              }
-              return hex;
-          }
+            for (int i=0; i < hex.length() - 1; i+=2) {
+                int cp = Integer.parseInt(hex.substring(i, (i +2)), 16);
+                if (cp < 33 || cp == 34 || cp == 127) {
+                    needed_encoding = true;
+                }
+                if (cp < 32 || cp == 127) {
+                    sb.append('^');
+                    cp ^= 64;
+                }
+                sb.append((char)cp);
+            }
+            if (needed_encoding) {
+                return sb.toString();
+            }
+            return hex;
+        }
 
-          Boolean convertStringToBoolean(String value) {
-              value = value.toLowerCase();
-              return value == "yes" || value == "true" || value == "1";
-          }
+        Boolean convertStringToBoolean(String value) {
+            value = value.toLowerCase();
+            return value == "yes" || value == "true" || value == "1";
+        }
 
-          def possibleHexKeys = ["exe", "cmd", "data", "path", "comm", "file", "name", "watch", "cwd", "acct", "dir", "vm", "old-chardev", "new-chardev", "old-disk", "new-disk", "old-fs", "new-fs", "old-net", "new-net", "device", "cgroup", "apparmor", "operation", "denied_mask", "info", "profile", "requested_mask", "old-rng", "new-rng", "ocomm", "grp", "new_group", "invalid_context", "sw", "root_dir", "proctitle"];
-          def possibleBooleanKeys = ["success", "key_enforce"];
-          def audit = ctx.auditd.get("log");
-          Iterator entries = audit.entrySet().iterator();
+        // processFieldValue processes the value for the field, and returns
+        // the processed value if it is valid, otherwise null.
+        def processFieldValue(String k, def v, def possibleHexKeys, def possibleBooleanKeys) {
+            // Remove entries whose value is ?
+            if (v == "?" || v == "(null)" || v == "") {
+                return null;
+            }
 
-          while (entries.hasNext()) {
-              def e = entries.next();
-              def k = e.getKey();
-              def v = e.getValue();
+            // Convert hex values to ASCII.
+            if (possibleHexKeys.contains(k) && isHexAscii(v)) {
+                v = convertHexToString(v);
+            }
 
-              // Remove entries whose value is ?
-              if (v == "?" || v == "(null)" || v == "") {
-                  entries.remove();
-                  continue;
-              }
+            // Convert string values to boolean.
+            if (possibleBooleanKeys.contains(k) && v instanceof String) {
+                v = convertStringToBoolean(v);
+            }
 
-              // Convert hex values to ASCII.
-              if (possibleHexKeys.contains(k) && isHexAscii(v)) {
-                  v = convertHexToString(v);
-                  audit.put(k, v);
-              }
+            // Trim quotes.
+            if (v instanceof String) {
+                v = trimQuotes("'", "\"", v);
+            }
 
-              // Convert string values to boolean.
-              if (possibleBooleanKeys.contains(k) && v instanceof String) {
-                  v = convertStringToBoolean(v);
-                  audit.put(k, v);
-              }
+            // Convert arch.
+            if (k == "arch" && v == "c000003e") {
+                v = "x86_64";
+            }
 
-              // Trim quotes.
-              if (v instanceof String) {
-                  v = trimQuotes(params.single_quote, params.double_quote, v);
-                  audit.put(k, v);
-              }
+            return v;
+        }
 
-              // Convert arch.
-              if (k == "arch" && v == "c000003e") {
-                  audit.put(k, "x86_64");
-              }
-          }
+        def audit = ctx.auditd.get("log");
+        Iterator entries = audit.entrySet().iterator();
+
+        while (entries.hasNext()) {
+            def e = entries.next();
+            def k = e.getKey();
+            def v = e.getValue();
+
+            if (v instanceof List) {
+                int j = 0;
+                for (int i = 0; i < v.length; i++) {
+                    v[j] = processFieldValue(k, v[i], params.possibleHexKeys, params.possibleBooleanKeys);
+                    if (v[j] != null) {
+                        j++;
+                    }
+                }
+                if (j < v.length) {
+                    if (j == 0) {
+                        entries.remove();
+                        continue;
+                    }
+                    audit.put(k, v.subList(0, j));
+                }
+                continue;
+            }
+
+            v = processFieldValue(k, v, params.possibleHexKeys, params.possibleBooleanKeys);
+            if (v == null) {
+                entries.remove();
+            } else {
+                audit.put(k, v);
+            }
+        }
       params:
-        single_quote: "'"
-        double_quote: "\""
+        possibleHexKeys:
+          - exe
+          - cmd
+          - data
+          - path
+          - comm
+          - file
+          - name
+          - watch
+          - cwd
+          - acct
+          - dir
+          - vm
+          - old-chardev
+          - new-chardev
+          - old-disk
+          - new-disk
+          - old-fs
+          - new-fs
+          - old-net
+          - new-net
+          - device
+          - cgroup
+          - apparmor
+          - operation
+          - denied_mask
+          - info
+          - profile
+          - requested_mask
+          - old-rng
+          - new-rng
+          - ocomm
+          - grp
+          - new_group
+          - invalid_context
+          - sw
+          - root_dir
+          - proctitle
+        possibleBooleanKeys:
+          - success
+          - key_enforce
   - convert:
       field: auditd.log.sequence
       type: long
@@ -181,6 +254,7 @@ processors:
       field: event.kind
       value: event
   - script:
+      tag: script_ecs_mapping
       lang: painless
       ignore_failure: true
       # Auditd record type to ECS mappings
@@ -2084,7 +2158,8 @@ processors:
       field: auditd.log.argc
       target_field: process.args_count
   - script:
-      if: "ctx?.process?.args != null"
+      tag: script_process_args
+      if: ctx.process?.args != null
       lang: painless
       source: >-
         if (ctx.process.args instanceof List) {
@@ -2129,14 +2204,27 @@ processors:
       field: event.outcome
       value: "unknown"
       ignore_failure: true
+  - set:
+      field: event.outcome
+      value: unknown
+      if: ctx.auditd?.log?.avc?.action != null && ctx.event?.outcome == null
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.auditd?.log?.avc?.action == 'granted'
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.auditd?.log?.avc?.action == 'denied'
    # The processor below populates process.args list from argN fields.
    #
    # It handles the common case of a complete record: Contains argc=N and a0 to aN-1,
    # and the truncated case: Contains aI, aI+1, ..., aN-1, for I>0, and no argc.
   - script:
+      tag: script_execve_process_args
       lang: painless
       description: Extracts process arguments from EXECVE calls.
-      if: 'ctx.auditd?.log?.record_type == "EXECVE"'
+      if: ctx.auditd?.log?.record_type == "EXECVE"
       source: >-
          /* Want to capture all aNN fields, including aN_len and aN[x] */
          Pattern argRegex = /^a([0-9]+)(.*)$/;
@@ -2174,9 +2262,9 @@ processors:
            ctx.process.args.add(0, "[... " + firstIndex + " truncated arguments ...]");
          }
       on_failure:
-      - append:
-          field: error.message
-          value: "failed extracting process arguments: {{{ _ingest.on_failure_message }}}"
+        - append:
+            field: error.message
+            value: "failed extracting process arguments: {{{ _ingest.on_failure_message }}}"
   - rename:
       ignore_failure: true
       field: auditd.log.record_type
@@ -2200,7 +2288,7 @@ processors:
   - grok:
       field: source.address
       patterns:
-      - "^%{IP:source.ip}$"
+        - "^%{IP:source.ip}$"
       ignore_failure: true
   - geoip:
       field: source.ip
@@ -2211,8 +2299,8 @@ processors:
       field: source.ip
       target_field: source.as
       properties:
-      - asn
-      - organization_name
+        - asn
+        - organization_name
       ignore_missing: true
   - rename:
       field: source.as.asn
@@ -2243,4 +2331,4 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"

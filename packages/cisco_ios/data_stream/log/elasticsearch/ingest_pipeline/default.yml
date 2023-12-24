@@ -4,7 +4,7 @@ description: Pipeline for Cisco IOS logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.10.0'
+      value: '8.11.0'
   - set:
       field: event.category
       value: [network]
@@ -211,6 +211,13 @@ processors:
       tag: dissect_logout
       pattern: "User %{source.user.name} has %{cisco.ios.action} %{cisco.ios.session.type} session %{cisco.ios.session.number}(%{source.address})"
       if: "ctx.event?.code == 'LOGOUT'"
+  - grok:
+      field: message
+      tag: grok_badauth
+      patterns:
+        - '^No MD5 digest from %{DATA:source.address}(\(%{INT:source.port}\)|\:%{INT:source.port}) to %{DATA:destination.address}(\(%{INT:destination.port}\)|\:%{INT:destination.port})(?: \(RST\) ((tableid - %{DATA:cisco.ios.tableid})|(%{GREEDYDATA:_temp_.rst})))?$'
+      ignore_missing: true
+      if: ctx.event?.code == 'BADAUTH'
   - grok:
       field: message
       tag: grok_message_rp_join

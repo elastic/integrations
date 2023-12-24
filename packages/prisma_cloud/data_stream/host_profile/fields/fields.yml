@@ -1,0 +1,180 @@
+- name: prisma_cloud
+  type: group
+  fields:
+    - name: host_profile
+      type: group
+      fields:
+        - name: _id
+          type: keyword
+          description: ID is the profile ID (hostname).
+        - name: account_id
+          type: keyword
+          description: AccountID is the cloud account ID associated with the profile.
+        - name: apps
+          type: group
+          fields:
+            - name: listening_ports
+              type: group
+              fields:
+                - name: command
+                  type: keyword
+                  description: Command represents the command that triggered the connection.
+                - name: modified
+                  type: date
+                  description: Modified is a timestamp of when the event occurred.
+                - name: port
+                  type: long
+                  description: Port is the port number.
+                - name: process_path
+                  type: keyword
+                  description: ProcessPath represents the path to the process that uses the port.
+            - name: name
+              type: keyword
+              description: Name is the app name.
+            - name: outgoing_ports
+              type: group
+              fields:
+                - name: command
+                  type: keyword
+                  description: Command represents the command that triggered the connection.
+                - name: country
+                  type: keyword
+                  description: Country is the country ISO code for the given IP address.
+                - name: ip
+                  type: ip
+                  description: IP is the IP address captured over this port.
+                - name: modified
+                  type: date
+                  description: Modified is a timestamp of when the event occurred.
+                - name: port
+                  type: long
+                  description: Port is the port number.
+                - name: process_path
+                  type: keyword
+                  description: ProcessPath represents the path to the process that uses the port.
+            - name: processes
+              type: group
+              fields:
+                - name: command
+                  type: keyword
+                  description: Command represents the command that triggered the connection.
+                - name: interactive
+                  type: boolean
+                  description: Interactive indicates whether the process belongs to an interactive session.
+                - name: md5
+                  type: keyword
+                  description: MD5 is the process binary MD5 sum.
+                - name: modified
+                  type: boolean
+                  description: Modified indicates the process binary was modified after the container has started.
+                - name: path
+                  type: keyword
+                  description: Path is the process binary path.
+                - name: ppath
+                  type: keyword
+                  description: PPath is the parent process path.
+                - name: time
+                  type: date
+                  description: Time is the time in which the process was added. If the process was modified, Time is the modification time.
+                - name: user
+                  type: keyword
+                  description: User represents the username that started the process.
+            - name: startup_process
+              type: group
+              fields:
+                - name: command
+                  type: keyword
+                  description: Command represents the command that triggered the connection.
+                - name: interactive
+                  type: boolean
+                  description: Interactive indicates whether the process belongs to an interactive session.
+                - name: md5
+                  type: keyword
+                  description: MD5 is the process binary MD5 sum.
+                - name: modified
+                  type: boolean
+                  description: Modified is a timestamp of when the event occurred.
+                - name: path
+                  type: keyword
+                  description: Path is the process binary path.
+                - name: ppath
+                  type: keyword
+                  description: PPath is the parent process path.
+                - name: time
+                  type: date
+                  description: Time is the time in which the process was added. If the process was modified, Time is the modification time.
+                - name: user
+                  type: keyword
+                  description: User represents the username that started the process.
+        - name: collections
+          type: keyword
+          description: Collections is a list of collections to which this profile applies.
+        - name: created
+          type: date
+          description: Created is the profile creation time.
+        - name: geoip
+          type: group
+          fields:
+            - name: countries
+              type: group
+              fields:
+                - name: code
+                  type: keyword
+                  description: Code is the country iso code.
+                - name: ip
+                  type: ip
+                  description: Ip is the Ip address.
+                - name: modified
+                  type: date
+                  description: Modified is the last modified time of this entry.
+            - name: modified
+              type: date
+              description: Modified is the last modified time of the cache.
+        - name: hash
+          type: keyword
+          description: ProfileHash represents the profile hash It is allowed to contain up to uint32 numbers, and represented by int64 since mongodb does not support unsigned data types.
+        - name: labels
+          type: keyword
+          description: Labels are the labels associated with the profile.
+        - name: ssh_events
+          type: group
+          fields:
+            - name: command
+              type: keyword
+              description: Command represents the command that triggered the connection.
+            - name: country
+              type: keyword
+              description: Country represents the SSH client's origin country.
+            - name: interactive
+              type: boolean
+              description: Interactive indicates whether the process belongs to an interactive session.
+            - name: ip
+              type: keyword
+              description: IP address represents the connection client IP address.
+            - name: login_time
+              type: date
+              description: LoginTime represents the SSH login time.
+            - name: md5
+              type: keyword
+              description: MD5 is the process binary MD5 sum.
+            - name: modified
+              type: boolean
+              description: Modified indicates the process binary was modified after the container has started.
+            - name: path
+              type: keyword
+              description: Path is the process binary path.
+            - name: ppath
+              type: keyword
+              description: PPath is the parent process path.
+            - name: time
+              type: date
+              description: Time is the time in which the process was added. If the process was modified, Time is the modification time.
+            - name: user
+              type: keyword
+              description: User represents the username that started the process.
+        - name: time
+          type: date
+          description: Time is the last time when this profile was modified.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.

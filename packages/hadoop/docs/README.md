@@ -50,13 +50,17 @@ An example event for `application` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "database",
+        "category": [
+            "database"
+        ],
         "created": "2023-02-02T12:03:41.178Z",
         "dataset": "hadoop.application",
         "ingested": "2023-02-02T12:03:42Z",
         "kind": "metric",
         "module": "httpjson",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "hadoop": {
         "application": {
@@ -111,7 +115,7 @@ An example event for `application` looks as following:
 | hadoop.application.vcore_seconds | The amount of CPU resources the application has allocated | long |
 | host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
-| tags | User defined tags | keyword |
+| tags | User defined tags. | keyword |
 
 
 ## cluster
@@ -145,13 +149,17 @@ An example event for `cluster` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "database",
+        "category": [
+            "database"
+        ],
         "dataset": "hadoop.cluster",
         "duration": 50350559,
         "ingested": "2022-04-04T17:22:25Z",
         "kind": "metric",
         "module": "http",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "hadoop": {
         "cluster": {
@@ -298,13 +306,17 @@ An example event for `datanode` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "database",
+        "category": [
+            "database"
+        ],
         "dataset": "hadoop.datanode",
         "duration": 241651987,
         "ingested": "2023-02-02T12:05:05Z",
         "kind": "metric",
         "module": "http",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "hadoop": {
         "datanode": {
@@ -439,13 +451,17 @@ An example event for `namenode` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "database",
+        "category": [
+            "database"
+        ],
         "dataset": "hadoop.namenode",
         "duration": 341259289,
         "ingested": "2022-03-28T11:36:09Z",
         "kind": "metric",
         "module": "http",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "hadoop": {
         "namenode": {
@@ -594,13 +610,17 @@ An example event for `node_manager` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "database",
+        "category": [
+            "database"
+        ],
         "dataset": "hadoop.node_manager",
         "duration": 12930711,
         "ingested": "2022-03-28T11:54:35Z",
         "kind": "metric",
         "module": "http",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "hadoop": {
         "node_manager": {
