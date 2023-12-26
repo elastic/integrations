@@ -111,6 +111,7 @@ An example event for `log` looks as following:
 | cisco.ios.sequence | Sequence number provided by the device when the device's service sequence-numbers global configuration is set. | keyword |
 | cisco.ios.session.number | Session ID | integer |
 | cisco.ios.session.type | Session type | keyword |
+| cisco.ios.tableid | The tableid associated with badauth errors | keyword |
 | cisco.ios.uptime | The uptime for the device. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |

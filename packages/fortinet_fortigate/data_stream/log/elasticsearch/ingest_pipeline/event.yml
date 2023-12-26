@@ -197,11 +197,14 @@ processors:
       field: fortinet.firewall.logdesc
       target_field: rule.description
       ignore_missing: true
-  - rename:
+  - convert:
       field: fortinet.firewall.addr
-      target_field: fortinet.firewall.addrgrp
-      if: ctx.rule?.description.startsWith('Dynamic address updated')
-      ignore_missing: true
+      type: ip
+      if: ctx.fortinet?.firewall?.addr != null && ctx.fortinet.firewall.addrgrp == null
+      on_failure:
+        - rename:
+            field: fortinet.firewall.addr
+            target_field: fortinet.firewall.addrgrp
   - rename:
       field: fortinet.firewall.url
       target_field: url.path
