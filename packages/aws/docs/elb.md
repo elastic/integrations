@@ -104,6 +104,7 @@ The `elb` dataset collects logs from AWS ELBs.
 | aws.elb.type | The type of the load balancer for v2 Load Balancers. | keyword |
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.metadata | AWS S3 object metadata values. | flattened |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
