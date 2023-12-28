@@ -40,66 +40,106 @@ An example event for `web` looks as following:
 ```json
 {
     "@timestamp": "2023-11-21T13:12:37.102Z",
+    "agent": {
+        "ephemeral_id": "eff1d7c7-f7ee-461c-aa04-d511324f0781",
+        "id": "41685dc6-3783-43a1-b01b-6a8ffb704b4e",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.10.1"
+    },
     "client": {
         "geo": {
             "country_iso_code": "US"
         },
-        "ip": "192.168.4.3"
+        "ip": "192.18.1.3"
     },
     "cloud": {
         "region": "us-east-1c"
+    },
+    "data_stream": {
+        "dataset": "menlo.web",
+        "namespace": "ep",
+        "type": "logs"
     },
     "destination": {
         "geo": {
             "country_iso_code": "US"
         },
-        "ip": "192.168.1.1"
+        "ip": "192.18.1.1"
     },
     "dns": {
-        "answers": [
-            "192.168.1.1",
-            ""
-        ]
+        "answers": {
+            "data": [
+                "192.18.1.1"
+            ]
+        }
     },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "41685dc6-3783-43a1-b01b-6a8ffb704b4e",
+        "snapshot": false,
+        "version": "8.10.1"
     },
     "event": {
-        "action": "isolate",
+        "agent_id_status": "verified",
         "category": [
             "web",
-            "network"
+            "network",
+            "threat"
         ],
-        "id": "nLxXe_iU-1",
+        "created": "2023-12-27T19:23:25.356Z",
+        "dataset": "menlo.web",
+        "ingested": "2023-12-27T19:23:28Z",
         "kind": "event",
         "module": "menlo",
-        "original": "{\"event\":{\"top_url\":\"http://elastic.co/\",\"egress_country\":\"US\",\"domain\":\"elastic.co\",\"protocol\":\"http\",\"risk_tally\":\"-1\",\"is_iframe\":\"false\",\"origin_ip\":\"192.168.1.1\",\"has_password\":\"false\",\"file_size\":\"NA\",\"browser_and_version\":\"Chrome_119\",\"user-agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36\",\"egress_ip\":\"192.168.4.55\",\"sandboxActivity\":\"NA\",\"event_time\":\"2023-11-21T13:12:37.102000\",\"full_session_id\":\"nLxXe_iU-1\",\"dst\":\"192.168.1.1\",\"filename\":\"NA\",\"risk_score\":\"low\",\"version\":\"2.0\",\"pe_rulename\":\"Business and Economy Category\",\"soph_dlp_ref\":\"NA\",\"numSubfiles\":\"0\",\"xff_ip\":\"NA\",\"product\":\"MSIP\",\"origin_country\":\"US\",\"vendor\":\"Menlo Security\",\"rendering_mode\":\"ACR1\",\"inconsistent_domain\":\"false\",\"x-client-country\":\"US\",\"sandboxResult\":\"NA\",\"request_type\":\"GET\",\"fullScanResult\":\"NA\",\"tab_id\":\"1\",\"pe_reason\":\"a77757d5-d3be-47ab-9394-cfff5887ade4\",\"categories\":\"Business and Economy\",\"severity\":\"5\",\"x-client-ip\":\"192.168.4.3\",\"name\":\"page_request\",\"url\":\"http://elastic.co/\",\"region\":\"us-east-1c\",\"userid\":\"example_user\",\"magicName\":\"NA\",\"pe_action\":\"isolate\",\"ua_type\":\"supported_browser\",\"content-type\":\"text/html; charset=UTF-8\",\"response_code\":\"308\"}}",
-        "outcome": "failure",
-        "reason": "a77757d5-d3be-47ab-9394-cfff5887ade4",
-        "severity": 5
+        "outcome": "unknown",
+        "reason": "a77757d5-d3be-47ab-9394-cfff5887ade4"
     },
-    "file": {
-        "name": "NA"
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "28da52b32df94b50aff67dfb8f1be3d6",
+        "ip": [
+            "172.18.0.7"
+        ],
+        "mac": [
+            "02-42-AC-12-00-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "6.5.11-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
     },
     "http": {
         "request": {
-            "method": "GET",
-            "mime_type": "text/html; charset=UTF-8"
+            "method": "GET"
         },
         "response": {
             "status_code": 308
         }
     },
+    "input": {
+        "type": "httpjson"
+    },
     "menlo": {
         "web": {
             "categories": "Business and Economy",
+            "content_type": "text/html; charset=UTF-8",
             "has_password": false,
             "is_iframe": "false",
             "request_type": "page_request",
             "tab_id": "1",
             "tally": -1,
-            "ua_type": "supported_browser",
-            "xff_ip": "NA"
+            "ua_type": "supported_browser"
         }
     },
     "network": {
@@ -110,7 +150,7 @@ An example event for `web` looks as following:
             "country_iso_code": "US"
         },
         "ip": [
-            "192.168.4.55"
+            "192.18.1.2"
         ],
         "product": "MSIP",
         "vendor": "Menlo Security",
@@ -118,8 +158,8 @@ An example event for `web` looks as following:
     },
     "related": {
         "ip": [
-            "192.168.4.3",
-            "192.168.1.1"
+            "192.18.1.3",
+            "192.18.1.1"
         ]
     },
     "risk": {
@@ -129,19 +169,17 @@ An example event for `web` looks as following:
         "geo": {
             "country_iso_code": "US"
         },
-        "ip": "192.168.1.1"
+        "ip": "192.18.1.1"
     },
     "source": {
         "geo": {
             "country_iso_code": "US"
         },
-        "ip": "192.168.4.3"
+        "ip": "192.18.1.3"
     },
-    "tags": [
-        "preserve_original_event"
-    ],
     "url": {
         "domain": "elastic.co",
+        "original": "http://elastic.co/",
         "path": "/",
         "registered_domain": "elastic.co",
         "scheme": "http",
@@ -272,20 +310,41 @@ An example event for `dlp` looks as following:
 
 ```json
 {
+    "@timestamp": "2023-12-27T19:22:33.235Z",
+    "agent": {
+        "ephemeral_id": "42e264a0-d8ae-45b9-8167-9f7a0630e1d6",
+        "id": "41685dc6-3783-43a1-b01b-6a8ffb704b4e",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.10.1"
+    },
+    "data_stream": {
+        "dataset": "menlo.dlp",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
-        "version": "8.8.0"
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "41685dc6-3783-43a1-b01b-6a8ffb704b4e",
+        "snapshot": false,
+        "version": "8.10.1"
     },
     "event": {
         "action": "block",
+        "agent_id_status": "verified",
         "category": [
             "threat",
             "network"
         ],
         "created": "2020-03-09T17:16:22.227Z",
+        "dataset": "menlo.dlp",
         "id": "a4c2161b3f81a287ec46d3c993a33f3b97ded5fd854fa184e7f50679303111ce",
+        "ingested": "2023-12-27T19:22:36Z",
         "kind": "event",
         "module": "menlo",
-        "original": "{\"event\":{\"dst_url\":\"http://tinyupload.com/\",\"user_input\":\"false\",\"protocol\":\"http\",\"file_type\":\"CSV\",\"domain\":\"tinyupload.com\",\"alerted\":\"false\",\"ccl_ids\":\"CreditordebitcardnumbersGlobal\",\"severity\":\"5\",\"event_time\":\"2020-03-09T17:16:22.227000\",\"event_id\":\"a4c2161b3f81a287ec46d3c993a33f3b97ded5fd854fa184e7f50679303111ce\",\"filename\":\"credit_cards.csv\",\"version\":\"2.0\",\"sha256\":\"fd1aee671d92aba0f9f0a8a6d5c6b843e09c8295ced9bb85e16d97360b4d7b3a\",\"status\":\"dirty\",\"product\":\"MSIP\",\"ccl_match_counts\":\"1\",\"vendor\":\"Menlo Security\",\"ccl_scores\":\"1\",\"rule_name\":\"Credit card block rule\",\"request_type\":\"GET\",\"src_url\":\"http://tinyupload.com/\",\"categories\":\"Download Sites\",\"stream_name\":\"/safefile-input/working_file\",\"name\":\"file_upload\",\"userid\":\"admin@menlosecurity.com\",\"action\":\"block\",\"rule_id\":\"1f3ef32c-ec62-42fb-8cad-e1fee3375099\"}}",
+        "original": "{\"event\":{\"action\":\"block\",\"alerted\":\"false\",\"categories\":\"Download Sites\",\"ccl_ids\":\"CreditordebitcardnumbersGlobal\",\"ccl_match_counts\":\"1\",\"ccl_scores\":\"1\",\"domain\":\"tinyupload.com\",\"dst_url\":\"http://tinyupload.com/\",\"event_id\":\"a4c2161b3f81a287ec46d3c993a33f3b97ded5fd854fa184e7f50679303111ce\",\"event_time\":\"2020-03-09T17:16:22.227000\",\"file_type\":\"CSV\",\"filename\":\"credit_cards.csv\",\"name\":\"file_upload\",\"product\":\"MSIP\",\"protocol\":\"http\",\"request_type\":\"GET\",\"rule_id\":\"1f3ef32c-ec62-42fb-8cad-e1fee3375099\",\"rule_name\":\"Credit card block rule\",\"severity\":\"5\",\"sha256\":\"fd1aee671d92aba0f9f0a8a6d5c6b843e09c8295ced9bb85e16d97360b4d7b3a\",\"src_url\":\"http://tinyupload.com/\",\"status\":\"dirty\",\"stream_name\":\"/safefile-input/working_file\",\"user_input\":\"false\",\"userid\":\"admin@menlosecurity.com\",\"vendor\":\"Menlo Security\",\"version\":\"2.0\"}}",
         "outcome": "success",
         "severity": 5
     },
@@ -293,13 +352,37 @@ An example event for `dlp` looks as following:
         "hash": {
             "sha256": "fd1aee671d92aba0f9f0a8a6d5c6b843e09c8295ced9bb85e16d97360b4d7b3a"
         },
-        "name": "credit_cards.csv",
-        "type": "CSV"
+        "name": "credit_cards.csv"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "28da52b32df94b50aff67dfb8f1be3d6",
+        "ip": [
+            "172.18.0.7"
+        ],
+        "mac": [
+            "02-42-AC-12-00-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "6.5.11-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
     },
     "http": {
         "request": {
             "method": "GET"
         }
+    },
+    "input": {
+        "type": "httpjson"
     },
     "menlo": {
         "dlp": {
@@ -324,11 +407,9 @@ An example event for `dlp` looks as following:
         "id": "1f3ef32c-ec62-42fb-8cad-e1fee3375099",
         "name": "Credit card block rule"
     },
-    "tags": [
-        "preserve_original_event"
-    ],
     "url": {
         "domain": "tinyupload.com",
+        "original": "http://tinyupload.com/",
         "path": "/",
         "registered_domain": "tinyupload.com",
         "scheme": "http",
