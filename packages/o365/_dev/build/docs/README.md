@@ -7,7 +7,7 @@ This integration is for [Microsoft Office 365](https://docs.microsoft.com/en-us/
 To use this package you need to [enable `Audit Log`](https://learn.microsoft.com/en-us/purview/audit-log-enable-disable) and register an application in [Microsoft Entra ID (formerly known as Azure Active Directory)](https://www.microsoft.com/en-us/security/business/identity-access/microsoft-entra-id).
 
 Once the application is registered, configure and/or note the following to setup O365 Elastic integration:
-1. Note `Application (client) ID` and the `Directory (tenant) ID` in the registered application's `Overview` page. 
+1. Note `Application (client) ID` and the `Directory (tenant) ID` in the registered application's `Overview` page.
 2. Create a new secret to configure the authentication of your application. 
     - Navigate to `Certificates & Secrets` section.
     - Click `New client secret` and provide some description to create new secret.
@@ -27,6 +27,7 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 - Add `Directory (tenant) ID` noted in Step 1 into `Directory (tenant) ID` parameter. This is required field.
 - Add `Application (client) ID` noted in Step 1 into `Application (client) ID` parameter. This is required field.
 - Add the secret `Value` noted in Step 2 into `Client Secret` parameter. This is required field.
+- Oauth2 Token URL can be added to generate the tokens during the oauth2 flow. If not provided, above `Directory (tenant) ID` will be used for oauth2 token generation.
 - Modify any other parameters as necessary.
 
 
