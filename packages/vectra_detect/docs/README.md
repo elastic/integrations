@@ -50,8 +50,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2023-02-14T08:52:22.000Z",
     "agent": {
-        "ephemeral_id": "a3bcc97a-83bf-43a7-9a01-339537595469",
-        "id": "0634707b-5b23-4d44-a21b-078537ad123e",
+        "ephemeral_id": "d1ccd3bb-36c3-4e60-a806-f450d426238c",
+        "id": "70808e18-f29a-48b6-8386-b77582d73652",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.0"
@@ -65,7 +65,7 @@ An example event for `log` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0634707b-5b23-4d44-a21b-078537ad123e",
+        "id": "70808e18-f29a-48b6-8386-b77582d73652",
         "snapshot": false,
         "version": "8.3.0"
     },
@@ -77,7 +77,7 @@ An example event for `log` looks as following:
         ],
         "created": "2023-02-14T09:52:22.000Z",
         "dataset": "vectra_detect.log",
-        "ingested": "2023-05-30T11:38:58Z",
+        "ingested": "2023-12-27T10:07:02Z",
         "kind": "event",
         "original": "vectra_json_host_lockdown -: {\"version\": \"7.4\", \"host_id\": 231, \"user\": \"vectrademo\", \"headend_addr\": \"89.160.20.112\", \"host_name\": \"conrad-t480\", \"href\": \"https://x29-1-13.sc.tvec/hosts/231\", \"action\": \"unlock\", \"success\": true, \"will_retry\": false, \"category\": \"HOST_LOCKDOWN\", \"edr_type\": \"sentinelone\", \"vectra_timestamp\": \"1676364742\"}",
         "outcome": "success",
@@ -95,7 +95,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.21.0.7:35109"
+            "address": "192.168.245.4:53106"
         },
         "syslog": {
             "facility": {
@@ -181,7 +181,6 @@ An example event for `log` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
