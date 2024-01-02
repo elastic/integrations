@@ -18,45 +18,52 @@ resource "aws_sqs_queue" "queue" {
   name = "elastic-package-security-lake-queue-${var.TEST_RUN_ID}"
 }
 
-data "aws_caller_identity" "current" {}
+# IAM Policy for EventBridge Scheduler
+resource "aws_iam_policy" "sqs_access_policy" {
+  count       = var.eventbridge_role_arn == null ? 1 : 0
+  name        = "sqs-access-policy-${var.TEST_RUN_ID}"
+  description = "Policy for EventBridge Scheduler to send messages to SQS"
 
-resource "aws_sqs_queue_policy" "schedule-event-policy" {
-  queue_url = aws_sqs_queue.queue.id
-
-  policy = <<POLICY
-{
-  "Version": "2012-10-17",
-  "Id": "sqspolicy",
-  "Statement": [
-    {
-      "Sid": "First",
-      "Effect": "Allow",
-      "Principal": "*",
-      "Action": ["sqs:SendMessage", "sqs:ReceiveMessage"],
-      "Resource": "${aws_sqs_queue.queue.arn}"
-    }
-  ]
-}
-POLICY
-}
-
-resource "aws_iam_role" "event_bridge_sqs_role" {
-  name = "event_bridge_sqs_role"
-
-  assume_role_policy = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
       {
-        "Effect" : "Allow",
-        "Principal" : {
-          "Service" : "scheduler.amazonaws.com"
-        },
-        "Action" : "sts:AssumeRole"
+        Action = [
+          "sqs:ReceiveMessage",
+          "sqs:SendMessage"
+        ],
+        Effect   = "Allow"
+        Resource = aws_sqs_queue.queue.arn
       }
     ]
   })
 }
 
+# IAM Role for EventBridge Scheduler
+resource "aws_iam_role" "eventbridge_scheduler_iam_role" {
+  count               = var.eventbridge_role_arn == null ? 1 : 0
+  name_prefix         = "eb-scheduler-role-${var.TEST_RUN_ID}-"
+  managed_policy_arns = [aws_iam_policy.sqs_access_policy.0.arn]
+  path                = "/"
+  assume_role_policy  = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "scheduler.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+        }
+    ]
+}
+EOF
+}
+
+// Simulate Amazon securitylake sending its notification events to SQS. Securitylake
+// uses a custom notification format that is different than the AWS S3 event
+// notification format.
 resource "aws_scheduler_schedule" "eventbridge_scheduler_every1minute" {
   name       = "eventbridge_scheduler_every1minute-${var.TEST_RUN_ID}"
   group_name = "default"
@@ -69,7 +76,7 @@ resource "aws_scheduler_schedule" "eventbridge_scheduler_every1minute" {
 
   target {
     arn      = aws_sqs_queue.queue.arn
-    role_arn = "arn:aws:iam::144492464627:role/eb-scheduler-role-20231101165501426500000001"
+    role_arn = var.eventbridge_role_arn == null ? aws_iam_role.eventbridge_scheduler_iam_role.0.arn : var.eventbridge_role_arn
 
     input = jsonencode({
       detail = {
@@ -90,8 +97,4 @@ resource "aws_s3_object" "object" {
   source = "./files/test.gz.parquet"
 
   depends_on = [aws_sqs_queue.queue]
-}
-
-output "queue_url" {
-  value = aws_sqs_queue.queue.url
 }
