@@ -163,6 +163,7 @@ with_kubernetes() {
 }
 
 with_yq() {
+    create_bin_folder
     check_platform_architecture
     local binary="yq_${platform_type_lowercase}_${arch_type}"
 
@@ -177,23 +178,40 @@ with_yq() {
     rm -rf "${BIN_FOLDER}/yq.tar.gz"
 }
 
+with_jq() {
+    create_bin_folder
+    check_platform_architecture
+    # filename for versions <=1.6 is jq-linux64
+    local binary="jq-${platform_type_lowercase}-${arch_type}"
+
+    retry 5 curl -sL -o "${BIN_FOLDER}/jq" "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/${binary}"
+
+    chmod +x "${BIN_FOLDER}/jq"
+    jq --version
+}
+
+with_github_cli() {
+    create_bin_folder
+    check_platform_architecture
+
+    mkdir -p "${WORKSPACE}/tmp"
+
+    local gh_filename="gh_${GH_CLI_VERSION}_${platform_type_lowercase}_${arch_type}"
+    local gh_tar_file="${gh_filename}.tar.gz"
+    local gh_tar_full_path="${WORKSPACE}/tmp/${gh_tar_file}"
+
+    retry 5 curl -sL -o "${gh_tar_full_path}" "https://github.com/cli/cli/releases/download/v${GH_CLI_VERSION}/${gh_tar_file}"
+
+    # just extract the binary file from the tar.gz
+    tar -C "${BIN_FOLDER}" -xpf "${gh_tar_full_path}" "${gh_filename}/bin/gh" --strip-components=2
+
+    chmod +x "${BIN_FOLDER}/gh"
+    rm -rf "${WORKSPACE}/tmp"
+
+    gh version
+}
+
 ## Logging and logout from Google Cloud
-google_cloud_upload_auth() {
-  local secretFileLocation
-  secretFileLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE_BASE}.XXXXXXXXX")/${GOOGLE_CREDENTIALS_FILENAME}
-  echo "${PACKAGE_UPLOADER_GCS_CREDENTIALS_SECRET}" > "${secretFileLocation}"
-  gcloud auth activate-service-account --key-file "${secretFileLocation}" 2> /dev/null
-  export GOOGLE_APPLICATION_CREDENTIALS=${secretFileLocation}
-}
-
-google_cloud_signing_auth() {
-  local secretFileLocation
-  secretFileLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE_BASE}.XXXXXXXXX")/${GOOGLE_CREDENTIALS_FILENAME}
-  echo "${SIGNING_PACKAGES_GCS_CREDENTIALS_SECRET}" > "${secretFileLocation}"
-  gcloud auth activate-service-account --key-file "${secretFileLocation}" 2> /dev/null
-  export GOOGLE_APPLICATION_CREDENTIALS=${secretFileLocation}
-}
-
 google_cloud_auth_safe_logs() {
     local gsUtilLocation
     gsUtilLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE}")
@@ -398,11 +416,14 @@ prepare_serverless_stack() {
     export EC_HOST=${EC_HOST_SECRET}
 
     echo "Boot up the Elastic stack"
-    ${ELASTIC_PACKAGE_BIN} stack up \
+    # grep command required to remove password from the output
+    if ! ${ELASTIC_PACKAGE_BIN} stack up \
         -d \
         ${args} \
         --provider serverless \
-        -U "stack.serverless.region=${EC_REGION_SECRET},stack.serverless.type=${SERVERLESS_PROJECT}" 2>&1 | grep -E -v "^Password: " # To remove password from the output
+        -U "stack.serverless.region=${EC_REGION_SECRET},stack.serverless.type=${SERVERLESS_PROJECT}" 2>&1 | grep -E -v "^Password: " ; then
+        return 1
+    fi
     echo ""
     ${ELASTIC_PACKAGE_BIN} stack status
     echo ""
@@ -422,6 +443,18 @@ is_spec_3_0_0() {
 
 echoerr() {
     echo "$@" 1>&2
+}
+
+get_last_failed_or_successful_build() {
+    local pipeline="$1"
+    local branch="$2"
+    local state_query_param="state[]=failed&state[]=passed"
+
+    local api_url="${API_BUILDKITE_PIPELINES_URL}/${pipeline}/builds?branch=${branch}&${state_query_param}&per_page=1"
+    local build_id
+    build_id=$(retry 5 curl -sH "Authorization: Bearer ${BUILDKITE_API_TOKEN}" "${api_url}" | jq -r '.[0] |.id')
+
+    echo "${build_id}"
 }
 
 get_commit_from_build() {
@@ -544,10 +577,10 @@ is_pr_affected() {
 }
 
 is_pr() {
-    if [[ "${BUILDKITE_PULL_REQUEST}" == "false" || "${BUILDKITE_TAG}" == "" ]]; then
-        return 0
+    if [[ "${BUILDKITE_PULL_REQUEST}" == "false" && "${BUILDKITE_TAG}" == "" ]]; then
+        return 1
     fi
-    return 1
+    return 0
 }
 
 kubernetes_service_deployer_used() {
@@ -657,7 +690,9 @@ run_tests_package() {
 
     # For non serverless, each Elastic stack is boot up checking each package manifest
     if ! is_serverless ; then
-        prepare_stack
+        if ! prepare_stack ; then
+            return 1
+        fi
     fi
 
     echo "--- [${package}] test installation"
@@ -798,8 +833,6 @@ process_package() {
 
     if ! is_serverless ; then
         if [[ $exit_code -eq 0 ]]; then
-            # TODO: add benchmarks support stash and comments in PR
-            # https://github.com/elastic/integrations/blob/befdc5cb752a08aaf5f79b0d9bdb68588ade9f27/.ci/Jenkinsfile#L180
             ${ELASTIC_PACKAGE_BIN} benchmark pipeline -v --report-format json --report-output file
         fi
     fi
@@ -821,105 +854,57 @@ process_package() {
     return $exit_code
 }
 
-## TODO: Benchmark helpers
-add_github_comment_benchmark() {
-    if ! is_pr ; then
+add_or_edit_gh_pr_comment() {
+    local owner="$1"
+    local repo="$2"
+    local pr_number="$3"
+    local metadata="<!--COMMENT_GENERATED_WITH_ID_${4}-->"
+    local commentFilePath="$5"
+    local contents
+    local comment_id
+
+    contents="$(cat "${commentFilePath}")"
+    printf -v contents '%s\n%s' "${contents}" "${metadata}"
+
+    echo "Looking for messages with pattern: \"${metadata}\""
+    comment_id=$(get_comment_with_pattern "${owner}" "${repo}" "${pr_number}" "${metadata}")
+    if [[ "${comment_id}" == "" ]]; then
+        echo "Creating new comment"
+        gh pr comment \
+          "${BUILDKITE_PULL_REQUEST}" \
+          --body "${contents}"
         return
     fi
 
-    local benchmark_github_file="report.md"
-    local benchmark_results="benchmark-results"
-    local current_benchmark_results="build/${benchmark_results}"
-    local baseline="build/${BUILDKITE_PULL_REQUEST_BASE_BRANCH}/${benchmark_results}"
-    local is_full_report="false"
-
-    if [[ "${GITHUB_PR_TRIGGER_COMMENT}" =~ benchmark\ fullreport ]]; then
-        is_full_report="true"
-    fi
-
-    pushd "${WORKSPACE}" > /dev/null
-
-    mkdir -p "${current_benchmark_results}"
-    mkdir -p "${baseline}"
-
-    # download PR benchmarks
-    download_benchmark_results \
-        "${JOB_GCS_BUCKET}" \
-        "$(get_benchmark_path_prefix)" \
-        "${current_benchmark_results}"
-
-    # download main benchmark if any
-    download_benchmark_results \
-        "${JOB_GCS_BUCKET}" \
-        "$(get_benchmark_path_prefix)" \
-        baseline
-
-    echo "Debug: current benchmark"
-    ls -l "${current_benchmark_results}"
-
-    echo "Debug: baseline benchmark"
-    ls -l "${baseline}"
-
-    echo "Run benchmark report"
-    ${ELASTIC_PACKAGE_BIN} report benchmark \
-        --fail-on-missing=false \
-        --new="${current_benchmark_results}" \
-        --old="${baseline}" \
-        --threshold="${BENCHMARK_THRESHOLD}" \
-        --report-output-path="${benchmark_github_file}" \
-        --full=${is_full_report}
-
-
-    if [ ! -f ${benchmark_github_file} ]; then
-        echo "add_github_comment_benchmark: it was not possible to send the message"
-        return
-    fi
-    # TODO: write github comment in PR
-    popd > /dev/null
+    echo "Updating comment: ${comment_id}"
+    gh api \
+      --method PATCH \
+      -H "Accept: application/vnd.github+json" \
+      -H "X-GitHub-Api-Version: 2022-11-28" \
+      "/repos/${owner}/${repo}/issues/comments/${comment_id}" \
+      -f body="${contents}" | jq -r '.html_url'
 }
 
-stash_benchmark_results() {
-    local wildcard="build/benchmark-results/*.json"
-    if ! ls ${wildcard} ; then
-        echo "isBenchmarkResultsPresent: benchmark files not found, report won't be stashed"
-        return 0
-    fi
+# FIXME: In a Pull Request that there are more than 100 comments,
+# if the comment is older than those 100 comments, it won't be found due to pagination
+get_comment_with_pattern() {
+    local owner="$1"
+    local repo="$2"
+    local pr_number="$3"
+    local pattern="$4"
+    local comment_id=""
 
-    upload_benchmark_results \
-        "${JOB_GCS_BUCKET}" \
-        "${wildcard}" \
-        "$(get_benchmark_path_prefix)"
-}
+    gh api \
+      -XGET \
+      -H "Accept: application/vnd.github+json" \
+      -H "X-GitHub-Api-Version: 2022-11-28" \
+      "/repos/${owner}/${repo}/issues/${pr_number}/comments" \
+      -F per_page=100 > response_github.json
 
-get_benchmark_path_prefix() {
-    echo "${BUILDKITE_PIPELINE_SLUG}/$(buildkite_pr_branch_build_id)/benchmark-results/"
-}
+    # get the latest comment ID in case there are several posted
+    comment_id=$(cat response_github.json | jq -r ".[] | select(.body | match(\"${pattern}\")) | .id" | tail -1)
 
-upload_benchmark_results() {
-    local bucket="$1"
-    local source="$2"
-    local target="$3"
+    rm response_github.json
 
-    if ! ls ${source} 2>&1 > /dev/null ; then
-        echo "upload_benchmark_results: artifacts files not found, nothing will be archived"
-        return
-    fi
-
-    google_cloud_auth_safe_logs
-
-    gsutil cp ${source} "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${target}"
-
-    google_cloud_logout_active_account
-}
-
-download_benchmark_results() {
-    local bucket="$1"
-    local source="$2"
-    local target="$3"
-
-    google_cloud_auth_safe_logs
-
-    gsutil cp "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${source}" "${target}"
-
-    google_cloud_logout_active_account
+    echo "${comment_id}"
 }
