@@ -85,7 +85,12 @@ processors:
   - set:
       if: ctx?.source?.address == null
       field: source.address
-      value: '{{{azure.signinlogs.caller_ip_address}}}'
+      value: '{{{azure.signinlogs.properties.caller_ip_address}}}'
+      ignore_empty_value: true
+  - set:
+      if: ctx?.source?.address == null
+      field: azure.signinlogs.properties.callerIpAddress
+      value: '{{{azure.signinlogs.properties.callerIpAddress}}}'
       ignore_empty_value: true
   - convert:
       field: source.address
