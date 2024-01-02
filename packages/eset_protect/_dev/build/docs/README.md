@@ -6,9 +6,9 @@ ESET PROTECT enables you to manage ESET products on workstations and servers in 
 
 The ESET PROTECT integration collects three types of logs: Detection, Device Task and Event.
 
-**Detection** is used to retrieve detections via the [ESET Connect - Incident Management](https://eu.business-account.iam.eset.systems/swagger/?urls.primaryName=Incident%20Management).
+**[Detection](https://help.eset.com/protect_cloud/en-US/admin_ct.html?threats.html)** is used to retrieve detections via the [ESET Connect - Incident Management](https://eu.business-account.iam.eset.systems/swagger/?urls.primaryName=Incident%20Management).
 
-**Device Task** is used to retrieve device tasks via the [ESET Connect - Automation](https://eu.business-account.iam.eset.systems/swagger/?urls.primaryName=Automation).
+**[Device Task](https://help.eset.com/protect_cloud/en-US/admin_ct.html?admin_ct.html)** is used to retrieve device tasks via the [ESET Connect - Automation](https://eu.business-account.iam.eset.systems/swagger/?urls.primaryName=Automation).
 
 **Event** is used to retrieve Detection, Firewall, HIPS, Audit, and ESET Inspect logs using the [Syslog Server](https://help.eset.com/protect_cloud/en-US/events-exported-to-json-format.html?admin_server_settings_export_to_syslog.html).
 

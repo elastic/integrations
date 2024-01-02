@@ -62,11 +62,28 @@ processors:
       field: event.type
       tag: append_info_into_event_type
       value: info
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: ESET
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: ESET PROTECT
+  - set:
+      field: observer.type
+      tag: set_observer_type
+      value: ids
   - rename:
       field: json.category
       tag: rename_category
       target_field: eset_protect.detection.category
       ignore_missing: true
+  - set:
+      field: rule.category
+      tag: set_rule_category_from_category
+      copy_from: eset_protect.detection.category
+      ignore_empty_value: true
   - rename:
       field: json.context.circumstances
       tag: rename_context_circumstances
@@ -108,11 +125,26 @@ processors:
       tag: rename_context_userName
       target_field: eset_protect.detection.context.user_name
       ignore_missing: true
-  - set:
-      field: user.name
-      tag: set_user_name_from_detection_context_user_name
-      copy_from: eset_protect.detection.context.user_name
-      ignore_empty_value: true
+  - grok:
+      field: eset_protect.detection.context.user_name
+      tag: grok_user_name
+      ignore_missing: true
+      patterns:
+        - '^%{HOSTNAME:user.domain}\\%{USERNAME:user.name}$'
+        - '^%{HOSTNAME:user.domain}\\\\%{USERNAME:user.name}$'
+        - "^%{USERNAME:user.name}@%{HOSTNAME:user.domain}$"
+        - "^%{GREEDYDATA:user.name}$"
+      if: ctx.eset_protect?.detection?.context?.user_name != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+  - append:
+      field: related.user
+      tag: append_user_name_into_related_user
+      value: "{{{user.name}}}"
+      allow_duplicates: false
+      if: ctx.user?.name != null
   - append:
       field: related.user
       tag: append_detection_context_user_name_into_related_user
@@ -333,7 +365,6 @@ processors:
   - foreach:
       field: json.responses
       if: ctx.json?.responses instanceof List
-      ignore_failure: true
       processor:
         convert:
           field: _ingest._value.deviceRestartRequired
@@ -351,7 +382,6 @@ processors:
   - foreach:
       field: json.responses
       if: ctx.json?.responses instanceof List
-      ignore_failure: true
       processor:
         rename:
           field: _ingest._value.displayName
@@ -361,7 +391,6 @@ processors:
   - foreach:
       field: json.responses
       if: ctx.json?.responses instanceof List
-      ignore_failure: true
       processor:
         rename:
           field: _ingest._value.protectionName
@@ -371,7 +400,6 @@ processors:
   - foreach:
       field: json.responses
       if: ctx.json?.responses instanceof List
-      ignore_failure: true
       processor:
         remove:
           field: _ingest._value.deviceRestartRequired
@@ -405,9 +433,9 @@ processors:
       ignore_missing: true
   - remove:
       field:
+        - eset_protect.detection.category
         - eset_protect.detection.context.device_uuid
         - eset_protect.detection.context.process.path
-        - eset_protect.detection.context.user_name
         - eset_protect.detection.network_communication.local.ip_address
         - eset_protect.detection.network_communication.local.port
         - eset_protect.detection.network_communication.protocol_name

@@ -6,9 +6,9 @@ ESET PROTECT enables you to manage ESET products on workstations and servers in 
 
 The ESET PROTECT integration collects three types of logs: Detection, Device Task and Event.
 
-**Detection** is used to retrieve detections via the [ESET Connect - Incident Management](https://eu.business-account.iam.eset.systems/swagger/?urls.primaryName=Incident%20Management).
+**[Detection](https://help.eset.com/protect_cloud/en-US/admin_ct.html?threats.html)** is used to retrieve detections via the [ESET Connect - Incident Management](https://eu.business-account.iam.eset.systems/swagger/?urls.primaryName=Incident%20Management).
 
-**Device Task** is used to retrieve device tasks via the [ESET Connect - Automation](https://eu.business-account.iam.eset.systems/swagger/?urls.primaryName=Automation).
+**[Device Task](https://help.eset.com/protect_cloud/en-US/admin_ct.html?admin_ct.html)** is used to retrieve device tasks via the [ESET Connect - Automation](https://eu.business-account.iam.eset.systems/swagger/?urls.primaryName=Automation).
 
 **Event** is used to retrieve Detection, Firewall, HIPS, Audit, and ESET Inspect logs using the [Syslog Server](https://help.eset.com/protect_cloud/en-US/events-exported-to-json-format.html?admin_server_settings_export_to_syslog.html).
 
@@ -77,8 +77,8 @@ An example event for `detection` looks as following:
 {
     "@timestamp": "2023-10-26T13:36:53.000Z",
     "agent": {
-        "ephemeral_id": "3d39ed12-0db7-4f1f-bd9d-6a29c5c1ba8a",
-        "id": "b6b28fdd-af2a-4f4a-b4f5-1fba5ca6b8ad",
+        "ephemeral_id": "a8b05115-c46c-4367-91e8-07a6308c6b0d",
+        "id": "e2d23ba0-7fee-4fa5-9887-0c441f1cb0b0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.0"
@@ -114,7 +114,7 @@ An example event for `detection` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b6b28fdd-af2a-4f4a-b4f5-1fba5ca6b8ad",
+        "id": "e2d23ba0-7fee-4fa5-9887-0c441f1cb0b0",
         "snapshot": true,
         "version": "8.12.0"
     },
@@ -151,7 +151,7 @@ An example event for `detection` looks as following:
             "intrusion_detection"
         ],
         "dataset": "eset_protect.detection",
-        "ingested": "2023-12-21T06:50:49Z",
+        "ingested": "2024-01-01T10:24:04Z",
         "kind": "alert",
         "original": "{\"category\":\"DETECTION_CATEGORY_NETWORK_INTRUSION\",\"context\":{\"circumstances\":\"Eicar\",\"deviceUuid\":\"xxx-xxxx-1234-5678-xxxxxxxxxxxx\",\"process\":{\"path\":\"C:\\\\Windows\\\\chrome.exe\"},\"userName\":\"testingpc\\\\example\"},\"networkCommunication\":{\"protocolName\":\"0\",\"remoteIpAddress\":\"89.160.20.112\",\"remotePort\":443},\"objectHashSha1\":\"AAF4C61DDCC5E8A2DABEDE0F3B4820123456789D\",\"objectTypeName\":\"File\",\"objectUrl\":\"C:\\\\Temp\\\\06516f11-xxxx-xxxx-xxxx-37da66b5de99_ccf7464ba6e2e12e984514f694bfb10d03de77358d8a3afd7a2ffed150ec1df8.zip.e99\\\\ccf7464ba6e2e12e984514f694bfb10d03de77358d8a3afd7a2ffed150ec1df8\",\"occurTime\":\"2023-10-26T13:36:53Z\",\"responses\":[{}],\"severityLevel\":\"SEVERITY_LEVEL_MEDIUM\",\"typeName\":\"TCP Port scanning attack\",\"uuid\":\"xxx-xxxx-xxxx-1234-xxxxxxxxxxxx\"}",
         "type": [
@@ -170,6 +170,11 @@ An example event for `detection` looks as following:
         "type": "cel"
     },
     "message": "Eicar",
+    "observer": {
+        "product": "ESET PROTECT",
+        "type": "ids",
+        "vendor": "ESET"
+    },
     "process": {
         "executable": "C:\\Windows\\chrome.exe"
     },
@@ -184,8 +189,12 @@ An example event for `detection` looks as following:
             "89.160.20.112"
         ],
         "user": [
+            "example",
             "testingpc\\example"
         ]
+    },
+    "rule": {
+        "category": "DETECTION_CATEGORY_NETWORK_INTRUSION"
     },
     "tags": [
         "preserve_original_event",
@@ -201,7 +210,8 @@ An example event for `detection` looks as following:
         }
     },
     "user": {
-        "name": "testingpc\\example"
+        "domain": "testingpc",
+        "name": "example"
     }
 }
 ```
@@ -255,10 +265,10 @@ An example event for `device_task` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-12-21T06:51:24.371Z",
+    "@timestamp": "2024-01-01T10:24:44.613Z",
     "agent": {
-        "ephemeral_id": "767dc9f6-9336-4c1a-8f48-f6854e7f465e",
-        "id": "b6b28fdd-af2a-4f4a-b4f5-1fba5ca6b8ad",
+        "ephemeral_id": "ec01aa31-b589-4e50-bb82-a19801f65aa4",
+        "id": "e2d23ba0-7fee-4fa5-9887-0c441f1cb0b0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.0"
@@ -272,14 +282,14 @@ An example event for `device_task` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b6b28fdd-af2a-4f4a-b4f5-1fba5ca6b8ad",
+        "id": "e2d23ba0-7fee-4fa5-9887-0c441f1cb0b0",
         "snapshot": true,
         "version": "8.12.0"
     },
     "eset_protect": {
         "device_task": {
             "action": {
-                "name": "Product Activation",
+                "name": "Shutdown computer",
                 "params": {
                     "@type": "type.googleapis.com/Era.Common.DataDefinition.Task.ESS.OnDemandScan",
                     "cleaning_enabled": true,
@@ -290,10 +300,12 @@ An example event for `device_task` looks as following:
                     ]
                 }
             },
-            "description": "Automatically created via ESET LiveGuard",
-            "display_name": "Product activation - via ESET LiveGuard",
+            "description": "Automatically created via context menu",
+            "display_name": "Reboot Computer - via context menu",
             "targets": {
                 "devices_uuids": [
+                    "0205321e-XXXX-XXXX-1234-feeb35010ea7",
+                    "0205321e-XXXX-XXXX-5678-feeb35010ea7",
                     "0205321e-XXXX-1234-5678-feeb35010ea7"
                 ]
             },
@@ -304,23 +316,25 @@ An example event for `device_task` looks as following:
                     }
                 }
             ],
-            "uuid": "c93070e0-1234-1234-5678-c48f0e5e0b7e",
+            "uuid": "c93070e0-XXXX-1234-5678-c48f0e5e0b7e",
             "version_id": "1511"
         }
     },
     "event": {
-        "action": "Product Activation",
+        "action": "Shutdown computer",
         "agent_id_status": "verified",
         "dataset": "eset_protect.device_task",
-        "ingested": "2023-12-21T06:51:36Z",
+        "ingested": "2024-01-01T10:24:56Z",
         "kind": "event",
-        "original": "{\"action\":{\"name\":\"Product Activation\",\"params\":{\"@type\":\"type.googleapis.com/Era.Common.DataDefinition.Task.ESS.OnDemandScan\",\"cleaningEnabled\":true,\"customProfileName\":\"DefaultProfile\",\"scanProfile\":\"InDepth\",\"scanTargets\":[\"eset://AllTargets\"]}},\"description\":\"Automatically created via ESET LiveGuard\",\"displayName\":\"Product activation - via ESET LiveGuard\",\"targets\":{\"devicesUuids\":[\"0205321e-XXXX-1234-5678-feeb35010ea7\"]},\"triggers\":[{\"manual\":{\"expireTime\":\"2023-12-01T01:30:00Z\"}}],\"uuid\":\"c93070e0-1234-1234-5678-c48f0e5e0b7e\",\"versionId\":\"1511\"}",
+        "original": "{\"action\":{\"name\":\"Shutdown computer\",\"params\":{\"@type\":\"type.googleapis.com/Era.Common.DataDefinition.Task.ESS.OnDemandScan\",\"cleaningEnabled\":true,\"customProfileName\":\"DefaultProfile\",\"scanProfile\":\"InDepth\",\"scanTargets\":[\"eset://AllTargets\"]}},\"description\":\"Automatically created via context menu\",\"displayName\":\"Reboot Computer - via context menu\",\"targets\":{\"devicesUuids\":[\"0205321e-XXXX-XXXX-1234-feeb35010ea7\",\"0205321e-XXXX-XXXX-5678-feeb35010ea7\",\"0205321e-XXXX-1234-5678-feeb35010ea7\"]},\"triggers\":[{\"manual\":{\"expireTime\":\"2023-12-01T01:30:00Z\"}}],\"uuid\":\"c93070e0-XXXX-1234-5678-c48f0e5e0b7e\",\"versionId\":\"1511\"}",
         "type": [
             "info"
         ]
     },
     "host": {
         "id": [
+            "0205321e-XXXX-XXXX-1234-feeb35010ea7",
+            "0205321e-XXXX-XXXX-5678-feeb35010ea7",
             "0205321e-XXXX-1234-5678-feeb35010ea7"
         ]
     },
@@ -329,6 +343,8 @@ An example event for `device_task` looks as following:
     },
     "related": {
         "hosts": [
+            "0205321e-XXXX-XXXX-1234-feeb35010ea7",
+            "0205321e-XXXX-XXXX-5678-feeb35010ea7",
             "0205321e-XXXX-1234-5678-feeb35010ea7"
         ]
     },
@@ -385,8 +401,8 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2021-06-21T03:56:20.000Z",
     "agent": {
-        "ephemeral_id": "a6a60266-c7e2-4f8b-a29f-575fa030206d",
-        "id": "b6b28fdd-af2a-4f4a-b4f5-1fba5ca6b8ad",
+        "ephemeral_id": "2f3c31b1-4719-44cd-8f9f-151032ee5881",
+        "id": "e2d23ba0-7fee-4fa5-9887-0c441f1cb0b0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.0"
@@ -421,7 +437,7 @@ An example event for `event` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b6b28fdd-af2a-4f4a-b4f5-1fba5ca6b8ad",
+        "id": "e2d23ba0-7fee-4fa5-9887-0c441f1cb0b0",
         "snapshot": true,
         "version": "8.12.0"
     },
@@ -450,12 +466,13 @@ An example event for `event` looks as following:
         }
     },
     "event": {
+        "action": "blocked",
         "agent_id_status": "verified",
         "category": [
             "web"
         ],
         "dataset": "eset_protect.event",
-        "ingested": "2023-12-21T06:52:28Z",
+        "ingested": "2024-01-01T10:25:49Z",
         "kind": "alert",
         "original": "{\"event_type\":\"FilteredWebsites_Event\",\"ipv4\":\"192.168.30.30\",\"hostname\":\"win-test\",\"group_name\":\"All/Lost & found\",\"os_name\":\"Microsoft Windows 11 Pro\",\"group_description\":\"Lost & found static group\",\"source_uuid\":\"d9477661-8fa4-4144-b8d4-e37b983bcd69\",\"occured\":\"21-Jun-2021 03:56:20\",\"severity\":\"Warning\",\"event\":\"An attempt to connect to URL\",\"target_address\":\"89.160.20.128\",\"target_address_type\":\"IPv4\",\"scanner_id\":\"HTTP filter\",\"action_taken\":\"blocked\",\"object_uri\":\"https://test.com\",\"hash\":\"ABCDAA625E6961037B8904E113FD0C232A7D0EDC\",\"username\":\"WIN-TEST\\\\Administrator\",\"processname\":\"C:\\\\Program Files\\\\Web browser\\\\brwser.exe\",\"rule_id\":\"Blocked by PUA blacklist\"}",
         "type": [
@@ -480,7 +497,7 @@ An example event for `event` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.25.0.1:35850"
+            "address": "172.31.0.8:35072"
         },
         "syslog": {
             "appname": "ERAServer",
@@ -499,7 +516,7 @@ An example event for `event` looks as following:
     },
     "message": "An attempt to connect to URL",
     "process": {
-        "name": "C:\\Program Files\\Web browser\\brwser.exe"
+        "executable": "C:\\Program Files\\Web browser\\brwser.exe"
     },
     "related": {
         "hash": [
@@ -514,6 +531,7 @@ An example event for `event` looks as following:
             "89.160.20.128"
         ],
         "user": [
+            "Administrator",
             "WIN-TEST\\Administrator"
         ]
     },
@@ -526,8 +544,14 @@ An example event for `event` looks as following:
         "forwarded",
         "eset_protect-event"
     ],
+    "threat": {
+        "indicator": {
+            "provider": "ESET PROTECT"
+        }
+    },
     "user": {
-        "name": "WIN-TEST\\Administrator"
+        "domain": "WIN-TEST",
+        "name": "Administrator"
     }
 }
 ```
@@ -595,7 +619,6 @@ An example event for `event` looks as following:
 | eset_protect.event.threat_name | Name of the detection. | keyword |
 | eset_protect.event.threat_type | Type of detection. | keyword |
 | eset_protect.event.type | Type of exported events. | keyword |
-| eset_protect.event.user | Security user involved. | keyword |
 | eset_protect.event.username | Name of the user account associated with the event. | keyword |
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |

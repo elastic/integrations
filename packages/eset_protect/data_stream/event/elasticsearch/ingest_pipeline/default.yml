@@ -189,11 +189,21 @@ processors:
       target_field: eset_protect.event.type
       ignore_missing: true
   - set:
+      field: threat.indicator.provider
+      tag: set_threat_indicator_provider
+      value: ESET PROTECT
+      if: ctx.eset_protect?.event?.type != null && ['Threat_Event','HipsAggregated_Event','FirewallAggregated_Event','FilteredWebsites_Event','BlockedFiles_Event'].contains(ctx.eset_protect.event.type)
+  - set:
+      field: threat.indicator.file.hash.sha1
+      tag: set_threat_indicator_file_hash_sha1
+      copy_from: json.hash
+      ignore_empty_value: true
+      if: ctx.eset_protect?.event?.type == 'BlockedFiles_Event' || ctx.json?.object_type?.toLowerCase() == 'file'
+  - set:
       field: threat.indicator.type
       tag: set_threat_indicator_type
       value: file
-      ignore_empty_value: true
-      if: ctx.eset_protect?.event?.type == 'BlockedFiles_Event'
+      if: ctx.eset_protect?.event?.type == 'BlockedFiles_Event' || ctx.json?.object_type?.toLowerCase() == 'file'
   - rename:
       field: json.account
       tag: rename_account
@@ -215,6 +225,18 @@ processors:
       tag: set_event_action_from_event_action
       copy_from: eset_protect.event.action
       ignore_empty_value: true
+      if: ctx.eset_protect?.event?.action != ''
+  - rename:
+      field: json.action_taken
+      tag: rename_action_taken
+      target_field: eset_protect.event.action_taken
+      ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_event_action_taken
+      copy_from: eset_protect.event.action_taken
+      ignore_empty_value: true
+      if: ctx.event?.action == null
   - lowercase:
       field: event.action
       tag: lowercase_event_action
@@ -242,11 +264,6 @@ processors:
       field: json.action_error
       tag: rename_action_error
       target_field: eset_protect.event.action_error
-      ignore_missing: true
-  - rename:
-      field: json.action_taken
-      tag: rename_action_taken
-      target_field: eset_protect.event.action_taken
       ignore_missing: true
   - convert:
       field: json.aggregate_count
@@ -453,8 +470,8 @@ processors:
       target_field: eset_protect.event.processname
       ignore_missing: true
   - set:
-      field: process.name
-      tag: set_process_name_from_event_processname
+      field: process.executable
+      tag: set_process_executable_from_event_processname
       copy_from: eset_protect.event.processname
       ignore_empty_value: true
   - rename:
@@ -708,29 +725,33 @@ processors:
   - rename:
       field: json.user
       tag: rename_user
-      target_field: eset_protect.event.user
+      target_field: eset_protect.event.username
       ignore_missing: true
-  - set:
-      field: user.name
-      tag: set_user_name_from_event_user
-      copy_from: eset_protect.event.user
-      ignore_empty_value: true
-  - append:
-      field: related.user
-      tag: append_user_into_related_user
-      value: "{{{eset_protect.event.user}}}"
-      allow_duplicates: false
-      if: ctx.eset_protect?.event?.user != null
   - rename:
       field: json.username
       tag: rename_username
       target_field: eset_protect.event.username
       ignore_missing: true
-  - set:
-      field: user.name
-      tag: set_user_name_from_event_username
-      copy_from: eset_protect.event.username
-      ignore_empty_value: true
+  - grok:
+      field: eset_protect.event.username
+      tag: grok_user_name
+      ignore_missing: true
+      patterns:
+        - '^%{HOSTNAME:user.domain}\\%{USERNAME:user.name}$'
+        - '^%{HOSTNAME:user.domain}\\\\%{USERNAME:user.name}$'
+        - "^%{USERNAME:user.name}@%{HOSTNAME:user.domain}$"
+        - "^%{GREEDYDATA:user.name}$"
+      if: ctx.eset_protect?.event?.username != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+  - append:
+      field: related.user
+      tag: append_user_name_into_related_user
+      value: "{{{user.name}}}"
+      allow_duplicates: false
+      if: ctx.user?.name != null
   - append:
       field: related.user
       tag: append_username_into_related_user
@@ -746,7 +767,6 @@ processors:
         - eset_protect.event.occured
         - eset_protect.event.os_name
         - eset_protect.event.source_uuid
-        - eset_protect.event.action
         - eset_protect.event.aggregate_count
         - eset_protect.event.cause
         - eset_protect.event.circumstances
@@ -760,8 +780,6 @@ processors:
         - eset_protect.event.source_port
         - eset_protect.event.target_port
         - eset_protect.event.threat_name
-        - eset_protect.event.user
-        - eset_protect.event.username
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
