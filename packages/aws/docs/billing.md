@@ -115,7 +115,6 @@ An example event for `billing` looks as following:
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
-| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | double |  |
 | aws.billing.AmortizedCost.amount | Amortized cost amount. | double | gauge |
 | aws.billing.AmortizedCost.unit | Amortized cost unit. | keyword |  |
 | aws.billing.BlendedCost.amount | Blended cost amount. | double | gauge |
@@ -138,7 +137,6 @@ An example event for `billing` looks as following:
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
 | aws.linked_account.id | ID used to identify linked account. | keyword |  |
 | aws.linked_account.name | Name or alias used to identify linked account. | keyword |  |
-| aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |
 | aws.tags | Tag key value pairs from aws resources. | flattened |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |

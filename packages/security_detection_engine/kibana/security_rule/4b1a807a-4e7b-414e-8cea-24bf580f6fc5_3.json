@@ -11,7 +11,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Potential Reverse Shell via Suspicious Parent Process",
-        "query": "sequence by host.id, process.parent.entity_id with maxspan=1s\n[ process where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"fork\" and (\n  (process.name : \"python*\" and process.args : \"-c\") or\n  (process.name : \"php*\" and process.args : \"-r\") or\n  (process.name : \"perl\" and process.args : \"-e\") or\n  (process.name : \"ruby\" and process.args : (\"-e\", \"-rsocket\")) or\n  (process.name : \"lua*\" and process.args : \"-e\") or\n  (process.name : \"openssl\" and process.args : \"-connect\") or\n  (process.name : (\"nc\", \"ncat\", \"netcat\") and process.args_count \u003e= 3) or\n  (process.name : \"telnet\" and process.args_count \u003e= 3) or\n  (process.name : \"awk\")) and \n  process.parent.name : (\"python*\", \"php*\", \"perl\", \"ruby\", \"lua*\", \"openssl\", \"nc\", \"netcat\", \"ncat\", \"telnet\", \"awk\") ]\n[ network where host.os.type == \"linux\" and event.type == \"start\" and event.action in (\"connection_attempted\", \"connection_accepted\") and \n  process.name : (\"python*\", \"php*\", \"perl\", \"ruby\", \"lua*\", \"openssl\", \"nc\", \"netcat\", \"ncat\", \"telnet\", \"awk\") and\n  destination.ip != null and destination.ip != \"127.0.0.1\" and destination.ip != \"::1\" ]\n",
+        "query": "sequence by host.id, process.parent.entity_id with maxspan=1s\n[ process where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"fork\" and (\n  (process.name : \"python*\" and process.args : \"-c\") or\n  (process.name : \"php*\" and process.args : \"-r\") or\n  (process.name : \"perl\" and process.args : \"-e\") or\n  (process.name : \"ruby\" and process.args : (\"-e\", \"-rsocket\")) or\n  (process.name : \"lua*\" and process.args : \"-e\") or\n  (process.name : \"openssl\" and process.args : \"-connect\") or\n  (process.name : (\"nc\", \"ncat\", \"netcat\") and process.args_count >= 3) or\n  (process.name : \"telnet\" and process.args_count >= 3) or\n  (process.name : \"awk\")) and \n  process.parent.name : (\"python*\", \"php*\", \"perl\", \"ruby\", \"lua*\", \"openssl\", \"nc\", \"netcat\", \"ncat\", \"telnet\", \"awk\") ]\n[ network where host.os.type == \"linux\" and event.type == \"start\" and event.action in (\"connection_attempted\", \"connection_accepted\") and \n  process.name : (\"python*\", \"php*\", \"perl\", \"ruby\", \"lua*\", \"openssl\", \"nc\", \"netcat\", \"ncat\", \"telnet\", \"awk\") and\n  destination.ip != null and destination.ip != \"127.0.0.1\" and destination.ip != \"::1\" ]\n",
         "references": [
             "https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Reverse%20Shell%20Cheatsheet.md"
         ],
@@ -84,7 +84,7 @@
         ],
         "threat": [
             {
-                "framework": "MITRE ATT\u0026CK",
+                "framework": "MITRE ATT&CK",
                 "tactic": {
                     "id": "TA0002",
                     "name": "Execution",
@@ -106,7 +106,7 @@
                 ]
             },
             {
-                "framework": "MITRE ATT\u0026CK",
+                "framework": "MITRE ATT&CK",
                 "tactic": {
                     "id": "TA0011",
                     "name": "Command and Control",

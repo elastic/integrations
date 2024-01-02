@@ -139,7 +139,6 @@ An example event for `lambda` looks as following:
 | aws.lambda.metrics.ProvisionedConcurrentExecutions.max | The number of function instances that are processing events on provisioned concurrency. | long | gauge |
 | aws.lambda.metrics.Throttles.avg | The number of invocation requests that are throttled. | double | gauge |
 | aws.lambda.metrics.UnreservedConcurrentExecutions.avg | For an AWS Region, the number of events that are being processed by functions that don't have reserved concurrency. | double | gauge |
-| aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |
 | aws.tags | Tag key value pairs from aws resources. | flattened |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
