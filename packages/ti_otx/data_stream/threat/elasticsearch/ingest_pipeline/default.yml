@@ -56,26 +56,51 @@ processors:
       target_field: threat.indicator.file.hash.md5
       ignore_missing: true
       if: "ctx.otx?.type == 'FileHash-MD5'"
+  - append:
+      field: related.hash
+      value: '{{{threat.indicator.file.hash.md5}}}'
+      allow_duplicates: false
+      if: ctx.threat?.indicator?.file?.hash?.md5 != null
   - rename:
       field: otx.indicator
       target_field: threat.indicator.file.hash.sha1
       ignore_missing: true
       if: "ctx.otx?.type == 'FileHash-SHA1'"
+  - append:
+      field: related.hash
+      value: '{{{threat.indicator.file.hash.sha1}}}'
+      allow_duplicates: false
+      if: ctx.threat?.indicator?.file?.hash?.sha1 != null
   - rename:
       field: otx.indicator
       target_field: threat.indicator.file.hash.sha256
       ignore_missing: true
       if: "ctx.otx?.type == 'FileHash-SHA256'"
+  - append:
+      field: related.hash
+      value: '{{{threat.indicator.file.hash.sha256}}}'
+      allow_duplicates: false
+      if: ctx.threat?.indicator?.file?.hash?.sha256 != null
   - rename:
       field: otx.indicator
       target_field: threat.indicator.file.hash.pehash
       ignore_missing: true
       if: "ctx.otx?.type == 'FileHash-PEHASH'"
+  - append:
+      field: related.hash
+      value: '{{{threat.indicator.file.hash.pehash}}}'
+      allow_duplicates: false
+      if: ctx.threat?.indicator?.file?.hash?.pehash != null
   - rename:
       field: otx.indicator
       target_field: threat.indicator.file.hash.imphash
       ignore_missing: true
       if: "ctx.otx?.type == 'FileHash-IMPHASH'"
+  - append:
+      field: related.hash
+      value: '{{{threat.indicator.file.hash.imphash}}}'
+      allow_duplicates: false
+      if: ctx.threat?.indicator?.file?.hash?.imphash != null
   ## IP indicator operations
   - set:
       field: threat.indicator.type
@@ -90,6 +115,11 @@ processors:
       target_field: threat.indicator.ip
       ignore_missing: true
       if: "ctx.threat?.indicator?.type != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type)"
+  - append:
+      field: related.ip
+      value: '{{{threat.indicator.ip}}}'
+      allow_duplicates: false
+      if: ctx.threat?.indicator?.ip != null
   ## URL indicator operations
   - set:
       field: threat.indicator.type

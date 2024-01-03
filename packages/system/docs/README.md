@@ -1413,15 +1413,15 @@ This data should be available without elevated permissions.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
-| system.diskio.io.time | The total number of of milliseconds spent doing I/Os. | long |  | counter |
+| system.diskio.io.time | The total amount of time in milliseconds spent doing I/Os. | long |  | counter |
 | system.diskio.name | The disk name. | keyword |  |  |
 | system.diskio.read.bytes | The total number of bytes read successfully. On Linux this is the number of sectors read multiplied by an assumed sector size of 512. | long | byte | counter |
 | system.diskio.read.count | The total number of reads completed successfully. | long |  | counter |
-| system.diskio.read.time | The total number of milliseconds spent by all reads. | long |  | counter |
+| system.diskio.read.time | The total amount of time in milliseconds spent by all reads. | long |  | counter |
 | system.diskio.serial_number | The disk's serial number. This may not be provided by all operating systems. | keyword |  |  |
 | system.diskio.write.bytes | The total number of bytes written successfully. On Linux this is the number of sectors written multiplied by an assumed sector size of 512. | long | byte | counter |
 | system.diskio.write.count | The total number of writes completed successfully. | long |  | counter |
-| system.diskio.write.time | The total number of milliseconds spent by all writes. | long |  | counter |
+| system.diskio.write.time | The total amount of time in milliseconds spent by all writes. | long |  | counter |
 
 
 ### Filesystem
@@ -1991,6 +1991,13 @@ If running as less privileged user, it may not be able to read process data belo
 | system.process.fd.limit.hard | The hard limit on the number of file descriptors opened by the process. The hard limit can only be raised by root. | long |  | gauge |
 | system.process.fd.limit.soft | The soft limit on the number of file descriptors opened by the process. The soft limit can be changed by the process at any time. | long |  | gauge |
 | system.process.fd.open | The number of file descriptors open by the process. | long |  | gauge |
+| system.process.io.cancelled_write_bytes | The number of bytes this process cancelled, or caused not to be written. | long | byte | counter |
+| system.process.io.read_bytes | The number of bytes fetched from the storage layer. | long | byte | counter |
+| system.process.io.read_char | The number of bytes read from read(2) and similar syscalls. | long | byte | counter |
+| system.process.io.read_ops | The count of read-related syscalls. | long |  | counter |
+| system.process.io.write_bytes | The number of bytes written to the storage layer. | long | byte | counter |
+| system.process.io.write_char | The number of bytes sent to syscalls for writing. | long | byte | counter |
+| system.process.io.write_ops | The count of write-related syscalls. | long |  | counter |
 | system.process.memory.rss.bytes | The Resident Set Size. The amount of memory the process occupied in main memory (RAM). On Windows this represents the current working set size, in bytes. | long | byte | gauge |
 | system.process.memory.rss.pct | The percentage of memory the process occupied in main memory (RAM). | scaled_float | percent | gauge |
 | system.process.memory.share | The shared memory the process uses. | long | byte | gauge |

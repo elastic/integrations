@@ -32,7 +32,10 @@ fields:
   _conf:
     url: {{url}}
 program: |
-  request("POST", state.url + "/graphql").with({
+  request(
+    "POST",
+    state.url.trim_suffix("graphql").trim_suffix("/") + "/graphql"
+  ).with({
     "Header": ({
       "Content-Type": ["application/json"]
     }).with(
@@ -77,7 +80,6 @@ state:
       $search: String
       $first: Int!
       $after: ID
-      $filters: [IndicatorsFiltering]
       $orderBy: IndicatorsOrdering
       $orderMode: OrderingMode
     ) {
@@ -85,7 +87,6 @@ state:
         search: $search
         first: $first
         after: $after
-        filters: $filters
         orderBy: $orderBy
         orderMode: $orderMode
       ) {
