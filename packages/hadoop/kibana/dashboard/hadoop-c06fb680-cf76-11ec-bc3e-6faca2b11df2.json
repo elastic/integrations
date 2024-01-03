@@ -15,14 +15,27 @@
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
                             "key": "data_stream.dataset",
                             "negate": false,
-                            "params": {
-                                "query": "hadoop.namenode"
-                            },
-                            "type": "phrase"
+                            "params": [
+                                "hadoop.namenode",
+                                "hadoop.datanode"
+                            ],
+                            "type": "phrases"
                         },
                         "query": {
-                            "match_phrase": {
-                                "data_stream.dataset": "hadoop.namenode"
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "hadoop.namenode"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "hadoop.datanode"
+                                        }
+                                    }
+                                ]
                             }
                         }
                     }
