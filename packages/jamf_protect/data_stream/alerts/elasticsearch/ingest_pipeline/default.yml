@@ -5,81 +5,38 @@ processors:
     field: message
     target_field: jamf_protect.alerts
 - date:
-    field: jamf_protect.alerts.match.event.timestamp
+    field: jamf_protect.alerts.input.match.event.timestamp
     formats:
     - UNIX
-<<<<<<< Updated upstream
-=======
-    ignore_failure: true
->>>>>>> Stashed changes
 
 #######################
 ## ECS Event Mapping ##
 #######################
 #   - rename:
-#       field: jamf_protect.alerts.match.event.timestamp
+#       field: jamf_protect.alerts.input.match.event.timestamp
 #       target_field: event.start
 #       ignore_missing: true
 #       ignore_failure: true
 - date:
-    field: jamf_protect.alerts.match.event.timestamp
+    field: jamf_protect.alerts.input.match.event.timestamp
     target_field: event.start
     formats: 
     - UNIX
-<<<<<<< Updated upstream
-    if: ctx.jamf_protect?.alerts?.match.event.timestamp != null
+    if: ctx.jamf_protect?.alerts?.match?.event?.timestamp != null
 - rename:
-    field: jamf_protect.alerts.match.facts.human
+    field: jamf_protect.alerts.input.match.facts.human
     target_field: message
     ignore_missing: true
 - rename:
-    field: jamf_protect.alerts.match.facts.human
-    target_field: message
-    ignore_missing: true
-=======
-    ignore_failure: true
-    if: ctx.jamf_protect?.alerts?.match.event.timestamp != null
-- rename:
-    field: jamf_protect.alerts.match.facts.human
-    target_field: event.action
-    ignore_missing: true
-    ignore_failure: true
->>>>>>> Stashed changes
-- rename:
-    field: jamf_protect.alerts.match.uuid
+    field: jamf_protect.alerts.input.match.uuid
     target_field: event.id
     ignore_missing: true
-<<<<<<< Updated upstream
 - rename:
     field: ctx.jamf_protect?.alerts?.match?.facts[0]?.severity
     target_field: event.severity
     ignore_missing: true
     if: ctx.jamf_protect?.alerts?.match?.facts != null
 - set:
-=======
-    ignore_failure: true
-- set:
-    field: event.severity
-    value: 1
-    if: ctx.jamf_protect?.alerts?.match.severity == 'Informational'
-- set:
-    field: event.severity
-    value: 1
-    if: ctx.jamf_protect?.alerts?.match.severity == 'Low'
-- set:
-    field: event.severity
-    value: 2
-    if: ctx.jamf_protect?.alerts?.match.severity == 'Medium'
-- set:
-    field: event.severity
-    value: 3
-    if: ctx.jamf_protect?.alerts?.match.severity == 'High'
-- set:
-    field: event.severity
-    value: 0
-    if: ctx.jamf_protect?.alerts?.match.severity == null
-- set:
->>>>>>> Stashed changes
     field: event.kind
     value: alert
 - set:
@@ -99,42 +56,18 @@ processors:
 ## ECS Host Mapping ##
 #######################
 - rename:
-    field: jamf_protect.alerts.host.hostname
+    field: jamf_protect.alerts.input.host.hostname
     target_field: host.hostname
     ignore_missing: true
-<<<<<<< Updated upstream
-=======
-    ignore_failure: true
->>>>>>> Stashed changes
 - rename:
-    field: jamf_protect.alerts.host.ips
+    field: jamf_protect.alerts.input.host.ips
     target_field: host.ip
     ignore_missing: true
-<<<<<<< Updated upstream
-=======
-    ignore_failure: true
->>>>>>> Stashed changes
     if: ctx.jamf_protect?.alerts?.host.ips != null && ctx.jamf_protect?.alerts?.host.ips != ""
 - rename:
-    field: jamf_protect.alerts.host.os
+    field: jamf_protect.alerts.input.host.os
     target_field: host.os.full
     ignore_missing: true
-<<<<<<< Updated upstream
-=======
-    ignore_failure: true
->>>>>>> Stashed changes
-- rename:
-    field: jamf_protect.alerts.host.provisioningUDID
-    target_field: host.id
-    ignore_missing: true
-<<<<<<< Updated upstream
-=======
-    ignore_failure: true
->>>>>>> Stashed changes
-
-#####################
-## ECS OS Mapping ##
-#####################
 - set:
     field: host.os.family
     value: macos
@@ -143,26 +76,16 @@ processors:
 ## ECS Source Mapping ##
 ########################
 - rename:
-    field: jamf_protect.alerts.host.ips
+    field: jamf_protect.alerts.input.host.ips
     target_field: source.ip
-<<<<<<< Updated upstream
-=======
-    ignore_missing: true
->>>>>>> Stashed changes
 - script:
     description: Script processor to capture user names from related.users array
     tag: set-process-command_line
     lang: painless
     source: |
-<<<<<<< Updated upstream
         if (ctx.jamf_protect?.alerts?.related?.users != null) {
           ArrayList userNames = new ArrayList();
           for (def user : ctx.jamf_protect.alerts.related.users) {
-=======
-        if (ctx.containsKey('input') && ctx.input.containsKey('related') && ctx.input.related.containsKey('users')) {
-          ArrayList userNames = new ArrayList();
-          for (def user : ctx.input.related.users) {
->>>>>>> Stashed changes
             if (user.containsKey('name')) {
               userNames.add(user.name);
             }
