@@ -15,14 +15,27 @@
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
                             "key": "data_stream.dataset",
                             "negate": false,
-                            "params": {
-                                "query": "iis.access"
-                            },
-                            "type": "phrase"
+                            "params": [
+                                "iis.access",
+                                "iis.error"
+                            ],
+                            "type": "phrases"
                         },
                         "query": {
-                            "match_phrase": {
-                                "data_stream.dataset": "iis.access"
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "iis.access"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "iis.error"
+                                        }
+                                    }
+                                ]
                             }
                         }
                     }
