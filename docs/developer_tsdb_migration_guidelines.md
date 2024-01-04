@@ -153,6 +153,15 @@ A field that holds millions of unique values may not be an ideal candidate for b
 
 # <a id="troubleshooting"></a> Troubleshooting
 
+### Enabling multiple variants support in system tests
+
+If your system test configuration for a TSDB enabled package contains multiple variants, make sure to set the `kibana.version` in the `manifest.yml` file of the package to be `8.8.1` or higher.
+
+```yaml
+conditions:
+ kibana.version: "^8.8.1"
+```
+
 ### Conflicting field type
 
 Fields having conflicting field type will not be considered as dimension. Resolve the field type ambiguity before defining a field as dimension field.
