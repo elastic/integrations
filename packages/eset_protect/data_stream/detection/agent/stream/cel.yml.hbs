@@ -1,0 +1,141 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: https://{{region}}.incident-management.eset.systems
+auth.oauth2:
+  client.id: {{username}}
+  client.secret: {{password}}
+  token_url: https://{{region}}.business-account.iam.eset.systems/oauth/token
+state:
+  page_size: {{batch_size}}
+  want_more: false
+  initial_interval: {{initial_interval}}
+  page_token: ""
+redact:
+  fields: ~
+program: |
+  (
+    state.want_more
+    ?
+      state
+    :
+      state.with({
+        "page_size": string(state.page_size),
+        "start_time": (
+          has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null
+          ?
+            state.cursor.last_timestamp
+          :
+            (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+        ),
+        "end_time": now.format(time_layout.RFC3339),
+        "page_token": state.page_token
+      })
+  ).as(state,
+    request(
+      "GET",
+      state.url + "/v1/detections?" + {
+        "page_size": [state.page_size],
+        "start_time": [state.start_time],
+        "end_time": [state.end_time],
+        "page_token": [state.page_token]
+      }.format_query()
+    ).as(request, (
+      has(state.cursor) && has(state.cursor.response_id) && state.cursor.response_id != null
+      ?
+        request.with({
+          "Header":{
+            "response-id": [state.cursor.response_id],
+          }
+        })
+      :
+        request
+    )).do_request().as(resp, (
+      resp.StatusCode == 200
+      ?
+        bytes(resp.Body).decode_json().as(body, {
+          "events": (
+            has(body.detections) && body.detections != null
+            ?
+              body.detections.map(e, {
+                "message": e.encode_json(),
+              })
+            :
+              []
+          ),
+          "page_token": (
+            has(body.nextPageToken) && body.nextPageToken != null
+            ?
+              body.nextPageToken
+            :
+              ""
+          ),
+          "want_more": has(body.nextPageToken) && body.nextPageToken != null && body.nextPageToken != "",
+          "page_size": state.page_size,
+          "start_time": string(state.start_time),
+          "end_time": string(state.end_time),
+          "cursor": {
+            "response_id": null,
+            "last_timestamp": (
+              has(body.nextPageToken) && body.nextPageToken != null && body.nextPageToken != ""
+              ?
+                (
+                  has(state.cursor) && has(state.cursor.last_timestamp)
+                  ?
+                    state.cursor.last_timestamp
+                  :
+                    null
+                )
+              :
+                has(body.detections) && body.detections != null && body.detections.size() > 0
+                ?
+                  body.detections.map(e, e.occurTime).max()
+                :
+                  state.end_time
+            )
+          }
+        })
+      :
+        {
+          "events": resp.StatusCode == 202 ? [{"message":"retry"}] : [],
+          "page_size": state.page_size,
+          "page_token": resp.StatusCode == 202 ? state.page_token : "",
+          "start_time": state.start_time,
+          "end_time": state.end_time,
+          "want_more": resp.StatusCode == 202 ? true : false,
+          "cursor": {
+            "last_timestamp": state.start_time,
+            "response_id": resp.StatusCode == 202 ? resp.Header["Response-Id"][0] : null
+          }
+        }
+    ))
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

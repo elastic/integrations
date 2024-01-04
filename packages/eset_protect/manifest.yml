@@ -1,0 +1,80 @@
+format_version: 3.0.1
+name: eset_protect
+title: ESET PROTECT
+version: 0.1.0
+description: Collect logs from ESET PROTECT with Elastic Agent.
+type: integration
+categories:
+  - security
+conditions:
+  kibana:
+    version: ^8.12.0
+  elastic:
+    subscription: basic
+icons:
+  - src: /img/eset-protect-logo.svg
+    title: ESET PROTECT logo
+    size: 32x32
+    type: image/svg+xml
+screenshots:
+  - src: /img/eset_protect-event-dashboard.png
+    title: ESET PROTECT Event Dashboard Screenshot
+    size: 600x600
+    type: image/png
+  - src: /img/eset_protect-detection-dashboard.png
+    title: ESET PROTECT Detection Dashboard Screenshot
+    size: 600x600
+    type: image/png
+  - src: /img/eset_protect-device_task-dashboard.png
+    title: ESET PROTECT Device Task Dashboard Screenshot
+    size: 600x600
+    type: image/png
+policy_templates:
+  - name: eset_protect
+    title: ESET PROTECT logs
+    description: Collect logs from ESET PROTECT.
+    inputs:
+      - type: tcp
+        title: Collect ESET PROTECT logs via TCP input
+        description: Collecting logs from ESET PROTECT via TCP input.
+      - type: cel
+        title: Collect ESET PROTECT logs via API
+        description: Collecting ESET PROTECT via API.
+        vars:
+          - name: region
+            type: text
+            title: Region
+            description: Region to use in the base URL. Supported values will be `eu` and `us`.
+            required: true
+            show_user: true
+          - name: username
+            type: text
+            title: User Name
+            description: Name of the API User Account.
+            multi: false
+            required: true
+            show_user: true
+          - name: password
+            type: password
+            title: Password
+            description: Password for the API User Account.
+            multi: false
+            required: true
+            show_user: true
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            multi: false
+            required: false
+            show_user: false
+            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+owner:
+  github: elastic/security-external-integrations
+  type: elastic
