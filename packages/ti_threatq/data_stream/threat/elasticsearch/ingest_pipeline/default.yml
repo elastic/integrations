@@ -163,15 +163,26 @@ processors:
             def dur = ctx._conf.ioc_expiration_duration;
             ZonedDateTime updated_at = ZonedDateTime.parse(ctx.json.updated_at.concat("Z"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssX"));
             if (dur instanceof String){
-              Character time_unit = dur.charAt(dur.length() - 1);
-              String time_value = dur.substring(0, dur.length());
-              if (time_unit == 'd') {
+              char time_unit;
+              String time_value;
+              if (dur.length() != 0){
+                time_unit = dur.charAt(dur.length() - 1);
+                time_value = dur.substring(0, dur.length() - 1);
+              }
+              if (time_unit == (char)'d') {
                 ioc_expired_at = updated_at.plusDays(Long.parseLong(time_value));
-              } else if (time_unit == 'h') {
+              } else if (time_unit == (char)'h') {
                 ioc_expired_at = updated_at.plusHours(Long.parseLong(time_value));
-              } else if (time_unit == 'm') {
+              } else if (time_unit == (char)'m') {
                 ioc_expired_at = updated_at.plusMinutes(Long.parseLong(time_value));
               } else {
+                if (ctx.error == null) {
+                  ctx.error = new HashMap();
+                }
+                if (ctx.error.message == null) {
+                  ctx.error.message = new ArrayList();
+                }
+                ctx.error.message.add('invalid ioc_expiration_duration: using default 90 days');
                 ioc_expired_at = updated_at.plusDays(90L);
               }
             }
