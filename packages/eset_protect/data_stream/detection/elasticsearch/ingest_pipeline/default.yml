@@ -120,6 +120,19 @@ processors:
       tag: set_process_executable_from_detection_context_process_path
       copy_from: eset_protect.detection.context.process.path
       ignore_empty_value: true
+  - grok:
+      field: eset_protect.detection.context.process.path
+      tag: grok_context_process_path
+      ignore_missing: true
+      patterns:
+        - '^%{GREEDYDATA:json._temp}\\%{DATA:process.name}$'
+        - "^%{GREEDYDATA:json._temp}/%{DATA:process.name}$"
+        - "^%{DATA:process.name}$"
+      if: ctx.eset_protect?.detection?.context?.process?.path != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - rename:
       field: json.context.userName
       tag: rename_context_userName
@@ -145,12 +158,6 @@ processors:
       value: "{{{user.name}}}"
       allow_duplicates: false
       if: ctx.user?.name != null
-  - append:
-      field: related.user
-      tag: append_detection_context_user_name_into_related_user
-      value: "{{{eset_protect.detection.context.user_name}}}"
-      allow_duplicates: false
-      if: ctx.eset_protect?.detection?.context?.user_name != null
   - rename:
       field: json.displayName
       tag: rename_displayName

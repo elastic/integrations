@@ -77,8 +77,8 @@ An example event for `detection` looks as following:
 {
     "@timestamp": "2023-10-26T13:36:53.000Z",
     "agent": {
-        "ephemeral_id": "a8b05115-c46c-4367-91e8-07a6308c6b0d",
-        "id": "e2d23ba0-7fee-4fa5-9887-0c441f1cb0b0",
+        "ephemeral_id": "eaf0a213-9722-4532-9223-51619c3f6c91",
+        "id": "7e7335eb-8b8a-400b-9634-4d8caf719b70",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.0"
@@ -114,7 +114,7 @@ An example event for `detection` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e2d23ba0-7fee-4fa5-9887-0c441f1cb0b0",
+        "id": "7e7335eb-8b8a-400b-9634-4d8caf719b70",
         "snapshot": true,
         "version": "8.12.0"
     },
@@ -151,7 +151,7 @@ An example event for `detection` looks as following:
             "intrusion_detection"
         ],
         "dataset": "eset_protect.detection",
-        "ingested": "2024-01-01T10:24:04Z",
+        "ingested": "2024-01-04T10:08:34Z",
         "kind": "alert",
         "original": "{\"category\":\"DETECTION_CATEGORY_NETWORK_INTRUSION\",\"context\":{\"circumstances\":\"Eicar\",\"deviceUuid\":\"xxx-xxxx-1234-5678-xxxxxxxxxxxx\",\"process\":{\"path\":\"C:\\\\Windows\\\\chrome.exe\"},\"userName\":\"testingpc\\\\example\"},\"networkCommunication\":{\"protocolName\":\"0\",\"remoteIpAddress\":\"89.160.20.112\",\"remotePort\":443},\"objectHashSha1\":\"AAF4C61DDCC5E8A2DABEDE0F3B4820123456789D\",\"objectTypeName\":\"File\",\"objectUrl\":\"C:\\\\Temp\\\\06516f11-xxxx-xxxx-xxxx-37da66b5de99_ccf7464ba6e2e12e984514f694bfb10d03de77358d8a3afd7a2ffed150ec1df8.zip.e99\\\\ccf7464ba6e2e12e984514f694bfb10d03de77358d8a3afd7a2ffed150ec1df8\",\"occurTime\":\"2023-10-26T13:36:53Z\",\"responses\":[{}],\"severityLevel\":\"SEVERITY_LEVEL_MEDIUM\",\"typeName\":\"TCP Port scanning attack\",\"uuid\":\"xxx-xxxx-xxxx-1234-xxxxxxxxxxxx\"}",
         "type": [
@@ -176,7 +176,8 @@ An example event for `detection` looks as following:
         "vendor": "ESET"
     },
     "process": {
-        "executable": "C:\\Windows\\chrome.exe"
+        "executable": "C:\\Windows\\chrome.exe",
+        "name": "chrome.exe"
     },
     "related": {
         "hash": [
@@ -189,8 +190,7 @@ An example event for `detection` looks as following:
             "89.160.20.112"
         ],
         "user": [
-            "example",
-            "testingpc\\example"
+            "example"
         ]
     },
     "rule": {
@@ -265,10 +265,10 @@ An example event for `device_task` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-01-01T10:24:44.613Z",
+    "@timestamp": "2024-01-04T10:09:14.915Z",
     "agent": {
-        "ephemeral_id": "ec01aa31-b589-4e50-bb82-a19801f65aa4",
-        "id": "e2d23ba0-7fee-4fa5-9887-0c441f1cb0b0",
+        "ephemeral_id": "3873a5a6-ab80-4d05-b35a-e91aa4c7f86e",
+        "id": "7e7335eb-8b8a-400b-9634-4d8caf719b70",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.0"
@@ -282,7 +282,7 @@ An example event for `device_task` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e2d23ba0-7fee-4fa5-9887-0c441f1cb0b0",
+        "id": "7e7335eb-8b8a-400b-9634-4d8caf719b70",
         "snapshot": true,
         "version": "8.12.0"
     },
@@ -324,7 +324,7 @@ An example event for `device_task` looks as following:
         "action": "Shutdown computer",
         "agent_id_status": "verified",
         "dataset": "eset_protect.device_task",
-        "ingested": "2024-01-01T10:24:56Z",
+        "ingested": "2024-01-04T10:09:26Z",
         "kind": "event",
         "original": "{\"action\":{\"name\":\"Shutdown computer\",\"params\":{\"@type\":\"type.googleapis.com/Era.Common.DataDefinition.Task.ESS.OnDemandScan\",\"cleaningEnabled\":true,\"customProfileName\":\"DefaultProfile\",\"scanProfile\":\"InDepth\",\"scanTargets\":[\"eset://AllTargets\"]}},\"description\":\"Automatically created via context menu\",\"displayName\":\"Reboot Computer - via context menu\",\"targets\":{\"devicesUuids\":[\"0205321e-XXXX-XXXX-1234-feeb35010ea7\",\"0205321e-XXXX-XXXX-5678-feeb35010ea7\",\"0205321e-XXXX-1234-5678-feeb35010ea7\"]},\"triggers\":[{\"manual\":{\"expireTime\":\"2023-12-01T01:30:00Z\"}}],\"uuid\":\"c93070e0-XXXX-1234-5678-c48f0e5e0b7e\",\"versionId\":\"1511\"}",
         "type": [
@@ -401,8 +401,8 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2021-06-21T03:56:20.000Z",
     "agent": {
-        "ephemeral_id": "2f3c31b1-4719-44cd-8f9f-151032ee5881",
-        "id": "e2d23ba0-7fee-4fa5-9887-0c441f1cb0b0",
+        "ephemeral_id": "677639c3-b8cb-4791-bd2d-a6f2c144f964",
+        "id": "7e7335eb-8b8a-400b-9634-4d8caf719b70",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.0"
@@ -437,7 +437,7 @@ An example event for `event` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e2d23ba0-7fee-4fa5-9887-0c441f1cb0b0",
+        "id": "7e7335eb-8b8a-400b-9634-4d8caf719b70",
         "snapshot": true,
         "version": "8.12.0"
     },
@@ -472,7 +472,7 @@ An example event for `event` looks as following:
             "web"
         ],
         "dataset": "eset_protect.event",
-        "ingested": "2024-01-01T10:25:49Z",
+        "ingested": "2024-01-04T10:10:20Z",
         "kind": "alert",
         "original": "{\"event_type\":\"FilteredWebsites_Event\",\"ipv4\":\"192.168.30.30\",\"hostname\":\"win-test\",\"group_name\":\"All/Lost & found\",\"os_name\":\"Microsoft Windows 11 Pro\",\"group_description\":\"Lost & found static group\",\"source_uuid\":\"d9477661-8fa4-4144-b8d4-e37b983bcd69\",\"occured\":\"21-Jun-2021 03:56:20\",\"severity\":\"Warning\",\"event\":\"An attempt to connect to URL\",\"target_address\":\"89.160.20.128\",\"target_address_type\":\"IPv4\",\"scanner_id\":\"HTTP filter\",\"action_taken\":\"blocked\",\"object_uri\":\"https://test.com\",\"hash\":\"ABCDAA625E6961037B8904E113FD0C232A7D0EDC\",\"username\":\"WIN-TEST\\\\Administrator\",\"processname\":\"C:\\\\Program Files\\\\Web browser\\\\brwser.exe\",\"rule_id\":\"Blocked by PUA blacklist\"}",
         "type": [
@@ -497,7 +497,7 @@ An example event for `event` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.31.0.8:35072"
+            "address": "192.168.64.8:46716"
         },
         "syslog": {
             "appname": "ERAServer",
@@ -516,7 +516,8 @@ An example event for `event` looks as following:
     },
     "message": "An attempt to connect to URL",
     "process": {
-        "executable": "C:\\Program Files\\Web browser\\brwser.exe"
+        "executable": "C:\\Program Files\\Web browser\\brwser.exe",
+        "name": "brwser.exe"
     },
     "related": {
         "hash": [
@@ -531,8 +532,7 @@ An example event for `event` looks as following:
             "89.160.20.128"
         ],
         "user": [
-            "Administrator",
-            "WIN-TEST\\Administrator"
+            "Administrator"
         ]
     },
     "rule": {

@@ -474,6 +474,19 @@ processors:
       tag: set_process_executable_from_event_processname
       copy_from: eset_protect.event.processname
       ignore_empty_value: true
+  - grok:
+      field: eset_protect.event.processname
+      tag: grok_processname
+      ignore_missing: true
+      patterns:
+        - '^%{GREEDYDATA:json._temp}\\%{DATA:process.name}$'
+        - "^%{GREEDYDATA:json._temp}/%{DATA:process.name}$"
+        - "^%{DATA:process.name}$"
+      if: ctx.eset_protect?.event?.processname != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - rename:
       field: json.protocol
       tag: rename_protocol
@@ -752,12 +765,6 @@ processors:
       value: "{{{user.name}}}"
       allow_duplicates: false
       if: ctx.user?.name != null
-  - append:
-      field: related.user
-      tag: append_username_into_related_user
-      value: "{{{eset_protect.event.username}}}"
-      allow_duplicates: false
-      if: ctx.eset_protect?.event?.username != null
   - remove:
       field:
         - eset_protect.event.group_name
