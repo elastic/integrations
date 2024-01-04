@@ -127,10 +127,10 @@ An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-11-15T00:00:02.000Z",
+    "@timestamp": "2019-11-15T00:00:02.000Z",
     "agent": {
-        "ephemeral_id": "c6981148-4ce9-455f-9dbc-c26ed00d2688",
-        "id": "66ac1e7c-a879-4591-b25e-82962b1a71c9",
+        "ephemeral_id": "b61f9d9a-97f7-4d8a-9ec1-535a1ca13e89",
+        "id": "8130bdff-3530-4540-8c03-ba091c47a24f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.11.0"
@@ -144,7 +144,7 @@ An example event for `threat` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "66ac1e7c-a879-4591-b25e-82962b1a71c9",
+        "id": "8130bdff-3530-4540-8c03-ba091c47a24f",
         "snapshot": false,
         "version": "8.11.0"
     },
@@ -153,11 +153,11 @@ An example event for `threat` looks as following:
         "category": [
             "threat"
         ],
-        "created": "2023-12-11T12:43:43.800Z",
+        "created": "2023-12-22T11:40:37.696Z",
         "dataset": "ti_threatq.threat",
-        "ingested": "2023-12-11T12:43:44Z",
+        "ingested": "2023-12-22T11:40:38Z",
         "kind": "enrichment",
-        "original": "{\"adversaries\":[],\"attributes\":[{\"attribute_id\":7,\"created_at\":\"2020-09-11 14:35:53\",\"id\":1889,\"indicator_id\":338,\"name\":\"AlienVault Threat Level\",\"touched_at\":\"2020-10-15 14:36:00\",\"updated_at\":\"2020-10-15 14:36:00\",\"value\":\"2\"},{\"attribute_id\":4,\"created_at\":\"2020-09-11 14:35:53\",\"id\":1890,\"indicator_id\":338,\"name\":\"Country\",\"touched_at\":\"2020-10-15 14:36:00\",\"updated_at\":\"2020-10-15 14:36:00\",\"value\":\"US\"},{\"attribute_id\":3,\"created_at\":\"2020-09-11 14:35:53\",\"id\":1891,\"indicator_id\":338,\"name\":\"Description\",\"touched_at\":\"2020-10-15 14:36:00\",\"updated_at\":\"2020-10-15 14:36:00\",\"value\":\"Malicious Host\"},{\"attribute_id\":6,\"created_at\":\"2020-09-11 14:35:53\",\"id\":1892,\"indicator_id\":338,\"name\":\"AlienVault Revision\",\"touched_at\":\"2020-10-15 14:36:00\",\"updated_at\":\"2020-10-15 14:36:00\",\"value\":\"3\"},{\"attribute_id\":5,\"created_at\":\"2020-09-11 14:35:53\",\"id\":1893,\"indicator_id\":338,\"name\":\"City\",\"touched_at\":\"2020-10-15 14:36:00\",\"updated_at\":\"2020-10-15 14:36:00\",\"value\":\"New York\"},{\"attribute_id\":8,\"created_at\":\"2020-09-11 14:35:53\",\"id\":1894,\"indicator_id\":338,\"name\":\"AlienVault Reliability\",\"touched_at\":\"2020-10-15 14:36:00\",\"updated_at\":\"2020-10-15 14:36:00\",\"value\":\"4\"}],\"class\":\"network\",\"created_at\":\"2020-09-11 14:35:51\",\"expired_at\":\"2020-11-15 00:00:02\",\"expires_calculated_at\":\"2020-10-15 14:40:03\",\"hash\":\"a9c6773919112627495d87c51fe89b15\",\"id\":338,\"published_at\":\"2020-09-11 14:35:51\",\"score\":4,\"sources\":[{\"created_at\":\"2020-09-11 14:35:53\",\"creator_source_id\":12,\"id\":338,\"indicator_id\":338,\"indicator_status_id\":2,\"indicator_type_id\":15,\"name\":\"AlienVault OTX\",\"published_at\":\"2020-09-11 14:35:53\",\"reference_id\":1,\"source_expire_days\":\"30\",\"source_id\":12,\"source_score\":1,\"source_type\":\"connectors\",\"updated_at\":\"2020-10-15 14:36:00\"}],\"status\":{\"description\":\"No longer poses a serious threat.\",\"id\":2,\"name\":\"Expired\"},\"status_id\":2,\"touched_at\":\"2021-06-07 19:47:27\",\"type\":{\"class\":\"network\",\"id\":15,\"name\":\"IP Address\"},\"type_id\":15,\"updated_at\":\"2020-11-15 00:00:02\",\"value\":\"89.160.20.156\"}",
+        "original": "{\"adversaries\":[],\"attributes\":[{\"attribute_id\":3,\"created_at\":\"2020-09-11 14:35:53\",\"id\":1877,\"indicator_id\":336,\"name\":\"Description\",\"touched_at\":\"2020-10-15 14:36:00\",\"updated_at\":\"2020-10-15 14:36:00\",\"value\":\"Malicious Host\"},{\"attribute_id\":4,\"created_at\":\"2020-09-11 14:35:53\",\"id\":1878,\"indicator_id\":336,\"name\":\"Country\",\"touched_at\":\"2020-10-15 14:36:00\",\"updated_at\":\"2020-10-15 14:36:00\",\"value\":\"MP\"}],\"class\":\"network\",\"created_at\":\"2020-09-11 14:35:51\",\"expires_calculated_at\":\"2020-10-15 14:40:03\",\"hash\":\"1ece659dcec98b1e1141160b55655c96\",\"id\":336,\"published_at\":\"2020-09-11 14:35:51\",\"score\":4,\"sources\":[{\"created_at\":\"2020-09-11 14:35:53\",\"creator_source_id\":12,\"id\":336,\"indicator_id\":336,\"indicator_status_id\":2,\"indicator_type_id\":15,\"name\":\"AlienVault OTX\",\"published_at\":\"2020-09-11 14:35:53\",\"reference_id\":1,\"source_expire_days\":\"30\",\"source_id\":12,\"source_score\":1,\"source_type\":\"connectors\",\"updated_at\":\"2020-10-15 14:36:00\"}],\"status\":{\"description\":\"Poses a threat\",\"id\":2,\"name\":\"Active\"},\"status_id\":2,\"touched_at\":\"2021-06-07 19:47:27\",\"type\":{\"class\":\"network\",\"id\":15,\"name\":\"IP Address\"},\"type_id\":15,\"updated_at\":\"2019-11-15 00:00:02\",\"value\":\"89.160.20.156\"}",
         "type": [
             "indicator"
         ]
@@ -179,34 +179,21 @@ An example event for `threat` looks as following:
     },
     "threatq": {
         "attributes": {
-            "alienvault_reliability": [
-                "4"
-            ],
-            "alienvault_revision": [
-                "3"
-            ],
-            "alienvault_threat_level": [
-                "2"
-            ],
-            "city": [
-                "New York"
-            ],
             "country": [
-                "US"
+                "MP"
             ],
             "description": [
                 "Malicious Host"
             ]
         },
         "created_at": "2020-09-11T14:35:51.000Z",
-        "expired_at": "2020-11-15T00:00:02.000Z",
         "expires_calculated_at": "2020-10-15T14:40:03.000Z",
-        "id": 338,
+        "id": 336,
         "indicator_value": "89.160.20.156",
-        "ioc_expiration_reason": "Expiration set by ThreatQ from expired_at field",
-        "ioc_expired_at": "2020-11-15T00:00:02.000Z",
+        "ioc_expiration_reason": "Expiration set by Elastic from the integration's parameter `IOC Expiration Duration`",
+        "ioc_expired_at": "2019-11-20T00:00:02.000Z",
         "published_at": "2020-09-11T14:35:51.000Z",
-        "status": "Expired"
+        "status": "Active"
     }
 }
 ```
