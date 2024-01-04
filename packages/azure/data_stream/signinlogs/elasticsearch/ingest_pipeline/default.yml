@@ -83,18 +83,17 @@ processors:
       value: '{{{azure.signinlogs.properties.ip_address}}}'
       ignore_empty_value: true
   - set:
-      if: ctx?.source?.address == null
-      field: source.address
-      value: '{{{azure.signinlogs.properties.caller_ip_address}}}'
-      ignore_empty_value: true
-  - set:
-      if: ctx?.source?.address == null
-      field: azure.signinlogs.properties.callerIpAddress
-      value: '{{{azure.signinlogs.properties.callerIpAddress}}}'
+      field: azure.signinlogs.properties.caller_ip_address
+      value: '{{{azure.signinlogs.caller_ip_address}}}'
       ignore_empty_value: true
   - convert:
       field: source.address
       target_field: source.ip
+      type: ip
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: azure.signinlogs.properties.caller_ip_address
       type: ip
       ignore_missing: true
       ignore_failure: true
