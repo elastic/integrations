@@ -51,6 +51,11 @@ chain:
       {{/if}}
       replace: $.export_uuid
       until: '[[ eq .last_response.body.status "FINISHED" ]]'
+      {{#if enable_request_tracer}}
+      {{!-- The file name below is hardcoded but once https://github.com/elastic/beats/issues/37551 is implemented, it can be changed back to `"../../logs/httpjson/http-request-trace-*.ndjson"` --}}
+      request.tracer.filename: "../../logs/httpjson/http-request-trace-httpjson-tenable_io.asset-assets_export_status.ndjson"
+      request.tracer.maxbackups: 5
+      {{/if}}
       request.retry.max_attempts: {{retry_max_attempts}}
       request.retry.wait_min: {{retry_wait_min}}
       request.transforms:
@@ -78,6 +83,11 @@ chain:
       {{/if}}
       replace: $.chunks_available[:]
       replace_with: '$.export_uuid,.first_response.body.export_uuid'
+      {{#if enable_request_tracer}}
+      {{!-- The file name below is hardcoded but once https://github.com/elastic/beats/issues/37551 is implemented, it can be changed back to `"../../logs/httpjson/http-request-trace-*.ndjson"` --}}
+      request.tracer.filename: "../../logs/httpjson/http-request-trace-httpjson-tenable_io.asset-assets_export_chunks.ndjson"
+      request.tracer.maxbackups: 5
+      {{/if}}
       request.transforms:
         - delete:
             target: header.User-Agent
