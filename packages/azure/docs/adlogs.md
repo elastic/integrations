@@ -221,6 +221,7 @@ An example event for `signinlogs` looks as following:
 | azure.resource.name | Name | keyword |
 | azure.resource.namespace | Resource type/namespace | keyword |
 | azure.resource.provider | Resource type/namespace | keyword |
+| azure.signinlogs.caller_ip_address | The IP address of the client that made the request. | ip |
 | azure.signinlogs.category | Category | keyword |
 | azure.signinlogs.identity | Identity | keyword |
 | azure.signinlogs.operation_name | The operation name | keyword |
@@ -234,7 +235,6 @@ An example event for `signinlogs` looks as following:
 | azure.signinlogs.properties.authentication_requirement | This holds the highest level of authentication needed through all the sign-in steps, for sign-in to succeed. | keyword |
 | azure.signinlogs.properties.authentication_requirement_policies | Set of CA policies that apply to this sign-in, each as CA: policy name, and/or MFA: Per-user | flattened |
 | azure.signinlogs.properties.autonomous_system_number | Autonomous system number. | long |
-| azure.signinlogs.properties.caller_ip_address | The IP address of the client that made the request. | ip |
 | azure.signinlogs.properties.client_app_used | Client app used | keyword |
 | azure.signinlogs.properties.conditional_access_status | Conditional access status | keyword |
 | azure.signinlogs.properties.correlation_id | Correlation ID | keyword |
