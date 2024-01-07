@@ -221,6 +221,7 @@ An example event for `signinlogs` looks as following:
 | azure.resource.name | Name | keyword |
 | azure.resource.namespace | Resource type/namespace | keyword |
 | azure.resource.provider | Resource type/namespace | keyword |
+| azure.signinlogs.caller_ip_address | The IP address of the client that made the request. | ip |
 | azure.signinlogs.category | Category | keyword |
 | azure.signinlogs.identity | Identity | keyword |
 | azure.signinlogs.operation_name | The operation name | keyword |
