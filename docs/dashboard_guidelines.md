@@ -128,5 +128,5 @@ Use tables whenever you need precise numbers.
 
 
 [1]: https://www.elastic.co/guide/en/kibana/current/dashboard.html
-[2]: https://github.com/flash1293/legacy_vis_analyzer
+[2]: https://github.com/elastic/visualizations_integrations_tools
 [3]: https://www.elastic.co/blog/an-introduction-to-the-elastic-data-stream-naming-scheme
