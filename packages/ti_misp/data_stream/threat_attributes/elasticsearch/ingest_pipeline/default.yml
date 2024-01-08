@@ -329,16 +329,15 @@ processors:
   - set:
       field: threat.indicator.type
       value: email-addr
-      if: "ctx.misp?.attribute?.type != null && ['email-dst', 'email-src'].contains(ctx.misp.attribute.type)"
+      if: "ctx.misp?.attribute?.type != null && ctx.misp?.attribute?.type.startsWith('email')"
   - set:
-      field: threat.indicator.type
-      value: email-message
-      if: "ctx.misp?.attribute?.type != null && ctx.misp?.attribute?.type.startsWith('email') && !['email-dst', 'email-src'].contains(ctx.misp.attribute.type)"
-  - rename:
-      field: misp.attribute.value
-      target_field: threat.indicator.email.address
-      ignore_missing: true
-      if: ctx.threat?.indicator?.type == 'email-addr'
+      value: "{{{misp.attribute.value}}}"
+      field: threat.indicator.email.address
+      if: ctx.misp?.attribute?.type == 'email-dst' || ctx.misp?.attribute?.type == 'email-src'
+  - set:
+      value: "{{{misp.attribute.value}}}"
+      field: threat.indicator.email.subject
+      if: ctx.misp?.attribute?.value != null && ctx.misp?.attribute?.type == 'email-subject'
   - rename:
       field: misp.event.event_creator_email
       target_field: user.email
@@ -494,13 +493,13 @@ processors:
       if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
+
   - remove:
       field:
         - misp.attribute.value
       ignore_missing: true
-      # Special-case email subject as it is potentially useful, but cannot yet be
-      # put in threat.indicator.email.subject as it is not an ECS field.
-      if: ctx.threat?.indicator?.type != null && ctx.misp?.attribute?.type != "email-subject"
+      if: ctx.threat?.indicator?.type != null
+
   - remove:
       field:
         - temp_tags
