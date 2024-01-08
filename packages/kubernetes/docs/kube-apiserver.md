@@ -212,6 +212,8 @@ An example event for `apiserver` looks as following:
 | kubernetes.apiserver.audit.rejected.count | Number of audit rejected events | long |  | counter |
 | kubernetes.apiserver.client.request.count | Number of requests as client | long |  | counter |
 | kubernetes.apiserver.etcd.object.count | Number of kubernetes objects at etcd | long |  | gauge |
+| kubernetes.apiserver.major.version | API Server major version. | keyword |  |  |
+| kubernetes.apiserver.minor.version | API Server minor version. | keyword |  |  |
 | kubernetes.apiserver.process.cpu.sec | CPU seconds | double |  | counter |
 | kubernetes.apiserver.process.fds.open.count | Number of open file descriptors | long |  | gauge |
 | kubernetes.apiserver.process.memory.resident.bytes | Bytes in resident memory | long | byte | gauge |

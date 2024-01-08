@@ -1274,6 +1274,7 @@ An example event for `state_node` looks as following:
 | kubernetes.node.cpu.allocatable.cores | Node CPU allocatable cores | float |  | gauge |
 | kubernetes.node.cpu.capacity.cores | Node CPU capacity cores | long |  | gauge |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
+| kubernetes.node.kubelet.version | Kubelet version. | keyword |  |  |
 | kubernetes.node.memory.allocatable.bytes | Node allocatable memory in bytes | long | byte | gauge |
 | kubernetes.node.memory.capacity.bytes | Node memory capacity in bytes | long | byte | gauge |
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
