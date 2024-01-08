@@ -62,13 +62,18 @@ Then, Metricbeat can be launched.
 
 ### Oracle DSN Configuration
 
-The supported configuration takes one of the forms
-- `oracle://<user>:<password>@<connection_string>`
-- `<user>:<password>@<connection_string>`
+The supported configuration takes the form
+```
+oracle://<user>:<password>@<connection_string>
+```
 
-Examples of supported configurations are as below:
-- `oracle://sys:Oradoc_db1@0.0.0.0:1521/ORCLCDB.localdomain?sysdba=1`
-- `sys:Oradoc_db1@0.0.0.0:1521/ORCLCDB.localdomain?sysdba=1`
+For example:
+
+```
+oracle://sys:Oradoc_db1@0.0.0.0:1521/ORCLCDB.localdomain?sysdba=1
+```
+
+Special characters, for example in the password, should be URL encoded.
 
 ## Compatibility
 
