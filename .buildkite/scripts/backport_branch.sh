@@ -20,6 +20,7 @@ TRIMMED_PACKAGE_VERSION="$(echo "$PACKAGE_VERSION" | cut -d '.' -f -2)"
 SOURCE_BRANCH="main"
 BACKPORT_BRANCH_NAME="backport-${PACKAGE_NAME}-${TRIMMED_PACKAGE_VERSION}"
 PACKAGES_FOLDER_PATH="packages"
+MSG=""
 
 isPackagePublished() {
   local packageZip=$1
@@ -65,7 +66,6 @@ createLocalBackportBranch() {
   local source_commit=$2
   if git checkout -b "$branch_name" "$source_commit"; then
     echo "The branch $branch_name has been created."
-    MSG="The backport branch: **$BACKPORT_BRANCH_NAME** has been created."
   else
     buildkite-agent annotate "The backport branch **$BACKPORT_BRANCH_NAME** could not be created." --style "warning"
     exit 1
@@ -166,9 +166,9 @@ fi
 
 echo "Creating the branch: $BACKPORT_BRANCH_NAME from the commit: $BASE_COMMIT"
 createLocalBackportBranch "$BACKPORT_BRANCH_NAME" "$BASE_COMMIT"
+MSG="The backport branch: **$BACKPORT_BRANCH_NAME** has been created."
 
 echo "Adding CI files into the branch ${BACKPORT_BRANCH_NAME}"
-MSG=""
 updateBackportBranchContents
 
 buildkite-agent annotate "$MSG" --style "success"
