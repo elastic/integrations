@@ -113,7 +113,9 @@ updateBackportBranchContents() {
     git diff $SOURCE_BRANCH...$BACKPORT_BRANCH_NAME
   else
     echo "Commiting and pushing..."
-    git add .
+    git add $BUILDKITE_FOLDER_PATH
+    git add $JENKINS_FOLDER_PATH
+    git add $PACKAGES_FOLDER_PATH/
     git commit -m "Add $BUILDKITE_FOLDER_PATH and $JENKINS_FOLDER_PATH to backport branch: $BACKPORT_BRANCH_NAME from the $SOURCE_BRANCH branch"
     git push origin $BACKPORT_BRANCH_NAME
   fi
