@@ -95,7 +95,7 @@ updateBackportBranchContents() {
     git checkout $BACKPORT_BRANCH_NAME
     echo "Copying $BUILDKITE_FOLDER_PATH from $SOURCE_BRANCH..."
     git checkout $SOURCE_BRANCH -- $BUILDKITE_FOLDER_PATH
-    echo "Romoving $JENKINS_FOLDER_PATH from $BACKPORT_BRANCH_NAME..."
+    echo "Removing $JENKINS_FOLDER_PATH from $BACKPORT_BRANCH_NAME..."
     rm -rf "$JENKINS_FOLDER_PATH"
   fi
 
