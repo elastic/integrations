@@ -87,8 +87,16 @@ Follow these detailed steps to release a fix for a given package version:
 
    If it is needed to release a new fix for that version, there is no need to create a new branch. Just create a new PR to merge a
    new branch onto the same backport branch created previously.
+   
+4. **Update changelog in main**
 
-4. **Known issues and their solutions:**
+   Once PR has been merged in the corresponding backport branch (e.g. `backport-aws-1.9`) and the package has been published,
+   a new Pull Request should be created manually to update the changelog in the main branch to include the new version published in the backport branch.
+   Take into account to add the changelog entry following the version order.
+
+   In order to keep track, this new PR should have a reference (relates) to the backport PR too in its description.
+
+5. **Known issues and their solutions:**
 
     1. Missing shellinit command:
         - Example of the error: https://buildkite.com/elastic/integrations/builds/7634#018c87f4-7b0c-4d6f-8ddd-b779a9a7a019/507-512
