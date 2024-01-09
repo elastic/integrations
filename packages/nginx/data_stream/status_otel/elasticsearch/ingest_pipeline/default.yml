@@ -1,0 +1,31 @@
+---
+description: Pipeline for processing the Nginx OTEL Metrics
+processors:
+  - set:
+      field: ishleen.stubstatus.otel
+      value: "yes"
+  - dot_expander:
+      field: nginx.requests
+      ignore_failure: true
+  - rename:
+      field: nginx.requests
+      target_field: nginx.stubstatus.requests
+      ignore_missing: true
+  - dot_expander:
+      field: nginx.connections_accepted
+      ignore_failure: true
+  - rename:
+      field: nginx.connections_accepted
+      target_field: nginx.stubstatus.accepts
+      ignore_missing: true 
+  - dot_expander:
+      field: nginx.connections_handled
+      ignore_failure: true
+  - rename:
+      field: nginx.connections_handled
+      target_field: nginx.stubstatus.handled
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
