@@ -103,8 +103,9 @@ Follow these detailed steps to release a fix for a given package version:
 
           `Error: could not create kibana client: undefined environment variable: ELASTIC_PACKAGE_KIBANA_HOST. If you have started the Elastic stack using the elastic-package tool, please load stack environment variables using 'eval "$(elastic-package stack shellinit)"' or set their values manually`
 
-        - **Solution**: add elastic-package stack shellinit command in `.buildkite/scripts/common.sh.
+        - **Solution**: add elastic-package stack shellinit command in `.buildkite/scripts/common.sh`.
             - `eval "$(elastic-package stack shellinit)"`
+              
               Example: https://github.com/elastic/integrations/blob/0226f93e0b1493d963a297e2072f79431f6cc443/.buildkite/scripts/common.sh#L828
 
     2. Not found license file:
