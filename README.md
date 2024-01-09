@@ -1,4 +1,4 @@
-[![Build Status](https://fleet-ci.elastic.co/job/ingest-manager/job/integrations/job/main/badge/icon)](https://fleet-ci.elastic.co/job/ingest-manager/job/integrations/job/main/)
+[![Build status](https://badge.buildkite.com/153e2f7f984d3b1b350d8cb5d2fe7e7ae924982d5bd5b5ee49.svg?branch=main)](https://buildkite.com/elastic/integrations)
 
 # Elastic Integrations
 
@@ -8,7 +8,7 @@ An Elastic Package may define configuration for the [Elastic Agent](#elastic-age
 
 Elastic Packages have a certain, well-defined structure. This structure is described by the [Package Specification](#package-specification). The repository is also used for discussions about extending the specification (with proposals).
 
-While this repository contains _sources_ for Elastic Integrations, _built_ Elastic Integrations are stored in the [Package Storage](#package-storage) repository and served up via the [Package Registry](#package-registry). The Fleet UI in Kibana connects to the Package Registry and allows users to discover, install, and configure Elastic Packages.
+While this repository contains _sources_ for Elastic Integrations, _built_ Elastic Integrations are published into a storage based on Google Cloud bucket (more info [here](https://github.com/elastic/elastic-package/blob/85d6fcacad736e543e459a044a5e0fa48b5d43c6/docs/howto/use_package_storage_v2.md)) and served up via the [Package Registry](#package-registry). The Fleet UI in Kibana connects to the Package Registry and allows users to discover, install, and configure Elastic Packages.
 
 ## Contributing
 
@@ -23,13 +23,13 @@ explore the builder tools.
 * [Suggest changes to the package specification](https://github.com/elastic/package-spec/issues/new)
   repository. Let's discuss any spec extensions together
 
+### Elastic Package
+* [Repository](https://github.com/elastic/elastic-package)
+* [Changelog of the `elastic-package` releases](https://github.com/elastic/elastic-package/releases)
+
 ### Package Registry
 * [Repository](https://github.com/elastic/package-registry)
 * [Release latest changes introduced to the Package Registry](https://github.com/elastic/package-registry/#release)
-
-### Package Storage
-* [Repository](https://github.com/elastic/package-storage)
-* [Update Docker images of Package Storage to include latest release of the Package Registry](https://github.com/elastic/package-storage#update-package-registry-for-a-distribution)
 
 ### Elastic Agent
 * [Repository](https://github.com/elastic/elastic-agent/tree/main)
