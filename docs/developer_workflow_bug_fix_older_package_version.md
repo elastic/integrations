@@ -65,10 +65,10 @@ Follow these detailed steps to release a fix for a given package version:
      If DRY_RUN is defined as "true" it will check:
       - if the package is published,
       - if the entered commit exists,
-      - if the backport-branch exists.
-     Also, it will create the local branch, update the branch with .buildkite and .ci folders, and remove other packages except the defined one.
+      - if the backport branch exists.
+     Also, it will create the local branch, update the branch with `.buildkite` and `.ci` folders, and remove other packages except the defined one (if set as input). This local branch will not be pushed to the upstream repository in this mode.
 
-     If DRY_RUN is defined as "false", in addition to written above it will create a commit and push the local branch to the upstream repository https://github.com/elastic/integrations.git. In this case, the name of the branch will be backport-${PACKAGE_NAME}-${TRIMMED_PACKAGE_VERSION}, for example, backport-aws-1.19.
+     If DRY_RUN is defined as "false", in addition to written above it will create a commit and push the local branch to the upstream repository https://github.com/elastic/integrations.git. In this case, the name of the branch will be `backport-${PACKAGE_NAME}-${TRIMMED_PACKAGE_VERSION}`, for example, `backport-aws-1.19`.
    * **BASE_COMMIT** (default: "") - enter the commit from the previous step (8cb321075afb9b77ea965e1373a03a603d9c9796)
    * **PACKAGE_NAME** (default: "") - enter the package name, for example aws
    * **PACKAGE_VERSION** (default: "") - enter the package version, for example: 1.19.7, 1.0.0-beta1
@@ -87,7 +87,7 @@ Follow these detailed steps to release a fix for a given package version:
 
    If it is needed to release a new fix for that version, there is no need to create a new branch. Just create a new PR to merge a
    new branch onto the same backport branch created previously.
-   
+
 4. **Update changelog in main**
 
    Once PR has been merged in the corresponding backport branch (e.g. `backport-aws-1.9`) and the package has been published,
@@ -104,7 +104,8 @@ Follow these detailed steps to release a fix for a given package version:
           `Error: could not create kibana client: undefined environment variable: ELASTIC_PACKAGE_KIBANA_HOST. If you have started the Elastic stack using the elastic-package tool, please load stack environment variables using 'eval "$(elastic-package stack shellinit)"' or set their values manually`
 
         - **Solution**: add elastic-package stack shellinit command in `.buildkite/scripts/common.sh.
-            - Example: https://github.com/elastic/integrations/blob/0226f93e0b1493d963a297e2072f79431f6cc443/.buildkite/scripts/common.sh#L828
+            - `eval "$(elastic-package stack shellinit)"`
+              Example: https://github.com/elastic/integrations/blob/0226f93e0b1493d963a297e2072f79431f6cc443/.buildkite/scripts/common.sh#L828
 
     2. Not found license file:
         - Example of the error: https://buildkite.com/elastic/integrations/builds/7644#018c883c-546f-4d32-ab4a-71e919ddebf8/270-309
