@@ -4,35 +4,11 @@ source .buildkite/scripts/common.sh
 
 set -euo pipefail
 
-if buildkite-agent meta-data exists DRY_RUN; then
-  DRY_RUN="$(buildkite-agent meta-data get DRY_RUN)"
-else
-  DRY_RUN=${DRY_RUN:-"true"}
-fi
-
-if buildkite-agent meta-data exists BASE_COMMIT; then
-  BASE_COMMIT="$(buildkite-agent meta-data get BASE_COMMIT)"
-else
-  BASE_COMMIT=${BASE_COMMIT:-""}
-fi
-
-if buildkite-agent meta-data exists PACKAGE_NAME; then
-  PACKAGE_NAME="$(buildkite-agent meta-data get PACKAGE_NAME)"
-else
-  PACKAGE_NAME=${PACKAGE_NAME:-""}
-fi
-
-if buildkite-agent meta-data exists PACKAGE_VERSION; then
-  PACKAGE_VERSION="$(buildkite-agent meta-data get PACKAGE_VERSION)"
-else
-  PACKAGE_VERSION="${PACKAGE_VERSION:-""}"
-fi
-
-if buildkite-agent meta-data exists REMOVE_OTHER_PACKAGES; then
-  REMOVE_OTHER_PACKAGES="$(buildkite-agent meta-data get REMOVE_OTHER_PACKAGES)"
-else
-  REMOVE_OTHER_PACKAGES="${REMOVE_OTHER_PACKAGES:-"false"}"
-fi
+DRY_RUN="$(buildkite-agent meta-data get DRY_RUN --default ${DRY_RUN:-"true"})"
+BASE_COMMIT="$(buildkite-agent meta-data get BASE_COMMIT --default ${BASE_COMMIT:-""})"
+PACKAGE_NAME="$(buildkite-agent meta-data get PACKAGE_NAME --default ${PACKAGE_NAME:-""})"
+PACKAGE_VERSION="$(buildkite-agent meta-data get PACKAGE_VERSION --default ${PACKAGE_VERSION:-""})"
+REMOVE_OTHER_PACKAGES="$(buildkite-agent meta-data get PREMOVE_OTHER_PACKAGES --default ${REMOVE_OTHER_PACKAGES:-"false"})"
 
 if [[ -z "$PACKAGE_NAME" ]] || [[ -z "$PACKAGE_VERSION" ]]; then
   buildkite-agent annotate "The variables **PACKAGE_NAME** or **PACKAGE_VERSION** aren't defined, please try again" --style "warning"
@@ -44,7 +20,6 @@ TRIMMED_PACKAGE_VERSION="$(echo "$PACKAGE_VERSION" | cut -d '.' -f -2)"
 SOURCE_BRANCH="main"
 BACKPORT_BRANCH_NAME="backport-${PACKAGE_NAME}-${TRIMMED_PACKAGE_VERSION}"
 PACKAGES_FOLDER_PATH="packages"
-MSG=""
 
 isPackagePublished() {
   local packageZip=$1
@@ -193,6 +168,7 @@ echo "Creating the branch: $BACKPORT_BRANCH_NAME from the commit: $BASE_COMMIT"
 createLocalBackportBranch "$BACKPORT_BRANCH_NAME" "$BASE_COMMIT"
 
 echo "Adding CI files into the branch ${BACKPORT_BRANCH_NAME}"
+MSG=""
 updateBackportBranchContents
 
 buildkite-agent annotate "$MSG" --style "success"
