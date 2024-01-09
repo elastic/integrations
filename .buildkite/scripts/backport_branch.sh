@@ -39,7 +39,6 @@ commitExists() {
   git checkout $branch
   local searchResult=""
   searchResult="$(git branch --contains $commit_sha --format="%(refname:short)" | grep -E ^${branch}$)"
-  echo "$searchResult"
   git checkout $BUILDKITE_BRANCH
   if [ "${searchResult}" == "${branch}" ]; then
     echo "The commit $commit_sha exists in the branch $branch"
