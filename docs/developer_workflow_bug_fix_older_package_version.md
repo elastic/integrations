@@ -56,24 +56,24 @@ Follow these detailed steps to release a fix for a given package version:
       ```
 
 2. Run the **integrations-backport** pipeline https://buildkite.com/elastic/integrations-backport for creating the backport-branch.
-   
+
    **Please, pay attention!**, if you just run the pipeline it'll wait for your inputs, nothing will happen without that.
-   
+
    Pipeline's inputs:
-   
+
    * **DRY_RUN** (default: "true"),
      If DRY_RUN is defined as "true" it will check:
       - if the package is published,
       - if the entered commit exists,
       - if the backport-branch exists.
-     Also, it will create the local branch, update the branch with .buildkite and .ci folders, and remove all packages except the defined one.
-   
+     Also, it will create the local branch, update the branch with .buildkite and .ci folders, and remove other packages except the defined one.
+
      If DRY_RUN is defined as "false", in addition to written above it will create a commit and push the local branch to the upstream repository https://github.com/elastic/integrations.git. In this case, the name of the branch will be backport-${PACKAGE_NAME}-${TRIMMED_PACKAGE_VERSION}, for example, backport-aws-1.19.
    * **BASE_COMMIT** (default: "") - enter the commit from the previous step (8cb321075afb9b77ea965e1373a03a603d9c9796)
    * **PACKAGE_NAME** (default: "") - enter the package name, for example aws
    * **PACKAGE_VERSION** (default: "") - enter the package version, for example: 1.19.7, 1.0.0-beta1
-   * **REMOVE_ALL_PACKAGES** (default: "false")
-     If **REMOVE_ALL_PACKAGES** is defined as "true" all packages from the **packages** folder, except the defined package, will be removed from the created branch.
+   * **REMOVE_OTHER_PACKAGES** (default: "false")
+     If **REMOVE_OTHER_PACKAGES** is defined as "true" all packages from the **packages** folder, except the defined package, will be removed from the created branch.
 
 
 3. **Create a PR for the bug fix**
