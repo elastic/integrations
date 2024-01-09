@@ -90,19 +90,17 @@ Follow these detailed steps to release a fix for a given package version:
 
 4. **Known issues and their solutions:**
 
-   4.1. Missing shell init command:
-      Example of the error: https://buildkite.com/elastic/integrations/builds/7634#018c87f4-7b0c-4d6f-8ddd-b779a9a7a019/507-512
-      
-      ```Error: could not create kibana client: undefined environment variable: ELASTIC_PACKAGE_KIBANA_HOST. If you have started the Elastic stack using the elastic-package tool, please load stack environment variables using 'eval "$(elastic-package stack shellinit)"' or set their values manually```
+    1. Missing shellinit command:
+        - Example of the error: https://buildkite.com/elastic/integrations/builds/7634#018c87f4-7b0c-4d6f-8ddd-b779a9a7a019/507-512
 
-      **Solution**: add elastic-package stack shellinit command in `.buildkite/scripts/common.sh.
-      Example: https://github.com/elastic/integrations/blob/0226f93e0b1493d963a297e2072f79431f6cc443/.buildkite/scripts/common.sh#L828
-   
-   4.2. Not found license file:
-      Example of the error: https://buildkite.com/elastic/integrations/builds/7644#018c883c-546f-4d32-ab4a-71e919ddebf8/270-309
-      
-      ```Error: checking package failed: building package failed: copying license text file: failure while looking for license "licenses/Elastic-2.0.txt" in repository: failed to find repository license: stat /opt/buildkite-agent/builds/bk-agent-prod-gcp-1703092724145948143/elastic/integrations/licenses/Elastic-2.0.txt: no such file or directory```
-      
-      **Solution**:
-      Remove line defining `ELASTIC_PACKAGE_REPOSITORY_LICENSE` environment variable.
-      Example: https://github.com/elastic/integrations/blob/0daff27f0e0195a483771a50d60ab28ca2830f75/.buildkite/pipeline.yml#L17
+          `Error: could not create kibana client: undefined environment variable: ELASTIC_PACKAGE_KIBANA_HOST. If you have started the Elastic stack using the elastic-package tool, please load stack environment variables using 'eval "$(elastic-package stack shellinit)"' or set their values manually`
+
+        - **Solution**: add elastic-package stack shellinit command in `.buildkite/scripts/common.sh.
+            - Example: https://github.com/elastic/integrations/blob/0226f93e0b1493d963a297e2072f79431f6cc443/.buildkite/scripts/common.sh#L828
+
+    2. Not found license file:
+        - Example of the error: https://buildkite.com/elastic/integrations/builds/7644#018c883c-546f-4d32-ab4a-71e919ddebf8/270-309
+
+          `Error: checking package failed: building package failed: copying license text file: failure while looking for license "licenses/Elastic-2.0.txt" in repository: failed to find repository license: stat /opt/buildkite-agent/builds/bk-agent-prod-gcp-1703092724145948143/elastic/integrations/licenses/Elastic-2.0.txt: no such file or directory`
+        - **Solution**: Remove line defining `ELASTIC_PACKAGE_REPOSITORY_LICENSE` environment variable.
+            - Example: https://github.com/elastic/integrations/blob/0daff27f0e0195a483771a50d60ab28ca2830f75/.buildkite/pipeline.yml#L17
