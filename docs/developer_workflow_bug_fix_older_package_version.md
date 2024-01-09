@@ -55,7 +55,7 @@ Follow these detailed steps to release a fix for a given package version:
           Move lightweight manifest to integration for EBS data stream (#3856)
       ```
 
-2. Run the **integrations-backport** pipeline https://buildkite.com/elastic/integrations-backport for creating the backport-branch.
+2. Run the **integrations-backport** pipeline https://buildkite.com/elastic/integrations-backport for creating the backport branch.
 
    **Please, pay attention!**, if you just run the pipeline it'll wait for your inputs, nothing will happen without that.
 
