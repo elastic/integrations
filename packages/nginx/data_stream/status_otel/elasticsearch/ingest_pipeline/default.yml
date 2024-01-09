@@ -1,9 +1,6 @@
 ---
 description: Pipeline for processing the Nginx OTEL Metrics
 processors:
-  - set:
-      field: ishleen.stubstatus.otel
-      value: "yes"
   - dot_expander:
       field: nginx.requests
       ignore_failure: true
@@ -25,6 +22,29 @@ processors:
       field: nginx.connections_handled
       target_field: nginx.stubstatus.handled
       ignore_missing: true
+  - dot_expander:
+      field: nginx.connections_current
+      override: true
+  - rename:
+      field: nginx.connections_current
+      target_field: nginx.stubstatus.waiting
+      ignore_missing: true
+      if: ctx?.labels.state == 'waiting'
+  - rename:
+      field: nginx.connections_current
+      target_field: nginx.stubstatus.writing
+      ignore_missing: true
+      if: ctx?.labels.state == 'writing'
+  - rename:
+      field: nginx.connections_current
+      target_field: nginx.stubstatus.reading
+      ignore_missing: true
+      if: ctx?.labels.state == 'reading'
+  - rename:
+      field: nginx.connections_current
+      target_field: nginx.stubstatus.active
+      ignore_missing: true
+      if: ctx?.labels.state == 'active'
 on_failure:
   - set:
       field: error.message
