@@ -1,6 +1,54 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
 
+name: "integrations-backport"
+
+env:
+  YQ_VERSION: 'v4.35.2'
+
 steps:
 
-  - label: "init pipeline"
-    command: echo "It works!"
+  - label: "Check that it runs from UI"
+    key: "check-ui"
+    command:
+      - "buildkite-agent annotate \"The $BUILDKITE_PIPELINE_SLUG is used only for running from UI!\" --style 'warning'"
+      - "exit 1"
+    if: "build.source != 'ui'"
+
+  - input: "Input values for the variables"
+    key: "input-variables"
+    fields:
+    - select: "DRY_RUN"
+      key: "DRY_RUN"
+      options:
+        - label: "True"
+          value: "true"
+        - label: "False"
+          value: "false"
+      default: "true"
+    - text: "Enter base-commit (please use a blank value if you want to update the current backport-branch)"
+      key: "BASE_COMMIT"
+      required: true
+      default: ""
+    - text: "Enter package name"
+      key: "PACKAGE_NAME"
+      required: true
+      default: ""
+    - text: "Enter package version (examples: 1.5.7, 1.0.0-beta1)"
+      key: "PACKAGE_VERSION"
+      required: true
+      default: ""
+    - select: "Include to backport-branch only one package?"
+      key: "REMOVE_OTHER_PACKAGES"
+      options:
+        - label: "True"
+          value: "true"
+        - label: "False"
+          value: "false"
+      default: "false"
+
+  - label: "Creating the backport branch"
+    key: "create-backport-branch"
+    command: ".buildkite/scripts/backport_branch.sh"
+    depends_on:
+      - step: "input-variables"
+        allow_failure: false
