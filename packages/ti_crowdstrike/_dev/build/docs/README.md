@@ -6,6 +6,8 @@ CrowdStrike Falcon Intelligence is a threat intelligence product that provides a
 
 The CrowdStrike Falcon Intelligence integration collects two types of data: IOC and Intel Indicator.
 
+Both the endpoints are related to the threat intelligence. Intel Indicators provide information about a hash, particularly related to malware and threat types, while IOC provides information about the detection of an IPv4 address, including severity, platforms, and global application status.
+
 Reference for CrowdStrike Falcon Intelligence APIs - https://falcon.crowdstrike.com/documentation/page/a2a7fc0e/crowdstrike-oauth2-based-apis. -> Go to the Accessing CrowdStrike API specification and find the API reference link for your cloud environment region.
 
 NOTE: Your Base URL depends on your cloud environment region.
@@ -56,14 +58,18 @@ This module has been tested against the **CrowdStrike Falcon Intelligence API Ve
 
 ## IoCs Expiration
 
-Since we want to retain only valuable information and avoid duplicated data, the CrowdStrike Falcon Intelligence Elastic integration forces the intel indicators to rotate into a custom index called: `logs-ti_crowdstrike_latest.dest_intel`.
+The ingested IOCs expire after certain duration. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to faciliate only active IOCs be available to the end users. Since we want to retain only valuable information and avoid duplicated data, the CrowdStrike Falcon Intelligence Elastic integration forces the intel indicators to rotate into a custom index called: `logs-ti_crowdstrike_latest.dest_intel` and forces the IOC logs to rotate into a custom index called: `logs-ti_crowdstrike_latest.dest_ioc`.
 **Please, refer to this index in order to set alerts and so on.**
+
+#### Handling Orphaned IOCs
+
+IOC expiration is set default to false in CrowdStrike console but user can set the expiration duration in using the admin console. Some CrowdStrike IOCs may never expire and will continue to stay in the latest destination index. To avoid any false positives from such orphaned IOCs, users are allowed to configure `IOC Expiration Duration` parameter while setting up the integration. This parameter deletes all data inside the destination index `logs-ti_crowdstrike_latest.intel` and `logs-ti_crowdstrike_latest.ioc` after this specified duration is reached. Users must pull entire feed instead of incremental feed when this expiration happens so that the IOCs get reset.
 
 ### How it works
 
 This is possible thanks to a transform rule installed along with the integration. The transform rule parses the data stream content that is pulled from CrowdStrike Falcon Intelligence and only adds new intel indicators.
 
-Both the data stream and the _latest index have applied expiration through ILM and a retention policy in the transform respectively._
+Both the data stream and the latest index have applied expiration through ILM and a retention policy in the transform respectively.
 
 ## Logs Reference
 

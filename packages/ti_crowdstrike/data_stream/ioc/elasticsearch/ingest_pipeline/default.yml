@@ -28,6 +28,7 @@ processors:
       tag: rename_message_to_event_original
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       tag: json_event_original
@@ -89,11 +90,6 @@ processors:
       tag: dissect_ioc_created_by
       field: ti_crowdstrike.ioc.created_by
       pattern: '%{user.name}@%{user.domain}'
-  - append:
-      field: related.user
-      tag: append_ioc_created_by_into_related_user
-      value: '{{{ti_crowdstrike.ioc.created_by}}}'
-      allow_duplicates: false
   - date:
       field: json.created_on
       tag: date_created_on
@@ -165,11 +161,69 @@ processors:
       tag: rename_metadata
       target_field: ti_crowdstrike.ioc.metadata
       ignore_missing: true
+  - script:
+      lang: painless
+      tag: script-default-deleted_at
+      if: ctx.json?.deleted_at == null && ctx.json?.modified_on != null && ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != ''
+      description: Add default deleted_at field.
+      source: >
+        def dur = ctx._conf.ioc_expiration_duration;
+        String modified_on = ctx.json.modified_on;
+        if (dur instanceof String){
+          String time_unit = dur.substring(dur.length() -  1, dur.length());
+          String time_value = dur.substring(0, dur.length() - 1);
+          if (time_unit == 'd') {
+            ctx.json.deleted_at = ZonedDateTime.parse(modified_on).plusDays(Long.parseLong(time_value));
+          } else if (time_unit == 'h') {
+            ctx.json.deleted_at = ZonedDateTime.parse(modified_on).plusHours(Long.parseLong(time_value));
+          } else if (time_unit == 'm') {
+            ctx.json.deleted_at = ZonedDateTime.parse(modified_on).plusMinutes(Long.parseLong(time_value));
+          } else {
+            ctx.json.deleted_at = ZonedDateTime.parse(modified_on).plusDays(90L);
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.deleted_at
+      tag: date_deleted_at
+      target_field: ti_crowdstrike.ioc.deleted_at
+      formats:
+        - ISO8601
+        - UNIX
+      if: ctx.json?.deleted_at != null && ctx.json.deleted_at != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: _conf.ioc_expiration_duration
+      tag: rename_conf_ioc_expiration_duration
+      target_field: ti_crowdstrike.ioc.expiration_duration
+      ignore_missing: true
+  - set:
+      field: threat.indicator.file.name
+      tag: set_threat_indicator_file_name
+      copy_from: ti_crowdstrike.ioc.metadata.filename
+      ignore_empty_value: true
   - rename:
       field: json.modified_by
       tag: rename_modified_by
       target_field: ti_crowdstrike.ioc.modified_by
       ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_modified_by_into_related_user
+      value: '{{{ti_crowdstrike.ioc.modified_by}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_ioc_created_by_into_related_user
+      value: '{{{ti_crowdstrike.ioc.created_by}}}'
+      if: ctx.related?.user == null
+      allow_duplicates: false
   - date:
       field: json.modified_on
       tag: date_modified_on
@@ -184,6 +238,11 @@ processors:
   - set:
       field: '@timestamp'
       tag: set_@timestamp_from_ioc_modified_on
+      copy_from: ti_crowdstrike.ioc.modified_on
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.modified_at
+      tag: set_threat_indicator_modified_at_from_ioc_modified_on
       copy_from: ti_crowdstrike.ioc.modified_on
       ignore_empty_value: true
   - rename:
@@ -215,9 +274,9 @@ processors:
         ipv4: ipv4-addr
         ipv6: ipv6-addr
         domain: domain-name
-        md5: x509-certificate
-        sha256: x509-certificate
-        sha1: x509-certificate
+        md5: file
+        sha256: file
+        sha1: file
       source: >
         String mapping = params[ctx.ti_crowdstrike.ioc.type];
         if (mapping != null) {
@@ -232,6 +291,11 @@ processors:
       tag: rename_value
       target_field: ti_crowdstrike.ioc.value
       ignore_missing: true
+  - set:
+      field: threat.indicator.name
+      tag: set_threat_indicator_name
+      copy_from: ti_crowdstrike.ioc.value
+      ignore_empty_value: true
   - convert:
       field: ti_crowdstrike.ioc.value
       tag: convert_ioc_value_to_ip

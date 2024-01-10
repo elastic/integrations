@@ -7,6 +7,12 @@ request.tracer.maxbackups: 5
 {{#if proxy_url}}
 resource.proxy_url: {{proxy_url}}
 {{/if}}
+{{#if ioc_expiration_duration}}
+fields_under_root: true
+fields:
+  _conf:
+    ioc_expiration_duration: "{{ioc_expiration_duration}}"
+{{/if}}
 {{#if ssl}}
 resource.ssl: {{ssl}}
 {{/if}}
@@ -23,6 +29,8 @@ state:
   want_more: false
   offset: 0
   batch_size: {{batch_size}}
+redact:
+  fields: ~
 program: |
   (
    !state.want_more ?

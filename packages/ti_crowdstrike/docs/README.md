@@ -6,6 +6,8 @@ CrowdStrike Falcon Intelligence is a threat intelligence product that provides a
 
 The CrowdStrike Falcon Intelligence integration collects two types of data: IOC and Intel Indicator.
 
+Both the endpoints are related to the threat intelligence. Intel Indicators provide information about a hash, particularly related to malware and threat types, while IOC provides information about the detection of an IPv4 address, including severity, platforms, and global application status.
+
 Reference for CrowdStrike Falcon Intelligence APIs - https://falcon.crowdstrike.com/documentation/page/a2a7fc0e/crowdstrike-oauth2-based-apis. -> Go to the Accessing CrowdStrike API specification and find the API reference link for your cloud environment region.
 
 NOTE: Your Base URL depends on your cloud environment region.
@@ -56,14 +58,18 @@ This module has been tested against the **CrowdStrike Falcon Intelligence API Ve
 
 ## IoCs Expiration
 
-Since we want to retain only valuable information and avoid duplicated data, the CrowdStrike Falcon Intelligence Elastic integration forces the intel indicators to rotate into a custom index called: `logs-ti_crowdstrike_latest.dest_intel`.
+The ingested IOCs expire after certain duration. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to faciliate only active IOCs be available to the end users. Since we want to retain only valuable information and avoid duplicated data, the CrowdStrike Falcon Intelligence Elastic integration forces the intel indicators to rotate into a custom index called: `logs-ti_crowdstrike_latest.dest_intel` and forces the IOC logs to rotate into a custom index called: `logs-ti_crowdstrike_latest.dest_ioc`.
 **Please, refer to this index in order to set alerts and so on.**
+
+#### Handling Orphaned IOCs
+
+IOC expiration is set default to false in CrowdStrike console but user can set the expiration duration in using the admin console. Some CrowdStrike IOCs may never expire and will continue to stay in the latest destination index. To avoid any false positives from such orphaned IOCs, users are allowed to configure `IOC Expiration Duration` parameter while setting up the integration. This parameter deletes all data inside the destination index `logs-ti_crowdstrike_latest.intel` and `logs-ti_crowdstrike_latest.ioc` after this specified duration is reached. Users must pull entire feed instead of incremental feed when this expiration happens so that the IOCs get reset.
 
 ### How it works
 
 This is possible thanks to a transform rule installed along with the integration. The transform rule parses the data stream content that is pulled from CrowdStrike Falcon Intelligence and only adds new intel indicators.
 
-Both the data stream and the _latest index have applied expiration through ILM and a retention policy in the transform respectively._
+Both the data stream and the latest index have applied expiration through ILM and a retention policy in the transform respectively.
 
 ## Logs Reference
 
@@ -79,8 +85,8 @@ An example event for `intel` looks as following:
 {
     "@timestamp": "2023-11-21T06:16:01.000Z",
     "agent": {
-        "ephemeral_id": "c92cc6ea-db57-4448-9b2a-b9200faeb957",
-        "id": "8eb38451-380b-4d79-bb51-3bbef1af85a5",
+        "ephemeral_id": "f0dc9887-cee1-4307-8276-5679945a62a6",
+        "id": "cd237c45-0361-4317-ac21-0528667dfad2",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.11.0"
@@ -94,7 +100,7 @@ An example event for `intel` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8eb38451-380b-4d79-bb51-3bbef1af85a5",
+        "id": "cd237c45-0361-4317-ac21-0528667dfad2",
         "snapshot": false,
         "version": "8.11.0"
     },
@@ -105,7 +111,7 @@ An example event for `intel` looks as following:
         ],
         "dataset": "ti_crowdstrike.intel",
         "id": "hash_sha256_c98e1a7f563824cd448b47613743dcd1c853742b78f42b000192b83d",
-        "ingested": "2023-12-19T10:03:51Z",
+        "ingested": "2024-01-02T10:03:58Z",
         "kind": "enrichment",
         "original": "{\"_marker\":\"17005473618d17ae6353d123235e4158c5c81f25f0\",\"actors\":[\"SALTYSPIDER\"],\"deleted\":false,\"domain_types\":[\"abc.com\"],\"id\":\"hash_sha256_c98e1a7f563824cd448b47613743dcd1c853742b78f42b000192b83d\",\"indicator\":\"c98e192bf71a7f97563824cd448b47613743dcd1c853742b78f42b000192b83d\",\"ip_address_types\":[\"81.2.69.192\"],\"kill_chains\":[\"Installation\",\"C2\"],\"labels\":[{\"created_on\":1700547356,\"last_valid_on\":1700547360,\"name\":\"MaliciousConfidence/High\"},{\"created_on\":1700547359,\"last_valid_on\":1700547359,\"name\":\"Malware/Mofksys\"},{\"created_on\":1700547359,\"last_valid_on\":1700547359,\"name\":\"ThreatType/Commodity\"},{\"created_on\":1700547359,\"last_valid_on\":1700547359,\"name\":\"ThreatType/CredentialHarvesting\"},{\"created_on\":1700547359,\"last_valid_on\":1700547359,\"name\":\"ThreatType/InformationStealer\"}],\"last_updated\":1700547361,\"malicious_confidence\":\"high\",\"malware_families\":[\"Mofksys\"],\"published_date\":1700547356,\"relations\":[{\"created_date\":1700547339,\"id\":\"domain.com.yy\",\"indicator\":\"domain.ds\",\"last_valid_date\":1700547339,\"type\":\"domain\"},{\"created_date\":1700547339,\"id\":\"domain.xx.yy\",\"indicator\":\"domain.xx.fd\",\"last_valid_date\":1700547339,\"type\":\"domain\"}],\"reports\":[\"reports\"],\"targets\":[\"abc\"],\"threat_types\":[\"Commodity\",\"CredentialHarvesting\",\"InformationStealer\"],\"type\":\"hash_sha256\",\"vulnerabilities\":[\"vuln\"]}",
         "type": [
@@ -116,6 +122,9 @@ An example event for `intel` looks as following:
         "type": "cel"
     },
     "related": {
+        "hash": [
+            "c98e192bf71a7f97563824cd448b47613743dcd1c853742b78f42b000192b83d"
+        ],
         "ip": [
             "81.2.69.192"
         ]
@@ -129,6 +138,10 @@ An example event for `intel` looks as following:
     "threat": {
         "indicator": {
             "confidence": "High",
+            "ip": [
+                "81.2.69.192"
+            ],
+            "name": "c98e192bf71a7f97563824cd448b47613743dcd1c853742b78f42b000192b83d",
             "provider": "crowdstrike",
             "type": "x509-certificate"
         }
@@ -140,9 +153,11 @@ An example event for `intel` looks as following:
                 "SALTYSPIDER"
             ],
             "deleted": false,
+            "deleted_at": "2024-02-19T06:16:01.000Z",
             "domain_types": [
                 "abc.com"
             ],
+            "expiration_duration": "90d",
             "id": "hash_sha256_c98e1a7f563824cd448b47613743dcd1c853742b78f42b000192b83d",
             "ip_address_types": [
                 "81.2.69.192"
@@ -217,6 +232,11 @@ An example event for `intel` looks as following:
                 "vuln"
             ]
         }
+    },
+    "vulnerability": {
+        "category": [
+            "vuln"
+        ]
     }
 }
 ```
@@ -232,12 +252,16 @@ An example event for `intel` looks as following:
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
+| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | log.offset | Log offset. | long |
 | tags | User defined tags. | keyword |
+| threat.feed.name | Display friendly feed name. | constant_keyword |
 | ti_crowdstrike.intel._marker | A special marker associated with the Intel Indicator. | keyword |
 | ti_crowdstrike.intel.actors | Information related to actors associated with the Intel Indicator. | keyword |
 | ti_crowdstrike.intel.deleted | Indicates whether the Intel Indicator has been deleted. | boolean |
+| ti_crowdstrike.intel.deleted_at | Date when IOC was deleted/expired. | date |
 | ti_crowdstrike.intel.domain_types | Information related to domain types associated with the Intel Indicator. | keyword |
+| ti_crowdstrike.intel.expiration_duration |  | keyword |
 | ti_crowdstrike.intel.id | A unique identifier for the Intel Indicator. | keyword |
 | ti_crowdstrike.intel.ip_address_types | Information related to IP address types associated with the Intel Indicator. | ip |
 | ti_crowdstrike.intel.kill_chains | Information related to kill chains associated with the Intel Indicator. | keyword |
@@ -273,8 +297,8 @@ An example event for `ioc` looks as following:
 {
     "@timestamp": "2023-11-01T10:22:23.106Z",
     "agent": {
-        "ephemeral_id": "83c9312b-2d89-4caa-ae36-e0dc1a2f24fb",
-        "id": "8eb38451-380b-4d79-bb51-3bbef1af85a5",
+        "ephemeral_id": "87149a42-9d56-4dc1-a7fb-a03ad2bc384f",
+        "id": "cd237c45-0361-4317-ac21-0528667dfad2",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.11.0"
@@ -288,7 +312,7 @@ An example event for `ioc` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8eb38451-380b-4d79-bb51-3bbef1af85a5",
+        "id": "cd237c45-0361-4317-ac21-0528667dfad2",
         "snapshot": false,
         "version": "8.11.0"
     },
@@ -300,7 +324,7 @@ An example event for `ioc` looks as following:
         ],
         "dataset": "ti_crowdstrike.ioc",
         "id": "34874a88935860cf6yyfc856d6abb6f35a29d8c077195ed6291aa8373696b44",
-        "ingested": "2023-12-19T10:05:04Z",
+        "ingested": "2024-01-02T10:04:56Z",
         "kind": "enrichment",
         "original": "{\"action\":\"detect again\",\"applied_globally\":true,\"created_by\":\"abc.it@example.com\",\"created_on\":\"2023-11-01T10:22:23.10607613Z\",\"deleted\":false,\"description\":\"IS-38887\",\"expired\":false,\"from_parent\":false,\"id\":\"34874a88935860cf6yyfc856d6abb6f35a29d8c077195ed6291aa8373696b44\",\"metadata\":{\"filename\":\"High_Serverity_Heuristic_Sandbox_Threat.docx\"},\"modified_by\":\"example.it@ex.com\",\"modified_on\":\"2023-11-01T10:22:23.10607613Z\",\"platforms\":[\"windows\",\"mac\",\"linux\"],\"severity\":\"critical\",\"tags\":[\"IS-38887\"],\"type\":\"ipv4\",\"value\":\"81.2.69.192\"}",
         "type": [
@@ -315,7 +339,7 @@ An example event for `ioc` looks as following:
             "81.2.69.192"
         ],
         "user": [
-            "abc.it@example.com"
+            "example.it@ex.com"
         ]
     },
     "tags": [
@@ -327,8 +351,13 @@ An example event for `ioc` looks as following:
     "threat": {
         "indicator": {
             "description": "IS-38887",
+            "file": {
+                "name": "High_Serverity_Heuristic_Sandbox_Threat.docx"
+            },
             "first_seen": "2023-11-01T10:22:23.106Z",
             "ip": "81.2.69.192",
+            "modified_at": "2023-11-01T10:22:23.106Z",
+            "name": "81.2.69.192",
             "provider": "crowdstrike",
             "type": "ipv4-addr"
         }
@@ -340,7 +369,9 @@ An example event for `ioc` looks as following:
             "created_by": "abc.it@example.com",
             "created_on": "2023-11-01T10:22:23.106Z",
             "deleted": false,
+            "deleted_at": "2024-01-30T10:22:23.106Z",
             "description": "IS-38887",
+            "expiration_duration": "90d",
             "expired": false,
             "from_parent": false,
             "id": "34874a88935860cf6yyfc856d6abb6f35a29d8c077195ed6291aa8373696b44",
@@ -380,14 +411,18 @@ An example event for `ioc` looks as following:
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
+| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | log.offset | Log offset. | long |
 | tags | User defined tags. | keyword |
+| threat.feed.name | Display friendly feed name. | constant_keyword |
 | ti_crowdstrike.ioc.action | Describes the action taken when the IOC is detected. | keyword |
 | ti_crowdstrike.ioc.applied_globally | Indicates whether the IOC is applied globally. | boolean |
 | ti_crowdstrike.ioc.created_by | Indicates the entity or user who created the IOC. | keyword |
 | ti_crowdstrike.ioc.created_on | Timestamp indicating when the IOC was created. | date |
 | ti_crowdstrike.ioc.deleted | Indicates whether the IOC has been deleted. | boolean |
+| ti_crowdstrike.ioc.deleted_at | Date when IOC was deleted/expired. | date |
 | ti_crowdstrike.ioc.description | A textual description associated with the IOC. | keyword |
+| ti_crowdstrike.ioc.expiration_duration |  | keyword |
 | ti_crowdstrike.ioc.expired | Indicates whether the IOC has expired. | boolean |
 | ti_crowdstrike.ioc.from_parent | Indicates whether the IOC originated from a parent entity. | boolean |
 | ti_crowdstrike.ioc.id | A unique identifier for the IOC. | keyword |

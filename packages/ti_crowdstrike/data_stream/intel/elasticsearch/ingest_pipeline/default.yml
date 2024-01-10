@@ -28,6 +28,7 @@ processors:
       tag: rename_message_to_event_original
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       tag: json_event_original
@@ -78,11 +79,12 @@ processors:
       ignore_missing: true
   - foreach:
       field: ti_crowdstrike.intel.ip_address_types
+      tag: foreach_ti_crowdstrike_intel_ip_address_types
       if: ctx.ti_crowdstrike?.intel?.ip_address_types instanceof List
-      ignore_failure: true
       processor:
         convert:
           field: _ingest._value
+          tag: convert_ti_crowdstrike_intel_ip_address_types
           type: ip
           ignore_missing: true
           on_failure:
@@ -94,11 +96,22 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ti_crowdstrike.intel.ip_address_types
+      tag: foreach_ti_crowdstrike_intel_ip_address_types_append_into_threat_indicator_ip
       if: ctx.ti_crowdstrike?.intel?.ip_address_types instanceof List
-      ignore_failure: true
+      processor:
+        append:
+          field: threat.indicator.ip
+          tag: append_intel_ip_address_types_into_threat_indicator_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ti_crowdstrike.intel.ip_address_types
+      tag: foreach_ti_crowdstrike_intel_ip_address_types_append_into_related_ip
+      if: ctx.ti_crowdstrike?.intel?.ip_address_types instanceof List
       processor:
         append:
           field: related.ip
+          tag: append_intel_ip_address_types_into_related_ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - rename:
@@ -113,11 +126,12 @@ processors:
       ignore_missing: true
   - foreach:
       field: ti_crowdstrike.intel.labels
+      tag: foreach_intel_labels_date_created_on
       if: ctx.ti_crowdstrike?.intel?.labels instanceof List
-      ignore_failure: true
       processor:
         date:
           field: _ingest._value.created_on
+          tag: date_intel_labels_created_on
           target_field: _ingest._value.created_on
           formats:
             - ISO8601
@@ -128,11 +142,12 @@ processors:
                 ignore_missing: true
   - foreach:
       field: ti_crowdstrike.intel.labels
+      tag: foreach_intel_labels_date_valid_on
       if: ctx.ti_crowdstrike?.intel?.labels instanceof List
-      ignore_failure: true
       processor:
         date:
           field: _ingest._value.last_valid_on
+          tag: date_intel_labels_valid_on
           target_field: _ingest._value.last_valid_on
           formats:
             - ISO8601
@@ -141,6 +156,48 @@ processors:
             - remove:
                 field: _ingest._value.last_valid_on
                 ignore_missing: true
+  - script:
+      lang: painless
+      tag: script-default-deleted_at
+      if: ctx.json?.deleted_at == null && ctx.json?.last_updated != null && ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != ''
+      description: Add default deleted_at field.
+      source: >
+        def dur = ctx._conf.ioc_expiration_duration;
+        def last_updated = ctx.json.last_updated;
+        if (dur instanceof String){
+          String time_unit = dur.substring(dur.length() -  1, dur.length());
+          String time_value = dur.substring(0, dur.length() - 1);
+          if (time_unit == 'd') {
+            ctx.json.deleted_at = last_updated + Long.parseLong(time_value)*24*60*60;
+          } else if (time_unit == 'h') {
+            ctx.json.deleted_at = last_updated + Long.parseLong(time_value)*60*60;
+          } else if (time_unit == 'm') {
+            ctx.json.deleted_at = last_updated + Long.parseLong(time_value)*60;
+          } else {
+            ctx.json.deleted_at = last_updated + 90*24*60*60;
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.deleted_at
+      tag: date_deleted_at
+      target_field: ti_crowdstrike.intel.deleted_at
+      formats:
+        - ISO8601
+        - UNIX
+      if: ctx.json?.deleted_at != null && ctx.json.deleted_at != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: _conf.ioc_expiration_duration
+      tag: rename_conf_ioc_expiration_duration
+      target_field: ti_crowdstrike.intel.expiration_duration
+      ignore_missing: true
   - date:
       field: json.last_updated
       tag: date_timestamp
@@ -203,11 +260,12 @@ processors:
       ignore_missing: true
   - foreach:
       field: ti_crowdstrike.intel.relations
+      tag: foreach_intel_relations
       if: ctx.ti_crowdstrike?.intel?.relations instanceof List
-      ignore_failure: true
       processor:
         date:
           field: _ingest._value.created_date
+          tag: date_intel_relations_created_date
           target_field: _ingest._value.created_date
           formats:
             - ISO8601
@@ -218,11 +276,12 @@ processors:
                 ignore_missing: true
   - foreach:
       field: ti_crowdstrike.intel.relations
+      tag: foreach_intel_relations_date_valid_date
       if: ctx.ti_crowdstrike?.intel?.relations instanceof List
-      ignore_failure: true
       processor:
         date:
           field: _ingest._value.last_valid_date
+          tag: date_intel_relations_valid_date
           target_field: _ingest._value.last_valid_date
           formats:
             - ISO8601
@@ -290,11 +349,37 @@ processors:
       tag: rename_indicator
       target_field: ti_crowdstrike.intel.value
       ignore_missing: true
+  - set:
+      field: threat.indicator.type
+      tag: set_threat_indicator_type_to_ipv6_addr
+      value: ipv6-addr
+      if: ctx.ti_crowdstrike?.intel?.type != null && ctx.ti_crowdstrike.intel.type.contains('ip_address') && ctx.ti_crowdstrike?.intel?.value != null && ctx.ti_crowdstrike.intel.value.contains(":")
+  - append:
+      field: related.hash
+      tag: append_intel_value_into_related_hash
+      value: '{{{ti_crowdstrike.intel.value}}}'
+      if: ctx.ti_crowdstrike?.intel?.type != null && ['hash_ion', 'hash_md5', 'hash_sha256', 'hash_sha2'].contains(ctx.ti_crowdstrike.intel.type)
+      allow_duplicates: false
+  - set:
+      field: threat.indicator.name
+      tag: set_threat_indicator_name
+      copy_from: ti_crowdstrike.intel.value
+      ignore_empty_value: true
   - rename:
       field: json.vulnerabilities
       tag: rename_vulnerabilities
       target_field: ti_crowdstrike.intel.vulnerabilities
       ignore_missing: true
+  - foreach:
+      field: ti_crowdstrike.intel.vulnerabilities
+      tag: foreach_intel_vulnerabilities
+      if: ctx.ti_crowdstrike?.intel?.vulnerabilities instanceof List
+      processor:
+        append:
+          field: vulnerability.category
+          tag: append_vulnerabilities_into_vulnerability-category
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - remove:
       field:
         - ti_crowdstrike.intel.id

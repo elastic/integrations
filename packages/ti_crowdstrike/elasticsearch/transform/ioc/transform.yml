@@ -1,7 +1,7 @@
 # Use of "*" to use all namespaces defined.
 source:
   index:
-    - "logs-ti_crowdstrike.intel-*"
+    - "logs-ti_crowdstrike.ioc-*"
 # The version suffix on the dest.index should be incremented if a breaking change
 # is made to the index mapping. You must also bump the fleet_transform_version
 # for any change to this transform configuration to take effect. The old destination
@@ -9,9 +9,9 @@ source:
 # us that ability in order to prevent having duplicate IoC data and prevent query
 # time field type conflicts.
 dest:
-  index: "logs-ti_crowdstrike_latest.dest_intel-1"
+  index: "logs-ti_crowdstrike_latest.dest_ioc-1"
   aliases:
-    - alias: "logs-ti_crowdstrike_latest.intel"
+    - alias: "logs-ti_crowdstrike_latest.ioc"
       move_on_creation: true
 latest:
   unique_key:
@@ -19,7 +19,7 @@ latest:
     - threat.indicator.type
     - event.id
   sort: '@timestamp'
-description: Latest Intel Indicator data retrieved from CrowdStrike Intel API.
+description: Latest IOC Indicator data retrieved from CrowdStrike IOC API.
 frequency: 30s
 sync:
   time:
@@ -27,8 +27,8 @@ sync:
     delay: 120s
 retention_policy:
   time:
-    field: event.ingested
-    max_age: 1d
+    field: ti_crowdstrike.ioc.deleted_at
+    max_age: 1m
 _meta:
   managed: true
   # Bump this version to delete, reinstall, and restart the transform during package.
