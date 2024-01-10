@@ -13,7 +13,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "WMI Incoming Lateral Movement",
-        "query": "sequence by host.id with maxspan = 2s\n\n /* Accepted Incoming RPC connection by Winmgmt service */\n\n  [network where host.os.type == \"windows\" and process.name : \"svchost.exe\" and network.direction : (\"incoming\", \"ingress\") and\n   source.ip != \"127.0.0.1\" and source.ip != \"::1\" and source.port \u003e= 49152 and destination.port \u003e= 49152\n  ]\n\n  /* Excluding Common FPs Nessus and SCCM */\n\n  [process where host.os.type == \"windows\" and event.type == \"start\" and process.parent.name : \"WmiPrvSE.exe\" and\n   not process.args : (\"C:\\\\windows\\\\temp\\\\nessus_*.txt\",\n                       \"*C:\\\\windows\\\\TEMP\\\\nessus_*.TMP*\",\n                       \"C:\\\\Windows\\\\CCM\\\\SystemTemp\\\\*\",\n                       \"C:\\\\Windows\\\\CCMCache\\\\*\",\n                       \"C:\\\\CCM\\\\Cache\\\\*\")\n   ]\n",
+        "query": "sequence by host.id with maxspan = 2s\n\n /* Accepted Incoming RPC connection by Winmgmt service */\n\n  [network where host.os.type == \"windows\" and process.name : \"svchost.exe\" and network.direction : (\"incoming\", \"ingress\") and\n   source.ip != \"127.0.0.1\" and source.ip != \"::1\" and source.port >= 49152 and destination.port >= 49152\n  ]\n\n  /* Excluding Common FPs Nessus and SCCM */\n\n  [process where host.os.type == \"windows\" and event.type == \"start\" and process.parent.name : \"WmiPrvSE.exe\" and\n   not process.args : (\"C:\\\\windows\\\\temp\\\\nessus_*.txt\",\n                       \"*C:\\\\windows\\\\TEMP\\\\nessus_*.TMP*\",\n                       \"C:\\\\Windows\\\\CCM\\\\SystemTemp\\\\*\",\n                       \"C:\\\\Windows\\\\CCMCache\\\\*\",\n                       \"C:\\\\CCM\\\\Cache\\\\*\")\n   ]\n",
         "related_integrations": [
             {
                 "package": "endpoint",
@@ -87,7 +87,7 @@
         ],
         "threat": [
             {
-                "framework": "MITRE ATT\u0026CK",
+                "framework": "MITRE ATT&CK",
                 "tactic": {
                     "id": "TA0008",
                     "name": "Lateral Movement",
@@ -96,7 +96,7 @@
                 "technique": []
             },
             {
-                "framework": "MITRE ATT\u0026CK",
+                "framework": "MITRE ATT&CK",
                 "tactic": {
                     "id": "TA0002",
                     "name": "Execution",

@@ -26,6 +26,12 @@ resource "aws_s3_object" "crowdstrike_aidmaster" {
   source = "./files/fdr-0_aidmaster.log"
 }
 
+resource "aws_s3_object" "crowdstrike_userinfo" {
+  bucket = aws_s3_bucket.crowdstrike_fdr.id
+  key    = "fdrv2/userinfo"
+  source = "./files/fdr-0_userinfo.log"
+}
+
 resource "aws_sqs_queue" "crowdstrike_queue" {
   name = "elastic-package-crowdstrike-queue-${var.TEST_RUN_ID}"
 }
@@ -93,20 +99,25 @@ resource "aws_scheduler_schedule" "eventbridge_scheduler_every1minute" {
     input = jsonencode({
       cid        = "ffffffff15754bcfb5f9152ec7ac90ac"
       timestamp  = 1625677488615
-      fileCount  = 2
-      totalSize  = 117600
+      fileCount  = 3
+      totalSize  = 118088
       bucket     = aws_s3_bucket.crowdstrike_fdr.id
       pathPrefix = "data/f0714ca5-3689-448d-b5cc-582a6f7a56b1"
       "files" : [
         {
           "path" : aws_s3_object.crowdstrike_data.key,
           "size" : 113186,
-          "checksum" : "5ac29ea09dd63d62e13e5b11abb1ffdb"
+          "checksum" : "49b3322129084890cbdfc0f4521cc80b"
         },
         {
           "path" : aws_s3_object.crowdstrike_aidmaster.key,
           "size" : 4414,
-          "checksum" : "446fc9c950413527640a620863691594"
+          "checksum" : "a06a88462e6950f0be3bb83230047e87"
+        },
+        {
+          "path" : aws_s3_object.crowdstrike_userinfo.key,
+          "size" : 489,
+          "checksum" : "349c96ed5531edce2233ad417123736d"
         }
       ]
     })
