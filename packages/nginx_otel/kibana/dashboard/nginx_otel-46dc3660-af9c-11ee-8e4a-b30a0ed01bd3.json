@@ -1,6 +1,6 @@
 {
     "attributes": {
-        "description": "This dashboard provides the overview of data collected using OTEL receiver",
+        "description": "This dashboard provides the overview of metrics collected using OTEL receiver for Nginx",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -16,13 +16,13 @@
                             "key": "data_stream.dataset",
                             "negate": false,
                             "params": {
-                                "query": "apm.app.nginx"
+                                "query": "nginx.otel"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "data_stream.dataset": "apm.app.nginx"
+                                "data_stream.dataset": "nginx.otel"
                             }
                         }
                     }
@@ -43,17 +43,134 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-20c858b1-6127-4798-8d1c-f756edbd71d1",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "savedObjectId": "nginx-nginx_otel-1fb14dc0-ae0f-11ee-8e4a-b30a0ed01bd3",
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "20c858b1-6127-4798-8d1c-f756edbd71d1": {
+                                            "columnOrder": [
+                                                "d03c7c23-fd94-4a53-9f1a-d54f6e28ea7d",
+                                                "7302ebea-1cf2-47f5-a461-25791dcd1ce3"
+                                            ],
+                                            "columns": {
+                                                "7302ebea-1cf2-47f5-a461-25791dcd1ce3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "nginx.requests"
+                                                },
+                                                "d03c7c23-fd94-4a53-9f1a-d54f6e28ea7d": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": -90,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "7302ebea-1cf2-47f5-a461-25791dcd1ce3"
+                                        ],
+                                        "layerId": "20c858b1-6127-4798-8d1c-f756edbd71d1",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "d03c7c23-fd94-4a53-9f1a-d54f6e28ea7d",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "7302ebea-1cf2-47f5-a461-25791dcd1ce3"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Total Requests[Metrics Nginx OTEL]",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
                     "enhancements": {}
                 },
                 "gridData": {
                     "h": 13,
-                    "i": "4eed0e5c-d079-40bc-9ed9-351212cee2c8",
+                    "i": "4b69bc04-9eaa-4c2a-a583-b83f83de5510",
                     "w": 17,
                     "x": 0,
                     "y": 0
                 },
-                "panelIndex": "4eed0e5c-d079-40bc-9ed9-351212cee2c8",
-                "panelRefName": "panel_4eed0e5c-d079-40bc-9ed9-351212cee2c8",
+                "panelIndex": "4b69bc04-9eaa-4c2a-a583-b83f83de5510",
                 "type": "lens"
             },
             {
@@ -62,16 +179,16 @@
                         "description": "",
                         "references": [
                             {
-                                "id": "67cc8727-922c-4a8c-911f-a420e2ce97fd",
+                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-47aefbb2-c91a-4ad9-b08f-e1a5a0b6a5d7",
                                 "type": "index-pattern"
                             }
                         ],
+                        "savedObjectId": "nginx-nginx_otel-56c57e30-ae0f-11ee-8e4a-b30a0ed01bd3",
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "67cc8727-922c-4a8c-911f-a420e2ce97fd",
                                     "layers": {
                                         "47aefbb2-c91a-4ad9-b08f-e1a5a0b6a5d7": {
                                             "columnOrder": [
@@ -106,7 +223,6 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "67cc8727-922c-4a8c-911f-a420e2ce97fd",
                                             "sampling": 1
                                         }
                                     }
@@ -175,13 +291,12 @@
                 },
                 "gridData": {
                     "h": 13,
-                    "i": "ec7cba14-9f26-47bd-b314-1c28ba9248dd",
+                    "i": "db0108bc-af1d-4103-8052-767120aa8c05",
                     "w": 15,
                     "x": 17,
                     "y": 0
                 },
-                "panelIndex": "ec7cba14-9f26-47bd-b314-1c28ba9248dd",
-                "panelRefName": "panel_ec7cba14-9f26-47bd-b314-1c28ba9248dd",
+                "panelIndex": "db0108bc-af1d-4103-8052-767120aa8c05",
                 "type": "lens"
             },
             {
@@ -308,13 +423,13 @@
                 },
                 "gridData": {
                     "h": 13,
-                    "i": "58582f85-63fd-42a2-9fd6-d992a00ffee0",
+                    "i": "84b57d62-bd5c-4f88-bf95-d170c08f9b20",
                     "w": 16,
                     "x": 32,
                     "y": 0
                 },
-                "panelIndex": "58582f85-63fd-42a2-9fd6-d992a00ffee0",
-                "panelRefName": "panel_58582f85-63fd-42a2-9fd6-d992a00ffee0",
+                "panelIndex": "84b57d62-bd5c-4f88-bf95-d170c08f9b20",
+                "panelRefName": "panel_84b57d62-bd5c-4f88-bf95-d170c08f9b20",
                 "type": "lens"
             },
             {
@@ -323,13 +438,13 @@
                         "description": "",
                         "references": [
                             {
-                                "id": "67cc8727-922c-4a8c-911f-a420e2ce97fd",
+                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-717d33bc-9878-4851-a85f-2eb7630d56ca",
                                 "type": "index-pattern"
                             },
                             {
-                                "id": "67cc8727-922c-4a8c-911f-a420e2ce97fd",
-                                "name": "469bf1e8-c799-4d5a-8368-c3c5666f188a",
+                                "id": "metrics-*",
+                                "name": "e4ad9515-2e9f-43d3-8082-ccd9a9209efc",
                                 "type": "index-pattern"
                             }
                         ],
@@ -390,7 +505,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "469bf1e8-c799-4d5a-8368-c3c5666f188a",
+                                        "index": "e4ad9515-2e9f-43d3-8082-ccd9a9209efc",
                                         "key": "labels.state",
                                         "negate": false,
                                         "params": {
@@ -462,12 +577,12 @@
                 },
                 "gridData": {
                     "h": 13,
-                    "i": "67147a5a-a6b1-4c16-ad0f-282662e925d4",
+                    "i": "6588681e-becd-49c6-b10a-76cb7052f833",
                     "w": 17,
                     "x": 0,
                     "y": 13
                 },
-                "panelIndex": "67147a5a-a6b1-4c16-ad0f-282662e925d4",
+                "panelIndex": "6588681e-becd-49c6-b10a-76cb7052f833",
                 "title": "Active Connections [Metrics Nginx OTEL]",
                 "type": "lens"
             },
@@ -477,7 +592,7 @@
                         "description": "",
                         "references": [
                             {
-                                "id": "67cc8727-922c-4a8c-911f-a420e2ce97fd",
+                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-f34176ce-7f0e-49c1-ac1f-f9421d8c00d2",
                                 "type": "index-pattern"
                             }
@@ -628,12 +743,12 @@
                 },
                 "gridData": {
                     "h": 13,
-                    "i": "bc640ceb-678e-4d44-b983-dc0ab7c77940",
+                    "i": "2d6ad174-0648-4382-bb02-06a8ad8c9acf",
                     "w": 31,
                     "x": 17,
                     "y": 13
                 },
-                "panelIndex": "bc640ceb-678e-4d44-b983-dc0ab7c77940",
+                "panelIndex": "2d6ad174-0648-4382-bb02-06a8ad8c9acf",
                 "type": "lens"
             },
             {
@@ -765,12 +880,12 @@
                 },
                 "gridData": {
                     "h": 14,
-                    "i": "27dd18f8-70a5-4697-8953-4c3bf4c8bc9c",
+                    "i": "9d86edc1-d167-443f-9dc2-ce2e2c02356d",
                     "w": 17,
                     "x": 0,
                     "y": 26
                 },
-                "panelIndex": "27dd18f8-70a5-4697-8953-4c3bf4c8bc9c",
+                "panelIndex": "9d86edc1-d167-443f-9dc2-ce2e2c02356d",
                 "title": "Request Rate [Metrics Nginx OTEL]",
                 "type": "lens"
             },
@@ -929,79 +1044,84 @@
                 },
                 "gridData": {
                     "h": 14,
-                    "i": "3f610b6a-4d71-47be-8d8c-9a222615d156",
+                    "i": "55575184-577d-49c4-aa62-db6790ca2388",
                     "w": 31,
                     "x": 17,
                     "y": 26
                 },
-                "panelIndex": "3f610b6a-4d71-47be-8d8c-9a222615d156",
+                "panelIndex": "55575184-577d-49c4-aa62-db6790ca2388",
                 "title": "Accepts \u0026 Handled [Metrics Nginx OTEL]",
                 "type": "lens"
             }
         ],
         "timeRestore": false,
-        "title": "[Metrics Nginx OTEL] Overview",
+        "title": "[Metrics Nginx OTEL] Integrations Overview",
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-01-08T10:50:58.772Z",
-    "id": "nginx_otel-1ddc90f0-ae13-11ee-8e4a-b30a0ed01bd3",
+    "created_at": "2024-01-10T09:41:09.289Z",
+    "id": "nginx_otel-46dc3660-af9c-11ee-8e4a-b30a0ed01bd3",
     "managed": false,
     "references": [
         {
-            "id": "67cc8727-922c-4a8c-911f-a420e2ce97fd",
+            "id": "metrics-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         },
         {
-            "id": "nginx_otel-1fb14dc0-ae0f-11ee-8e4a-b30a0ed01bd3",
-            "name": "4eed0e5c-d079-40bc-9ed9-351212cee2c8:panel_4eed0e5c-d079-40bc-9ed9-351212cee2c8",
-            "type": "lens"
-        },
-        {
-            "id": "nginx_otel-56c57e30-ae0f-11ee-8e4a-b30a0ed01bd3",
-            "name": "ec7cba14-9f26-47bd-b314-1c28ba9248dd:panel_ec7cba14-9f26-47bd-b314-1c28ba9248dd",
-            "type": "lens"
-        },
-        {
-            "id": "67cc8727-922c-4a8c-911f-a420e2ce97fd",
-            "name": "ec7cba14-9f26-47bd-b314-1c28ba9248dd:indexpattern-datasource-layer-47aefbb2-c91a-4ad9-b08f-e1a5a0b6a5d7",
-            "type": "index-pattern"
-        },
-        {
-            "id": "nginx_otel-1812d060-ae10-11ee-8e4a-b30a0ed01bd3",
-            "name": "58582f85-63fd-42a2-9fd6-d992a00ffee0:panel_58582f85-63fd-42a2-9fd6-d992a00ffee0",
-            "type": "lens"
-        },
-        {
-            "id": "67cc8727-922c-4a8c-911f-a420e2ce97fd",
-            "name": "58582f85-63fd-42a2-9fd6-d992a00ffee0:indexpattern-datasource-layer-26597c61-5aa7-4bde-8420-9bf23375c077",
-            "type": "index-pattern"
-        },
-        {
-            "id": "67cc8727-922c-4a8c-911f-a420e2ce97fd",
-            "name": "67147a5a-a6b1-4c16-ad0f-282662e925d4:indexpattern-datasource-layer-717d33bc-9878-4851-a85f-2eb7630d56ca",
-            "type": "index-pattern"
-        },
-        {
-            "id": "67cc8727-922c-4a8c-911f-a420e2ce97fd",
-            "name": "67147a5a-a6b1-4c16-ad0f-282662e925d4:469bf1e8-c799-4d5a-8368-c3c5666f188a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "67cc8727-922c-4a8c-911f-a420e2ce97fd",
-            "name": "bc640ceb-678e-4d44-b983-dc0ab7c77940:indexpattern-datasource-layer-f34176ce-7f0e-49c1-ac1f-f9421d8c00d2",
+            "id": "metrics-*",
+            "name": "4b69bc04-9eaa-4c2a-a583-b83f83de5510:indexpattern-datasource-layer-20c858b1-6127-4798-8d1c-f756edbd71d1",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "27dd18f8-70a5-4697-8953-4c3bf4c8bc9c:indexpattern-datasource-layer-9cb60e1d-d0f7-4ff8-b6f2-b914e0a70e27",
+            "name": "db0108bc-af1d-4103-8052-767120aa8c05:indexpattern-datasource-layer-47aefbb2-c91a-4ad9-b08f-e1a5a0b6a5d7",
+            "type": "index-pattern"
+        },
+        {
+            "id": "nginx_otel-nginx-nginx_otel-1812d060-ae10-11ee-8e4a-b30a0ed01bd3",
+            "name": "84b57d62-bd5c-4f88-bf95-d170c08f9b20:panel_84b57d62-bd5c-4f88-bf95-d170c08f9b20",
+            "type": "lens"
+        },
+        {
+            "id": "67cc8727-922c-4a8c-911f-a420e2ce97fd",
+            "name": "84b57d62-bd5c-4f88-bf95-d170c08f9b20:indexpattern-datasource-layer-26597c61-5aa7-4bde-8420-9bf23375c077",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "3f610b6a-4d71-47be-8d8c-9a222615d156:indexpattern-datasource-layer-675681b0-a565-4e80-a398-f6e79d0a78ec",
+            "name": "6588681e-becd-49c6-b10a-76cb7052f833:indexpattern-datasource-layer-717d33bc-9878-4851-a85f-2eb7630d56ca",
             "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "6588681e-becd-49c6-b10a-76cb7052f833:e4ad9515-2e9f-43d3-8082-ccd9a9209efc",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "2d6ad174-0648-4382-bb02-06a8ad8c9acf:indexpattern-datasource-layer-f34176ce-7f0e-49c1-ac1f-f9421d8c00d2",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "9d86edc1-d167-443f-9dc2-ce2e2c02356d:indexpattern-datasource-layer-9cb60e1d-d0f7-4ff8-b6f2-b914e0a70e27",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "55575184-577d-49c4-aa62-db6790ca2388:indexpattern-datasource-layer-675681b0-a565-4e80-a398-f6e79d0a78ec",
+            "type": "index-pattern"
+        },
+        {
+            "id": "nginx_otel-nginx-fleet-pkg-nginx_otel-default",
+            "name": "tag-ref-nginx-fleet-pkg-nginx_otel-default",
+            "type": "tag"
+        },
+        {
+            "id": "nginx_otel-fleet-pkg-nginx-default",
+            "name": "tag-ref-fleet-pkg-nginx-default",
+            "type": "tag"
         }
     ],
     "type": "dashboard",
