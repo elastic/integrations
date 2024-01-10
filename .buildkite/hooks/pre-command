@@ -105,3 +105,12 @@ if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations-serverless" ]]; then
         export EC_REGION_SECRET
     fi
 fi
+
+if [[ "$BUILDKITE_PIPELINE_SLUG" == "integrations-backport" ]]; then
+  if [[ "$BUILDKITE_STEP_KEY" == "create-backport-branch" ]]; then
+    GITHUB_USERNAME_SECRET=$(retry 5 vault kv get -field username ${GITHUB_TOKEN_VAULT_PATH})
+    export GITHUB_USERNAME_SECRET
+    GITHUB_EMAIL_SECRET=$(retry 5 vault kv get -field email ${GITHUB_TOKEN_VAULT_PATH})
+    export GITHUB_EMAIL_SECRET
+  fi
+fi
