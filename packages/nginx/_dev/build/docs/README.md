@@ -100,6 +100,12 @@ The Nginx `stubstatus` stream was tested with Nginx 1.19.5 and is expected to wo
 
 {{fields "stubstatus"}}
 
+#### OTEL Metrics
+
+The Nginx stubstatus_otel steam shows the data collected using OTEL
+
+{{fields "stubstatus_otel"}}
+
 ## ML Modules
 
 These anomaly detection jobs are available in the Machine Learning app in Kibana
