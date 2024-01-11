@@ -45,6 +45,12 @@ processors:
       target_field: nginx.stubstatus.active
       ignore_missing: true
       if: ctx?.labels.state == 'active'
+  - script: 
+      if: ctx?.nginx?.stubstatus?.accepts != null && ctx?.nginx?.stubstatus?.handled != null
+      lang: painless
+      source: >
+        double dropped = ctx.nginx.stubstatus.accepts - ctx.nginx.stubstatus.handled;
+        ctx.nginx.stubstatus.dropped = dropped;
 on_failure:
   - set:
       field: error.message
