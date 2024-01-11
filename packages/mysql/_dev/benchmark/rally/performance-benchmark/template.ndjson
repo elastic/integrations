@@ -1,0 +1,118 @@
+{{- $timestamp := generate "timestamp" }}
+{{- $agentId := generate "agent.id" }}
+{{- $agentVersion := generate "agent.version" }}
+{{- $agentName := generate "agent.name" }}
+{{- $agentEphemeralid := generate "agent.ephemeral_id" }}
+{{- $queryId := generate "query_id" }}
+{{- $maxTimerWait := generate "max_timer_wait" }}
+{{- $quantile95 := generate "quantile_95" }}
+{{- $countStar := generate "count_star" }}
+{{- $avgTimerWait := generate "avg_timer_wait" }}
+{{- $schemaName := generate "schema_name" }}
+{{- $tableName := generate "table_name" }}
+{{- $indexName := generate "index_name" }}
+{{- $fetchCount := generate "fetch_count" }}
+{{- $digest := generate "digest_text" }}
+{{- $service_address := generate "service_address" }}
+{
+    "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.000Z" }}",
+    "agent": {
+        "ephemeral_id": "{{ $agentEphemeralid }}",
+        "id": "{{ $agentId }}",
+        "name": "{{ $agentName }}",
+        "type": "metricbeat",
+        "version": "8.8.0"
+    },
+    "data_stream": {
+        "dataset": "mysql.performance",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.5.1"
+    },
+    "elastic_agent": {
+        "id": "{{ $agentEphemeralid }}",
+        "snapshot": false,
+        "version": "8.8.0"
+    },
+     "event": {
+        "agent_id_status": "verified",
+        "dataset": "mysql.performance",
+        "duration": {{ generate "EventDuration" }},
+        "module": "mysql"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "192.168.244.7"
+        ],
+        "mac": [
+            "02:42:c0:a8:f4:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.88.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.3 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "performance",
+        "period": 10000
+    },
+    "mysql": {
+        "performance": {
+            {{ if eq $digest "event_statements" }}
+            "events_statements": {
+                "query_id": "{{ $queryId }}",
+                "avg": {
+                    "timer": {
+                        "wait": {{ $avgTimerWait }}
+                    }
+                },
+                "count": {
+                    "star": {{ $countStar }}
+                },
+                "digest": {
+                    "text": "SELECT `digest_text` , `count_star` , `avg_timer_wait` , `max_timer_wait` , `last_seen` , `quantile_95` FROM `performance_schema` . `events_statements_summary_by_digest` ORDER BY `avg_timer_wait` DESC LIMIT ?"
+                },
+                "last": {
+                    "seen": "{{ $timestamp.Format "2006-01-02T15:04:05.000000" }}"
+                },
+                "max": {
+                    "timer": {
+                        "wait": {{ $maxTimerWait }}
+                    }
+                },
+                "quantile": {
+                    "95": {{ $quantile95 }}
+                }
+            }
+            {{ else if eq $digest "table_io_waits" }}
+            "table_io_waits": {
+               "object": {
+                    "schema": "{{ $schemaName }}",
+                    "name": "{{ $tableName }}"
+                },
+                "index": {
+                    "name": "{{ $indexName }}"
+                },
+                "count": {
+                    "fetch": {{ $fetchCount }}
+                }
+            }
+            {{ end }}
+        }
+    },
+    "service": {
+        "address": "tcp({{ $service_address }}:3306)/?readTimeout=10s\u0026timeout=10s\u0026writeTimeout=10s",
+        "type": "mysql"
+    }
+}
