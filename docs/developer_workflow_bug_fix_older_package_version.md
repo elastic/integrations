@@ -59,6 +59,9 @@ Follow these detailed steps to release a fix for a given package version:
 
    **Please, pay attention!**, if you just run the pipeline it'll wait for your inputs, nothing will happen without that.
 
+   ![waiting input step](./images/backport_input_step.png)
+
+
    Pipeline's inputs:
 
    * **DRY_RUN** (default: "true"),
