@@ -126,6 +126,16 @@ processors:
   - rename:
       field: valid_until
       target_field: opencti.indicator.valid_until
+  - script:
+      lang: painless
+      source: |
+        def values = new TreeSet();
+        // valid_until always has a value, will be epoch + 10^14 ms if no other value
+        values.add(ctx.opencti.indicator.valid_until);
+        if (ctx.opencti.indicator.revoked == true) {
+          values.add(ctx.threat.indicator.modified_at);
+        }
+        ctx.opencti.indicator.invalid_or_revoked_from = values.first();
   - rename:
       field: x_opencti_score
       target_field: opencti.indicator.score
