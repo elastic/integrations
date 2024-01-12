@@ -97,7 +97,6 @@ cat << EOF >> ${PIPELINE_FILE}
       artifact_paths:
         - build/test-results/*.xml
         - build/test-coverage/*.xml
-        - build/benchmark-results/*.xml 
         - build/benchmark-results/*.json
         - build/elastic-stack-dump/*/logs/*.log
         - build/elastic-stack-dump/*/logs/fleet-server-internal/**/*
