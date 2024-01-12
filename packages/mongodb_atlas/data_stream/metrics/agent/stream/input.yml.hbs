@@ -1,0 +1,84 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+{{/if}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+auth.digest:
+  user: {{public_key}}
+  password: {{private_key}}
+resource.url: {{url}}/processes/?pageNum=1&itemsPerPage=2
+state:
+  query: "/measurements?granularity=PT5M&period=PT5m"
+  want_more: false
+  next_url: ""
+program: |
+  (
+    bytes(get(state.url).Body).decode_json().as(body,(
+          body.results.map(e, e.with( (bytes(get(e.links[0].href + state.query).Body).decode_json())
+            )).as(res, {
+              "temp": res.map(f,(f).with({"final" : zip(
+                          f.measurements.map(m,
+                            m.name
+                          ), 
+                          f.measurements.map(m,
+                            m.dataPoints.map(d,
+                              d.value
+                            ).as(v,
+                          size(v) == 0 ?
+                            0.0
+                          :
+                            v[0]
+                        )
+                          )
+                        )}).drop("measurements").as(rs,[(rs).with(
+                            {"cpu_state_kernel" : {
+                                  "PROCESS_NORMALIZED_CPU_CHILDREN_KERNEL" : (has(rs.final.PROCESS_NORMALIZED_CPU_CHILDREN_KERNEL) ?
+                                  (rs.final.PROCESS_NORMALIZED_CPU_CHILDREN_KERNEL)
+                                  :null),
+                                  "MAX_PROCESS_NORMALIZED_CPU_CHILDREN_KERNEL" : (has(rs.final.MAX_PROCESS_NORMALIZED_CPU_CHILDREN_KERNEL) ?
+                                  (rs.final.MAX_PROCESS_NORMALIZED_CPU_CHILDREN_KERNEL)
+                                  :null)
+                            }}),
+                            (rs).with({"cpu_state_user" : {
+
+                                  "PROCESS_NORMALIZED_CPU_CHILDREN_USER" : (has(rs.final.PROCESS_NORMALIZED_CPU_CHILDREN_USER) ?
+                                  (rs.final.PROCESS_NORMALIZED_CPU_CHILDREN_USER)
+                                  :null),
+                                  "MAX_PROCESS_NORMALIZED_CPU_CHILDREN_USER" : (has(rs.final.MAX_PROCESS_NORMALIZED_CPU_CHILDREN_USER) ?
+                                  (rs.final.MAX_PROCESS_NORMALIZED_CPU_CHILDREN_USER)
+                                  :null)
+                            }}
+                          )]).drop("final")).flatten()
+            }).as(event,{"events" : event.collate("temp")}).with(
+          body.links.exists_one(res,res.rel=="next") ?
+          {
+          "url": body.links.filter(res,res.rel=="next")[0].href,
+          "want_more": true,
+          "query": state.query
+          }
+          :
+          {
+            "want_more": false
+          })
+      ))
+  )
