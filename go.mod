@@ -41,7 +41,7 @@ require (
 	github.com/cbroglie/mustache v1.4.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chai2010/gettext-go v1.0.2 // indirect
-	github.com/cloudflare/circl v1.3.3 // indirect
+	github.com/cloudflare/circl v1.3.7 // indirect
 	github.com/creasty/defaults v1.7.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
@@ -139,7 +139,7 @@ require (
 	github.com/prometheus/procfs v0.11.1 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/shirou/gopsutil/v3 v3.23.11 // indirect
+	github.com/shirou/gopsutil/v3 v3.23.12 // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
@@ -204,4 +204,4 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
-replace github.com/elastic/elastic-package => github.com/mrodm/elastic-package v0.53.1-0.20240102122420-018e2d411992
+replace github.com/elastic/elastic-package => github.com/mrodm/elastic-package v0.53.1-0.20240112121623-d58434049c10
