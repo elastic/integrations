@@ -1,0 +1,379 @@
+---
+description: Pipeline for processing IOC logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: enrichment
+  - append:
+      field: event.category
+      tag: append_threat_into_event_category
+      value: threat
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_indicator_into_event_type
+      value: indicator
+      allow_duplicates: false
+  - set:
+      field: threat.indicator.provider
+      tag: set_threat_indicator_provider
+      value: crowdstrike
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.action
+      tag: rename_action
+      target_field: ti_crowdstrike.ioc.action
+      ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_ioc_action
+      copy_from: ti_crowdstrike.ioc.action
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - split:
+      field: event.action
+      tag: split_event_action
+      separator: \s+
+      ignore_missing: true
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - join:
+      field: event.action
+      tag: join_event_action
+      separator: '-'
+      if: ctx.event?.action != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.applied_globally
+      tag: convert_applied_globally_to_boolean
+      target_field: ti_crowdstrike.ioc.applied_globally
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.created_by
+      tag: rename_created_by
+      target_field: ti_crowdstrike.ioc.created_by
+      ignore_missing: true
+  - dissect:
+      if: ctx.ti_crowdstrike?.ioc?.created_by != null && ctx.ti_crowdstrike.ioc.created_by.contains('@')
+      tag: dissect_ioc_created_by
+      field: ti_crowdstrike.ioc.created_by
+      pattern: '%{user.name}@%{user.domain}'
+  - date:
+      field: json.created_on
+      tag: date_created_on
+      target_field: ti_crowdstrike.ioc.created_on
+      formats:
+        - ISO8601
+      if: ctx.json?.created_on != null && ctx.json.created_on != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.indicator.first_seen
+      tag: set_threat_indicator_first_seen_from_ioc_created_on
+      copy_from: ti_crowdstrike.ioc.created_on
+      ignore_empty_value: true
+  - convert:
+      field: json.deleted
+      tag: convert_deleted_to_boolean
+      target_field: ti_crowdstrike.ioc.deleted
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.description
+      tag: rename_description
+      target_field: ti_crowdstrike.ioc.description
+      ignore_missing: true
+  - set:
+      field: threat.indicator.description
+      tag: set_threat_indicator_description_from_ioc_description
+      copy_from: ti_crowdstrike.ioc.description
+      ignore_empty_value: true
+  - convert:
+      field: json.expired
+      tag: convert_expired_to_boolean
+      target_field: ti_crowdstrike.ioc.expired
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.from_parent
+      tag: convert_from_parent_to_boolean
+      target_field: ti_crowdstrike.ioc.from_parent
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.id
+      tag: rename_id
+      target_field: ti_crowdstrike.ioc.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_ioc_id
+      copy_from: ti_crowdstrike.ioc.id
+      ignore_empty_value: true
+  - rename:
+      field: json.metadata
+      tag: rename_metadata
+      target_field: ti_crowdstrike.ioc.metadata
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: script-default-deleted_at
+      if: ctx.json?.deleted_at == null && ctx.json?.modified_on != null && ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != ''
+      description: Add default deleted_at field.
+      source: >
+        def dur = ctx._conf.ioc_expiration_duration;
+        String modified_on = ctx.json.modified_on;
+        if (dur instanceof String){
+          String time_unit = dur.substring(dur.length() -  1, dur.length());
+          String time_value = dur.substring(0, dur.length() - 1);
+          if (time_unit == 'd') {
+            ctx.json.deleted_at = ZonedDateTime.parse(modified_on).plusDays(Long.parseLong(time_value));
+          } else if (time_unit == 'h') {
+            ctx.json.deleted_at = ZonedDateTime.parse(modified_on).plusHours(Long.parseLong(time_value));
+          } else if (time_unit == 'm') {
+            ctx.json.deleted_at = ZonedDateTime.parse(modified_on).plusMinutes(Long.parseLong(time_value));
+          } else {
+            ctx.json.deleted_at = ZonedDateTime.parse(modified_on).plusDays(90L);
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.deleted_at
+      tag: date_deleted_at
+      target_field: ti_crowdstrike.ioc.deleted_at
+      formats:
+        - ISO8601
+        - UNIX
+      if: ctx.json?.deleted_at != null && ctx.json.deleted_at != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: _conf.ioc_expiration_duration
+      tag: rename_conf_ioc_expiration_duration
+      target_field: ti_crowdstrike.ioc.expiration_duration
+      ignore_missing: true
+  - set:
+      field: file.name
+      tag: set_file_name
+      copy_from: ti_crowdstrike.ioc.metadata.filename
+      ignore_empty_value: true
+  - rename:
+      field: json.modified_by
+      tag: rename_modified_by
+      target_field: ti_crowdstrike.ioc.modified_by
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_modified_by_into_related_user
+      value: '{{{ti_crowdstrike.ioc.modified_by}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_ioc_created_by_into_related_user
+      value: '{{{ti_crowdstrike.ioc.created_by}}}'
+      if: ctx.related?.user == null
+      allow_duplicates: false
+  - date:
+      field: json.modified_on
+      tag: date_modified_on
+      target_field: ti_crowdstrike.ioc.modified_on
+      formats:
+        - ISO8601
+      if: ctx.json?.modified_on != null && ctx.json.modified_on != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_ioc_modified_on
+      copy_from: ti_crowdstrike.ioc.modified_on
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.modified_at
+      tag: set_threat_indicator_modified_at_from_ioc_modified_on
+      copy_from: ti_crowdstrike.ioc.modified_on
+      ignore_empty_value: true
+  - rename:
+      field: json.platforms
+      tag: rename_platforms
+      target_field: ti_crowdstrike.ioc.platforms
+      ignore_missing: true
+  - rename:
+      field: json.severity
+      tag: rename_severity
+      target_field: ti_crowdstrike.ioc.severity
+      ignore_missing: true
+  - rename:
+      field: json.tags
+      tag: rename_tags
+      target_field: ti_crowdstrike.ioc.tags
+      ignore_missing: true
+  - rename:
+      field: json.type
+      tag: rename_type
+      target_field: ti_crowdstrike.ioc.type
+      ignore_missing: true
+  - script:
+      lang: painless
+      if: ctx.ti_crowdstrike?.ioc?.type != null
+      description: >
+        Map ioc type field to STIX 2.0 Cyber Observable values (threat.indicator.type).
+      params:
+        ipv4: ipv4-addr
+        ipv6: ipv6-addr
+        domain: domain-name
+        md5: file
+        sha256: file
+        sha1: file
+      source: >
+        String mapping = params[ctx.ti_crowdstrike.ioc.type];
+        if (mapping != null) {
+           ctx.threat.indicator.type = mapping;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.value
+      tag: rename_value
+      target_field: ti_crowdstrike.ioc.value
+      ignore_missing: true
+  - set:
+      field: threat.indicator.name
+      tag: set_threat_indicator_name
+      copy_from: ti_crowdstrike.ioc.value
+      ignore_empty_value: true
+  - convert:
+      field: ti_crowdstrike.ioc.value
+      tag: convert_ioc_value_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.ti_crowdstrike?.ioc?.value != '' && ctx.ti_crowdstrike?.ioc?.type != null && ['ipv4', 'ipv6'].contains(ctx.ti_crowdstrike.ioc.type)
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_ioc_value_to_related_ip
+      value: '{{{ti_crowdstrike.ioc.value}}}'
+      if: ctx.ti_crowdstrike?.ioc?.value != null && ctx.ti_crowdstrike?.ioc?.type != null && ['ipv4', 'ipv6'].contains(ctx.ti_crowdstrike.ioc.type)
+      allow_duplicates: false
+  - set:
+      field: threat.indicator.ip
+      tag: set_threat_indicator_ip_from_ioc_value
+      copy_from: ti_crowdstrike.ioc.value
+      if: ctx.ti_crowdstrike?.ioc?.value != null && ctx.ti_crowdstrike?.ioc?.type != null && ['ipv4', 'ipv6'].contains(ctx.ti_crowdstrike.ioc.type)
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_ioc_value_to_related_hash
+      value: '{{{ti_crowdstrike.ioc.value}}}'
+      if: ctx.ti_crowdstrike?.ioc?.value != null && ctx.ti_crowdstrike?.ioc?.type != null && ['md5', 'sha256', 'sha1'].contains(ctx.ti_crowdstrike.ioc.type)
+      allow_duplicates: false
+  - remove:
+      field:
+        - ti_crowdstrike.ioc.modified_on
+        - ti_crowdstrike.ioc.id
+        - ti_crowdstrike.ioc.description
+        - ti_crowdstrike.ioc.created_on
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+      description: Drops null/empty values recursively.
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: event.kind
+      tag: append_pipeline_error_into_event_kind
+      value: pipeline_error
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
