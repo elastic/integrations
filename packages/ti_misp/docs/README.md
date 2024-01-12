@@ -412,6 +412,7 @@ To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_misp
 | threat.feed.name | Display friendly feed name | constant_keyword |
 | threat.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | threat.indicator.email.address | Identifies a threat indicator as an email address (irrespective of direction). | keyword |
+| threat.indicator.email.subject |  | keyword |
 | threat.indicator.file.hash.md5 | MD5 hash. | keyword |
 | threat.indicator.file.hash.sha1 | SHA1 hash. | keyword |
 | threat.indicator.file.hash.sha256 | SHA256 hash. | keyword |
