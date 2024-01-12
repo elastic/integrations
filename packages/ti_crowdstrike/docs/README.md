@@ -58,12 +58,12 @@ This module has been tested against the **CrowdStrike Falcon Intelligence API Ve
 
 ## IoCs Expiration
 
-The ingested IOCs expire after certain duration. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to faciliate only active IOCs be available to the end users. Since we want to retain only valuable information and avoid duplicated data, the CrowdStrike Falcon Intelligence Elastic integration forces the intel indicators to rotate into a custom index called: `logs-ti_crowdstrike_latest.dest_intel` and forces the IOC logs to rotate into a custom index called: `logs-ti_crowdstrike_latest.dest_ioc`.
+The ingested IOCs expire after a certain duration. A separate [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for Intel and IOC datasets to facilitate only active Indicators and IOCs, respectively, being available to the end users. Since we want to retain only valuable information and avoid duplicated data, the CrowdStrike Falcon Intelligence Elastic integration forces the intel indicators to rotate into a custom index called: `logs-ti_crowdstrike_latest.dest_intel` and forces the IOC logs to rotate into a custom index called: `logs-ti_crowdstrike_latest.dest_ioc`.
 **Please, refer to this index in order to set alerts and so on.**
 
 #### Handling Orphaned IOCs
 
-IOC expiration is set default to false in CrowdStrike console but user can set the expiration duration in using the admin console. Some CrowdStrike IOCs may never expire and will continue to stay in the latest destination index. To avoid any false positives from such orphaned IOCs, users are allowed to configure `IOC Expiration Duration` parameter while setting up the integration. This parameter deletes all data inside the destination index `logs-ti_crowdstrike_latest.intel` and `logs-ti_crowdstrike_latest.ioc` after this specified duration is reached. Users must pull entire feed instead of incremental feed when this expiration happens so that the IOCs get reset.
+IOC expiration is set default to false in CrowdStrike console but user can set the expiration duration in using the admin console. Some CrowdStrike IOCs may never expire and will continue to stay in the latest destination index. To avoid any false positives from such orphaned IOCs, users are allowed to configure `IOC Expiration Duration` parameter for both the dataset Intel and IOC, respectively, while setting up the integration. This parameter deletes all data inside the destination index `logs-ti_crowdstrike_latest.intel` and `logs-ti_crowdstrike_latest.ioc` after this specified duration is reached. Users must pull entire feed instead of incremental feed when this expiration happens so that the IOCs get reset.
 
 ### How it works
 
@@ -85,8 +85,8 @@ An example event for `intel` looks as following:
 {
     "@timestamp": "2023-11-21T06:16:01.000Z",
     "agent": {
-        "ephemeral_id": "f0dc9887-cee1-4307-8276-5679945a62a6",
-        "id": "cd237c45-0361-4317-ac21-0528667dfad2",
+        "ephemeral_id": "91894e79-85f9-4358-897b-3e25722c7277",
+        "id": "3ac65ec0-d6ad-4ccb-ae51-f7d6cbd54eff",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.11.0"
@@ -100,7 +100,7 @@ An example event for `intel` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "cd237c45-0361-4317-ac21-0528667dfad2",
+        "id": "3ac65ec0-d6ad-4ccb-ae51-f7d6cbd54eff",
         "snapshot": false,
         "version": "8.11.0"
     },
@@ -111,12 +111,17 @@ An example event for `intel` looks as following:
         ],
         "dataset": "ti_crowdstrike.intel",
         "id": "hash_sha256_c98e1a7f563824cd448b47613743dcd1c853742b78f42b000192b83d",
-        "ingested": "2024-01-02T10:03:58Z",
+        "ingested": "2024-01-11T11:53:46Z",
         "kind": "enrichment",
         "original": "{\"_marker\":\"17005473618d17ae6353d123235e4158c5c81f25f0\",\"actors\":[\"SALTYSPIDER\"],\"deleted\":false,\"domain_types\":[\"abc.com\"],\"id\":\"hash_sha256_c98e1a7f563824cd448b47613743dcd1c853742b78f42b000192b83d\",\"indicator\":\"c98e192bf71a7f97563824cd448b47613743dcd1c853742b78f42b000192b83d\",\"ip_address_types\":[\"81.2.69.192\"],\"kill_chains\":[\"Installation\",\"C2\"],\"labels\":[{\"created_on\":1700547356,\"last_valid_on\":1700547360,\"name\":\"MaliciousConfidence/High\"},{\"created_on\":1700547359,\"last_valid_on\":1700547359,\"name\":\"Malware/Mofksys\"},{\"created_on\":1700547359,\"last_valid_on\":1700547359,\"name\":\"ThreatType/Commodity\"},{\"created_on\":1700547359,\"last_valid_on\":1700547359,\"name\":\"ThreatType/CredentialHarvesting\"},{\"created_on\":1700547359,\"last_valid_on\":1700547359,\"name\":\"ThreatType/InformationStealer\"}],\"last_updated\":1700547361,\"malicious_confidence\":\"high\",\"malware_families\":[\"Mofksys\"],\"published_date\":1700547356,\"relations\":[{\"created_date\":1700547339,\"id\":\"domain.com.yy\",\"indicator\":\"domain.ds\",\"last_valid_date\":1700547339,\"type\":\"domain\"},{\"created_date\":1700547339,\"id\":\"domain.xx.yy\",\"indicator\":\"domain.xx.fd\",\"last_valid_date\":1700547339,\"type\":\"domain\"}],\"reports\":[\"reports\"],\"targets\":[\"abc\"],\"threat_types\":[\"Commodity\",\"CredentialHarvesting\",\"InformationStealer\"],\"type\":\"hash_sha256\",\"vulnerabilities\":[\"vuln\"]}",
         "type": [
             "indicator"
         ]
+    },
+    "file": {
+        "hash": {
+            "sha256": "c98e192bf71a7f97563824cd448b47613743dcd1c853742b78f42b000192b83d"
+        }
     },
     "input": {
         "type": "cel"
@@ -138,12 +143,9 @@ An example event for `intel` looks as following:
     "threat": {
         "indicator": {
             "confidence": "High",
-            "ip": [
-                "81.2.69.192"
-            ],
             "name": "c98e192bf71a7f97563824cd448b47613743dcd1c853742b78f42b000192b83d",
             "provider": "crowdstrike",
-            "type": "x509-certificate"
+            "type": "file"
         }
     },
     "ti_crowdstrike": {
@@ -153,11 +155,11 @@ An example event for `intel` looks as following:
                 "SALTYSPIDER"
             ],
             "deleted": false,
-            "deleted_at": "2024-02-19T06:16:01.000Z",
+            "deleted_at": "2023-11-21T11:16:01.000Z",
             "domain_types": [
                 "abc.com"
             ],
-            "expiration_duration": "90d",
+            "expiration_duration": "5h",
             "id": "hash_sha256_c98e1a7f563824cd448b47613743dcd1c853742b78f42b000192b83d",
             "ip_address_types": [
                 "81.2.69.192"
@@ -297,8 +299,8 @@ An example event for `ioc` looks as following:
 {
     "@timestamp": "2023-11-01T10:22:23.106Z",
     "agent": {
-        "ephemeral_id": "87149a42-9d56-4dc1-a7fb-a03ad2bc384f",
-        "id": "cd237c45-0361-4317-ac21-0528667dfad2",
+        "ephemeral_id": "1a68a49b-98f5-4aee-adf5-df243cdb4637",
+        "id": "3ac65ec0-d6ad-4ccb-ae51-f7d6cbd54eff",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.11.0"
@@ -312,7 +314,7 @@ An example event for `ioc` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "cd237c45-0361-4317-ac21-0528667dfad2",
+        "id": "3ac65ec0-d6ad-4ccb-ae51-f7d6cbd54eff",
         "snapshot": false,
         "version": "8.11.0"
     },
@@ -324,12 +326,15 @@ An example event for `ioc` looks as following:
         ],
         "dataset": "ti_crowdstrike.ioc",
         "id": "34874a88935860cf6yyfc856d6abb6f35a29d8c077195ed6291aa8373696b44",
-        "ingested": "2024-01-02T10:04:56Z",
+        "ingested": "2024-01-11T11:54:47Z",
         "kind": "enrichment",
         "original": "{\"action\":\"detect again\",\"applied_globally\":true,\"created_by\":\"abc.it@example.com\",\"created_on\":\"2023-11-01T10:22:23.10607613Z\",\"deleted\":false,\"description\":\"IS-38887\",\"expired\":false,\"from_parent\":false,\"id\":\"34874a88935860cf6yyfc856d6abb6f35a29d8c077195ed6291aa8373696b44\",\"metadata\":{\"filename\":\"High_Serverity_Heuristic_Sandbox_Threat.docx\"},\"modified_by\":\"example.it@ex.com\",\"modified_on\":\"2023-11-01T10:22:23.10607613Z\",\"platforms\":[\"windows\",\"mac\",\"linux\"],\"severity\":\"critical\",\"tags\":[\"IS-38887\"],\"type\":\"ipv4\",\"value\":\"81.2.69.192\"}",
         "type": [
             "indicator"
         ]
+    },
+    "file": {
+        "name": "High_Serverity_Heuristic_Sandbox_Threat.docx"
     },
     "input": {
         "type": "cel"
@@ -351,9 +356,6 @@ An example event for `ioc` looks as following:
     "threat": {
         "indicator": {
             "description": "IS-38887",
-            "file": {
-                "name": "High_Serverity_Heuristic_Sandbox_Threat.docx"
-            },
             "first_seen": "2023-11-01T10:22:23.106Z",
             "ip": "81.2.69.192",
             "modified_at": "2023-11-01T10:22:23.106Z",
@@ -369,9 +371,9 @@ An example event for `ioc` looks as following:
             "created_by": "abc.it@example.com",
             "created_on": "2023-11-01T10:22:23.106Z",
             "deleted": false,
-            "deleted_at": "2024-01-30T10:22:23.106Z",
+            "deleted_at": "2023-11-01T15:22:23.106Z",
             "description": "IS-38887",
-            "expiration_duration": "90d",
+            "expiration_duration": "5h",
             "expired": false,
             "from_parent": false,
             "id": "34874a88935860cf6yyfc856d6abb6f35a29d8c077195ed6291aa8373696b44",

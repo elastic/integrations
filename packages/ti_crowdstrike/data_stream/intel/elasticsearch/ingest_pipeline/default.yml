@@ -97,7 +97,7 @@ processors:
   - foreach:
       field: ti_crowdstrike.intel.ip_address_types
       tag: foreach_ti_crowdstrike_intel_ip_address_types_append_into_threat_indicator_ip
-      if: ctx.ti_crowdstrike?.intel?.ip_address_types instanceof List
+      if: ctx.ti_crowdstrike?.intel?.type != null && ctx.ti_crowdstrike.intel.type.contains('ip_address') && ctx.ti_crowdstrike?.intel?.ip_address_types instanceof List
       processor:
         append:
           field: threat.indicator.ip
@@ -322,16 +322,15 @@ processors:
         file_mapping: file
         file_name: file
         file_path: file
-        hash_ion: x509-certificate
-        hash_md5: x509-certificate
-        hash_sha256: x509-certificate
+        hash_ion: file
+        hash_md5: file
+        hash_sha256: file
         ip_address: ipv4-addr
         ip_address_block: ipv4-addr
         mutex_name: mutex
         persona_name: user-account
         port: port
         url: url
-        user_agent: user-account
         username: user-account
         x509_serial: x509-certificate
         x509_subject: x509-certificate
@@ -349,6 +348,16 @@ processors:
       tag: rename_indicator
       target_field: ti_crowdstrike.intel.value
       ignore_missing: true
+  - set:
+      field: file.hash.sha256
+      tag: set_file_hash_sha256
+      value: '{{{ti_crowdstrike.intel.value}}}'
+      if: ctx.ti_crowdstrike?.intel?.type != null && ctx.ti_crowdstrike.intel.type.contains('hash_sha256') && ctx.ti_crowdstrike?.intel?.value != null
+  - set:
+      field: file.hash.md5
+      tag: set_file_hash_md5
+      value: '{{{ti_crowdstrike.intel.value}}}'
+      if: ctx.ti_crowdstrike?.intel?.type != null && ctx.ti_crowdstrike.intel.type.contains('hash_md5') && ctx.ti_crowdstrike?.intel?.value != null
   - set:
       field: threat.indicator.type
       tag: set_threat_indicator_type_to_ipv6_addr
