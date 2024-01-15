@@ -2114,11 +2114,12 @@ processors:
   - script:
       description: Calculate network.direction if zones are not configured
       lang: painless
-      if: "ctx?.tags?.contains('private_is_internal') &&
-           ctx?.source?.ip != null &&
-           ctx?.destination?.ip != null &&
-          (ctx?._temp_?.external_zones == null ||
-           ctx?._temp_?.internal_zones == null)"
+      if: "ctx.tags != null && 
+           ctx.tags.contains('private_is_internal') &&
+           ctx.source?.ip != null &&
+           ctx.destination?.ip != null &&
+          (ctx._temp_?.external_zones == null ||
+           ctx._temp_?.internal_zones == null)"
       source: |
         boolean isPrivateCIDR(def ip) {
           CIDR class_a_network = new CIDR('10.0.0.0/8');
