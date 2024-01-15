@@ -8,7 +8,7 @@ mergedCoverageFileName="coverage_merged.xml"
 pushd "${sourceFolder}" > /dev/null
 echo '<coverage>' > "${mergedCoverageFileName}"
 
-for file in *.xml; do
+for file in coverage-*.xml; do
   [ "$file" = "${mergedCoverageFileName}" ] && continue
   sed '1d;$d' "$file" | awk '/<package /,/<\/package>/' >> "${mergedCoverageFileName}"
 done
