@@ -41,7 +41,8 @@ program: |
       "Content-Type": ["application/json"]
     }).with(
       has(state.api_key) && size(state.api_key) > 0 ?
-        { "Authorization": ["Bearer " + state.api_key] } :
+        { "Authorization": ["Bearer " + state.api_key] }
+      :
         {}
     )
   }).with({
@@ -62,11 +63,13 @@ program: |
             "error": { "message": body.errors.map(e, e.message) },
             "event": { "original": body.encode_json() }
           }]
-        }) :
+        })
+      :
         state.with({
           "events": body.data.indicators.edges.map(e, e.node.with(
             has(state.preserve_original_event) && state.preserve_original_event ?
-              { "event": { "original": e.node.encode_json() } } :
+              { "event": { "original": e.node.encode_json() } }
+            :
               {}
           )),
           "want_more": body.data.indicators.pageInfo.hasNextPage,
