@@ -207,6 +207,7 @@ An example event for `log` looks as following:
 | observer.vendor | Vendor name of the observer. | keyword |
 | pulse_secure.realm | test | keyword |
 | pulse_secure.role | test | keyword |
+| pulse_secure.session |  | keyword |
 | pulse_secure.session.id | test | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
