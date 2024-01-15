@@ -22,6 +22,12 @@ The minimum **kibana.version** required is **8.10.1**.
 2. Client Secret
 3. Token url
 4. API Endpoint url
+5. Required scopes for each data stream :
+
+    | Data Stream   | Scope         |
+    | ------------- | ------------- |
+    | Alert         | read:alert    |
+    | Host          | read:host     |
 
 ## Logs
 
