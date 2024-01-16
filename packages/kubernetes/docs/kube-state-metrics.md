@@ -1140,91 +1140,53 @@ An example event for `state_node` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-25T12:37:44.457Z",
-    "ecs": {
-        "version": "1.5.0"
-    },
-    "host": {
-        "mac": [
-            "02:42:ac:11:00:0b"
-        ],
-        "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "architecture": "x86_64",
-        "os": {
-            "kernel": "4.19.81",
-            "codename": "Core",
-            "platform": "centos",
-            "version": "7 (Core)",
-            "family": "redhat",
-            "name": "CentOS Linux"
-        },
-        "id": "b0e83d397c054b8a99a431072fe4617b",
-        "containerized": false,
-        "ip": [
-            "172.17.0.11"
-        ]
-    },
-    "metricset": {
-        "name": "state_node",
-        "period": 10000
-    },
     "kubernetes": {
+        "labels": {
+            "beta_kubernetes_io/arch": "amd64",
+            "beta_kubernetes_io/os": "linux",
+            "kubernetes_io/arch": "amd64",
+            "kubernetes_io/hostname": "kind-control-plane",
+            "kubernetes_io/os": "linux",
+            "node-role_kubernetes_io/control-plane": "",
+            "node_kubernetes_io/exclude-from-external-load-balancers": ""
+        },
         "node": {
-            "pod": {
-                "capacity": {
-                    "total": 110
-                },
-                "allocatable": {
-                    "total": 110
-                }
-            },
-            "memory": {
-                "capacity": {
-                    "bytes": 16815325184
-                },
-                "allocatable": {
-                    "bytes": 16815325184
-                }
-            },
             "cpu": {
                 "allocatable": {
-                    "cores": 4
+                    "cores": 16
                 },
                 "capacity": {
-                    "cores": 4
+                    "cores": 16
                 }
             },
-            "name": "minikube",
+            "kubelet": {
+                "version": "v1.27.3"
+            },
+            "memory": {
+                "allocatable": {
+                    "bytes": 8069844992
+                },
+                "capacity": {
+                    "bytes": 8069844992
+                }
+            },
+            "name": "kind-control-plane",
+            "pod": {
+                "allocatable": {
+                    "total": 110
+                },
+                "capacity": {
+                    "total": 110
+                }
+            },
             "status": {
+                "disk_pressure": "false",
+                "memory_pressure": "false",
+                "pid_pressure": "false",
                 "ready": "true",
                 "unschedulable": false
             }
-        },
-        "labels": {
-            "kubernetes_io/arch": "amd64",
-            "kubernetes_io/hostname": "minikube",
-            "kubernetes_io/os": "linux",
-            "node-role_kubernetes_io/master": "",
-            "beta_kubernetes_io/arch": "amd64",
-            "beta_kubernetes_io/os": "linux"
         }
-    },
-    "agent": {
-        "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
-        "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
-        "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "type": "metricbeat",
-        "version": "8.0.0"
-    },
-    "service": {
-        "type": "kubernetes",
-        "address": "kube-state-metrics:8080"
-    },
-    "event": {
-        "dataset": "kubernetes.state_node",
-        "module": "kubernetes",
-        "duration": 8194220
     }
 }
 ```
@@ -1274,6 +1236,7 @@ An example event for `state_node` looks as following:
 | kubernetes.node.cpu.allocatable.cores | Node CPU allocatable cores | float |  | gauge |
 | kubernetes.node.cpu.capacity.cores | Node CPU capacity cores | long |  | gauge |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
+| kubernetes.node.kubelet.version | Kubelet version. | keyword |  |  |
 | kubernetes.node.memory.allocatable.bytes | Node allocatable memory in bytes | long | byte | gauge |
 | kubernetes.node.memory.capacity.bytes | Node memory capacity in bytes | long | byte | gauge |
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
@@ -1424,121 +1387,22 @@ An example event for `state_persistentvolumeclaim` looks as following:
 ```json
 {
     "kubernetes": {
-        "persistentvolumeclaim": {
-            "phase": "Bound",
-            "storage_class": "standard",
-            "name": "federation-prometheus-server",
-            "volume_name": "pvc-1f40933c-5079-4b15-86dc-5d6485ae9e3f",
-            "request_storage": {
-                "bytes": 8589934592
-            },
-            "access_mode": "ReadWriteOnce"
-        },
-        "namespace": "kube-system",
-        "namespace_uid": "250a647d-3acc-4f7e-85b5-a51b6069959d",
-        "namespace_labels": {
-            "kubernetes_io/metadata_name": "kube-system"
-        },
-        "labels": {
-            "app": "prometheus",
-            "component": "server",
-            "release": "federation",
-            "app_kubernetes_io/managed-by": "Helm",
-            "heritage": "Helm",
-            "chart": "prometheus-19.0.2"
-        }
-    },
-    "orchestrator": {
-        "cluster": {
-            "name": "kind",
-            "url": "kind-control-plane:6443"
-        }
-    },
-    "agent": {
-        "name": "kind-control-plane",
-        "id": "c446ee97-62f8-47db-ac88-ada92aa550a0",
-        "ephemeral_id": "b61db5f9-8e5a-4ec2-b73f-dd4ee1537110",
-        "type": "metricbeat",
-        "version": "8.6.0"
-    },
-    "@timestamp": "2023-01-18T14:54:26.414Z",
-    "ecs": {
-        "version": "8.0.0"
-    },
-    "service": {
-        "address": "http://kube-state-metrics:8080/metrics",
-        "type": "kubernetes"
-    },
-    "data_stream": {
         "namespace": "default",
-        "type": "metrics",
-        "dataset": "kubernetes.state_persistentvolumeclaim"
-    },
-    "elastic_agent": {
-        "id": "c446ee97-62f8-47db-ac88-ada92aa550a0",
-        "version": "8.6.0",
-        "snapshot": false
-    },
-    "host": {
-        "hostname": "kind-control-plane",
-        "os": {
-            "kernel": "5.10.104-linuxkit",
-            "codename": "focal",
-            "name": "Ubuntu",
-            "type": "linux",
-            "family": "debian",
-            "version": "20.04.5 LTS (Focal Fossa)",
-            "platform": "ubuntu"
+        "namespace_labels": {
+            "kubernetes_io/metadata_name": "default"
         },
-        "containerized": false,
-        "ip": [
-            "10.244.0.1",
-            "10.244.0.1",
-            "10.244.0.1",
-            "10.244.0.1",
-            "10.244.0.1",
-            "10.244.0.1",
-            "10.244.0.1",
-            "172.18.0.2",
-            "fc00:f853:ccd:e793::2",
-            "fe80::42:acff:fe12:2",
-            "10.244.0.1",
-            "172.21.0.2",
-            "10.244.0.1",
-            "10.244.0.1",
-            "10.244.0.1",
-            "10.244.0.1"
-        ],
-        "name": "kind-control-plane",
-        "id": "ee94d9f5b385448b805141d2b007ef9e",
-        "mac": [
-            "02-42-AC-12-00-02",
-            "02-42-AC-15-00-02",
-            "26-44-88-00-0A-01",
-            "36-29-00-36-7F-53",
-            "8E-B9-C8-09-2D-B8",
-            "92-BA-04-F3-2A-CC",
-            "A2-55-7D-53-57-91",
-            "A6-4F-D1-E2-1E-12",
-            "B6-ED-00-D6-1B-B8",
-            "BA-D7-49-95-5A-F5",
-            "CA-B9-E6-A7-52-0D",
-            "D6-F9-71-43-6C-24",
-            "DE-05-63-F9-0B-36",
-            "F6-52-0A-F0-63-83"
-        ],
-        "architecture": "x86_64"
-    },
-    "metricset": {
-        "period": 10000,
-        "name": "state_persistentvolumeclaim"
-    },
-    "event": {
-        "duration": 191163,
-        "agent_id_status": "verified",
-        "ingested": "2023-01-18T14:54:27Z",
-        "module": "kubernetes",
-        "dataset": "kubernetes.state_persistentvolumeclaim"
+        "namespace_uid": "b6c80381-f829-45a4-acef-e4e1c8e58f3e",
+        "persistentvolumeclaim": {
+            "access_mode": "ReadWriteOnce",
+            "created": "2024-01-08T14:07:51.000Z",
+            "name": "task-pv-claim",
+            "phase": "Bound",
+            "request_storage": {
+                "bytes": 1024
+            },
+            "storage_class": "generic",
+            "volume_name": "task-pv-volume"
+        }
     }
 }
 ```
@@ -1589,6 +1453,7 @@ An example event for `state_persistentvolumeclaim` looks as following:
 | kubernetes.namespace_labels.\* | Kubernetes namespace labels map | object |  |  |
 | kubernetes.namespace_uid | Kubernetes namespace UID | keyword |  |  |
 | kubernetes.persistentvolumeclaim.access_mode | Access mode. | keyword |  |  |
+| kubernetes.persistentvolumeclaim.created | PersistentVolumeClaim creation date | date |  |  |
 | kubernetes.persistentvolumeclaim.name | PVC name. | keyword |  |  |
 | kubernetes.persistentvolumeclaim.phase | PVC phase. | keyword |  |  |
 | kubernetes.persistentvolumeclaim.request_storage.bytes | Requested capacity. | long | byte | gauge |
