@@ -64,9 +64,11 @@ steps:
       image: "docker.elastic.co/cloud-ci/sonarqube/buildkite-scanner:latest"
     command:
       - "buildkite-agent artifact download build/test-coverage/coverage-*.xml ."
-      - "buildkite-agent artifact download build/test-results/*.xml ."
-      # - ".buildkite/scripts/merge_xml.sh"
+      # - "buildkite-agent artifact download build/test-results/*.xml ."
+      - ".buildkite/scripts/merge_xml.sh"
       - "/scan-source-code.sh"
+    artifact_paths:
+      - build/test-coverage/coverage_merged.xml
 
   # - label: "Publish benchmarks"
   #   key: publish-benchmarks

@@ -1,24 +1,24 @@
 #!/bin/bash
 
-set -euox pipefail
+set -euo pipefail
 
 sourceFolder="build/test-coverage"
 mergedCoverageFileName="coverage_merged.xml"
 
 pushd "${sourceFolder}" > /dev/null
-echo '<coverage>' > "${mergedCoverageFileName}"
+echo "Generating ${mergedCoverageFileName} into ${sourceFolder}..."
+echo '<?xml version="1.0" encoding="UTF-8"?>' > "${mergedCoverageFileName}"
+echo '<coverage version="1">' >> "${mergedCoverageFileName}"
 
+# for file in coverage-nginx-*.xml coverage-elastic_package_registry-*.xml; do
 for file in coverage-*.xml; do
-  [ "$file" = "${mergedCoverageFileName}" ] && continue
-  sed '1d;$d' "$file" | awk '/<package /,/<\/package>/' >> "${mergedCoverageFileName}"
+  [[ "$file" == "${mergedCoverageFileName}" ]] && continue
+  echo " - Adding ${file}"
+  sed '1d;$d' "$file" | awk '/<file/,/<\/file>/' >> "${mergedCoverageFileName}"
 done
 
 echo '</coverage>' >> "${mergedCoverageFileName}"
-
-mkdir -p coverage-report
-cp "$(find . -name 'coverage-*.xml' | head -n 1)" coverage-report/coverage.xml
+echo 'Done'
 
 popd > /dev/null
 
-ls -la $sourceFolder
-ls -la $sourceFolder/coverage-report
