@@ -615,7 +615,7 @@ An example event for `cluster_stats` looks as following:
 | elasticsearch.cluster.stats.indices.shards.count | Total number of shards in cluster. | long | gauge |
 | elasticsearch.cluster.stats.indices.shards.primaries | Total number of primary shards in cluster. | long | gauge |
 | elasticsearch.cluster.stats.indices.store.size.bytes |  | long | gauge |
-| elasticsearch.cluster.stats.indices.store.stotal_data_set_size.bytes |  | long | gauge |
+| elasticsearch.cluster.stats.indices.store.total_data_set_size.bytes |  | long | gauge |
 | elasticsearch.cluster.stats.indices.total |  | long | gauge |
 | elasticsearch.cluster.stats.license.cluster_needs_tls |  | boolean |  |
 | elasticsearch.cluster.stats.license.expiry_date |  | date |  |
