@@ -178,7 +178,7 @@ processors:
   - append:
       field: event.category
       value: network
-      if: ctx.checkpoint?.operation != 'Log In' && ctx.checkpoint?.operation != 'Log Out' && ctx.checkpoint?.action != 'Log In' && ctx.checkpoint?.action != 'Log Out'
+      if: "!['Log In','Log Out'].contains(ctx.checkpoint?.operation) && !['Log In','Log Out'].contains(ctx.checkpoint?.action)"
       allow_duplicates: false
   - set:
       field: observer.vendor
@@ -307,6 +307,14 @@ processors:
       field: checkpoint.dst_machine_name
       target_field: destination.domain
       if: ctx.server?.domain == null
+      ignore_missing: true
+  - rename:
+      field: checkpoint.dst_user_name
+      target_field: destination.user.name
+      ignore_missing: true
+  - rename:
+      field: checkpoint.dst_user_dn
+      target_field: destination.user.domain
       ignore_missing: true
   - rename:
       field: checkpoint.src_user_group
@@ -530,7 +538,7 @@ processors:
       pattern: 'Administrator failed to log in: %{event.reason}'
       ignore_missing: true
       ignore_failure: true
-      if: (ctx.checkpoint?.operation == 'Log In' && ctx.checkpoint?.audit_status == 'Failure') && (ctx.event?.reason == null || ctx.event?.reason == "")
+      if: ctx.checkpoint?.operation == 'Log In' && ctx.checkpoint.audit_status == 'Failure' && (ctx.event?.reason == null || ctx.event?.reason == "")
   - rename:
       field: checkpoint.dns_message_type
       target_field: dns.type
@@ -563,13 +571,13 @@ processors:
       field: event.action
       value: logon-failed
       override: true
-      if: ctx.checkpoint?.operation == 'Log In' && ctx.checkpoint?.audit_status == 'Failure'
+      if: ctx.checkpoint?.operation == 'Log In' && ctx.checkpoint.audit_status == 'Failure'
       description: "Set 'logon-failed' action categorization for failed logon attempts."
   - set:
       field: event.action
       value: logged-in
       override: true
-      if: ctx.checkpoint?.operation == 'Log In' && (ctx.checkpoint?.audit_status == 'Success' || ctx.checkpoint?.audit_status == null)
+      if: ctx.checkpoint?.operation == 'Log In' && (ctx.checkpoint.audit_status == 'Success' || ctx.checkpoint.audit_status == null)
       description: "Set 'logged-in' action categorization for events related to successful logons."
   - set:
       field: event.action
@@ -596,7 +604,7 @@ processors:
       value: '{{{ checkpoint.machine }}}'
       override: false
       ignore_empty_value: true
-      if: "['Log In', 'Log Out'].contains(ctx.checkpoint?.operation) && ctx.checkpoint?.machine != 'localhost'"
+      if: "['Log In', 'Log Out'].contains(ctx.checkpoint?.operation) && ctx.checkpoint.machine != 'localhost'"
       description: "Copy the device type to the host.type field for logon events in Checkpoint expert shells."
   - set:
       field: network.protocol
