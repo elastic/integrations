@@ -1,0 +1,58 @@
+---
+description: Pipeline for processing the System Network OTEL Metrics
+processors:
+  - rename:
+      field: labels.device
+      target_field: system.network.name
+  - dot_expander:
+      field: system.network.io 
+  - dot_expander:
+      field: system.network.packets
+  - dot_expander:
+      field: system.network.dropped
+  - dot_expander:
+      field: system.network.errors
+  - rename:
+      field: system.network.io
+      target_field: system.network.in.bytes
+      ignore_missing: true
+      if: ctx?.labels.direction == "receive"
+  - rename:
+      field: system.network.packets
+      target_field: system.network.in.packets
+      ignore_missing: true
+      if: ctx?.labels.direction == "receive"
+  - rename:
+      field: system.network.dropped
+      target_field: system.network.in.dropped
+      ignore_missing: true
+      if: ctx?.labels.direction == "receive"
+  - rename:
+      field: system.network.errors
+      target_field: system.network.in.errors
+      ignore_missing: true
+      if: ctx?.labels.direction == "receive"
+  - rename:
+      field: system.network.errors
+      target_field: system.network.out.errors
+      ignore_missing: true
+      if: ctx?.labels.direction == "transmit"
+  - rename:
+      field: system.network.dropped
+      target_field: system.network.out.dropped
+      ignore_missing: true
+      if: ctx?.labels.direction == "transmit"
+  - rename:
+      field: system.network.io
+      target_field: system.network.out.bytes
+      ignore_missing: true
+      if: ctx?.labels.direction == "transmit"
+  - rename:
+      field: system.network.packets
+      target_field: system.network.out.packets
+      ignore_missing: true
+      if: ctx?.labels.direction == "transmit"
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
