@@ -1,0 +1,72 @@
+{{- $timestamp := generate "timestamp" }}
+{{- $agentId := generate "agent.id" }}
+{{- $agentVersion := generate "agent.version" }}
+{{- $agentName := generate "agent.name" }}
+{{- $agentEphemeralid := generate "agent.ephemeral_id" }}
+{{- $logLevel := generate "log.level" }}
+{{- $pid := generate "process.pid" }}
+{{- $threadId := generate "thread.id" }}
+{{- $connectionId := generate "connection_id" }}
+{
+    "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.000Z" }}",
+    "agent": {
+        "ephemeral_id": "{{ $agentEphemeralid }}",
+        "id": "{{ $agentId }}",
+        "name": "{{ $agentName }}",
+        "type": "filebeat",
+        "version": "8.8.0"
+    },
+    "data_stream": {
+        "dataset": "nginx.error",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.5.1"
+    },
+    "elastic_agent": {
+        "id": "{{ $agentEphemeralid }}",
+        "snapshot": false,
+        "version": "8.8.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "nginx.error",
+        "timezone": "{{ $timestamp.Format "-07:00" }}"
+    },
+     "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "66392b0697b84641af8006d87aeb89f1",
+        "ip": [
+            "{{ generate "host.ip" }}"
+        ],
+        "mac": [
+            "02-42-AC-12-00-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.15.49-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.5 LTS (Focal Fossa)"
+        }
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/var/log/nginx/error.log"
+        },
+        "offset": 0
+    },
+    "message": "{{$timestamp.Format "2006/01/02 15:04:05"}} [{{ $logLevel }}] {{ $pid }}#{{ $threadId }}: *{{ $connectionId }} {{generate "message"}}",
+    "tags": [
+        "nginx-error"
+    ]
+}
