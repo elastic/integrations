@@ -10,6 +10,10 @@ provider "aws" {
       branch       = var.BRANCH
       build        = var.BUILD_ID
       created_date = var.CREATED_DATE
+      division = "engineering"
+      org      = "obs"
+      team     = "obs-cloud-monitoring"
+      project  = "integrations-aws-package"      
     }
   }
 }
