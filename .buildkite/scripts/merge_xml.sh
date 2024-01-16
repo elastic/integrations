@@ -14,6 +14,7 @@ echo '<coverage version="1">' >> "${mergedCoverageFileName}"
 for file in coverage-*.xml; do
   [[ "$file" == "${mergedCoverageFileName}" ]] && continue
   echo " - Adding ${file}"
+  # generic coverage
   sed '1d;$d' "$file" | awk '/<file/,/<\/file>/' >> "${mergedCoverageFileName}"
 done
 
