@@ -101,6 +101,13 @@ This is the `event` dataset.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.region_iso_code | Region ISO code. | keyword |
+| destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | dll.hash.md5 | MD5 hash. | keyword |
@@ -474,7 +481,12 @@ This is the `event` dataset.
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
