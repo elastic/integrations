@@ -1503,6 +1503,7 @@ An example event for `index_summary` looks as following:
 | elasticsearch.index.summary.total.segments.count | Total number of index segments. | long | gauge |
 | elasticsearch.index.summary.total.segments.memory.bytes | Total number of memory used by the segments in bytes. | long | gauge |
 | elasticsearch.index.summary.total.store.size.bytes | Total size of the index in bytes. | long | gauge |
+| elasticsearch.index.summary.total.store.total_data_set_size.bytes | Total size of the index in bytes including backing data for partially mounted indices. | long | gauge |
 | elasticsearch.node.id | Node ID | keyword |  |
 | elasticsearch.node.master | Is the node the master node? | boolean |  |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |  |
