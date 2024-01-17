@@ -178,7 +178,8 @@ processors:
   - append:
       field: event.category
       value: network
-      if: ctx.checkpoint?.operation != 'Log In'
+      if: "!['Log In','Log Out'].contains(ctx.checkpoint?.operation) && !['Log In','Log Out'].contains(ctx.checkpoint?.action)"
+      allow_duplicates: false
   - set:
       field: observer.vendor
       value: Checkpoint
@@ -308,13 +309,22 @@ processors:
       if: ctx.server?.domain == null
       ignore_missing: true
   - rename:
+      field: checkpoint.dst_user_name
+      target_field: destination.user.name
+      ignore_missing: true
+  - rename:
+      field: checkpoint.dst_user_dn
+      target_field: destination.user.domain
+      ignore_missing: true
+  - rename:
       field: checkpoint.src_user_group
       target_field: source.user.group.name
       ignore_missing: true
   - append:
       field: event.category
       value: authentication
-      if: ctx.checkpoint?.operation == 'Log In'
+      if: ctx.checkpoint?.operation == 'Log In' || ctx.checkpoint?.operation == 'Log Out'
+      allow_duplicates: false
   - rename:
       field: checkpoint.originsicname
       target_field: checkpoint.origin_sic_name
@@ -336,7 +346,7 @@ processors:
       value:
         - allowed
         - connection
-      if: "['Accept', 'Allow'].contains(ctx.checkpoint?.rule_action)"
+      if: "['Accept', 'Allow'].contains(ctx.checkpoint?.rule_action) && (ctx.checkpoint?.operation != 'Log In' && ctx.checkpoint?.operation != 'Log Out')"
   - set:
       field: event.outcome
       value: success
@@ -359,10 +369,12 @@ processors:
       field: event.category
       value: malware
       if: ctx.checkpoint?.malware_action != null
+      allow_duplicates: false
   - append:
       field: event.category
       value: intrusion_detection
       if: "['Detect', 'Prevent'].contains(ctx.checkpoint?.rule_action)"
+      allow_duplicates: false
   - set:
       field: event.outcome
       value: success
@@ -371,14 +383,35 @@ processors:
       field: event.outcome
       value: failure
       if: ctx.checkpoint?.action == 'Failed Log In'
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.checkpoint?.operation == 'Log Out'
+      override: true
+      description: "Set 'success' outcome for logoff activity."
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.checkpoint?.operation == 'Log In' && (ctx.checkpoint?.audit_status == 'Success' || ctx.checkpoint?.audit_status == null)
+      override: true
+      description: "Set 'success' outcome by default for logon events without audit outcome set."
   - append:
       field: event.category
       value: authentication
       if: "['Log In', 'Failed Log In'].contains(ctx.checkpoint?.action)"
+      allow_duplicates: false
   - append:
       field: event.type
-      value: allowed
-      if: ctx.checkpoint?.action == 'Log In'
+      value:  
+        - start
+      allow_duplicates: false
+      if: ctx.checkpoint?.action == 'Log In' || ctx.checkpoint?.operation == 'Log In'
+  - append:
+      field: event.type
+      value: end
+      allow_duplicates: false
+      if: ctx.checkpoint?.action == 'Log Out' || ctx.checkpoint?.operation == 'Log Out'
+      description: "Add 'end' categorization type for events related to log out activities."
   - set:
       field: checkpoint.action
       value: logged-in
@@ -386,6 +419,7 @@ processors:
   - append:
       field: event.type
       value: denied
+      allow_duplicates: false
       if: ctx.checkpoint?.action == 'Failed Log In'
   - set:
       field: checkpoint.action
@@ -495,6 +529,17 @@ processors:
       target_field: dns.question.name
       ignore_missing: true
   - rename:
+      field: dns.question.name
+      target_field: source.user.domain
+      ignore_missing: true
+      if: ctx.checkpoint?.operation == 'Log Out' && ctx.source?.user?.domain == null
+  - dissect:
+      field: checkpoint.additional_info
+      pattern: 'Administrator failed to log in: %{event.reason}'
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.checkpoint?.operation == 'Log In' && ctx.checkpoint.audit_status == 'Failure' && (ctx.event?.reason == null || ctx.event?.reason == "")
+  - rename:
       field: checkpoint.dns_message_type
       target_field: dns.type
       ignore_missing: true
@@ -521,6 +566,102 @@ processors:
   - rename:
       field: checkpoint.action
       target_field: event.action
+      ignore_missing: true
+  - set:
+      field: event.action
+      value: logon-failed
+      override: true
+      if: ctx.checkpoint?.operation == 'Log In' && ctx.checkpoint.audit_status == 'Failure'
+      description: "Set 'logon-failed' action categorization for failed logon attempts."
+  - set:
+      field: event.action
+      value: logged-in
+      override: true
+      if: ctx.checkpoint?.operation == 'Log In' && (ctx.checkpoint.audit_status == 'Success' || ctx.checkpoint.audit_status == null)
+      description: "Set 'logged-in' action categorization for events related to successful logons."
+  - set:
+      field: event.action
+      value: logged-out
+      override: true
+      if: ctx.checkpoint?.operation == 'Log Out'
+      description: "Set 'logged-out' action categorization for logoff events."
+  - set:
+      field: host.name
+      value: '{{{ checkpoint.device_name }}}'
+      override: false
+      ignore_empty_value: true
+      if: ctx.checkpoint?.operation == 'Log In' && ctx.observer?.product == 'Expert Shell'
+      description: "Copy the device name to the host.name field for logon events in Checkpoint expert shells."
+  - set:
+      field: host.type
+      value: '{{{ checkpoint.device_type }}}'
+      override: false
+      ignore_empty_value: true
+      if: ctx.checkpoint?.operation == 'Log In' && ctx.observer?.product == 'Expert Shell'
+      description: "Copy the device type to the host.type field for logon events in Checkpoint expert shells."
+  - set:
+      field: source.domain
+      value: '{{{ checkpoint.machine }}}'
+      override: false
+      ignore_empty_value: true
+      if: "['Log In', 'Log Out'].contains(ctx.checkpoint?.operation) && ctx.checkpoint.machine != 'localhost'"
+      description: "Copy the device type to the host.type field for logon events in Checkpoint expert shells."
+  - set:
+      field: network.protocol
+      value: ssh
+      override: false
+      if: ctx.checkpoint?.operation == 'Log In' && ctx.observer?.product == 'Expert Shell'
+      description: "Set network protocol to SSH for logon activities made with Checkpoint expert shells."
+  - set:
+      field: user.name
+      value: '{{{ source.user.name }}}'
+      override: false
+      ignore_empty_value: true
+  - set:
+      field: user.id
+      value: '{{{ source.user.id }}}'
+      override: false
+      ignore_empty_value: true
+  - set:
+      field: user.group.name
+      value: '{{{ source.user.group.name }}}'
+      override: false
+      ignore_empty_value: true
+  - set:
+      field: user.email
+      value: '{{{ source.user.email }}}'
+      override: false
+      ignore_empty_value: true
+  - set:
+      field: user.domain
+      value: '{{{ source.user.domain }}}'
+      override: false
+      ignore_empty_value: true
+  - append:
+      field: user.roles
+      value: administrator
+      allow_duplicates: false
+      if: ctx.message == 'Administrator Login' || ctx.message == 'Administrator Logout' || ctx.message == 'Administrator Expert Shell login'
+      description: "Add administrator label to the user.role field for all events related to administrator logon / logoff activities."
+  - set:
+      field: event.code
+      value: '{{{ checkpoint.operation_number }}}'
+      override: false
+      ignore_empty_value: true
+  - lowercase:
+      field: user.name
+      ignore_missing: true
+  - lowercase:
+      field: user.id
+      ignore_missing: true
+  - lowercase:
+      field: user.email
+      ignore_missing: true
+  - lowercase:
+      field: user.domain
+      ignore_missing: true
+  - lowercase:
+      field: user.group.name
       ignore_missing: true
   - rename:
       field: checkpoint.packet_capture
