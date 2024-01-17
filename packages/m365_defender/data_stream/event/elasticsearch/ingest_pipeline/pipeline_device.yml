@@ -1742,10 +1742,20 @@ processors:
 
   # Geo mapping
   - geoip:
-      if: ctx.m365_defender?.event?.public_ip?.value != null
+      if: ctx.host?.ip != null
       field: host.ip
       tag: geoip_host_ip
       target_field: host.geo
+  - geoip:
+      if: ctx.source?.ip != null
+      field: source.ip
+      tag: geoip_source_ip
+      target_field: source.geo
+  - geoip:
+      if: ctx.destination?.ip != null
+      field: destination.ip
+      tag: geoip_destination_ip
+      target_field: destination.geo
 
   # Related fields
   ## Hosts
