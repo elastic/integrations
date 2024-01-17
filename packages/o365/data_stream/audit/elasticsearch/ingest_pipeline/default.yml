@@ -229,6 +229,24 @@ processors:
       target_field: o365audit.Parameters._raw
       if: 'ctx.o365audit?.Parameters != null && ctx.o365audit?.Parameters instanceof String'
   - script:
+      if: ctx.o365audit?.Platform != null
+      lang: painless
+      params:
+        # Based on `Aip*.md` files in
+        # https://github.com/MicrosoftDocs/office-365-management-api/tree/20763d/office-365-management-api
+        "0": "Unknown"
+        "1": "Windows"
+        "2": "MacOS"
+        "3": "iOS"
+        "4": "Android"
+        "5": "Web Browser"
+      source: >
+        def value = ctx.o365audit.Platform.toString();
+        def name = params[value];
+        if (name != null) {
+          ctx.o365audit.Platform = name;
+        }
+  - script:
       lang: painless
       if: 'ctx.o365audit?.ExtendedProperties != null && ctx.o365audit?.ExtendedProperties instanceof List'
       source: >
@@ -1090,6 +1108,64 @@ processors:
       field: o365audit.YammerNetworkId
       type: string
       ignore_missing: true
+  - json:
+      field: o365audit.Data
+      if: ctx.o365audit?.containsKey('Data') == true
+  - rename:
+      field: o365audit.Data
+      target_field: o365audit.Data.flattened
+      ignore_missing: true
+  - script:
+      description: Copy known Data fields to their explicity mapped locations
+      lang: painless
+      if: 'ctx.o365audit?.Data?.flattened instanceof Map'
+      source: >
+        def knownKeys = ['ad', 'af', 'aii', 'ail', 'alk', 'als', 'an', 'at',
+          'cid', 'cpid', 'dm', 'dpn', 'eid', 'etps', 'etype', 'f3u', 'fvs',
+          'imsgid', 'lon', 'mat', 'md', 'ms', 'od', 'op', 'ot', 'plk', 'pud',
+          'reid', 'rid', 'sev', 'sict', 'sid', 'sip', 'sitmi', 'srt', 'ssic',
+          'suid', 'tdc', 'te', 'thn', 'tht', 'tid', 'tpid', 'tpt', 'trc', 'ts',
+          'tsd', 'ttdt', 'ttr', 'upfc', 'upfv', 'ut', 'von', 'wl', 'zfh', 'zfn',
+          'zmfh', 'zmfn', 'zu'];
+        for (def key : knownKeys) {
+          if (ctx.o365audit.Data.flattened.containsKey(key)) {
+            ctx.o365audit.Data[key] = ctx.o365audit.Data.flattened[key];
+          }
+        }
+  - convert:
+      field: o365audit.Data.sip
+      type: ip
+      ignore_missing: true
+  - date:
+      field: o365audit.Data.at
+      target_field: o365audit.Data.at
+      formats:
+        - ISO8601
+      if: ctx.o365audit?.Data?.at != null
+  - date:
+      field: o365audit.Data.md
+      target_field: o365audit.Data.md
+      formats:
+        - ISO8601
+      if: ctx.o365audit?.Data?.md != null
+  - date:
+      field: o365audit.Data.te
+      target_field: o365audit.Data.te
+      formats:
+        - ISO8601
+      if: ctx.o365audit?.Data?.te != null
+  - date:
+      field: o365audit.Data.ts
+      target_field: o365audit.Data.ts
+      formats:
+        - ISO8601
+      if: ctx.o365audit?.Data?.ts != null
+  - date:
+      field: o365audit.Data.ttdt
+      target_field: o365audit.Data.ttdt
+      formats:
+        - ISO8601
+      if: ctx.o365audit?.Data?.ttdt != null
   - rename:
       field: o365audit
       target_field: o365.audit
