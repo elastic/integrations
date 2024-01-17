@@ -28,6 +28,7 @@ processors:
 {{processors}}
 {{/if}}
 fields_under_root: true
+keep_null: true
 fields:
   _conf:
     url: {{url}}
@@ -40,7 +41,8 @@ program: |
       "Content-Type": ["application/json"]
     }).with(
       has(state.api_key) && size(state.api_key) > 0 ?
-        { "Authorization": ["Bearer " + state.api_key] } :
+        { "Authorization": ["Bearer " + state.api_key] }
+      :
         {}
     )
   }).with({
@@ -54,15 +56,26 @@ program: |
       }
     }.encode_json()
   }).do_request().as(resp,
-    bytes(resp.Body).decode_json().as(body, state.with({
-      "events": body.data.indicators.edges.map(e, e.node.with(
-        has(state.preserve_original_event) && state.preserve_original_event ?
-          { "event": { "original": e.node.encode_json() } } :
-          {}
-      )),
-      "want_more": body.data.indicators.pageInfo.hasNextPage,
-      "cursor": { "value": body.data.indicators.pageInfo.endCursor },
-    }))
+    bytes(resp.Body).decode_json().as(body,
+      has(body.errors) && size(body.errors) > 0 ?
+        state.with({
+          "events": [{
+            "error": { "message": body.errors.map(e, e.message) },
+            "event": { "original": body.encode_json() }
+          }]
+        })
+      :
+        state.with({
+          "events": body.data.indicators.edges.map(e, e.node.with(
+            has(state.preserve_original_event) && state.preserve_original_event ?
+              { "event": { "original": e.node.encode_json() } }
+            :
+              {}
+          )),
+          "want_more": body.data.indicators.pageInfo.hasNextPage,
+          "cursor": { "value": body.data.indicators.pageInfo.endCursor },
+        })
+    )
   )
 redact:
   fields:
