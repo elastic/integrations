@@ -155,7 +155,7 @@ A field that holds millions of unique values may not be an ideal candidate for b
 
 ### Enabling multiple variants support in system tests
 
-If your system test configuration for a TSDB enabled package contains multiple variants, make sure to set the `kibana.version` in the `manifest.yml` file of the package to be `8.8.1` or higher.
+If the system test configuration for a TSDB-enabled package contains multiple variants, make sure to set the `kibana.version` specified in the `manifest.yml` file of the package to `8.8.1` or a version higher.
 
 ```yaml
 conditions:
