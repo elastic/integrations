@@ -1721,24 +1721,44 @@ processors:
       field: destination.user.name
       value: "{{{ _temp_.cisco.destination_username }}}"
       if: 'ctx?.destination?.user?.name == null && ctx?._temp_?.cisco?.destination_username != null'
+  # Support masked user value
   - grok:
       field: "source.user.name"
-      if: 'ctx?.source?.user?.name != null'
-      ignore_failure: true
+      if: 'ctx.source?.user?.name != null'
+      tag: "grok_source_user_name"
       patterns:
+        - (%{CISCO_DOMAIN})?%{CISCO_USER_EMAIL:source.user.email}
         - (%{CISCO_DOMAIN})?%{CISCO_USER}
+        - \*+
       pattern_definitions:
-        CISCO_USER: "%{USERNAME:source.user.name}(@%{HOSTNAME:source.user.domain})?"
+        USERNAME: "[^@$]+"
+        CISCO_USER_EMAIL: "%{CISCO_USER}@%{HOSTNAME:source.user.domain}"
+        CISCO_USER: "%{USERNAME:source.user.name}"
         CISCO_DOMAIN: (LOCAL\\)?(%{HOSTNAME:source.user.domain}\\)?
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - grok:
       field: "destination.user.name"
+      tag: "grok_destination_user_name"
       if: 'ctx?.destination?.user?.name != null'
-      ignore_failure: true
       patterns:
+        - (%{CISCO_DOMAIN})?%{CISCO_USER_EMAIL:destination.user.email}
         - (%{CISCO_DOMAIN})?%{CISCO_USER}
       pattern_definitions:
-        CISCO_USER: "%{USERNAME:destination.user.name}(@%{HOSTNAME:destination.user.domain})?"
+        USERNAME: "[^@$]+"
+        CISCO_USER_EMAIL: "%{CISCO_USER}@%{HOSTNAME:destination.user.domain}"
+        CISCO_USER: "%{USERNAME:destination.user.name}"
         CISCO_DOMAIN: (LOCAL\\)?(%{HOSTNAME:destination.user.domain}\\)?
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
 
   #
   # Normalize protocol names
