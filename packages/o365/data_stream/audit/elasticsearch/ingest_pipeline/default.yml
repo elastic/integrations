@@ -1044,6 +1044,11 @@ processors:
       value: "{{file.owner}}"
       allow_duplicates: false
       if: ctx.file?.owner != null
+  - append:
+      field: related.user
+      value: "{{o365audit.Parameters.User}}"
+      allow_duplicates: false
+      if: ctx.o365audit?.Parameters?.User != null
   - rename:
       field: o365audit.ExtendedProperties.UserAgent
       target_field: user_agent.original
@@ -1166,6 +1171,26 @@ processors:
       formats:
         - ISO8601
       if: ctx.o365audit?.Data?.ttdt != null
+  - append:
+      field: related.user
+      value: "{{o365audit.Data.f3u}}"
+      allow_duplicates: false
+      if: ctx.o365audit?.Data?.f3u?.splitOnToken('@')?.length == 2 && ctx.o365audit.Data.f3u.length() >= 3;
+  - append:
+      field: related.user
+      value: "{{o365audit.Data.suid}}"
+      allow_duplicates: false
+      if: ctx.o365audit?.Data?.suid?.splitOnToken('@')?.length == 2 && ctx.o365audit.Data.suid.length() >= 3;
+  - append:
+      field: related.user
+      value: "{{o365audit.Data.tsd}}"
+      allow_duplicates: false
+      if: ctx.o365audit?.Data?.tsd?.splitOnToken('@')?.length == 2 && ctx.o365audit.Data.tsd.length() >= 3;
+  - append:
+      field: related.user
+      value: "{{o365audit.Data.trc}}"
+      allow_duplicates: false
+      if: ctx.o365audit?.Data?.trc?.splitOnToken('@')?.length == 2 && ctx.o365audit.Data.trc.length() >= 3;
   - rename:
       field: o365audit
       target_field: o365.audit
