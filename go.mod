@@ -204,4 +204,4 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
-replace github.com/elastic/elastic-package => github.com/mrodm/elastic-package v0.53.1-0.20240118104015-5579da4d4f80
+replace github.com/elastic/elastic-package => github.com/mrodm/elastic-package v0.53.1-0.20240118120137-499953c0751a
