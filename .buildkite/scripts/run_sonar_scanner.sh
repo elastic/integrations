@@ -12,8 +12,7 @@ run_sonar_scanner() {
     /scan-source-code.sh
 }
 
-if [[ ${FORCE_CHECK_ALL:-"false"} == "true" && ${STACK_VERSION:-"false"} =~ 8\..*\-SNAPSHOT ]]; then
-    echo "Run from schedule daily job"
+if [[ "${PUBLISH_COVERAGE_REPORTS:-"false"}" == "true" ]]; then
     run_sonar_scanner
     exit 0
 fi
