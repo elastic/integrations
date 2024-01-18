@@ -4,7 +4,6 @@ set -euo pipefail
 run_sonar_scanner() {
     echo "--- Download coverage reports and merge them"
     buildkite-agent artifact download build/test-coverage/coverage-*.xml .
-    # buildkite-agent artifact download build/test-results/*.xml .
 
     echo "Merge all coverage reports"
     .buildkite/scripts/merge_xml.sh
