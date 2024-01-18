@@ -15,7 +15,7 @@ export ELASTIC_PACKAGE_BIN=${WORKSPACE}/build/elastic-package
 
 API_BUILDKITE_PIPELINES_URL="https://api.buildkite.com/v2/organizations/elastic/pipelines/"
 
-COVERAGE_FORMAT=generic
+COVERAGE_FORMAT="generic"
 COVERAGE_OPTIONS="--test-coverage --coverage-format=${COVERAGE_FORMAT}"
 
 running_on_buildkite() {
