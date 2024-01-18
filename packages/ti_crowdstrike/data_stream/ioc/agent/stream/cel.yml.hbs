@@ -51,8 +51,8 @@ program: |
     "events": body.resources.map(e, {
       "message": e.encode_json(),
     }),
-    "want_more": (int(state.offset) + body.resources.size()) < body.meta.pagination.total,
-    "offset": ((int(state.offset) + body.resources.size()) < body.meta.pagination.total) ?
+    "want_more": has(body.meta.pagination) && (int(state.offset) + body.resources.size()) < body.meta.pagination.total,
+    "offset": has(body.meta.pagination) && ((int(state.offset) + body.resources.size()) < body.meta.pagination.total) ?
       int(state.offset) + int(body.resources.size()) 
     :
       0,
