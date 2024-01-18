@@ -222,6 +222,7 @@ An example event for `log` looks as following:
 | destination.nat.port | Port the source session is translated to by NAT Device. Typically used with load balancers, firewalls, or routers. | long |
 | destination.port | Port of the destination. | long |
 | destination.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| destination.user.email | User email address. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
 | destination.user.name.text | Multi-field of `destination.user.name`. | match_only_text |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -335,6 +336,7 @@ An example event for `log` looks as following:
 | source.nat.port | Translated port of source based NAT sessions. (e.g. internal client to internet) Typically used with load balancers, firewalls, or routers. | long |
 | source.port | Port of the source. | long |
 | source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| source.user.email | User email address. | keyword |
 | source.user.group.name | Name of the group. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
 | source.user.name.text | Multi-field of `source.user.name`. | match_only_text |
