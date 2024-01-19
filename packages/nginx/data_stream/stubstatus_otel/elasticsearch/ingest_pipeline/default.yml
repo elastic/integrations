@@ -1,0 +1,19 @@
+---
+description: Pipeline for processing the Nginx OTEL Metrics
+processors:
+  - dot_expander:
+      field: nginx.connections_accepted
+      ignore_failure: true 
+  - dot_expander:
+      field: nginx.connections_handled
+      ignore_failure: true
+  - script:
+      if: ctx?.nginx?.connections_accepted != null && ctx?.nginx?.connections_handled != null
+      lang: painless
+      source: >
+        double dropped = ctx.nginx.connections_accepted - ctx.nginx.connections_handled;
+        ctx.nginx.connections_dropped = dropped;
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
