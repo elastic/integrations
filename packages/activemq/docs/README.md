@@ -9,7 +9,7 @@ The ActiveMQ datasets were tested with ActiveMQ 5.17.1 or higher (independent fr
 
 ## Troubleshooting
 
-If host.ip is shown conflicted under ``log-*`` or ``metrics-*`` data view, then this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the ``Audit``, ``Log``, ``Broker``, ``Queue`` and ``Topic`` data stream's indices.
+If `host.ip` appears conflicted under the `log-*` or `metrics-*` data view, this issue can be resolved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the indices of the `Audit`, `Log`, `Broker`, `Queue` and `Topic` data streams.
 
 ## Logs
 
