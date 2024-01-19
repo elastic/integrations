@@ -197,7 +197,6 @@ An example event for `s3_storage_lens` looks as following:
 | aws.dimensions.organization_id | The AWS Organizations ID for the metrics. | keyword |  |
 | aws.dimensions.record_type | The granularity of the metrics such as ORGANIZATION, ACCOUNT, BUCKET. | keyword |  |
 | aws.dimensions.storage_class | The storage class for the bucket that's reported in the metrics. | keyword |  |
-| aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |
 | aws.s3_storage_lens.metrics.4xxErrors.avg | The total 4xx errors in scope. | long | gauge |
 | aws.s3_storage_lens.metrics.5xxErrors.avg | The total 5xx errors in scope. | long | gauge |
 | aws.s3_storage_lens.metrics.AllRequests.avg | The total number of requests made. | long | gauge |
@@ -249,7 +248,7 @@ An example event for `s3_storage_lens` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |  |
 | error.message | Error message. | match_only_text |  |
-| event.dataset | Event dataset | constant_keyword |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |

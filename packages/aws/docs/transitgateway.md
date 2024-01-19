@@ -155,7 +155,6 @@ An example event for `transitgateway` looks as following:
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
 | aws.dimensions.TransitGateway | Filters the metric data by transit gateway. | keyword |  |
 | aws.dimensions.TransitGatewayAttachment | Filters the metric data by transit gateway attachment. | keyword |  |
-| aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |
 | aws.tags | Tag key value pairs from aws resources. | flattened |  |
 | aws.transitgateway.metrics.BytesDropCountBlackhole.sum | The number of bytes dropped because they matched a blackhole route. | long | gauge |
 | aws.transitgateway.metrics.BytesDropCountNoRoute.sum | The number of bytes dropped because they did not match a route. | long | gauge |
@@ -186,7 +185,7 @@ An example event for `transitgateway` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |  |
 | error.message | Error message. | match_only_text |  |
-| event.dataset | Event dataset | constant_keyword |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |

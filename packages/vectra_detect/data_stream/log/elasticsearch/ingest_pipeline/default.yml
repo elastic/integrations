@@ -3,7 +3,7 @@ description: Pipeline for processing Vectra Detect logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.10.0'
+      value: '8.11.0'
   - set:
       field: observer.vendor
       value: Vectra
@@ -110,10 +110,10 @@ processors:
       ignore_empty_value: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline-host-detection" }}'
-      if: ctx.vectra_detect?.log?.event_type == 'vectra_json_v2' && ctx.json?.category != 'HOST SCORING'
+      if: (ctx.vectra_detect?.log?.event_type == 'vectra_json_v2' || ctx.vectra_detect?.log?.event_type == 'vectra_json') && ctx.json?.category != 'HOST SCORING'
   - pipeline:
       name: '{{ IngestPipeline "pipeline-host-scoring" }}'
-      if: ctx.vectra_detect?.log?.event_type == 'vectra_json_v2' && ctx.json?.category == 'HOST SCORING'
+      if: (ctx.vectra_detect?.log?.event_type == 'vectra_json_v2' || ctx.vectra_detect?.log?.event_type == 'vectra_json') && ctx.json?.category == 'HOST SCORING'
   - pipeline:
       name: '{{ IngestPipeline "pipeline-account-scoring" }}'
       if: ctx.vectra_detect?.log?.event_type == 'vectra_json_account_v2'
