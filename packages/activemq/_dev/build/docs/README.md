@@ -94,7 +94,7 @@ These logs are System logs of ActiveMQ.
 
 ### Audit Logs
 
-For many secured environments, there's a requirement to log every user management action. For that ActiveMQ implements audit logging, which means that every management action made through JMX or Web Console management interface will be logged and available for later inspection.
+In secured environments, it is required to log every user management action. ActiveMQ implements audit logging, which means that every management action made through JMX or Web Console management interface is logged and available for later inspection.
 
 {{event "audit"}}
 
