@@ -178,7 +178,7 @@ An example event for `log` looks as following:
 
 ### Audit Logs
 
-In many secured environments, it is required to log every user management action. For that, ActiveMQ implements audit logging, which means that every management action made through JMX or Web Console management interface is logged and available for later inspection.
+In secured environments, it is required to log every user management action. ActiveMQ implements audit logging, which means that every management action made through JMX or Web Console management interface is logged and available for later inspection.
 
 An example event for `audit` looks as following:
 
