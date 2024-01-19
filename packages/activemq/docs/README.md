@@ -457,7 +457,7 @@ An example event for `broker` looks as following:
 
 ### Queue Metrics
 
-Queues are FIFO (first-in, first-out) pipelines of messages produced and consumed by brokers and clients. Producers create messages and push them onto these queues. Then those messages are polled and collected by consumer applications, one message at a time. Metrics show statistics of exchanged messages, consumers, producers and memory usage.
+Queues are FIFO (first-in, first-out) pipelines of messages produced and consumed by brokers and clients. Producers create messages and push them onto these queues. Then, those messages are polled and collected by consumer applications, one message at a time. Metrics show statistics of exchanged messages, consumers, producers and memory usage.
 
 An example event for `queue` looks as following:
 
