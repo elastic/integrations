@@ -82,6 +82,10 @@ Here is the breakdown of the pattern:
 
 After the integration is successfully configured, clicking on the Assets tab of the ActiveMQ Integration should display a list of available dashboards. Click on the dashboard available for your configured data stream. It should be populated with the required data.
 
+## Troubleshooting
+
+If `host.ip` appears conflicted under the `log-*` or `metrics-*` data view, this issue can be resolved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the indices of the `Audit`, `Log`, `Broker`, `Queue` and `Topic` data streams.
+
 ## Logs
 
 ### ActiveMQ Logs
