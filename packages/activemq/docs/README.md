@@ -359,7 +359,7 @@ An example event for `broker` looks as following:
 | activemq.broker.messages.dequeue.count | Number of messages that have been acknowledged on the broker. | long |  | gauge |
 | activemq.broker.messages.enqueue.count | Number of messages that have been sent to the destination. | long |  | gauge |
 | activemq.broker.name | Broker name. | keyword |  |  |
-| activemq.broker.producers.count | Number of message producers active on destinations on the broker. | long |  |  |
+| activemq.broker.producers.count | Number of message producers active on destinations on the broker. | long |  | gauge |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
@@ -513,7 +513,7 @@ An example event for `queue` looks as following:
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
-| activemq.queue.consumers.count | Number of consumers subscribed to this destination. | long |  |  |
+| activemq.queue.consumers.count | Number of consumers subscribed to this destination. | long |  | gauge |
 | activemq.queue.mbean | MBean that this event is related to. | keyword |  |  |
 | activemq.queue.memory.broker.pct | Percent of memory limit used. | float | percent | gauge |
 | activemq.queue.messages.dequeue.count | Number of messages that has been acknowledged (and removed) from the destination. | long |  | gauge |
@@ -525,9 +525,9 @@ An example event for `queue` looks as following:
 | activemq.queue.messages.expired.count | Number of messages that have been expired. | long |  | gauge |
 | activemq.queue.messages.inflight.count | Number of messages that have been dispatched to consumers but not acknowledged by consumers. | long |  | gauge |
 | activemq.queue.messages.size.avg | Average message size on this destination. | long |  | gauge |
-| activemq.queue.name | Queue name | keyword |  |  |
-| activemq.queue.producers.count | Number of producers attached to this destination. | long |  |  |
-| activemq.queue.size | Queue size | long |  |  |
+| activemq.queue.name | Queue name. | keyword |  |  |
+| activemq.queue.producers.count | Number of producers attached to this destination. | long |  | gauge |
+| activemq.queue.size | Queue size. | long |  | gauge |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
@@ -680,7 +680,7 @@ An example event for `topic` looks as following:
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
-| activemq.topic.consumers.count | Number of consumers subscribed to this destination. | long |  |  |
+| activemq.topic.consumers.count | Number of consumers subscribed to this destination. | long |  | gauge |
 | activemq.topic.mbean | MBean that this event is related to. | keyword |  |  |
 | activemq.topic.memory.broker.pct | Percent of memory limit used. | float | percent | gauge |
 | activemq.topic.messages.dequeue.count | Number of messages that has been acknowledged (and removed) from the destination. | long |  | gauge |
