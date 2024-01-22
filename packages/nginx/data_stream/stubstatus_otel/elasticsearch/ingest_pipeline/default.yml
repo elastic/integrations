@@ -1,6 +1,12 @@
 ---
 description: Pipeline for processing the Nginx OTEL Metrics
 processors:
+  - dot_expander:
+      field: nginx.connections_accepted
+      ignore_failure: true
+  - dot_expander:
+      field: nginx.connections_handled
+      ignore_failure: true
   - script:
       if: ctx?.nginx?.connections_accepted != null && ctx?.nginx?.connections_handled != null
       lang: painless
