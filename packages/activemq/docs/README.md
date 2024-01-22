@@ -6,7 +6,7 @@ Apache [ActiveMQ](https://activemq.apache.org) is the most popular open-source, 
 
 Use the ActiveMQ integration to:
 
-- Collect logs related to the audit and activemq instance and collect metrics related to the broker, queue and topic.
+- Collect logs related to the audit and ActiveMQ instance and collect metrics related to the broker, queue and topic.
 - Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
 - Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
@@ -41,11 +41,11 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 For step-by-step instructions on how to set up an integration, see the [Getting Started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
-## Supported log formats for Audit and ActiveMQ logs
+## Supported Log Formats
 
 Here are the supported log format for the Audit logs and ActiveMQ logs in the ActiveMQ instance,
 
-### Audit
+### Audit Logs
 
 ```
 %-5p | %m | %t%n
@@ -59,7 +59,7 @@ Here is the breakdown of the pattern:
 
 - %t%n: This part represents the thread name (%t) followed by a newline (%n).
 
-### ActiveMQ
+### ActiveMQ Logs
 
 ```
 %d | %-5p | %m | %c | %t%n%throwable{full}

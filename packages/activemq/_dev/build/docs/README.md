@@ -41,11 +41,11 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 For step-by-step instructions on how to set up an integration, see the [Getting Started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
-## Supported log formats for Audit and ActiveMQ logs
+## Supported Log Formats
 
 Here are the supported log format for the Audit logs and ActiveMQ logs in the ActiveMQ instance,
 
-### Audit
+### Audit Logs
 
 ```
 %-5p | %m | %t%n
@@ -59,7 +59,7 @@ Here is the breakdown of the pattern:
 
 - %t%n: This part represents the thread name (%t) followed by a newline (%n).
 
-### ActiveMQ
+### ActiveMQ Logs
 
 ```
 %d | %-5p | %m | %c | %t%n%throwable{full}
