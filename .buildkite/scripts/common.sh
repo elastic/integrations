@@ -135,14 +135,44 @@ with_mage() {
     mage --version
 }
 
-with_docker_compose() {
+with_docker() {
+    echo "--- Setting up the Docker environment..."
+    if [[ "${DOCKER_VERSION:-"false"}" == "false" ]]; then
+        echo "Skip docker installation"
+        return
+    fi
+    local ubuntu_version
+    local ubuntu_codename
+    local architecture
+    ubuntu_version="$(lsb_release -rs)" # 20.04
+    ubuntu_codename="$(lsb_release -sc)" # focal
+    architecture=$(dpkg --print-architecture)
+    local debian_version="5:${DOCKER_VERSION}-1~ubuntu.${ubuntu_version}~${ubuntu_codename}"
+
+    sudo sudo mkdir -p /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    echo "deb [arch=${architecture} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu ${ubuntu_codename} stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-downgrades -y "docker-ce=${debian_version}"
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-downgrades -y "docker-ce-cli=${debian_version}"
+    sudo systemctl start docker
+}
+
+with_docker_compose_plugin() {
+    echo "--- Setting up the Docker compose plugin environment..."
+    if [[ "${DOCKER_COMPOSE_VERSION:-"false"}" == "false" ]]; then
+        echo "Skip docker compose installation (plugin)"
+        return
+    fi
     create_bin_folder
     check_platform_architecture
 
-    echo "--- Setting up the Docker-compose environment..."
-    retry 5 curl -sSL -o "${BIN_FOLDER}/docker-compose" "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${platform_type_lowercase}-${hw_type}"
-    chmod +x "${BIN_FOLDER}/docker-compose"
-    docker-compose version
+    local DOCKER_CONFIG="$HOME/.docker/cli-plugins"
+    mkdir -p "$DOCKER_CONFIG"
+
+    retry 5 curl -SL -o ${DOCKER_CONFIG}/docker-compose "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${platform_type_lowercase}-${hw_type}"
+    chmod +x ${DOCKER_CONFIG}/docker-compose
+    docker compose version
 }
 
 with_kubernetes() {
