@@ -23,75 +23,65 @@ state:
   want_more: false
   offset: 0
   batch_size: {{batch_size}}
+redact:
+  fields: ~
 program: |
   (
     state.with(
       (
-       !state.want_more ?
-         request("GET", state.url + "/alerts/queries/alerts/v1?sort=timestamp|asc&offset=0&limit="
-          + string(state.batch_size) + "&filter=timestamp:>\"" +
-         (
-            has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null ?
-             state.cursor.last_timestamp + "\""
-            :
-             (now - duration(state.initial_interval)).format(time_layout.RFC3339) + "\""
-          )
-         )
-       :
-         request("GET", state.url + "/alerts/queries/alerts/v1?sort=timestamp|asc&offset=" + string(state.offset) +
-          "&limit=" + string(state.batch_size) + "&filter=timestamp:>\"" +
-             (
-               has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null ?
-                 state.cursor.first_timestamp + "\""
-               :
-                 "\""
-              )
-          )
-       ).do_request().as(resp, bytes(resp.Body).decode_json().as(body, {
-              "resources": has(body.resources) && body.resources.size() > 0 ? body.resources : "",
-              "want_more": ((int(state.offset) + body.resources.size()) < body.meta.pagination.total),
-              "offset": ((int(state.offset) + body.resources.size()) < body.meta.pagination.total) ?
-                int(state.offset) + int(body.resources.size())
-              :
-                0,
-              "url": state.url,
-              "batch_size": state.batch_size,
-          }))
-      ).as(state, state.with(
-        has (state.resources) && state.resources != "" ?
-         post_request(
-           state.url + "/alerts/entities/alerts/v1",
-           "application/json",
-           {"ids": state.resources }.encode_json()
-         )
-         .do_request().as(resp, bytes(resp.Body).decode_json().as(inner_body, {
-            "events": inner_body.resources.map(e, {
-              "message": e.encode_json(),
-            }),
-            "cursor": {
-               "last_timestamp": (
-                 has(inner_body.resources) && inner_body.resources.size() > 0 ?
-                  inner_body.resources.map(e, e.timestamp).max()
-                 :
-                   (
-                   has(state.cursor) && has(state.cursor.last_timestamp) ?
-                    state.cursor.last_timestamp
-                   :
-                    null
-                   )
-               ),
-               "first_timestamp": (
-                 has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null ?
-                   ( state.want_more ? state.cursor.first_timestamp : state.cursor.last_timestamp )
-                  :
-                   (now - duration(state.initial_interval)).format(time_layout.RFC3339)
-               ),
-            },
-          }))
+        !state.want_more ?
+          request("GET", state.url + "/alerts/queries/alerts/v1?sort=timestamp|asc&offset=0&limit=" + string(state.batch_size) + "&filter=timestamp:>\"" + (
+             has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null ?
+               state.cursor.last_timestamp + "\""
+             :
+               (now - duration(state.initial_interval)).format(time_layout.RFC3339) + "\""
+          ))
         :
-         {}
-        )
-   )
+          request("GET", state.url + "/alerts/queries/alerts/v1?sort=timestamp|asc&offset=" + string(state.offset) + "&limit=" + string(state.batch_size) + "&filter=timestamp:>\"" + (
+            has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null ?
+              state.cursor.first_timestamp + "\""
+            :
+              "\""
+          ))
+      ).do_request().as(resp, bytes(resp.Body).decode_json().as(body, {
+        "resources": has(body.resources) && body.resources.size() > 0 ? body.resources : "",
+        "want_more": ((int(state.offset) + body.resources.size()) < body.meta.pagination.total),
+        "offset": ((int(state.offset) + body.resources.size()) < body.meta.pagination.total) ?
+          int(state.offset) + int(body.resources.size())
+        :
+          0,
+        "url": state.url,
+        "batch_size": state.batch_size,
+      }))
+    ).as(state, state.with(
+      !has(state.resources) || state.resources == "" ? {"events": []} :
+        post_request(
+          state.url + "/alerts/entities/alerts/v1",
+          "application/json",
+          {"ids": state.resources}.encode_json()
+        ).do_request().as(resp, bytes(resp.Body).decode_json().as(inner_body, {
+          "events": inner_body.resources.map(e, {
+            "message": e.encode_json(),
+          }),
+          "cursor": {
+            "last_timestamp": (
+              has(inner_body.resources) && inner_body.resources.size() > 0 ?
+                inner_body.resources.map(e, e.timestamp).max()
+              : has(state.cursor) && has(state.cursor.last_timestamp) ?
+                state.cursor.last_timestamp
+              :
+                null
+            ),
+            "first_timestamp": (
+              has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null ?
+                (state.want_more ? state.cursor.first_timestamp : state.cursor.last_timestamp)
+              :
+                (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+            ),
+          },
+        }))
+      )
+    )
   )
 tags:
 {{#if preserve_original_event}}

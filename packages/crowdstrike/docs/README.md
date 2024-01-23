@@ -1,19 +1,23 @@
 # CrowdStrike Integration
 
-This integration is for [CrowdStrike](https://www.crowdstrike.com/resources/?cs_query=type=5) products. It includes the
-following datasets for receiving logs:
+The [CrowdStrike](https://www.crowdstrike.com/) Falcon integration allows you to easily connect your CrowdStrike Falcon platform to Elastic for seamless onboarding of alerts and telemetry from CrowdStrike Falcon and Falcon Data Replicator. Elastic Security can leverage this data for security analytics including correlation, visualisation and incident response. It provides support using two different modes for integrating CrowdStrike to the Elastic:
 
-- `alert` dataset: retrieves all the alerts matching the given input query. It is supported through the REST API.
+1. Falcon SIEM Connector: This is a pre-built integration designed to connect CrowdStrike Falcon with Security Information and Event Management (SIEM) systems. It streamlines the flow of security data from CrowdStrike Falcon to the SIEM, providing a standardized and structured way of feeding information into the SIEM platform. It includes the following datasets for receiving logs:
+
 - `falcon` dataset: consists of endpoint data and Falcon platform audit data forwarded from [Falcon SIEM Connector](https://www.crowdstrike.com/blog/tech-center/integrate-with-your-siem/).
 - `fdr` dataset: consists of logs forwarded using the [Falcon Data Replicator](https://github.com/CrowdStrike/FDR).
-- `host` dataset: retrieves all the hosts in your environment. It is supported through the REST API.
+
+2. CrowdStrike REST API: This provides a programmatic interface to interact with the CrowdStrike Falcon platform. It allows users to perform various operations such as querying information about alerts and hosts. It includes the following datasets for receiving logs:
+
+- `alert` dataset: retrieves all the alerts matching the given input query.
+- `host` dataset: retrieves all the hosts in your environment.
 
 ## Compatibility
 
-This integration supports CrowdStrike Falcon SIEM-Connector-v2.0.
+This integration is compatible with both CrowdStrike Falcon SIEM-Connector-v2.0 and REST API.
 For Rest API support, this module has been tested against the **CrowdStrike API Version v1/v2**.
 
-The minimum **kibana.version** required is **8.10.1**.
+The minimum **kibana.version** required is **8.11.0**.
 
 ## Setup
 ### To collect data from CrowdStrike REST API, the following parameters from your CrowdStrike instance are required:
@@ -43,11 +47,11 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2023-11-03T18:00:22.328Z",
     "agent": {
-        "ephemeral_id": "8fd71bbe-5098-4447-87fa-6e59e478a07d",
-        "id": "868b4416-974a-486a-b98e-ebbd497b5fa6",
+        "ephemeral_id": "3e7e3041-6389-4abf-aa8a-c2996b6509ed",
+        "id": "b095b147-68c9-47a8-a1fc-7fd9dc3764c5",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.11.0"
     },
     "crowdstrike": {
         "alert": {
@@ -272,15 +276,15 @@ An example event for `alert` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "868b4416-974a-486a-b98e-ebbd497b5fa6",
+        "id": "b095b147-68c9-47a8-a1fc-7fd9dc3764c5",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.11.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "crowdstrike.alert",
         "id": "ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600",
-        "ingested": "2024-01-12T12:36:35Z",
+        "ingested": "2024-01-22T13:23:29Z",
         "kind": "alert",
         "original": "{\"agent_id\":\"2ce412d17b334ad4adc8c1c54dbfec4b\",\"aggregate_id\":\"aggind:2ce412d17b334ad4adc8c1c54dbfec4b:163208931778\",\"alleged_filetype\":\"exe\",\"cid\":\"92012896127c4a948236ba7601b886b0\",\"cloud_indicator\":\"false\",\"cmdline\":\"\\\"C:\\\\Users\\\\yuvraj.mahajan\\\\AppData\\\\Local\\\\Temp\\\\Temp3cc4c329-2896-461f-9dea-88009eb2e8fb_pfSenseFirewallOpenVPNClients-20230823T120504Z-001.zip\\\\pfSenseFirewallOpenVPNClients\\\\Windows\\\\openvpn-cds-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe\\\"\",\"composite_id\":\"92012896127c4a8236ba7601b886b0:ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600\",\"confidence\":10,\"context_timestamp\":\"2023-11-03T18:00:31Z\",\"control_graph_id\":\"ctg:2ce4127b334ad4adc8c1c54dbfec4b:163208931778\",\"crawl_edge_ids\":{\"Sensor\":[\"KZcZ=__;K\\u0026cmqQ]Z=W,QK4W.9(rBfs\\\\gfmjTblqI^F-_oNnAWQ\\u0026-o0:dR/\\u003e\\u003e2J\\u003cd2T/ji6R\\u0026RIHe-tZSkP*q?HW;:leq.:kk)\\u003eIVMD36[+=kiQDRm.bB?;d\\\"V0JaQlaltC59Iq6nM?6`\\u003eZAs+LbOJ9p9A;9'WV9^H3XEMs8N\",\"KZcZA__;?\\\"cmott@m_k)MSZ^+C?.cg\\u003cLga#0@71X07*LY2teE56*16pL[=!bjF7g@0jOQE'jT6RX_F@sr#RP-U/d[#nm9A,A,W%cl/T@\\u003cW`alY1K_h%QDBBF;_e7S!!*'!\",\"KZd)iK2;s\\\\ckQl_P*d=Mo?^a7/JKc\\\\*L48169!7I5;0\\\\\\u003cH^hNG\\\"ZQ3#U3\\\"eo\\u003c\\u003e92t[f!\\u003e*b9WLY@H!V0N,BJsNSTD:?/+fY';e\\u003cOHh9AmlT?5\\u003cgGqK:*L99kat+P)eZ$HR\\\"Ql@Q!!!$!rr\",\"N6=Ks_B9Bncmur)?\\\\[fV$k/N5;:6@aB$P;R$2XAaPJ?E\\u003cG5,UfaP')8#2AY4ff+q?T?b0/RBi-YAeGmb\\u003c6Bqp[DZh#I(jObGkjJJaMf\\\\:#mb;BM\\\\L[g!\\\\F*M!!*'!\",\"N6B%O`'=_7d#%u\\u0026d[+LTNDs\\u003c3307?8n=GrFI:4YYGCL,cIt-Tuj!\\u0026\\u003c6:3RbC`uNjL#gW\\u0026=)E`4^/'fp*.bFX@p_$,R6.\\\"=lV*T*5Vf`c.:nkd$+YD:DJ,Ls0[sArC')K%YTc$:@kUQW5s8N\",\"N6B%s!\\\\k)ed$F6\\u003ea%iM\\\"\\u003cFTSe/eH8M:\\u003c9gf;$$.b??kpC*99aX!Lq:g6:Q3@Ga4Zrb@MaMa]L'YAt$IFBu])\\\"H^sF$r7gDPf6\\u0026CHpVKO3\\u003cDgK9,Y/e@V\\\"b\\u0026m!\\u003c\\u003c'\",\"N6CU\\u0026`%VT\\\"d$=67=h\\\\I)/BJH:8-lS!.%\\\\-!$1@bAhtVO?q4]9'9'haE4N0*-0Uh'-'f',YW3]T=jL3D#N=fJi]Pp-bWej+R9q[%h[p]p26NK8q3b50k9G:.\\u0026eM\\u003cQer\\u003e__\\\"59K'R?_=`'`rK/'hA\\\"r+L5i-*Ut5PI!!*'!\",\"N6CUF__;K!d$:[C93.?=/5(`5KnM]!L#UbnSY5HOHc#[6A\\u0026FE;(naXB4h/OG\\\"%MDAR=fo41Z]rXc\\\"J-\\\\\\u0026\\u0026V8UW.?I6V*G+,))Ztu_IuCMV#ZJ:QDJ_EjQmjiX#HENY'WD0rVAV$Gl6_+0e:2$8D)):.LUs+8-S$L!!!$!rr\",\"N6CUF__;K!d$:\\\\N43JV0AO56@6D0$!na(s)d.dQ'iI1*uiKt#j?r\\\"X'\\\\AtNML2_C__7ic6,8Dc[F\\u003c0NTUGtl%HD#?/Y)t8!1X.;G!*FQ9GP-ukQn`6I##\\u0026$^81(P+hN*-#rf/cUs)Wb\\\"\\u003c_/?I'[##WMh'H[Rcl+!!\\u003c\\u003c'\",\"N6L[G__;K!d\\\"qhT7k?[D\\\"Bk:5s%+=\\u003e#DM0j$_\\u003cr/JG0TCEQ!Ug(be3)\\u0026R2JnX+RSqorgC-NCjf6XATBWX(5\\u003cL1J1DV\\u003e44ZjO9q*d!YLuHhkq!3\\u003e3tpi\\u003eOPYZp9]5f1#/AlRZL06`/I6cl\\\"d.\\u0026=To@9kS!prs8N\"]},\"crawl_vertex_ids\":{\"Sensor\":[\"aggind:2ce412d17b334ad4adc8c1c54dbfec4b:163208931778\",\"ctg:2ce412d17b334ad4adc8c1c54dbfec4b:163208931778\",\"ind:2ce412d17b34ad4adc8c1c54dbfec4b:399748687993-5761-42627600\",\"mod:2ce412d17b4ad4adc8c1c54dbfec4b:0b25d56bd2b4d8a6df45beff7be165117fbf7ba6ba2c07744f039143866335e4\",\"mod:2ce412d17b4ad4adc8c1c54dbfec4b:b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"mod:2ce412d17b334ad4adc8c1c54dbfec4b:caef4ae19056eeb122a0540508fa8984cea960173ada0dc648cb846d6ef5dd33\",\"pid:2ce412d17b33d4adc8c1c54dbfec4b:392734873135\",\"pid:2ce412d17b334ad4adc8c1c54dbfec4b:392736520876\",\"pid:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993\",\"quf:2ce412d17b334ad4adc8c1c54dbfec4b:b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"uid:2ce412d17b334ad4adc8c1c54dbfec4b:S-1-5-21-1909377054-3469629671-4104191496-4425\"]},\"crawled_timestamp\":\"2023-11-03T19:00:23.985020992Z\",\"created_timestamp\":\"2023-11-03T18:01:23.995794943Z\",\"data_domains\":[\"Endpoint\"],\"description\":\"ThisfilemeetstheAdware/PUPAnti-malwareMLalgorithm'slowest-confidencethreshold.\",\"device\":{\"agent_load_flags\":\"0\",\"agent_local_time\":\"2023-10-12T03:45:57.753Z\",\"agent_version\":\"7.04.17605.0\",\"bios_manufacturer\":\"ABC\",\"bios_version\":\"F8CN42WW(V2.05)\",\"cid\":\"92012896127c4a948236ba7601b886b0\",\"config_id_base\":\"65994763\",\"config_id_build\":\"17605\",\"config_id_platform\":\"3\",\"device_id\":\"2ce412d17b334ad4adc8c1c54dbfec4b\",\"external_ip\":\"81.2.69.142\",\"first_seen\":\"2023-04-07T09:36:36Z\",\"groups\":[\"18704e21288243b58e4c76266d38caaf\"],\"hostinfo\":{\"active_directory_dn_display\":[\"WinComputers\",\"WinComputers\\\\ABC\"],\"domain\":\"ABC.LOCAL\"},\"hostname\":\"ABC709-1175\",\"last_seen\":\"2023-11-03T17:51:42Z\",\"local_ip\":\"81.2.69.142\",\"mac_address\":\"ab-21-48-61-05-b2\",\"machine_domain\":\"ABC.LOCAL\",\"major_version\":\"10\",\"minor_version\":\"0\",\"modified_timestamp\":\"2023-11-03T17:53:43Z\",\"os_version\":\"Windows11\",\"ou\":[\"ABC\",\"WinComputers\"],\"platform_id\":\"0\",\"platform_name\":\"Windows\",\"pod_labels\":null,\"product_type\":\"1\",\"product_type_desc\":\"Workstation\",\"site_name\":\"Default-First-Site-Name\",\"status\":\"normal\",\"system_manufacturer\":\"LENOVO\",\"system_product_name\":\"20VE\"},\"falcon_host_link\":\"https://falcon.us-2.crowdstrike.com/activity-v2/detections/dhjffg:ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600\",\"filename\":\"openvpn-abc-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe\",\"filepath\":\"\\\\Device\\\\HarddiskVolume3\\\\Users\\\\yuvraj.mahajan\\\\AppData\\\\Local\\\\Temp\\\\Temp3cc4c329-2896-461f-9dea-88009eb2e8fb_pfSenseFirewallOpenVPNClients-20230823T120504Z-001.zip\\\\pfSenseFirewallOpenVPNClients\\\\Windows\\\\openvpn-cds-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe\",\"grandparent_details\":{\"cmdline\":\"C:\\\\Windows\\\\system32\\\\userinit.exe\",\"filename\":\"userinit.exe\",\"filepath\":\"\\\\Device\\\\HarddiskVolume3\\\\Windows\\\\System32\\\\userinit.exe\",\"local_process_id\":\"4328\",\"md5\":\"b07f77fd3f9828b2c9d61f8a36609741\",\"process_graph_id\":\"pid:2ce412d17b334ad4adc8c1c54dbfec4b:392734873135\",\"process_id\":\"392734873135\",\"sha256\":\"caef4ae19056eeb122a0540508fa8984cea960173ada0dc648cb846d6ef5dd33\",\"timestamp\":\"2023-10-30T16:49:19Z\",\"user_graph_id\":\"uid:2ce412d17b334ad4adc8c1c54dbfec4b:S-1-5-21-1909377054-3469629671-4104191496-4425\",\"user_id\":\"S-1-5-21-1909377054-3469629671-4104191496-4425\",\"user_name\":\"yuvraj.mahajan\"},\"has_script_or_module_ioc\":\"true\",\"id\":\"ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600\",\"indicator_id\":\"ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600\",\"ioc_context\":[{\"ioc_description\":\"\\\\Device\\\\HarddiskVolume3\\\\Users\\\\yuvraj.mahajan\\\\AppData\\\\Local\\\\Temp\\\\Temp3cc4c329-2896-461f-9dea-88009eb2e8fb_pfSenseFirewallOpenVPNClients-20230823T120504Z-001.zip\\\\pfSenseFirewallOpenVPNClients\\\\Windows\\\\openvpn-cds-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe\",\"ioc_source\":\"library_load\",\"ioc_type\":\"hash_sha256\",\"ioc_value\":\"b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"md5\":\"cdf9cfebb400ce89d5b6032bfcdc693b\",\"sha256\":\"b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"type\":\"module\"}],\"ioc_values\":[],\"is_synthetic_quarantine_disposition\":true,\"local_process_id\":\"17076\",\"logon_domain\":\"ABSYS\",\"md5\":\"cdf9cfebb400ce89d5b6032bfcdc693b\",\"name\":\"PrewittPupAdwareSensorDetect-Lowest\",\"objective\":\"FalconDetectionMethod\",\"parent_details\":{\"cmdline\":\"C:\\\\WINDOWS\\\\Explorer.EXE\",\"filename\":\"explorer.exe\",\"filepath\":\"\\\\Device\\\\HarddiskVolume3\\\\Windows\\\\explorer.exe\",\"local_process_id\":\"1040\",\"md5\":\"8cc3fcdd7d52d2d5221303c213e044ae\",\"process_graph_id\":\"pid:2ce412d17b334ad4adc8c1c54dbfec4b:392736520876\",\"process_id\":\"392736520876\",\"sha256\":\"0b25d56bd2b4d8a6df45beff7be165117fbf7ba6ba2c07744f039143866335e4\",\"timestamp\":\"2023-11-03T18:00:32Z\",\"user_graph_id\":\"uid:2ce412d17b334ad4adc8c1c54dbfec4b:S-1-5-21-1909377054-3469629671-4104191496-4425\",\"user_id\":\"S-1-5-21-1909377054-3469629671-4104191496-4425\",\"user_name\":\"mohit.jha\"},\"parent_process_id\":\"392736520876\",\"pattern_disposition\":2176,\"pattern_disposition_description\":\"Prevention/Quarantine,processwasblockedfromexecutionandquarantinewasattempted.\",\"pattern_disposition_details\":{\"blocking_unsupported_or_disabled\":false,\"bootup_safeguard_enabled\":false,\"critical_process_disabled\":false,\"detect\":false,\"fs_operation_blocked\":false,\"handle_operation_downgraded\":false,\"inddet_mask\":false,\"indicator\":false,\"kill_action_failed\":false,\"kill_parent\":false,\"kill_process\":false,\"kill_subprocess\":false,\"operation_blocked\":false,\"policy_disabled\":false,\"process_blocked\":true,\"quarantine_file\":true,\"quarantine_machine\":false,\"registry_operation_blocked\":false,\"rooting\":false,\"sensor_only\":false,\"suspend_parent\":false,\"suspend_process\":false},\"pattern_id\":5761,\"platform\":\"Windows\",\"poly_id\":\"AACSASiWEnxKlIIaw8LWC-8XINBatE2uYZaWqRAAATiEEfPFwhoY4opnh1CQjm0tvUQp4Lu5eOAx29ZVj-qrGrA==\",\"process_end_time\":\"1699034421\",\"process_id\":\"399748687993\",\"process_start_time\":\"1699034413\",\"product\":\"epp\",\"quarantined_files\":[{\"filename\":\"\\\\Device\\\\Volume3\\\\Users\\\\yuvraj.mahajan\\\\AppData\\\\Local\\\\Temp\\\\Temp3cc4c329-2896-461f-9dea-88009eb2e8fb_pfSenseFirewallOpenVPNClients-20230823T120504Z-001.zip\\\\pfSenseFirewallOpenVPNClients\\\\Windows\\\\openvpn-cds-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe\",\"id\":\"2ce412d17b334ad4adc8c1c54dbfec4b_b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"sha256\":\"b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"state\":\"quarantined\"}],\"scenario\":\"NGAV\",\"severity\":30,\"sha1\":\"0000000000000000000000000000000000000000\",\"sha256\":\"b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"show_in_ui\":true,\"source_products\":[\"FalconInsight\"],\"source_vendors\":[\"CrowdStrike\"],\"status\":\"new\",\"tactic\":\"MachineLearning\",\"tactic_id\":\"CSTA0004\",\"technique\":\"Adware/PUP\",\"technique_id\":\"CST0000\",\"timestamp\":\"2023-11-03T18:00:22.328Z\",\"tree_id\":\"1931778\",\"tree_root\":\"38687993\",\"triggering_process_graph_id\":\"pid:2ce4124ad4adc8c1c54dbfec4b:399748687993\",\"type\":\"ldt\",\"updated_timestamp\":\"2023-11-03T19:00:23.985007341Z\",\"user_id\":\"S-1-5-21-1909377054-3469629671-4104191496-4425\",\"user_name\":\"mohit.jha\"}",
         "severity": 30
@@ -883,11 +887,11 @@ An example event for `falcon` looks as following:
 {
     "@timestamp": "2020-02-12T21:29:10.000Z",
     "agent": {
-        "ephemeral_id": "6b7924ba-f695-422a-a296-d1092ff909e4",
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "ephemeral_id": "7a2afe90-295d-4664-b470-02ab73a45db7",
+        "id": "b095b147-68c9-47a8-a1fc-7fd9dc3764c5",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.11.0"
     },
     "crowdstrike": {
         "event": {
@@ -932,9 +936,9 @@ An example event for `falcon` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "id": "b095b147-68c9-47a8-a1fc-7fd9dc3764c5",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.11.0"
     },
     "event": {
         "action": [
@@ -946,7 +950,7 @@ An example event for `falcon` looks as following:
         ],
         "created": "2020-02-12T21:29:10.710Z",
         "dataset": "crowdstrike.falcon",
-        "ingested": "2023-09-26T13:19:10Z",
+        "ingested": "2024-01-22T13:25:40Z",
         "kind": "event",
         "original": "{\n    \"metadata\": {\n        \"customerIDString\": \"8f69fe9e-b995-4204-95ad-44f9bcf75b6b\",\n        \"offset\": 0,\n        \"eventType\": \"AuthActivityAuditEvent\",\n        \"eventCreationTime\": 1581542950710,\n        \"version\": \"1.0\"\n    },\n    \"event\": {\n        \"UserId\": \"api-client-id:1234567890abcdefghijklmnopqrstuvwxyz\",\n        \"UserIp\": \"10.10.0.8\",\n        \"OperationName\": \"streamStarted\",\n        \"ServiceName\": \"Crowdstrike Streaming API\",\n        \"Success\": true,\n        \"UTCTimestamp\": 1581542950,\n        \"AuditKeyValues\": [\n            {\n                \"Key\": \"APIClientID\",\n                \"ValueString\": \"1234567890abcdefghijklmnopqr\"\n            },\n            {\n                \"Key\": \"partition\",\n                \"ValueString\": \"0\"\n            },\n            {\n                \"Key\": \"offset\",\n                \"ValueString\": \"-1\"\n            },\n            {\n                \"Key\": \"appId\",\n                \"ValueString\": \"siem-connector-v2.0.0\"\n            },\n            {\n                \"Key\": \"eventType\",\n                \"ValueString\": \"[UserActivityAuditEvent HashSpreadingEvent RemoteResponseSessionStartEvent RemoteResponseSessionEndEvent DetectionSummaryEvent AuthActivityAuditEvent]\"\n            }\n        ]\n    }\n}",
         "outcome": "success"
@@ -1861,11 +1865,11 @@ An example event for `host` looks as following:
 {
     "@timestamp": "2023-11-07T10:26:53.000Z",
     "agent": {
-        "ephemeral_id": "224be371-88c5-4f1d-81aa-0056e5d6473c",
-        "id": "868b4416-974a-486a-b98e-ebbd497b5fa6",
+        "ephemeral_id": "5805cb9f-4413-4da3-8da7-b85cd99c2961",
+        "id": "b095b147-68c9-47a8-a1fc-7fd9dc3764c5",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.11.0"
     },
     "crowdstrike": {
         "host": {
@@ -2017,9 +2021,9 @@ An example event for `host` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "868b4416-974a-486a-b98e-ebbd497b5fa6",
+        "id": "b095b147-68c9-47a8-a1fc-7fd9dc3764c5",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.11.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -2027,7 +2031,7 @@ An example event for `host` looks as following:
             "host"
         ],
         "dataset": "crowdstrike.host",
-        "ingested": "2024-01-12T12:44:07Z",
+        "ingested": "2024-01-22T13:24:41Z",
         "kind": "event",
         "original": "{\"agent_load_flags\":\"0\",\"agent_local_time\":\"2023-11-07T04:51:16.678Z\",\"agent_version\":\"7.05.17603.0\",\"bios_manufacturer\":\"ABCInc.\",\"bios_version\":\"2020.0.1.0.0(iBridge:22.11.000.0.0,0)\",\"chassis_type\":\"9\",\"chassis_type_desc\":\"Laptop\",\"cid\":\"92012896127c4948236ba7601b886b0\",\"config_id_base\":\"6594763\",\"config_id_build\":\"1703\",\"config_id_platform\":\"4\",\"connection_ip\":\"81.2.69.192\",\"cpu_signature\":\"460517\",\"device_id\":\"3114433dbce478ca48d9a828b9b34be\",\"device_policies\":{\"device_control\":{\"applied\":true,\"applied_date\":\"2023-06-20T08:45:26.341093915Z\",\"assigned_date\":\"2023-06-20T08:43:47.736146738Z\",\"policy_id\":\"2f88daf0177f467dae69262a5ce71775\",\"policy_type\":\"device-control\"},\"firewall\":{\"applied\":true,\"applied_date\":\"2023-09-11T10:33:44.174488832Z\",\"assigned_date\":\"2023-09-11T10:32:47.853976945Z\",\"policy_id\":\"1ee301f7e3e24e96ad6a23c73aaac1e3\",\"policy_type\":\"firewall\",\"rule_set_id\":\"1ee301f7e3e24e96ad6a23c73aaac1e3\"},\"global_config\":{\"applied\":true,\"applied_date\":\"2023-11-07T04:52:59.515775409Z\",\"assigned_date\":\"2023-11-07T04:51:18.94671252Z\",\"policy_id\":\"7e3078b60976486cac5dc998808d9135\",\"policy_type\":\"globalconfig\",\"settings_hash\":\"f01def74\"},\"prevention\":{\"applied\":true,\"applied_date\":\"2023-06-08T10:04:47.643357971Z\",\"assigned_date\":\"2023-06-08T10:03:49.505180252Z\",\"policy_id\":\"1024fac1b279424fa7300b8ac2d56be5\",\"policy_type\":\"prevention\",\"rule_groups\":[],\"settings_hash\":\"f7a54ca1\"},\"remote_response\":{\"applied\":true,\"applied_date\":\"2023-06-08T10:04:47.01735027Z\",\"assigned_date\":\"2023-06-08T10:03:49.505163572Z\",\"policy_id\":\"dabb4def99034f11b9b3d52271584c9f\",\"policy_type\":\"remote-response\",\"settings_hash\":\"8a548e5e\"},\"sensor_update\":{\"applied\":true,\"applied_date\":\"2023-11-07T04:52:59.659583066Z\",\"assigned_date\":\"2023-11-07T04:47:43.342175341Z\",\"policy_id\":\"64bfa2bbcd4e46da92a66b107933da11\",\"policy_type\":\"sensor-update\",\"settings_hash\":\"tagged|18;101\",\"uninstall_protection\":\"ENABLED\"}},\"external_ip\":\"81.2.69.192\",\"first_seen\":\"2023-06-08T10:00:19Z\",\"group_hash\":\"b607fe25348a46d421ff46e19741b0caf5bbc70bb6da1637f56e97b4e1454d77\",\"groups\":[\"182388a8dbea4c44b5e019cfd32c2695\"],\"hostname\":\"CLM101-131.local\",\"kernel_version\":\"22.6.0\",\"last_seen\":\"2023-11-07T10:25:24Z\",\"local_ip\":\"81.2.69.142\",\"mac_address\":\"14-7d-da-ad-ac-71\",\"machine_domain\":\"SYS\",\"major_version\":\"22\",\"meta\":{\"version\":\"6002\",\"version_string\":\"7:43570272778\"},\"minor_version\":\"6\",\"modified_timestamp\":\"2023-11-07T10:26:53Z\",\"os_build\":\"22G120\",\"os_version\":\"Ventura(13)\",\"platform_id\":\"1\",\"platform_name\":\"Mac\",\"policies\":[{\"applied\":true,\"applied_date\":\"2023-06-08T10:04:47.643357971Z\",\"assigned_date\":\"2023-06-08T10:03:49.505180252Z\",\"policy_id\":\"1024fac1b279424fa7300b8ac2d56be5\",\"policy_type\":\"prevention\",\"rule_groups\":[],\"settings_hash\":\"f7a54ca1\"}],\"product_type_desc\":\"Workstation\",\"provision_status\":\"Provisioned\",\"reduced_functionality_mode\":\"no\",\"serial_number\":\"FVFDH73HMNHX\",\"site_name\":\"Default-First-Site-Name\",\"status\":\"normal\",\"system_manufacturer\":\"ABCInc.\",\"system_product_name\":\"Air,1\",\"tags\":[\"tags\"]}",
         "type": [
@@ -2035,6 +2039,18 @@ An example event for `host` looks as following:
         ]
     },
     "host": {
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
         "hostname": "CLM101-131.local",
         "ip": [
             "81.2.69.192"

@@ -1,19 +1,23 @@
 # CrowdStrike Integration
 
-This integration is for [CrowdStrike](https://www.crowdstrike.com/resources/?cs_query=type=5) products. It includes the
-following datasets for receiving logs:
+The [CrowdStrike](https://www.crowdstrike.com/) Falcon integration allows you to easily connect your CrowdStrike Falcon platform to Elastic for seamless onboarding of alerts and telemetry from CrowdStrike Falcon and Falcon Data Replicator. Elastic Security can leverage this data for security analytics including correlation, visualisation and incident response. It provides support using two different modes for integrating CrowdStrike to the Elastic:
 
-- `alert` dataset: retrieves all the alerts matching the given input query. It is supported through the REST API.
+1. Falcon SIEM Connector: This is a pre-built integration designed to connect CrowdStrike Falcon with Security Information and Event Management (SIEM) systems. It streamlines the flow of security data from CrowdStrike Falcon to the SIEM, providing a standardized and structured way of feeding information into the SIEM platform. It includes the following datasets for receiving logs:
+
 - `falcon` dataset: consists of endpoint data and Falcon platform audit data forwarded from [Falcon SIEM Connector](https://www.crowdstrike.com/blog/tech-center/integrate-with-your-siem/).
 - `fdr` dataset: consists of logs forwarded using the [Falcon Data Replicator](https://github.com/CrowdStrike/FDR).
-- `host` dataset: retrieves all the hosts in your environment. It is supported through the REST API.
+
+2. CrowdStrike REST API: This provides a programmatic interface to interact with the CrowdStrike Falcon platform. It allows users to perform various operations such as querying information about alerts and hosts. It includes the following datasets for receiving logs:
+
+- `alert` dataset: retrieves all the alerts matching the given input query.
+- `host` dataset: retrieves all the hosts in your environment.
 
 ## Compatibility
 
-This integration supports CrowdStrike Falcon SIEM-Connector-v2.0.
+This integration is compatible with both CrowdStrike Falcon SIEM-Connector-v2.0 and REST API.
 For Rest API support, this module has been tested against the **CrowdStrike API Version v1/v2**.
 
-The minimum **kibana.version** required is **8.10.1**.
+The minimum **kibana.version** required is **8.11.0**.
 
 ## Setup
 ### To collect data from CrowdStrike REST API, the following parameters from your CrowdStrike instance are required:
