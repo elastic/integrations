@@ -60,7 +60,7 @@ If the listener is not running, use the command to start:
 
 Then, Metricbeat can be launched.
 
-*Oracle DSN Configuration*
+### Oracle DSN Configuration
 
 The supported configuration takes one of the forms
 - `oracle://<user>:<password>@<connection_string>`
