@@ -28,7 +28,8 @@ add_bin_path
 
 with_yq
 with_mage
-with_docker_compose
+with_docker
+with_docker_compose_plugin
 with_kubernetes
 
 use_elastic_package
