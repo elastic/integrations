@@ -136,6 +136,7 @@ with_mage() {
 }
 
 with_docker() {
+    echo "--- Setting up the Docker environment..."
     if [[ "${DOCKER_VERSION:-"false"}" == "false" ]]; then
         echo "Skip docker installation"
         return
@@ -168,6 +169,7 @@ with_docker_compose() {
 }
 
 with_docker_compose_plugin() {
+    echo "--- Setting up the Docker compose plugin environment..."
     if [[ "${DOCKER_COMPOSE_VERSION:-"false"}" == "false" ]]; then
         echo "Skip docker compose installation (plugin)"
         return
