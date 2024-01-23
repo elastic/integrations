@@ -346,6 +346,13 @@ An example event for `log` looks as following:
 | infoblox_nios.log.dns.failed_message |  | text |
 | infoblox_nios.log.dns.header_flags |  | keyword |
 | infoblox_nios.log.dns.message |  | text |
+| infoblox_nios.log.dns.rpz.action |  | keyword |
+| infoblox_nios.log.dns.rpz.domain |  | keyword |
+| infoblox_nios.log.dns.rpz.domain_rewrite |  | keyword |
+| infoblox_nios.log.dns.rpz.query_class |  | keyword |
+| infoblox_nios.log.dns.rpz.query_class_rewrite |  | keyword |
+| infoblox_nios.log.dns.rpz.rule_type |  | keyword |
+| infoblox_nios.log.dns.rpz.type |  | keyword |
 | infoblox_nios.log.dns.version |  | text |
 | infoblox_nios.log.dns.view_name |  | text |
 | infoblox_nios.log.service_name |  | keyword |
