@@ -14,14 +14,15 @@ processors:
           \\|%{DATA:cisco_secure_email_gateway.log.event_class_id}\
           \\|%{DATA:cisco_secure_email_gateway.log.event.name}\
           \\|%{WORD:event.severity}\
-          \\|%{GREEDYDATA:_tmp.details} %{ENDTIME}=%{DATA:event.end}%{SPACE}\
+          \\|%{DATA:_tmp.details}%{SPACE}\
+          (?:%{ENDTIME}=%{DATA:event.end}%{SPACE})?\
           (?:ESADKIMVerdict=%{WORD:cisco_secure_email_gateway.log.esa.dkim_verdict} )?\
           (?:ESADLPVerdict=%{WORD:cisco_secure_email_gateway.log.esa.dlp_verdict} )?\
           (?:dvc=%{IP:cisco_secure_email_gateway.log.data.ip} )?\
           (?:ESAAttachmentDetails=%{DATA:cisco_secure_email_gateway.log.esa.attachment_details} )?\
           (?:ESAFriendlyFrom=%{DATA:cisco_secure_email_gateway.log.esa.friendly_from} )?\
           (?:ESAGMVerdict=%{WORD:cisco_secure_email_gateway.log.esa.graymail_verdict} )?\
-          %{STARTTIME}=%{DATA:event.start}%{SPACE}\
+          (?:%{STARTTIME}=%{DATA:event.start}%{SPACE})?\
           (?:(deviceInboundInterface||deviceOutboundInterface)=%{WORD:cisco_secure_email_gateway.log.listener.name} )?\
           (?:deviceDirection=%{DATA:cisco_secure_email_gateway.log.device_direction} )?\
           (?:ESAMailFlowPolicy=%{WORD:cisco_secure_email_gateway.log.esa.mail_flow_policy} )?\

@@ -17,8 +17,8 @@ processors:
   - kv:
       field: _tmp.new_message
       if: ctx._tmp.new_message != null
-      field_split: ', |,'
-      value_split: ' = | =|: '
+      field_split: ",\\s*(?=[^',]*[=:][^',]*)"
+      value_split: '\s*=\s*|:\s*'
   - grok:
       field: _tmp.cisco_secure_email_gateway.log.remaining_details
       if: ctx._tmp?.cisco_secure_email_gateway?.log?.remaining_details != null
@@ -88,9 +88,13 @@ processors:
       field: Disposition
       target_field: cisco_secure_email_gateway.log.disposition
       ignore_missing: true
+  - convert:
+      field: 'Analysis Score'
+      type: long
+      ignore_missing: true
   - rename:
-      field: 'Reputation Score'
-      target_field: cisco_secure_email_gateway.log.reputation_score
+      field: 'Analysis Score'
+      target_field: cisco_secure_email_gateway.log.score
       ignore_missing: true
   - rename:
       field: sha256
@@ -115,6 +119,10 @@ processors:
   - rename:
       field: Verdict
       target_field: cisco_secure_email_gateway.log.verdict
+      ignore_missing: true
+  - rename:
+      field: verdict_source
+      target_field: cisco_secure_email_gateway.log.verdict_source
       ignore_missing: true
   - gsub:
       field: email.attachments.file.name
