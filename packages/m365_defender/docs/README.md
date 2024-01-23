@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Microsoft 365 Defender](https://learn.microsoft.com/en-us/microsoft-365/security/defender) integration allows you to monitor Incident (Microsoft Graph Security API) and Event (Streaming API) Logs. Microsoft 365 Defender is a unified pre and post-breach enterprise defense suite that natively coordinates detection, prevention, investigation, and response across endpoints, identities, email, and applications to provide integrated protection against sophisticated attacks.
+The [Microsoft 365 Defender](https://learn.microsoft.com/en-us/microsoft-365/security/defender) integration allows you to monitor Alert, Incident (Microsoft Graph Security API) and Event (Streaming API) Logs. Microsoft 365 Defender is a unified pre and post-breach enterprise defense suite that natively coordinates detection, prevention, investigation, and response across endpoints, identities, email, and applications to provide integrated protection against sophisticated attacks.
 
 Use the Microsoft 365 Defender integration to collect and parse data from the Microsoft Azure Event Hub, Microsoft Graph Security v1.0 REST API and Microsoft 365 Defender API. Then visualise that data in Kibana.
 
@@ -10,7 +10,9 @@ For example, you could use the data from this integration to consolidate and cor
 
 ## Data streams
 
-The Microsoft 365 Defender integration collects logs for three types of events: Event, Incident and Log.
+The Microsoft 365 Defender integration collects logs for four types of events: Alert, Event, Incident and Log.
+
+**Alert:** This data streams leverages the [M365 Defender Streaming API](https://learn.microsoft.com/en-us/graph/api/resources/security-alert?view=graph-rest-1.0) to collect alerts including suspicious activities in a customer's tenant that Microsoft or partner security providers have identified and flagged for action.
 
 **Event (Recommended):** This data streams leverages the [M365 Defender Streaming API](https://learn.microsoft.com/en-us/microsoft-365/security/defender/streaming-api?view=o365-worldwide) to collect Alert, Device, Email, App and Identity Events. Events are streamed to an Azure Event Hub. For a list of Supported Events exposed by the Streaming API and supported by Elastic's integration, please see Microsoft's documentation [here](https://learn.microsoft.com/en-us/microsoft-365/security/defender/supported-event-types?view=o365-worldwide).
 
@@ -72,6 +74,503 @@ For **Event**, in filebeat [Azure Event Hub](https://www.elastic.co/guide/en/bea
 3. After the application has been created, it will generate Client ID, Client Secret and Tenant ID values that are required for log data collection.
 
 ## Logs reference
+
+### alert
+
+This is the `alert` dataset.
+
+#### Example
+
+An example event for `alert` looks as following:
+
+```json
+{
+    "@timestamp": "2021-05-02T14:19:01.326Z",
+    "agent": {
+        "ephemeral_id": "667355bc-f929-4049-b75a-be574abb5056",
+        "id": "8566550a-5e20-48da-b1f8-7bd4684c9436",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.7.1"
+    },
+    "cloud": {
+        "account": {
+            "id": "b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c"
+        },
+        "provider": [
+            "azure"
+        ]
+    },
+    "data_stream": {
+        "dataset": "m365_defender.alert",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "8566550a-5e20-48da-b1f8-7bd4684c9436",
+        "snapshot": false,
+        "version": "8.7.1"
+    },
+    "event": {
+        "action": [
+            "detected"
+        ],
+        "agent_id_status": "verified",
+        "category": [
+            "file",
+            "host",
+            "process",
+            "registry"
+        ],
+        "created": "2021-04-27T12:19:27.721Z",
+        "dataset": "m365_defender.alert",
+        "duration": 519068106000000,
+        "end": "2021-05-02T07:56:58.222Z",
+        "id": "da637551227677560813_-961444813",
+        "ingested": "2024-01-22T11:44:09Z",
+        "kind": "alert",
+        "original": "{\"@odata.type\":\"#microsoft.graph.security.alert\",\"actorDisplayName\":null,\"alertWebUrl\":\"https://security.microsoft.com/alerts/da637551227677560813_-961444813?tid=b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\",\"assignedTo\":null,\"category\":\"DefenseEvasion\",\"classification\":\"unknown\",\"comments\":[],\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"description\":\"A hidden file has been launched. This activity could indicate a compromised host. Attackers often hide files associated with malicious tools to evade file system inspection and defenses.\",\"detectionSource\":\"antivirus\",\"detectorId\":\"e0da400f-affd-43ef-b1d5-afc2eb6f2756\",\"determination\":\"unknown\",\"evidence\":[{\"@odata.type\":\"#microsoft.graph.security.deviceEvidence\",\"azureAdDeviceId\":null,\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"defenderAvStatus\":\"unknown\",\"deviceDnsName\":\"tempDns\",\"firstSeenDateTime\":\"2020-09-12T07:28:32.4321753Z\",\"healthStatus\":\"active\",\"loggedOnUsers\":[],\"mdeDeviceId\":\"73e7e2de709dff64ef64b1d0c30e67fab63279db\",\"onboardingStatus\":\"onboarded\",\"osBuild\":22424,\"osPlatform\":\"Windows10\",\"rbacGroupId\":75,\"rbacGroupName\":\"UnassignedGroup\",\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"riskScore\":\"medium\",\"roles\":[\"compromised\"],\"tags\":[\"Test Machine\"],\"verdict\":\"unknown\",\"version\":\"Other\",\"vmMetadata\":{\"cloudProvider\":\"azure\",\"resourceId\":\"/subscriptions/8700d3a3-3bb7-4fbe-a090-488a1ad04161/resourceGroups/WdatpApi-EUS-STG/providers/Microsoft.Compute/virtualMachines/NirLaviTests\",\"subscriptionId\":\"8700d3a3-3bb7-4fbe-a090-488a1ad04161\",\"vmId\":\"ca1b0d41-5a3b-4d95-b48b-f220aed11d78\"}},{\"@odata.type\":\"#microsoft.graph.security.fileEvidence\",\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"detectionStatus\":\"detected\",\"fileDetails\":{\"fileName\":\"MsSense.exe\",\"filePath\":\"C:\\\\Program Files\\\\temp\",\"filePublisher\":\"Microsoft Corporation\",\"fileSize\":6136392,\"issuer\":null,\"sha1\":\"5f1e8acedc065031aad553b710838eb366cfee9a\",\"sha256\":\"8963a19fb992ad9a76576c5638fd68292cffb9aaac29eb8285f9abf6196a7dec\",\"signer\":null},\"mdeDeviceId\":\"73e7e2de709dff64ef64b1d0c30e67fab63279db\",\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"verdict\":\"unknown\"},{\"@odata.type\":\"#microsoft.graph.security.processEvidence\",\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"detectionStatus\":\"detected\",\"imageFile\":{\"fileName\":\"MsSense.exe\",\"filePath\":\"C:\\\\Program Files\\\\temp\",\"filePublisher\":\"Microsoft Corporation\",\"fileSize\":6136392,\"issuer\":null,\"sha1\":\"5f1e8acedc065031aad553b710838eb366cfee9a\",\"sha256\":\"8963a19fb992ad9a76576c5638fd68292cffb9aaac29eb8285f9abf6196a7dec\",\"signer\":null},\"mdeDeviceId\":\"73e7e2de709dff64ef64b1d0c30e67fab63279db\",\"parentProcessCreationDateTime\":\"2021-08-12T07:39:09.0909239Z\",\"parentProcessId\":668,\"parentProcessImageFile\":{\"fileName\":\"services.exe\",\"filePath\":\"C:\\\\Windows\\\\System32\",\"filePublisher\":\"Microsoft Corporation\",\"fileSize\":731744,\"issuer\":null,\"sha1\":null,\"sha256\":null,\"signer\":null},\"processCommandLine\":\"\\\"MsSense.exe\\\"\",\"processCreationDateTime\":\"2021-08-12T12:43:19.0772577Z\",\"processId\":4780,\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"userAccount\":{\"accountName\":\"SYSTEM\",\"azureAdUserId\":null,\"domainName\":\"NT AUTHORITY\",\"userPrincipalName\":null,\"userSid\":\"S-1-5-18\"},\"verdict\":\"unknown\"},{\"@odata.type\":\"#microsoft.graph.security.registryKeyEvidence\",\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"registryHive\":\"HKEY_LOCAL_MACHINE\",\"registryKey\":\"SYSTEM\\\\CONTROLSET001\\\\CONTROL\\\\WMI\\\\AUTOLOGGER\\\\SENSEAUDITLOGGER\",\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"verdict\":\"unknown\"}],\"firstActivityDateTime\":\"2021-04-26T07:45:50.116Z\",\"id\":\"da637551227677560813_-961444813\",\"incidentId\":\"28282\",\"incidentWebUrl\":\"https://security.microsoft.com/incidents/28282?tid=b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\",\"lastActivityDateTime\":\"2021-05-02T07:56:58.222Z\",\"lastUpdateDateTime\":\"2021-05-02T14:19:01.3266667Z\",\"mitreTechniques\":[\"T1564.001\"],\"providerAlertId\":\"da637551227677560813_-961444813\",\"recommendedActions\":\"Collect artifacts and determine scope\\n�\\tReview the machine timeline for suspicious activities that may have occurred before and after the time of the alert, and record additional related artifacts (files, IPs/URLs) \\n�\\tLook for the presence of relevant artifacts on other systems. Identify commonalities and differences between potentially compromised systems.\\n�\\tSubmit relevant files for deep analysis and review resulting detailed behavioral information.\\n�\\tSubmit undetected files to the MMPC malware portal\\n\\nInitiate containment \\u0026 mitigation \\n�\\tContact the user to verify intent and initiate local remediation actions as needed.\\n�\\tUpdate AV signatures and run a full scan. The scan might reveal and remove previously-undetected malware components.\\n�\\tEnsure that the machine has the latest security updates. In particular, ensure that you have installed the latest software, web browser, and Operating System versions.\\n�\\tIf credential theft is suspected, reset all relevant users passwords.\\n�\\tBlock communication with relevant URLs or IPs at the organization�s perimeter.\",\"resolvedDateTime\":null,\"serviceSource\":\"microsoftDefenderForEndpoint\",\"severity\":\"low\",\"status\":\"new\",\"tenantId\":\"b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\",\"threatDisplayName\":null,\"threatFamilyName\":null,\"title\":\"Suspicious execution of hidden file\"}",
+        "provider": "microsoftDefenderForEndpoint",
+        "severity": 2,
+        "start": "2021-04-26T07:45:50.116Z",
+        "type": [
+            "access",
+            "info"
+        ],
+        "url": "https://security.microsoft.com/alerts/da637551227677560813_-961444813?tid=b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c"
+    },
+    "file": {
+        "hash": {
+            "sha1": [
+                "5f1e8acedc065031aad553b710838eb366cfee9a"
+            ],
+            "sha256": [
+                "8963a19fb992ad9a76576c5638fd68292cffb9aaac29eb8285f9abf6196a7dec"
+            ]
+        },
+        "name": [
+            "MsSense.exe"
+        ],
+        "path": [
+            "C:\\Program Files\\temp"
+        ],
+        "size": [
+            6136392
+        ]
+    },
+    "host": {
+        "id": [
+            "73e7e2de709dff64ef64b1d0c30e67fab63279db"
+        ],
+        "os": {
+            "name": [
+                "Windows10"
+            ],
+            "version": [
+                "Other"
+            ]
+        }
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "m365_defender": {
+        "alert": {
+            "category": "DefenseEvasion",
+            "classification": "unknown",
+            "created_datetime": "2021-04-27T12:19:27.721Z",
+            "description": "A hidden file has been launched. This activity could indicate a compromised host. Attackers often hide files associated with malicious tools to evade file system inspection and defenses.",
+            "detection_source": "antivirus",
+            "detector_id": "e0da400f-affd-43ef-b1d5-afc2eb6f2756",
+            "determination": "unknown",
+            "evidence": [
+                {
+                    "created_datetime": "2021-04-27T12:19:27.721Z",
+                    "defender_av_status": "unknown",
+                    "device_dns_name": "tempDns",
+                    "first_seen_datetime": "2020-09-12T07:28:32.432Z",
+                    "health_status": "active",
+                    "mde_device_id": "73e7e2de709dff64ef64b1d0c30e67fab63279db",
+                    "odata_type": "#microsoft.graph.security.deviceEvidence",
+                    "onboarding_status": "onboarded",
+                    "os_build": "22424",
+                    "os_platform": "Windows10",
+                    "rbac_group": {
+                        "id": "75",
+                        "name": "UnassignedGroup"
+                    },
+                    "remediation_status": "none",
+                    "risk_score": "medium",
+                    "roles": [
+                        "compromised"
+                    ],
+                    "tags": [
+                        "Test Machine"
+                    ],
+                    "verdict": "unknown",
+                    "version": "Other",
+                    "vm_metadata": {
+                        "cloud_provider": "azure",
+                        "resource_id": "/subscriptions/8700d3a3-3bb7-4fbe-a090-488a1ad04161/resourceGroups/WdatpApi-EUS-STG/providers/Microsoft.Compute/virtualMachines/NirLaviTests",
+                        "subscription_id": "8700d3a3-3bb7-4fbe-a090-488a1ad04161",
+                        "vm_id": "ca1b0d41-5a3b-4d95-b48b-f220aed11d78"
+                    }
+                },
+                {
+                    "created_datetime": "2021-04-27T12:19:27.721Z",
+                    "detection_status": "detected",
+                    "file_details": {
+                        "name": "MsSense.exe",
+                        "path": "C:\\Program Files\\temp",
+                        "publisher": "Microsoft Corporation",
+                        "sha1": "5f1e8acedc065031aad553b710838eb366cfee9a",
+                        "sha256": "8963a19fb992ad9a76576c5638fd68292cffb9aaac29eb8285f9abf6196a7dec",
+                        "size": 6136392
+                    },
+                    "mde_device_id": "73e7e2de709dff64ef64b1d0c30e67fab63279db",
+                    "odata_type": "#microsoft.graph.security.fileEvidence",
+                    "remediation_status": "none",
+                    "verdict": "unknown"
+                },
+                {
+                    "created_datetime": "2021-04-27T12:19:27.721Z",
+                    "detection_status": "detected",
+                    "image_file": {
+                        "name": "MsSense.exe",
+                        "path": "C:\\Program Files\\temp",
+                        "publisher": "Microsoft Corporation",
+                        "sha1": "5f1e8acedc065031aad553b710838eb366cfee9a",
+                        "sha256": "8963a19fb992ad9a76576c5638fd68292cffb9aaac29eb8285f9abf6196a7dec",
+                        "size": 6136392
+                    },
+                    "mde_device_id": "73e7e2de709dff64ef64b1d0c30e67fab63279db",
+                    "odata_type": "#microsoft.graph.security.processEvidence",
+                    "parent_process": {
+                        "creation_datetime": "2021-08-12T07:39:09.090Z",
+                        "id": 668,
+                        "image_file": {
+                            "name": "services.exe",
+                            "path": "C:\\Windows\\System32",
+                            "publisher": "Microsoft Corporation",
+                            "size": 731744
+                        }
+                    },
+                    "process": {
+                        "command_line": "\"MsSense.exe\"",
+                        "creation_datetime": "2021-08-12T12:43:19.077Z",
+                        "id": 4780
+                    },
+                    "remediation_status": "none",
+                    "user_account": {
+                        "account_name": "SYSTEM",
+                        "domain_name": "NT AUTHORITY",
+                        "user_sid": "S-1-5-18"
+                    },
+                    "verdict": "unknown"
+                },
+                {
+                    "created_datetime": "2021-04-27T12:19:27.721Z",
+                    "odata_type": "#microsoft.graph.security.registryKeyEvidence",
+                    "registry_hive": "HKEY_LOCAL_MACHINE",
+                    "registry_key": "SYSTEM\\CONTROLSET001\\CONTROL\\WMI\\AUTOLOGGER\\SENSEAUDITLOGGER",
+                    "remediation_status": "none",
+                    "verdict": "unknown"
+                }
+            ],
+            "first_activity_datetime": "2021-04-26T07:45:50.116Z",
+            "id": "da637551227677560813_-961444813",
+            "incident_id": "28282",
+            "incident_web_url": {
+                "domain": "security.microsoft.com",
+                "original": "https://security.microsoft.com/incidents/28282?tid=b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c",
+                "path": "/incidents/28282",
+                "query": "tid=b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c",
+                "scheme": "https"
+            },
+            "last_activity_datetime": "2021-05-02T07:56:58.222Z",
+            "last_update_datetime": "2021-05-02T14:19:01.326Z",
+            "mitre_techniques": [
+                "T1564.001"
+            ],
+            "odata_type": "#microsoft.graph.security.alert",
+            "provider_alert_id": "da637551227677560813_-961444813",
+            "recommended_actions": "Collect artifacts and determine scope\n�\tReview the machine timeline for suspicious activities that may have occurred before and after the time of the alert, and record additional related artifacts (files, IPs/URLs) \n�\tLook for the presence of relevant artifacts on other systems. Identify commonalities and differences between potentially compromised systems.\n�\tSubmit relevant files for deep analysis and review resulting detailed behavioral information.\n�\tSubmit undetected files to the MMPC malware portal\n\nInitiate containment & mitigation \n�\tContact the user to verify intent and initiate local remediation actions as needed.\n�\tUpdate AV signatures and run a full scan. The scan might reveal and remove previously-undetected malware components.\n�\tEnsure that the machine has the latest security updates. In particular, ensure that you have installed the latest software, web browser, and Operating System versions.\n�\tIf credential theft is suspected, reset all relevant users passwords.\n�\tBlock communication with relevant URLs or IPs at the organization�s perimeter.",
+            "service_source": "microsoftDefenderForEndpoint",
+            "severity": "low",
+            "status": "new",
+            "tenant_id": "b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c",
+            "title": "Suspicious execution of hidden file",
+            "web_url": {
+                "domain": "security.microsoft.com",
+                "original": "https://security.microsoft.com/alerts/da637551227677560813_-961444813?tid=b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c",
+                "path": "/alerts/da637551227677560813_-961444813",
+                "query": "tid=b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c",
+                "scheme": "https"
+            }
+        }
+    },
+    "message": "A hidden file has been launched. This activity could indicate a compromised host. Attackers often hide files associated with malicious tools to evade file system inspection and defenses.",
+    "process": {
+        "command_line": [
+            "\"MsSense.exe\""
+        ],
+        "hash": {
+            "sha1": [
+                "5f1e8acedc065031aad553b710838eb366cfee9a"
+            ],
+            "sha256": [
+                "8963a19fb992ad9a76576c5638fd68292cffb9aaac29eb8285f9abf6196a7dec"
+            ]
+        },
+        "parent": {
+            "pid": [
+                668
+            ],
+            "start": [
+                "2021-08-12T07:39:09.090Z"
+            ]
+        },
+        "pid": [
+            4780
+        ],
+        "start": [
+            "2021-08-12T12:43:19.077Z"
+        ],
+        "user": {
+            "name": [
+                "SYSTEM"
+            ]
+        }
+    },
+    "registry": {
+        "hive": [
+            "HKEY_LOCAL_MACHINE"
+        ],
+        "key": [
+            "SYSTEM\\CONTROLSET001\\CONTROL\\WMI\\AUTOLOGGER\\SENSEAUDITLOGGER"
+        ]
+    },
+    "related": {
+        "hash": [
+            "5f1e8acedc065031aad553b710838eb366cfee9a",
+            "8963a19fb992ad9a76576c5638fd68292cffb9aaac29eb8285f9abf6196a7dec"
+        ],
+        "hosts": [
+            "73e7e2de709dff64ef64b1d0c30e67fab63279db",
+            "Windows10",
+            "Other",
+            "tempDns",
+            "NT AUTHORITY"
+        ],
+        "user": [
+            "SYSTEM",
+            "S-1-5-18"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "m365_defender-alert"
+    ],
+    "threat": {
+        "tactic": {
+            "name": [
+                "DefenseEvasion"
+            ]
+        },
+        "technique": {
+            "subtechnique": {
+                "id": [
+                    "T1564.001"
+                ]
+            }
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| m365_defender.alert.actor_display_name | The adversary or activity group that is associated with this alert. | keyword |
+| m365_defender.alert.assigned_to | Owner of the alert, or null if no owner is assigned. | keyword |
+| m365_defender.alert.category | The attack kill-chain category that the alert belongs to. Aligned with the MITRE ATT&CK framework. | keyword |
+| m365_defender.alert.classification | Specifies whether the alert represents a true threat. Possible values are: unknown, falsePositive, truePositive, benignPositive, unknownFutureValue. | keyword |
+| m365_defender.alert.comments | Array of comments created by the Security Operations (SecOps) team during the alert management process. | flattened |
+| m365_defender.alert.created_datetime | Time when Microsoft 365 Defender created the alert. | date |
+| m365_defender.alert.description | String value describing each alert. | keyword |
+| m365_defender.alert.detection_source | Detection technology or sensor that identified the notable component or activity. | keyword |
+| m365_defender.alert.detector_id | The ID of the detector that triggered the alert. | keyword |
+| m365_defender.alert.determination | Specifies the result of the investigation, whether the alert represents a true attack and if so, the nature of the attack. Possible values are: unknown, apt, malware, securityPersonnel, securityTesting, unwantedSoftware, other, multiStagedAttack, compromisedUser, phishing, maliciousUserActivity, clean, insufficientData, confirmedUserActivity, lineOfBusinessApplication, unknownFutureValue. | keyword |
+| m365_defender.alert.evidence.antispam_direction | Direction of the email relative to your network. The possible values are: Inbound, Outbound or Intraorg. | keyword |
+| m365_defender.alert.evidence.app_id | Unique identifier of the application. | keyword |
+| m365_defender.alert.evidence.attachments_count | Number of attachments in the email. | long |
+| m365_defender.alert.evidence.azure_ad_device_id | A unique identifier assigned to a device by Azure Active Directory (Azure AD) when device is Azure AD-joined. | keyword |
+| m365_defender.alert.evidence.cluster_by | The clustering logic of the emails inside the cluster. | keyword |
+| m365_defender.alert.evidence.cluster_by_value | The value utilized to cluster the similar emails. | keyword |
+| m365_defender.alert.evidence.created_datetime | The time the evidence was created and added to the alert. | date |
+| m365_defender.alert.evidence.defender_av_status | State of the Defender AntiMalware engine. The possible values are: notReporting, disabled, notUpdated, updated, unknown, notSupported, unknownFutureValue. | keyword |
+| m365_defender.alert.evidence.delivery_action | Delivery action of the email. The possible values are: Delivered, DeliveredAsSpam, Junked, Blocked, or Replaced. | keyword |
+| m365_defender.alert.evidence.delivery_location | Location where the email was delivered. The possible values are: Inbox, External, JunkFolder, Quarantine, Failed, Dropped, DeletedFolder or Forwarded. | keyword |
+| m365_defender.alert.evidence.detailed_roles | Detailed roles of the user associated with the event. | keyword |
+| m365_defender.alert.evidence.detection_status | The status of the detection.The possible values are: detected, blocked, prevented, unknownFutureValue. | keyword |
+| m365_defender.alert.evidence.device_dns_name | The fully qualified domain name (FQDN) for the device. | keyword |
+| m365_defender.alert.evidence.display_name | Name of the application. | keyword |
+| m365_defender.alert.evidence.email_count | Count of emails in the email cluster. | long |
+| m365_defender.alert.evidence.file_details.issuer | The certificate authority (CA) that issued the certificate. | keyword |
+| m365_defender.alert.evidence.file_details.name | The name of the file. | keyword |
+| m365_defender.alert.evidence.file_details.odata_type |  | keyword |
+| m365_defender.alert.evidence.file_details.path | The file path (location) of the file instance. | keyword |
+| m365_defender.alert.evidence.file_details.publisher | The publisher of the file. | keyword |
+| m365_defender.alert.evidence.file_details.sha1 | The Sha1 cryptographic hash of the file content. | keyword |
+| m365_defender.alert.evidence.file_details.sha256 | The Sha256 cryptographic hash of the file content. | keyword |
+| m365_defender.alert.evidence.file_details.signer | The signer of the signed file. | keyword |
+| m365_defender.alert.evidence.file_details.size | The size of the file in bytes. | long |
+| m365_defender.alert.evidence.first_seen_datetime | The date and time when the device was first seen. | date |
+| m365_defender.alert.evidence.health_status | The health state of the device.The possible values are: active, inactive, impairedCommunication, noSensorData, noSensorDataImpairedCommunication, unknown, unknownFutureValue. | keyword |
+| m365_defender.alert.evidence.image_file.issuer | The certificate authority (CA) that issued the certificate. | keyword |
+| m365_defender.alert.evidence.image_file.name | The name of the file. | keyword |
+| m365_defender.alert.evidence.image_file.odata_type |  | keyword |
+| m365_defender.alert.evidence.image_file.path | The file path (location) of the file instance. | keyword |
+| m365_defender.alert.evidence.image_file.publisher | The publisher of the file. | keyword |
+| m365_defender.alert.evidence.image_file.sha1 | The Sha1 cryptographic hash of the file content. | keyword |
+| m365_defender.alert.evidence.image_file.sha256 | The Sha256 cryptographic hash of the file content. | keyword |
+| m365_defender.alert.evidence.image_file.signer | The signer of the signed file. | keyword |
+| m365_defender.alert.evidence.image_file.size | The size of the file in bytes. | long |
+| m365_defender.alert.evidence.instance_id | Identifier of the instance of the Software as a Service (SaaS) application. | keyword |
+| m365_defender.alert.evidence.instance_name | Name of the instance of the SaaS application. | keyword |
+| m365_defender.alert.evidence.internet_message_id | Public-facing identifier for the email that is set by the sending email system. | keyword |
+| m365_defender.alert.evidence.ip_address | The value of the IP Address, can be either in V4 address or V6 address format. | ip |
+| m365_defender.alert.evidence.ip_interfaces | IP Interfaces related to the event. | ip |
+| m365_defender.alert.evidence.language | Detected language of the email content. | keyword |
+| m365_defender.alert.evidence.logged_on_users.account_name | User account name of the logged-on user. | keyword |
+| m365_defender.alert.evidence.logged_on_users.domain_name | User account domain of the logged-on user. | keyword |
+| m365_defender.alert.evidence.logged_on_users.odata_type |  | keyword |
+| m365_defender.alert.evidence.mde_device_id | A unique identifier assigned to a device by Microsoft Defender for Endpoint. | keyword |
+| m365_defender.alert.evidence.network_message_id | Unique identifier for the email, generated by Microsoft 365. | keyword |
+| m365_defender.alert.evidence.network_message_ids | Unique identifiers for the emails in the cluster, generated by Microsoft 365. | keyword |
+| m365_defender.alert.evidence.object_id | The unique identifier of the application object in Azure AD. | keyword |
+| m365_defender.alert.evidence.odata_type |  | keyword |
+| m365_defender.alert.evidence.onboarding_status | The status of the machine onboarding to Microsoft Defender for Endpoint.The possible values are: insufficientInfo, onboarded, canBeOnboarded, unsupported, unknownFutureValue. | keyword |
+| m365_defender.alert.evidence.os_build | The build version for the operating system the device is running. | keyword |
+| m365_defender.alert.evidence.os_platform | The operating system platform the device is running. | keyword |
+| m365_defender.alert.evidence.p1_sender.display_name | The name of the sender. | keyword |
+| m365_defender.alert.evidence.p1_sender.domain_name | Sender domain. | keyword |
+| m365_defender.alert.evidence.p1_sender.email_address | Sender email address. | keyword |
+| m365_defender.alert.evidence.p1_sender.odata_type |  | keyword |
+| m365_defender.alert.evidence.p2_sender.display_name | The name of the sender. | keyword |
+| m365_defender.alert.evidence.p2_sender.domain_name | Sender domain. | keyword |
+| m365_defender.alert.evidence.p2_sender.email_address | Sender email address. | keyword |
+| m365_defender.alert.evidence.p2_sender.odata_type |  | keyword |
+| m365_defender.alert.evidence.parent_process.creation_datetime | Date and time when the parent of the process was created. | date |
+| m365_defender.alert.evidence.parent_process.id | Process ID (PID) of the parent process that spawned the process. | long |
+| m365_defender.alert.evidence.parent_process.image_file.issuer | The certificate authority (CA) that issued the certificate. | keyword |
+| m365_defender.alert.evidence.parent_process.image_file.name | The name of the file. | keyword |
+| m365_defender.alert.evidence.parent_process.image_file.odata_type |  | keyword |
+| m365_defender.alert.evidence.parent_process.image_file.path | The file path (location) of the file instance. | keyword |
+| m365_defender.alert.evidence.parent_process.image_file.publisher | The publisher of the file. | keyword |
+| m365_defender.alert.evidence.parent_process.image_file.sha1 | The Sha1 cryptographic hash of the file content. | keyword |
+| m365_defender.alert.evidence.parent_process.image_file.sha256 | The Sha256 cryptographic hash of the file content. | keyword |
+| m365_defender.alert.evidence.parent_process.image_file.signer | The signer of the signed file. | keyword |
+| m365_defender.alert.evidence.parent_process.image_file.size | The size of the file in bytes. | long |
+| m365_defender.alert.evidence.primary_address | The primary email address of the mailbox. | keyword |
+| m365_defender.alert.evidence.process.command_line | Command line used to create the new process. | keyword |
+| m365_defender.alert.evidence.process.creation_datetime | Date and time the process was created. | date |
+| m365_defender.alert.evidence.process.id | Process ID (PID) of the newly created process. | long |
+| m365_defender.alert.evidence.publisher | The name of the application publisher. | keyword |
+| m365_defender.alert.evidence.query | The query used to identify the email cluster. | keyword |
+| m365_defender.alert.evidence.rbac_group.id | The ID of the role-based access control (RBAC) device group. | keyword |
+| m365_defender.alert.evidence.rbac_group.name | The name of the RBAC device group. | keyword |
+| m365_defender.alert.evidence.received_datetime | Date and time when the email was received. | date |
+| m365_defender.alert.evidence.recipient_email_address | Email address of the recipient, or email address of the recipient after distribution list expansion. | keyword |
+| m365_defender.alert.evidence.registry_hive | Registry hive of the key that the recorded action was applied to. | keyword |
+| m365_defender.alert.evidence.registry_key | Registry key that the recorded action was applied to. | keyword |
+| m365_defender.alert.evidence.registry_value | Data of the registry value that the recorded action was applied to. | keyword |
+| m365_defender.alert.evidence.registry_value_name | Name of the registry value that the recorded action was applied to. | keyword |
+| m365_defender.alert.evidence.registry_value_type | Data type, such as binary or string, of the registry value that the recorded action was applied to. | keyword |
+| m365_defender.alert.evidence.remediation_status | Status of the remediation action taken. The possible values are: none, remediated, prevented, blocked, notFound, active, pendingApproval, declined, notRemediated, running, unknownFutureValue. | keyword |
+| m365_defender.alert.evidence.remediation_status_details | Details about the remediation status. | keyword |
+| m365_defender.alert.evidence.risk_score | Risk score as evaluated by Microsoft Defender for Endpoint. The possible values are: none, informational, low, medium, high, unknownFutureValue. | keyword |
+| m365_defender.alert.evidence.roles | The role/s that an evidence entity represents in an alert, e.g., an IP address that is associated with an attacker will have the evidence role "Attacker". | keyword |
+| m365_defender.alert.evidence.saas_app_id | The identifier of the SaaS application. | keyword |
+| m365_defender.alert.evidence.security_group_id | Unique identifier of the security group. | keyword |
+| m365_defender.alert.evidence.sender_ip | IP address of the last detected mail server that relayed the message. | ip |
+| m365_defender.alert.evidence.subject | Subject of the email. | keyword |
+| m365_defender.alert.evidence.tags | Array of custom tags associated with an evidence instance, for example to denote a group of devices, high value assets, etc. | keyword |
+| m365_defender.alert.evidence.threat_detection_methods | Collection of methods used to detect malware, phishing, or other threats found in the email. | keyword |
+| m365_defender.alert.evidence.threats | Collection of detection names for malware or other threats found. | keyword |
+| m365_defender.alert.evidence.type |  | keyword |
+| m365_defender.alert.evidence.url | The Unique Resource Locator (URL). | keyword |
+| m365_defender.alert.evidence.url_count | Number of embedded URLs in the email. | long |
+| m365_defender.alert.evidence.urls | Collection of the URLs contained in this email. | keyword |
+| m365_defender.alert.evidence.urn | Uniform resource name (URN) of the automated investigation where the cluster was identified. | keyword |
+| m365_defender.alert.evidence.user_account.account_name | The user account's displayed name. | keyword |
+| m365_defender.alert.evidence.user_account.azure_ad_user_id | The user object identifier in Azure AD. | keyword |
+| m365_defender.alert.evidence.user_account.domain_name | The name of the Active Directory domain of which the user is a member. | keyword |
+| m365_defender.alert.evidence.user_account.odata_type |  | keyword |
+| m365_defender.alert.evidence.user_account.user_principal_name | The user principal name of the account in Azure AD. | keyword |
+| m365_defender.alert.evidence.user_account.user_sid | The local security identifier of the user account. | keyword |
+| m365_defender.alert.evidence.verdict | The decision reached by automated investigation. The possible values are: unknown, suspicious, malicious, noThreatsFound, unknownFutureValue. | keyword |
+| m365_defender.alert.evidence.version | The version of the operating system platform. | keyword |
+| m365_defender.alert.evidence.vm_metadata.cloud_provider | The cloud provider hosting the virtual machine. The possible values are: unknown, azure, unknownFutureValue. | keyword |
+| m365_defender.alert.evidence.vm_metadata.odata_type |  | keyword |
+| m365_defender.alert.evidence.vm_metadata.resource_id | Unique identifier of the Azure resource. | keyword |
+| m365_defender.alert.evidence.vm_metadata.subscription_id | Unique identifier of the Azure subscription the customer tenant belongs to. | keyword |
+| m365_defender.alert.evidence.vm_metadata.vm_id | Unique identifier of the virtual machine instance. | keyword |
+| m365_defender.alert.first_activity_datetime | The earliest activity associated with the alert. | date |
+| m365_defender.alert.id | Unique identifier to represent the alert resource. | keyword |
+| m365_defender.alert.incident_id | Unique identifier to represent the incident this alert resource is associated with. | keyword |
+| m365_defender.alert.incident_web_url.domain |  | keyword |
+| m365_defender.alert.incident_web_url.extension |  | keyword |
+| m365_defender.alert.incident_web_url.fragment |  | keyword |
+| m365_defender.alert.incident_web_url.full |  | keyword |
+| m365_defender.alert.incident_web_url.original |  | keyword |
+| m365_defender.alert.incident_web_url.password |  | keyword |
+| m365_defender.alert.incident_web_url.path |  | keyword |
+| m365_defender.alert.incident_web_url.port |  | long |
+| m365_defender.alert.incident_web_url.query |  | keyword |
+| m365_defender.alert.incident_web_url.scheme |  | keyword |
+| m365_defender.alert.incident_web_url.username |  | keyword |
+| m365_defender.alert.last_activity_datetime | The oldest activity associated with the alert. | date |
+| m365_defender.alert.last_update_datetime | Time when the alert was last updated at Microsoft 365 Defender. | date |
+| m365_defender.alert.mitre_techniques | The attack techniques, as aligned with the MITRE ATT&CK framework. | keyword |
+| m365_defender.alert.odata_type |  | keyword |
+| m365_defender.alert.provider_alert_id | The ID of the alert as it appears in the security provider product that generated the alert. | keyword |
+| m365_defender.alert.recommended_actions | Recommended response and remediation actions to take in the event this alert was generated. | keyword |
+| m365_defender.alert.resolved_datetime | Time when the alert was resolved. | date |
+| m365_defender.alert.service_source | The service or product that created this alert. Possible values are: microsoftDefenderForEndpoint, microsoftDefenderForIdentity, microsoftCloudAppSecurity, microsoftDefenderForOffice365, microsoft365Defender, aadIdentityProtection, appGovernance, dataLossPrevention. | keyword |
+| m365_defender.alert.severity | Indicates the possible impact on assets. The higher the severity the bigger the impact. Typically higher severity items require the most immediate attention. Possible values are: unknown, informational, low, medium, high, unknownFutureValue. | keyword |
+| m365_defender.alert.status | The status of the alert. Possible values are: new, inProgress, resolved, unknownFutureValue. | keyword |
+| m365_defender.alert.tenant_id | The Azure Active Directory tenant the alert was created in. | keyword |
+| m365_defender.alert.threat_display_name | The threat associated with this alert. | keyword |
+| m365_defender.alert.threat_family_name | Threat family associated with this alert. | keyword |
+| m365_defender.alert.title | Brief identifying string value describing the alert. | keyword |
+| m365_defender.alert.web_url.domain |  | keyword |
+| m365_defender.alert.web_url.extension |  | keyword |
+| m365_defender.alert.web_url.fragment |  | keyword |
+| m365_defender.alert.web_url.full |  | keyword |
+| m365_defender.alert.web_url.original |  | keyword |
+| m365_defender.alert.web_url.password |  | keyword |
+| m365_defender.alert.web_url.path |  | keyword |
+| m365_defender.alert.web_url.port |  | long |
+| m365_defender.alert.web_url.query |  | keyword |
+| m365_defender.alert.web_url.scheme |  | keyword |
+| m365_defender.alert.web_url.username |  | keyword |
+| tags | User defined tags. | keyword |
+
 
 ### event
 
@@ -547,11 +1046,11 @@ An example event for `incident` looks as following:
 {
     "@timestamp": "2021-09-30T09:35:45.113Z",
     "agent": {
-        "ephemeral_id": "bfa54030-e0ce-4076-86d5-90314cd5425d",
-        "id": "b749ee7f-378d-45d8-8151-975dfa11ce57",
+        "ephemeral_id": "9e5243b4-644c-46e6-94e0-603d136c9d24",
+        "id": "8566550a-5e20-48da-b1f8-7bd4684c9436",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.2"
+        "version": "8.7.1"
     },
     "cloud": {
         "account": {
@@ -570,9 +1069,9 @@ An example event for `incident` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b749ee7f-378d-45d8-8151-975dfa11ce57",
+        "id": "8566550a-5e20-48da-b1f8-7bd4684c9436",
         "snapshot": false,
-        "version": "8.8.2"
+        "version": "8.7.1"
     },
     "event": {
         "action": [
@@ -582,7 +1081,7 @@ An example event for `incident` looks as following:
         "created": "2021-08-13T08:43:35.553Z",
         "dataset": "m365_defender.incident",
         "id": "2972395",
-        "ingested": "2023-07-21T12:35:09Z",
+        "ingested": "2024-01-22T11:44:50Z",
         "kind": "alert",
         "original": "{\"@odata.type\":\"#microsoft.graph.security.incident\",\"alerts\":{\"@odata.type\":\"#microsoft.graph.security.alert\",\"actorDisplayName\":null,\"alertWebUrl\":\"https://security.microsoft.com/alerts/da637551227677560813_-961444813?tid=b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\",\"assignedTo\":null,\"category\":\"DefenseEvasion\",\"classification\":\"unknown\",\"comments\":[],\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"description\":\"A hidden file has been launched. This activity could indicate a compromised host. Attackers often hide files associated with malicious tools to evade file system inspection and defenses.\",\"detectionSource\":\"antivirus\",\"detectorId\":\"e0da400f-affd-43ef-b1d5-afc2eb6f2756\",\"determination\":\"unknown\",\"evidence\":[{\"@odata.type\":\"#microsoft.graph.security.deviceEvidence\",\"azureAdDeviceId\":null,\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"defenderAvStatus\":\"unknown\",\"deviceDnsName\":\"tempDns\",\"firstSeenDateTime\":\"2020-09-12T07:28:32.4321753Z\",\"healthStatus\":\"active\",\"loggedOnUsers\":[],\"mdeDeviceId\":\"73e7e2de709dff64ef64b1d0c30e67fab63279db\",\"onboardingStatus\":\"onboarded\",\"osBuild\":22424,\"osPlatform\":\"Windows10\",\"rbacGroupId\":75,\"rbacGroupName\":\"UnassignedGroup\",\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"riskScore\":\"medium\",\"roles\":[\"compromised\"],\"tags\":[\"Test Machine\"],\"verdict\":\"unknown\",\"version\":\"Other\",\"vmMetadata\":{\"cloudProvider\":\"azure\",\"resourceId\":\"/subscriptions/8700d3a3-3bb7-4fbe-a090-488a1ad04161/resourceGroups/WdatpApi-EUS-STG/providers/Microsoft.Compute/virtualMachines/NirLaviTests\",\"subscriptionId\":\"8700d3a3-3bb7-4fbe-a090-488a1ad04161\",\"vmId\":\"ca1b0d41-5a3b-4d95-b48b-f220aed11d78\"}},{\"@odata.type\":\"#microsoft.graph.security.fileEvidence\",\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"detectionStatus\":\"detected\",\"fileDetails\":{\"fileName\":\"MsSense.exe\",\"filePath\":\"C:\\\\Program Files\\\\temp\",\"filePublisher\":\"Microsoft Corporation\",\"fileSize\":6136392,\"issuer\":null,\"sha1\":\"5f1e8acedc065031aad553b710838eb366cfee9a\",\"sha256\":\"8963a19fb992ad9a76576c5638fd68292cffb9aaac29eb8285f9abf6196a7dec\",\"signer\":null},\"mdeDeviceId\":\"73e7e2de709dff64ef64b1d0c30e67fab63279db\",\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"verdict\":\"unknown\"},{\"@odata.type\":\"#microsoft.graph.security.processEvidence\",\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"detectionStatus\":\"detected\",\"imageFile\":{\"fileName\":\"MsSense.exe\",\"filePath\":\"C:\\\\Program Files\\\\temp\",\"filePublisher\":\"Microsoft Corporation\",\"fileSize\":6136392,\"issuer\":null,\"sha1\":\"5f1e8acedc065031aad553b710838eb366cfee9a\",\"sha256\":\"8963a19fb992ad9a76576c5638fd68292cffb9aaac29eb8285f9abf6196a7dec\",\"signer\":null},\"mdeDeviceId\":\"73e7e2de709dff64ef64b1d0c30e67fab63279db\",\"parentProcessCreationDateTime\":\"2021-08-12T07:39:09.0909239Z\",\"parentProcessId\":668,\"parentProcessImageFile\":{\"fileName\":\"services.exe\",\"filePath\":\"C:\\\\Windows\\\\System32\",\"filePublisher\":\"Microsoft Corporation\",\"fileSize\":731744,\"issuer\":null,\"sha1\":null,\"sha256\":null,\"signer\":null},\"processCommandLine\":\"\\\"MsSense.exe\\\"\",\"processCreationDateTime\":\"2021-08-12T12:43:19.0772577Z\",\"processId\":4780,\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"userAccount\":{\"accountName\":\"SYSTEM\",\"azureAdUserId\":null,\"domainName\":\"NT AUTHORITY\",\"userPrincipalName\":null,\"userSid\":\"S-1-5-18\"},\"verdict\":\"unknown\"},{\"@odata.type\":\"#microsoft.graph.security.registryKeyEvidence\",\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"registryHive\":\"HKEY_LOCAL_MACHINE\",\"registryKey\":\"SYSTEM\\\\CONTROLSET001\\\\CONTROL\\\\WMI\\\\AUTOLOGGER\\\\SENSEAUDITLOGGER\",\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"verdict\":\"unknown\"}],\"firstActivityDateTime\":\"2021-04-26T07:45:50.116Z\",\"id\":\"da637551227677560813_-961444813\",\"incidentId\":\"28282\",\"incidentWebUrl\":\"https://security.microsoft.com/incidents/28282?tid=b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\",\"lastActivityDateTime\":\"2021-05-02T07:56:58.222Z\",\"lastUpdateDateTime\":\"2021-05-02T14:19:01.3266667Z\",\"mitreTechniques\":[\"T1564.001\"],\"providerAlertId\":\"da637551227677560813_-961444813\",\"recommendedActions\":\"Collect artifacts and determine scope\\n�\\tReview the machine timeline for suspicious activities that may have occurred before and after the time of the alert, and record additional related artifacts (files, IPs/URLs) \\n�\\tLook for the presence of relevant artifacts on other systems. Identify commonalities and differences between potentially compromised systems.\\n�\\tSubmit relevant files for deep analysis and review resulting detailed behavioral information.\\n�\\tSubmit undetected files to the MMPC malware portal\\n\\nInitiate containment \\u0026 mitigation \\n�\\tContact the user to verify intent and initiate local remediation actions as needed.\\n�\\tUpdate AV signatures and run a full scan. The scan might reveal and remove previously-undetected malware components.\\n�\\tEnsure that the machine has the latest security updates. In particular, ensure that you have installed the latest software, web browser, and Operating System versions.\\n�\\tIf credential theft is suspected, reset all relevant users passwords.\\n�\\tBlock communication with relevant URLs or IPs at the organization�s perimeter.\",\"resolvedDateTime\":null,\"serviceSource\":\"microsoftDefenderForEndpoint\",\"severity\":\"low\",\"status\":\"new\",\"tenantId\":\"b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\",\"threatDisplayName\":null,\"threatFamilyName\":null,\"title\":\"Suspicious execution of hidden file\"},\"assignedTo\":\"KaiC@contoso.onmicrosoft.com\",\"classification\":\"truePositive\",\"comments\":[{\"comment\":\"Demo incident\",\"createdBy\":\"DavidS@contoso.onmicrosoft.com\",\"createdTime\":\"2021-09-30T12:07:37.2756993Z\"}],\"createdDateTime\":\"2021-08-13T08:43:35.5533333Z\",\"determination\":\"multiStagedAttack\",\"displayName\":\"Multi-stage incident involving Initial access \\u0026 Command and control on multiple endpoints reported by multiple sources\",\"id\":\"2972395\",\"incidentWebUrl\":\"https://security.microsoft.com/incidents/2972395?tid=12f988bf-16f1-11af-11ab-1d7cd011db47\",\"lastUpdateDateTime\":\"2021-09-30T09:35:45.1133333Z\",\"redirectIncidentId\":null,\"severity\":\"medium\",\"status\":\"active\",\"tags\":[\"Demo\"],\"tenantId\":\"b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\"}",
         "provider": "microsoftDefenderForEndpoint",
@@ -874,7 +1373,6 @@ An example event for `incident` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -1176,8 +1674,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2020-09-06T12:07:55.32Z",
     "agent": {
-        "ephemeral_id": "538b61a2-ee8e-4f0f-92b3-874bb25bd07c",
-        "id": "761cded5-abcb-4ec8-a5e6-f7546489e271",
+        "ephemeral_id": "6081fb83-76e6-4d6a-b1b0-936692199928",
+        "id": "8566550a-5e20-48da-b1f8-7bd4684c9436",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.7.1"
@@ -1194,7 +1692,7 @@ An example event for `log` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "761cded5-abcb-4ec8-a5e6-f7546489e271",
+        "id": "8566550a-5e20-48da-b1f8-7bd4684c9436",
         "snapshot": false,
         "version": "8.7.1"
     },
@@ -1209,7 +1707,7 @@ An example event for `log` looks as following:
         "duration": 0,
         "end": "2020-09-06T12:04:00Z",
         "id": "faf8edc936-85f8-a603-b800-08d8525cf099",
-        "ingested": "2023-08-08T07:59:58Z",
+        "ingested": "2024-01-22T11:45:29Z",
         "kind": "alert",
         "original": "{\"alerts\":{\"actorName\":null,\"alertId\":\"faf8edc936-85f8-a603-b800-08d8525cf099\",\"assignedTo\":\"Automation\",\"category\":\"InitialAccess\",\"classification\":null,\"creationTime\":\"2020-09-06T12:07:54.3716642Z\",\"description\":\"This alert is triggered when any email message is reported as malware or phish by users -V1.0.0.2\",\"detectionSource\":\"OfficeATP\",\"determination\":null,\"devices\":[],\"entities\":{\"aadUserId\":null,\"accountName\":null,\"clusterBy\":null,\"deliveryAction\":null,\"deviceId\":null,\"domainName\":null,\"entityType\":\"MailBox\",\"fileName\":null,\"filePath\":null,\"ipAddress\":null,\"mailboxAddress\":\"testUser3@contoso.com\",\"mailboxDisplayName\":\"test User3\",\"parentProcessCreationTime\":null,\"parentProcessId\":null,\"processCommandLine\":null,\"processCreationTime\":null,\"processId\":null,\"recipient\":null,\"registryHive\":null,\"registryKey\":null,\"registryValue\":null,\"registryValueType\":null,\"securityGroupId\":null,\"securityGroupName\":null,\"sender\":null,\"sha1\":null,\"sha256\":null,\"subject\":null,\"url\":null,\"userPrincipalName\":\"testUser3@contoso.com\",\"userSid\":null},\"firstActivity\":\"2020-09-06T12:04:00Z\",\"incidentId\":924518,\"investigationId\":null,\"investigationState\":\"Queued\",\"lastActivity\":\"2020-09-06T12:04:00Z\",\"lastUpdatedTime\":\"2020-09-06T12:37:40.88Z\",\"mitreTechniques\":[],\"resolvedTime\":null,\"serviceSource\":\"OfficeATP\",\"severity\":\"Informational\",\"status\":\"InProgress\",\"threatFamilyName\":null,\"title\":\"Email reported by user as malware or phish\"},\"assignedTo\":null,\"classification\":\"Unknown\",\"comments\":[],\"createdTime\":\"2020-09-06T12:07:55.1366667Z\",\"determination\":\"NotAvailable\",\"incidentId\":924518,\"incidentName\":\"Email reported by user as malware or phish\",\"lastUpdateTime\":\"2020-09-06T12:07:55.32Z\",\"redirectIncidentId\":null,\"severity\":\"Informational\",\"status\":\"Active\",\"tags\":[]}",
         "provider": "OfficeATP",
@@ -1282,7 +1780,6 @@ An example event for `log` looks as following:
         "name": "testUser3@contoso.com"
     }
 }
-
 ```
 
 **Exported fields**
