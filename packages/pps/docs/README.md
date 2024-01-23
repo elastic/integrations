@@ -45,7 +45,7 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2024-01-23T09:49:10.000+05:00",
     "agent": {
-        "ephemeral_id": "8c9b8215-4903-4299-a243-ee7a542f80b0",
+        "ephemeral_id": "4839a553-f2b3-4b50-8473-50087ad56a7c",
         "id": "fb476fe0-ec94-4731-9642-3d09807f2a87",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -71,7 +71,7 @@ An example event for `log` looks as following:
         "agent_id_status": "verified",
         "created": "2024-01-23T09:49:10.000+05:00",
         "dataset": "pps.log",
-        "ingested": "2024-01-23T21:52:03Z",
+        "ingested": "2024-01-23T22:18:43Z",
         "original": "<134>Jan 23 09:49:10 SRV-PPS-001 Pleasant Password Server:192.168.1.2 - user@name.test -  - Success - Syslog Settings Changed - User <user@name.test> Syslogging setting updated  changing the host from <localhost> to <127.0.0.1> changing the port fr\t127.0.0.1\t23/01 09:49:10.894\t",
         "outcome": "success",
         "timezone": "+0500"
@@ -84,7 +84,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.24.0.7:44533"
+            "address": "172.24.0.7:44613"
         },
         "syslog": {
             "priority": 134
@@ -98,6 +98,7 @@ An example event for `log` looks as following:
     ],
     "user": {
         "domain": "name.test",
+        "email": "user@name.test",
         "name": "user"
     }
 }
