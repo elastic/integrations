@@ -137,6 +137,11 @@ with_mage() {
 
 with_docker() {
     echo "--- Setting up the Docker environment..."
+    echo "Current docker client version:"
+    docker version -f json  | jq -r '.Client.Version'
+    echo "Current docekr server version:"
+    docker version -f json  | jq -r '.Server.Version'
+
     if [[ "${DOCKER_VERSION:-"false"}" == "false" ]]; then
         echo "Skip docker installation"
         return
@@ -148,9 +153,6 @@ with_docker() {
     ubuntu_codename="$(lsb_release -sc)" # focal
     architecture=$(dpkg --print-architecture)
     local debian_version="5:${DOCKER_VERSION}-1~ubuntu.${ubuntu_version}~${ubuntu_codename}"
-
-    docker version -f json  | jq -r '.Client.Version'
-    docker version -f json  | jq -r '.Server.Version'
 
     sudo sudo mkdir -p /etc/apt/keyrings
     if [ ! -f /etc/apt/keyrings/docker.gpg ]; then
