@@ -3,10 +3,13 @@
 env:
   SETUP_GVM_VERSION: "v0.5.1"
   LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
-  DOCKER_COMPOSE_VERSION: "v2.17.2"
+  DOCKER_COMPOSE_VERSION: "v2.24.1"
+  DOCKER_VERSION: "24.0.7"
   KIND_VERSION: 'v0.20.0'
-  K8S_VERSION: 'v1.27.3'
+  K8S_VERSION: 'v1.29.0'
   YQ_VERSION: 'v4.35.2'
+  JQ_VERSION: '1.7'
+  GH_CLI_VERSION: "2.29.0"
   # Elastic package settings
   # Manage docker output/logs
   ELASTIC_PACKAGE_COMPOSE_DISABLE_ANSI: "true"
@@ -27,15 +30,21 @@ steps:
       cpu: "8"
       memory: "4G"
 
-  # TODO: Pending to migrate stages from https://github.com/elastic/integrations/blob/993537b80456edf2035f2a4826031841116c2019/.ci/Jenkinsfile
-  # - label: "Publish packages - INCOMPLETE"
-  #   key: "publish-packages"
-  #   command: ".buildkite/scripts/publish_packages.sh" # TODO: missing signature and publishing loops
-  #   agents:
-  #     provider: "gcp"
-  #   depends_on:
-  #     - step: "check"
-  #       allow_failure: false
+  - label: ":package: Build packages"
+    key: "build-packages"
+    command: ".buildkite/scripts/build_packages.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "8"
+      memory: "8G"
+    env:
+      ARTIFACTS_FOLDER: "artifacts-to-sign"
+      DRY_RUN: "false"
+    depends_on:
+      - step: "check"
+        allow_failure: false
+    artifact_paths:
+      - artifacts-to-sign/*.zip
 
   - label: "Trigger integrations"
     key: "test-integrations"
@@ -48,6 +57,16 @@ steps:
 
   - wait: ~
     continue_on_failure: true
+
+  - label: "Publish benchmarks"
+    key: publish-benchmarks
+    command: ".buildkite/scripts/process_benchmarks.sh"
+    env:
+      BENCHMARK_THRESHOLD: 15
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "8"
+      memory: "4G"
 
   - label: ":junit: Junit annotate"
     plugins:

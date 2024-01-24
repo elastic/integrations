@@ -4,8 +4,6 @@ source .buildkite/scripts/common.sh
 
 set -euo pipefail
 
-# default values
-BENCHMARK_THRESHOLD=${BENCHMARK_THRESHOLD:-'15'}
 
 # used in common.sh
 SKIPPED_PACKAGES_FILE_PATH="${WORKSPACE}/skipped_packages.txt"
@@ -30,13 +28,14 @@ add_bin_path
 
 with_yq
 with_mage
-with_docker_compose
+with_docker
+with_docker_compose_plugin
 with_kubernetes
 
 use_elastic_package
 
 pushd packages > /dev/null
-if ! process_package ${package} ${from} ${to}; then
+if ! process_package "${package}" "${from}" "${to}"; then
     echo "[${package}] failed"
     exit 1
 fi

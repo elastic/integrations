@@ -4,11 +4,32 @@ This integration is for [Microsoft Office 365](https://docs.microsoft.com/en-us/
 
 ## Setup
 
-To use this package you need to enable _Audit Log Search_ and register an application in Azure AD.
+To use this package you need to [enable `Audit Log`](https://learn.microsoft.com/en-us/purview/audit-log-enable-disable) and register an application in [Microsoft Entra ID (formerly known as Azure Active Directory)](https://www.microsoft.com/en-us/security/business/identity-access/microsoft-entra-id).
 
-Once this application is registered, note the _Application (client) ID_ and the _Directory (tenant) ID._ Then configure the authentication in the _Certificates & Secrets_ section.
+Once the application is registered, configure and/or note the following to setup O365 Elastic integration:
+1. Note `Application (client) ID` and the `Directory (tenant) ID` in the registered application's `Overview` page.
+2. Create a new secret to configure the authentication of your application. 
+    - Navigate to `Certificates & Secrets` section.
+    - Click `New client secret` and provide some description to create new secret.
+    - Note the `Value` which is required for the integration setup.
+3. Add permissions to your registered application. Please check [O365 Management API permissions](https://learn.microsoft.com/en-us/office/office-365-management-api/get-started-with-office-365-management-apis#specify-the-permissions-your-app-requires-to-access-the-office-365-management-apis) for more details.
+    - Navigate to `API permissions` page and click `Add a permission`
+    - Select `Office 365 Management APIs` tile from the listed tiles.
+    - Click `Application permissions`.
+    - Under `ActivityFeed`, select `ActivityFeed.Read` permission. This is minimum required permissions to read audit logs of your organization as [provided in the documentation](https://learn.microsoft.com/en-us/office/office-365-management-api/office-365-management-activity-api-reference). Optionally, select `ActivityFeed.ReadDlp` to read DLP policy events.
+    - Click `Add permissions`. 
+    - If `User.Read` permission under `Microsoft.Graph` tile is not added by default, add this permission.
+    - After the permissions are added, the admin has to grant consent for these permissions.
 
-To use client-secret authentication, add your secret to the _Client Secret_ field.
+Once the secret is created and permissions are granted by admin, setup Elastic Agent's O365 integration:
+- Click `Add Microsoft 365`.
+- Enable `Collect Office 365 audit logs via Management Activity API using CEL Input`.
+- Add `Directory (tenant) ID` noted in Step 1 into `Directory (tenant) ID` parameter. This is required field.
+- Add `Application (client) ID` noted in Step 1 into `Application (client) ID` parameter. This is required field.
+- Add the secret `Value` noted in Step 2 into `Client Secret` parameter. This is required field.
+- Oauth2 Token URL can be added to generate the tokens during the oauth2 flow. If not provided, above `Directory (tenant) ID` will be used for oauth2 token generation.
+- Modify any other parameters as necessary.
+
 
 **NOTE:** As Microsoft is no longer supporting Azure Active Directory Authentication Library (ADAL), the existing o365audit input is being deprecated in favor of new [CEL](https://www.elastic.co/guide/en/beats/filebeat/8.6/filebeat-input-cel.html) input in version `1.18.0`. Hence for versions `>= 1.18.0`, certificate based authentication (provided by earlier o365audit input) is no longer supported. 
 
@@ -250,7 +271,66 @@ An example event for `audit` looks as following:
 | o365.audit.CorrelationId |  | keyword |
 | o365.audit.CreationTime |  | keyword |
 | o365.audit.CustomUniqueId |  | boolean |
-| o365.audit.Data |  | keyword |
+| o365.audit.Data.ad |  | keyword |
+| o365.audit.Data.af |  | keyword |
+| o365.audit.Data.aii |  | keyword |
+| o365.audit.Data.ail |  | keyword |
+| o365.audit.Data.alk |  | keyword |
+| o365.audit.Data.als |  | keyword |
+| o365.audit.Data.an |  | keyword |
+| o365.audit.Data.at |  | date |
+| o365.audit.Data.cid |  | keyword |
+| o365.audit.Data.cpid |  | keyword |
+| o365.audit.Data.dm |  | keyword |
+| o365.audit.Data.dpn |  | keyword |
+| o365.audit.Data.eid |  | keyword |
+| o365.audit.Data.etps |  | keyword |
+| o365.audit.Data.etype |  | keyword |
+| o365.audit.Data.f3u |  | keyword |
+| o365.audit.Data.flattened | The full Data document. | flattened |
+| o365.audit.Data.fvs |  | keyword |
+| o365.audit.Data.imsgid |  | keyword |
+| o365.audit.Data.lon |  | keyword |
+| o365.audit.Data.mat |  | keyword |
+| o365.audit.Data.md |  | date |
+| o365.audit.Data.ms |  | keyword |
+| o365.audit.Data.od |  | keyword |
+| o365.audit.Data.op |  | keyword |
+| o365.audit.Data.ot |  | keyword |
+| o365.audit.Data.plk |  | keyword |
+| o365.audit.Data.pud |  | keyword |
+| o365.audit.Data.reid |  | keyword |
+| o365.audit.Data.rid |  | keyword |
+| o365.audit.Data.sev |  | keyword |
+| o365.audit.Data.sict |  | keyword |
+| o365.audit.Data.sid |  | keyword |
+| o365.audit.Data.sip |  | ip |
+| o365.audit.Data.sitmi |  | keyword |
+| o365.audit.Data.srt |  | keyword |
+| o365.audit.Data.ssic |  | keyword |
+| o365.audit.Data.suid |  | keyword |
+| o365.audit.Data.tdc |  | keyword |
+| o365.audit.Data.te |  | date |
+| o365.audit.Data.thn |  | keyword |
+| o365.audit.Data.tht |  | keyword |
+| o365.audit.Data.tid |  | keyword |
+| o365.audit.Data.tpid |  | keyword |
+| o365.audit.Data.tpt |  | keyword |
+| o365.audit.Data.trc |  | keyword |
+| o365.audit.Data.ts |  | date |
+| o365.audit.Data.tsd |  | keyword |
+| o365.audit.Data.ttdt |  | date |
+| o365.audit.Data.ttr |  | keyword |
+| o365.audit.Data.upfc |  | keyword |
+| o365.audit.Data.upfv |  | keyword |
+| o365.audit.Data.ut |  | keyword |
+| o365.audit.Data.von |  | keyword |
+| o365.audit.Data.wl |  | keyword |
+| o365.audit.Data.zfh |  | keyword |
+| o365.audit.Data.zfn |  | keyword |
+| o365.audit.Data.zmfh |  | keyword |
+| o365.audit.Data.zmfn |  | keyword |
+| o365.audit.Data.zu |  | keyword |
 | o365.audit.DataType |  | keyword |
 | o365.audit.EntityType |  | keyword |
 | o365.audit.ErrorNumber |  | keyword |
@@ -292,6 +372,7 @@ An example event for `audit` looks as following:
 | o365.audit.OrganizationName |  | keyword |
 | o365.audit.OriginatingServer |  | keyword |
 | o365.audit.Parameters.\* |  | object |
+| o365.audit.Platform |  | keyword |
 | o365.audit.PolicyDetails |  | flattened |
 | o365.audit.PolicyId |  | keyword |
 | o365.audit.RecordType |  | keyword |

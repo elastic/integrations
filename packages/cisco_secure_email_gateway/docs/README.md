@@ -398,6 +398,7 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.domain |  | keyword |
 | cisco_secure_email_gateway.log.dropped_messages | Dropped Messages. | long |
 | cisco_secure_email_gateway.log.email |  | keyword |
+| cisco_secure_email_gateway.log.email_participants | All the participants in the email. | keyword |
 | cisco_secure_email_gateway.log.email_tracker_header | Header consisting of (but not typically displaying) critical information for efficient email tracking and delivery. | keyword |
 | cisco_secure_email_gateway.log.encrypted_hash |  | keyword |
 | cisco_secure_email_gateway.log.encryption_queue | Messages in the Encryption Queue. | long |
@@ -454,6 +455,7 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.global_unsubscribe_hits | Global Unsubscribe Hits. | long |
 | cisco_secure_email_gateway.log.hard_bounce_recipients | Hard Bounced Recipients. | long |
 | cisco_secure_email_gateway.log.helo |  | keyword |
+| cisco_secure_email_gateway.log.host | The hostname or serial of the host sending the log. Configured in the Cisco Secure Email Gateway log subscription dashboard. | keyword |
 | cisco_secure_email_gateway.log.injected.bytes | Total Injected Message Size in Bytes. | long |
 | cisco_secure_email_gateway.log.injected.messages | Injected Messages. | long |
 | cisco_secure_email_gateway.log.injected.recipients | Injected Recipients. | long |
@@ -530,7 +532,8 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.upload.priority | Upload priority values are: High - For all selected file types, except PDF file type. Low - For only PDF file types. | keyword |
 | cisco_secure_email_gateway.log.vendor_action |  | keyword |
 | cisco_secure_email_gateway.log.verdict | The file retrospective verdict value is malicious or clean. | keyword |
-| cisco_secure_email_gateway.log.verdict_scale | Verdict is negative or postive. | keyword |
+| cisco_secure_email_gateway.log.verdict_scale | Verdict is negative or positive. | keyword |
+| cisco_secure_email_gateway.log.verdict_source | Verdict source. | keyword |
 | cisco_secure_email_gateway.log.verified |  | keyword |
 | cisco_secure_email_gateway.log.work_queue | This is the number of messages currently in the work queue. | long |
 | cisco_secure_email_gateway.log.zone |  | keyword |

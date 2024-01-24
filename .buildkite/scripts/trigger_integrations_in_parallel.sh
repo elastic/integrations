@@ -33,15 +33,15 @@ packages_to_test=0
 
 for package in ${PACKAGE_LIST}; do
     # check if needed to create an step for this package
-    pushd packages/${package} > /dev/null
+    pushd "packages/${package}" > /dev/null
     skip_package="false"
-    if ! reason=$(is_pr_affected ${package} ${from} ${to}) ; then
+    if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
         skip_package="true"
     fi
     echoerr "${reason}"
     popd > /dev/null
 
-    if [[ $skip_package == "true" ]] ; then
+    if [[ "$skip_package" == "true" ]] ; then
         continue
     fi
 
@@ -59,7 +59,9 @@ for package in ${PACKAGE_LIST}; do
         UPLOAD_SAFE_LOGS: ${UPLOAD_SAFE_LOGS}
       artifact_paths:
         - build/test-results/*.xml
-        - build/benchmark-results/*.xml
+        - build/benchmark-results/*.json
+        - build/elastic-stack-dump/*/logs/*.log
+        - build/elastic-stack-dump/*/logs/fleet-server-internal/**/*
 EOF
 done
 
