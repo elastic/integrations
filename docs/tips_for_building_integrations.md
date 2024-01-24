@@ -40,7 +40,7 @@ $ ./elastic-package help
 
 4. Set the proper package owner (either Github team or personal account)
 
-   Good candidates for a team: `elastic/integrations`, `elastic/security-external-integrations`
+   Good candidates for a team: `elastic/integrations`, `elastic/security-service-integrations`
 
    Update the `.github/CODEOWNERS` file accordingly.
 
