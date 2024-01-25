@@ -53,11 +53,11 @@ require (
 	github.com/elastic/go-ucfg v0.8.6 // indirect
 	github.com/elastic/go-windows v1.0.1 // indirect
 	github.com/elastic/gojsonschema v1.2.1 // indirect
-	github.com/elastic/kbncontent v0.1.1 // indirect
+	github.com/elastic/kbncontent v0.1.3 // indirect
 	github.com/elastic/package-spec/v3 v3.0.3 // indirect
 	github.com/emicklei/go-restful/v3 v3.10.1 // indirect
 	github.com/evanphx/json-patch v5.6.0+incompatible // indirect
-	github.com/evanphx/json-patch/v5 v5.7.0 // indirect
+	github.com/evanphx/json-patch/v5 v5.8.1 // indirect
 	github.com/exponent-io/jsonpath v0.0.0-20210407135951-1de76d718b3f // indirect
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
@@ -202,4 +202,4 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
-replace github.com/elastic/package-spec/v3 => github.com/jillguyonnet/package-spec/v3 v3.0.0-20240125102433-26f5e185b6a6
+replace github.com/elastic/package-spec/v3 => github.com/jillguyonnet/package-spec/v3 v3.0.0-20240125184937-b1e64ef3fa9d
