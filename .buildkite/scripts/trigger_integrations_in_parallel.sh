@@ -9,7 +9,6 @@ with_yq
 
 pushd packages > /dev/null
 PACKAGE_LIST=$(list_all_directories)
-PACKAGE_LIST="elastic_package_registry nginx"
 popd > /dev/null
 
 PIPELINE_FILE="packages_pipeline.yml"
