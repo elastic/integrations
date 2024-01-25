@@ -20,10 +20,15 @@ request.transforms:
       value: "MdatpPartner-Elastic-Filebeat/1.0.0"
   - set:
       target: "url.params.$filter"
-      value: 'lastUpdateTime gt [[formatDate .cursor.lastUpdateTime "2006-01-02T15:04:05.9999999Z"]]'
-      default: 'lastUpdateTime gt [[formatDate (now (parseDuration "-{{initial_interval}}")) "2006-01-02T15:04:05.9999999Z"]]'
+      value: 'lastUpdateTime gt [[.cursor.lastUpdateTime]]'
+{{#if initial_interval}}
+      default: 'lastUpdateTime gt [[formatDate (now (parseDuration "-{{initial_interval}}")) "2006-01-02T15:04:05.99Z"]]'
+{{else}}
+      default: 'lastUpdateTime gt 2020-08-06T12:07:55.32Z'
+{{/if}}
 response.split:
   target: body.value
+  ignore_empty_value: true
   split:
     target: body.alerts
     keep_parent: true
@@ -32,7 +37,8 @@ response.split:
       keep_parent: true
 cursor:
   lastUpdateTime:
-    value: "[[.last_response.body.lastUpdateTime]]"
+    value: "[[.last_event.lastUpdateTime]]"
+    ignore_empty_value: true
 
 tags:
 {{#if preserve_original_event}}
