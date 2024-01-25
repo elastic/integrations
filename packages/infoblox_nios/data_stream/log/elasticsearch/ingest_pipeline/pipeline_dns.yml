@@ -103,6 +103,16 @@ processors:
           }
         }
         ctx.dns.answers = map;
+  - gsub:
+      field: infoblox_nios.log.dns.message
+      pattern: '"'
+      replacement: ''
+      if: ctx.infoblox_nios?.log?.dns?.message != null
+  - dissect:
+      field: infoblox_nios.log.dns.message
+      pattern: 'rpz %{infoblox_nios.log.dns.rpz.rule_type} %{infoblox_nios.log.dns.rpz.query_class} %{infoblox_nios.log.dns.rpz.action} %{infoblox_nios.log.dns.rpz.domain} %{infoblox_nios.log.dns.rpz.query_class_rewrite} via %{infoblox_nios.log.dns.rpz.domain_rewrite} CAT=%{infoblox_nios.log.dns.rpz.type}'
+      ignore_failure: true
+      if: ctx.infoblox_nios?.log?.dns?.message != null
   - convert:
       field: dns.answers.ttl
       type: long
