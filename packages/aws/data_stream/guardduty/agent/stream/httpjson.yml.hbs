@@ -29,11 +29,11 @@ request.transforms:
       value_type: json
   - set:
       target: body.findingCriteria.criterion.updatedAt.greaterThan
-      value: '[[((parseDate .cursor.last_execution_datetime).Truncate (parseDuration "1h")).UnixMilli]]'
-      default: '[[((now (parseDuration "-{{initial_interval}}")).Truncate (parseDuration "1h")).UnixMilli]]'
+      value: '[[((parseDate .cursor.last_execution_datetime)).UnixMilli]]'
+      default: '[[((now (parseDuration "-{{initial_interval}}"))).UnixMilli]]'
   - set:
       target: body.findingCriteria.criterion.updatedAt.lessThan
-      value: '[[((now).Truncate (parseDuration "1h")).UnixMilli]]'
+      value: '[[((now)).UnixMilli]]'
   - set:
       target: header.Authorization
       value: '[[$now := (now)]][[(sprintf "AWS4-HMAC-SHA256 Credential={{access_key_id}}/%s/{{aws_region}}/guardduty/aws4_request, SignedHeaders=host;x-amz-date, Signature=%s" (formatDate ($now) "20060102") (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" "AWS4{{secret_access_key}}" (formatDate ($now) "20060102"))) "{{aws_region}}")) "guardduty")) "aws4_request")) "AWS4-HMAC-SHA256\n" (formatDate ($now) "20060102T150405Z") "\n" (sprintf "%s/%s\n" (formatDate ($now) "20060102") "{{aws_region}}/guardduty/aws4_request") (hash "sha256" "POST\n" "/detector/{{detector_id}}/findings\n" "\n" "host:guardduty.{{aws_region}}.{{tld}}\n" (sprintf "x-amz-date:%s\n\n" (formatDate ($now) "20060102T150405Z")) "host;x-amz-date\n" (hash "sha256" (sprintf `%s` .body)))))]]'
