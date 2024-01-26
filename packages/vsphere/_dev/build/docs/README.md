@@ -35,7 +35,7 @@ Datastores are logical containers, analogous to file systems, that hide specific
 
 ## Logs
 
-To access the logs, host address (localhost) and host port (9525) needs to be passed in Kibana UI. 
+To access the logs, from the Kibana UI, you have to specify the network-accessible IP address of the host where the Elastic Agent will be deployed. 
 
 ### vSphere Logs
 

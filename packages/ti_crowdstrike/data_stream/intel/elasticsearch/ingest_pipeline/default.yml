@@ -1,0 +1,441 @@
+---
+description: Pipeline for processing Intel logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: enrichment
+  - append:
+      field: event.category
+      tag: append_threat_into_event_category
+      value: threat
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_indicator_into_event_type
+      value: indicator
+      allow_duplicates: false
+  - set:
+      field: threat.indicator.provider
+      tag: set_threat_indicator_provider
+      value: crowdstrike
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json._marker
+      tag: rename__marker
+      target_field: ti_crowdstrike.intel._marker
+      ignore_missing: true
+  - rename:
+      field: json.actors
+      tag: rename_actors
+      target_field: ti_crowdstrike.intel.actors
+      ignore_missing: true
+  - convert:
+      field: json.deleted
+      tag: convert_deleted_to_boolean
+      target_field: ti_crowdstrike.intel.deleted
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.domain_types
+      tag: rename_domain_types
+      target_field: ti_crowdstrike.intel.domain_types
+      ignore_missing: true
+  - rename:
+      field: json.id
+      tag: rename_id
+      target_field: ti_crowdstrike.intel.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_intel_id
+      copy_from: ti_crowdstrike.intel.id
+      ignore_empty_value: true
+  - rename:
+      field: json.ip_address_types
+      tag: rename_ip_address_types
+      target_field: ti_crowdstrike.intel.ip_address_types
+      ignore_missing: true
+  - foreach:
+      field: ti_crowdstrike.intel.ip_address_types
+      tag: foreach_ti_crowdstrike_intel_ip_address_types
+      if: ctx.ti_crowdstrike?.intel?.ip_address_types instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_ti_crowdstrike_intel_ip_address_types
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ti_crowdstrike.intel.ip_address_types
+      tag: foreach_ti_crowdstrike_intel_ip_address_types_append_into_threat_indicator_ip
+      if: ctx.ti_crowdstrike?.intel?.type != null && ctx.ti_crowdstrike.intel.type.contains('ip_address') && ctx.ti_crowdstrike?.intel?.ip_address_types instanceof List
+      processor:
+        append:
+          field: threat.indicator.ip
+          tag: append_intel_ip_address_types_into_threat_indicator_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ti_crowdstrike.intel.ip_address_types
+      tag: foreach_ti_crowdstrike_intel_ip_address_types_append_into_related_ip
+      if: ctx.ti_crowdstrike?.intel?.ip_address_types instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_intel_ip_address_types_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.kill_chains
+      tag: rename_kill_chains
+      target_field: ti_crowdstrike.intel.kill_chains
+      ignore_missing: true
+  - rename:
+      field: json.labels
+      tag: rename_labels
+      target_field: ti_crowdstrike.intel.labels
+      ignore_missing: true
+  - foreach:
+      field: ti_crowdstrike.intel.labels
+      tag: foreach_intel_labels_date_created_on
+      if: ctx.ti_crowdstrike?.intel?.labels instanceof List
+      processor:
+        date:
+          field: _ingest._value.created_on
+          tag: date_intel_labels_created_on
+          target_field: _ingest._value.created_on
+          formats:
+            - ISO8601
+            - UNIX
+          on_failure:
+            - remove:
+                field: _ingest._value.created_on
+                ignore_missing: true
+  - foreach:
+      field: ti_crowdstrike.intel.labels
+      tag: foreach_intel_labels_date_valid_on
+      if: ctx.ti_crowdstrike?.intel?.labels instanceof List
+      processor:
+        date:
+          field: _ingest._value.last_valid_on
+          tag: date_intel_labels_valid_on
+          target_field: _ingest._value.last_valid_on
+          formats:
+            - ISO8601
+            - UNIX
+          on_failure:
+            - remove:
+                field: _ingest._value.last_valid_on
+                ignore_missing: true
+  - script:
+      lang: painless
+      tag: script-default-deleted_at
+      if: ctx.json?.deleted_at == null && ctx.json?.last_updated != null && ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != ''
+      description: Add default deleted_at field.
+      source: >
+        def dur = ctx._conf.ioc_expiration_duration;
+        def last_updated = ctx.json.last_updated;
+        if (dur instanceof String){
+          String time_unit = dur.substring(dur.length() -  1, dur.length());
+          String time_value = dur.substring(0, dur.length() - 1);
+          if (time_unit == 'd') {
+            ctx.json.deleted_at = last_updated + Long.parseLong(time_value)*24*60*60;
+          } else if (time_unit == 'h') {
+            ctx.json.deleted_at = last_updated + Long.parseLong(time_value)*60*60;
+          } else if (time_unit == 'm') {
+            ctx.json.deleted_at = last_updated + Long.parseLong(time_value)*60;
+          } else {
+            ctx.json.deleted_at = last_updated + 90*24*60*60;
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.deleted_at
+      tag: date_deleted_at
+      target_field: ti_crowdstrike.intel.deleted_at
+      formats:
+        - ISO8601
+        - UNIX
+      if: ctx.json?.deleted_at != null && ctx.json.deleted_at != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: _conf.ioc_expiration_duration
+      tag: rename_conf_ioc_expiration_duration
+      target_field: ti_crowdstrike.intel.expiration_duration
+      ignore_missing: true
+  - date:
+      field: json.last_updated
+      tag: date_timestamp
+      formats:
+        - ISO8601
+        - UNIX
+      if: ctx.json?.last_updated != null && ctx.json.last_updated != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: ti_crowdstrike.intel.last_updated
+      tag: set_@timestamp_from_intel_last_updated
+      copy_from: '@timestamp'
+      ignore_empty_value: true
+  - rename:
+      field: json.malicious_confidence
+      tag: rename_malicious_confidence
+      target_field: ti_crowdstrike.intel.malicious_confidence
+      ignore_missing: true
+  - script:
+      tag: script_to_set_threat_indicator_confidence
+      lang: painless
+      if: ctx.ti_crowdstrike?.intel?.malicious_confidence != null
+      description: Set threat indicator confidence on the basis of malicious_confidence allowed values (high, medium, low, unverified).
+      source: |-
+        String temp = ctx.ti_crowdstrike.intel.malicious_confidence;
+        if (['high', 'low', 'medium'].contains(temp)) {
+            ctx.threat.indicator.confidence = temp.substring(0, 1).toUpperCase() + temp.substring(1);
+        }
+        if (temp == 'unverified') {
+            ctx.threat.indicator.confidence = 'Not Specified';
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.malware_families
+      tag: rename_malware_families
+      target_field: ti_crowdstrike.intel.malware_families
+      ignore_missing: true
+  - date:
+      field: json.published_date
+      tag: date_published_date
+      target_field: ti_crowdstrike.intel.published_date
+      formats:
+        - ISO8601
+        - UNIX
+      if: ctx.json?.published_date != null && ctx.json.published_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.relations
+      tag: rename_relations
+      target_field: ti_crowdstrike.intel.relations
+      ignore_missing: true
+  - foreach:
+      field: ti_crowdstrike.intel.relations
+      tag: foreach_intel_relations
+      if: ctx.ti_crowdstrike?.intel?.relations instanceof List
+      processor:
+        date:
+          field: _ingest._value.created_date
+          tag: date_intel_relations_created_date
+          target_field: _ingest._value.created_date
+          formats:
+            - ISO8601
+            - UNIX
+          on_failure:
+            - remove:
+                field: _ingest._value.created_date
+                ignore_missing: true
+  - foreach:
+      field: ti_crowdstrike.intel.relations
+      tag: foreach_intel_relations_date_valid_date
+      if: ctx.ti_crowdstrike?.intel?.relations instanceof List
+      processor:
+        date:
+          field: _ingest._value.last_valid_date
+          tag: date_intel_relations_valid_date
+          target_field: _ingest._value.last_valid_date
+          formats:
+            - ISO8601
+            - UNIX
+          on_failure:
+            - remove:
+                field: _ingest._value.last_valid_date
+                ignore_missing: true
+  - rename:
+      field: json.reports
+      tag: rename_reports
+      target_field: ti_crowdstrike.intel.reports
+      ignore_missing: true
+  - rename:
+      field: json.targets
+      tag: rename_targets
+      target_field: ti_crowdstrike.intel.targets
+      ignore_missing: true
+  - rename:
+      field: json.threat_types
+      tag: rename_threat_types
+      target_field: ti_crowdstrike.intel.threat_types
+      ignore_missing: true
+  - rename:
+      field: json.type
+      tag: rename_type
+      target_field: ti_crowdstrike.intel.type
+      ignore_missing: true
+  - script:
+      lang: painless
+      if: ctx.ti_crowdstrike?.intel?.type != null
+      description: >
+        Map intel type field to STIX 2.0 Cyber Observable values (threat.indicator.type).
+      params:
+        domain: domain-name
+        email_address: email-addr
+        email_subject: email-addr
+        file_mapping: file
+        file_name: file
+        file_path: file
+        hash_ion: file
+        hash_md5: file
+        hash_sha256: file
+        ip_address: ipv4-addr
+        ip_address_block: ipv4-addr
+        mutex_name: mutex
+        persona_name: user-account
+        port: port
+        url: url
+        username: user-account
+        x509_serial: x509-certificate
+        x509_subject: x509-certificate
+      source: >
+        String mapping = params[ctx.ti_crowdstrike.intel.type];
+        if (mapping != null) {
+           ctx.threat.indicator.type = mapping;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.indicator
+      tag: rename_indicator
+      target_field: ti_crowdstrike.intel.value
+      ignore_missing: true
+  - set:
+      field: file.hash.sha256
+      tag: set_file_hash_sha256
+      value: '{{{ti_crowdstrike.intel.value}}}'
+      if: ctx.ti_crowdstrike?.intel?.type != null && ctx.ti_crowdstrike.intel.type.contains('hash_sha256') && ctx.ti_crowdstrike?.intel?.value != null
+  - set:
+      field: file.hash.md5
+      tag: set_file_hash_md5
+      value: '{{{ti_crowdstrike.intel.value}}}'
+      if: ctx.ti_crowdstrike?.intel?.type != null && ctx.ti_crowdstrike.intel.type.contains('hash_md5') && ctx.ti_crowdstrike?.intel?.value != null
+  - set:
+      field: threat.indicator.type
+      tag: set_threat_indicator_type_to_ipv6_addr
+      value: ipv6-addr
+      if: ctx.ti_crowdstrike?.intel?.type != null && ctx.ti_crowdstrike.intel.type.contains('ip_address') && ctx.ti_crowdstrike?.intel?.value != null && ctx.ti_crowdstrike.intel.value.contains(":")
+  - append:
+      field: related.hash
+      tag: append_intel_value_into_related_hash
+      value: '{{{ti_crowdstrike.intel.value}}}'
+      if: ctx.ti_crowdstrike?.intel?.type != null && ['hash_ion', 'hash_md5', 'hash_sha256', 'hash_sha2'].contains(ctx.ti_crowdstrike.intel.type)
+      allow_duplicates: false
+  - set:
+      field: threat.indicator.name
+      tag: set_threat_indicator_name
+      copy_from: ti_crowdstrike.intel.value
+      ignore_empty_value: true
+  - rename:
+      field: json.vulnerabilities
+      tag: rename_vulnerabilities
+      target_field: ti_crowdstrike.intel.vulnerabilities
+      ignore_missing: true
+  - foreach:
+      field: ti_crowdstrike.intel.vulnerabilities
+      tag: foreach_intel_vulnerabilities
+      if: ctx.ti_crowdstrike?.intel?.vulnerabilities instanceof List
+      processor:
+        append:
+          field: vulnerability.category
+          tag: append_vulnerabilities_into_vulnerability-category
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - remove:
+      field:
+        - ti_crowdstrike.intel.id
+        - ti_crowdstrike.intel.last_updated
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+      description: Drops null/empty values recursively.
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
