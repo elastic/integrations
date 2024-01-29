@@ -578,6 +578,7 @@ Current supported event types are:
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
 | crowdstrike.event.AccountCreationTimeStamp | The timestamp of when the source account was created in Active Directory. | date |
+| crowdstrike.event.AccountId |  | keyword |
 | crowdstrike.event.ActivityId | ID of the activity that triggered the detection. | keyword |
 | crowdstrike.event.AddedPrivilege | The difference between their current and previous list of privileges. | keyword |
 | crowdstrike.event.AdditionalAccountObjectGuid | Additional involved user object GUID. | keyword |
@@ -598,6 +599,9 @@ Current supported event types are:
 | crowdstrike.event.CertificateTemplateIdentifier | The ID of the certificate template. | keyword |
 | crowdstrike.event.CertificateTemplateName | Name of the certificate template. | keyword |
 | crowdstrike.event.Certificates | Provides one or more JSON objects which includes related SSL/TLS Certificates. | nested |
+| crowdstrike.event.CloudPlatform |  | keyword |
+| crowdstrike.event.CloudProvider |  | keyword |
+| crowdstrike.event.CloudService |  | keyword |
 | crowdstrike.event.Commands | Commands run in a remote session. | keyword |
 | crowdstrike.event.ComputerName | Name of the computer where the detection occurred. | keyword |
 | crowdstrike.event.CustomerId | Customer identifier. | keyword |
@@ -698,6 +702,7 @@ Current supported event types are:
 | crowdstrike.event.PreviousPrivileges | A list of the source account's privileges before privilege changes were made. | keyword |
 | crowdstrike.event.Protocol | CrowdStrike provided protocol. | keyword |
 | crowdstrike.event.ProtocolAnomalyClassification | Authentication signature analysis. | keyword |
+| crowdstrike.event.Region |  | keyword |
 | crowdstrike.event.ReportFileReference |  | keyword |
 | crowdstrike.event.ReportID |  | keyword |
 | crowdstrike.event.ReportName |  | keyword |
@@ -887,8 +892,8 @@ An example event for `falcon` looks as following:
 {
     "@timestamp": "2020-02-12T21:29:10.000Z",
     "agent": {
-        "ephemeral_id": "7a2afe90-295d-4664-b470-02ab73a45db7",
-        "id": "b095b147-68c9-47a8-a1fc-7fd9dc3764c5",
+        "ephemeral_id": "fe495f50-2dbf-43ee-9c49-b35ef8bf9235",
+        "id": "df7cb44a-7978-449c-992e-c6b22e788ae9",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.11.0"
@@ -936,7 +941,7 @@ An example event for `falcon` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b095b147-68c9-47a8-a1fc-7fd9dc3764c5",
+        "id": "df7cb44a-7978-449c-992e-c6b22e788ae9",
         "snapshot": false,
         "version": "8.11.0"
     },
@@ -950,7 +955,7 @@ An example event for `falcon` looks as following:
         ],
         "created": "2020-02-12T21:29:10.710Z",
         "dataset": "crowdstrike.falcon",
-        "ingested": "2024-01-22T13:25:40Z",
+        "ingested": "2024-01-29T08:59:16Z",
         "kind": "event",
         "original": "{\n    \"metadata\": {\n        \"customerIDString\": \"8f69fe9e-b995-4204-95ad-44f9bcf75b6b\",\n        \"offset\": 0,\n        \"eventType\": \"AuthActivityAuditEvent\",\n        \"eventCreationTime\": 1581542950710,\n        \"version\": \"1.0\"\n    },\n    \"event\": {\n        \"UserId\": \"api-client-id:1234567890abcdefghijklmnopqrstuvwxyz\",\n        \"UserIp\": \"10.10.0.8\",\n        \"OperationName\": \"streamStarted\",\n        \"ServiceName\": \"Crowdstrike Streaming API\",\n        \"Success\": true,\n        \"UTCTimestamp\": 1581542950,\n        \"AuditKeyValues\": [\n            {\n                \"Key\": \"APIClientID\",\n                \"ValueString\": \"1234567890abcdefghijklmnopqr\"\n            },\n            {\n                \"Key\": \"partition\",\n                \"ValueString\": \"0\"\n            },\n            {\n                \"Key\": \"offset\",\n                \"ValueString\": \"-1\"\n            },\n            {\n                \"Key\": \"appId\",\n                \"ValueString\": \"siem-connector-v2.0.0\"\n            },\n            {\n                \"Key\": \"eventType\",\n                \"ValueString\": \"[UserActivityAuditEvent HashSpreadingEvent RemoteResponseSessionStartEvent RemoteResponseSessionEndEvent DetectionSummaryEvent AuthActivityAuditEvent]\"\n            }\n        ]\n    }\n}",
         "outcome": "success"
