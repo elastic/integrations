@@ -138,18 +138,31 @@ processors:
       source: >
         def dur = ctx._conf.ioc_expiration_duration;
         String added_at = ctx.json.added_at;
+        ZonedDateTime _tmp_deleted_at;
         if (dur instanceof String){
-          Character time_unit = dur.charAt(dur.length() - 1);
-          String time_value = dur.substring(0, dur.length());
-          if (time_unit == 'd') {
-            ctx.json.deleted_at = ZonedDateTime.parse(added_at, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusDays(Long.parseLong(time_value));
-          } else if (time_unit == 'h') {
-            ctx.json.deleted_at = ZonedDateTime.parse(added_at, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusHours(Long.parseLong(time_value));
-          } else if (time_unit == 'm') {
-            ctx.json.deleted_at = ZonedDateTime.parse(added_at, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusMinutes(Long.parseLong(time_value));
+          char time_unit;
+          String time_value;
+          if (dur.length() != 0){
+            time_unit = dur.charAt(dur.length() - 1);
+            time_value = dur.substring(0, dur.length() - 1);
+          }
+          if (time_unit == (char)'d') {
+            _tmp_deleted_at = ZonedDateTime.parse(added_at, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusDays(Long.parseLong(time_value));
+          } else if (time_unit == (char)'h') {
+            _tmp_deleted_at = ZonedDateTime.parse(added_at, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusHours(Long.parseLong(time_value));
+          } else if (time_unit == (char)'m') {
+            _tmp_deleted_at = ZonedDateTime.parse(added_at, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusMinutes(Long.parseLong(time_value));
           } else {
-            ctx.json.deleted_at = ZonedDateTime.parse(added_at, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusDays(90L);
-          }        
+            if (ctx.error == null) {
+              ctx.error = new HashMap();
+            }
+            if (ctx.error.message == null) {
+              ctx.error.message = new ArrayList();
+            }
+            ctx.error.message.add('invalid ioc_expiration_duration: using default 90 days');
+            _tmp_deleted_at = ZonedDateTime.parse(added_at, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusDays(90L);
+          }
+          ctx.json.deleted_at = _tmp_deleted_at;
         }
       on_failure:
         - append:
