@@ -27,7 +27,14 @@ state:
   want_more: false
   batch: {{batch_size}}
   initial_interval: {{initial_interval}}
-  event_list: associatedGroups, associatedIndicators, attributes, securityLabels, sightings, tags, threatAssess
+  event_list:
+    - associatedGroups
+    - associatedIndicators
+    - attributes
+    - securityLabels
+    - sightings
+    - tags
+    - threatAssess
   tql_filter: {{tql}}
 redact:
   fields:
@@ -36,7 +43,7 @@ program: |
   request("GET", (
     !state.want_more ?
       state.url + "/api/v3/indicators?" + (
-          "fields=" + state.event_list.trim(" ").replace(" ", "", -1).split(",").join("&fields=") + "&"
+          "fields=" + state.event_list.join("&fields=") + "&"
         ) + "resultStart=0&resultLimit=" + string(state.batch) + "&sorting=lastModified%20asc&tql=lastModified%20GEQ%20%22" +
         (
           !state.want_more ?
@@ -65,13 +72,13 @@ program: |
       "Header": {
         "Authorization": ["TC "+ string(state.access_id) + ":" + string(
           base64(
-            string(
+            bytes(
             (
               has(state.next_url) && state.next_url.contains_substr("/api") ?
                 "/api" + state.next_url.split("/api")[1]
               :
                 "/api/v3/indicators?"+ (
-                    "fields=" + state.event_list.trim(" ").replace(" ", "", -1).split(",").join("&fields=") + "&"
+                    "fields=" + state.event_list.join("&fields=") + "&"
                   ) +"resultStart=0&resultLimit=" + string(state.batch) + "&sorting=lastModified%20asc&tql=lastModified%20GEQ%20%22" +
                 (
                   !state.want_more ?
@@ -116,7 +123,7 @@ program: |
       "next_url": (
         has(body.next) && body.next != null && body.next != "" ?
           state.url + "/api/v3/indicators?" + (
-              "fields=" + state.event_list.trim(" ").replace(" ", "", -1).split(",").join("&fields=") + "&"
+              "fields=" + state.event_list.join("&fields=") + "&"
             ) + "resultStart=" + string(int(state.counter) + body.data.size()) + "&resultLimit=" + string(state.batch) + "&sorting=lastModified%20asc&tql=lastModified%20GEQ%20%22" +
             (
               !state.want_more ?
