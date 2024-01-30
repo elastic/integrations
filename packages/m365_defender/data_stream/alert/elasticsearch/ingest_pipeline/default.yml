@@ -37,43 +37,50 @@ processors:
       tag: script_to_set_event_category_and_type
       lang: painless
       if: ctx.json?.evidence instanceof List
-      source:
+      params:
+        '#microsoft.graph.security.analyzedMessageEvidence': email
+        '#microsoft.graph.security.mailboxEvidence': email
+        '#microsoft.graph.security.mailClusterEvidence': email
+        '#microsoft.graph.security.deviceEvidence': host
+        '#microsoft.graph.security.fileEvidence': file
+        '#microsoft.graph.security.ipEvidence': network
+        '#microsoft.graph.security.processEvidence': process
+        '#microsoft.graph.security.registryValueEvidence': registry
+        '#microsoft.graph.security.registryKeyEvidence': registry
+        '#microsoft.graph.security.userEvidence': iam
+        '#microsoft.graph.security.securityGroupEvidence': iam
+        malware: malware
+        malicioususeractivity: malware
+        phishing: email
+        apt: threat
+      source: >
         def eventCategory = new HashSet();
         def eventType = new HashSet();
         for (evidence in ctx.json.evidence) {
-          if (['#microsoft.graph.security.analyzedMessageEvidence', '#microsoft.graph.security.mailboxEvidence', '#microsoft.graph.security.mailClusterEvidence'].contains(evidence["@odata.type"])) {
-            eventCategory.add('email');
-            eventType.add('info');
-          } else if (evidence["@odata.type"] == '#microsoft.graph.security.deviceEvidence') {
-            eventCategory.add('host');
-            eventType.add('info');
-          } else if (evidence["@odata.type"] == '#microsoft.graph.security.fileEvidence') {
-            eventCategory.add('file');
-            eventType.add('info');
-          } else if (evidence["@odata.type"] == '#microsoft.graph.security.ipEvidence') {
-            eventCategory.add('network');
-            eventType.add('info');
-          } else if (evidence["@odata.type"] == '#microsoft.graph.security.processEvidence') {
-            eventCategory.add('process');
-            eventType.add('info');
-          } else if (['#microsoft.graph.security.registryValueEvidence', '#microsoft.graph.security.registryKeyEvidence'].contains(evidence["@odata.type"])) {
-            eventCategory.add('registry');
-            eventType.add('access')
-          } else if (['#microsoft.graph.security.userEvidence', '#microsoft.graph.security.securityGroupEvidence'].contains(evidence["@odata.type"])) {
-            eventCategory.add('iam');
-            eventType.add('info');
+          String mapping = params[evidence["@odata.type"]];
+          if (mapping != null) {
+            eventCategory.add(mapping);
+            if(eventCategory.contains('registry')){
+              eventType.add('access');
+            }
+            else if(eventCategory.contains('threat')){
+              eventType.add('indicator');
+            }
+            else{
+              eventType.add('info');
+            }
           }
         }
-        if (ctx.json?.determination != null) {
-          if (['malware', 'malicioususeractivity'].contains(ctx.json.determination.toLowerCase())) {
-            eventCategory.add('malware');
-            eventType.add('info');
-          } else if (['phishing'].contains(ctx.json.determination.toLowerCase())) {
-            eventCategory.add('email');
-            eventType.add('info');
-          } else if (['apt'].contains(ctx.json.determination.toLowerCase())) {
-            eventCategory.add('threat');
-            eventType.add('indicator');
+        if(ctx.json?.determination != null){
+          String mapping = params[ctx.json.determination.toLowerCase()];
+          if(mapping != null) {
+            eventCategory.add(mapping);
+            if(eventCategory.contains('threat')){
+              eventType.add('indicator');
+            }
+            else{
+              eventType.add('info');
+            }
           }
         }
         if (!eventType.isEmpty()) {
@@ -2280,42 +2287,43 @@ processors:
         def processUserId = new HashSet();
         def processUserName = new HashSet();
         for (evidence in ctx.json.evidence) {
-          if (evidence?.odata_type != null) {
-            if (evidence.odata_type == '#microsoft.graph.security.securityGroupEvidence') {
-              if (evidence?.display_name != null) {
-                groupName.add(evidence.display_name);
-              }
+          if (evidence?.odata_type == null) {
+            continue
+          }
+          if (evidence?.odata_type == '#microsoft.graph.security.securityGroupEvidence') {
+            if (evidence?.display_name != null) {
+              groupName.add(evidence.display_name);
             }
-            if (evidence.odata_type == '#microsoft.graph.security.deviceEvidence') {
-              if (evidence?.mde_device_id != null) {
-                hostId.add(evidence.mde_device_id);
-              }
+          }
+          if (evidence?.odata_type == '#microsoft.graph.security.deviceEvidence') {
+            if (evidence?.mde_device_id != null) {
+              hostId.add(evidence.mde_device_id);
             }
-            if (['#microsoft.graph.security.mailboxEvidence', '#microsoft.graph.security.userEvidence'].contains(evidence.odata_type)) {
-              if (evidence?.user_account?.domain_name != null) {
-                userDomain.add(evidence.user_account.domain_name);
-              }
-              if (evidence?.user_account?.azure_ad_user_id != null) {
-                userId.add(evidence.user_account.azure_ad_user_id);
-              }
-              if (evidence?.user_account?.user_principal_name != null) {
-                userEmail.add(evidence.user_account.user_principal_name);
-              }
-              if (evidence?.user_account?.account_name != null) {
-                userName.add(evidence.user_account.account_name);
-              }
+          }
+          if (['#microsoft.graph.security.mailboxEvidence', '#microsoft.graph.security.userEvidence'].contains(evidence.odata_type)) {
+            if (evidence?.user_account?.domain_name != null) {
+              userDomain.add(evidence.user_account.domain_name);
             }
-            if (evidence.odata_type == '#microsoft.graph.security.processEvidence') {
-              if (evidence?.user_account?.azure_ad_user_id != null) {
-                processUserId.add(evidence.user_account.azure_ad_user_id);
-              }
-              if (evidence?.user_account?.account_name != null) {
-                processUserName.add(evidence.user_account.account_name);
-              }
+            if (evidence?.user_account?.azure_ad_user_id != null) {
+              userId.add(evidence.user_account.azure_ad_user_id);
             }
-            if (evidence?.vm_metadata?.cloud_provider != null && evidence.vm_metadata.cloud_provider.toLowerCase() == 'azure') {
-              cloudProvider.add('azure');
+            if (evidence?.user_account?.user_principal_name != null) {
+              userEmail.add(evidence.user_account.user_principal_name);
             }
+            if (evidence?.user_account?.account_name != null) {
+              userName.add(evidence.user_account.account_name);
+            }
+          }
+          if (evidence?.odata_type == '#microsoft.graph.security.processEvidence') {
+            if (evidence?.user_account?.azure_ad_user_id != null) {
+              processUserId.add(evidence.user_account.azure_ad_user_id);
+            }
+            if (evidence?.user_account?.account_name != null) {
+              processUserName.add(evidence.user_account.account_name);
+            }
+          }
+          if (evidence?.vm_metadata?.cloud_provider != null && evidence.vm_metadata.cloud_provider.toLowerCase() == 'azure') {
+            cloudProvider.add('azure');
           }
         }
         if (!cloudProvider.isEmpty()) {
@@ -2372,18 +2380,19 @@ processors:
         def processPid = new HashSet();
         def processParentPid = new HashSet();
         for (evidence in ctx.json.evidence) {
-          if (evidence.odata_type != null) {
-            if (evidence.odata_type == '#microsoft.graph.security.fileEvidence') {
-              if (evidence?.file_details?.size != null) {
-                fileSize.add(evidence.file_details.size);
-              }
-            } else if (evidence.odata_type == '#microsoft.graph.security.processEvidence') {
-              if (evidence?.process?.id != null) {
-                processPid.add(evidence.process.id);
-              }
-              if (evidence?.parent_process?.id != null) {
-                processParentPid.add(evidence.parent_process.id);
-              }
+          if (evidence?.odata_type == null) {
+            continue
+          }
+          if (evidence?.odata_type == '#microsoft.graph.security.fileEvidence') {
+            if (evidence?.file_details?.size != null) {
+              fileSize.add(evidence.file_details.size);
+            }
+          } else if (evidence?.odata_type == '#microsoft.graph.security.processEvidence') {
+            if (evidence?.process?.id != null) {
+              processPid.add(evidence.process.id);
+            }
+            if (evidence?.parent_process?.id != null) {
+              processParentPid.add(evidence.parent_process.id);
             }
           }
         }
