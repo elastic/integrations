@@ -80,11 +80,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2022-05-16T08:18:39.000+02:00",
     "agent": {
-        "ephemeral_id": "fb68f426-1f95-414b-8f91-86dd7b4b51f1",
-        "id": "c2bdf813-eef8-466e-a578-4cfc4712db49",
+        "ephemeral_id": "8f24cddd-67ce-47a5-abbf-f121166c864d",
+        "id": "8601d89d-ddce-4945-96ce-7d8dd35e7d9e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.1"
+        "version": "8.11.4"
     },
     "data_stream": {
         "dataset": "sonicwall_firewall.log",
@@ -112,9 +112,9 @@ An example event for `log` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c2bdf813-eef8-466e-a578-4cfc4712db49",
+        "id": "8601d89d-ddce-4945-96ce-7d8dd35e7d9e",
         "snapshot": false,
-        "version": "8.8.1"
+        "version": "8.11.4"
     },
     "event": {
         "action": "connection-denied",
@@ -124,11 +124,11 @@ An example event for `log` looks as following:
         ],
         "code": "713",
         "dataset": "sonicwall_firewall.log",
-        "ingested": "2023-11-20T22:26:19Z",
+        "ingested": "2024-01-29T19:06:19Z",
         "kind": "event",
         "outcome": "success",
-        "sequence": "692",
-        "severity": "7",
+        "sequence": 692,
+        "severity": 7,
         "timezone": "+02:00",
         "type": [
             "connection",
@@ -141,7 +141,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "debug",
         "source": {
-            "address": "192.168.16.4:53067"
+            "address": "172.23.0.4:37942"
         },
         "syslog": {
             "priority": 135
@@ -238,6 +238,10 @@ An example event for `log` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
+| event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
+| host.ip | Host ip addresses. | ip |
+| http.request.body.bytes | Size in bytes of the request body. | long |
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Path to the log file. | keyword |

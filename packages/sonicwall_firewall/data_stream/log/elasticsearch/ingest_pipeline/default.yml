@@ -42,6 +42,10 @@ processors:
       target_field: host.ip
       if: ctx._temp_?.host != null
       ignore_failure: true
+  - set:
+      field: host.ip
+      value: ['{{{host.ip}}}']
+      if: ctx.host?.ip instanceof String
   - rename:
       field: _temp_.host
       target_field: host.name
@@ -495,6 +499,22 @@ processors:
       on_failure:
         - remove:
             field: event.duration
+
+  - convert:
+      field: event.sequence
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: event.sequence
+
+  - convert:
+      field: event.severity
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: event.severity
 
   - script:
       lang: painless
