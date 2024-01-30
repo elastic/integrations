@@ -342,84 +342,84 @@ processors:
           ctx.event.action.contains('open secure note')
         )
       patterns:
-        - "^Secure Note\\s+\\(%{DATA:lastpass.event_report.data.secure_note}\\)$"
-        - "^Secure Note\\s+\\(%{DATA:lastpass.event_report.data.secure_note}\\)\\s+from\\s+%{DATA:lastpass.event_report.data.shared_folder_name}$"
+        - '^Secure Note\s+\(%{DATA:lastpass.event_report.data.secure_note}\)$'
+        - '^Secure Note\s+\(%{DATA:lastpass.event_report.data.secure_note}\)\s+from\s+%{DATA:lastpass.event_report.data.shared_folder_name}$'
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('edit secure note') == true
       patterns:
-        - "^Secure Note\\s+\\(%{DATA:lastpass.event_report.data.secure_note}\\)$"
+        - '^Secure Note\s+\(%{DATA:lastpass.event_report.data.secure_note}\)$'
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('add to shared folder') == true
       patterns:
-        - "^\\'%{DATA:lastpass.event_report.data.shared_folder_name}\\'\\s+\\'%{EMAILADDRESS:lastpass.event_report.data.user_email}\\'$"
+        - "^'%{DATA:lastpass.event_report.data.shared_folder_name}'\\s+'%{EMAILADDRESS:lastpass.event_report.data.user_email}'$"
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('create group') == true
       patterns:
-        - "^\\'%{DATA:lastpass.event_report.data.group_name}\\'$"
+        - "^'%{DATA:lastpass.event_report.data.group_name}'$"
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('adding user to group') == true
       patterns:
-        - "^%{EMAILADDRESS:lastpass.event_report.data.user_email}\\s+\\-\\s+%{DATA:lastpass.event_report.data.group_name}$"
+        - '^%{EMAILADDRESS:lastpass.event_report.data.user_email}\s+\-\s+%{DATA:lastpass.event_report.data.group_name}$'
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('created lastpass account') == true
       patterns:
-        - "^%{EMAILADDRESS:lastpass.event_report.data.user_email}\\s*\\-Shared\\-\\s*%{DATA:lastpass.event_report.data.shared_folder_name}$"
+        - '^%{EMAILADDRESS:lastpass.event_report.data.user_email}\s*-Shared-\s*%{DATA:lastpass.event_report.data.shared_folder_name}$'
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('update folder permissions') == true
       patterns:
-        - "^\\'%{DATA:lastpass.event_report.data.shared_folder_name}\\'\\s+\\'%{EMAILADDRESS:lastpass.event_report.data.user_email}\\'\\s+\\'Read only\\:%{DATA:lastpass.event_report.data.shared_folder_user_permissions.read_only}\\s+Admin\\:%{DATA:lastpass.event_report.data.shared_folder_user_permissions.admin}\\s+Hide PW\\:%{DATA:lastpass.event_report.data.shared_folder_user_permissions.hide_password}\\'$"
+        - "^'%{DATA:lastpass.event_report.data.shared_folder_name}'\\s+'%{EMAILADDRESS:lastpass.event_report.data.user_email}'\\s+'Read only:%{DATA:lastpass.event_report.data.shared_folder_user_permissions.read_only}\\s+Admin:%{DATA:lastpass.event_report.data.shared_folder_user_permissions.admin}\\s+Hide PW:%{DATA:lastpass.event_report.data.shared_folder_user_permissions.hide_password}'$"
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('renamed shared folder') == true
       patterns:
-        - "^\\'%{DATA:lastpass.event_report.data.shared_folder_name}\\'\\s+\\'%{DATA:lastpass.event_report.data.renamed_shared_folder_name}\\'$"
+        - "^'%{DATA:lastpass.event_report.data.shared_folder_name}'\\s+'%{DATA:lastpass.event_report.data.renamed_shared_folder_name}'$"
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('move to shared folder') == true
       patterns:
-        - "^\\s+to\\s+%{DATA:lastpass.event_report.data.shared_folder_name}$"
-        - "^%{GREEDYDATA:lastpass.event_report.data.site}\\s+to\\s+%{DATA:lastpass.event_report.data.shared_folder_name}$"
+        - '^\s+to\s+%{DATA:lastpass.event_report.data.shared_folder_name}$'
+        - '^%{GREEDYDATA:lastpass.event_report.data.site}\s+to\s+%{DATA:lastpass.event_report.data.shared_folder_name}$'
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('move from shared folder') == true
       patterns:
-        - "^ from INVALID SHARED FOLDER$"
-        - "^\\s+from\\s+%{DATA:lastpass.event_report.data.shared_folder_name}$"
-        - "^%{GREEDYDATA:lastpass.event_report.data.site}\\s+from\\s+%{DATA:lastpass.event_report.data.shared_folder_name}$"
+        - '^ from INVALID SHARED FOLDER$'
+        - '^\s+from\s+%{DATA:lastpass.event_report.data.shared_folder_name}$'
+        - '^%{GREEDYDATA:lastpass.event_report.data.site}\s+from\s+%{DATA:lastpass.event_report.data.shared_folder_name}$'
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('delete shared sites') == true
       patterns:
-        - "^\\s+from\\s+%{DATA:lastpass.event_report.data.shared_folder_name}$"
-        - "^%{GREEDYDATA:lastpass.event_report.data.deleted_site}\\s+from\\s+%{DATA:lastpass.event_report.data.shared_folder_name}$"
+        - '^\s+from\s+%{DATA:lastpass.event_report.data.shared_folder_name}$'
+        - '^%{GREEDYDATA:lastpass.event_report.data.deleted_site}\s+from\s+%{DATA:lastpass.event_report.data.shared_folder_name}$'
       ignore_failure: true
   - grok:
       field: _temp
       if: ctx.event?.action?.contains('limit shared folder') == true
       patterns:
-        - "^%{DATA:lastpass.event_report.data.shared_folder_name}\\,%{EMAILADDRESS:lastpass.event_report.data.user_email}$"
+        - '^%{DATA:lastpass.event_report.data.shared_folder_name},%{EMAILADDRESS:lastpass.event_report.data.user_email}$'
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('removed from shared folder') == true
       patterns:
-        - "^\\'%{DATA:lastpass.event_report.data.shared_folder_name}\\'\\s+\\'%{EMAILADDRESS:lastpass.event_report.data.user_email}\\'$"
+        - "^'%{DATA:lastpass.event_report.data.shared_folder_name}'\\s+'%{EMAILADDRESS:lastpass.event_report.data.user_email}'$"
       ignore_failure: true
   - set:
       field: user.group.name
