@@ -18,6 +18,10 @@ to your configuration XML file (ie standalone.xml) under the path below
     </profile>
 </server>
 ```
+
+Note:
+- Keycloak log files could contain multiline logs. In order to process them, the [multiline configuration](https://www.elastic.co/guide/en/beats/filebeat/current/multiline-examples.html) should be added to the parsers section when deploying the integration.
+
 ## Logs
 
 ### log
