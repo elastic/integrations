@@ -4,9 +4,6 @@ processors:
   - set:
       field: ecs.version
       value: 8.3.1
-        # - set:
-        #     field: test.field_version
-        #     value: 9.9.9
   - set:
       field: service.type
       value: elastic_package_registry
@@ -77,11 +74,6 @@ processors:
       formats: ["UNIX"]
       target_field: package_registry.start_time
       if: ctx?.package_registry?.containsKey("start_time_seconds")
-  - date:
-      field: package_registry.start_time_seconds
-      formats: ["UNIX"]
-      target_field: package_registry.start_time
-      if: ctx?.package_registry?.containsKey("not_exist")
   - script:
       description: Get process uptime
       lang: painless
