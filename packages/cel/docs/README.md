@@ -1,8 +1,8 @@
 # CEL Custom API input integration
 
-The CEL custom API input integration is used to ingest data from custom HTTP and local file-system APIs that do not currently have an existing integration.
+The Common Expression Language (CEL) custom API input integration is used to ingest data from custom HTTP and local file-system APIs that do not currently have an existing integration.
 
-The input itself supports making both HTTP requests and file-system read operations, and keeping running and persistent state on information from the last collected events. The input performs [Common Expression Language](https://opensource.google.com/projects/cel) with a [set of standard extensions](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_cel_extension_libraries) to both obtain input data from the API and then process the data into events that are published to Elasticsearch.
+The input itself supports making both HTTP requests and file-system read operations, and keeping running and persistent state on information from the last collected events. The input performs [Common Expression Language](https://opensource.google.com/projects/cel) expression evaluation with a [set of standard extensions](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_cel_extension_libraries) to both obtain input data from the API and then process the data into events that are published to Elasticsearch.
 
 ## Configuration
 
