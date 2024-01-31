@@ -67,6 +67,15 @@ steps:
       cpu: "8"
       memory: "4G"
 
+  - label: ":sonarqube: Continuous Code Inspection"
+    env:
+      VAULT_SONAR_TOKEN_PATH: "kv/ci-shared/platform-ingest/elastic/integrations/sonar-analyze-token"
+    agents:
+      image: "docker.elastic.co/cloud-ci/sonarqube/buildkite-scanner:latest"
+    command: ".buildkite/scripts/run_sonar_scanner.sh"
+    artifact_paths:
+      - build/test-coverage/coverage_merged.xml
+
   - label: ":junit: Junit annotate"
     plugins:
       - junit-annotate#v2.4.1:
