@@ -1,0 +1,59 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+auth.digest:
+  user: {{public_key}}
+  password: {{private_key}}
+resource.url: {{url}}
+state:
+  groupId: {{groupId}}
+  hostName: {{hostName}}
+program: |
+    (
+      state.with({
+        "startDate": (
+        has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null
+        ?
+          state.cursor.last_timestamp
+        :
+          int(timestamp(now) - duration("30m"))
+        ),
+        "endDate": int(timestamp(now))
+      })
+      ).as(state, state.with(
+      request("GET", state.url + "/api/atlas/v2/groups/" + state.groupId + "/clusters/" + state.hostName + "/logs/mongodb-audit-log.gz?startDate=" + string(int(state.startDate)) + "&endDate=" + string(int(state.endDate))
+      ).with({
+        "Header": {
+          "Accept": ["application/vnd.atlas." + string(timestamp(now).getFullYear()) + "-01-01+gzip"]
+        }
+      }).do_request().as(resp,
+        string(bytes(resp.Body).mime('application/gzip')).as(body,{
+          "events": body.trim_space().split("\n").map(value,{"message":value}),
+          "cursor": {
+            "last_timestamp": state.endDate
+          }
+        })
+      ))
+    )     
