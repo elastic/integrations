@@ -93,8 +93,8 @@ An example event for `securesphere` looks as following:
 {
     "@timestamp": "2023-10-05T18:33:02.000Z",
     "agent": {
-        "ephemeral_id": "72a3940a-ff8f-4dbe-996c-683be2bf9c9d",
-        "id": "68d423e3-c562-46ac-aebf-08e6f6ce9e0f",
+        "ephemeral_id": "94608df6-6778-4ec4-99dc-d0cd37d583d8",
+        "id": "0412638f-dd94-4c0e-b349-e99a0886d9f0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.10.1"
@@ -108,7 +108,7 @@ An example event for `securesphere` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "68d423e3-c562-46ac-aebf-08e6f6ce9e0f",
+        "id": "0412638f-dd94-4c0e-b349-e99a0886d9f0",
         "snapshot": false,
         "version": "8.10.1"
     },
@@ -116,7 +116,7 @@ An example event for `securesphere` looks as following:
         "agent_id_status": "verified",
         "code": "User logged in",
         "dataset": "imperva.securesphere",
-        "ingested": "2023-10-10T12:08:14Z",
+        "ingested": "2023-12-01T09:10:18Z",
         "kind": "event",
         "original": "\u003c14\u003eCEF:0|Imperva Inc.|SecureSphere|15.1.0|User logged in|User admin logged in from 81.2.69.142.|High|suser=admin rt=Oct 05 2023 18:33:02 cat=SystemEvent",
         "severity": 7
@@ -146,7 +146,7 @@ An example event for `securesphere` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.18.0.6:38727"
+            "address": "192.168.249.7:48857"
         }
     },
     "message": "User admin logged in from 81.2.69.142.",
@@ -212,8 +212,12 @@ An example event for `securesphere` looks as following:
 | imperva.securesphere.transport_protocol |  | keyword |
 | imperva.securesphere.version |  | keyword |
 | input.type | Type of filebeat input. | keyword |
-| log.file.device_id |  | long |
-| log.file.inode |  | long |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | tags | User defined tags. | keyword |
