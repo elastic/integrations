@@ -83,19 +83,21 @@ processors:
       ignore_missing: true
       pattern: ' {2,}'
       replacement: ' '
-  # Adding support to map timezone abbreviations that is not supported by Java manually.
-  # If no match is found, it will default back to _conf.tz_offset as before.
-  # If tz_offset is not set, it will default to UTC as before.
   - script:
       lang: painless
       tag: script_timezone
+      description: >-
+        Add support to map timezone abbreviations that are not supported by
+        Java manually. If no match is found, it will default back to
+        _conf.tz_offset as before. If tz_offset is not set, it will default to
+        UTC as before.
       if:
       source: >-
           if (ctx._temp_?.tz != null && ctx._conf?.tz_map != null) {
             for (def item : ctx._conf.tz_map) {
               if (item.tz_short == ctx._temp_.tz) {
                 ctx.event.timezone = item.tz_long;
-                break;
+                return;
               }
             }
           }
