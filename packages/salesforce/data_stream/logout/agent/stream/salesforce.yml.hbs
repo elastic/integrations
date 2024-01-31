@@ -1,0 +1,58 @@
+version: {{api_version}}
+auth.oauth2:
+{{#if jwt_enabled }}
+  jwt_bearer_flow:
+    enabled: true
+    client.id: {{client_id}}
+    client.username: {{username}}
+    client.key_path: {{client_key_path}}
+    url: {{jwt_url}}
+{{#else}}
+  user_password_flow:
+    enabled: true
+    client.id: {{client_id}}
+    client.secret: {{client_secret}}
+    token_url: {{token_url}}
+    username: {{username}}
+    password: {{password}}
+{{/if}}
+url: {{instance_url}}
+event_monitoring_method:
+  {{#if event_log_file}}
+  event_log_file:
+    enabled: true
+    interval: {{elf_period}}
+    query:
+      default: "SELECT CreatedDate,LogDate,LogFile FROM EventLogFile WHERE {{#if initial_interval}}LogDate > [[ formatTime(parseDuration(-{{initial_interval}})), "2006-01-02T15:04:05+0700") ]] AND{{/if}} Interval = '{{log_file_interval}}' AND EventType = 'Logout' ORDER BY LogDate ASC NULLS FIRST"
+      value: "SELECT CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = '{{log_file_interval}}' AND EventType = 'Logout' AND CreatedDate > [[ .cursor.event_log_file.last_event_time ]] ORDER BY LogDate ASC NULLS FIRST"
+    cursor:
+      field: "CreatedDate"
+  {{/if}}
+  {{#if object}}
+  object:
+    enabled: true
+    interval: {{real_time_period}}
+    query:
+      default: "SELECT FIELDS(STANDARD) FROM LogoutEvent{{#if initial_interval}} WHERE EventDate > [[ formatTime(parseDuration(-{{initial_interval}})), "2006-01-02T15:04:05+0700") ]]{{/if}}"
+      value: "SELECT FIELDS(STANDARD) FROM LogoutEvent WHERE EventDate > [[ .cursor.object.first_event_time ]]"
+    cursor:
+      field: "EventDate"
+  {{/if}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- add_fields:
+    target: salesforce
+    fields:
+      instance_url: {{instance_url}}
+{{#if processors}}
+{{processors}}
+{{/if}}

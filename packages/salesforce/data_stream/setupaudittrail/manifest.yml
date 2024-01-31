@@ -1,7 +1,7 @@
 type: logs
 title: Salesforce setupaudittrail logs
 streams:
-  - input: httpjson
+  - input: salesforce
     vars:
       - name: period
         type: text
@@ -9,8 +9,16 @@ streams:
         description: Period of fetching logs, i.e. 1s/1m/1h.
         multi: false
         required: true
-        show_user: false
+        show_user: true
         default: 1h
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: Initial Interval to fetch historical data form, i.e. 1s/1m/1h.
+        multi: false
+        required: false
+        show_user: true
+        default: 30d
       - name: tags
         type: text
         title: Tags
@@ -28,14 +36,6 @@ streams:
         type: bool
         multi: false
         default: false
-      - name: request_timeout
-        type: text
-        title: Request timeout
-        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are `s` (seconds) and `m` (minutes). Default is 30s if left empty.
-        show_user: false
-        multi: false
-        required: false
-        default: 5m
       - name: processors
         type: yaml
         title: Processors
