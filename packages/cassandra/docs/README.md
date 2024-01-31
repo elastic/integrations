@@ -11,7 +11,7 @@ This integration has been tested against `Cassandra version 3.11.11`.
 If log.flags is shown conflicted under the ``logs-*`` data view, then this issue can be solved by reindexing the ``Logs`` data stream's indices.
 
 Note:
-- This [document](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) provides details about reindexing.
+- This [document](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds-reindex.html) provides details about reindexing.
 
 ## Logs
 
