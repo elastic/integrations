@@ -259,25 +259,25 @@ processors:
     value: Up/Pending
     ignore_empty_value: true
     ignore_failure: true
-    if: ctx?.json?.current_state?.contains("0")
+    if: ctx.json?.current_state?.contains("0") == true
 - set:
     field: nagios_xi.host.current_state
     value: Warning
     ignore_empty_value: true
     ignore_failure: true
-    if: ctx?.json?.current_state?.contains("1")
+    if: ctx.json?.current_state?.contains("1") == true
 - set:
     field: nagios_xi.host.current_state
     value: Critical
     ignore_empty_value: true
     ignore_failure: true
-    if: ctx?.json?.current_state?.contains("2")
+    if: ctx.json?.current_state?.contains("2") == true
 - set:
     field: nagios_xi.host.current_state
     value: Unknown
     ignore_empty_value: true
     ignore_failure: true
-    if: ctx?.json?.current_state?.contains("3")
+    if: ctx.json?.current_state?.contains("3") == true
 - rename:
     field: json.has_been_checked
     target_field: nagios_xi.host.has_been_checked
@@ -447,7 +447,7 @@ processors:
       drop(ctx);
 - remove:
     field: event.original
-    if: ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))
+    if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
     ignore_failure: true
     ignore_missing: true
 - remove:
