@@ -83,41 +83,31 @@ processors:
       ignore_missing: true
       pattern: ' {2,}'
       replacement: ' '
-  # Adding support to map timezone abbreviations that is not supported by Java manually.
-  # If no match is found, it will default back to _conf.tz_offset as before.
-  # If tz_offset is not set, it will default to UTC as before.
   - script:
       lang: painless
       tag: script_timezone
-      if: ctx._temp_?.tz != null && ctx._temp_?.tz != ''
+      description: >-
+        Add support to map timezone abbreviations that are not supported by
+        Java manually. If no match is found, it will default back to
+        _conf.tz_offset as before. If tz_offset is not set, it will default to
+        UTC as before.
+      if:
       source: >-
-          def conf = ctx['_conf'];
-          if (conf == null) return;
-
-          if (conf.tz_offset == null) {
-            conf.tz_offset = 'UTC';
-          }
-          
-          def mappings = conf.tz_map;
-          if (mappings == null) {
-            ctx.event.timezone = conf.tz_offset;
-            return;
-          }
-
-          def tz_log = ctx._temp_.tz;
-          for (def item : mappings) {
-            if (item.tz_short == tz_log) {
-              ctx.event.timezone = item.tz_long;
-              break;
+          if (ctx._temp_?.tz != null && ctx._conf?.tz_map != null) {
+            for (def item : ctx._conf.tz_map) {
+              if (item.tz_short == ctx._temp_.tz) {
+                ctx.event.timezone = item.tz_long;
+                return;
+              }
             }
           }
-          if (ctx.event.timezone == null) {
-            ctx.event.timezone = conf.tz_offset;
+          if (ctx.event?.timezone == null) {
+            if (ctx._conf?.tz_offset != null) {
+              ctx.event.timezone = ctx._conf.tz_offset;
+            } else {
+              ctx.event.timezone = "UTC";
+            }
           }
-  - set:
-      field: event.timezone
-      value: UTC
-      if: ctx.event?.timezone == null
   - date:
       if: ctx?._temp_.cisco_timestamp != null
       field: _temp_.cisco_timestamp
