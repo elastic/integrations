@@ -42,67 +42,76 @@ redact:
 program: |
   request("GET", (
     !state.want_more ?
-      state.url + "/api/v3/indicators?" + (
-          "fields=" + state.event_list.join("&fields=") + "&"
-        ) + "resultStart=0&resultLimit=" + string(state.batch) + "&sorting=lastModified%20asc&tql=lastModified%20GEQ%20%22" +
-        (
-          !state.want_more ?
-            (has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null ?
-              string(state.cursor.last_timestamp)
-            :
-              string((now - duration(state.initial_interval)).format(time_layout.RFC3339)).split("+")[0]
-            )
-          :
-            (has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null ?
-              state.cursor.first_timestamp
-            :
-              null
-            )
-        ) + "%22" + (
-          has(state.tql_filter) && state.tql_filter != null && state.tql_filter != "" ?
-            "%20AND%20"+state.tql_filter.trim(" ").replace("%", "%25", -1).replace(" ", "%20", -1).replace("<", "%3C", -1).replace(">", "%3E", -1).replace("=", "%3D", -1).replace("\"", "%22", -1).replace("#", "%23", -1).replace("&", "%26", -1).replace("|", "%7C", -1)
-          :
-            ""
-        )
+        state.url + "/api/v3/indicators?" + {
+            "fields": state.event_list,
+            "resultStart": ["0"],
+            "resultLimit": [string(state.batch)],
+            "sorting": ["lastModified asc"],
+            "tql": ['lastModified GEQ "'+(
+                !state.want_more ?
+                    (has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null ?
+                        string(state.cursor.last_timestamp)
+                    :
+                        string((now - duration(state.initial_interval)).format(time_layout.RFC3339)).split("+")[0]
+                    )
+                :
+                    (has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null ?
+                        state.cursor.first_timestamp
+                    :
+                        ""
+                    )
+                )+'"'+(
+                    has(state.tql_filter) && state.tql_filter != null && state.tql_filter != "" ?
+                        " AND "+state.tql_filter.trim(" ")
+                    :
+                        ""
+                )
+            ],
+        }.format_query()
       :
         state.next_url
       )
     )
     .with({
       "Header": {
-        "Authorization": ["TC "+ string(state.access_id) + ":" + string(
+        "Authorization": ["TC "+ string(state.access_id) + ":" +
           base64(
             bytes(
             (
               has(state.next_url) && state.next_url.contains_substr("/api") ?
                 "/api" + state.next_url.split("/api")[1]
               :
-                "/api/v3/indicators?"+ (
-                    "fields=" + state.event_list.join("&fields=") + "&"
-                  ) +"resultStart=0&resultLimit=" + string(state.batch) + "&sorting=lastModified%20asc&tql=lastModified%20GEQ%20%22" +
-                (
-                  !state.want_more ?
-                    (has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null ?
-                      string(state.cursor.last_timestamp)
-                    :
-                      string((now - duration(state.initial_interval)).format(time_layout.RFC3339)).split("+")[0]
-                    )
-                  :
-                    (has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null ?
-                      state.cursor.first_timestamp
-                    :
-                      null
-                    )
-                ) + "%22" + (
-                  has(state.tql_filter) && state.tql_filter != null && state.tql_filter != "" ?
-                    "%20AND%20"+state.tql_filter.trim(" ").replace("%", "%25", -1).replace(" ", "%20", -1).replace("<", "%3C", -1).replace(">", "%3E", -1).replace("=", "%3D", -1).replace("\"", "%22", -1).replace("#", "%23", -1).replace("&", "%26", -1).replace("|", "%7C", -1)
-                  :
-                    ""
-                )
+                "/api/v3/indicators?" +
+                  {
+                    "fields": state.event_list,
+                    "resultStart": ["0"],
+                    "resultLimit": [string(state.batch)],
+                    "sorting": ["lastModified asc"],
+                    "tql": ['lastModified GEQ "'+(
+                        !state.want_more ?
+                            (has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null ?
+                                string(state.cursor.last_timestamp)
+                            :
+                                string((now - duration(state.initial_interval)).format(time_layout.RFC3339)).split("+")[0]
+                            )
+                        :
+                            (has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null ?
+                                state.cursor.first_timestamp
+                            :
+                                ""
+                            )
+                        )+'"'+(
+                            has(state.tql_filter) && state.tql_filter != null && state.tql_filter != "" ?
+                                " AND "+state.tql_filter.trim(" ")
+                            :
+                                ""
+                        )
+                    ],
+                }.format_query()
               ) +
               ":GET:" + string(int(now))
               ).hmac("sha256", bytes(state.secret_key)))
-            )],
+            ],
           "Timestamp": [string(int(now))]
         }
       })
@@ -122,28 +131,33 @@ program: |
       "tql_filter": has(state.tql_filter) && state.tql_filter != null && state.tql_filter != "" ? state.tql_filter : null,
       "next_url": (
         has(body.next) && body.next != null && body.next != "" ?
-          state.url + "/api/v3/indicators?" + (
-              "fields=" + state.event_list.join("&fields=") + "&"
-            ) + "resultStart=" + string(int(state.counter) + body.data.size()) + "&resultLimit=" + string(state.batch) + "&sorting=lastModified%20asc&tql=lastModified%20GEQ%20%22" +
-            (
-              !state.want_more ?
-                (has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null ?
-                  string(state.cursor.last_timestamp)
-                :
-                  string((now - duration(state.initial_interval)).format(time_layout.RFC3339)).split("+")[0]
-                )
-              :
-                (has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null ?
-                  state.cursor.first_timestamp
-                :
-                  null
-                )
-            ) + "%22" + (
-              has(state.tql_filter) && state.tql_filter != null && state.tql_filter != "" ?
-                "%20AND%20"+state.tql_filter.trim(" ").replace("%", "%25", -1).replace(" ", "%20", -1).replace("<", "%3C", -1).replace(">", "%3E", -1).replace("=", "%3D", -1).replace("\"", "%22", -1).replace("#", "%23", -1).replace("&", "%26", -1).replace("|", "%7C", -1)
-              :
-                ""
-            )
+          state.url + "/api/v3/indicators?" + 
+            {
+              "fields": state.event_list,
+              "resultStart": [string(int(state.counter) + body.data.size())],
+              "resultLimit": [string(state.batch)],
+              "sorting": ["lastModified asc"],
+              "tql": ['lastModified GEQ "'+(
+                  !state.want_more ?
+                      (has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null ?
+                          string(state.cursor.last_timestamp)
+                      :
+                          string((now - duration(state.initial_interval)).format(time_layout.RFC3339)).split("+")[0]
+                      )
+                  :
+                      (has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null ?
+                          state.cursor.first_timestamp
+                      :
+                          ""
+                      )
+                  )+'"'+(
+                      has(state.tql_filter) && state.tql_filter != null && state.tql_filter != "" ?
+                          " AND "+state.tql_filter.trim(" ")
+                      :
+                          ""
+                  )
+              ],
+            }.format_query()
         :
           state.url
       ),
@@ -159,7 +173,7 @@ program: |
           ),
         "first_timestamp": (
             has(state.cursor) && has(state.cursor.first_timestamp) && has(body.data) && state.cursor.first_timestamp != null ?
-              (has(body.next) && body.next != null && body.next != "" ? 
+              (has(body.next) && body.next != null && body.next != "" ?
                 state.cursor.first_timestamp
               :
                 state.cursor.last_timestamp)
