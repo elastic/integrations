@@ -37,6 +37,7 @@ processors:
     fields:
       annotations.elastic_co/dataset: ${kubernetes.annotations.elastic.co/dataset|""}
       annotations.elastic_co/namespace: ${kubernetes.annotations.elastic.co/namespace|""}
+      annotations.elastic_co/preserve_original_event: ${kubernetes.annotations.elastic.co/preserve_original_event|""}
 - drop_fields:
     fields:
       - kubernetes.annotations.elastic_co/dataset
@@ -51,7 +52,17 @@ processors:
       equals:
         kubernetes.annotations.elastic_co/namespace: ""
     ignore_missing: true
-{{#if processors}}      
+- add_tags:
+    tags: ["preserve_original_event"]
+    when:
+      regexp:
+        kubernetes.annotations.elastic_co/preserve_original_event:  "^(?i)true$"
+- drop_fields:
+    fields:
+      - kubernetes.annotations.elastic_co/preserve_original_event
+    ignore_missing: true
+
+{{#if processors}}
 {{processors}}
 {{/if}}
 
