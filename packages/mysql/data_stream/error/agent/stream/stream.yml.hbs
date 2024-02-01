@@ -8,5 +8,18 @@ multiline:
   pattern: '^([0-9]{4}-[0-9]{2}-[0-9]{2}|[0-9]{6})'
   negate: true
   match: after
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
 processors:
 - add_locale: ~
+{{#if processors}}
+{{processors}}
+{{/if}}

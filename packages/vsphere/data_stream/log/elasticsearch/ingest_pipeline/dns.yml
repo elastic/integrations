@@ -1,0 +1,50 @@
+---
+description: "Parse DNS events from VMware vSphere/vCenter"
+processors:
+    - dissect:
+        field: message
+        pattern: "%{dns.op_code}[%{dns.question.type}] %{dns.question.name} from %{}"
+        if: ctx.message.startsWith('query[')
+        description: "Extract information out of queries"
+    - dissect:
+        field: message
+        pattern: "cached %{dns.question.name} is %{_tmp.dns.resolved_ip}"
+        if: ctx.message.startsWith('cached')
+        description: "Extract information out of cached answers"
+    - dissect:
+        field: message
+        pattern: "forwarded %{dns.question.name} to %{_tmp.dns.resolved_ip}"
+        if: ctx.message.startsWith('forwarded')
+        description: "Extract information out of forwarded answers"
+    - registered_domain:
+        field: dns.question.name
+        target_field: dns.question
+        if: ctx.dns?.question?.name != null
+    - uppercase:
+        field: dns.op_code
+        if: ctx.dns?.op_code != null
+    - append:
+        field: dns.resolved_ip
+        value: "{{_tmp.dns.resolved_ip}}"
+        if: ctx._tmp?.dns?.resolved_ip != null
+    - set:
+        field: dns.answers.data
+        value: "{{dns.resolved_ip}}"
+        if: ctx.dns?.resolved_ip != null
+    - set:
+        field: dns.answers.name
+        value: "{{dns.question.name}}"
+        if: ctx.dns?.question?.name != null && ctx.dns?.resolved_ip != null
+    - append:
+        field: event.category
+        value: network
+    - append:
+        field: event.type
+        value: protocol
+    - append:
+        field: event.type
+        value: connection
+    - remove:
+        field: "dns.question.domain"
+        if: "ctx.dns?.question?.domain != null"
+        

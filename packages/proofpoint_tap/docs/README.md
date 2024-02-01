@@ -64,7 +64,7 @@ An example event for `clicks_blocked` looks as following:
         "ip": "89.160.20.112"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -153,6 +153,7 @@ An example event for `clicks_blocked` looks as following:
         "version": "199.0.427504638"
     }
 }
+
 ```
 
 **Exported fields**
@@ -191,6 +192,7 @@ An example event for `clicks_blocked` looks as following:
 | email.from.address | The email address of the sender, typically from the RFC 5322 `From:` header field. | keyword |
 | email.message_id | Identifier from the RFC 5322 `Message-ID:` email header that refers to a particular email message. | wildcard |
 | email.to.address | The email address of recipient | keyword |
+| error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
@@ -299,7 +301,7 @@ An example event for `clicks_permitted` looks as following:
         "ip": "89.160.20.112"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -388,6 +390,7 @@ An example event for `clicks_permitted` looks as following:
         "version": "99.0.1150.46"
     }
 }
+
 ```
 
 **Exported fields**
@@ -426,6 +429,7 @@ An example event for `clicks_permitted` looks as following:
 | email.from.address | The email address of the sender, typically from the RFC 5322 `From:` header field. | keyword |
 | email.message_id | Identifier from the RFC 5322 `Message-ID:` email header that refers to a particular email message. | wildcard |
 | email.to.address | The email address of recipient | keyword |
+| error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
@@ -511,7 +515,7 @@ An example event for `message_blocked` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -590,9 +594,9 @@ An example event for `message_blocked` looks as following:
         "message_blocked": {
             "completely_rewritten": "true",
             "header": {
-                "cc": "\"Example Abc\" \u003cabc@example.com\u003e",
+                "cc": "\"Example Abc\" <abc@example.com>",
                 "from": "\"A. Bc\" abc@example.com",
-                "to": "\"Aa Bb\" \u003caa.bb@example.com\u003e; \"Hey Hello\" \u003chey.hello@example.com\u003e"
+                "to": "\"Aa Bb\" <aa.bb@example.com>; \"Hey Hello\" <hey.hello@example.com>"
             },
             "impostor_score": 0,
             "malware_score": 100,
@@ -690,6 +694,7 @@ An example event for `message_blocked` looks as following:
         "proofpoint_tap-message_blocked"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -729,6 +734,7 @@ An example event for `message_blocked` looks as following:
 | email.subject.text | Multi-field of `email.subject`. | match_only_text |
 | email.to.address | The email address of recipient | keyword |
 | email.x_mailer | The name of the application that was used to draft and send the original email message. | keyword |
+| error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
@@ -824,7 +830,7 @@ An example event for `message_delivered` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -928,6 +934,7 @@ An example event for `message_delivered` looks as following:
         "proofpoint_tap-message_delivered"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -967,6 +974,7 @@ An example event for `message_delivered` looks as following:
 | email.subject.text | Multi-field of `email.subject`. | match_only_text |
 | email.to.address | The email address of recipient | keyword |
 | email.x_mailer | The name of the application that was used to draft and send the original email message. | keyword |
+| error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |

@@ -80,11 +80,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2022-05-16T08:18:39.000+02:00",
     "agent": {
-        "ephemeral_id": "9c635b3a-cb8b-4d1a-891b-3f37008b59bb",
-        "id": "bb043b0c-36d1-4054-81ed-2d3f4546a433",
+        "ephemeral_id": "8f24cddd-67ce-47a5-abbf-f121166c864d",
+        "id": "8601d89d-ddce-4945-96ce-7d8dd35e7d9e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.1"
+        "version": "8.11.4"
     },
     "data_stream": {
         "dataset": "sonicwall_firewall.log",
@@ -109,12 +109,12 @@ An example event for `log` looks as following:
         "port": 64889
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "bb043b0c-36d1-4054-81ed-2d3f4546a433",
+        "id": "8601d89d-ddce-4945-96ce-7d8dd35e7d9e",
         "snapshot": false,
-        "version": "8.8.1"
+        "version": "8.11.4"
     },
     "event": {
         "action": "connection-denied",
@@ -124,11 +124,11 @@ An example event for `log` looks as following:
         ],
         "code": "713",
         "dataset": "sonicwall_firewall.log",
-        "ingested": "2023-07-06T18:14:01Z",
+        "ingested": "2024-01-29T19:06:19Z",
         "kind": "event",
         "outcome": "success",
-        "sequence": "692",
-        "severity": "7",
+        "sequence": 692,
+        "severity": 7,
         "timezone": "+02:00",
         "type": [
             "connection",
@@ -141,7 +141,10 @@ An example event for `log` looks as following:
     "log": {
         "level": "debug",
         "source": {
-            "address": "192.168.16.4:58483"
+            "address": "172.23.0.4:37942"
+        },
+        "syslog": {
+            "priority": 135
         }
     },
     "message": "� (TCP Flag(s): RST)",
@@ -182,7 +185,7 @@ An example event for `log` looks as following:
         ]
     },
     "rule": {
-        "id": "15 (WAN-\u003eWAN)"
+        "id": "15 (WAN->WAN)"
     },
     "sonicwall": {
         "firewall": {
@@ -235,6 +238,10 @@ An example event for `log` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
+| event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
+| host.ip | Host ip addresses. | ip |
+| http.request.body.bytes | Size in bytes of the request body. | long |
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Path to the log file. | keyword |
@@ -242,6 +249,7 @@ An example event for `log` looks as following:
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
+| log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |

@@ -67,98 +67,83 @@ An example event for `firewall` looks as following:
 
 ```json
 {
-    "destination": {
-        "geo": {
-            "continent_name": "North America",
-            "region_iso_code": "US-ID",
-            "city_name": "Salmon",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "region_name": "Idaho",
-            "location": {
-                "lon": -113.8784,
-                "lat": 45.1571
+    "@timestamp": "2021-11-08T14:22:12.637Z",
+    "agent": {
+        "ephemeral_id": "69e718a7-8bc3-4e1b-98ce-0f81f588bd62",
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.10.1"
+    },
+    "aws": {
+        "firewall": {
+            "flow": {
+                "id": "706471429191862"
             }
         },
-        "as": {
-            "number": 209,
-            "organization": {
-                "name": "CenturyLink Communications, LLC"
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-aws-bucket-29440",
+                "name": "elastic-package-aws-bucket-29440"
+            },
+            "object": {
+                "key": "firewall.log"
             }
-        },
-        "address": "216.160.83.57",
-        "port": 80,
-        "ip": "216.160.83.57",
-        "domain": "216.160.83.57"
-    },
-    "rule": {
-        "name": "Deny all",
-        "id": "1024"
-    },
-    "source": {
-        "geo": {
-            "continent_name": "Europe",
-            "region_iso_code": "GB-OXF",
-            "city_name": "Abingdon",
-            "country_iso_code": "GB",
-            "country_name": "United Kingdom",
-            "region_name": "Oxfordshire",
-            "location": {
-                "lon": -1.3614,
-                "lat": 51.7095
-            }
-        },
-        "as": {
-            "number": 20712,
-            "organization": {
-                "name": "Andrews \u0026 Arnold Ltd"
-            }
-        },
-        "address": "81.2.69.143",
-        "port": 51254,
-        "ip": "81.2.69.143"
-    },
-    "message": "",
-    "url": {
-        "path": "/",
-        "original": "/"
-    },
-    "tags": [
-        "preserve_original_event",
-        "forwarded",
-        "aws-firewall-logs"
-    ],
-    "network": {
-        "protocol": "http",
-        "community_id": "1:+Arv0tAf8Q00mJ6C2ho2P6pp0Io=",
-        "transport": "tcp",
-        "type": "ipv4"
+        }
     },
     "cloud": {
         "availability_zone": "us-east-2a",
-        "provider": "aws",
+        "provider": "",
         "region": "us-east-2"
     },
-    "observer": {
-        "name": "AWSNetworkFirewall",
-        "product": "Network Firewall",
-        "type": "firewall",
-        "vendor": "AWS"
+    "data_stream": {
+        "dataset": "aws.firewall_logs",
+        "namespace": "ep",
+        "type": "logs"
     },
-    "@timestamp": "2021-11-18T17:27:38.039Z",
+    "destination": {
+        "address": "216.160.83.57",
+        "as": {
+            "number": 209
+        },
+        "domain": "216.160.83.57",
+        "geo": {
+            "city_name": "Milton",
+            "continent_name": "North America",
+            "country_iso_code": "US",
+            "country_name": "United States",
+            "location": {
+                "lat": 47.2513,
+                "lon": -122.3149
+            },
+            "region_iso_code": "US-WA",
+            "region_name": "Washington"
+        },
+        "ip": "216.160.83.57",
+        "port": 80
+    },
     "ecs": {
         "version": "8.0.0"
     },
-    "related": {
-        "ip": [
-            "81.2.69.143",
-            "216.160.83.57"
-        ]
+    "elastic_agent": {
+        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "snapshot": false,
+        "version": "8.10.1"
     },
-    "data_stream": {
-        "namespace": "default",
-        "type": "logs",
-        "dataset": "aws.firewall_logs"
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "aws.firewall_logs",
+        "ingested": "2023-11-07T13:25:09Z",
+        "kind": "alert",
+        "original": "{\"firewall_name\":\"AWSNetworkFirewall\",\"availability_zone\":\"us-east-2a\",\"event_timestamp\":\"1636381332\",\"event\":{\"timestamp\":\"2021-11-08T14:22:12.637611+0000\",\"flow_id\":706471429191862,\"event_type\":\"alert\",\"src_ip\":\"81.2.69.143\",\"src_port\":51254,\"dest_ip\":\"216.160.83.57\",\"dest_port\":80,\"proto\":\"TCP\",\"alert\":{\"action\":\"blocked\",\"signature_id\":1000003,\"rev\":1,\"signature\":\"Deny all other TCP traffic\",\"category\":\"\",\"severity\":3},\"http\":{\"hostname\":\"216.160.83.57\",\"url\":\"/\",\"http_user_agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36\",\"http_method\":\"GET\",\"protocol\":\"HTTP/1.1\",\"length\":0},\"app_proto\":\"http\"}}",
+        "severity": 3,
+        "type": [
+            "connection",
+            "denied"
+        ]
     },
     "http": {
         "request": {
@@ -166,36 +151,74 @@ An example event for `firewall` looks as following:
         },
         "version": "1.1"
     },
-    "event": {
-        "severity": 3,
-        "ingested": "2021-11-18T17:14:15.243250800Z",
-        "original": "{\"firewall_name\":\"AWSNetworkFirewall\",\"availability_zone\":\"us-east-2a\",\"event_timestamp\":\"1636381332\",\"event\":{\"timestamp\":\"2021-11-08T14:22:12.637611+0000\",\"flow_id\":706471429191862,\"event_type\":\"alert\",\"src_ip\":\"81.2.69.143\",\"src_port\":51254,\"dest_ip\":\"216.160.83.57\",\"dest_port\":80,\"proto\":\"TCP\",\"alert\":{\"action\":\"blocked\",\"signature_id\":1000003,\"rev\":1,\"signature\":\"Deny all other TCP traffic\",\"category\":\"\",\"severity\":3},\"http\":{\"hostname\":\"216.160.83.57\",\"url\":\"/\",\"http_user_agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36\",\"http_method\":\"GET\",\"protocol\":\"HTTP/1.1\",\"length\":0},\"app_proto\":\"http\"}}",
-        "category": [
-            "network"
-        ],
-        "type": [
-            "connection",
-            "denied"
-        ],
-        "kind": "alert"
+    "input": {
+        "type": "aws-s3"
     },
-    "aws": {
-        "firewall": {
-            "flow": {
-                "id": "706471429191862"
-            }
-        }
+    "log": {
+        "file": {
+            "path": "https://elastic-package-aws-bucket-29440.s3.us-east-1.amazonaws.com/firewall.log"
+        },
+        "offset": 0
+    },
+    "message": "",
+    "network": {
+        "community_id": "1:+Arv0tAf8Q00mJ6C2ho2P6pp0Io=",
+        "protocol": "http",
+        "transport": "tcp",
+        "type": "ipv4"
+    },
+    "observer": {
+        "name": "AWSNetworkFirewall",
+        "product": "Network Firewall",
+        "type": "firewall",
+        "vendor": "AWS"
+    },
+    "related": {
+        "ip": [
+            "81.2.69.143",
+            "216.160.83.57"
+        ]
+    },
+    "rule": {
+        "id": "1000003",
+        "name": "Deny all other TCP traffic"
+    },
+    "source": {
+        "address": "81.2.69.143",
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
+        "ip": "81.2.69.143",
+        "port": 51254
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "aws-firewall-logs"
+    ],
+    "url": {
+        "original": "/",
+        "path": "/"
     },
     "user_agent": {
+        "device": {
+            "name": "Mac"
+        },
         "name": "Chrome",
         "original": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36",
         "os": {
+            "full": "Mac OS X 10.15.7",
             "name": "Mac OS X",
-            "version": "10.15.7",
-            "full": "Mac OS X 10.15.7"
-        },
-        "device": {
-            "name": "Mac"
+            "version": "10.15.7"
         },
         "version": "95.0.4638.69"
     }
@@ -217,6 +240,9 @@ An example event for `firewall` looks as following:
 | aws.firewall.flow.start | The date/time when this flow started. | date |
 | aws.firewall.tcp_flags | The bitmask value for the following TCP flags: 2=SYN,18=SYN-ACK,1=FIN,4=RST | keyword |
 | aws.firewall.tcp_flags_array | List of TCP flags: 'fin, syn, rst, psh, ack, urg' | keyword |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -254,7 +280,7 @@ An example event for `firewall` looks as following:
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
-| event.dataset | Event dataset | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
@@ -282,6 +308,9 @@ An example event for `firewall` looks as following:
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.version | HTTP version. | keyword |
+| input.type | Input type | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.offset | Log offset | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
@@ -445,7 +474,7 @@ An example event for `firewall` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |  |
 | error.message | Error message. | match_only_text |  |
-| event.dataset | Event dataset | constant_keyword |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |

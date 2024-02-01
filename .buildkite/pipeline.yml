@@ -3,14 +3,16 @@
 env:
   SETUP_GVM_VERSION: "v0.5.1"
   LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
-  DOCKER_COMPOSE_VERSION: "v2.17.2"
+  DOCKER_COMPOSE_VERSION: "v2.24.1"
+  DOCKER_VERSION: "false"
   KIND_VERSION: 'v0.20.0'
-  K8S_VERSION: 'v1.27.3'
+  K8S_VERSION: 'v1.29.0'
   YQ_VERSION: 'v4.35.2'
+  JQ_VERSION: '1.7'
+  GH_CLI_VERSION: "2.29.0"
   # Elastic package settings
   # Manage docker output/logs
-  ELASTIC_PACKAGE_COMPOSE_DISABLE_ANSI: "true"
-  ELASTIC_PACKAGE_COMPOSE_DISABLE_PULL_PROGRESS_INFORMATION: "true"
+  ELASTIC_PACKAGE_COMPOSE_DISABLE_VERBOSE_OUTPUT: "true"
   # Default license to use by `elastic-package build`
   ELASTIC_PACKAGE_REPOSITORY_LICENSE: "licenses/Elastic-2.0.txt"
   # Link definitions path (full path to be set in the corresponding step)
@@ -27,29 +29,57 @@ steps:
       cpu: "8"
       memory: "4G"
 
-  # TODO: Pending to migrate stages from https://github.com/elastic/integrations/blob/993537b80456edf2035f2a4826031841116c2019/.ci/Jenkinsfile
-  # - label: "Publish packages - INCOMPLETE"
-  #   key: "publish-packages"
-  #   command: ".buildkite/scripts/publish_packages.sh" # TODO: missing signature and publishing loops
-  #   agents:
-  #     provider: "gcp"
-  #   depends_on:
-  #     - step: "check"
-  #       allow_failure: false
+  - label: ":package: Build packages"
+    key: "build-packages"
+    command: ".buildkite/scripts/build_packages.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "8"
+      memory: "8G"
+    env:
+      ARTIFACTS_FOLDER: "artifacts-to-sign"
+      DRY_RUN: "false"
+    depends_on:
+      - step: "check"
+        allow_failure: false
+    artifact_paths:
+      - artifacts-to-sign/*.zip
 
-  # - label: "Trigger integrations"
-  #   key: "trigger-integrations"
-  #   command: ".buildkite/scripts/trigger_integrations_in_parallel.sh" # TODO: missing script
-  #   depends_on:
-  #     - step: "publish-packages"
-  #       allow_failure: false
+  - label: "Trigger integrations"
+    key: "test-integrations"
+    command: ".buildkite/scripts/trigger_integrations_in_parallel.sh"
+    env:
+      UPLOAD_SAFE_LOGS: 1
+    depends_on:
+      - step: "check"
+        allow_failure: false
 
-  # - wait: ~
-  #   continue_on_failure: true
+  - wait: ~
+    continue_on_failure: true
 
-  # - label: ":junit: Junit annotate"
-  #   plugins:
-  #     - junit-annotate#v2.4.1:
-  #         artifacts: "build/test-results/*.xml"
-  #   agents:
-  #     provider: "gcp"  # junit plugin requires docker
+  - label: "Publish benchmarks"
+    key: publish-benchmarks
+    command: ".buildkite/scripts/process_benchmarks.sh"
+    env:
+      BENCHMARK_THRESHOLD: 15
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "8"
+      memory: "4G"
+
+  - label: ":sonarqube: Continuous Code Inspection"
+    env:
+      VAULT_SONAR_TOKEN_PATH: "kv/ci-shared/platform-ingest/elastic/integrations/sonar-analyze-token"
+    agents:
+      image: "docker.elastic.co/cloud-ci/sonarqube/buildkite-scanner:latest"
+    command: ".buildkite/scripts/run_sonar_scanner.sh"
+    artifact_paths:
+      - build/test-coverage/coverage_merged.xml
+
+  - label: ":junit: Junit annotate"
+    plugins:
+      - junit-annotate#v2.4.1:
+          artifacts: "build/test-results/*.xml"
+          failed-download-exit-code: 0 # Not fail the build in case there are no XML files
+    agents:
+      provider: "gcp"  # junit plugin requires docker

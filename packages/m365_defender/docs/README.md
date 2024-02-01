@@ -101,6 +101,13 @@ This is the `event` dataset.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.region_iso_code | Region ISO code. | keyword |
+| destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | dll.hash.md5 | MD5 hash. | keyword |
@@ -474,7 +481,12 @@ This is the `event` dataset.
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
@@ -555,7 +567,7 @@ An example event for `incident` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "b749ee7f-378d-45d8-8151-975dfa11ce57",
@@ -742,7 +754,7 @@ An example event for `incident` looks as following:
                     "T1564.001"
                 ],
                 "provider_alert_id": "da637551227677560813_-961444813",
-                "recommended_actions": "Collect artifacts and determine scope\n�\tReview the machine timeline for suspicious activities that may have occurred before and after the time of the alert, and record additional related artifacts (files, IPs/URLs) \n�\tLook for the presence of relevant artifacts on other systems. Identify commonalities and differences between potentially compromised systems.\n�\tSubmit relevant files for deep analysis and review resulting detailed behavioral information.\n�\tSubmit undetected files to the MMPC malware portal\n\nInitiate containment \u0026 mitigation \n�\tContact the user to verify intent and initiate local remediation actions as needed.\n�\tUpdate AV signatures and run a full scan. The scan might reveal and remove previously-undetected malware components.\n�\tEnsure that the machine has the latest security updates. In particular, ensure that you have installed the latest software, web browser, and Operating System versions.\n�\tIf credential theft is suspected, reset all relevant users passwords.\n�\tBlock communication with relevant URLs or IPs at the organization�s perimeter.",
+                "recommended_actions": "Collect artifacts and determine scope\n�\tReview the machine timeline for suspicious activities that may have occurred before and after the time of the alert, and record additional related artifacts (files, IPs/URLs) \n�\tLook for the presence of relevant artifacts on other systems. Identify commonalities and differences between potentially compromised systems.\n�\tSubmit relevant files for deep analysis and review resulting detailed behavioral information.\n�\tSubmit undetected files to the MMPC malware portal\n\nInitiate containment & mitigation \n�\tContact the user to verify intent and initiate local remediation actions as needed.\n�\tUpdate AV signatures and run a full scan. The scan might reveal and remove previously-undetected malware components.\n�\tEnsure that the machine has the latest security updates. In particular, ensure that you have installed the latest software, web browser, and Operating System versions.\n�\tIf credential theft is suspected, reset all relevant users passwords.\n�\tBlock communication with relevant URLs or IPs at the organization�s perimeter.",
                 "service_source": "microsoftDefenderForEndpoint",
                 "severity": "low",
                 "status": "new",
@@ -760,7 +772,7 @@ An example event for `incident` looks as following:
             ],
             "created_datetime": "2021-08-13T08:43:35.553Z",
             "determination": "multiStagedAttack",
-            "display_name": "Multi-stage incident involving Initial access \u0026 Command and control on multiple endpoints reported by multiple sources",
+            "display_name": "Multi-stage incident involving Initial access & Command and control on multiple endpoints reported by multiple sources",
             "id": "2972395",
             "last_update_datetime": "2021-09-30T09:35:45.113Z",
             "odata_type": "#microsoft.graph.security.incident",
@@ -779,7 +791,7 @@ An example event for `incident` looks as following:
             }
         }
     },
-    "message": "Multi-stage incident involving Initial access \u0026 Command and control on multiple endpoints reported by multiple sources",
+    "message": "Multi-stage incident involving Initial access & Command and control on multiple endpoints reported by multiple sources",
     "process": {
         "command_line": [
             "\"MsSense.exe\""
@@ -862,6 +874,7 @@ An example event for `incident` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
@@ -1178,7 +1191,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "761cded5-abcb-4ec8-a5e6-f7546489e271",
@@ -1258,7 +1271,7 @@ An example event for `log` looks as following:
         "forwarded"
     ],
     "threat": {
-        "framework": "MITRE ATT\u0026CK",
+        "framework": "MITRE ATT&CK",
         "technique": {
             "name": [
                 "InitialAccess"
@@ -1269,6 +1282,7 @@ An example event for `log` looks as following:
         "name": "testUser3@contoso.com"
     }
 }
+
 ```
 
 **Exported fields**

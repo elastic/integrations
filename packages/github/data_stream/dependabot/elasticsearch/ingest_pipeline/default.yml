@@ -3,7 +3,7 @@ description: Pipeline for parsing GitHub audit logs
 processors:
   - set:
       field: ecs.version
-      value: "8.10.0"
+      value: "8.11.0"
   - set:
       field: event.action
       value: "dependabot"
@@ -240,7 +240,7 @@ processors:
       description: Calculate time taken to resolve the alerts
       if: ctx?.event?.start != null && ctx?.event?.end != null
       source: >-
-        ZonedDateTime start = ZonedDateTime.parse(ctx.event.start); ZonedDateTime end = ZonedDateTime.parse(ctx.event.end); ctx.event.duration = ChronoUnit.SECONDS.between(start, end);
+        ZonedDateTime start = ZonedDateTime.parse(ctx.event.start); ZonedDateTime end = ZonedDateTime.parse(ctx.event.end); ctx.event.duration = ChronoUnit.NANOS.between(start, end);
       #################################
       # For Github Overview Dashboard #
       #################################

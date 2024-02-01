@@ -73,7 +73,7 @@ The Auth0 logs dataset provides events from Auth0 log stream. All Auth0 log even
 | auth0.logs.data.location_info.time_zone | Time zone name as found in the [tz database](https://www.iana.org/time-zones). | keyword |
 | auth0.logs.data.log_id | Unique log event identifier | keyword |
 | auth0.logs.data.login.completedAt | Time at which the operation was completed | date |
-| auth0.logs.data.login.elapsedTime | Number of milliseconds the operation took to complete. | long |
+| auth0.logs.data.login.elapsedTime | The total amount of time in milliseconds the operation took to complete. | long |
 | auth0.logs.data.login.initiatedAt | Time at which the operation was initiated | date |
 | auth0.logs.data.login.stats.loginsCount | Total number of logins performed by the user | long |
 | auth0.logs.data.scope | Scope permissions applied to the event. | keyword |
@@ -256,7 +256,7 @@ An example event for `logs` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "2c778b7a-e0be-4a84-8c7c-e0142f3690df",
@@ -326,4 +326,5 @@ An example event for `logs` looks as following:
         "version": "93.0."
     }
 }
+
 ```

@@ -18,6 +18,10 @@ to your configuration XML file (ie standalone.xml) under the path below
     </profile>
 </server>
 ```
+
+Note:
+- Keycloak log files could contain multiline logs. In order to process them, the [multiline configuration](https://www.elastic.co/guide/en/beats/filebeat/current/multiline-examples.html) should be added to the parsers section when deploying the integration.
+
 ## Logs
 
 ### log
@@ -152,7 +156,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "d053789b-7b04-4a8c-b06c-ca79014bb61a",
@@ -212,4 +216,5 @@ An example event for `log` looks as following:
         "keycloak-log"
     ]
 }
+
 ```
