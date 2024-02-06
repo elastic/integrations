@@ -7,18 +7,18 @@ processors:
 - append:
     field: event.category
     value: configuration
-    if: "['account.settings_updated'].contains(ctx?.event?.action)"
+    if: "['account.settings_updated'].contains(ctx.event?.action)"
 - append:
     field: event.type
     value: user
 - append:
     field: event.type
     value: creation
-    if: ctx?.event?.action == 'account.created'
+    if: ctx.event?.action == 'account.created'
 - append:
     field: event.type
     value: change
-    if: "['account.updated', 'account.settings_updated', 'account.disassociated'].contains(ctx?.event?.action)"
+    if: "['account.updated', 'account.settings_updated', 'account.disassociated'].contains(ctx.event?.action)"
 - rename:
     field: zoom.account_id
     target_field: zoom.master_account_id
@@ -32,7 +32,7 @@ processors:
     target_field: '@timestamp'
     formats:
     - UNIX_MS
-    if: ctx?.zoom?.time_stamp != null
+    if: ctx.zoom?.time_stamp != null
     ignore_failure: true
 - rename:
     field: zoom.object
