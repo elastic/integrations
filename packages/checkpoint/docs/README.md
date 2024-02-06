@@ -1,21 +1,51 @@
 # Check Point Integration
 
-This integration is for [Check Point](https://sc1.checkpoint.com/documents/latest/APIs/#introduction~v1.8%20) products. It includes the
-following datasets for receiving logs:
+The Check Point integration allows you to monitor [Check Point](http://checkpoint.com/) Firewall logs from appliances running [Check Point Management](https://sc1.checkpoint.com/documents/latest/APIs/#introduction~v1.9%20).
 
-- `firewall` dataset: consists of log entries from the [Log Exporter](
-  https://supportcenter.checkpoint.com/supportcenter/portal?eventSubmit_doGoviewsolutiondetails=&solutionid=sk122323)
-  in the Syslog format.
+Use the Check Point integration to collect and parse firewall event logs. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference the firewall data stream when troubleshooting an issue.
+
+For example, you could use the data from this integration to spot unusual network activity and malicious traffic on your network. You could also use the data to review or troubleshoot the rules that have been set up to block these activities. You can do this by looking at additional context in the logs, such as the source of the requests, and more.
+
+## Data streams
+
+The Check Point integration collects one type of data: logs.
+
+**Logs** help you keep a record of events logged by your firewall device.
+Logs collected by the Check Point integration include all logged network events specified by the firewall's rules. See more details in the [Logs reference](#logs-reference).
  
-## Compatibility
+## Requirements
 
-This module has been tested against Check Point Log Exporter on R80.X and R81.X.
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-## Logs
+You will need one or more Check Point Firewall appliances to monitor.
+
+### Compatibility
+
+This integration has been tested against Check Point Log Exporter on R80.X and R81.X.
+
+## Setup
+
+1. Install Elastic Agent on a host between your Check Point Log Exporter instance and Elastic Cluster. The agent will be used to receive syslog data from your Check Point firewalls and ship the events to Elasticsearch. 
+2. For each firewall device you wish to monitor, create a new [Log Exporter/SIEM object](https://sc1.checkpoint.com/documents/R81/WebAdminGuides/EN/CP_R81_LoggingAndMonitoring_AdminGuide/Topics-LMG/Log-Exporter-Configuration-in-SmartConsole.htm?tocpath=Log%20Exporter%7C_____2) in Check Point *SmartConsole*. Set the target server and target port to the Elastic Agent IP address and port number. Set the protocol to UDP or TCP, the Check Point integration supports both. Set the format to syslog.
+3. Configure the Management Server or Dedicated Log Server object in *SmartConsole*.
+4. Install the database within *SmartConsole* (steps included in the Checkpoint docs linked above).
+5. Within Kibana, browse to Integrations and locate the Check Point integration, and 'Add Check Point'
+6. Configure the TCP or UDP input, depending on the protocol you configured Check Point to use. 
+7. Add a certificate if using Secure Syslog over TCP with TLS (optional)
+8. Add integration to a New/Existing policy. 
+9. Browse to dashboard/discover to validate data is flowing from Check Point. 
+
+For step-by-step instructions on how to set up an integration, see the
+[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+In some instances firewall events may have the same Checkpoint `loguid` and arrive during the same timestamp resulting in a fingerprint collision. To avoid this [enable semi-unified logging](https://sc1.checkpoint.com/documents/R81/WebAdminGuides/EN/CP_R81_LoggingAndMonitoring_AdminGuide/Topics-LMG/Log-Exporter-Appendix.htm?TocPath=Log%20Exporter%7C_____9) in the Checkpoint dashboard.
+
+## Logs reference
 
 ### Firewall
 
-Consists of log entries from the Log Exporter in the Syslog format.
+The Check Point integration collects data in a single data stream, the **firewall** data set. This consists of log entries from the [Log Exporter](https://supportcenter.checkpoint.com/supportcenter/portal?eventSubmit_doGoviewsolutiondetails=&solutionid=sk122323) in the Syslog format.
 
 An example event for `firewall` looks as following:
 
@@ -38,7 +68,7 @@ An example event for `firewall` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "ecc82406-78ce-41c1-b1e2-7c12ce01f525",
@@ -84,6 +114,7 @@ An example event for `firewall` looks as following:
         "forwarded"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -169,6 +200,8 @@ An example event for `firewall` looks as following:
 | checkpoint.destination_object | Matched object name on destination column. | keyword |
 | checkpoint.detected_on | System and applications version the file was emulated on. | keyword |
 | checkpoint.developer_certificate_name | Name of the developer's certificate that was used to sign the mobile application. | keyword |
+| checkpoint.device_name | Name of the device. | keyword |
+| checkpoint.device_type | Type of the device. | keyword |
 | checkpoint.diameter_app_ID | The ID of diameter application. | integer |
 | checkpoint.diameter_cmd_code | Diameter not allowed application command id. | integer |
 | checkpoint.diameter_msg_type | Diameter message type. | keyword |
@@ -376,6 +409,7 @@ An example event for `firewall` looks as following:
 | checkpoint.observable_name | IOC observable signature name. | keyword |
 | checkpoint.operation | Operation made by Threat Extraction. | keyword |
 | checkpoint.operation_number | The operation number. | keyword |
+| checkpoint.operation_result_description |  | keyword |
 | checkpoint.operation_results |  | keyword |
 | checkpoint.origin_sic_name | SIC name of the Security Gateway that generated the event. | keyword |
 | checkpoint.original_queue_id | Original postfix email queue id. | keyword |
@@ -439,6 +473,7 @@ An example event for `firewall` looks as following:
 | checkpoint.scan_results | "Infected"/description of a failure. | keyword |
 | checkpoint.scheme | Describes the scheme used for the log. | keyword |
 | checkpoint.scope | IP related to the attack. | keyword |
+| checkpoint.script_value_for_one_time_scripts |  | keyword |
 | checkpoint.scrub_activity | The result of the extraction | keyword |
 | checkpoint.scrub_download_time | File download time from resource. | keyword |
 | checkpoint.scrub_time | Extraction process duration. | keyword |
@@ -488,7 +523,7 @@ An example event for `firewall` looks as following:
 | checkpoint.stormagentname |  | keyword |
 | checkpoint.sub_policy_name | Layer name. | keyword |
 | checkpoint.sub_policy_uid | Layer uid. | keyword |
-| checkpoint.subs_exp |  | keyword |
+| checkpoint.subs_exp |  | date |
 | checkpoint.subscriber | Source IP before CGNAT. | ip |
 | checkpoint.subscription_stat |  | keyword |
 | checkpoint.subscription_stat_desc |  | keyword |
@@ -499,6 +534,11 @@ An example event for `firewall` looks as following:
 | checkpoint.sys_message | System messages | keyword |
 | checkpoint.syslog_severity | Syslog severity level. | keyword |
 | checkpoint.system_application |  | keyword |
+| checkpoint.task |  | keyword |
+| checkpoint.task_percent |  | keyword |
+| checkpoint.task_progress |  | keyword |
+| checkpoint.taskid |  | keyword |
+| checkpoint.tasktargetid |  | keyword |
 | checkpoint.tcp_end_reason | Reason for TCP connection closure. | keyword |
 | checkpoint.tcp_flags | TCP packet flags (SYN, ACK, etc.,). | keyword |
 | checkpoint.tcp_packet_out_of_state | State violation. | keyword |
@@ -590,6 +630,7 @@ An example event for `firewall` looks as following:
 | destination.packets | Packets sent from the destination to the source. | long |
 | destination.port | Port of the destination. | long |
 | destination.service.name | Name of the service data is collected from. | keyword |
+| destination.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | destination.user.email | User email address. | keyword |
 | destination.user.id | Unique identifier of the user. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
@@ -611,19 +652,19 @@ An example event for `firewall` looks as following:
 | error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
-| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
+| event.end | `event.end` contains the date when the event ended or when the activity was last observed. | date |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.risk_score | Risk score or priority of the event (e.g. security solutions). Use your system's original value here. | float |
 | event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
-| event.start | event.start contains the date when the event started or when the activity was first observed. | date |
+| event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | event.url | URL linking to an external system to continue investigation of this event. This URL links to another system where in-depth investigation of the specific occurrence of this event can take place. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
@@ -642,7 +683,7 @@ An example event for `firewall` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -666,6 +707,7 @@ An example event for `firewall` looks as following:
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.name | Name given by operators to sections of their network. | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | observer.egress.interface.name | Interface name as reported by the system. | keyword |
 | observer.egress.zone | Network zone of outbound traffic as reported by the observer to categorize the destination area of egress traffic, e.g. Internal, External, DMZ, HR, Legal, etc. | keyword |
@@ -712,6 +754,7 @@ An example event for `firewall` looks as following:
 | source.nat.port | Translated port of source based NAT sessions. (e.g. internal client to internet) Typically used with load balancers, firewalls, or routers. | long |
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
+| source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | source.user.email | User email address. | keyword |
 | source.user.group.name | Name of the group. | keyword |
 | source.user.id | Unique identifier of the user. | keyword |
@@ -721,6 +764,12 @@ An example event for `firewall` looks as following:
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
 | url.original.text | Multi-field of `url.original`. | match_only_text |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.email | User email address. | keyword |
+| user.group.name | Name of the group. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
 | user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |

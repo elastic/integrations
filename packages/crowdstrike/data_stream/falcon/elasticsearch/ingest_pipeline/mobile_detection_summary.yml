@@ -1,0 +1,120 @@
+---
+processors:
+  - set:
+      field: event.kind
+      value: alert
+      tag: set_event_kind
+  - append:
+      field: event.category
+      value: malware
+      tag: append_malware_category
+  - append:
+      field: event.type
+      value: info
+      tag: append_info_type
+  - set:
+      field: event.action
+      value: mobile-detection
+  - remove:
+      field: event.created
+      if: ctx.crowdstrike?.event?.ContextTimeStamp != null
+      tag: remove_event_created
+      ignore_missing: true
+  - date:
+      field: crowdstrike.event.ContextTimeStamp
+      target_field: event.created
+      timezone: UTC
+      formats:
+        - UNIX
+      tag: date_event_creation_time
+      if: 'ctx.crowdstrike?.event?.ContextTimeStamp != null && String.valueOf(ctx.crowdstrike.event.ContextTimeStamp).length() <= 11'
+  - date:
+      field: crowdstrike.event.ContextTimeStamp
+      target_field: event.created
+      timezone: UTC
+      formats:
+        - UNIX_MS
+      tag: date_event_creation_time
+      if: 'ctx.crowdstrike?.event?.ContextTimeStamp != null && String.valueOf(ctx.crowdstrike.event.ContextTimeStamp).length() >= 12'
+  - rename:
+      field: crowdstrike.event.MobileDetectionId
+      target_field: event.id
+      ignore_missing: true
+      tag: rename_mobile_detect_id
+  - rename:
+      field: crowdstrike.event.DetectId
+      target_field: rule.id
+      ignore_missing: true
+      tag: rename_detect_id
+  - rename:
+      field: crowdstrike.event.DetectName
+      target_field: rule.name
+      ignore_missing: true
+      tag: rename_detect_name
+  - rename:
+      field: crowdstrike.event.DetectDescription
+      target_field: rule.description
+      ignore_missing: true
+      tag: rename_detect_description
+  - set: 
+      field: threat.framework
+      value: MITRE ATT&CK
+  - append:
+      field: threat.technique.name
+      value: "{{{crowdstrike.event.Technique}}}"
+      tag: append_technique_name
+      if: ctx.crowdstrike?.event?.Technique != null
+  - append:
+      field: threat.technique.id
+      value: "{{{crowdstrike.event.TechniqueId}}}"
+      tag: append_technique_id
+      if: ctx.crowdstrike?.event?.TechniqueId != null
+  - append:
+      field: threat.tactic.name
+      value: "{{{crowdstrike.event.Tactic}}}"
+      tag: append_tactic_name
+      if: ctx.crowdstrike?.event?.Tactic != null
+  - append:
+      field: threat.tactic.id
+      value: "{{{crowdstrike.event.TacticId}}}"
+      tag: append_tactic_id
+      if: ctx.crowdstrike?.event?.TacticId != null
+  - rename:
+      field: crowdstrike.event.ComputerName
+      target_field: host.name     
+      ignore_missing: true
+      tag: rename_computer_name
+  - rename:
+      field: crowdstrike.event.UserName
+      target_field: user.name
+      ignore_missing: true
+      tag: rename_user_name
+  - rename:
+      field: crowdstrike.event.FalconHostLink
+      target_field: event.reference    
+      ignore_missing: true
+      tag: rename_falcon_host_link
+  - rename:
+      field: crowdstrike.event.Severity
+      target_field: event.severity    
+      ignore_missing: true
+      tag: rename_severity
+  - rename:
+      field: crowdstrike.event.SensorId
+      target_field: device.id
+      ignore_missing: true
+      tag: rename_severity
+  - rename:
+      field: crowdstrike.event.ProcessId
+      target_field: process.pid
+      ignore_missing: true
+      tag: rename_process_id
+
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error

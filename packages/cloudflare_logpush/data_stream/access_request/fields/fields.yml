@@ -1,0 +1,70 @@
+- name: cloudflare_logpush.access_request
+  type: group
+  description: Integration for parsing Cloudflare Access Request logs.
+  fields:
+    - name: timestamp
+      type: date
+      description: The date and time the corresponding access request was made.
+    - name: action
+      type: keyword
+      description: What type of record is this. login | logout.
+    - name: allowed
+      type: boolean
+      description: If request was allowed or denied.
+    - name: app
+      type: group
+      fields:
+        - name: domain
+          type: keyword
+          description: The domain of the Application that Access is protecting.
+        - name: uuid
+          type: keyword
+          description: Access Application UUID.
+    - name: connection
+      type: keyword
+      description: Identity provider used for the login.
+    - name: country
+      type: keyword
+      description: Request’s country of origin.
+    - name: client
+      type: group
+      fields:
+        - name: ip
+          type: ip
+          description: The IP address of the client.
+    - name: ray
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: Identifier of the request.
+    - name: request
+      type: group
+      fields:
+        - name: prompt
+          type: keyword
+          description: Message prompted to the client when accessing the application.
+        - name: response
+          type: keyword
+          description: Justification given by the client when accessing the application.
+    - name: temp_access
+      type: group
+      fields:
+        - name: approvers
+          type: keyword
+          description: List of approvers for this access request.
+        - name: duration
+          type: long
+          description: Approved duration for this access request.
+    - name: user
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: The uid of the user who logged in.
+        - name: email
+          type: keyword
+          description: Email of the user who logged in.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.

@@ -1,0 +1,24 @@
+---
+description: Pipeline for processing DNS Event logs.
+processors:
+  - set:
+      field: event.category
+      value: [network]
+  - set:
+      field: event.type
+      value: [info]
+  - rename:
+      field: json.event.dns.request
+      target_field: sentinel_one_cloud_funnel.event.dns.request
+      ignore_missing: true
+  - rename:
+      field: json.event.dns.response
+      target_field: sentinel_one_cloud_funnel.event.dns.response
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

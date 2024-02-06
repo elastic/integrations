@@ -3,11 +3,12 @@ description: Pipeline for parsing Proofpoint TAP blocked clicks logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.11.0'
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: json
@@ -24,8 +25,12 @@ processors:
       value: email
       ignore_failure: true
   - append:
-      field: event.type
+      field: event.action
       value: denied
+      ignore_failure: true
+  - append:
+      field: event.type
+      value: info
       ignore_failure: true
   - set:
       field: event.kind
@@ -34,6 +39,10 @@ processors:
       field: json.sender
       target_field: email.from.address
       ignore_missing: true
+  - set:
+      field: email.from.address
+      value: ['{{{email.from.address}}}']
+      if: ctx.email?.from?.address instanceof String
   - rename:
       field: json.messageID
       target_field: email.message_id
@@ -42,6 +51,10 @@ processors:
       field: json.recipient
       target_field: email.to.address
       ignore_missing: true
+  - set:
+      field: email.to.address
+      value: ['{{{email.to.address}}}']
+      if: ctx.email?.to?.address instanceof String
   - date:
       field: json.clickTime
       if: ctx.json?.clickTime != null && ctx.json.clickTime != ''
@@ -179,20 +192,23 @@ processors:
       description: Drops null/empty values recursively.
       lang: painless
       source: |
-          boolean dropEmptyFields(Object object) {
-          if (object == null || object == '') {
-              return true;
-          } else if (object instanceof Map) {
-              ((Map) object).values().removeIf(value -> dropEmptyFields(value));
-              return (((Map) object).size() == 0);
-          } else if (object instanceof List) {
-              ((List) object).removeIf(value -> dropEmptyFields(value));
-              return (((List) object).length == 0);
-          }
-          return false;
-          }
-          dropEmptyFields(ctx);
+        boolean dropEmptyFields(Object object) {
+        if (object == null || object == '') {
+            return true;
+        } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+        } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+        }
+        return false;
+        }
+        dropEmptyFields(ctx);
 on_failure:
-- append:
-    field: error.message
-    value: '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

@@ -1,6 +1,10 @@
 config_version: "2"
 interval: {{interval}}
 request.method: "POST"
+{{#if enable_request_tracer}}
+request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
+{{/if}}
 
 {{#if url}}
 request.url: {{url}}
@@ -25,6 +29,7 @@ request.transforms:
     target: body.days
     value: '[[.cursor.days]]'
     default: '{{initial_interval}}'
+    value_type: int
 
 response.split:
   target: body.data

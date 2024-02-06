@@ -1,0 +1,38 @@
+{
+    "id": "2f7d9d2a-ec1f-545a-8258-ea62bbffad7f",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "In order to change service account or scope for an instance, it needs to be stopped.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances\n2. https://cloud.google.com/compute/docs/access/service-accounts",
+            "id": "2f7d9d2a-ec1f-545a-8258-ea62bbffad7f",
+            "name": "Ensure That Instances Are Not Configured To Use the Default Service Account With Full Access to All Cloud APIs",
+            "profile_applicability": "* Level 1",
+            "description": "To support principle of least privileges and prevent potential privilege escalation it is recommended that instances are not assigned to default service account `Compute Engine default service account` with Scope `Allow full access to all Cloud APIs`.",
+            "rationale": "Along with ability to optionally create, manage and use user managed custom service accounts, Google Compute Engine provides default service account `Compute Engine default service account` for an instances to access necessary cloud services.\n`Project Editor` role is assigned to `Compute Engine default service account` hence, This service account has almost all capabilities over all cloud services except billing.\nHowever, when `Compute Engine default service account` assigned to an instance it can operate in 3 scopes.\n\n```\n1. Allow default access: Allows only minimum access required to run an Instance (Least Privileges)\n\n2. Allow full access to all Cloud APIs: Allow full access to all the cloud APIs/Services (Too much access)\n\n3. Set access for each API: Allows Instance administrator to choose only those APIs that are needed to perform specific business functionality expected by instance\n```\n\nWhen an instance is configured with `Compute Engine default service account` with Scope `Allow full access to all Cloud APIs`, based on IAM roles assigned to the user(s) accessing Instance, it may allow user to perform cloud operations/API calls that user is not supposed to perform leading to successful privilege escalation.",
+            "audit": "**From Google Cloud Console**\n\n1. Go to the `VM instances` page by visiting: [https://console.cloud.google.com/compute/instances](https://console.cloud.google.com/compute/instances).\n2. Click on each instance name to go to its `VM instance details` page.\n3. Under the `API and identity management`, ensure that `Cloud API access scopes` is not set to `Allow full access to all Cloud APIs`.\n\n**From Google Cloud CLI**\n\n4. List the instances in your project and get details on each instance:\n```\ngcloud compute instances list --format=json | jq -r '.\n| \"SA Scopes: \\(.[].serviceAccounts[].scopes) Name: \\(.[].name) Email: \\(.[].serviceAccounts[].email)\"'\n```\n5. Ensure that the service account section has an email that does not match the pattern `[PROJECT_NUMBER]-compute@developer.gserviceaccount.com`.\n\n**Exception:**\nVMs created by GKE should be excluded.\nThese VMs have names that start with `gke-` and are labeled `goog-gke-node",
+            "remediation": "**From Google Cloud Console**\n\n1. Go to the `VM instances` page by visiting: [https://console.cloud.google.com/compute/instances](https://console.cloud.google.com/compute/instances).\n\n2. Click on the impacted VM instance.\n\n3. If the instance is not stopped, click the `Stop` button. Wait for the instance to be stopped.\n\n4. Next, click the `Edit` button.\n\n5. Scroll down to the `Service Account` section.\n\n6. Select a different service account or ensure that `Allow full access to all Cloud APIs` is not selected.\n\n7. Click the `Save` button to save your changes and then click `START`.\n\n**From Google Cloud CLI**\n\n8. Stop the instance:\n```\ngcloud compute instances stop <INSTANCE_NAME>\n```\n9. Update the instance:\n```\ngcloud compute instances set-service-account <INSTANCE_NAME> --service-account=<SERVICE_ACCOUNT> --scopes [SCOPE1, SCOPE2...]\n```\n10. Restart the instance:\n```\ngcloud compute instances start <INSTANCE_NAME>\n```",
+            "section": "Virtual Machines",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 4.2",
+                "Virtual Machines"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "4.2",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_4_2"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

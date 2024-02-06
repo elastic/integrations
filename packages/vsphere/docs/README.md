@@ -13,17 +13,19 @@ To access the metrices, the url https://host:port(8989)/sdk needs to be passed t
 
  The virtual machine consists of a set of specification and configuration files and is backed by the physical resources of a host. Every virtual machine has virtual devices that provide the same functionality as physical hardware but are more portable, secure and easier to manage.
 
+ Note: vSphere Integration currently supports network names of VMs connected only to vSS (vSphere Standard Switch) and not vDS (vSphere Distributed Switches).
+
 An example event for `virtualmachine` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-06T08:10:23.936Z",
+    "@timestamp": "2023-06-29T08:06:40.827Z",
     "agent": {
-        "ephemeral_id": "7b1c7f41-9102-4338-8bb7-c4a8f16f8840",
-        "id": "d8cbc62c-7f8c-4e0d-98a9-a953f1476f0a",
+        "ephemeral_id": "527dd76f-fe04-4478-b02c-110b5f47ccf4",
+        "id": "5096d7cc-1e4b-4959-abea-7355be2913a7",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.2.0"
+        "version": "8.8.1"
     },
     "data_stream": {
         "dataset": "vsphere.virtualmachine",
@@ -31,30 +33,27 @@ An example event for `virtualmachine` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "d8cbc62c-7f8c-4e0d-98a9-a953f1476f0a",
+        "id": "5096d7cc-1e4b-4959-abea-7355be2913a7",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.8.1"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.virtualmachine",
-        "duration": 77308917,
-        "ingested": "2022-07-06T08:10:27Z",
+        "duration": 14355583,
+        "ingested": "2023-06-29T08:06:41Z",
         "module": "vsphere"
     },
     "host": {
-        "architecture": "x86_64",
+        "architecture": "aarch64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "ip": [
-            "172.18.0.7"
-        ],
-        "mac": [
-            "02:42:ac:12:00:07"
-        ],
+        "id": "d08b346fbb8f49f5a2bb1a477f8ceb54",
+        "ip": "172.23.0.7",
+        "mac": "02-42-AC-17-00-07",
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -63,7 +62,7 @@ An example event for `virtualmachine` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -81,8 +80,10 @@ An example event for `virtualmachine` looks as following:
                     "mhz": 0
                 }
             },
-            "host.hostname": "DC0_H0",
-            "host.id": "host-21",
+            "host": {
+                "hostname": "DC0_H0",
+                "id": "host-21"
+            },
             "memory": {
                 "free": {
                     "guest": {
@@ -115,13 +116,20 @@ An example event for `virtualmachine` looks as following:
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id |  | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | error.message | Error message. | match_only_text |  |  |
 | event.dataset | Event dataset | constant_keyword |  |  |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |  |
+| event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |  |  |
 | event.module | Event module | constant_keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
@@ -165,13 +173,13 @@ An example event for `host` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-21T12:10:22.039Z",
+    "@timestamp": "2023-06-29T08:04:19.217Z",
     "agent": {
-        "ephemeral_id": "926eb17b-191e-43c3-8064-3838e5345018",
-        "id": "a64ea128-7315-4881-b39a-9c06346b9e29",
+        "ephemeral_id": "7528b4c0-2fe5-42c3-ab9d-6e57cdf00a5f",
+        "id": "5096d7cc-1e4b-4959-abea-7355be2913a7",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.2.0"
+        "version": "8.8.1"
     },
     "data_stream": {
         "dataset": "vsphere.host",
@@ -179,30 +187,27 @@ An example event for `host` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "a64ea128-7315-4881-b39a-9c06346b9e29",
+        "id": "5096d7cc-1e4b-4959-abea-7355be2913a7",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.8.1"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.host",
-        "duration": 119446084,
-        "ingested": "2022-07-21T12:10:23Z",
+        "duration": 45720334,
+        "ingested": "2023-06-29T08:04:22Z",
         "module": "vsphere"
     },
     "host": {
-        "architecture": "x86_64",
+        "architecture": "aarch64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "ip": [
-            "172.20.0.7"
-        ],
-        "mac": [
-            "02:42:ac:14:00:07"
-        ],
+        "id": "d08b346fbb8f49f5a2bb1a477f8ceb54",
+        "ip": "172.23.0.7",
+        "mac": "02-42-AC-17-00-07",
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -211,7 +216,7 @@ An example event for `host` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -233,7 +238,7 @@ An example event for `host` looks as following:
                 },
                 "used": {
                     "mhz": 67,
-                    "pct": 1.4603313
+                    "pct": 0.015
                 }
             },
             "memory": {
@@ -245,13 +250,11 @@ An example event for `host` looks as following:
                 },
                 "used": {
                     "bytes": 1472200704,
-                    "pct": 34.281628
+                    "pct": 0.343
                 }
             },
             "name": "DC0_H0",
-            "network_names": [
-                "VM Network"
-            ]
+            "network_names": "VM Network"
         }
     }
 }
@@ -262,13 +265,20 @@ An example event for `host` looks as following:
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id |  | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | error.message | Error message. | match_only_text |  |  |
 | event.dataset | Event dataset | constant_keyword |  |  |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |  |
+| event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |  |  |
 | event.module | Event module | constant_keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
@@ -307,13 +317,13 @@ An example event for `datastore` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-06T08:06:49.831Z",
+    "@timestamp": "2023-06-29T08:03:30.114Z",
     "agent": {
-        "ephemeral_id": "34e20210-abd8-4ef7-b216-3158638cbeab",
-        "id": "d8cbc62c-7f8c-4e0d-98a9-a953f1476f0a",
+        "ephemeral_id": "8b019ff3-cbda-41fa-b1ff-974d482b9694",
+        "id": "5096d7cc-1e4b-4959-abea-7355be2913a7",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.2.0"
+        "version": "8.8.1"
     },
     "data_stream": {
         "dataset": "vsphere.datastore",
@@ -321,30 +331,27 @@ An example event for `datastore` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "d8cbc62c-7f8c-4e0d-98a9-a953f1476f0a",
+        "id": "5096d7cc-1e4b-4959-abea-7355be2913a7",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.8.1"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.datastore",
-        "duration": 52476083,
-        "ingested": "2022-07-06T08:06:50Z",
+        "duration": 23155458,
+        "ingested": "2023-06-29T08:03:31Z",
         "module": "vsphere"
     },
     "host": {
-        "architecture": "x86_64",
+        "architecture": "aarch64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "ip": [
-            "172.18.0.7"
-        ],
-        "mac": [
-            "02:42:ac:12:00:07"
-        ],
+        "id": "d08b346fbb8f49f5a2bb1a477f8ceb54",
+        "ip": "172.23.0.7",
+        "mac": "02-42-AC-17-00-07",
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -353,7 +360,7 @@ An example event for `datastore` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -368,14 +375,14 @@ An example event for `datastore` looks as following:
         "datastore": {
             "capacity": {
                 "free": {
-                    "bytes": 10952166604800
+                    "bytes": 47869427712
                 },
                 "total": {
-                    "bytes": 10995116277760
+                    "bytes": 62725623808
                 },
                 "used": {
-                    "bytes": 42949672960,
-                    "pct": 0.00390625
+                    "bytes": 14856196096,
+                    "pct": 0.237
                 }
             },
             "fstype": "OTHER",
@@ -390,13 +397,20 @@ An example event for `datastore` looks as following:
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id |  | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | error.message | Error message. | match_only_text |  |  |
 | event.dataset | Event dataset | constant_keyword |  |  |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |  |
+| event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |  |  |
 | event.module | Event module | constant_keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
@@ -427,7 +441,7 @@ An example event for `datastore` looks as following:
 
 ## Logs
 
-To access the logs, host address (localhost) and host port (9525) needs to be passed in Kibana UI. 
+To access the logs, from the Kibana UI, you have to specify the network-accessible IP address of the host where the Elastic Agent will be deployed. 
 
 ### vSphere Logs
 
@@ -436,20 +450,34 @@ To access the logs, host address (localhost) and host port (9525) needs to be pa
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
+| client.port | Port of the client. | long |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.port | Port of the destination. | long |
+| dns.answers.data | The data describing the resource. The meaning of this data depends on the type and class of the resource record. | keyword |
+| dns.answers.name | The domain name to which this resource record pertains. If a chain of CNAME is being resolved, each answer's `name` should be the one that corresponds with the answer's `data`. It should not simply be the original `question.name` repeated. | keyword |
+| dns.op_code | The DNS operation code that specifies the kind of query in the message. This value is set by the originator of a query and copied into the response. | keyword |
+| dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
+| dns.question.registered_domain | The highest registered domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
+| dns.question.subdomain | The subdomain is all of the labels under the registered_domain. If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
+| dns.question.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
+| dns.question.type | The type of record being queried. | keyword |
+| dns.resolved_ip | Array containing all IPs seen in `answers.data`. The `answers` array can be difficult to use, because of the variety of data formats it can contain. Extracting all IP addresses seen in there to `dns.resolved_ip` makes it possible to index them as IP addresses, and makes them easier to visualize and query for. | ip |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Event dataset | constant_keyword |
+| event.end | `event.end` contains the date when the event ended or when the activity was last observed. | date |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -473,7 +501,12 @@ To access the logs, host address (localhost) and host port (9525) needs to be pa
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
 | log.source.address | Source address of the syslog message. | keyword |
+| log.syslog.facility.code | The Syslog numeric facility of the log event, if available. According to RFCs 5424 and 3164, this value should be an integer between 0 and 23. | long |
+| log.syslog.facility.name | The Syslog text-based facility of the log event, if available. | keyword |
+| log.syslog.hostname | The hostname, FQDN, or IP of the machine that originally sent the Syslog message. This is sourced from the hostname field of the syslog header. Depending on the environment, this value may be different from the host that handled the event, especially if the host handling the events is acting as a collector. | keyword |
 | log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
+| log.syslog.severity.code | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different numeric severity value (e.g. firewall, IDS), your source's numeric severity should go to `event.severity`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `event.severity`. | long |
+| log.syslog.severity.name | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different severity value (e.g. firewall, IDS), your source's text severity should go to `log.level`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `log.level`. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
@@ -483,5 +516,18 @@ To access the logs, host address (localhost) and host port (9525) needs to be pa
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
+| user.roles | Array of user roles at the time of the event. | keyword |
+| user_agent.device.name | Name of the device. | keyword |
+| user_agent.name | Name of the user agent. | keyword |
+| user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
+| user_agent.os.full | Operating system name, including the version or code name. | keyword |
+| user_agent.os.full.text | Multi-field of `user_agent.os.full`. | match_only_text |
+| user_agent.os.name | Operating system name, without the version. | keyword |
+| user_agent.os.name.text | Multi-field of `user_agent.os.name`. | match_only_text |
+| user_agent.os.version | Operating system version as a raw string. | keyword |
+| user_agent.version | Version of the user agent. | keyword |
+| vsphere.log.api.invocations |  | long |
 | vsphere.log.datacenter |  | keyword |
+| vsphere.log.file.path |  | keyword |
 

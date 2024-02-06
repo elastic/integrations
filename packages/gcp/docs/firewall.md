@@ -59,10 +59,11 @@ The `firewall` dataset collects logs from Firewall Rules in your Virtual Private
 | gcp.destination.vpc.project_id | ID of the project containing the VM. | keyword |
 | gcp.destination.vpc.subnetwork_name | Subnetwork on which the VM is operating. | keyword |
 | gcp.destination.vpc.vpc_name | VPC on which the VM is operating. | keyword |
+| gcp.firewall.flattened | Contains the full firewall document as sent by GCP. | flattened |
 | gcp.firewall.rule_details.action | Action that the rule performs on match. | keyword |
 | gcp.firewall.rule_details.destination_range | List of destination ranges that the firewall applies to. | keyword |
 | gcp.firewall.rule_details.direction | Direction of traffic that matches this rule. | keyword |
-| gcp.firewall.rule_details.ip_port_info | List of ip protocols and applicable port ranges for rules. | array |
+| gcp.firewall.rule_details.ip_port_info | List of ip protocols and applicable port ranges for rules. | nested |
 | gcp.firewall.rule_details.priority | The priority for the firewall rule. | long |
 | gcp.firewall.rule_details.reference | Reference to the firewall rule. | keyword |
 | gcp.firewall.rule_details.source_range | List of source ranges that the firewall rule applies to. | keyword |
@@ -133,11 +134,11 @@ An example event for `firewall` looks as following:
 {
     "@timestamp": "2019-10-30T13:52:42.191Z",
     "agent": {
-        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "ephemeral_id": "175ae0b3-355c-4ca7-87ea-d5f1ee34102e",
+        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.7.1"
     },
     "cloud": {
         "availability_zone": "us-east1-b",
@@ -159,23 +160,28 @@ An example event for `firewall` looks as following:
         "port": 3389
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
+        "snapshot": false,
+        "version": "8.7.1"
     },
     "event": {
         "action": "firewall-rule",
         "agent_id_status": "verified",
-        "category": "network",
-        "created": "2023-01-13T15:01:23.807Z",
+        "category": [
+            "network"
+        ],
+        "created": "2023-10-25T04:20:37.182Z",
         "dataset": "gcp.firewall",
         "id": "1f21ciqfpfssuo",
-        "ingested": "2023-01-13T15:01:24Z",
+        "ingested": "2023-10-25T04:20:41Z",
         "kind": "event",
-        "type": "connection"
+        "type": [
+            "allowed",
+            "connection"
+        ]
     },
     "gcp": {
         "destination": {

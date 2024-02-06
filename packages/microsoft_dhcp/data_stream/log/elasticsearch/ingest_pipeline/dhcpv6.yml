@@ -8,8 +8,8 @@ processors:
         - _tmp_.date
         - _tmp_.time
         - message
-        - host.ip
-        - host.name
+        - source.ip
+        - source.address
         - microsoft.dhcp.error_code
         - microsoft.dhcp.duid.length
         - microsoft.dhcp.duid.hex
@@ -17,14 +17,13 @@ processors:
         - microsoft.dhcp.dhc_id
         - microsoft.dhcp.subnet_prefix
       ignore_failure: true
-  - grok:
-      field: host.name
-      if: 'ctx.host?.name != null && ctx.host.name.contains(".")'
-      patterns:
-        - "%{HOSTNAME}\\.%{GREEDYDATA:host.domain}"
-      pattern_definitions:
-        "HOSTNAME": "[^.]+"
-      ignore_failure: true
+  - lowercase:
+      field: source.address
+      if: "ctx.source?.address != null"
+  - set:
+      field: source.domain
+      if: "ctx.source?.address != null"
+      copy_from: source.address
   - set:
       field: _tmp_.timestamp
       value: "{{{_tmp_.date}}} {{{_tmp_.time}}}"
@@ -247,6 +246,9 @@ processors:
       if: ctx?.event?.outcome == null
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
       value: |-
         Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"

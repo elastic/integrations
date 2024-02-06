@@ -1,0 +1,22 @@
+---
+description: Pipeline for processing Url Event logs.
+processors:
+  - rename:
+      field: json.url.address
+      target_field: sentinel_one_cloud_funnel.event.url.address
+      ignore_missing: true
+  - set:
+      field: url.original
+      copy_from: sentinel_one_cloud_funnel.event.url.address
+      ignore_empty_value: true
+  - rename:
+      field: json.event.url.action
+      target_field: sentinel_one_cloud_funnel.event.url.action
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

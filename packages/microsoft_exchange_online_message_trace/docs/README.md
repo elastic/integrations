@@ -5,33 +5,92 @@ datasets for receiving logs over the Microsoft Exchange Online Message Trace API
 
 - `log` dataset: supports Microsoft Exchange Online Message Trace logs.
 
+## Basic Auth Deprecation notification
+The basic authentication configuration fields have been removed from this integration as Microsoft has deprecated and disabled basic authentication for Exchange Online. See the [deprecation notification](https://learn.microsoft.com/en-us/exchange/clients-and-mobile-in-exchange-online/deprecation-of-basic-authentication-exchange-online) for details.
+
+## Office 365 Account Requirements
+At a minimum, your Office 365 service account should include a role with Message Tracking and View‑Only Recipients permissions, assigned to the Office 365 user account
+that will be used for the integration. Assign these permissions using the [Exchange admin center](https://admin.exchange.microsoft.com).
+
 ## Logs
+Logs are either gathered via the rest API or via a logfile. [Log Documentation](https://docs.microsoft.com/en-us/previous-versions/office/developer/o365-enterprise-developers/jj984335(v=office.15))
 
-Logs are either gathered via the rest API or via a logfile.
+## Microsoft Exchange Online Message Trace API
+The `log` dataset collects the Microsoft Exchange Online Message Trace logs. To search for ingested logs in Elasticsearch you need to query using `datastream.dataset: microsoft_exchange_online_message_trace.log`. This integration will poll the Microsoft Exchange Online Message Trace legacy API (https://reports.office365.com/ecp/reportingwebservice/reporting.svc/MessageTrace) to pull Message Trace logs and ingest them via the ingest pipelines.
 
-### Microsoft Exchange Online Message Trace API
+## Configuring with OAuth2
+In order to continue using the Microsoft Exchange Online Message Trace you will need to enable and configure OAuth2 authentication via your service app.
+- ### Service App Configuration  
+    1) In the [Azure portal](https://portal.azure.com/), create a Microsoft Entra App(service app) Registration. For details please refer to the official [Microsoft Documentation](https://learn.microsoft.com/en-us/entra/identity-platform/howto-create-service-principal-portal).
+    2) In most cases under the `Redirect URI` section, you would want to configure the value `Web` for the `app type` and `http://localhost` for the `Redirect URI`, unless there are some specific requirements on your end.
+    3) Assign the application at least one Microsoft Entra(Azure AD) role that will enable it to access the Reporting Web Service:
 
-The `log` dataset collects the Microsoft Exchange Online Message Trace logs.
+        - Security Reader
+        - Global Reader
+        - Global Administrator
+        - Exchange Administrator
+    
+    
+    NOTE: Make sure that at least one role includes the `ReportingWebService.Read.All` permission. For detailed steps, see [Microsoft's Assign Azure AD Roles to Users](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/manage-roles-portal) topic.
 
-[Log Documentation](https://docs.microsoft.com/en-us/previous-versions/office/developer/o365-enterprise-developers/jj984335(v=office.15))
+- ### Configuring OAuth2 Credentials
+  Once you have your service app registered and configured, you can now configure your OAuth2 credentials as follows:- 
+    1) Generate a client secret for your registered service app. Copy and store the `client secret value` with you as this will be required for your OAuth2 credentials.
+    2) Fill in the following fields with the appropriate values from your `configured service app`:-
+        
+        - **Client ID**: The `client_id` of your `service app` to pass in the OAuth request parameter.
+        - **Client secret**:  The `client_secret`  of your `service app` that you generated earlier, to pass in the OAuth request parameter.
+        - **Tenant ID**: The Directory ID (tenant identifier) of your `service app` in your Microsoft Entra ID(Azure Active Directory).
+  
+  
+  With these values now configured, the OAuth2 configuration for the integration should be ideally complete. For more details, please check the 
+  official doc for [Getting Started with Reporting Web Service](https://learn.microsoft.com/en-gb/previous-versions/office/developer/o365-enterprise-developers/jj984325(v=office.15)#get-started-with-reporting-web-service).
 
-### Logfile collection
+### NOTE
+- For configuring `Local Domains` you can check your [Microsoft Admin Exchange Center](https://admin.exchange.microsoft.com/) for the domains
+available in your organization. They are usually under the sections [Accepted Domains](https://admin.exchange.microsoft.com/#/accepteddomains) and [Remote Domains](https://admin.exchange.microsoft.com/#/remotedomains).
+
+- The default `Polling Interval` and `Initial Interval` values are configured to `1h`, you can however change these to your required values. The look-back 
+  value of `Initial Interval` should not exceed `200 hours` as this might cause unexpected errors with the API.
+
+- The default `Additional Look-back Time` value is configured for `1h`. 
+  This is intended to capture events that may not have been initially present due to eventual consistency.
+  This value does not need to exceed [`24h`](https://learn.microsoft.com/en-us/previous-versions/office/developer/o365-enterprise-developers/jj984335(v=office.15)#data-granularity-persistence-and-availability).
+    - Note: The larger this value is, the less likely events will be missed, however, this will cause the integration to take longer to pull all events, making newer events take longer to become present.
+
+- The default value of `Batch Size` is set to 1000. This means for every request Httpjson will paginate with a value of 1000 results per page. The 
+   maximum page size supported by the Message Trace API is `2000`. The API will return an empty `value` array when there are no more logs to pull and the
+   pagination will terminate with an error that can be ignored.
+
+## Logfile collection 
+
+**Disclaimer:**  With basic authentication support now disabled, the PowerShell script provided below will not work as is. However, you can 
+see the [guides here](https://learn.microsoft.com/en-us/powershell/exchange/connect-to-exchange-online-powershell?view=exchange-ps) on how 
+to connect to PowerShell using different authentication techniques using the EXO V2 and V3 modules. With a combination of the script below
+and the alternate authentication methods mentioned in the guide, you can possibly perform the logfile collection as usual.
+<br>
 
 The following sample Powershell script may be used to get the logs and put them into a JSON file that can then be
 consumed by the logfile input:
 
 Prerequisites:
 
+Install the Exchange Online Management module by running the following command: 
+
 ````powershell
 Install-Module -Name ExchangeOnlineManagement
 ````
 
-This script would have to be triggered at a certain interval, in accordance with the look back interval specified.
-In this example script the look back would be 24 hours, so the interval would need to be daily.
-According to the
-[documentation](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetrace?view=exchange-ps)
-it is only possible to get up to 1k pages.
-If this should be an issue, try reducing the `$looback` or increasing `$pageSize`.
+Import the Exchange Online Management module by running the following command:
+
+````powershell
+Import-Module -Name ExchangeOnlineManagement
+````
+
+This script would have to be triggered at a certain interval, in accordance with the look-back interval specified.
+In this example script, the look back would be 24 hours, so the interval would need to be daily.
+According to the [Documentation](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetrace?view=exchange-ps),
+it is only possible to get up to 1k pages. If this should be an issue, try reducing the `$looback` or increasing `$pageSize`.
 
 ```powershell
 # Username and Password
@@ -81,18 +140,17 @@ foreach ($event in $output)
     Add-Content $output_location $event -Encoding UTF8
 }
 ```
-
 An example event for `log` looks as following:
 
 ```json
 {
     "@timestamp": "2022-09-05T18:10:13.490Z",
     "agent": {
-        "ephemeral_id": "8de97862-77fa-4e44-91be-5d3947dd67aa",
-        "id": "6f0c420a-c434-4d40-90cb-956665a6fdd6",
+        "ephemeral_id": "f42c0a8e-b2c0-4772-ab85-278acafa95f5",
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.5.1"
+        "version": "8.8.2"
     },
     "data_stream": {
         "dataset": "microsoft_exchange_online_message_trace.log",
@@ -118,15 +176,21 @@ An example event for `log` looks as following:
         },
         "ip": "216.160.83.56",
         "registered_domain": "contoso.com",
-        "top_level_domain": "com"
+        "top_level_domain": "com",
+        "user": {
+            "domain": "contoso.com",
+            "email": "linus@contoso.com",
+            "id": "linus@contoso.com",
+            "name": "linus"
+        }
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "6f0c420a-c434-4d40-90cb-956665a6fdd6",
+        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
         "snapshot": false,
-        "version": "8.5.1"
+        "version": "8.8.2"
     },
     "email": {
         "attachments": {
@@ -136,21 +200,25 @@ An example event for `log` looks as following:
         },
         "delivery_timestamp": "2022-09-05T18:10:13.4907658",
         "from": {
-            "address": "azure-noreply@microsoft.com"
+            "address": [
+                "azure-noreply@microsoft.com"
+            ]
         },
         "local_id": "cf7a249a-5edd-4350-130a-08da8f69e0f6",
-        "message_id": "\u003ca210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com\u003e",
+        "message_id": "<a210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com>",
         "subject": "PIM: A privileged directory role was assigned outside of PIM",
         "to": {
-            "address": "linus@contoso.com"
+            "address": [
+                "linus@contoso.com"
+            ]
         }
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-02-05T23:16:02.721Z",
+        "created": "2023-07-24T14:46:09.199Z",
         "dataset": "microsoft_exchange_online_message_trace.log",
         "end": "2022-09-06T09:01:46.036Z",
-        "ingested": "2023-02-05T23:16:03Z",
+        "ingested": "2023-07-24T14:46:12Z",
         "original": "{\"EndDate\":\"2022-09-06T09:01:46.0369423Z\",\"FromIP\":\"81.2.69.144\",\"Index\":0,\"MessageId\":\"\\u003ca210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com\\u003e\",\"MessageTraceId\":\"cf7a249a-5edd-4350-130a-08da8f69e0f6\",\"Organization\":\"contoso.com\",\"Received\":\"2022-09-05T18:10:13.4907658\",\"RecipientAddress\":\"linus@contoso.com\",\"SenderAddress\":\"azure-noreply@microsoft.com\",\"Size\":87891,\"StartDate\":\"2022-09-04T09:01:46.0369423Z\",\"Status\":\"Delivered\",\"Subject\":\"PIM: A privileged directory role was assigned outside of PIM\",\"ToIP\":\"216.160.83.56\"}",
         "outcome": "Delivered",
         "start": "2022-09-04T09:01:46.036Z"
@@ -163,7 +231,7 @@ An example event for `log` looks as following:
             "EndDate": "2022-09-06T09:01:46.0369423Z",
             "FromIP": "81.2.69.144",
             "Index": 0,
-            "MessageId": "\u003ca210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com\u003e",
+            "MessageId": "<a210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com>",
             "MessageTraceId": "cf7a249a-5edd-4350-130a-08da8f69e0f6",
             "Organization": "contoso.com",
             "Received": "2022-09-05T18:10:13.4907658",
@@ -175,6 +243,14 @@ An example event for `log` looks as following:
             "Subject": "PIM: A privileged directory role was assigned outside of PIM",
             "ToIP": "216.160.83.56"
         }
+    },
+    "related": {
+        "user": [
+            "linus@contoso.com",
+            "azure-noreply@microsoft.com",
+            "linus",
+            "azure-noreply"
+        ]
     },
     "source": {
         "domain": "microsoft.com",
@@ -192,13 +268,20 @@ An example event for `log` looks as following:
         },
         "ip": "81.2.69.144",
         "registered_domain": "microsoft.com",
-        "top_level_domain": "com"
+        "top_level_domain": "com",
+        "user": {
+            "domain": "microsoft.com",
+            "email": "azure-noreply@microsoft.com",
+            "id": "azure-noreply@microsoft.com",
+            "name": "azure-noreply"
+        }
     },
     "tags": [
         "preserve_original_event",
         "forwarded"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -239,10 +322,10 @@ An example event for `log` looks as following:
 | email.subject | A brief summary of the topic of the message. | keyword |
 | email.subject.text | Multi-field of `email.subject`. | match_only_text |
 | email.to.address | The email address of recipient | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
-| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.start | event.start contains the date when the event started or when the activity was first observed. | date |
+| event.end | `event.end` contains the date when the event ended or when the activity was last observed. | date |
+| event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | input.type |  | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset |  | long |

@@ -3,11 +3,12 @@ description: Pipeline for processing Trend Micro Vision One Audit logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.11.0'
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - set:
       field: event.kind
       value: event
@@ -97,10 +98,10 @@ processors:
       field: json.loggedRole
       target_field: trend_micro_vision_one.audit.logged_role
       ignore_missing: true
-  - set:
+  - append:
       field: source.user.roles
-      copy_from: trend_micro_vision_one.audit.logged_role
-      ignore_failure: true
+      value: '{{{trend_micro_vision_one.audit.logged_role}}}'
+      if: ctx.trend_micro_vision_one?.audit?.logged_role != null
   - rename:
       field: json.accessType
       target_field: trend_micro_vision_one.audit.access_type
@@ -153,7 +154,7 @@ processors:
   - script:
       description: Drops null/empty values recursively.
       lang: painless
-      source:
+      source: |
         boolean dropEmptyFields(Object object) {
           if (object == null || object == '') {
             return true;
@@ -168,6 +169,9 @@ processors:
         }
         dropEmptyFields(ctx);
 on_failure:
-- append:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

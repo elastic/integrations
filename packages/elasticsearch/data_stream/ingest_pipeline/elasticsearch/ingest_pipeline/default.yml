@@ -1,0 +1,13 @@
+---
+description: "Pipeline for Elasticsearch Ingest Pipeline"
+
+processors:
+  - fingerprint:
+      fields:
+        - elasticsearch.ingest_pipeline.name
+      target_field: elasticsearch.ingest_pipeline.name_fingerprint
+      ignore_missing: true
+on_failure:
+  - set:
+      field: 'error.message'
+      value: '{{ _ingest.on_failure_message }}'

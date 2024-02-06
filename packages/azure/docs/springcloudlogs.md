@@ -1,14 +1,12 @@
-# Azure Spring Cloud Logs
+# Azure Spring Apps Logs
 
-The Azure Logs integration retrieves different types of log data from Azure.
+Azure Spring Apps Logs integration provides insight into the operations of Azure Spring Apps applications.
 
-There are several requirements before using the integration since the logs will actually be read from azure event hubs.
+Users opting for Elastic Cloud native Azure integration can stream the Azure Spring Apps logs directly to their partner solution clusters; you can find more information and steps [here](https://www.elastic.co/guide/en/observability/current/monitor-azure.html).
 
-- The logs have to be [exported first to the event hub](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-create-kafka-enabled).
-- To export activity logs to event hubs users can follow the steps [here](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/activity-log-export).
-- To export audit and sign-in logs to event hubs users can follow the steps [here](https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/tutorial-azure-monitor-stream-logs-to-event-hub).
+## Requirements and setup
 
-Users opting for Elastic Cloud native Azure integration can stream the Azure Spring Cloud logs directly to their partner solution clusters, more information and steps can be found [here](https://www.elastic.co/guide/en/observability/current/monitor-azure.html).
+Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information about setting up and using this integration.
 
 ## Settings
 
@@ -62,9 +60,9 @@ https://management.usgovcloudapi.net/
 
 ## Logs
 
-### springcloudlogs
+### springappslogs
 
-This is the `springcloudlogs` data stream of the Azure Logs package. It will collect any Spring Cloud logs that have been streamed through an azure event hub.
+This is the `springcloudlogs` data stream of the Azure Logs package. It will collect any Spring Apps logs that have been streamed through an azure event hub.
 
 An example event for `springcloudlogs` looks as following:
 

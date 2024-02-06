@@ -14,10 +14,6 @@ processors:
 - rename:
     field: signature
     target_field: cisco_meraki.security.signature
-- date:
-    field: timestamp
-    target_field: threat.indicator.last_seen
-    formats: ['UNIX']
 - rename:
     field: direction
     target_field: network.direction
@@ -46,3 +42,10 @@ processors:
     target_field: source.port
     type: long
     ignore_failure: true
+on_failure:
+- set:
+    field: event.kind
+    value: pipeline_error
+- append:
+    field: error.message
+    value: '{{{ _ingest.on_failure_message }}}'

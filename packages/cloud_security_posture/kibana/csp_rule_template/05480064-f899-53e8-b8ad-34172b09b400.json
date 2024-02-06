@@ -1,0 +1,38 @@
+{
+    "id": "05480064-f899-53e8-b8ad-34172b09b400",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Deleting user-managed Service Account Keys may break communication with the applications using the corresponding keys.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/iam/docs/understanding-service-accounts#managing_service_account_keys\n2. https://cloud.google.com/resource-manager/docs/organization-policy/restricting-service-accounts",
+            "id": "05480064-f899-53e8-b8ad-34172b09b400",
+            "name": "Ensure That There Are Only GCP-Managed Service Account Keys for Each Service Account",
+            "profile_applicability": "* Level 1",
+            "description": "User managed service accounts should not have user-managed keys.",
+            "rationale": "Anyone who has access to the keys will be able to access resources through the service account.\n\nGCP-managed keys are used by Cloud Platform services such as App Engine and Compute Engine.\nThese keys cannot be downloaded.\nGoogle will keep the keys and automatically rotate them on an approximately weekly basis.\nUser-managed keys are created, downloadable, and managed by users.\nThey expire 10 years from creation.\n\nFor user-managed keys, the user has to take ownership of key management activities which include:\n- Key storage\n- Key distribution\n- Key revocation\n- Key rotation\n- Protecting the keys from unauthorized users\n- Key recovery\n\nEven with key owner precautions, keys can be easily leaked by common development malpractices like checking keys into the source code or leaving them in the Downloads directory, or accidentally leaving them on support blogs/channels.\n\nIt is recommended to prevent user-managed service account keys.",
+            "audit": "**From Google Cloud Console**\n\n1. Go to the IAM page in the GCP Console using `https://console.cloud.google.com/iam-admin/iam`\n\n2. In the left navigation pane, click `Service accounts`. All service accounts and their corresponding keys are listed.\n\n3. Click the service accounts and check if keys exist.\n\n**From Google Cloud CLI**\n\nList All the service accounts:\n\n```\ngcloud iam service-accounts list\n```\nIdentify user-managed service accounts as such account `EMAIL` ends with `iam.gserviceaccount.com`\n\nFor each user-managed service account, list the keys managed by the user:\n```\ngcloud iam service-accounts keys list --iam-account=<Service Account> --managed-by=user\n```\nNo keys should be listed.",
+            "remediation": "**From Google Cloud Console**\n\n1. Go to the IAM page in the GCP Console using `https://console.cloud.google.com/iam-admin/iam`\n\n2. In the left navigation pane, click `Service accounts`. All service accounts and their corresponding keys are listed.\n\n3. Click the service account.\n\n4. Click the `edit` and delete the keys.\n\n**From Google Cloud CLI**\n\nTo delete a user managed Service Account Key,\n\n```\ngcloud iam service-accounts keys delete --iam-account=<user-managed-service-account-EMAIL> <KEY-ID>\n```\n\n**Prevention:**\nYou can disable service account key creation through the `Disable service account key creation` Organization policy by visiting [https://console.cloud.google.com/iam-admin/orgpolicies/iam-disableServiceAccountKeyCreation](https://console.cloud.google.com/iam-admin/orgpolicies/iam-disableServiceAccountKeyCreation).\nLearn more at: [https://cloud.google.com/resource-manager/docs/organization-policy/restricting-service-accounts](https://cloud.google.com/resource-manager/docs/organization-policy/restricting-service-accounts)\n\nIn addition, if you do not need to have service accounts in your project, you can also prevent the creation of service accounts through the `Disable service account creation` Organization policy: [https://console.cloud.google.com/iam-admin/orgpolicies/iam-disableServiceAccountCreation](https://console.cloud.google.com/iam-admin/orgpolicies/iam-disableServiceAccountCreation).",
+            "section": "Identity and Access Management",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 1.4",
+                "Identity and Access Management"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "1.4",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_1_4"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

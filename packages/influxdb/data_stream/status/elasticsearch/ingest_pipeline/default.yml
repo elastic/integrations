@@ -1,15 +1,10 @@
 ---
     description: Pipeline for Influxdb status metrics
     processors:
-        - rename:
+        - rename:   
             field: prometheus.metrics
             target_field: influxdb.status
             ignore_missing: true
-            ignore_failure: true
-        - remove:
-            field: [prometheus.labels.compiler_type, prometheus.labels.job, prometheus.labels.id, prometheus.labels.level, prometheus.labels.engine, prometheus.labels.user_agent, prometheus.labels.handler, prometheus.labels.task_type]
-            ignore_missing: true
-            ignore_failure: true
         - rename:
             field: influxdb.status.go_memstats_alloc_bytes
             target_field: influxdb.status.go_runtime.memstats_alloc_bytes
@@ -222,6 +217,11 @@
             field: prometheus.labels.org
             target_field: influxdb.status.org
             ignore_missing: true
+        - rename:
+            field: prometheus.labels
+            target_field: influxdb.status.label
+            ignore_missing: true
+            ignore_failure: true
     on_failure:
     - set:
         field: error.message

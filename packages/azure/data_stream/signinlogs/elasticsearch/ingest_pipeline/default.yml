@@ -82,14 +82,14 @@ processors:
       field: source.address
       value: '{{{azure.signinlogs.properties.ip_address}}}'
       ignore_empty_value: true
-  - set:
-      if: ctx?.source?.address == null
-      field: source.address
-      value: '{{{azure.signinlogs.caller_ip_address}}}'
-      ignore_empty_value: true
   - convert:
       field: source.address
       target_field: source.ip
+      type: ip
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: azure.signinlogs.caller_ip_address
       type: ip
       ignore_missing: true
       ignore_failure: true
@@ -97,7 +97,6 @@ processors:
       field:
         - azure.signinlogs.properties.ipaddress
         - azure.signinlogs.properties.ip_address
-        - azure.signinlogs.caller_ip_address
       ignore_missing: true
   - append:
       if: ctx?.source?.ip != null
@@ -274,6 +273,13 @@ processors:
       field: azure.signinlogs.properties.user_agent
       target_field: user_agent.original
       ignore_missing: true
+      if: 'ctx.user_agent?.original == null'
+      description: 'Renames the original `azure.signinlogs.properties.user_agent` field to `user_agent.original` to match the ECS field name. The `user_agent.original` field is not touched if the document already has one.'
+  - remove:
+      field: azure.signinlogs.properties.user_agent
+      ignore_missing: true
+      if: 'ctx.user_agent?.original != null'
+      description: 'The `azure.signinlogs.properties.user_agent` field is no longer required if the document has a `user_agent.original` field.'
   - user_agent:
       field: user_agent.original
       ignore_missing: true

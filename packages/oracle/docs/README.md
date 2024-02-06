@@ -24,6 +24,29 @@ Oracle Instant Client enables development and deployment of applications that co
 
 The OCI library install few Client Shared Libraries that must be referenced on the machine where Metricbeat is installed. Please follow the [Oracle Client Installation link](https://docs.oracle.com/en/database/oracle/oracle-database/21/lacli/install-instant-client-using-zip.html#GUID-D3DCB4FB-D3CA-4C25-BE48-3A1FB5A22E84) link for OCI Instant Client set up. The OCI Instant Client is available with the Oracle Universal Installer, RPM file or ZIP file. Download links can be found at the [Oracle Instant Client Download page](https://www.oracle.com/database/technologies/instant-client/downloads.html).
 
+If Elastic Agent is running as a systemd service and not using `ldconfig` is an option, to update the links to the shared libraries, you can use the `LD_LIBRARY_PATH` environment variable instead. Follow these steps to ensure Elastic Agent and its spawned processes respect the `LD_LIBRARY_PATH` environment variable.
+
+> Prerequisites: Ensure that you have administrative privileges to modify the Elastic Agent systemd service configuration.
+
+Steps:
+1. Check the status of the Elastic Agent systemd service by running the following command:
+   `systemctl status elastic-agent.service`
+   Take note of the path to the elastic-agent.service file, which is typically located in the systemd service directory. Example path: `/etc/systemd/system/elastic-agent.service`
+
+2. Open the elastic-agent.service file in your preferred text editor, find the `EnvironmentFile` key (commonly found at `/etc/sysconfig/elastic-agent`), and verify its contents, as these configurations are essential for the elastic-agent's runtime environment initialization. If the EnvironmentFile is absent, create it and set the necessary permissions to ensure the elastic-agent has full access.  
+
+3. Add the LD_LIBRARY_PATH environment variable to the configured `EnvironmentFile`. You can set it to the directory where libraries (`libclntsh.so`) are located. For example, if your libraries are in the `/opt/oracle/instantclient_21_1 directory`, add the following line to the `EnvironmentFile` (i.e. `/etc/systemd/system/elastic-agent.service`)
+
+      `LD_LIBRARY_PATH=/opt/oracle/instantclient_21_1`
+
+4. Save the changes made to the configured `EnvironmentFile`.
+
+5. Restart the Elastic Agent systemd service to apply the changes by running the following command:
+
+      `systemctl restart elastic-agent.service`
+
+> Note: Ensure that you replace `/opt/oracle/instantclient_21_1` with the actual path to the directory where the required libraries (`libclntsh.so`) are located. This will set the library search path for the Elastic Agent service to include the specified directory, allowing it to locate the required libraries.
+
 ####  Enable Listener
 
 The Oracle listener is a service that runs on the database host and receives requests from Oracle clients. Make sure that [Listener](https://docs.oracle.com/cd/B19306_01/network.102/b14213/lsnrctl.htm) is be running. 
@@ -37,15 +60,25 @@ If the listener is not running, use the command to start:
 
 Then, Metricbeat can be launched.
 
-*Oracle DSN Configuration*
+### Oracle DSN Configuration
 
-The supported configuration takes one of the forms
-- `oracle://<user>:<password>@<connection_string>`
-- `<user>:<password>@<connection_string>`
+The following two configuration formats are supported:
+```
+oracle://<user>:<password>@<connection_string>
+user="<user>" password="<password>" connectString="<connection_string>" sysdba=<true|false>
+```
 
-Examples of supported configurations are as below:
-- `oracle://sys:Oradoc_db1@0.0.0.0:1521/ORCLCDB.localdomain?sysdba=1`
-- `sys:Oradoc_db1@0.0.0.0:1521/ORCLCDB.localdomain?sysdba=1`
+Example values are:
+```
+oracle://sys:Oradoc_db1@0.0.0.0:1521/ORCLCDB.localdomain?sysdba=1
+user="sys" password="Oradoc_db1" connectString="0.0.0.0:1521/ORCLCDB.localdomain" sysdba=true
+```
+
+In the first, URL-based format, special characters should be URL encoded.
+
+In the seoncd, logfmt-encoded DSN format, if the password contains a backslash
+character (`\`), it must be escaped with another backslash. For example, if the
+password is `my\_password`, it must be written as `my\\_password`.
 
 ## Compatibility
 
@@ -111,7 +144,13 @@ The `database_audit` dataset collects Oracle Audit logs.
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.flags | related log flags |  |
 | log.offset | Log offset | long |
 | message | human-readable summary of the event | text |
@@ -161,35 +200,15 @@ An example event for `database_audit` looks as following:
 {
     "@timestamp": "2020-10-07T14:57:51.000Z",
     "agent": {
-        "ephemeral_id": "bb963eee-9be8-4811-902c-54c684a7c036",
-        "id": "ea8aab59-2fd7-4694-8024-7154f25adb03",
+        "ephemeral_id": "c8ada4ef-14e4-462f-b998-dd8c711b4ec7",
+        "id": "50560b92-4232-4158-b79d-9e6be7098c58",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.3"
+        "version": "8.10.2"
     },
     "client": {
         "user": {
             "name": "oracle"
-        }
-    },
-    "cloud": {
-        "account": {
-            "id": "elastic-obs-integrations-dev"
-        },
-        "availability_zone": "asia-south1-c",
-        "instance": {
-            "id": "3010911784348669868",
-            "name": "service-integration-dev-idc-01"
-        },
-        "machine": {
-            "type": "n1-standard-8"
-        },
-        "project": {
-            "id": "elastic-obs-integrations-dev"
-        },
-        "provider": "gcp",
-        "service": {
-            "name": "GCE"
         }
     },
     "data_stream": {
@@ -201,41 +220,45 @@ An example event for `database_audit` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "ea8aab59-2fd7-4694-8024-7154f25adb03",
+        "id": "50560b92-4232-4158-b79d-9e6be7098c58",
         "snapshot": false,
-        "version": "8.4.3"
+        "version": "8.10.2"
     },
     "event": {
         "action": "database_audit",
         "agent_id_status": "verified",
-        "category": "database",
+        "category": [
+            "database"
+        ],
         "dataset": "oracle.database_audit",
-        "ingested": "2022-11-09T04:17:52Z",
+        "ingested": "2023-10-05T12:18:05Z",
         "kind": "event",
         "outcome": "success",
         "timezone": "-04:00",
-        "type": "access"
+        "type": [
+            "access"
+        ]
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "702b305d5bf3433b8efe81033888bd28",
+        "id": "efe661d97f0c4d9883075c393da6b0d8",
         "ip": [
-            "192.168.240.7"
+            "172.28.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:f0:07"
+            "02-42-AC-1C-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.4.0-1078-gcp",
+            "kernel": "5.15.90.1-microsoft-standard-WSL2",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.5 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "input": {
@@ -243,6 +266,8 @@ An example event for `database_audit` looks as following:
     },
     "log": {
         "file": {
+            "device_id": 2080,
+            "inode": 827222,
             "path": "/tmp/service_logs/ORCLCDB_ora_13765_20201007105751904399925443.aud.log"
         },
         "flags": [
@@ -285,7 +310,9 @@ An example event for `database_audit` looks as following:
         "oracle-database_audit"
     ],
     "user": {
-        "roles": "SYSDBA"
+        "roles": [
+            "SYSDBA"
+        ]
     }
 }
 ```
@@ -300,9 +327,11 @@ Tablespace metrics describes the tablespace usage metrics of all types of tables
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
-| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |  |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
 | container.id | Unique container id. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
@@ -311,6 +340,7 @@ Tablespace metrics describes the tablespace usage metrics of all types of tables
 | event.dataset | Event module | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | oracle.tablespace.data_file.id | Tablespace unique identifier. | long |  |  |
 | oracle.tablespace.data_file.name | Filename of the data file | keyword |  |  |
 | oracle.tablespace.data_file.online_status | Last known online status of the data file. One of SYSOFF, SYSTEM, OFFLINE, ONLINE or RECOVER. | keyword |  |  |
@@ -454,9 +484,11 @@ The system metrics value captured for the most current time interval for the lon
 |---|---|---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
-| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
 | cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |  |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
 | container.id | Unique container id. | keyword |  |  |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
@@ -465,6 +497,7 @@ The system metrics value captured for the most current time interval for the lon
 | event.dataset | Event module | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | oracle.sysmetric.active_parallel_sessions | Active parallel sessions | double |  | gauge |
 | oracle.sysmetric.active_serial_sessions | Active serial sessions. | double |  | gauge |
 | oracle.sysmetric.average_active_sessions | Average active sessions. | double |  | gauge |
@@ -892,9 +925,11 @@ A Program Global Area (PGA) is a memory region that contains data and control in
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
-| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |  |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
 | container.id | Unique container id. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
@@ -903,6 +938,7 @@ A Program Global Area (PGA) is a memory region that contains data and control in
 | event.dataset | Event module | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | oracle.memory.pga.aggregate_auto_target | Amount of PGA memory the Oracle Database can use for work areas running in automatic mode. | double | byte | gauge |
 | oracle.memory.pga.aggregate_target_parameter | Current value of the PGA_AGGREGATE_TARGET initialization parameter. If this parameter is not set, then its value is 0 and automatic management of PGA memory is disabled. | double | byte | gauge |
 | oracle.memory.pga.cache_hit_pct | A metric computed by the Oracle Database to reflect the performance of the PGA memory component, cumulative since instance startup. | double | percent | gauge |
@@ -1034,9 +1070,11 @@ The System Global Area (SGA) is a group of shared memory structures that contain
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
-| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |  |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
 | container.id | Unique container id. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
@@ -1045,6 +1083,7 @@ The System Global Area (SGA) is a group of shared memory structures that contain
 | event.dataset | Event module | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | oracle.system_statistics.bytes_received_via_sqlnet_from_client | Total number of bytes received from the client over Oracle Net Services. | double | byte | counter |
 | oracle.system_statistics.bytes_received_via_sqlnet_from_dblink | Total number of bytes received from a database link over Oracle Net Services | double | byte | counter |
 | oracle.system_statistics.bytes_sent_via_sqlnet_to_client | Total number of bytes sent to the client from the foreground processes. | double | byte | counter |
@@ -1308,9 +1347,11 @@ Performance metrics give an overview of where time is spent in the system and en
 |---|---|---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
-| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |  |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
 | container.id | Unique container id. | keyword |  |  |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
@@ -1319,6 +1360,7 @@ Performance metrics give an overview of where time is spent in the system and en
 | event.dataset | Event module | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | oracle.performance.buffer_pool | Name of the buffer pool in the instance. | keyword |  |  |
 | oracle.performance.cache.buffer.hit.pct | The cache hit ratio of the specified buffer pool. | double | percent | gauge |
 | oracle.performance.cache.get.consistent | Consistent gets statistic. | long |  | gauge |

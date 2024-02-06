@@ -49,7 +49,74 @@ For more information see {{ url "observability-ingest-splunk" "Ingest data from 
 Note: This integration requires Windows Events from Splunk to be in XML format.
 To achieve this, `renderXml` needs to be set to `1` in your [`inputs.conf`](https://docs.splunk.com/Documentation/Splunk/latest/Admin/Inputsconf) file.
 
+## Notes
+
+### Windows Event ID clause limit
+
+If you specify more than 22 query conditions (event IDs or event ID ranges), some
+versions of Windows will prevent the integration from reading the event log due to
+limits in the query system. If this occurs, a similar warning as shown below:
+
+```
+The specified query is invalid.
+```
+
+In some cases, the limit may be lower than 22 conditions. For instance, using a
+mixture of ranges and single event IDs, along with an additional parameter such
+as `ignore older`, results in a limit of 21 conditions.
+
+If you have more than 22 conditions, you can work around this Windows limitation
+by using a drop_event processor to do the filtering after filebeat has received
+the events from Windows. The filter shown below is equivalent to
+`event_id: 903, 1024, 2000-2004, 4624` but can be expanded beyond 22 event IDs.
+
+```yaml
+- drop_event.when.not.or:
+  - equals.winlog.event_id: "903"
+  - equals.winlog.event_id: "1024"
+  - equals.winlog.event_id: "4624"
+  - range:
+      winlog.event_id.gte: 2000
+      winlog.event_id.lte: 2004
+```
+
 ## Logs reference
+
+### AppLocker/EXE and DLL
+
+The Windows `applocker_exe_and_dll` data stream provides events from the Windows
+`Microsoft-Windows-AppLocker/EXE and DLL` event log.
+
+{{event "applocker_exe_and_dll"}}
+
+{{fields "applocker_exe_and_dll"}}
+
+### AppLocker/MSI and Script
+
+The Windows `applocker_msi_and_script` data stream provides events from the Windows
+`Microsoft-Windows-AppLocker/MSI and Script` event log.
+
+{{event "applocker_msi_and_script"}}
+
+{{fields "applocker_msi_and_script"}}
+
+### AppLocker/Packaged app-Deployment
+
+The Windows `applocker_packaged_app_deployment` data stream provides events from the Windows
+`Microsoft-Windows-AppLocker/Packaged app-Deployment` event log.
+
+{{event "applocker_packaged_app_deployment"}}
+
+{{fields "applocker_packaged_app_deployment"}}
+
+### AppLocker/Packaged app-Execution
+
+The Windows `applocker_packaged_app_execution` data stream provides events from the Windows
+`Microsoft-Windows-AppLocker/Packaged app-Execution` event log.
+
+{{event "applocker_packaged_app_execution"}}
+
+{{fields "applocker_packaged_app_execution"}}
 
 ### Forwarded
 

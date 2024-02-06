@@ -4,6 +4,13 @@ processors:
   - set:
       field: trendmicro.event.category
       value: "intrusion-prevention"
+  - set:
+      field: event.category
+      value: ["intrusion_detection"]
+  - set:
+      field: event.type
+      value: ["info"]
+
   - script:
       lang: painless
       params:
@@ -76,5 +83,8 @@ processors:
 
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: '{{{ _ingest.on_failure_message }}}'

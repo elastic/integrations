@@ -4,7 +4,7 @@ The Spring Boot integration is used to fetch observability data from [Spring Boo
 
 ## Compatibility
 
-This integration has been tested against Spring Boot v2.3.12.
+This integration has been tested against Spring Boot v2.7.17 with LTS JDK versions 8, 11, 17, and 21.
 
 ## Requirements
 
@@ -25,6 +25,14 @@ In order to ingest data from Spring Boot:
     <artifactId>jolokia-core</artifactId>
 </dependency>
 ```
+- To expose `HTTP Trace` metrics following class can be used [InMemoryHttpTraceRepository](https://docs.spring.io/spring-boot/docs/2.0.6.RELEASE/api/org/springframework/boot/actuate/trace/http/InMemoryHttpTraceRepository.html).
+- To expose `Audit Events` metrics following class can be used [InMemoryAuditEventRepository](https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/actuate/audit/InMemoryAuditEventRepository.html).
+
+### Troubleshooting
+
+- If **[Spring Boot] Audit Events panel** does not display older documents after upgrading to ``0.9.0`` or later versions, then this issue can be solved by reindexing the ``Audit Events`` data stream's indices.
+- If host.ip is shown conflicted under ``logs-*`` data view, then this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the ``Audit Events`` data stream's indices. 
+- If host.ip is shown conflicted under ``metrics-*`` data view, then this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the ``Garbage Collector``, ``Memory`` and ``Threading`` data stream's indices.
 
 ## Logs
 

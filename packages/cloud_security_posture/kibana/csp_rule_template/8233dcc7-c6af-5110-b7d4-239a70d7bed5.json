@@ -1,0 +1,38 @@
+{
+    "id": "8233dcc7-c6af-5110-b7d4-239a70d7bed5",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/azure/mysql/single-server/concepts-ssl-connection-security\n2. https://docs.microsoft.com/en-us/azure/mysql/single-server/how-to-configure-ssl\n3. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-data-protection#dp-3-encrypt-sensitive-data-in-transit",
+            "id": "8233dcc7-c6af-5110-b7d4-239a70d7bed5",
+            "name": "Ensure 'Enforce SSL connection' is set to 'Enabled' for Standard MySQL Database Server",
+            "profile_applicability": "* Level 1",
+            "description": "Enable `SSL connection` on `MYSQL` Servers.",
+            "rationale": "SSL connectivity helps to provide a new layer of security by connecting database server to client applications using Secure Sockets Layer (SSL).\nEnforcing SSL connections between database server and client applications helps protect against \"man in the middle\" attacks by encrypting the data stream between the server and application.",
+            "audit": "**From Azure Portal**\n\n1. Login to Azure Portal using https://portal.azure.com\n2. Go to `Azure Database for MySQL servers`\n3. For each database, click on `Connection security`\n4. In `SSL` settings, ensure `Enforce SSL connection` is set to `ENABLED`. \n\n**From Azure CLI**\n\nEnsure the output of the below command returns ENABLED.\n ```\n az mysql server show --resource-group <resourceGroupName> --name <serverName> --query sslEnforcement\n```",
+            "remediation": "**From Azure Portal**\n\n1. Login to Azure Portal using https://portal.azure.com\n2. Go to `Azure Database for MySQL servers`\n3. For each database, click on `Connection security`\n4. In `SSL` settings, click on `ENABLED` to `Enforce SSL connections`\n\n**From Azure CLI**\n\nUse the below command to set MYSQL Databases to Enforce SSL connection.\n```\n az mysql server update --resource-group <resourceGroupName> --name <serverName> --ssl-enforcement Enabled\n```",
+            "section": "MySQL Database",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 4.4.1",
+                "MySQL Database"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "4.4.1",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_4_4_1"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

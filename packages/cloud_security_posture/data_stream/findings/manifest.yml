@@ -6,15 +6,18 @@ elasticsearch:
   index_template:
     mappings:
       dynamic: false
+# IMPORTANT: set all streams as disabled by default
 streams:
   - input: cloudbeat/cis_k8s
     title: CIS Kubernetes Benchmark
     description: CIS Benchmark for Kubernetes
     template_path: vanilla.yml.hbs
+    enabled: false
   - input: cloudbeat/cis_eks
     title: Amazon EKS Benchmark
     description: CIS Benchmark for Amazon Elastic Kubernetes Service (EKS)
     template_path: eks.yml.hbs
+    enabled: false
     vars:
       - name: access_key_id
         type: text
@@ -28,6 +31,7 @@ streams:
         multi: false
         required: false
         show_user: true
+        secret: false
       - name: session_token
         type: text
         title: Session Token
@@ -63,6 +67,7 @@ streams:
     title: CIS AWS Benchmark
     description: CIS Benchmark for Amazon Web Services Foundations
     template_path: aws.yml.hbs
+    enabled: false
     vars:
       - name: access_key_id
         type: text
@@ -76,6 +81,7 @@ streams:
         multi: false
         required: false
         show_user: true
+        secret: false
       - name: session_token
         type: text
         title: Session Token
@@ -103,7 +109,13 @@ streams:
         show_user: false
       - name: aws.credentials.type
         type: text
-        title: Credential type
+        title: Credentials type
+        multi: false
+        required: false
+        show_user: false
+      - name: aws.account_type
+        type: text
+        title: Fetch resources from AWS organization instead of single account
         multi: false
         required: false
         show_user: false
@@ -111,7 +123,104 @@ streams:
     title: CIS GCP Benchmark
     description: CIS Benchmark for Google Cloud Platform Foundation
     template_path: gcp.yml.hbs
+    enabled: false
+    vars:
+      - name: gcp.account_type
+        type: text
+        title: Account Type
+        multi: false
+        required: true
+        show_user: false
+      - name: gcp.organization_id
+        type: text
+        title: Organization Id
+        multi: false
+        required: false
+        show_user: false
+      - name: gcp.project_id
+        type: text
+        title: Project Id
+        multi: false
+        required: false
+        show_user: true
+      - name: gcp.credentials.type
+        type: text
+        title: Credentials type
+        multi: false
+        required: false
+        show_user: false
+      - name: gcp.credentials.file
+        type: text
+        title: Credentials file
+        multi: false
+        required: false
+        show_user: true
+      - name: gcp.credentials.json
+        type: text
+        title: Credentials json
+        multi: false
+        required: false
+        show_user: true
   - input: cloudbeat/cis_azure
     title: CIS Azure Benchmark
     description: CIS Benchmark for Microsoft Azure Foundations
     template_path: azure.yml.hbs
+    enabled: false
+    vars:
+      - name: azure.account_type
+        type: text
+        title: Account type
+        multi: false
+        required: false
+        show_user: false
+      - name: azure.credentials.type
+        type: text
+        title: Credentials type
+        multi: false
+        required: false
+        show_user: false
+      - name: azure.credentials.client_id
+        type: text
+        title: Client ID
+        multi: false
+        required: false
+        show_user: true
+      - name: azure.credentials.tenant_id
+        type: text
+        title: Tenant ID
+        multi: false
+        required: false
+        show_user: true
+      - name: azure.credentials.client_secret
+        type: text
+        title: Client Secret
+        multi: false
+        required: false
+        show_user: true
+        secret: false
+      - name: azure.credentials.client_username
+        type: text
+        title: Client Username
+        multi: false
+        required: false
+        show_user: true
+      - name: azure.credentials.client_password
+        type: text
+        title: Client Password
+        multi: false
+        required: false
+        show_user: true
+        secret: false
+      - name: azure.credentials.client_certificate_path
+        type: text
+        title: Client Certificate Path
+        multi: false
+        required: false
+        show_user: true
+      - name: azure.credentials.client_certificate_password
+        type: text
+        title: Client Certificate Password
+        multi: false
+        required: false
+        show_user: true
+        secret: false

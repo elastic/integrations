@@ -1,5 +1,11 @@
 {
     "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
+            "panelsJSON": "{\"13f93daa-2996-4413-8716-73b186ca0271\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"cloud.region\",\"title\":\"Region\",\"id\":\"13f93daa-2996-4413-8716-73b186ca0271\",\"enhancements\":{}}},\"fc120d66-f166-410b-b088-f948c09f5009\":{\"order\":1,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"azure.resource.group\",\"title\":\"Resource Group\",\"id\":\"fc120d66-f166-410b-b088-f948c09f5009\",\"enhancements\":{}}},\"eee6fbaa-e4c9-4c8d-816c-5c47fa5a7b1a\":{\"order\":2,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"azure.resource.name\",\"title\":\"VM Name\",\"id\":\"eee6fbaa-e4c9-4c8d-816c-5c47fa5a7b1a\",\"enhancements\":{}}}}"
+        },
         "description": "This dashboards shows ASP.NET and SQL Server specific metrics extracted from the azure.vm.windows.guestmetrics namespace",
         "hits": 0,
         "kibanaSavedObjectMeta": {
@@ -18,40 +24,165 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "### Azure Guest ASP.NET \u0026 SQL Server Metrics\n\n[Back to Overview Metrics](#/dashboard/azure_metrics-eb3f05f0-ea9a-11e9-90ec-112a988266d5) | [Memory \u0026 Process](#/dashboard/azure_metrics-b6b434c0-feae-11eb-8fff-87871c582eca) | [**ASP.NET and SQL Server**](#/dashboard/azure_metrics-a6f5d430-eaa6-11e9-90ec-112a988266d5) ",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "Navigation Compute VM Guest ASP.NET \u0026 SQL Server Guest Metrics [Azure Metrics]",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
                 },
                 "gridData": {
                     "h": 6,
                     "i": "aca8d6d8-91f6-4362-95e6-3547df2c95ab",
-                    "w": 10,
+                    "w": 24,
                     "x": 0,
                     "y": 0
                 },
                 "panelIndex": "aca8d6d8-91f6-4362-95e6-3547df2c95ab",
-                "panelRefName": "panel_aca8d6d8-91f6-4362-95e6-3547df2c95ab",
                 "type": "visualization",
-                "version": "7.14.0-SNAPSHOT"
+                "version": "8.4.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 6,
-                    "i": "b7b8bcc1-f776-45cf-a149-36665f2de746",
-                    "w": 14,
-                    "x": 10,
-                    "y": 0
-                },
-                "panelIndex": "b7b8bcc1-f776-45cf-a149-36665f2de746",
-                "panelRefName": "panel_b7b8bcc1-f776-45cf-a149-36665f2de746",
-                "title": "Filters",
-                "type": "visualization",
-                "version": "7.14.0-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {}
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-04ca1413-c115-497d-9fc1-cbbc1096cd35",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "04ca1413-c115-497d-9fc1-cbbc1096cd35": {
+                                            "columnOrder": [
+                                                "99dfae3a-9f13-458b-a72c-7e1e60046230",
+                                                "150abef4-24f9-4590-97e1-37086c47b194"
+                                            ],
+                                            "columns": {
+                                                "150abef4-24f9-4590-97e1-37086c47b194": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "connections",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.compute_vm.sqlserver_general_statistics_user_connections.avg"
+                                                },
+                                                "99dfae3a-9f13-458b-a72c-7e1e60046230": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "5m"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "azure.resource.type :\"Microsoft.Compute/virtualMachines\""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "150abef4-24f9-4590-97e1-37086c47b194"
+                                        ],
+                                        "layerId": "04ca1413-c115-497d-9fc1-cbbc1096cd35",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "xAccessor": "99dfae3a-9f13-458b-a72c-7e1e60046230",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#3185FC",
+                                                "forAccessor": "150abef4-24f9-4590-97e1-37086c47b194"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yTitle": ""
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 12,
@@ -61,14 +192,136 @@
                     "y": 0
                 },
                 "panelIndex": "6a5abca9-1cfd-45ef-aa88-9b4a72ce2dca",
-                "panelRefName": "panel_6a5abca9-1cfd-45ef-aa88-9b4a72ce2dca",
                 "title": "SQL Server User Connections",
-                "type": "visualization",
-                "version": "7.14.0-SNAPSHOT"
+                "type": "lens",
+                "version": "8.4.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-32e3900a-495a-4014-85ad-2ed800ff76d8",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "32e3900a-495a-4014-85ad-2ed800ff76d8": {
+                                            "columnOrder": [
+                                                "760c9e2d-3ca5-4645-bc06-824141f59969",
+                                                "2e58f163-ed64-4a0d-867b-6e0797e313e5"
+                                            ],
+                                            "columns": {
+                                                "2e58f163-ed64-4a0d-867b-6e0797e313e5": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "applications running",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.compute_vm.asp_net_applications_running.avg"
+                                                },
+                                                "760c9e2d-3ca5-4645-bc06-824141f59969": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "5m"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "azure.resource.type :\"Microsoft.Compute/virtualMachines\" "
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fillOpacity": 0.2,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "2e58f163-ed64-4a0d-867b-6e0797e313e5"
+                                        ],
+                                        "layerId": "32e3900a-495a-4014-85ad-2ed800ff76d8",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "area",
+                                        "xAccessor": "760c9e2d-3ca5-4645-bc06-824141f59969",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#3185FC",
+                                                "forAccessor": "2e58f163-ed64-4a0d-867b-6e0797e313e5"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yTitle": ""
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 12,
@@ -78,14 +331,141 @@
                     "y": 6
                 },
                 "panelIndex": "bc65dd87-08f6-49f7-b8bf-0d371431ad4d",
-                "panelRefName": "panel_bc65dd87-08f6-49f7-b8bf-0d371431ad4d",
                 "title": "Applications Running",
-                "type": "visualization",
-                "version": "7.14.0-SNAPSHOT"
+                "type": "lens",
+                "version": "8.4.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-3aa3b228-eeaf-4a1b-801b-5fddfb60fed3",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "3aa3b228-eeaf-4a1b-801b-5fddfb60fed3": {
+                                            "columnOrder": [
+                                                "d43e87f6-e5f1-40b2-8587-c94c129e02ae",
+                                                "d0eb903b-4a8f-4a3d-aa1e-e0f6bcc2de2c"
+                                            ],
+                                            "columns": {
+                                                "d0eb903b-4a8f-4a3d-aa1e-e0f6bcc2de2c": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "memory",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.compute_vm.sqlserver_memory_manager_total_server_memory.avg"
+                                                },
+                                                "d43e87f6-e5f1-40b2-8587-c94c129e02ae": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "5m"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "azure.resource.type : \"Microsoft.Compute/virtualMachines\""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "d0eb903b-4a8f-4a3d-aa1e-e0f6bcc2de2c"
+                                        ],
+                                        "layerId": "3aa3b228-eeaf-4a1b-801b-5fddfb60fed3",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "xAccessor": "d43e87f6-e5f1-40b2-8587-c94c129e02ae",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#3185FC",
+                                                "forAccessor": "d0eb903b-4a8f-4a3d-aa1e-e0f6bcc2de2c"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yTitle": ""
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 12,
@@ -95,14 +475,312 @@
                     "y": 12
                 },
                 "panelIndex": "aaa96404-80de-44dc-990c-76bf40d3827b",
-                "panelRefName": "panel_aaa96404-80de-44dc-990c-76bf40d3827b",
                 "title": "SQL Server Total Server Memory",
-                "type": "visualization",
-                "version": "7.14.0-SNAPSHOT"
+                "type": "lens",
+                "version": "8.4.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-d0780101-176b-42b3-bd87-1eb75070e4d8",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-a24698c5-6841-456f-bd10-8ffe55877bca",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-3eb35d2d-eaa4-4bc8-8994-d92be01d01ae",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-46d93037-893a-4a1f-90fb-296f1eb58c17",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "3eb35d2d-eaa4-4bc8-8994-d92be01d01ae": {
+                                            "columnOrder": [
+                                                "15f62cf5-0520-4902-98a5-2b77d5c3c8cb",
+                                                "fc7f5591-8179-422c-9a7c-6ae237157c66"
+                                            ],
+                                            "columns": {
+                                                "15f62cf5-0520-4902-98a5-2b77d5c3c8cb": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "5m"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "fc7f5591-8179-422c-9a7c-6ae237157c66": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "succeeded",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.compute_vm.asp_net_applications_requests_succeeded.avg"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        },
+                                        "46d93037-893a-4a1f-90fb-296f1eb58c17": {
+                                            "columnOrder": [
+                                                "8012f73d-6b6f-4c5e-a248-b01a53923e75",
+                                                "9287f204-1e7f-4da7-88e8-75b129563978"
+                                            ],
+                                            "columns": {
+                                                "8012f73d-6b6f-4c5e-a248-b01a53923e75": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "5m"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "9287f204-1e7f-4da7-88e8-75b129563978": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "total",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.compute_vm.asp_net_applications_requests_total.avg"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        },
+                                        "a24698c5-6841-456f-bd10-8ffe55877bca": {
+                                            "columnOrder": [
+                                                "2361bae7-da67-4752-b81c-784d63bd1133",
+                                                "e61e9769-4de2-45c6-bbb0-071a58a8f319"
+                                            ],
+                                            "columns": {
+                                                "2361bae7-da67-4752-b81c-784d63bd1133": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "5m"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "e61e9769-4de2-45c6-bbb0-071a58a8f319": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "failed",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.compute_vm.asp_net_applications_requests_failed.avg"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        },
+                                        "d0780101-176b-42b3-bd87-1eb75070e4d8": {
+                                            "columnOrder": [
+                                                "765b02b8-1ecb-4331-bdca-669963ec0d18",
+                                                "e1f90bc3-ef99-4b93-9ca9-40554f931802"
+                                            ],
+                                            "columns": {
+                                                "765b02b8-1ecb-4331-bdca-669963ec0d18": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "5m"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "e1f90bc3-ef99-4b93-9ca9-40554f931802": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "timed out",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.compute_vm.asp_net_applications_requests_timed_out.avg"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "azure.resource.type : \"Microsoft.Compute/virtualMachines\""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "e1f90bc3-ef99-4b93-9ca9-40554f931802"
+                                        ],
+                                        "layerId": "d0780101-176b-42b3-bd87-1eb75070e4d8",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "xAccessor": "765b02b8-1ecb-4331-bdca-669963ec0d18",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "rgba(254,146,0,1)",
+                                                "forAccessor": "e1f90bc3-ef99-4b93-9ca9-40554f931802"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "accessors": [
+                                            "e61e9769-4de2-45c6-bbb0-071a58a8f319"
+                                        ],
+                                        "layerId": "a24698c5-6841-456f-bd10-8ffe55877bca",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "xAccessor": "2361bae7-da67-4752-b81c-784d63bd1133",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#DB1374",
+                                                "forAccessor": "e61e9769-4de2-45c6-bbb0-071a58a8f319"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "accessors": [
+                                            "fc7f5591-8179-422c-9a7c-6ae237157c66"
+                                        ],
+                                        "layerId": "3eb35d2d-eaa4-4bc8-8994-d92be01d01ae",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "xAccessor": "15f62cf5-0520-4902-98a5-2b77d5c3c8cb",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#00B3A4",
+                                                "forAccessor": "fc7f5591-8179-422c-9a7c-6ae237157c66"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "accessors": [
+                                            "9287f204-1e7f-4da7-88e8-75b129563978"
+                                        ],
+                                        "layerId": "46d93037-893a-4a1f-90fb-296f1eb58c17",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "xAccessor": "8012f73d-6b6f-4c5e-a248-b01a53923e75",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#490092",
+                                                "forAccessor": "9287f204-1e7f-4da7-88e8-75b129563978"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yTitle": ""
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 18,
@@ -112,14 +790,140 @@
                     "y": 18
                 },
                 "panelIndex": "5c0158cc-c884-4665-8bbf-7fc34d885d55",
-                "panelRefName": "panel_5c0158cc-c884-4665-8bbf-7fc34d885d55",
                 "title": "Application Requests",
-                "type": "visualization",
-                "version": "7.14.0-SNAPSHOT"
+                "type": "lens",
+                "version": "8.4.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-4e9fe76c-dd6e-482e-b5e6-80365f63ee1a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "4e9fe76c-dd6e-482e-b5e6-80365f63ee1a": {
+                                            "columnOrder": [
+                                                "b8991460-48a1-4f71-9db5-7c323e899b64",
+                                                "a7036c3d-b262-482f-ad20-ff5324c0bd47"
+                                            ],
+                                            "columns": {
+                                                "a7036c3d-b262-482f-ad20-ff5324c0bd47": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": ""
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "errors",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.compute_vm.asp_net_applications_errors_total.avg"
+                                                },
+                                                "b8991460-48a1-4f71-9db5-7c323e899b64": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "5m"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "azure.resource.type : \"Microsoft.Compute/virtualMachines\""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fillOpacity": 0.2,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "a7036c3d-b262-482f-ad20-ff5324c0bd47"
+                                        ],
+                                        "layerId": "4e9fe76c-dd6e-482e-b5e6-80365f63ee1a",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "area",
+                                        "xAccessor": "b8991460-48a1-4f71-9db5-7c323e899b64",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "rgba(244,78,59,1)",
+                                                "forAccessor": "a7036c3d-b262-482f-ad20-ff5324c0bd47"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yTitle": ""
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 18,
@@ -129,14 +933,194 @@
                     "y": 18
                 },
                 "panelIndex": "03c9cff0-b2ec-4dd1-9a2f-db7f441e5e71",
-                "panelRefName": "panel_03c9cff0-b2ec-4dd1-9a2f-db7f441e5e71",
                 "title": "Application Error Rates",
-                "type": "visualization",
-                "version": "7.14.0-SNAPSHOT"
+                "type": "lens",
+                "version": "8.4.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-62a117f6-ae04-4140-b189-3bf7f1aeed34",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-63780669-90ca-47bc-88bb-13c44f2183fd",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "62a117f6-ae04-4140-b189-3bf7f1aeed34": {
+                                            "columnOrder": [
+                                                "c83c32be-ef92-46be-adc9-60270d078a0b",
+                                                "7646aaad-8f25-4012-b829-a2556dcefdea"
+                                            ],
+                                            "columns": {
+                                                "7646aaad-8f25-4012-b829-a2556dcefdea": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Page Reads/s",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.compute_vm.sqlserver_buffer_manager_page_reads_per_sec.avg"
+                                                },
+                                                "c83c32be-ef92-46be-adc9-60270d078a0b": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "5m"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        },
+                                        "63780669-90ca-47bc-88bb-13c44f2183fd": {
+                                            "columnOrder": [
+                                                "2b43f295-060e-42df-b966-6a415cfe81bc",
+                                                "d454debf-a642-4d31-91b2-1fc06ba66237"
+                                            ],
+                                            "columns": {
+                                                "2b43f295-060e-42df-b966-6a415cfe81bc": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "5m"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "d454debf-a642-4d31-91b2-1fc06ba66237": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Page Writes/s",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.compute_vm.sqlserver_buffer_manager_page_writes_per_sec.avg"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "azure.resource.type : \"Microsoft.Compute/virtualMachines\""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "7646aaad-8f25-4012-b829-a2556dcefdea"
+                                        ],
+                                        "layerId": "62a117f6-ae04-4140-b189-3bf7f1aeed34",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "xAccessor": "c83c32be-ef92-46be-adc9-60270d078a0b",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "rgba(252,196,0,1)",
+                                                "forAccessor": "7646aaad-8f25-4012-b829-a2556dcefdea"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "accessors": [
+                                            "d454debf-a642-4d31-91b2-1fc06ba66237"
+                                        ],
+                                        "layerId": "63780669-90ca-47bc-88bb-13c44f2183fd",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "xAccessor": "2b43f295-060e-42df-b966-6a415cfe81bc",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "rgba(176,188,0,1)",
+                                                "forAccessor": "d454debf-a642-4d31-91b2-1fc06ba66237"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yTitle": ""
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 12,
@@ -146,14 +1130,312 @@
                     "y": 24
                 },
                 "panelIndex": "43effd82-fc6a-4d11-bd1e-d3b12a34cbce",
-                "panelRefName": "panel_43effd82-fc6a-4d11-bd1e-d3b12a34cbce",
                 "title": "SQL Server Page Reads/Writes",
-                "type": "visualization",
-                "version": "7.14.0-SNAPSHOT"
+                "type": "lens",
+                "version": "8.4.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-70eaf0a1-58ec-4104-a28d-f60b942907d7",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-a61ee0d9-85ea-4520-a2d8-58df29ff8037",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-a17f6ecc-8371-47d3-9712-c34fd46e2241",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-6e225479-97e6-48fc-a218-b73708f9e1e4",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "6e225479-97e6-48fc-a218-b73708f9e1e4": {
+                                            "columnOrder": [
+                                                "6dbb7446-8979-4cd8-be0e-8f53f6b28b4e",
+                                                "ddaaa53a-86eb-49e2-8cad-4e5680ede30f"
+                                            ],
+                                            "columns": {
+                                                "6dbb7446-8979-4cd8-be0e-8f53f6b28b4e": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "5m"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "ddaaa53a-86eb-49e2-8cad-4e5680ede30f": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "total",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.compute_vm.asp_net_applications_sessions_total.avg"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        },
+                                        "70eaf0a1-58ec-4104-a28d-f60b942907d7": {
+                                            "columnOrder": [
+                                                "710798d3-cbd4-461c-8003-8e8803946419",
+                                                "f7838f99-ab97-4720-8b61-ac694e147be6"
+                                            ],
+                                            "columns": {
+                                                "710798d3-cbd4-461c-8003-8e8803946419": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "5m"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "f7838f99-ab97-4720-8b61-ac694e147be6": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "active",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.compute_vm.asp_net_applications_sessions_active.avg"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        },
+                                        "a17f6ecc-8371-47d3-9712-c34fd46e2241": {
+                                            "columnOrder": [
+                                                "0ef5196d-6919-48d8-81fc-352f9df7fd20",
+                                                "40d92cb9-2a4b-494b-bf59-b24182da983b"
+                                            ],
+                                            "columns": {
+                                                "0ef5196d-6919-48d8-81fc-352f9df7fd20": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "5m"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "40d92cb9-2a4b-494b-bf59-b24182da983b": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "abandoned",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.compute_vm.asp_net_applications_sessions_abandoned.avg"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        },
+                                        "a61ee0d9-85ea-4520-a2d8-58df29ff8037": {
+                                            "columnOrder": [
+                                                "250ef7ef-8500-4087-8f08-50da9277b712",
+                                                "d5d7524c-135f-40fe-b419-827d9d7725a4"
+                                            ],
+                                            "columns": {
+                                                "250ef7ef-8500-4087-8f08-50da9277b712": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "5m"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "d5d7524c-135f-40fe-b419-827d9d7725a4": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "timed out",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.compute_vm.asp_net_applications_sessions_timed_out.avg"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "azure.resource.type : \"Microsoft.Compute/virtualMachines\""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "f7838f99-ab97-4720-8b61-ac694e147be6"
+                                        ],
+                                        "layerId": "70eaf0a1-58ec-4104-a28d-f60b942907d7",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "xAccessor": "710798d3-cbd4-461c-8003-8e8803946419",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#3185FC",
+                                                "forAccessor": "f7838f99-ab97-4720-8b61-ac694e147be6"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "accessors": [
+                                            "d5d7524c-135f-40fe-b419-827d9d7725a4"
+                                        ],
+                                        "layerId": "a61ee0d9-85ea-4520-a2d8-58df29ff8037",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "xAccessor": "250ef7ef-8500-4087-8f08-50da9277b712",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#DB1374",
+                                                "forAccessor": "d5d7524c-135f-40fe-b419-827d9d7725a4"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "accessors": [
+                                            "40d92cb9-2a4b-494b-bf59-b24182da983b"
+                                        ],
+                                        "layerId": "a17f6ecc-8371-47d3-9712-c34fd46e2241",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "xAccessor": "0ef5196d-6919-48d8-81fc-352f9df7fd20",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#00B3A4",
+                                                "forAccessor": "40d92cb9-2a4b-494b-bf59-b24182da983b"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "accessors": [
+                                            "ddaaa53a-86eb-49e2-8cad-4e5680ede30f"
+                                        ],
+                                        "layerId": "6e225479-97e6-48fc-a218-b73708f9e1e4",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "xAccessor": "6dbb7446-8979-4cd8-be0e-8f53f6b28b4e",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#490092",
+                                                "forAccessor": "ddaaa53a-86eb-49e2-8cad-4e5680ede30f"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yTitle": ""
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 12,
@@ -163,66 +1445,105 @@
                     "y": 36
                 },
                 "panelIndex": "b89c7551-e0e1-4642-ac18-01322ea72db8",
-                "panelRefName": "panel_b89c7551-e0e1-4642-ac18-01322ea72db8",
                 "title": "Application Sessions",
-                "type": "visualization",
-                "version": "7.14.0-SNAPSHOT"
+                "type": "lens",
+                "version": "8.4.0"
             }
         ],
         "timeRestore": false,
         "title": "[Azure Metrics] Compute VM Guest ASP.NET \u0026 Sql Server",
         "version": 1
     },
-    "coreMigrationVersion": "7.14.0",
+    "coreMigrationVersion": "8.4.0",
     "id": "azure_metrics-a6f5d430-eaa6-11e9-90ec-112a988266d5",
     "migrationVersion": {
-        "dashboard": "7.14.0"
+        "dashboard": "8.4.0"
     },
     "references": [
         {
-            "id": "azure_metrics-4bbd6f50-feaf-11eb-8fff-87871c582eca",
-            "name": "aca8d6d8-91f6-4362-95e6-3547df2c95ab:panel_aca8d6d8-91f6-4362-95e6-3547df2c95ab",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "6a5abca9-1cfd-45ef-aa88-9b4a72ce2dca:indexpattern-datasource-layer-04ca1413-c115-497d-9fc1-cbbc1096cd35",
+            "type": "index-pattern"
         },
         {
-            "id": "azure_metrics-5031b220-eb61-11e9-90ec-112a988266d5",
-            "name": "b7b8bcc1-f776-45cf-a149-36665f2de746:panel_b7b8bcc1-f776-45cf-a149-36665f2de746",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "bc65dd87-08f6-49f7-b8bf-0d371431ad4d:indexpattern-datasource-layer-32e3900a-495a-4014-85ad-2ed800ff76d8",
+            "type": "index-pattern"
         },
         {
-            "id": "azure_metrics-0aacc190-eaa8-11e9-90ec-112a988266d5",
-            "name": "6a5abca9-1cfd-45ef-aa88-9b4a72ce2dca:panel_6a5abca9-1cfd-45ef-aa88-9b4a72ce2dca",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "aaa96404-80de-44dc-990c-76bf40d3827b:indexpattern-datasource-layer-3aa3b228-eeaf-4a1b-801b-5fddfb60fed3",
+            "type": "index-pattern"
         },
         {
-            "id": "azure_metrics-1f5c1cd0-eaa3-11e9-90ec-112a988266d5",
-            "name": "bc65dd87-08f6-49f7-b8bf-0d371431ad4d:panel_bc65dd87-08f6-49f7-b8bf-0d371431ad4d",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "5c0158cc-c884-4665-8bbf-7fc34d885d55:indexpattern-datasource-layer-d0780101-176b-42b3-bd87-1eb75070e4d8",
+            "type": "index-pattern"
         },
         {
-            "id": "azure_metrics-d7ea4290-eaa8-11e9-90ec-112a988266d5",
-            "name": "aaa96404-80de-44dc-990c-76bf40d3827b:panel_aaa96404-80de-44dc-990c-76bf40d3827b",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "5c0158cc-c884-4665-8bbf-7fc34d885d55:indexpattern-datasource-layer-a24698c5-6841-456f-bd10-8ffe55877bca",
+            "type": "index-pattern"
         },
         {
-            "id": "azure_metrics-097bc300-eaa5-11e9-90ec-112a988266d5",
-            "name": "5c0158cc-c884-4665-8bbf-7fc34d885d55:panel_5c0158cc-c884-4665-8bbf-7fc34d885d55",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "5c0158cc-c884-4665-8bbf-7fc34d885d55:indexpattern-datasource-layer-3eb35d2d-eaa4-4bc8-8994-d92be01d01ae",
+            "type": "index-pattern"
         },
         {
-            "id": "azure_metrics-6d52a660-eaa4-11e9-90ec-112a988266d5",
-            "name": "03c9cff0-b2ec-4dd1-9a2f-db7f441e5e71:panel_03c9cff0-b2ec-4dd1-9a2f-db7f441e5e71",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "5c0158cc-c884-4665-8bbf-7fc34d885d55:indexpattern-datasource-layer-46d93037-893a-4a1f-90fb-296f1eb58c17",
+            "type": "index-pattern"
         },
         {
-            "id": "azure_metrics-787a0a20-eaa8-11e9-90ec-112a988266d5",
-            "name": "43effd82-fc6a-4d11-bd1e-d3b12a34cbce:panel_43effd82-fc6a-4d11-bd1e-d3b12a34cbce",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "03c9cff0-b2ec-4dd1-9a2f-db7f441e5e71:indexpattern-datasource-layer-4e9fe76c-dd6e-482e-b5e6-80365f63ee1a",
+            "type": "index-pattern"
         },
         {
-            "id": "azure_metrics-b9aa9b20-eaa5-11e9-90ec-112a988266d5",
-            "name": "b89c7551-e0e1-4642-ac18-01322ea72db8:panel_b89c7551-e0e1-4642-ac18-01322ea72db8",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "43effd82-fc6a-4d11-bd1e-d3b12a34cbce:indexpattern-datasource-layer-62a117f6-ae04-4140-b189-3bf7f1aeed34",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "43effd82-fc6a-4d11-bd1e-d3b12a34cbce:indexpattern-datasource-layer-63780669-90ca-47bc-88bb-13c44f2183fd",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "b89c7551-e0e1-4642-ac18-01322ea72db8:indexpattern-datasource-layer-70eaf0a1-58ec-4104-a28d-f60b942907d7",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "b89c7551-e0e1-4642-ac18-01322ea72db8:indexpattern-datasource-layer-a61ee0d9-85ea-4520-a2d8-58df29ff8037",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "b89c7551-e0e1-4642-ac18-01322ea72db8:indexpattern-datasource-layer-a17f6ecc-8371-47d3-9712-c34fd46e2241",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "b89c7551-e0e1-4642-ac18-01322ea72db8:indexpattern-datasource-layer-6e225479-97e6-48fc-a218-b73708f9e1e4",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_13f93daa-2996-4413-8716-73b186ca0271:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_fc120d66-f166-410b-b088-f948c09f5009:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_eee6fbaa-e4c9-4c8d-816c-5c47fa5a7b1a:optionsListDataView",
+            "type": "index-pattern"
         }
     ],
     "type": "dashboard"

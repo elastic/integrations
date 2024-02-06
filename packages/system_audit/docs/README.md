@@ -1,12 +1,12 @@
-# System Audit integration [Beta]
+# System Audit Integration [Beta]
 
 ## Overview
 
-The `System Audit` integration collects various security related information about
+The `System Audit` integration collects various security-related information about
 a system. All data streams send both periodic state information (e.g. all currently
 installed packages) and real-time changes (e.g. when a new package is installed/uninstalled
-or an existing package is updated). Currently the only implemented data stream is the
-package data stream, which collects various information about system packages. In future
+or an existing package is updated). Currently, the only implemented data stream is the
+package data stream, which collects various information about system packages. In the future, 
 more data streams like (process, socket, hosts .. etc) will be added.
 
 ## How it works
@@ -29,8 +29,6 @@ The frequency of these polls is controlled by the `period` configuration paramet
 This module populates `entity_id` fields to uniquely identify entities (packages) within a host.
 This requires the module to obtain a unique identifier for the host:
 
-- Windows: Uses the `HKLM\Software\Microsoft\Cryptography\MachineGuid` registry
-key.
 - macOS: Uses the value returned by `gethostuuid(2)` system call.
 - Linux: Uses the content of one of the following files, created by either
 `systemd` or `dbus`:
@@ -38,9 +36,8 @@ key.
  * /var/lib/dbus/machine-id
  * /var/db/dbus/machine-id
 
-**NOTE:** Under CentOS 6.x, it's possible that none of the files above exist.
-In that case, running `dbus-uuidgen --ensure` (provided by the `dbus` package)
-will generate one for you.
+**NOTE:** Under CentOS 6.x, it's possible that none of the files above exist. In that case, running `dbus-uuidgen --ensure` (provided by the `dbus` package)
+will generate one for you. One more thing to consider is that at the moment this integration is **not supported on Windows** systems.
 
 ## Requirements
 
@@ -49,16 +46,16 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 ## Setup
 
-For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+For step-by-step instructions on how to set up an integration, see the [Getting Started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
 **NOTE:** If you want to supress `host` related information, please consider adding the tag: `forwarded`. Adding this tag to the tag list will remove
-any host related data from the output, this will also stop certain dashboards from displaying host/os related information/charts.
+any host-related data from the output, this will also stop certain dashboards from displaying host/os-related information/charts.
 ## Data Streams
-The data streams which are currently supported are :-
+The data streams which are currently supported are:-
  - package
 
 **Package** helps you keep a record of events and changes happening to different packages on your system. The fields & events associated with the
-data stream are as follows :-
+data stream are as follows:-
 
 **Exported fields**
 
@@ -78,7 +75,7 @@ data stream are as follows :-
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
@@ -133,7 +130,7 @@ An example event for `package` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "027bc354-85a6-40d6-be9d-7eb4533fbd18",
@@ -203,6 +200,7 @@ An example event for `package` looks as following:
         "audit-system-package"
     ]
 }
+
 ```
 
 ### Example dashboard

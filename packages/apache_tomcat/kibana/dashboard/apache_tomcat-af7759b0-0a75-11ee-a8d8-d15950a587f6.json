@@ -1,0 +1,499 @@
+{
+    "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
+            "panelsJSON": "{\"3503af0f-80d1-487e-8fa3-e470f20f9f8b\":{\"type\":\"optionsListControl\",\"order\":0,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"3503af0f-80d1-487e-8fa3-e470f20f9f8b\",\"fieldName\":\"service.address\",\"title\":\"Host Name\",\"enhancements\":{},\"singleSelect\":true}},\"80f0e8b9-8077-4aec-bcea-2cc806ff57ed\":{\"type\":\"optionsListControl\",\"order\":1,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"80f0e8b9-8077-4aec-bcea-2cc806ff57ed\",\"fieldName\":\"apache_tomcat.connection_pool.application_name\",\"title\":\"Application Name\",\"enhancements\":{},\"selectedOptions\":[],\"singleSelect\":true}}}"
+        },
+        "description": "This Apache Tomcat dashboard visualizes connection pool data stream metrics.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "event.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "event.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "apache_tomcat.connection_pool"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "event.dataset": "apache_tomcat.connection_pool"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-e325a4cc-4f13-45e6-ad1d-ab520a86078f",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "d754c647-0a3e-4949-b974-ae09a1bc847d",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "e325a4cc-4f13-45e6-ad1d-ab520a86078f": {
+                                            "columnOrder": [
+                                                "85eeb55f-dc5a-4e6a-95be-bae70a4539b4",
+                                                "a595aca1-c1f6-4115-b83f-5624fefff173",
+                                                "ffa09b26-9189-492d-8e79-da9b5f6183b8"
+                                            ],
+                                            "columns": {
+                                                "85eeb55f-dc5a-4e6a-95be-bae70a4539b4": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "a595aca1-c1f6-4115-b83f-5624fefff173": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "apache_tomcat.connection_pool.connection.active.count: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Active connections",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "apache_tomcat.connection_pool.connection.active.count"
+                                                },
+                                                "ffa09b26-9189-492d-8e79-da9b5f6183b8": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "apache_tomcat.connection_pool.connection.idle.count: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Idle connections",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "apache_tomcat.connection_pool.connection.idle.count"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "event.dataset",
+                                        "index": "d754c647-0a3e-4949-b974-ae09a1bc847d",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "apache_tomcat.connection_pool"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "apache_tomcat.connection_pool"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "a595aca1-c1f6-4115-b83f-5624fefff173",
+                                            "ffa09b26-9189-492d-8e79-da9b5f6183b8"
+                                        ],
+                                        "layerId": "e325a4cc-4f13-45e6-ad1d-ab520a86078f",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "85eeb55f-dc5a-4e6a-95be-bae70a4539b4"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "large",
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Count"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 20,
+                    "i": "8379c1c8-9392-4af4-a7f4-e625811a8f12",
+                    "w": 38,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "8379c1c8-9392-4af4-a7f4-e625811a8f12",
+                "title": "Connections over time [Metrics Apache Tomcat]",
+                "type": "lens",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-bf37fdfd-568b-4d88-8698-f487013d0e7a",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "c82a919f-342a-40fb-b752-e7d04fed8ff7",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "bf37fdfd-568b-4d88-8698-f487013d0e7a": {
+                                            "columnOrder": [
+                                                "d8899acf-91a6-4a42-9f2b-2c4724b59a49"
+                                            ],
+                                            "columns": {
+                                                "d8899acf-91a6-4a42-9f2b-2c4724b59a49": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "apache_tomcat.connection_pool.connection.active.count: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Active connections",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "apache_tomcat.connection_pool.connection.active.count"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "event.dataset",
+                                        "index": "c82a919f-342a-40fb-b752-e7d04fed8ff7",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "apache_tomcat.connection_pool"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "apache_tomcat.connection_pool"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#FFFFFF",
+                                "layerId": "bf37fdfd-568b-4d88-8698-f487013d0e7a",
+                                "layerType": "data",
+                                "metricAccessor": "d8899acf-91a6-4a42-9f2b-2c4724b59a49",
+                                "showBar": false
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "f170f694-3b15-4d7f-8d02-93721b07841a",
+                    "w": 10,
+                    "x": 38,
+                    "y": 0
+                },
+                "panelIndex": "f170f694-3b15-4d7f-8d02-93721b07841a",
+                "title": "Active connections [Metrics Apache Tomcat]",
+                "type": "lens",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-bf37fdfd-568b-4d88-8698-f487013d0e7a",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "18d6b810-b483-4c38-8003-439a9795566e",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "bf37fdfd-568b-4d88-8698-f487013d0e7a": {
+                                            "columnOrder": [
+                                                "37ab7957-367f-4788-8d40-2bb3abf57bb8"
+                                            ],
+                                            "columns": {
+                                                "37ab7957-367f-4788-8d40-2bb3abf57bb8": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "apache_tomcat.connection_pool.connection.idle.count: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Idle connections",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "apache_tomcat.connection_pool.connection.idle.count"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "event.dataset",
+                                        "index": "18d6b810-b483-4c38-8003-439a9795566e",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "apache_tomcat.connection_pool"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "apache_tomcat.connection_pool"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#FFFFFF",
+                                "layerId": "bf37fdfd-568b-4d88-8698-f487013d0e7a",
+                                "layerType": "data",
+                                "metricAccessor": "37ab7957-367f-4788-8d40-2bb3abf57bb8",
+                                "showBar": false
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "4ba1c352-1167-4214-a1e0-a8acb13e59aa",
+                    "w": 10,
+                    "x": 38,
+                    "y": 10
+                },
+                "panelIndex": "4ba1c352-1167-4214-a1e0-a8acb13e59aa",
+                "title": "Idle connections [Metrics Apache Tomcat]",
+                "type": "lens",
+                "version": "8.7.0"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Metrics Apache Tomcat] Connection Pool",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.7.0",
+    "created_at": "2023-06-30T05:14:49.407Z",
+    "id": "apache_tomcat-af7759b0-0a75-11ee-a8d8-d15950a587f6",
+    "migrationVersion": {
+        "dashboard": "8.7.0"
+    },
+    "references": [
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "8379c1c8-9392-4af4-a7f4-e625811a8f12:indexpattern-datasource-layer-e325a4cc-4f13-45e6-ad1d-ab520a86078f",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "8379c1c8-9392-4af4-a7f4-e625811a8f12:d754c647-0a3e-4949-b974-ae09a1bc847d",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "f170f694-3b15-4d7f-8d02-93721b07841a:indexpattern-datasource-layer-bf37fdfd-568b-4d88-8698-f487013d0e7a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "f170f694-3b15-4d7f-8d02-93721b07841a:c82a919f-342a-40fb-b752-e7d04fed8ff7",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "4ba1c352-1167-4214-a1e0-a8acb13e59aa:indexpattern-datasource-layer-bf37fdfd-568b-4d88-8698-f487013d0e7a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "4ba1c352-1167-4214-a1e0-a8acb13e59aa:18d6b810-b483-4c38-8003-439a9795566e",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_3503af0f-80d1-487e-8fa3-e470f20f9f8b:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_80f0e8b9-8077-4aec-bcea-2cc806ff57ed:optionsListDataView",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard"
+}

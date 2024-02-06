@@ -1,6 +1,11 @@
 ---
 description: Pipeline for parsing GCP PubSub metrics.
 processors:
+  - fingerprint:
+      fields:
+        - gcp.labels
+      target_field: gcp.labels_fingerprint
+      ignore_missing: true
   - rename:
       field: gcp.metrics.snapshot.backlog.bytes
       target_field: gcp.pubsub.snapshot.backlog.bytes
@@ -203,5 +208,8 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: '{{{ _ingest.on_failure_message }}}'

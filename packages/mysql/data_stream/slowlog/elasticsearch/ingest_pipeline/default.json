@@ -33,8 +33,36 @@
       }
     },
     {
-      "remove": {
-        "field": "message"
+      "rename": {
+        "field": "message",
+        "target_field": "event.original",
+        "ignore_missing": true,
+        "if": "ctx.event?.original == null",
+        "description": "Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document."
+      }
+    },
+    {
+      "script": {
+        "lang": "painless",
+        "if": "ctx?.mysql != null",
+        "source": "for (field in params.fields) { if (ctx.mysql[field] instanceof List) { def vals = ctx.mysql[field]; vals = vals.stream().distinct().collect(Collectors.toList()); if (vals.size() == 1) { ctx.mysql[field] = vals[0] } else { ctx.mysql[field] = vals } } }",
+        "params": {
+          "fields": [
+            "thread_id"
+          ]
+        }
+      }
+    },
+    {
+      "script": {
+        "lang": "painless",
+        "if": "ctx?.mysql?.slowlog != null",
+        "source": "for (field in params.fields) { if (ctx.mysql.slowlog[field] instanceof List) { def vals = ctx.mysql.slowlog[field]; vals = vals.stream().distinct().collect(Collectors.toList()); if (vals.size() == 1) { ctx.mysql.slowlog[field] = vals[0] } else { ctx.mysql.slowlog[field] = vals } } }",
+        "params": {
+          "fields": [
+            "schema"
+          ]
+        }
       }
     },
     {
@@ -104,6 +132,14 @@
       "append": {
         "field": "event.type",
         "value": "info"
+      }
+    },
+    {
+      "remove": {
+        "field": "event.original",
+        "if": "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))",
+        "ignore_failure": true,
+        "ignore_missing": true
       }
     }
   ],

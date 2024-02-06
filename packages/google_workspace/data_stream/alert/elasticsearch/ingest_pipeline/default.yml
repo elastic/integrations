@@ -3,11 +3,12 @@ description: Pipeline for parsing Google Workspace Alert logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.11.0'
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: json
@@ -1037,6 +1038,9 @@ processors:
           }
           dropEmptyFields(ctx);
 on_failure:
-- append:
-    field: error.message
-    value: '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

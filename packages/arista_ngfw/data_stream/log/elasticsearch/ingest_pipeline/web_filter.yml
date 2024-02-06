@@ -1,0 +1,34 @@
+---
+description: Pipeline for processing Arista NG Firewall system metrics
+processors:
+  #######################
+  ## Web Filter Events ##
+  #######################
+  - dissect:
+      description: Parse HTTP request method and full URL from requestLine
+      if: ctx.arista?.requestLine != null && ctx.arista.requestLine.contains(' ')
+      field: arista.requestLine
+      pattern: '%{http.request.method} %{_temp.url_full}'
+  - uri_parts:
+      if: ctx._temp?.url_full != null
+      field: _temp.url_full
+      ignore_failure: true
+  - rename:
+      field: _temp.url_full
+      target_field: url.full
+      ignore_missing: true
+  ##############
+  ## Clean Up ##
+  ##############
+  - remove:
+      description: Remove Arista fields that are not necessary after parsing to ECS
+      field:
+        - arista.appName
+      ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

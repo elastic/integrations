@@ -1,0 +1,1444 @@
+- name: prisma_cloud
+  type: group
+  fields:
+    - name: host
+      type: group
+      fields:
+        - name: _id
+          type: keyword
+          description: Image identifier (image ID or repo:tag).
+        - name: agentless
+          type: boolean
+          description: Agentless indicates that the host was scanned with the agentless scanner.
+        - name: all_compliance
+          type: group
+          fields:
+            - name: data
+              type: group
+              fields:
+                - name: applicable_rules
+                  type: keyword
+                  description: Rules applied on the package.
+                - name: binary_pkgs
+                  type: keyword
+                  description: Names of the distro binary package names (packages which are built from the source of the package).
+                - name: block
+                  type: boolean
+                  description: Indicates if the vulnerability has a block effect (true) or not (false).
+                - name: cause
+                  type: keyword
+                  description: Additional information regarding the root cause for the vulnerability.
+                - name: cri
+                  type: boolean
+                  description: Indicates if this is a CRI-specific vulnerability (true) or not (false).
+                - name: custom
+                  type: boolean
+                  description: Indicates if the vulnerability is a custom vulnerability (e.g., openscap, sandbox) (true) or not (false).
+                - name: cve
+                  type: keyword
+                  description: CVE ID of the vulnerability (if applied).
+                - name: cvss
+                  type: float
+                  description: CVSS score of the vulnerability.
+                - name: description
+                  type: keyword
+                  description: Description of the vulnerability.
+                - name: discovered
+                  type: date
+                  description: Specifies the time of discovery for the vulnerability.
+                - name: exploit
+                  type: keyword
+                  description: ExploitType represents the source of an exploit.
+                - name: exploits
+                  type: group
+                  fields:
+                    - name: kind
+                      type: keyword
+                      description: ExploitKind represents the kind of the exploit.
+                    - name: link
+                      type: keyword
+                      description: Link is a link to information about the exploit.
+                    - name: source
+                      type: keyword
+                      description: ExploitType represents the source of an exploit.
+                - name: fix_date
+                  type: date
+                  description: Date/time when the vulnerability was fixed (in Unix time).
+                - name: fix_link
+                  type: keyword
+                  description: Link to the vendor's fixed-version information.
+                - name: function_layer
+                  type: keyword
+                  description: Specifies the serverless layer ID in which the vulnerability was discovered.
+                - name: grace_period_days
+                  type: long
+                  description: Number of grace days left for a vulnerability, based on the configured grace period. Nil if no block vulnerability rule applies.
+                - name: id
+                  type: keyword
+                  description: ID of the violation.
+                - name: layer_time
+                  type: date
+                  description: Date/time of the image layer to which the CVE belongs.
+                - name: link
+                  type: keyword
+                  description: Vendor link to the CVE.
+                - name: package
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: Name of the package that caused the vulnerability.
+                    - name: version
+                      type: keyword
+                      description: Version of the package that caused the vulnerability (or null).
+                - name: published
+                  type: date
+                  description: Date/time when the vulnerability was published (in Unix time).
+                - name: risk_factors
+                  type: flattened
+                  description: RiskFactors maps the existence of vulnerability risk factors.
+                - name: severity
+                  type: keyword
+                  description: Textual representation of the vulnerability's severity.
+                - name: status
+                  type: keyword
+                  description: Vendor status for the vulnerability.
+                - name: templates
+                  type: keyword
+                  description: List of templates with which the vulnerability is associated.
+                - name: text
+                  type: keyword
+                  description: Description of the violation.
+                - name: title
+                  type: keyword
+                  description: Compliance title.
+                - name: twistlock
+                  type: boolean
+                  description: Indicates if this is a Twistlock-specific vulnerability (true) or not (false).
+                - name: type
+                  type: keyword
+                  description: Type represents the vulnerability type.
+                - name: vec_str
+                  type: keyword
+                  description: Textual representation of the metric values used to score the vulnerability.
+                - name: vuln_tag_infos
+                  type: group
+                  fields:
+                    - name: color
+                      type: keyword
+                      description: Color is a hexadecimal representation of color code value.
+                    - name: comment
+                      type: keyword
+                      description: Tag comment in a specific vulnerability context.
+                    - name: name
+                      type: keyword
+                      description: Name of the tag.
+                - name: wild_fire_malware
+                  type: group
+                  fields:
+                    - name: md5
+                      type: keyword
+                      description: MD5 is the hash of the malicious binary.
+                    - name: path
+                      type: keyword
+                      description: Path is the path to malicious binary.
+                    - name: verdict
+                      type: keyword
+                      description: Verdict is the malicious source like grayware, malware and phishing.
+            - name: enabled
+              type: boolean
+              description: Enabled indicates whether passed compliance checks is enabled by policy.
+        - name: app_embedded
+          type: boolean
+          description: Indicates that this image was scanned by an App-Embedded Defender.
+        - name: applications
+          type: group
+          fields:
+            - name: installed_from_package
+              type: boolean
+              description: Indicates that the app was installed as an OS package.
+            - name: known_vulnerabilities
+              type: long
+              description: Total number of vulnerabilities for this application.
+            - name: layer_time
+              type: date
+              description: Image layer to which the application belongs - layer creation time.
+            - name: name
+              type: keyword
+              description: Name of the application.
+            - name: path
+              type: keyword
+              description: Path of the detected application.
+            - name: service
+              type: boolean
+              description: Service indicates whether the application is installed as a service.
+            - name: version
+              type: keyword
+              description: Version of the application.
+        - name: base_image
+          type: keyword
+          description: Image’s base image name. Used when filtering the vulnerabilities by base images.
+        - name: binaries
+          type: group
+          fields:
+            - name: altered
+              type: boolean
+              description: Indicates if the binary was installed from a package manager and modified/replaced (true) or not (false).
+            - name: cve_count
+              type: long
+              description: Total number of CVEs for this specific binary.
+            - name: deps
+              type: keyword
+              description: Third-party package files which are used by the binary.
+            - name: file_mode
+              type: long
+              description: Represents the file's mode and permission bits.
+            - name: function_layer
+              type: keyword
+              description: ID of the serverless layer in which the package was discovered.
+            - name: md5
+              type: keyword
+              description: Md5 hashset of the binary.
+            - name: missing_pkg
+              type: boolean
+              description: Indicates if this binary is not related to any package (true) or not (false).
+            - name: name
+              type: keyword
+              description: Name of the binary.
+            - name: path
+              type: keyword
+              description: Path is the path of the binary.
+            - name: pkg_root_dir
+              type: keyword
+              description: Path for searching packages used by the binary.
+            - name: services
+              type: keyword
+              description: Names of services which use the binary.
+            - name: version
+              type: keyword
+              description: Version of the binary.
+        - name: cloud_metadata
+          type: group
+          fields:
+            - name: account_id
+              type: keyword
+              description: Cloud account ID.
+            - name: aws_execution_env
+              type: keyword
+              description: AWS execution environment (e.g. EC2/Fargate).
+            - name: image
+              type: keyword
+              description: Image name.
+            - name: labels
+              type: group
+              fields:
+                - name: key
+                  type: keyword
+                  description: Label key.
+                - name: source
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: Source name (e.g., for a namespace, the source name can be 'twistlock').
+                    - name: type
+                      type: keyword
+                      description: ExternalLabelSourceType indicates the source of the labels.
+                - name: timestamp
+                  type: date
+                  description: Time when the label was fetched.
+                - name: value
+                  type: keyword
+                  description: Value of the label.
+            - name: name
+              type: keyword
+              description: Instance name.
+            - name: provider
+              type: keyword
+              description: CloudProvider specifies the cloud provider name.
+            - name: region
+              type: keyword
+              description: Instance region.
+            - name: resource
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: Unique ID of the resource.
+                - name: url
+                  type: keyword
+                  description: Server-defined URL for the resource.
+            - name: type
+              type: keyword
+              description: Instance type.
+            - name: vm
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: Azure unique vm ID.
+                - name: image_id
+                  type: keyword
+                  description: VMImageID holds the VM image ID.
+        - name: cluster_type
+          type: keyword
+          description: ClusterType is the cluster type.
+        - name: clusters
+          type: keyword
+          description: Cluster names.
+        - name: collections
+          type: keyword
+          description: Collections to which this result applies.
+        - name: compliance_distribution
+          type: group
+          fields:
+            - name: critical
+              type: long
+            - name: high
+              type: long
+            - name: low
+              type: long
+            - name: medium
+              type: long
+            - name: total
+              type: long
+        - name: compliance_issues
+          type: group
+          fields:
+            - name: count
+              type: long
+              description: Number of compliance issues.
+            - name: data
+              type: group
+              fields:
+                - name: applicable_rules
+                  type: keyword
+                  description: Rules applied on the package.
+                - name: binary_pkgs
+                  type: keyword
+                  description: Names of the distro binary package names (packages which are built from the source of the package).
+                - name: block
+                  type: boolean
+                  description: Indicates if the vulnerability has a block effect (true) or not (false).
+                - name: cause
+                  type: keyword
+                  description: Additional information regarding the root cause for the vulnerability.
+                - name: cri
+                  type: boolean
+                  description: Indicates if this is a CRI-specific vulnerability (true) or not (false).
+                - name: custom
+                  type: boolean
+                  description: Indicates if the vulnerability is a custom vulnerability (e.g., openscap, sandbox) (true) or not (false).
+                - name: cve
+                  type: keyword
+                  description: CVE ID of the vulnerability (if applied).
+                - name: cvss
+                  type: float
+                  description: CVSS score of the vulnerability.
+                - name: description
+                  type: keyword
+                  description: Description of the vulnerability.
+                - name: discovered
+                  type: date
+                  description: Specifies the time of discovery for the vulnerability.
+                - name: exploit
+                  type: keyword
+                  description: ExploitType represents the source of an exploit.
+                - name: exploits
+                  type: group
+                  fields:
+                    - name: kind
+                      type: keyword
+                      description: ExploitKind represents the kind of the exploit.
+                    - name: link
+                      type: keyword
+                      description: Link is a link to information about the exploit.
+                    - name: source
+                      type: keyword
+                      description: ExploitType represents the source of an exploit.
+                - name: fix_date
+                  type: date
+                  description: Date/time when the vulnerability was fixed (in Unix time).
+                - name: fix_link
+                  type: keyword
+                  description: Link to the vendor's fixed-version information.
+                - name: function_layer
+                  type: keyword
+                  description: Specifies the serverless layer ID in which the vulnerability was discovered.
+                - name: grace_period_days
+                  type: long
+                  description: Number of grace days left for a vulnerability, based on the configured grace period. Nil if no block vulnerability rule applies.
+                - name: id
+                  type: keyword
+                  description: ID of the violation.
+                - name: layer_time
+                  type: date
+                  description: Date/time of the image layer to which the CVE belongs.
+                - name: link
+                  type: keyword
+                  description: Vendor link to the CVE.
+                - name: package
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: Name of the package that caused the vulnerability.
+                    - name: version
+                      type: keyword
+                      description: Version of the package that caused the vulnerability (or null).
+                - name: published
+                  type: date
+                  description: Date/time when the vulnerability was published (in Unix time).
+                - name: risk_factors
+                  type: flattened
+                  description: RiskFactors maps the existence of vulnerability risk factors.
+                - name: severity
+                  type: keyword
+                  description: Textual representation of the vulnerability's severity.
+                - name: status
+                  type: keyword
+                  description: Vendor status for the vulnerability.
+                - name: text
+                  type: keyword
+                  description: Description of the violation.
+                - name: title
+                  type: keyword
+                  description: Compliance title.
+                - name: twistlock
+                  type: boolean
+                  description: Indicates if this is a Twistlock-specific vulnerability (true) or not (false).
+                - name: type
+                  type: keyword
+                  description: Type represents the vulnerability type.
+                - name: vec_str
+                  type: keyword
+                  description: Textual representation of the metric values used to score the vulnerability.
+                - name: vuln_tag_infos
+                  type: group
+                  fields:
+                    - name: color
+                      type: keyword
+                      description: Color is a hexadecimal representation of color code value.
+                    - name: comment
+                      type: keyword
+                      description: Tag comment in a specific vulnerability context.
+                    - name: name
+                      type: keyword
+                      description: Name of the tag.
+                - name: wildfire_malware
+                  type: group
+                  fields:
+                    - name: md5
+                      type: keyword
+                      description: MD5 is the hash of the malicious binary.
+                    - name: path
+                      type: keyword
+                      description: Path is the path to malicious binary.
+                    - name: verdict
+                      type: keyword
+                      description: Verdict is the malicious source like grayware, malware and phishing.
+        - name: compliance_risk_score
+          type: float
+          description: Compliance risk score for the image.
+        - name: creation_time
+          type: date
+          description: Specifies the time of creation for the latest version of the image.
+        - name: devices
+          type: group
+          fields:
+            - name: ip
+              type: ip
+              description: Network device IPv4 address.
+            - name: name
+              type: keyword
+              description: Network device name.
+        - name: distro
+          type: keyword
+          description: Full name of the distribution.
+        - name: ecs_cluster_name
+          type: keyword
+          description: ECS cluster name.
+        - name: err
+          type: keyword
+          description: Description of an error that occurred during image health scan.
+        - name: external_labels
+          type: group
+          fields:
+            - name: key
+              type: keyword
+              description: Label key.
+            - name: source
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: Source name (e.g., for a namespace, the source name can be 'twistlock').
+                - name: type
+                  type: keyword
+                  description: ExternalLabelSourceType indicates the source of the labels.
+            - name: timestamp
+              type: keyword
+              description: Time when the label was fetched.
+            - name: value
+              type: keyword
+              description: Value of the label.
+        - name: files
+          type: group
+          fields:
+            - name: md5
+              type: keyword
+              description: Hash sum of the file using md5.
+            - name: path
+              type: keyword
+              description: Path of the file.
+            - name: sha1
+              type: keyword
+              description: Hash sum of the file using SHA-1.
+            - name: sha256
+              type: keyword
+              description: Hash sum of the file using SHA256.
+        - name: firewall_protection
+          type: group
+          fields:
+            - name: enabled
+              type: boolean
+              description: Enabled indicates if WAAS proxy protection is enabled (true) or not (false).
+            - name: out_of_band_mode
+              type: keyword
+              description: OutOfBandMode holds the app firewall out-of-band mode.
+            - name: ports
+              type: long
+              description: Ports indicates http open ports associated with the container.
+            - name: supported
+              type: boolean
+              description: Supported indicates if WAAS protection is supported (true) or not (false).
+            - name: tls_ports
+              type: long
+              description: TLSPorts indicates https open ports associated with the container.
+            - name: unprotected_processes
+              type: group
+              fields:
+                - name: port
+                  type: long
+                  description: Port is the process port.
+                - name: process
+                  type: keyword
+                  description: Process is the process name.
+                - name: tls
+                  type: boolean
+                  description: TLS is the port TLS indication.
+        - name: first_scan_time
+          type: date
+          description: Specifies the time of the scan for the first version of the image. This time is preserved even after the version update.
+        - name: history
+          type: group
+          fields:
+            - name: base_layer
+              type: boolean
+              description: Indicates if this layer originated from the base image (true) or not (false).
+            - name: created
+              type: date
+              description: Date/time when the image layer was created.
+            - name: empty_layer
+              type: boolean
+              description: Indicates if this instruction didn't create a separate layer (true) or not.
+            - name: id
+              type: keyword
+              description: ID of the layer.
+            - name: instruction
+              type: keyword
+              description: Docker file instruction and arguments used to create this layer.
+            - name: size_bytes
+              type: long
+              description: Size of the layer (in bytes).
+            - name: tags
+              type: keyword
+              description: Holds the image tags.
+            - name: vulnerabilities
+              type: group
+              fields:
+                - name: applicable_rules
+                  type: keyword
+                  description: Rules applied on the package.
+                - name: binary_pkgs
+                  type: keyword
+                  description: Names of the distro binary package names (packages which are built from the source of the package).
+                - name: block
+                  type: boolean
+                  description: Indicates if the vulnerability has a block effect (true) or not (false).
+                - name: cause
+                  type: keyword
+                  description: Additional information regarding the root cause for the vulnerability.
+                - name: cri
+                  type: boolean
+                  description: Indicates if this is a CRI-specific vulnerability (true) or not (false).
+                - name: custom
+                  type: boolean
+                  description: Indicates if the vulnerability is a custom vulnerability (e.g., openscap, sandbox) (true) or not (false).
+                - name: cve
+                  type: keyword
+                  description: CVE ID of the vulnerability (if applied).
+                - name: cvss
+                  type: float
+                  description: CVSS score of the vulnerability.
+                - name: description
+                  type: keyword
+                  description: Description of the vulnerability.
+                - name: discovered
+                  type: date
+                  description: Specifies the time of discovery for the vulnerability.
+                - name: exploit
+                  type: keyword
+                  description: ExploitType represents the source of an exploit.
+                - name: exploits
+                  type: group
+                  fields:
+                    - name: kind
+                      type: keyword
+                      description: ExploitKind represents the kind of the exploit.
+                    - name: link
+                      type: keyword
+                      description: Link is a link to information about the exploit.
+                    - name: source
+                      type: keyword
+                      description: ExploitType represents the source of an exploit.
+                - name: fix_date
+                  type: date
+                  description: Date/time when the vulnerability was fixed (in Unix time).
+                - name: fix_link
+                  type: keyword
+                  description: Link to the vendor's fixed-version information.
+                - name: function_layer
+                  type: keyword
+                  description: Specifies the serverless layer ID in which the vulnerability was discovered.
+                - name: grace_period_days
+                  type: long
+                  description: Number of grace days left for a vulnerability, based on the configured grace period. Nil if no block vulnerability rule applies.
+                - name: id
+                  type: keyword
+                  description: ID of the violation.
+                - name: layer_time
+                  type: date
+                  description: Date/time of the image layer to which the CVE belongs.
+                - name: link
+                  type: keyword
+                  description: Vendor link to the CVE.
+                - name: package
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: Name of the package that caused the vulnerability.
+                    - name: version
+                      type: keyword
+                      description: Version of the package that caused the vulnerability (or null).
+                - name: published
+                  type: date
+                  description: Date/time when the vulnerability was published (in Unix time).
+                - name: risk_factors
+                  type: flattened
+                  description: RiskFactors maps the existence of vulnerability risk factors.
+                - name: severity
+                  type: keyword
+                  description: Textual representation of the vulnerability's severity.
+                - name: status
+                  type: keyword
+                  description: Vendor status for the vulnerability.
+                - name: templates
+                  type: keyword
+                  description: List of templates with which the vulnerability is associated.
+                - name: text
+                  type: keyword
+                  description: Description of the violation.
+                - name: title
+                  type: keyword
+                  description: Compliance title.
+                - name: twistlock
+                  type: boolean
+                  description: Indicates if this is a Twistlock-specific vulnerability (true) or not (false).
+                - name: type
+                  type: keyword
+                  description: Type represents the vulnerability type.
+                - name: vec_str
+                  type: keyword
+                  description: Textual representation of the metric values used to score the vulnerability.
+                - name: vuln_tag_infos
+                  type: group
+                  fields:
+                    - name: color
+                      type: keyword
+                      description: Color is a hexadecimal representation of color code value.
+                    - name: comment
+                      type: keyword
+                      description: Tag comment in a specific vulnerability context.
+                    - name: name
+                      type: keyword
+                      description: Name of the tag.
+                - name: wild_fire_malware
+                  type: group
+                  fields:
+                    - name: md5
+                      type: keyword
+                      description: MD5 is the hash of the malicious binary.
+                    - name: path
+                      type: keyword
+                      description: Path is the path to malicious binary.
+                    - name: verdict
+                      type: keyword
+                      description: Verdict is the malicious source like grayware, malware and phishing.
+        - name: hostname
+          type: keyword
+          description: Name of the host that was scanned.
+        - name: hosts
+          type: flattened
+          description: ImageHosts is a fast index for image scan results metadata per host.
+        - name: id
+          type: keyword
+          description: Image ID.
+        - name: image
+          type: group
+          fields:
+            - name: created
+              type: date
+              description: Date/time when the image was created.
+            - name: entrypoint
+              type: keyword
+              description: Combined entrypoint of the image (entrypoint + CMD).
+            - name: env
+              type: keyword
+              description: Image environment variables.
+            - name: healthcheck
+              type: boolean
+              description: Indicates if health checks are enabled (true) or not (false).
+            - name: history
+              type: group
+              fields:
+                - name: base_layer
+                  type: boolean
+                  description: Indicates if this layer originated from the base image (true) or not (false).
+                - name: created
+                  type: date
+                  description: Date/time when the image layer was created.
+                - name: empty_layer
+                  type: boolean
+                  description: Indicates if this instruction didn't create a separate layer (true) or not.
+                - name: id
+                  type: keyword
+                  description: ID of the layer.
+                - name: instruction
+                  type: keyword
+                  description: Docker file instruction and arguments used to create this layer.
+                - name: size_bytes
+                  type: long
+                  description: Size of the layer (in bytes).
+                - name: tags
+                  type: keyword
+                  description: Holds the image tags.
+                - name: vulnerabilities
+                  type: group
+                  fields:
+                    - name: applicable_rules
+                      type: keyword
+                      description: Rules applied on the package.
+                    - name: binaryPkgs
+                      type: keyword
+                      description: Names of the distro binary package names (packages which are built from the source of the package).
+                    - name: block
+                      type: boolean
+                      description: Indicates if the vulnerability has a block effect (true) or not (false).
+                    - name: cause
+                      type: keyword
+                      description: Additional information regarding the root cause for the vulnerability.
+                    - name: cri
+                      type: boolean
+                      description: Indicates if this is a CRI-specific vulnerability (true) or not (false).
+                    - name: custom
+                      type: boolean
+                      description: Indicates if the vulnerability is a custom vulnerability (e.g., openscap, sandbox) (true) or not (false).
+                    - name: cve
+                      type: keyword
+                      description: CVE ID of the vulnerability (if applied).
+                    - name: cvss
+                      type: float
+                      description: CVSS score of the vulnerability.
+                    - name: description
+                      type: keyword
+                      description: Description of the vulnerability.
+                    - name: discovered
+                      type: date
+                      description: Specifies the time of discovery for the vulnerability.
+                    - name: exploit
+                      type: keyword
+                      description: ExploitType represents the source of an exploit.
+                    - name: exploits
+                      type: group
+                      fields:
+                        - name: kind
+                          type: keyword
+                          description: ExploitKind represents the kind of the exploit.
+                        - name: link
+                          type: keyword
+                          description: Link is a link to information about the exploit.
+                        - name: source
+                          type: keyword
+                          description: ExploitType represents the source of an exploit.
+                    - name: fix_date
+                      type: date
+                      description: Date/time when the vulnerability was fixed (in Unix time).
+                    - name: fix_link
+                      type: keyword
+                      description: Link to the vendor's fixed-version information.
+                    - name: function_layer
+                      type: keyword
+                      description: Specifies the serverless layer ID in which the vulnerability was discovered.
+                    - name: grace_period_days
+                      type: long
+                      description: Number of grace days left for a vulnerability, based on the configured grace period. Nil if no block vulnerability rule applies.
+                    - name: id
+                      type: keyword
+                      description: ID of the violation.
+                    - name: layer_time
+                      type: date
+                      description: Date/time of the image layer to which the CVE belongs.
+                    - name: link
+                      type: keyword
+                      description: Vendor link to the CVE.
+                    - name: package
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: Name of the package that caused the vulnerability.
+                        - name: version
+                          type: keyword
+                          description: Version of the package that caused the vulnerability (or null).
+                    - name: published
+                      type: date
+                      description: Date/time when the vulnerability was published (in Unix time).
+                    - name: risk_factors
+                      type: flattened
+                      description: RiskFactors maps the existence of vulnerability risk factors.
+                    - name: severity
+                      type: keyword
+                      description: Textual representation of the vulnerability's severity.
+                    - name: status
+                      type: keyword
+                      description: Vendor status for the vulnerability.
+                    - name: templates
+                      type: keyword
+                      description: List of templates with which the vulnerability is associated.
+                    - name: text
+                      type: keyword
+                      description: Description of the violation.
+                    - name: title
+                      type: keyword
+                      description: Compliance title.
+                    - name: twistlock
+                      type: boolean
+                      description: Indicates if this is a Twistlock-specific vulnerability (true) or not (false).
+                    - name: type
+                      type: keyword
+                      description: Type represents the vulnerability type.
+                    - name: vec_str
+                      type: keyword
+                      description: Textual representation of the metric values used to score the vulnerability.
+                    - name: vuln_tag_infos
+                      type: group
+                      fields:
+                        - name: color
+                          type: keyword
+                          description: Color is a hexadecimal representation of color code value.
+                        - name: comment
+                          type: keyword
+                          description: Tag comment in a specific vulnerability context.
+                        - name: name
+                          type: keyword
+                          description: Name of the tag.
+                    - name: wild_fire_malware
+                      type: group
+                      fields:
+                        - name: md5
+                          type: keyword
+                          description: MD5 is the hash of the malicious binary.
+                        - name: path
+                          type: keyword
+                          description: Path is the path to malicious binary.
+                        - name: verdict
+                          type: keyword
+                          description: Verdict is the malicious source like grayware, malware and phishing.
+            - name: id
+              type: keyword
+              description: ID of the image.
+            - name: labels
+              type: flattened
+              description: Image labels.
+            - name: layers
+              type: keyword
+              description: Image filesystem layers.
+            - name: os
+              type: keyword
+              description: Image os type.
+            - name: repo
+              type: group
+              fields:
+                - name: digest
+                  type: keyword
+                  description: Image repo digests.
+                - name: tags
+                  type: keyword
+                  description: Image repo tags.
+            - name: user
+              type: keyword
+              description: Image user.
+            - name: working_dir
+              type: keyword
+              description: Base working directory of the image.
+        - name: installed_products
+          type: group
+          fields:
+            - name: agentless
+              type: boolean
+              description: Agentless indicates whether the scan was performed with agentless approach.
+            - name: apache
+              type: keyword
+              description: Apache indicates the apache server version, empty in case apache not running.
+            - name: aws_cloud
+              type: boolean
+              description: AWSCloud indicates whether AWS cloud is used.
+            - name: cluster_type
+              type: keyword
+              description: ClusterType is the cluster type.
+            - name: crio
+              type: boolean
+              description: CRI indicates whether the container runtime is CRI (and not docker).
+            - name: docker
+              type: keyword
+              description: Docker represents the docker daemon version.
+            - name: docker_enterprise
+              type: boolean
+              description: DockerEnterprise indicates whether the enterprise version of Docker is installed.
+            - name: has_package_manager
+              type: boolean
+              description: HasPackageManager indicates whether package manager is installed on the OS.
+            - name: k8s_api_server
+              type: boolean
+              description: K8sAPIServer indicates whether a kubernetes API server is running.
+            - name: k8s_controller_manager
+              type: boolean
+              description: K8sControllerManager indicates whether a kubernetes controller manager is running.
+            - name: k8s_etcd
+              type: boolean
+              description: K8sEtcd indicates whether etcd is running.
+            - name: k8s_federation_api_server
+              type: boolean
+              description: K8sFederationAPIServer indicates whether a federation API server is running.
+            - name: k8s_federation_controller_manager
+              type: boolean
+              description: K8sFederationControllerManager indicates whether a federation controller manager is running.
+            - name: k8s_kubelet
+              type: boolean
+              description: K8sKubelet indicates whether kubelet is running.
+            - name: k8s_proxy
+              type: boolean
+              description: K8sProxy indicates whether a kubernetes proxy is running.
+            - name: k8s_scheduler
+              type: boolean
+              description: K8sScheduler indicates whether the kubernetes scheduler is running.
+            - name: kubernetes
+              type: keyword
+              description: Kubernetes represents the kubernetes version.
+            - name: managed_cluster_version
+              type: keyword
+              description: ManagedClusterVersion is the version of the managed Kubernetes service, e.g. AKS/EKS/GKE/etc.
+            - name: openshift
+              type: boolean
+              description: Openshift indicates whether openshift is deployed.
+            - name: openshift_version
+              type: keyword
+              description: OpenshiftVersion represents the running openshift version.
+            - name: os_distro
+              type: keyword
+              description: OSDistro specifies the os distribution.
+            - name: serverless
+              type: boolean
+              description: Serverless indicates whether evaluated on a serverless environment.
+            - name: swarm
+              type: group
+              fields:
+                - name: manager
+                  type: boolean
+                  description: SwarmManager indicates whether a swarm manager is running.
+                - name: node
+                  type: boolean
+                  description: SwarmNode indicates whether the node is part of an active swarm.
+        - name: instances
+          type: group
+          fields:
+            - name: host
+              type: keyword
+            - name: image
+              type: keyword
+            - name: modified
+              type: date
+            - name: registry
+              type: keyword
+            - name: repo
+              type: keyword
+            - name: tag
+              type: keyword
+        - name: is_arm64
+          type: boolean
+          description: IsARM64 indicates if the architecture of the image is aarch64.
+        - name: k8s_cluster_addr
+          type: keyword
+          description: Endpoint of the Kubernetes API server.
+        - name: labels
+          type: keyword
+          description: Image labels.
+        - name: malware_analyzed_time
+          type: date
+          description: MalwareAnalyzedTime is the WildFire evaluator analyzing time shown as progress in UI and cannot to be overwritten by a new scan result.
+        - name: missing_distro_vuln_coverage
+          type: boolean
+          description: Indicates if the image OS is covered in the IS (true) or not (false).
+        - name: namespaces
+          type: keyword
+          description: k8s namespaces of all the containers running this image.
+        - name: os_distro
+          type: group
+          fields:
+            - name: release
+              type: keyword
+              description: OS distribution release.
+            - name: value
+              type: keyword
+              description: Name of the OS distribution.
+            - name: version
+              type: keyword
+              description: OS distribution version.
+        - name: package
+          type: group
+          fields:
+            - name: correlation_done
+              type: boolean
+              description: PackageCorrelationDone indicates that the correlation to OS packages has been done.
+            - name: manager
+              type: boolean
+              description: Indicates if the package manager is installed for the OS.
+        - name: packages
+          type: group
+          fields:
+            - name: pkgs
+              type: group
+              fields:
+                - name: binary_idx
+                  type: long
+                  description: Indexes of the top binaries which use the package.
+                - name: binary_pkgs
+                  type: keyword
+                  description: Names of the distro binary packages (packages which are built on the source of the package).
+                - name: cve_count
+                  type: long
+                  description: Total number of CVEs for this specific package.
+                - name: default_gem
+                  type: boolean
+                  description: DefaultGem indicates this is a gem default package (and not a bundled package).
+                - name: files
+                  type: group
+                  fields:
+                    - name: md5
+                      type: keyword
+                      description: Hash sum of the file using md5.
+                    - name: path
+                      type: keyword
+                      description: Path of the file.
+                    - name: sha1
+                      type: keyword
+                      description: Hash sum of the file using SHA-1.
+                    - name: sha256
+                      type: keyword
+                      description: Hash sum of the file using SHA256.
+                - name: function_layer
+                  type: keyword
+                  description: ID of the serverless layer in which the package was discovered.
+                - name: go_pkg
+                  type: boolean
+                  description: GoPkg indicates this is a Go package (and not module).
+                - name: jar_identifier
+                  type: keyword
+                  description: JarIdentifier holds an additional identification detail of a JAR package.
+                - name: layer_time
+                  type: date
+                  description: Image layer to which the package belongs (layer creation time).
+                - name: license
+                  type: keyword
+                  description: License information for the package.
+                - name: name
+                  type: keyword
+                  description: Name of the package.
+                - name: os_package
+                  type: boolean
+                  description: OSPackage indicates that a python/java package was installed as an OS package.
+                - name: path
+                  type: keyword
+                  description: Full package path (e.g., JAR or Node.js package path).
+                - name: version
+                  type: keyword
+                  description: Package version.
+            - name: pkgs_type
+              type: keyword
+              description: PackageType describes the package type.
+        - name: pull_duration
+          type: long
+          description: PullDuration is the time it took to pull the image.
+        - name: push_time
+          type: date
+          description: PushTime is the image push time to the registry.
+        - name: red_hat_non_rpm_image
+          type: boolean
+          description: RedHatNonRPMImage indicates whether the image is a Red Hat image with non-RPM content.
+        - name: registry
+          type: group
+          fields:
+            - name: namespace
+              type: keyword
+              description: IBM cloud namespace to which the image belongs.
+            - name: tags
+              type: keyword
+              description: RegistryTags are the tags of the registry this image is stored.
+            - name: type
+              type: keyword
+              description: RegistryType indicates the registry type where the image is stored.
+        - name: repo_digests
+          type: keyword
+          description: Digests of the image. Used for content trust (notary). Has one digest per tag.
+        - name: repo_tag
+          type: group
+          fields:
+            - name: digest
+              type: keyword
+              description: Image digest (requires V2 or later registry).
+            - name: id
+              type: keyword
+              description: ID of the image.
+            - name: registry
+              type: keyword
+              description: Registry name to which the image belongs.
+            - name: repo
+              type: keyword
+              description: Repository name to which the image belongs.
+            - name: value
+              type: keyword
+              description: Image tag.
+        - name: rhel_repos
+          type: keyword
+          description: RhelRepositories are the (RPM) repositories IDs from which the packages in this image were installed Used for matching vulnerabilities by Red Hat CPEs.
+        - name: risk_factors
+          type: flattened
+          description: RiskFactors maps the existence of vulnerability risk factors.
+        - name: runtime_enabled
+          type: boolean
+          description: HostRuntimeEnabled indicates if any runtime rule applies to the host.
+        - name: scan
+          type: group
+          fields:
+            - name: build_date
+              type: date
+              description: Scanner build date that published the image.
+            - name: duration
+              type: long
+              description: ScanDuration is the total time it took to scan the image.
+            - name: id
+              type: keyword
+              description: ScanID is the ID of the scan.
+            - name: time
+              type: date
+              description: Specifies the time of the last scan of the image.
+            - name: version
+              type: keyword
+              description: Scanner version that published the image.
+        - name: secrets
+          type: keyword
+          description: 'Secrets are paths to embedded secrets inside the image Note: capital letter JSON annotation is kept to avoid converting all images for backward-compatibility support.'
+        - name: startup_binaries
+          type: group
+          fields:
+            - name: altered
+              type: boolean
+              description: Indicates if the binary was installed from a package manager and modified/replaced (true) or not (false).
+            - name: cve_count
+              type: long
+              description: Total number of CVEs for this specific binary.
+            - name: deps
+              type: keyword
+              description: Third-party package files which are used by the binary.
+            - name: file_mode
+              type: long
+              description: Represents the file's mode and permission bits.
+            - name: function_layer
+              type: keyword
+              description: ID of the serverless layer in which the package was discovered.
+            - name: md5
+              type: keyword
+              description: Md5 hashset of the binary.
+            - name: missing_pkg
+              type: boolean
+              description: Indicates if this binary is not related to any package (true) or not (false).
+            - name: name
+              type: keyword
+              description: Name of the binary.
+            - name: path
+              type: keyword
+              description: Path is the path of the binary.
+            - name: pkg_root_dir
+              type: keyword
+              description: Path for searching packages used by the binary.
+            - name: services
+              type: keyword
+              description: Names of services which use the binary.
+            - name: version
+              type: keyword
+              description: Version of the binary.
+        - name: stopped
+          type: boolean
+          description: Stopped indicates whether the host was running during the agentless scan.
+        - name: tags
+          type: group
+          fields:
+            - name: digest
+              type: keyword
+              description: Image digest (requires V2 or later registry).
+            - name: id
+              type: keyword
+              description: ID of the image.
+            - name: registry
+              type: keyword
+              description: Registry name to which the image belongs.
+            - name: repo
+              type: keyword
+              description: Repository name to which the image belongs.
+            - name: tag
+              type: keyword
+              description: Image tag.
+        - name: top_layer
+          type: keyword
+          description: SHA256 of the image's last layer that is the last element of the Layers field.
+        - name: trust_result
+          type: group
+          fields:
+            - name: groups
+              type: group
+              fields:
+                - name: _id
+                  type: keyword
+                  description: Name of the group.
+                - name: disabled
+                  type: boolean
+                  description: Indicates if the rule is currently disabled (true) or not (false).
+                - name: images
+                  type: keyword
+                  description: Image names or IDs (e.g., docker.io/library/ubuntu:16.04 / SHA264@...).
+                - name: layers
+                  type: keyword
+                  description: Filesystem layers. The image is trusted if its layers have a prefix of the trusted groups layer in the same order.
+                - name: modified
+                  type: date
+                  description: Datetime when the rule was last modified.
+                - name: name
+                  type: keyword
+                  description: Name of the rule.
+                - name: notes
+                  type: keyword
+                  description: Free-form text.
+                - name: owner
+                  type: keyword
+                  description: User who created or last modified the rule.
+                - name: previous_name
+                  type: keyword
+                  description: Previous name of the rule. Required for rule renaming.
+            - name: hosts_statuses
+              type: group
+              fields:
+                - name: host
+                  type: keyword
+                  description: Host name.
+                - name: status
+                  type: keyword
+                  description: Status is the trust status for an image.
+        - name: trust_status
+          type: keyword
+          description: Status is the trust status for an image.
+        - name: twistlock_image
+          type: boolean
+          description: Indicates if the image is a Twistlock image (true) or not (false).
+        - name: type
+          type: keyword
+          description: ScanType displays the components for an ongoing scan.
+        - name: vulnerabilities
+          type: group
+          fields:
+            - name: count
+              type: long
+              description: Total number of vulnerabilities.
+            - name: data
+              type: group
+              fields:
+                - name: applicable_rules
+                  type: keyword
+                  description: Rules applied on the package.
+                - name: binary_pkgs
+                  type: keyword
+                  description: Names of the distro binary package names (packages which are built from the source of the package).
+                - name: block
+                  type: boolean
+                  description: Indicates if the vulnerability has a block effect (true) or not (false).
+                - name: cause
+                  type: keyword
+                  description: Additional information regarding the root cause for the vulnerability.
+                - name: cri
+                  type: boolean
+                  description: Indicates if this is a CRI-specific vulnerability (true) or not (false).
+                - name: custom
+                  type: boolean
+                  description: Indicates if the vulnerability is a custom vulnerability (e.g., openscap, sandbox) (true) or not (false).
+                - name: cve
+                  type: keyword
+                  description: CVE ID of the vulnerability (if applied).
+                - name: cvss
+                  type: float
+                  description: CVSS score of the vulnerability.
+                - name: description
+                  type: keyword
+                  description: Description of the vulnerability.
+                - name: discovered
+                  type: date
+                  description: Specifies the time of discovery for the vulnerability.
+                - name: exploit
+                  type: keyword
+                  description: ExploitType represents the source of an exploit.
+                - name: exploits
+                  type: group
+                  fields:
+                    - name: kind
+                      type: keyword
+                      description: ExploitKind represents the kind of the exploit.
+                    - name: source
+                      type: keyword
+                      description: ExploitType represents the source of an exploit.
+                - name: fix_date
+                  type: date
+                  description: Date/time when the vulnerability was fixed (in Unix time).
+                - name: fix_link
+                  type: keyword
+                  description: Link to the vendor's fixed-version information.
+                - name: function_layer
+                  type: keyword
+                  description: Specifies the serverless layer ID in which the vulnerability was discovered.
+                - name: grace_period_days
+                  type: long
+                  description: Number of grace days left for a vulnerability, based on the configured grace period. Nil if no block vulnerability rule applies.
+                - name: id
+                  type: keyword
+                  description: ID of the violation.
+                - name: layer_time
+                  type: date
+                  description: Date/time of the image layer to which the CVE belongs.
+                - name: link
+                  type: keyword
+                  description: Vendor link to the CVE.
+                - name: package
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: Name of the package that caused the vulnerability.
+                    - name: version
+                      type: keyword
+                      description: Version of the package that caused the vulnerability (or null).
+                - name: published
+                  type: date
+                  description: Date/time when the vulnerability was published (in Unix time).
+                - name: risk_factors
+                  type: flattened
+                  description: RiskFactors maps the existence of vulnerability risk factors.
+                - name: severity
+                  type: keyword
+                  description: Textual representation of the vulnerability's severity.
+                - name: status
+                  type: keyword
+                  description: Vendor status for the vulnerability.
+                - name: templates
+                  type: keyword
+                  description: List of templates with which the vulnerability is associated.
+                - name: text
+                  type: keyword
+                  description: Description of the violation.
+                - name: title
+                  type: keyword
+                - name: twistlock
+                  type: boolean
+                  description: Indicates if this is a Twistlock-specific vulnerability (true) or not (false).
+                - name: type
+                  type: keyword
+                  description: Type represents the vulnerability type.
+                - name: vec_str
+                  type: keyword
+                  description: Textual representation of the metric values used to score the vulnerability.
+                - name: vuln_tag_infos
+                  type: group
+                  fields:
+                    - name: color
+                      type: keyword
+                      description: Color is a hexadecimal representation of color code value.
+                    - name: comment
+                      type: keyword
+                      description: Tag comment in a specific vulnerability context.
+                    - name: name
+                      type: keyword
+                      description: Name of the tag.
+                - name: wild_fire_malware
+                  type: group
+                  fields:
+                    - name: md5
+                      type: keyword
+                      description: MD5 is the hash of the malicious binary.
+                    - name: path
+                      type: keyword
+                      description: Path is the path to malicious binary.
+                    - name: verdict
+                      type: keyword
+                      description: Verdict is the malicious source like grayware, malware and phishing.
+        - name: vulnerability
+          type: group
+          fields:
+            - name: distribution
+              type: group
+              fields:
+                - name: critical
+                  type: long
+                - name: high
+                  type: long
+                - name: low
+                  type: long
+                - name: medium
+                  type: long
+                - name: total
+                  type: long
+            - name: risk_score
+              type: long
+              description: Image's CVE risk score.
+        - name: wild_fire_usage
+          type: group
+          fields:
+            - name: bytes
+              type: long
+              description: Bytes is the total number of bytes uploaded to the WildFire API.
+            - name: queries
+              type: long
+              description: Queries is the number of queries to the WildFire API.
+            - name: uploads
+              type: long
+              description: Uploads is the number of uploads to the WildFire API.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.

@@ -4,7 +4,7 @@ The Apache Spark integration collects and parses data using the Jolokia Input.
 
 ## Compatibility
 
-This integration has been tested against `Apache Spark version 3.2.0`
+This integration has been tested against `Apache Spark version 3.5.0`
 
 ## Requirements
 
@@ -62,6 +62,10 @@ stats: http://127.0.0.1:7777/jolokia/read
 Restart Spark master.
 
 Follow the same set of steps for Spark Worker, Driver and Executor.
+
+### Troubleshooting
+
+If host.ip is shown conflicted under ``metrics-*`` data view, then this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds-reindex.html) the ``Application``, ``Driver``, ``Executor`` and ``Node`` data stream's indices.
 
 ## Metrics
 

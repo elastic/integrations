@@ -359,6 +359,7 @@ An example event for `status` looks as following:
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id |  | keyword |  |  |
 | apache.status.bytes_per_request | Bytes per request. | scaled_float |  | gauge |
 | apache.status.bytes_per_sec | Bytes per second. | scaled_float |  | gauge |
 | apache.status.connections.async.closing | Async closed connections. | long |  | gauge |

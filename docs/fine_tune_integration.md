@@ -129,11 +129,11 @@ what's been already fixed, as the script has overridden part of it).
 
     Due to changed templating engine from a standard Golang one to [handlebars](https://handlebarsjs.com/), it may be
     hard to automatically convert the Filebeat input configuration (nested variables, many representations, conditions,
-    loops). Kindly please to review the output stream configuration and review potential bugs.
+    loops). Please review the output stream configuration and identify potential bugs.
 
 11. Update docs template with sample events.
 
-    The events collected by the agent slightly differ from original, Metricbeat's and Filebeat's, ones. Adjust the event
+    The events collected by the agent slightly differ from the original, Metricbeat and Filebeat, ones. Adjust the event
     content manually basing on already migrated integrations (e.g. [MySQL integration](https://github.com/elastic/integrations/blob/main/packages/mysql/_dev/build/docs/README.md))
     or copy them once managed to run whole setup with real agent.
 

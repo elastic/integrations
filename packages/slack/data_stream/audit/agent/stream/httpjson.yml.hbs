@@ -1,5 +1,9 @@
 config_version: "2"
 interval: {{interval}}
+{{#if enable_request_tracer}}
+request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
+{{/if}}
 request.method: "GET"
 request.url: {{api_url}}/audit/v1/logs
 {{#if ssl}}
@@ -17,31 +21,44 @@ request.transforms:
       target: header.Authorization
       value: "Bearer {{oauth_token}}"
   - set:
-      target: url.params.oldest
-      value: "[[.cursor.last_timestamp]]"
-      default: '[[(now (parseDuration "-{{initial_interval}}")).Unix]]'
+      target: url.params.cursor
+      value: '[[.cursor.next_cursor]]'
+      default: ''
   - set:
-      target: url.params.latest
-      value: '[[(now).Unix]]'
+      target: url.params.oldest
+      value: '[[if eq .cursor.next_cursor ""]][[.cursor.max_date_seen_so_far]][[else]][[.cursor.saved_oldest]][[end]]'
+      default: '[[(now (parseDuration "-{{initial_interval}}")).Unix]]'
   - set:
       target: url.params.limit
       value: '[[{{limit}}]]'
+  - set:
+      target: url.params.max_date_seen_so_far
+      value: '[[.cursor.max_date_seen_so_far]]'
+      default: '0'
 
 request.rate_limit.reset: '[[ add (toInt (.last_response.header.Get "Retry-After")) ((now).Unix) ]]'
 request.rate_limit.remaining: '0' # hardcoded to 0 since slack doesn't return remaining header only reset
 
 response.split:
   target: body.entries
+
 response.pagination:
-- set:
-    target: url.params.cursor
-    value: '[[.last_response.body.response_metadata.next_cursor]]'
-    fail_on_template_error: true
-          
+  - set:
+      target: url.params.cursor
+      value: '[[.last_response.body.response_metadata.next_cursor]]'
+      fail_on_template_error: true
+  - set:
+      target: url.params.oldest
+      value: '[[.last_response.url.params.Get "oldest"]]'
+
 cursor:
-  last_timestamp:
-    value: "[[.first_event.date_create]]"
-    fail_on_template_error: true
+  next_cursor:
+    value: '[[.last_response.body.response_metadata.Get "next_cursor"]]'
+    ignore_empty_value: false
+  saved_oldest:
+    value: '[[.last_response.url.params.Get "oldest"]]'
+  max_date_seen_so_far:
+    value: '[[max (toInt (.last_response.url.params.Get "max_date_seen_so_far")) (toInt .first_event.date_create)]]'
 
 {{#if tags.length}}
 tags:

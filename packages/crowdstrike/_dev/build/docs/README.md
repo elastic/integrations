@@ -16,6 +16,28 @@ This integration supports CrowdStrike Falcon SIEM-Connector-v2.0.
 
 Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from Falcon SIEM Connector.
 
+#### Falcon SIEM Connector configuration file
+
+By default, the configuration file located at `/opt/crowdstrike/etc/cs.falconhoseclient.cf` provides configuration options related to the events collected by Falcon SIEM Connector.
+
+Parts of the configuration file called `EventTypeCollection` and `EventSubTypeCollection` provides a list of event types that the connector should collect.
+
+Current supported event types are:
+- DetectionSummaryEvent
+- IncidentSummaryEvent
+- UserActivityAuditEvent
+- AuthActivityAuditEvent
+- FirewallMatchEvent
+- RemoteResponseSessionStartEvent
+- RemoteResponseSessionEndEvent
+- CSPM Streaming events
+- CSPM Search events
+- IDP Incidents
+- IDP Summary events
+- Mobile Detection events
+- Recon Notification events
+- XDR Detection events
+
 {{fields "falcon"}}
 
 {{event "falcon"}}

@@ -1,37 +1,9 @@
 {
     "attributes": {
         "description": "Overview of System Audit Information.",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [
-                    {
-                        "$state": {
-                            "store": "appState"
-                        },
-                        "meta": {
-                            "alias": "Package",
-                            "disabled": true,
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "event.dataset",
-                            "negate": false,
-                            "params": {
-                                "query": "system_audit.package",
-                                "type": "phrase"
-                            },
-                            "type": "phrase",
-                            "value": "package"
-                        },
-                        "query": {
-                            "match": {
-                                "event.dataset": {
-                                    "query": "system_audit.package",
-                                    "type": "phrase"
-                                }
-                            }
-                        }
-                    }
-                ],
+                "filter": [],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -39,14 +11,148 @@
             }
         },
         "optionsJSON": {
-            "darkTheme": false,
             "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-cad954e8-6092-402e-87f6-b4aa8e873c4b",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "b6b94de8-42a0-4508-9793-25d8e54b5e7b",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "cad954e8-6092-402e-87f6-b4aa8e873c4b": {
+                                            "columnOrder": [
+                                                "259bcb2f-bb59-4da2-9a7a-f40702af8ac1",
+                                                "259bcb2f-bb59-4da2-9a7a-f40702af8ac1X0",
+                                                "259bcb2f-bb59-4da2-9a7a-f40702af8ac1X1"
+                                            ],
+                                            "columns": {
+                                                "259bcb2f-bb59-4da2-9a7a-f40702af8ac1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Packages",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "defaults(unique_count(system_audit.package.entity_id), 0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "259bcb2f-bb59-4da2-9a7a-f40702af8ac1X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "259bcb2f-bb59-4da2-9a7a-f40702af8ac1X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Packages",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "system_audit.package.entity_id"
+                                                },
+                                                "259bcb2f-bb59-4da2-9a7a-f40702af8ac1X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Packages",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "259bcb2f-bb59-4da2-9a7a-f40702af8ac1X0",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 57,
+                                                                "min": 0
+                                                            },
+                                                            "name": "defaults",
+                                                            "text": "defaults(unique_count(system_audit.package.entity_id), 0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "259bcb2f-bb59-4da2-9a7a-f40702af8ac1X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "b6b94de8-42a0-4508-9793-25d8e54b5e7b",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "system_audit.package",
+                                            "type": "phrase"
+                                        },
+                                        "type": "phrase",
+                                        "value": "package"
+                                    },
+                                    "query": {
+                                        "match": {
+                                            "event.dataset": {
+                                                "query": "system_audit.package",
+                                                "type": "phrase"
+                                            }
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "cad954e8-6092-402e-87f6-b4aa8e873c4b",
+                                "layerType": "data",
+                                "metricAccessor": "259bcb2f-bb59-4da2-9a7a-f40702af8ac1"
+                            }
+                        },
+                        "title": "Package Count [System Audit] (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 8,
@@ -56,13 +162,176 @@
                     "y": 4
                 },
                 "panelIndex": "1",
-                "panelRefName": "panel_1",
-                "type": "visualization",
-                "version": "8.5.0"
+                "title": "Package Count [System Audit]",
+                "type": "lens",
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-e31e57b9-aa23-401c-b274-bdf0adc24975",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "485c28ba-3d0b-4527-912b-66cc76642153",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "5acbc0ec-4aa7-43b9-8ad0-3edf38291e98",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "e31e57b9-aa23-401c-b274-bdf0adc24975": {
+                                            "columnOrder": [
+                                                "8cd791b8-0ee6-474e-900b-4b2bb94da7d1",
+                                                "8cd791b8-0ee6-474e-900b-4b2bb94da7d1X0",
+                                                "8cd791b8-0ee6-474e-900b-4b2bb94da7d1X1"
+                                            ],
+                                            "columns": {
+                                                "8cd791b8-0ee6-474e-900b-4b2bb94da7d1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Changes",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "defaults(count(), 0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "8cd791b8-0ee6-474e-900b-4b2bb94da7d1X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "8cd791b8-0ee6-474e-900b-4b2bb94da7d1X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Changes",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "8cd791b8-0ee6-474e-900b-4b2bb94da7d1X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Changes",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "8cd791b8-0ee6-474e-900b-4b2bb94da7d1X0",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 20,
+                                                                "min": 0
+                                                            },
+                                                            "name": "defaults",
+                                                            "text": "defaults(count(), 0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "8cd791b8-0ee6-474e-900b-4b2bb94da7d1X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "485c28ba-3d0b-4527-912b-66cc76642153",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "system_audit.package",
+                                            "type": "phrase"
+                                        },
+                                        "type": "phrase",
+                                        "value": "package"
+                                    },
+                                    "query": {
+                                        "match": {
+                                            "event.dataset": {
+                                                "query": "system_audit.package",
+                                                "type": "phrase"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "5acbc0ec-4aa7-43b9-8ad0-3edf38291e98",
+                                        "key": "event.action",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "existing_package",
+                                            "type": "phrase"
+                                        },
+                                        "type": "phrase",
+                                        "value": "existing_package"
+                                    },
+                                    "query": {
+                                        "match": {
+                                            "event.action": {
+                                                "query": "existing_package",
+                                                "type": "phrase"
+                                            }
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "e31e57b9-aa23-401c-b274-bdf0adc24975",
+                                "layerType": "data",
+                                "metricAccessor": "8cd791b8-0ee6-474e-900b-4b2bb94da7d1"
+                            }
+                        },
+                        "title": "Package Changes [System Audit] (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 14,
@@ -72,59 +341,83 @@
                     "y": 12
                 },
                 "panelIndex": "2",
-                "panelRefName": "panel_2",
-                "type": "visualization",
-                "version": "8.5.0"
+                "title": "Package Changes [System Audit]",
+                "type": "lens",
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "**Dashboards**: **[System Overview](#/dashboard/system_audit-2be46cb0-27f2-11e9-89af-fd12d59dac90)** | [Packages](#/dashboard/system_audit-137c52f0-286a-11e9-9d21-0be348776e6c)",
+                            "openLinksInNewTab": false
+                        },
+                        "type": "markdown",
+                        "uiState": {}
+                    }
                 },
                 "gridData": {
                     "h": 4,
-                    "i": "3",
+                    "i": "1bf0e900-2d1c-4665-82d4-a65d0148eea0",
                     "w": 48,
                     "x": 0,
                     "y": 0
                 },
-                "panelIndex": "3",
-                "panelRefName": "panel_3",
+                "panelIndex": "1bf0e900-2d1c-4665-82d4-a65d0148eea0",
+                "title": "Dashboard Links [System Audit]",
                 "type": "visualization",
-                "version": "8.5.0"
+                "version": "8.7.1"
             }
         ],
         "timeRestore": false,
         "title": "[System Audit] System Audit Overview",
         "version": 1
     },
-    "coreMigrationVersion": "8.5.0",
+    "coreMigrationVersion": "8.7.1",
+    "created_at": "2023-07-10T09:45:01.566Z",
     "id": "system_audit-2be46cb0-27f2-11e9-89af-fd12d59dac90",
     "migrationVersion": {
-        "dashboard": "8.5.0"
+        "dashboard": "8.7.0"
     },
     "references": [
         {
             "id": "logs-*",
-            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "name": "1:indexpattern-datasource-layer-cad954e8-6092-402e-87f6-b4aa8e873c4b",
             "type": "index-pattern"
         },
         {
-            "id": "system_audit-f664fb20-27f3-11e9-89af-fd12d59dac90",
-            "name": "1:panel_1",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "1:b6b94de8-42a0-4508-9793-25d8e54b5e7b",
+            "type": "index-pattern"
         },
         {
-            "id": "system_audit-bdf9c530-27fe-11e9-805f-43bf57dfa519",
-            "name": "2:panel_2",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "2:indexpattern-datasource-layer-e31e57b9-aa23-401c-b274-bdf0adc24975",
+            "type": "index-pattern"
         },
         {
-            "id": "system_audit-4ccc5b50-27f6-11e9-89af-fd12d59dac90",
-            "name": "3:panel_3",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "2:485c28ba-3d0b-4527-912b-66cc76642153",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "2:5acbc0ec-4aa7-43b9-8ad0-3edf38291e98",
+            "type": "index-pattern"
         }
     ],
-    "type": "dashboard",
-    "updated_at": "2023-01-26T16:36:03.951Z",
-    "version": "WzUwMTksMV0="
+    "type": "dashboard"
 }

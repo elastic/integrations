@@ -1,18 +1,36 @@
-format_version: 1.0.0
+format_version: "3.0.0"
 name: cloudflare_logpush
 title: Cloudflare Logpush
-version: "0.5.0"
-license: basic
+version: "1.17.4"
 description: Collect and parse logs from Cloudflare API with Elastic Agent.
 type: integration
 categories:
   - security
+  - network
+  - cdn_security
 conditions:
-  kibana.version: ^8.0.0
+  kibana:
+    version: ^8.7.1
 screenshots:
-  - src: /img/cloudflare-screenshot.png
-    title: Cloudflare Logpush DNS dashboard screenshot
+  - src: /img/cloudflare_logpush-overview1.png
+    title: Cloudflare Logpush - Zero Trust Overview
     size: 1847x950
+    type: image/png
+  - src: /img/cloudflare_logpush-audit1.png
+    title: Cloudflare Logpush - Audit
+    size: 1850x948
+    type: image/png
+  - src: /img/cloudflare_logpush-gateway_http1.png
+    title: Cloudflare - Gateway HTTP
+    size: 1850x948
+    type: image/png
+  - src: /img/cloudflare_logpush-network_sessions1.png
+    title: Cloudflare - Network Sessions
+    size: 1850x948
+    type: image/png
+  - src: /img/cloudflare_logpush-workers_trace1.png
+    title: Cloudflare - Workers Trace
+    size: 1850x948
     type: image/png
 icons:
   - src: /img/cloudflare-logo.svg
@@ -78,8 +96,8 @@ policy_templates:
               #    sxSmbIUfc2SGJGCJD4I=
               #    -----END CERTIFICATE-----
       - type: aws-s3
-        title: Collect Cloudflare Logpush logs via AWS S3 or AWS SQS
-        description: Collecting Logpush logs from Cloudflare via AWS S3 or AWS SQS.
+        title: Collect Cloudflare Logpush logs via AWS S3, AWS SQS or Cloudflare R2
+        description: Collecting Logpush logs from Cloudflare via AWS S3, AWS SQS or Cloudflare R2.
         vars:
           - name: collect_s3_logs
             required: true
@@ -96,13 +114,22 @@ policy_templates:
             required: false
             show_user: true
             description: It is a required parameter for collecting logs via the AWS S3 Bucket.
-          - name: queue_url
+          - name: cloudflare_r2
             type: text
-            title: "[SQS] Queue URL"
+            title: "[Global][S3] Cloudflare R2 Bucket Name"
             multi: false
             required: false
             show_user: true
-            description: URL of the AWS SQS queue that messages will be received from. It is a required parameter for collecting logs via the AWS SQS.
+            description: |-
+              Cloudflare R2 is an S3-compatible, globally distributed object storage. This parameter can replace Bucket ARN with a Bucket Name for collecting logs from Cloudflare R2 or another 3rd party S3-compatible service. This is a global setting which can be overriden by specific local bucket names for each data stream if required.
+              Using non-AWS S3 compatible buckets requires the use of Access Key ID and Secret Access Key for authentication. To specify the non-AWS S3 bucket name, use the non_aws_bucket_name config and the endpoint must be set to replace the default API endpoint.
+          - name: queue_url
+            type: text
+            title: "[Global][SQS] Queue URL"
+            multi: false
+            required: false
+            show_user: true
+            description: "URL of the AWS SQS queue that messages will be received from. \nThis is only required if you want to collect logs via AWS SQS.\nThis is a global queue URL, i.e this can be overriden by specific local queue URLs for each data stream if required."
           - name: access_key_id
             type: password
             title: Access Key ID
@@ -203,4 +230,5 @@ policy_templates:
             required: false
             show_user: false
 owner:
-  github: elastic/security-external-integrations
+  github: elastic/security-service-integrations
+  type: elastic

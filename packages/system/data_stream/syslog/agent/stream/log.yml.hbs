@@ -1,8 +1,11 @@
 paths:
-{{#each paths as |path i|}}
- - {{path}}
+{{#each paths as |path|}}
+  - {{path}}
 {{/each}}
-exclude_files: [".gz$"]
+exclude_files: 
+{{#each exclude_files as |exclude_files|}}
+  - {{exclude_files}}
+{{/each}}
 multiline:
   pattern: "^\\s"
   match: after
@@ -11,12 +14,13 @@ processors:
 {{#if processors.length}}
 {{processors}}
 {{/if}}
-{{#if tags.length}}
 tags:
-{{#each tags as |tag i|}}
-- {{tag}}
-{{/each}}
+{{#if preserve_original_event}}
+  - preserve_original_event
 {{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
 {{#if ignore_older}}
 ignore_older: {{ignore_older}}
 {{/if}}

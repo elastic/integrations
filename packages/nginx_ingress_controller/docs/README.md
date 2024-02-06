@@ -198,7 +198,13 @@ An example event for `access` looks as following:
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
 | input.type | Input type | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log offset | long |
 | nginx_ingress_controller.access.http.request.id | The randomly generated ID of the request | text |
 | nginx_ingress_controller.access.http.request.length | The request length (including request line, header, and request body) | long |
@@ -206,7 +212,7 @@ An example event for `access` looks as following:
 | nginx_ingress_controller.access.remote_ip_list | An array of remote IP addresses. It is a list because it is common to include, besides the client IP address, IP addresses from headers like `X-Forwarded-For`. Real source IP is restored to `source.ip`. | array |
 | nginx_ingress_controller.access.upstream.alternative_name | The name of the alternative upstream. | text |
 | nginx_ingress_controller.access.upstream.ip | The IP address of the upstream server. If several servers were contacted during request processing, their addresses are separated by commas. | ip |
-| nginx_ingress_controller.access.upstream.name | The name of the upstream. | text |
+| nginx_ingress_controller.access.upstream.name | The name of the upstream. | keyword |
 | nginx_ingress_controller.access.upstream.port | The port of the upstream server. | long |
 | nginx_ingress_controller.access.upstream.response.length | The length of the response obtained from the upstream server | long |
 | nginx_ingress_controller.access.upstream.response.length_list | An array of upstream response lengths. It is a list because it is common that several upstream servers were contacted during request processing. | keyword |
@@ -386,7 +392,13 @@ An example event for `error` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Log offset | long |

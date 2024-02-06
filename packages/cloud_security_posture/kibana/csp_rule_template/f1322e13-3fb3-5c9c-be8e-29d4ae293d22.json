@@ -1,0 +1,38 @@
+{
+    "id": "f1322e13-3fb3-5c9c-be8e-29d4ae293d22",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Access will have to be managed using shared access signatures or via Azure AD RBAC.",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/azure/storage/blobs/storage-manage-access-to-resources\n2. https://docs.microsoft.com/en-us/azure/storage/blobs/anonymous-read-access-prevent\n3. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-governance-strategy#gs-2-define-and-implement-enterprise-segmentationseparation-of-duties-strategy\n4. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-network-security#ns-2-secure-cloud-services-with-network-controls\n5. https://docs.microsoft.com/en-us/azure/storage/blobs/anonymous-read-access-configure\n6. https://docs.microsoft.com/en-us/azure/storage/blobs/assign-azure-role-data-access",
+            "id": "f1322e13-3fb3-5c9c-be8e-29d4ae293d22",
+            "name": "Ensure that 'Public access level' is disabled for storage accounts with blob containers",
+            "profile_applicability": "* Level 1",
+            "description": "Disallowing public access for a storage account overrides the public access settings for individual containers in that storage account.",
+            "rationale": "The default configuration for a storage account permits a user with appropriate permissions to configure public (anonymous) access to containers and blobs in a storage account.\nKeep in mind that public access to a container is always turned off by default and must be explicitly configured to permit anonymous requests.\nIt grants read-only access to these resources without sharing the account key, and without requiring a shared access signature.\nIt is recommended not to provide anonymous access to blob containers until, and unless, it is strongly desired.\nA shared access signature token or Azure AD RBAC should be used for providing controlled and timed access to blob containers.\nIf no anonymous access is needed on any container in the storage account, it\u2019s recommended to set allowBlobPublicAccess false at the account level, which forbids any container to accept anonymous access in the future.",
+            "audit": "**From Azure Portal**\n\n1. Go to `Storage Accounts`\n2. For each storage account, go to the `Networking` setting under `Security + networking`\n3. Ensure the `Public Network Access` setting is set to `Disabled`.\n\n**From Azure CLI**\n\nEnsure `publicNetworkAccess` is `Disabled` \n```\naz storage account show --name <storage-account> --resource-group <resource-group> --query \"{publicNetworkAccess:publicNetworkAccess}\"\n```\n\n**From PowerShell**\n\nFor each Storage Account, ensure `PublicNetworkAccess` is `Disabled`\n\n```\nGet-AzStorageAccount -Name <storage account name> -ResourceGroupName <resource group name> |select PublicNetworkAccess\n```",
+            "remediation": "**From Azure Portal**\n\nFirst, follow Microsoft documentation and create shared access signature tokens for your blob containers.\nThen, \n\n1. Go to `Storage Accounts`\n2. For each storage account, go to `Networking` in `Security + networking`\n3. Set `Public Network Access` to `Disabled` if no anonymous access is needed on the storage account \n\n**From Azure CLI**\n\nSet 'Public Network Access' to `Disabled` on the storage account \n\n```\naz storage account update --name <storage-account> --resource-group <resource-group> --public-network-access Disabled\n```\n\n**From PowerShell**\n\nFor each Storage Account, run the following to set the `PublicNetworkAccess` setting to `Disabled`\n```\nSet-AzStorageAccount -ResourceGroupName <resource group name> -Name <storage account name> -PublicNetworkAccess Disabled\n```",
+            "section": "Storage Accounts",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 3.7",
+                "Storage Accounts"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "3.7",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_3_7"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

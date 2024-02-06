@@ -1,0 +1,38 @@
+{
+    "id": "e2306922-4f95-5660-bf2e-9610f556de69",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "All Remote Desktop Protocol (RDP) connections from outside of the network to the concerned VPC(s) will be blocked. There could be a business need where secure shell access is required from outside of the network to access resources associated with the VPC. In that case, specific source IP(s) should be mentioned in firewall rules to white-list access to RDP port for the concerned VPC(s).",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/vpc/docs/firewalls#blockedtraffic\n2. https://cloud.google.com/blog/products/identity-security/cloud-iap-enables-context-aware-access-to-vms-via-ssh-and-rdp-without-bastion-hosts",
+            "id": "e2306922-4f95-5660-bf2e-9610f556de69",
+            "name": "Ensure That RDP Access Is Restricted From the Internet",
+            "profile_applicability": "* Level 2",
+            "description": "GCP `Firewall Rules` are specific to a `VPC Network`.\nEach rule either `allows` or `denies` traffic when its conditions are met.\nIts conditions allow users to specify the type of traffic, such as ports and protocols, and the source or destination of the traffic, including IP addresses, subnets, and instances.\n\nFirewall rules are defined at the VPC network level and are specific to the network in which they are defined.\nThe rules themselves cannot be shared among networks.\nFirewall rules only support IPv4 traffic.\nWhen specifying a source for an ingress rule or a destination for an egress rule by address, an `IPv4` address or `IPv4 block in CIDR` notation can be used.\nGeneric `(0.0.0.0/0)` incoming traffic from the Internet to a VPC or VM instance using `RDP` on `Port 3389` can be avoided.",
+            "rationale": "GCP `Firewall Rules` within a `VPC Network`.\nThese rules apply to outgoing (egress) traffic from instances and incoming (ingress) traffic to instances in the network.\nEgress and ingress traffic flows are controlled even if the traffic stays within the network (for example, instance-to-instance communication).\nFor an instance to have outgoing Internet access, the network must have a valid Internet gateway route or custom route whose destination IP is specified.\nThis route simply defines the path to the Internet, to avoid the most general `(0.0.0.0/0)` destination `IP Range` specified from the Internet through `RDP` with the default `Port 3389`.\nGeneric access from the Internet to a specific IP Range should be restricted.",
+            "audit": "**From Google Cloud Console**\n\n1. Go to `VPC network`.\n2. Go to the `Firewall Rules`.\n3. Ensure `Port` is not equal to `3389` and `Action` is not `Allow`.\n4. Ensure `IP Ranges` is not equal to `0.0.0.0/0` under `Source filters`.\n\n**From Google Cloud CLI**\n\n gcloud compute firewall-rules list --format=table'(name,direction,sourceRanges,allowed.ports)'\n\nEnsure that there is no rule matching the below criteria:\n- `SOURCE_RANGES` is `0.0.0.0/0`\n- AND `DIRECTION` is `INGRESS`\n- AND IPProtocol is `TCP` or `ALL`\n- AND `PORTS` is set to `3389` or `range containing 3389` or `Null (not set)`\n\nNote: \n- When ALL TCP ports are allowed in a rule, PORT does not have any value set (`NULL`)\n- When ALL Protocols are allowed in a rule, PORT does not have any value set (`NULL`)",
+            "remediation": "**From Google Cloud Console**\n\n1. Go to `VPC Network`.\n2. Go to the `Firewall Rules`.\n3. Click the `Firewall Rule` to be modified.\n4. Click `Edit`.\n5. Modify `Source IP ranges` to specific `IP`.\n6. Click `Save`.\n\n**From Google Cloud CLI**\n\n7. 1.Update RDP Firewall rule with new `SOURCE_RANGE` from the below command:\n\n gcloud compute firewall-rules update FirewallName --allow=[PROTOCOL[:PORT[-PORT]],...] --source-ranges=[CIDR_RANGE,...]",
+            "section": "Networking",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 3.7",
+                "Networking"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "3.7",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_3_7"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

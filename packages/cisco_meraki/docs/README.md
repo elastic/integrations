@@ -79,6 +79,10 @@ The `cisco_meraki.log` dataset provides events from the configured syslog server
 | cisco_meraki.firewall.rule |  | keyword |
 | cisco_meraki.flows |  | flattened |
 | cisco_meraki.multiple_dhcp_servers_detected |  | flattened |
+| cisco_meraki.mxport |  | keyword |
+| cisco_meraki.new_port_status |  | keyword |
+| cisco_meraki.old_port_status |  | keyword |
+| cisco_meraki.port |  | keyword |
 | cisco_meraki.security.action |  | keyword |
 | cisco_meraki.security.decision |  | keyword |
 | cisco_meraki.security.dhost |  | keyword |
@@ -92,6 +96,9 @@ The `cisco_meraki.log` dataset provides events from the configured syslog server
 | cisco_meraki.vap |  | keyword |
 | cisco_meraki.wpa_auth |  | flattened |
 | cisco_meraki.wpa_deauth |  | flattened |
+| client.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| client.as.organization.name | Organization name. | keyword |
+| client.as.organization.name.text | Multi-field of `client.as.organization.name`. | match_only_text |
 | client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | client.geo.city_name | City name. | keyword |
 | client.geo.continent_name | Name of the continent. | keyword |
@@ -163,15 +170,12 @@ The `cisco_meraki.log` dataset provides events from the configured syslog server
 | file.attributes | Array of file attributes. Attributes names will vary by platform. Here's a non-exhaustive list of values that are expected in this field: archive, compressed, directory, encrypted, execute, hidden, read, readonly, system, write. | keyword |
 | file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | keyword |
 | file.extension | File extension, excluding the leading dot. Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
+| file.hash.sha256 | SHA256 hash. | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | file.path.text | Multi-field of `file.path`. | match_only_text |
 | file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
 | file.type | File type (file, dir, or symlink). | keyword |
-| geo.city_name | City name. | keyword |
-| geo.country_name | Country name. | keyword |
-| geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
-| geo.region_name | Region name. | keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -181,7 +185,7 @@ The `cisco_meraki.log` dataset provides events from the configured syslog server
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -213,6 +217,7 @@ The `cisco_meraki.log` dataset provides events from the configured syslog server
 | observer.egress.interface.name | Interface name as reported by the system. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
+| observer.ingress.vlan.id | VLAN ID as reported by the observer. | keyword |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.product | The product name of the observer. | keyword |
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
@@ -261,17 +266,14 @@ The `cisco_meraki.log` dataset provides events from the configured syslog server
 | source.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
 | source.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | tags | List of keywords used to tag each event. | keyword |
-| threat.indicator.description | Describes the type of action conducted by the threat. | keyword |
-| threat.indicator.file.hash.sha256 | SHA256 hash. | keyword |
-| threat.indicator.file.name | Name of the file including the extension, without the directory. | keyword |
-| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
-| threat.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
 | url.original.text | Multi-field of `url.original`. | match_only_text |
 | url.path | Path of the request, such as "/search". | wildcard |
 | url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | url.registered_domain | The highest registered url domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
+| url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.full_name | User's full name, if available. | keyword |
@@ -297,11 +299,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2021-11-23T18:13:18.348Z",
     "agent": {
-        "ephemeral_id": "6c6d06ce-b090-4f7c-a7e1-ac4ea241dc4b",
-        "id": "c5f4a269-fab9-4c19-9b0f-2f270ed03375",
+        "ephemeral_id": "bd9fe1e0-a3cd-42b7-9b0b-e0946be0c276",
+        "id": "234cd698-ca4b-4fd7-8a3f-8617e423274a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.5.1"
+        "version": "8.11.0"
     },
     "cisco_meraki": {
         "event_subtype": "ids_alerted",
@@ -323,26 +325,25 @@ An example event for `log` looks as following:
         "port": 56391
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c5f4a269-fab9-4c19-9b0f-2f270ed03375",
+        "id": "234cd698-ca4b-4fd7-8a3f-8617e423274a",
         "snapshot": false,
-        "version": "8.5.1"
+        "version": "8.11.0"
     },
     "event": {
         "action": "ids-signature-matched",
         "agent_id_status": "verified",
         "category": [
             "network",
-            "threat"
+            "intrusion_detection"
         ],
         "dataset": "cisco_meraki.log",
-        "ingested": "2023-01-30T01:30:34Z",
-        "original": "\u003c134\u003e1 1637691198.348361125 MX84 security_event ids_alerted signature=1:29708:4 priority=1 timestamp=1637691198.330873 dhost=D0:AB:D5:7B:43:73 direction=ingress protocol=tcp/ip src=67.43.156.12:80 dst=10.0.3.162:56391 decision=allowed message: BROWSER-IE Microsoft Internet Explorer CSS uninitialized object access attempt detected",
+        "ingested": "2023-11-21T20:46:12Z",
+        "original": "<134>1 1637691198.348361125 MX84 security_event ids_alerted signature=1:29708:4 priority=1 timestamp=1637691198.330873 dhost=D0:AB:D5:7B:43:73 direction=ingress protocol=tcp/ip src=67.43.156.12:80 dst=10.0.3.162:56391 decision=allowed message: BROWSER-IE Microsoft Internet Explorer CSS uninitialized object access attempt detected",
         "type": [
-            "info",
-            "indicator"
+            "info"
         ]
     },
     "input": {
@@ -350,9 +351,10 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.24.0.4:59574"
+            "address": "192.168.160.4:52334"
         }
     },
+    "message": "BROWSER-IE Microsoft Internet Explorer CSS uninitialized object access attempt detected",
     "network": {
         "direction": "ingress",
         "protocol": "tcp/ip"
@@ -380,13 +382,7 @@ An example event for `log` looks as following:
         "preserve_original_event",
         "cisco-meraki",
         "forwarded"
-    ],
-    "threat": {
-        "indicator": {
-            "description": " BROWSER-IE Microsoft Internet Explorer CSS uninitialized object access attempt detected",
-            "last_seen": "2021-11-23T18:13:18.330Z"
-        }
-    }
+    ]
 }
 ```
 
@@ -420,14 +416,6 @@ An example event for `log` looks as following:
 | cisco_meraki.event.sharedSecret | User defined secret to be validated by the webhook receiver (optional) | keyword |
 | cisco_meraki.event.version | Current version of webhook format | keyword |
 | client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
-| client.geo.city_name | City name. | keyword |
-| client.geo.continent_name | Name of the continent. | keyword |
-| client.geo.country_iso_code | Country ISO code. | keyword |
-| client.geo.country_name | Country name. | keyword |
-| client.geo.location.lat | Longitude and latitude. | geo_point |
-| client.geo.location.lon | Longitude and latitude. | geo_point |
-| client.geo.region_iso_code | Region ISO code. | keyword |
-| client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.mac | MAC address of the client. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | client.registered_domain | The highest registered client domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
@@ -455,13 +443,6 @@ An example event for `log` looks as following:
 | destination.as.organization.name.text | Multi-field of `destination.as.organization.name`. | match_only_text |
 | destination.bytes | Bytes sent from the destination to the source. | long |
 | destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
-| destination.geo.city_name | City name. | keyword |
-| destination.geo.continent_name | Name of the continent. | keyword |
-| destination.geo.country_iso_code | Country ISO code. | keyword |
-| destination.geo.country_name | Country name. | keyword |
-| destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.region_iso_code | Region ISO code. | keyword |
-| destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.mac | MAC address of the destination. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | destination.nat.ip | Translated ip of destination based NAT sessions (e.g. internet to private DMZ) Typically used with load balancers, firewalls, or routers. | ip |
@@ -496,10 +477,6 @@ An example event for `log` looks as following:
 | file.path.text | Multi-field of `file.path`. | match_only_text |
 | file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
 | file.type | File type (file, dir, or symlink). | keyword |
-| geo.city_name | City name. | keyword |
-| geo.country_name | Country name. | keyword |
-| geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
-| geo.region_name | Region name. | keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -509,7 +486,7 @@ An example event for `log` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -577,13 +554,6 @@ An example event for `log` looks as following:
 | source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
-| source.geo.city_name | City name. | keyword |
-| source.geo.continent_name | Name of the continent. | keyword |
-| source.geo.country_iso_code | Country ISO code. | keyword |
-| source.geo.country_name | Country name. | keyword |
-| source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.region_iso_code | Region ISO code. | keyword |
-| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.mac | MAC address of the source. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | source.nat.ip | Translated ip of source based NAT sessions (e.g. internal client to internet) Typically connections traversing load balancers, firewalls, or routers. | ip |
@@ -622,11 +592,11 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2018-02-11T00:00:00.123Z",
     "agent": {
-        "ephemeral_id": "6c6d06ce-b090-4f7c-a7e1-ac4ea241dc4b",
-        "id": "c5f4a269-fab9-4c19-9b0f-2f270ed03375",
+        "ephemeral_id": "9a78410b-655d-4ff4-9fd6-5c47d2b1e28b",
+        "id": "29d48081-6d4f-4236-b959-925451410f6f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.5.1"
+        "version": "8.0.0"
     },
     "cisco_meraki": {
         "event": {
@@ -658,12 +628,12 @@ An example event for `events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c5f4a269-fab9-4c19-9b0f-2f270ed03375",
+        "id": "29d48081-6d4f-4236-b959-925451410f6f",
         "snapshot": false,
-        "version": "8.5.1"
+        "version": "8.0.0"
     },
     "event": {
         "action": "Cellular came up",
@@ -672,7 +642,7 @@ An example event for `events` looks as following:
             "network"
         ],
         "dataset": "cisco_meraki.events",
-        "ingested": "2023-01-30T01:28:32Z",
+        "ingested": "2023-09-20T09:09:47Z",
         "original": "{\"alertData\":{\"connection\":\"LTE\",\"local\":\"192.168.1.2\",\"model\":\"UML290VW\",\"provider\":\"Purview Wireless\",\"remote\":\"1.2.3.5\"},\"alertId\":\"0000000000000000\",\"alertLevel\":\"informational\",\"alertType\":\"Cellular came up\",\"alertTypeId\":\"cellular_up\",\"deviceMac\":\"00:11:22:33:44:55\",\"deviceModel\":\"MX\",\"deviceName\":\"My appliance\",\"deviceSerial\":\"Q234-ABCD-5678\",\"deviceTags\":[\"tag1\",\"tag2\"],\"deviceUrl\":\"https://n1.meraki.com//n//manage/nodes/new_list/000000000000\",\"networkId\":\"N_24329156\",\"networkName\":\"Main Office\",\"networkTags\":[],\"networkUrl\":\"https://n1.meraki.com//n//manage/nodes/list\",\"occurredAt\":\"2018-02-11T00:00:00.123450Z\",\"organizationId\":\"2930418\",\"organizationName\":\"My organization\",\"organizationUrl\":\"https://dashboard.meraki.com/o/VjjsAd/manage/organization/overview\",\"sentAt\":\"2021-10-07T08:42:00.926325Z\",\"sharedSecret\":\"secret\",\"version\":\"0.1\"}",
         "type": [
             "info",
@@ -689,7 +659,9 @@ An example event for `events` looks as following:
         "name": "Main Office"
     },
     "observer": {
-        "mac": "00-11-22-33-44-55",
+        "mac": [
+            "00-11-22-33-44-55"
+        ],
         "name": "My appliance",
         "product": "MX",
         "serial_number": "Q234-ABCD-5678",

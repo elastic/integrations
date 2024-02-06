@@ -1,5 +1,4 @@
 title: Thrift
-release: beta
 type: logs
 streams:
   - input: packet
@@ -135,7 +134,7 @@ streams:
         title: Transaction Timeout
         description: |-
           Transaction timeout. Expired transactions will no longer be correlated to
-          incoming responses, but sent to Elasticsearch immediately.
+          incoming responses, but sent to Elasticsearch immediately. Valid time units are ns, us, ms, s, m, h.
         show_user: false
         multi: false
         required: false
@@ -152,6 +151,20 @@ streams:
         description: Tags to include in the published event.
         show_user: false
         multi: true
+        required: false
+      - name: map_to_ecs
+        type: bool
+        title: Map root Packetbeat fields to ECS
+        description: |-
+          Remap any non-ECS Packetbeat fields in root to their correct ECS fields.
+          This will rename fields that are moved so the fields will not be present
+          at the root of the document and so any rules that depend on the fields
+          will need to be updated.
+
+          The legacy behaviour of this option is deprecated and users are encouraged
+          to set this option to true. See details in the [package overview describing `map_to_ecs`](../../../integrations/detail/network_traffic/overview).
+        show_user: true
+        multi: false
         required: false
     title: Thrift
     description: Capture Thrift Traffic

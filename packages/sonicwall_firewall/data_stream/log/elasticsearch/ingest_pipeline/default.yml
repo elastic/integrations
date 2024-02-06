@@ -3,41 +3,54 @@ description: Pipeline for processing SonicWall firewall logs
 processors:
   - set:
       field: ecs.version
-      value: '8.6.0'
-
+      value: '8.11.0'
   - set:
       field: observer.vendor
       value: SonicWall
-
   - set:
       field: observer.product
       value: SonicOS
-
   - set:
       field: observer.type
       value: firewall
-
   - set:
       field: event.timezone
       value: "{{{_conf.tz_offset}}}"
-      if: ctx?._conf?.tz_offset != null && ctx?._conf?.tz_offset != 'local'
-
+      if: ctx._conf?.tz_offset != null && ctx._conf.tz_offset != 'local'
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
-
+      if: ctx.event?.original == null
   - grok:
       field: event.original
       description: Extracts key-value pairs from original message
       patterns:
-        - '%{KEY_VALUES:_temp_.serialized_kv}'
+        - '^%{DATA:_temp_.header}%{SPACE}%{KEY_VALUES:_temp_.serialized_kv}'
       pattern_definitions:
           KEY_VALUES: 'id=.*'
       on_failure:
           - fail:
               message: 'unable to extract key-values from log message: {{{ _ingest.on_failure_message }}}'
-
+  - grok:
+      field: _temp_.header
+      patterns: 
+        - '^(?:<%{NUMBER:log.syslog.priority:long}>)?%{SYSLOGTIMESTAMP}?%{SPACE}%{DATA:_temp_.host}?$'
+  - convert:
+      field: _temp_.host
+      type: ip
+      target_field: host.ip
+      if: ctx._temp_?.host != null
+      ignore_failure: true
+  - set:
+      field: host.ip
+      value: ['{{{host.ip}}}']
+      if: ctx.host?.ip instanceof String
+  - rename:
+      field: _temp_.host
+      target_field: host.name
+      if: ctx.host?.ip == null && ctx._temp_?.host != null && ctx._temp_.host != ''
+      ignore_failure: true
   - kv:
       field: _temp_.serialized_kv
       description: Splits key-value pairs extracted from original message
@@ -301,10 +314,15 @@ processors:
 #
   - convert:
       field: observer.hostname
-      target_field: observer.ip
+      target_field: _temp_.observer.ip
       type: ip
       ignore_missing: true
       ignore_failure: true
+  - append:
+      field: observer.ip
+      value: "{{{ _temp_.observer.ip }}}"
+      allow_duplicates: false
+      if: 'ctx._temp_?.observer?.ip != null'
 
   - remove:
       field: observer.hostname
@@ -481,6 +499,22 @@ processors:
       on_failure:
         - remove:
             field: event.duration
+
+  - convert:
+      field: event.sequence
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: event.sequence
+
+  - convert:
+      field: event.severity
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: event.severity
 
   - script:
       lang: painless
@@ -1265,9 +1299,9 @@ processors:
       if: 'ctx.destination?.nat?.ip != null'
   - append:
       field: related.ip
-      value: "{{{ observer.ip }}}"
+      value: "{{{ _temp_.observer.ip }}}"
       allow_duplicates: false
-      if: 'ctx.observer?.ip != null'
+      if: 'ctx._temp_?.observer?.ip != null'
   - append:
       field: related.user
       value: "{{{ user.name }}}"
@@ -1299,5 +1333,8 @@ processors:
 
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

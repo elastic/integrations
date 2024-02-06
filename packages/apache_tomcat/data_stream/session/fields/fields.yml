@@ -1,0 +1,79 @@
+- name: apache_tomcat
+  type: group
+  fields:
+    - name: session
+      type: group
+      fields:
+        - name: active
+          type: group
+          fields:
+            - name: allowed.max
+              type: double
+              description: The maximum number of active sessions allowed, or -1 for no limit.
+              metric_type: gauge
+            - name: max
+              type: double
+              description: Maximum number of active sessions so far.
+              metric_type: counter
+            - name: total
+              type: double
+              description: Number of active sessions at this moment.
+              metric_type: gauge
+        - name: alive_time
+          type: group
+          fields:
+            - name: avg
+              type: double
+              description: Average time an expired session had been alive.
+              metric_type: gauge
+            - name: max
+              type: double
+              description: Longest time an expired session had been alive.
+              metric_type: counter
+        - name: application_name
+          type: keyword
+          description: Name of the Apache Tomcat application.
+          # Reason to add as a dimension field: Users can deploy many different Applications in Apache Tomcat instance.
+          dimension: true
+        - name: create
+          type: group
+          fields:
+            - name: rate
+              type: double
+              description: Session creation rate in sessions per minute.
+              metric_type: gauge
+            - name: total
+              type: double
+              description: Total number of sessions created by the manager.
+              metric_type: counter
+        - name: duplicate_ids.count
+          type: double
+          description: Number of duplicated session ids generated.
+          metric_type: gauge
+        - name: expire
+          type: group
+          fields:
+            - name: rate
+              type: double
+              description: Session expiration rate in sessions per minute.
+              metric_type: gauge
+            - name: total
+              type: double
+              description: Number of sessions that expired (doesn't include explicit invalidations).
+              metric_type: gauge
+        - name: persist_authentication
+          type: boolean
+          description: Indicates whether sessions shall persist authentication information when being persisted (e.g. across application restarts).
+        - name: process_expires_frequency.count
+          type: double
+          description: The frequency of the manager checks (expiration and passivation).
+          metric_type: gauge
+        - name: processing_time
+          type: double
+          description: Time spent doing housekeeping and expiration.
+          metric_type: gauge
+          unit: ms
+        - name: rejected.count
+          type: double
+          description: Number of sessions we rejected due to maxActive being reached.
+          metric_type: gauge

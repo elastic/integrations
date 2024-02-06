@@ -1,6 +1,6 @@
 name: elasticsearch
 title: Elasticsearch
-version: 1.4.1
+version: 1.14.0
 description: Elasticsearch Integration
 type: integration
 icons:
@@ -8,19 +8,21 @@ icons:
     title: logo elasticsearch
     size: 32x32
     type: image/svg+xml
-format_version: 1.0.0
-license: basic
+format_version: 2.6.0
 categories: ["elastic_stack", "datastore"]
 conditions:
-  kibana.version: ^8.7.0
+  elastic.subscription: basic
+  kibana.version: ^8.10.1
+owner:
+  github: elastic/stack-monitoring
 policy_templates:
   - name: elasticsearch
     title: Elasticsearch logs and metrics
     description: Collect logs and metrics from Elasticsearch instances
     inputs:
       - type: logfile
-        title: Collect Elasticsearch logs
-        description: "Collecting audit, deprecation, gc, server and slowlog logs from Elasticsearch instances (input: logfile)"
+        title: "Logs"
+        description: "Collect audit, deprecation, gc, server and slowlog logs from Elasticsearch instances"
         vars:
           - name: condition
             title: Condition
@@ -30,8 +32,8 @@ policy_templates:
             required: false
             show_user: false
       - type: elasticsearch/metrics
-        title: Collect Elasticsearch metrics
-        description: Collect Elasticsearch metrics about indices, CCR, cluster stats, machine learning or node statistics
+        title: "Metrics (Stack Monitoring)"
+        description: "Collect index, CCR, cluster stats, machine learning and node metrics from Elasticsearch instances to power the Stack Monitoring application in Kibana"
         vars:
           - name: hosts
             type: text
@@ -55,11 +57,23 @@ policy_templates:
             multi: false
             required: false
             show_user: false
+          - name: api_key
+            type: password
+            title: API Key
+            description: Elasticsearch API Key in Beats format. Use when connecting to elasticsearch in place of username/password.
+            multi: false
+            required: false
+            show_user: false
           - name: scope
-            type: text
+            type: select
             title: Scope
+            options:
+              - value: node
+                text: node
+              - value: cluster
+                text: cluster
             description: >-
-              Options are `node` or `cluster`. By default, scope is set to node and each entry in the hosts list indicates a distinct node in an Elasticsearch cluster.  If the scope is set to cluster then each entry in the hosts list indicates a single endpoint for a distinct Elasticsearch cluster (for example, a load-balancing proxy fronting the cluster).  Cluster should be used if the cluster has dedicated master nodes, and configure the endpoint in the hosts list not to direct requests to the dedicated master nodes.
+              By default, scope is set to node and each entry in the hosts list indicates a distinct node in an Elasticsearch cluster.  If the scope is set to cluster then each entry in the hosts list indicates a single endpoint for a distinct Elasticsearch cluster (for example, a load-balancing proxy fronting the cluster).  Cluster should be used if the cluster has dedicated master nodes, and configure the endpoint in the hosts list not to direct requests to the dedicated master nodes.
             multi: false
             required: true
             show_user: false
@@ -90,5 +104,12 @@ policy_templates:
             multi: false
             required: false
             show_user: false
-owner:
-  github: elastic/infra-monitoring-ui
+screenshots:
+  - src: /img/cluster_node_view.png
+    title: Cluster and Node View
+    size: 2006×1138
+    type: image/png
+  - src: /img/index_shard_view.png
+    title: Index and Shard View
+    size: 1992×1268
+    type: image/png

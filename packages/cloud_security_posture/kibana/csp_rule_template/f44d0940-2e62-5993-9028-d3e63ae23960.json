@@ -1,0 +1,38 @@
+{
+    "id": "f44d0940-2e62-5993-9028-d3e63ae23960",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "On high use systems with a high percentage sample rate, the logging file may grow to high capacity in a short amount of time. Ensure that the sample rate is set appropriately so that storage costs are not exorbitant.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/load-balancing/\n2. https://cloud.google.com/load-balancing/docs/https/https-logging-monitoring#gcloud:-global-mode\n3. https://cloud.google.com/sdk/gcloud/reference/compute/backend-services/",
+            "id": "f44d0940-2e62-5993-9028-d3e63ae23960",
+            "name": "Ensure Logging is enabled for HTTP(S) Load Balancer",
+            "profile_applicability": "* Level 2",
+            "description": "Logging enabled on a HTTPS Load Balancer will show all network traffic and its destination.",
+            "rationale": "Logging will allow you to view HTTPS network traffic to your web applications.",
+            "audit": "**From Google Cloud Console**\n\n1. From Google Cloud home open the Navigation Menu in the top left.\n\n2. Under the `Networking` heading select `Network services`.\n\n3. Select the HTTPS load-balancer you wish to audit.\n\n4. Select `Edit` then `Backend Configuration`. \n\n5. Select `Edit` on the corresponding backend service.\n\n6. Ensure that `Enable Logging` is selected. Also ensure that `Sample Rate` is set to an appropriate level for your needs.\n\n**From Google Cloud CLI**\n\n7. Run the following command\n\n```\ngcloud compute backend-services describe <serviceName>\n```\n\n8. Ensure that ```enable-logging``` is enabled and ```sample rate``` is set to your desired level.",
+            "remediation": "**From Google Cloud Console**\n\n1. From Google Cloud home open the Navigation Menu in the top left.\n\n2. Under the `Networking` heading select `Network services`.\n\n3. Select the HTTPS load-balancer you wish to audit.\n\n4. Select `Edit` then `Backend Configuration`. \n\n5. Select `Edit` on the corresponding backend service.\n\n6. Click `Enable Logging`.\n\n7. Set `Sample Rate` to a desired value. This is a percentage as a decimal point. 1.0 is 100%.\n\n**From Google Cloud CLI**\n\n8. Run the following command\n\n```\ngcloud compute backend-services update <serviceName> --region=REGION --enable-logging --logging-sample-rate=<percentageAsADecimal>\n```",
+            "section": "Logging and Monitoring",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 2.16",
+                "Logging and Monitoring"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "2.16",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_2_16"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

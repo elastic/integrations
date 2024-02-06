@@ -9,6 +9,7 @@ fields_under_root: true
 fields:
   _conf:
     geoip_enrich: {{geoip_enrich}}
+    map_to_ecs: {{map_to_ecs}}
 {{#if include_authorities}}
 include_authorities: {{include_authorities}}
 {{/if}}
@@ -27,10 +28,13 @@ keep_null: {{keep_null}}
 {{#if transaction_timeout}}
 transaction_timeout: {{transaction_timeout}}
 {{/if}}
-{{#if processors}}
 processors:
+{{#contains "forwarded" tags}}
+- add_observer_metadata: ~
+{{else}}
+- add_host_metadata: ~
+{{/contains}}
 {{processors}}
-{{/if}}
 {{#if tags}}
 tags:
 {{#each tags as |tag|}}
@@ -48,4 +52,8 @@ interface:
 {{else}}
   device: {{interface}}
 {{/if}}
+{{/if}}
+{{#if never_install}}
+npcap:
+  never_install: true
 {{/if}}

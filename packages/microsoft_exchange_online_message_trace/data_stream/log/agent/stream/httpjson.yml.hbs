@@ -1,15 +1,23 @@
 config_version: 2
 interval: {{interval}}
+{{#if enable_request_tracer}}
+request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
+{{/if}}
 request.method: GET
 request.url: {{url}}
-request.transforms:
-  - set:
-      target: url.params.$filter
-      value: StartDate eq datetime'[[.cursor.last_execution_datetime]]' and EndDate eq datetime'[[(formatDate (now) "RFC3339")]]'
-      default: StartDate eq datetime'[[(formatDate (now (parseDuration "-{{initial_interval}}")) "RFC3339")]]' and EndDate eq datetime'[[(formatDate (now) "RFC3339")]]'
-  - set:
-      target: url.params.$skiptoken
-      value: 0
+auth.oauth2.client.id: {{client_id}}
+auth.oauth2.client.secret: {{client_secret}}
+auth.oauth2.token_url: {{login_url}}/{{tenant_id}}/{{token_url}}
+{{#if scopes}}
+auth.oauth2.scopes:
+{{#each scopes as |scope|}}
+  - {{scope}}
+{{/each}}
+{{else}}
+auth.oauth2.provider: azure
+auth.oauth2.azure.resource: {{azure_resource}}
+{{/if}}
 request.timeout: {{request_timeout}}
 {{#if proxy_url }}
 request.proxy_url: {{proxy_url}}
@@ -17,12 +25,18 @@ request.proxy_url: {{proxy_url}}
 {{#if ssl}}
 request.ssl: {{ssl}}
 {{/if}}
-{{#if username}}
-{{#if password}}
-auth.basic.user: {{username}}
-auth.basic.password: {{password}}
-{{/if}}
-{{/if}}
+request.transforms:
+  - set:
+      # Warning: Modification of the `$filter` param format can break the `last_execution_datetime` cursor
+      target: url.params.$filter
+      value: StartDate eq datetime'[[(formatDate ((parseDate .cursor.last_execution_datetime "RFC3339").Add (parseDuration "-{{additional_look_back}}")) "RFC3339")]]' and EndDate eq datetime'[[(formatDate (now) "RFC3339")]]'
+      default: StartDate eq datetime'[[(formatDate (now (parseDuration "-{{initial_interval}}")) "RFC3339")]]' and EndDate eq datetime'[[(formatDate (now) "RFC3339")]]'
+  - set:
+      target: url.params.$top
+      value: {{batch_size}}
+  - set:
+      target: url.params.$skiptoken
+      value: 0
 fields_under_root: true
 fields:
   _conf:
@@ -44,19 +58,27 @@ response.split:
   target: body.value
 response.pagination:
   - set:
-      target: url.value
-      value: {{url}}
-  - set:
+      target: url.params.$filter
+      value: '[[.last_response.url.params.Get "$filter"]]'
       fail_on_template_error: true
+  - set:
+      target: url.params.$top
+      value: '[[.last_response.url.params.Get "$top"]]'
+      fail_on_template_error: true
+  - set:
       target: url.params.$skiptoken
-      value: '[[ (add (toInt (index .last_response.url.params "$skiptoken")) 2000) ]]'
-  - set:
+      value: '[[if (lt (len .last_response.body.value) (toInt {{batch_size}}))]][[.last_response.terminate_pagination]][[else]][[(add (toInt (.last_response.url.params.Get "$skiptoken")) (toInt {{batch_size}}))]][[end]]'
       fail_on_template_error: true
-      target: url.params.test
-      value: '[[ (add (toInt (index .last_response.url.params "$skiptoken")) 2000) ]]'
 cursor:
   last_execution_datetime:
-    value: '[[(formatDate (now (parseDuration)) "RFC3339")]]'
+    # Expects `$filter` param to be in the format of:
+    #
+    #  StartDate+eq+datetime'2023-12-19T22:47:25Z'+and+EndDate+eq+datetime'2023-12-19T23:47:25Z'
+    #                                                                      ^~~~~~~~~~~~~~~~~~~~
+    #
+    # Produces output of: 2023-12-19T23:47:25Z
+    # If you modify `$filter` format you might need to update the slice range
+    value: '[[ slice (.last_response.url.params.Get "$filter") 68 88 ]]'
 
 {{#if processors}}
 processors:

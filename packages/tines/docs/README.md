@@ -74,10 +74,10 @@ All fields ingested to this data stream are stored under `tines.audit_log` as ea
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
@@ -111,6 +111,7 @@ All fields ingested to this data stream are stored under `tines.audit_log` as ea
 | tines.audit_log.inputs.diagramNoteIds |  | long |
 | tines.audit_log.inputs.inputs.actionId |  | long |
 | tines.audit_log.inputs.inputs.actionIds |  | long |
+| tines.audit_log.inputs.inputs.agents |  | flattened |
 | tines.audit_log.inputs.inputs.allowedHosts |  | keyword |
 | tines.audit_log.inputs.inputs.authenticationTokenId |  | long |
 | tines.audit_log.inputs.inputs.awsAccessKey |  | keyword |
@@ -122,7 +123,7 @@ All fields ingested to this data stream are stored under `tines.audit_log` as ea
 | tines.audit_log.inputs.inputs.delta.y |  | long |
 | tines.audit_log.inputs.inputs.description |  | keyword |
 | tines.audit_log.inputs.inputs.diagramNoteIds |  | long |
-| tines.audit_log.inputs.inputs.diagramNotes |  | keyword |
+| tines.audit_log.inputs.inputs.diagramNotes |  | flattened |
 | tines.audit_log.inputs.inputs.editingSource |  | keyword |
 | tines.audit_log.inputs.inputs.eventName |  | keyword |
 | tines.audit_log.inputs.inputs.httpRequestLocationOfToken |  | keyword |
@@ -135,7 +136,7 @@ All fields ingested to this data stream are stored under `tines.audit_log` as ea
 | tines.audit_log.inputs.inputs.jwtHs256Secret |  | keyword |
 | tines.audit_log.inputs.inputs.jwtPayload |  | keyword |
 | tines.audit_log.inputs.inputs.jwtPrivateKey |  | keyword |
-| tines.audit_log.inputs.inputs.links |  | keyword |
+| tines.audit_log.inputs.inputs.links |  | flattened |
 | tines.audit_log.inputs.inputs.mode |  | keyword |
 | tines.audit_log.inputs.inputs.mtlsClientCertificate |  | keyword |
 | tines.audit_log.inputs.inputs.mtlsClientPrivateKey |  | keyword |
@@ -152,6 +153,7 @@ All fields ingested to this data stream are stored under `tines.audit_log` as ea
 | tines.audit_log.inputs.inputs.readAccess |  | keyword |
 | tines.audit_log.inputs.inputs.sharedTeamSlugs |  | keyword |
 | tines.audit_log.inputs.inputs.source |  | keyword |
+| tines.audit_log.inputs.inputs.standardLibVersion |  | keyword |
 | tines.audit_log.inputs.inputs.storyId |  | long |
 | tines.audit_log.inputs.inputs.teamId |  | long |
 | tines.audit_log.inputs.inputs.value |  | keyword |
@@ -214,7 +216,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "681e4da0-a57a-4818-b61e-2bb4a9557356",
@@ -324,6 +326,7 @@ An example event for `audit` looks as following:
         "version": "109.0.0.0"
     }
 }
+
 ```
 
 ### time_saved
@@ -342,10 +345,10 @@ All fields ingested to this data stream are stored under `tines.time_saved` as e
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
@@ -426,7 +429,7 @@ An example event for `time_saved` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "681e4da0-a57a-4818-b61e-2bb4a9557356",
@@ -456,4 +459,5 @@ An example event for `time_saved` looks as following:
         }
     }
 }
+
 ```

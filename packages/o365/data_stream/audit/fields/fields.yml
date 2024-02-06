@@ -2,7 +2,7 @@
   type: group
   fields:
     - name: Actor
-      type: array
+      type: group
       fields:
         - name: ID
           type: keyword
@@ -16,14 +16,22 @@
       type: keyword
     - name: ActorYammerUserId
       type: keyword
+    - name: AdditionalInfo.*
+      type: object
+      object_type: keyword
+      object_type_mapping_type: '*'
     - name: AlertEntityId
       type: keyword
     - name: AlertId
       type: keyword
     - name: AlertLinks
-      type: array
+      type: flattened
     - name: AlertType
       type: keyword
+    - name: AppAccessContext.*
+      type: object
+      object_type: keyword
+      object_type_mapping_type: '*'
     - name: AppId
       type: keyword
     - name: ApplicationDisplayName
@@ -34,6 +42,9 @@
       type: keyword
     - name: ExchangeMetaData.*
       type: object
+      # This object can also contain date fields, but we cannot express multiple dynamic mapping types here.
+      object_type: long
+      object_type_mapping_type: long
     - name: Category
       type: keyword
     - name: ClientAppId
@@ -55,7 +66,129 @@
     - name: CustomUniqueId
       type: boolean
     - name: Data
-      type: keyword
+      type: group
+      fields:
+        - name: flattened
+          type: flattened
+          description: The full Data document.
+        - name: sip
+          type: ip
+        - name: at
+          type: date
+        - name: md
+          type: date
+        - name: te
+          type: date
+        - name: ts
+          type: date
+        - name: ttdt
+          type: date
+        - name: ad
+          type: keyword
+        - name: af
+          type: keyword
+        - name: aii
+          type: keyword
+        - name: ail
+          type: keyword
+        - name: alk
+          type: keyword
+        - name: als
+          type: keyword
+        - name: an
+          type: keyword
+        - name: cid
+          type: keyword
+        - name: cpid
+          type: keyword
+        - name: dm
+          type: keyword
+        - name: dpn
+          type: keyword
+        - name: eid
+          type: keyword
+        - name: etps
+          type: keyword
+        - name: etype
+          type: keyword
+        - name: f3u
+          type: keyword
+        - name: fvs
+          type: keyword
+        - name: imsgid
+          type: keyword
+        - name: lon
+          type: keyword
+        - name: mat
+          type: keyword
+        - name: ms
+          type: keyword
+        - name: od
+          type: keyword
+        - name: op
+          type: keyword
+        - name: ot
+          type: keyword
+        - name: plk
+          type: keyword
+        - name: pud
+          type: keyword
+        - name: reid
+          type: keyword
+        - name: rid
+          type: keyword
+        - name: sev
+          type: keyword
+        - name: sict
+          type: keyword
+        - name: sid
+          type: keyword
+        - name: sitmi
+          type: keyword
+        - name: srt
+          type: keyword
+        - name: ssic
+          type: keyword
+        - name: suid
+          type: keyword
+        - name: tdc
+          type: keyword
+        - name: thn
+          type: keyword
+        - name: tht
+          type: keyword
+        - name: tid
+          type: keyword
+        - name: tpid
+          type: keyword
+        - name: tpt
+          type: keyword
+        - name: trc
+          type: keyword
+        - name: tsd
+          type: keyword
+        - name: ttr
+          type: keyword
+        - name: upfc
+          type: keyword
+        - name: upfv
+          type: keyword
+        - name: ut
+          type: keyword
+        - name: von
+          type: keyword
+        - name: wl
+          type: keyword
+        - name: zfh
+          type: keyword
+        - name: zfn
+          type: keyword
+        - name: zmfh
+          type: keyword
+        - name: zmfn
+          type: keyword
+        - name: zu
+          type: keyword
     - name: DataType
       type: keyword
     - name: EntityType
@@ -68,10 +201,18 @@
       type: keyword
     - name: ExceptionInfo.*
       type: object
+      # This should be boolean→boolean falling back to *→keyword, but this is
+      # not expressible here; object_type_mapping_type cannot be 'boolean'.
+      object_type: keyword
+      object_type_mapping_type: '*'
     - name: ExtendedProperties.*
       type: object
+      object_type: keyword
+      object_type_mapping_type: '*'
     - name: ExternalAccess
       type: boolean
+    - name: FileSizeBytes
+      type: long
     - name: GroupName
       type: keyword
     - name: Id
@@ -88,8 +229,12 @@
       type: keyword
     - name: Item.*
       type: object
+      object_type: keyword
+      object_type_mapping_type: '*'
     - name: Item.*.*
       type: object
+      object_type: keyword
+      object_type_mapping_type: '*'
     - name: ItemName
       type: keyword
     - name: ItemType
@@ -115,11 +260,11 @@
     - name: MailboxOwnerUPN
       type: keyword
     - name: Members
-      type: array
-    - name: Members.*
-      type: object
+      type: flattened
     - name: ModifiedProperties.*.*
       type: object
+      object_type: keyword
+      object_type_mapping_type: '*'
     - name: Name
       type: keyword
     - name: NewValue
@@ -136,8 +281,12 @@
       type: keyword
     - name: Parameters.*
       type: object
+      object_type: keyword
+      object_type_mapping_type: '*'
+    - name: Platform
+      type: keyword
     - name: PolicyDetails
-      type: array
+      type: flattened
     - name: PolicyId
       type: keyword
     - name: RecordType
@@ -148,6 +297,9 @@
       type: boolean
     - name: SharePointMetaData.*
       type: object
+      # This object may contain date formatted fields, but we do not ensure validity, so leave as keyword.
+      object_type: keyword
+      object_type_mapping_type: '*'
     - name: SessionId
       type: keyword
     - name: Severity
@@ -169,7 +321,7 @@
     - name: SupportTicketId
       type: keyword
     - name: Target
-      type: array
+      type: group
       fields:
         - name: ID
           type: keyword

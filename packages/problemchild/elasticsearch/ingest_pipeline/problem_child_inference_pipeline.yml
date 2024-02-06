@@ -351,11 +351,10 @@ processors:
         }
       if:
         ctx.containsKey('problemchild') && ctx['problemchild'].containsKey('prediction')
-        && ctx['problemchild']['prediction'] == 0
+        && ctx['problemchild']['prediction'] == '0'
       params:
         blocklist:
           - dump
-          - "-embedding"
           - privilege
           - administrator
           - password
@@ -394,3 +393,10 @@ processors:
   - script:
       lang: painless
       source: ctx.entrySet().removeIf(field -> field.getKey() =~ /feature_.*/);ctx['problemchild'].remove('prediction_score');ctx['problemchild'].remove('model_id');
+on_failure:
+  - append:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

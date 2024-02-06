@@ -67,6 +67,7 @@ An example event for `redis` looks as following:
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |  |
@@ -95,16 +96,17 @@ An example event for `redis` looks as following:
 | gcp.labels.resource.\* |  | object |  |  |
 | gcp.labels.system.\* |  | object |  |  |
 | gcp.labels.user.\* |  | object |  |  |
+| gcp.labels_fingerprint | Hashed value of the labels field. | keyword |  |  |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |  |  |
 | gcp.redis.clients.blocked.count | Number of blocked clients. | long |  | gauge |
 | gcp.redis.clients.connected.count | Number of client connections. | long |  | gauge |
-| gcp.redis.commands.calls.count | Total number of calls for this command in one minute. | long |  | counter |
-| gcp.redis.commands.total_time.us | The amount of time in microseconds that this command took in the last second. | long | micros | counter |
+| gcp.redis.commands.calls.count | Delta of the number of calls for this command in one minute. | long |  | gauge |
+| gcp.redis.commands.total_time.us | Delta of the amount of time in microseconds that this command took in the last second. | long | micros | gauge |
 | gcp.redis.commands.usec_per_call.sec | Average time per call over 1 minute by command. | double | s | gauge |
 | gcp.redis.keyspace.avg_ttl.sec | Average TTL for keys in this database. | double | s | gauge |
 | gcp.redis.keyspace.keys.count | Number of keys stored in this database. | long |  | gauge |
 | gcp.redis.keyspace.keys_with_expiration.count | Number of keys with an expiration in this database. | long |  | gauge |
-| gcp.redis.persistence.rdb.bgsave_in_progress | Flag indicating a RDB save is on-going. | boolean |  | gauge |
+| gcp.redis.persistence.rdb.bgsave_in_progress | Flag indicating a RDB save is on-going. | long |  | gauge |
 | gcp.redis.replication.master.slaves.lag.sec | The number of seconds that replica is lagging behind primary. | long | s | gauge |
 | gcp.redis.replication.master.slaves.offset.bytes | The number of bytes that have been acknowledged by replicas. | long | byte | gauge |
 | gcp.redis.replication.master_repl_offset.bytes | The number of bytes that master has produced and sent to replicas. | long | byte | gauge |
@@ -112,18 +114,18 @@ An example event for `redis` looks as following:
 | gcp.redis.replication.role | Returns a value indicating the node role. 1 indicates primary and 0 indicates replica. | long |  | gauge |
 | gcp.redis.server.uptime.sec | Uptime in seconds. | long | s | gauge |
 | gcp.redis.stats.cache_hit_ratio | Cache Hit ratio as a fraction. | double |  | gauge |
-| gcp.redis.stats.connections.total.count | Total number of connections accepted by the server. | long |  | counter |
+| gcp.redis.stats.connections.total.count | Delta of the total number of connections accepted by the server. | long |  | gauge |
 | gcp.redis.stats.cpu_utilization.sec | CPU-seconds consumed by the Redis server, broken down by system/user space and parent/child relationship. | double | s | gauge |
-| gcp.redis.stats.evicted_keys.count | Number of evicted keys due to maxmemory limit. | long |  | counter |
-| gcp.redis.stats.expired_keys.count | Total number of key expiration events. | long |  | counter |
-| gcp.redis.stats.keyspace_hits.count | Number of successful lookup of keys in the main dictionary. | long |  | counter |
-| gcp.redis.stats.keyspace_misses.count | Number of failed lookup of keys in the main dictionary. | long |  | counter |
+| gcp.redis.stats.evicted_keys.count | Delta of the number of evicted keys due to maxmemory limit. | long |  | gauge |
+| gcp.redis.stats.expired_keys.count | Delta of the total number of key expiration events. | long |  | gauge |
+| gcp.redis.stats.keyspace_hits.count | Delta of the number of successful lookup of keys in the main dictionary. | long |  | gauge |
+| gcp.redis.stats.keyspace_misses.count | Delta of the number of failed lookup of keys in the main dictionary. | long |  | gauge |
 | gcp.redis.stats.memory.maxmemory.mb | Maximum amount of memory Redis can consume. | long | m | gauge |
 | gcp.redis.stats.memory.system_memory_overload_duration.us | The amount of time in microseconds the instance is in system memory overload mode. | long | micros | gauge |
 | gcp.redis.stats.memory.system_memory_usage_ratio | Memory usage as a ratio of maximum system memory. | double |  | gauge |
 | gcp.redis.stats.memory.usage.bytes | Total number of bytes allocated by Redis. | long | byte | gauge |
 | gcp.redis.stats.memory.usage_ratio | Memory usage as a ratio of maximum memory. | double |  | gauge |
-| gcp.redis.stats.network_traffic.bytes | Total number of bytes sent to/from redis (includes bytes from commands themselves, payload data, and delimiters). | long | byte | counter |
+| gcp.redis.stats.network_traffic.bytes | Delta of the total number of bytes sent to/from redis (includes bytes from commands themselves, payload data, and delimiters). | long | byte | gauge |
 | gcp.redis.stats.pubsub.channels.count | Global number of pub/sub channels with client subscriptions. | long |  | gauge |
 | gcp.redis.stats.pubsub.patterns.count | Global number of pub/sub pattern with client subscriptions. | long |  | gauge |
 | gcp.redis.stats.reject_connections.count | Number of connections rejected because of maxclients limit. | long |  | gauge |

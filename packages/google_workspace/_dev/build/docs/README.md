@@ -2,6 +2,12 @@
 
 The Google Workspace integration collects and parses data from the different [Google Workspace audit reports APIs](https://developers.google.com/admin-sdk/reports).
 
+If you want to know more about how you can fully leverage the Google Workspace integration, there is a multipart blog from our Security Labs that will help you:
+
+1. To understand what Google Workspace is in [Part One - Surveying the Land](https://www.elastic.co/security-labs/google-workspace-attack-surface-part-one)
+2. To set it up, step by step, in [Part Two - Setup Threat Detection with Elastic](https://www.elastic.co/security-labs/google-workspace-attack-surface-part-two)
+3. And to use the collected information to your advantage in [Part Three - Detecting Common Threats](https://www.elastic.co/security-labs/google-workspace-attack-surface-part-three)
+
 ## Compatibility
 
 It is compatible with a subset of applications under the [Google Reports API v1](https://developers.google.com/admin-sdk/reports/v1/get-start/getting-started). As of today it supports:
@@ -15,6 +21,12 @@ It is compatible with a subset of applications under the [Google Reports API v1]
 | [Admin](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/admin-application-settings) [help](https://support.google.com/a/answer/4579579?hl=en&ref_topic=9027054) | View administrator activity performed within the Google Admin console. |
 | [Drive](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive) [help](https://support.google.com/a/answer/4579696?hl=en&ref_topic=9027054) | Record user activity within Google Drive including content creation in such as Google Docs, as well as content created elsewhere that your users upload to Drive such as PDFs and Microsoft Word files. |
 | [Groups](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/groups) [help](https://support.google.com/a/answer/6270454?hl=en&ref_topic=9027054) | Track changes to groups, group memberships and group messages. |
+| [Group Enterprise](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/groups-enterprise) [help](https://support.google.com/a/answer/9667889?hl=en&ref_topic=9027054) | The Group Enterprise activity report returns information about various types of Enterprise Groups Audit activity events. |
+| [Device](https://developers.google.com/admin-sdk/reports/v1/reference/appendix/mobile) [help](https://support.google.com/a/answer/6350074?hl=en&ref_topic=9027054) | The Mobile activity report returns information about various types of Device Audit activity events. |
+| [Token](https://developers.google.com/admin-sdk/reports/v1/reference/activity-ref-appendix-a/token-event-names) [help](https://support.google.com/a/answer/6124308?hl=en&ref_topic=9027054) | The Token activity report returns information about various types of OAuth Token Audit activity events. |
+| [Access Transparency](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/access-transparency) [help](https://support.google.com/a/answer/9230474?hl=en) | The Access Transparency activity report returns information about various types of Access Transparency activity events. |
+| [Context Aware Access](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/context-aware-access) [help](https://support.google.com/a/answer/9394107?hl=en#zippy=) | The Context Aware Access activity report returns information about various types of Context-Aware Access Audit activity events. |
+| [GCP](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/gcp) | The GCP activity report returns information about various types of Google Cloud Platform activity events. |
 
 ## Requirements
 
@@ -31,7 +43,9 @@ This integration will make use of the following *oauth2 scope*:
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
 
-Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `admin`, `drive`, `groups`, `login`, `saml`, and `user accounts` logs.
+Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `device`, `context_aware_access`, `drive`, `gcp`, `groups`, `group_enterprise`, `login`, `rules`, `saml`, `token` and `user accounts` logs.
+
+>  NOTE: The `Delegated Account` value in the configuration, is expected to be the email of the administrator account, and not the email of the ServiceAccount.
 
 # Google Workspace Alert
 
@@ -105,8 +119,9 @@ This integration will make use of the following *oauth2 scope*:
 
 Once Service Account credentials are downloaded as a JSON file, then the integration can be setup to collect data.
 
+>  NOTE: The `Delegated Account` value in the configuration, is expected to be the email of the administrator account, and not the email of the ServiceAccount.
 
->  Note: The default value of the "Page Size" is set to 1000. This option is available under 'Alert' Advance options. Set the parameter "Page Size" according to the requirement. For Alert Data Stream, The default value of "Alert Center API Host" is `https://alertcenter.googleapis.com`. The Alert Center API Host will be used for collecting alert logs only.
+>  NOTE: The default value of the "Page Size" is set to 1000. This option is available under 'Alert' Advance options. Set the parameter "Page Size" according to the requirement. For Alert Data Stream, The default value of "Alert Center API Host" is `https://alertcenter.googleapis.com`. The Alert Center API Host will be used for collecting alert logs only.
 
 ## Logs
 
@@ -188,3 +203,51 @@ This is the `alert` dataset.
 {{event "alert"}}
 
 {{fields "alert"}}
+
+### Device
+
+This is the `device` dataset.
+
+{{event "device"}}
+
+{{fields "device"}}
+
+### Group Enterprise
+
+This is the `group_enterprise` dataset.
+
+{{event "group_enterprise"}}
+
+{{fields "group_enterprise"}}
+
+### Token
+
+This is the `token` dataset.
+
+{{event "token"}}
+
+{{fields "token"}}
+
+### Access Transparency
+
+This is the `access_transparency` dataset.
+
+{{event "access_transparency"}}
+
+{{fields "access_transparency"}}
+
+### Context Aware Access
+
+This is the `context_aware_access` dataset.
+
+{{event "context_aware_access"}}
+
+{{fields "context_aware_access"}}
+
+### GCP
+
+This is the `gcp` dataset.
+
+{{event "gcp"}}
+
+{{fields "gcp"}}
