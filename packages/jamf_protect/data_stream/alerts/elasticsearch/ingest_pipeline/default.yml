@@ -1,233 +1,236 @@
 ---
 description: Pipeline for parsing Jamf Protect Alert logs
 processors:
-- json:
-    field: message
-    target_field: jamf_protect.alerts
-# - rename:
-#     field: message
-#     target_field: event.original
-#     ignore_missing: true
-#     if: ctx.event?.original == null
+    - set:
+        field: ecs.version
+        value: '8.11.0'
+    - json:
+        field: message
+        target_field: jamf_protect.alerts
+    # - rename:
+    #     field: message
+    #     target_field: event.original
+    #     ignore_missing: true
+    #     if: ctx.event?.original == null
 
 
 ##########################
 ## ECS Observer Mapping ##
 ##########################
-- set:
-    field: observer.product
-    value: Jamf Protect
-- set:
-    field: observer.vendor
-    value: Jamf
-# - rename:
-#     field: json.detectionSource
-#     target_field: observer.name
-#     ignore_missing: true
+    - set:
+        field: observer.product
+        value: Jamf Protect
+    - set:
+        field: observer.vendor
+        value: Jamf
+    # - rename:
+    #     field: json.detectionSource
+    #     target_field: observer.name
+    #     ignore_missing: true
 
 #######################
 ## ECS Event Mapping ##
 #######################
-- set:
-    field: event.kind
-    value: alert
-- set:
-      field: event.provider
-      value: Jamf Protect
-- set:
-      field: event.module
-      value: Alerts
-- date:
-    field: jamf_protect.alerts.input.match.event.timestamp
-    target_field: event.start
-    formats: 
-    - UNIX
-    if: ctx.jamf_protect?.alerts?.input?.match?.event?.timestamp != null
+    - set:
+        field: event.kind
+        value: alert
+    - set:
+        field: event.provider
+        value: Jamf Protect
+    - set:
+        field: event.module
+        value: Alerts
+    - date:
+        field: jamf_protect.alerts.input.match.event.timestamp
+        target_field: event.start
+        formats: 
+        - UNIX
+        if: ctx.jamf_protect?.alerts?.input?.match?.event?.timestamp != null
 
-- append:
-    field: event.category
-    value: host
-- append:
-    field: event.category
-    value: malware
-    if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPThreatMatchExecEvent'
-- append:
-    field: event.category
-    value: process
-    if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPProcessEvent'
-- append:
-    field: event.category
-    value: file
-    if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPFSEvent'
+    - append:
+        field: event.category
+        value: host
+    - append:
+        field: event.category
+        value: malware
+        if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPThreatMatchExecEvent'
+    - append:
+        field: event.category
+        value: process
+        if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPProcessEvent'
+    - append:
+        field: event.category
+        value: file
+        if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPFSEvent'
 
-- rename:
-    field: rule.name
-    target_field: fctx.jamf_protect.alerts.input.match.facts[0].name
-    if: ctx.jamf_protect?.alerts?.input?.match?.facts[0].name != null
-    ignore_missing: true
-- rename:
-    field: rule.description
-    target_field: ctx.jamf_protect?.alerts.input.match.facts[0].name
-    if: ctx.jamf_protect?.alerts?.input?.match?.facts[0].human != null
-    ignore_missing: true
-# - script:
-#     lang: painless
-#     source: >
-#       if (ctx.jamf_protect?.alerts?.input?.match?.facts != null && ctx.jamf_protect.alerts.input.match.facts.size() > 0) {
-#         if (ctx.jamf_protect.alerts.input.match.facts[0].containsKey('human')) {
-#           ctx.rule.description = ctx.jamf_protect.alerts.input.match.facts[0].human;
-#         }
-#       }
+    - rename:
+        field: rule.name
+        target_field: fctx.jamf_protect.alerts.input.match.facts[0].name
+        if: ctx.jamf_protect?.alerts?.input?.match?.facts[0].name != null
+        ignore_missing: true
+    - rename:
+        field: rule.description
+        target_field: ctx.jamf_protect?.alerts.input.match.facts[0].name
+        if: ctx.jamf_protect?.alerts?.input?.match?.facts[0].human != null
+        ignore_missing: true
+    # - script:
+    #     lang: painless
+    #     source: >
+    #       if (ctx.jamf_protect?.alerts?.input?.match?.facts != null && ctx.jamf_protect.alerts.input.match.facts.size() > 0) {
+    #         if (ctx.jamf_protect.alerts.input.match.facts[0].containsKey('human')) {
+    #           ctx.rule.description = ctx.jamf_protect.alerts.input.match.facts[0].human;
+    #         }
+    #       }
 
-- script:
-    description: Populates event.action with the name of the event
-    lang: painless
-    source: >
-      if (ctx.jamf_protect?.alerts?.input?.match?.facts != null && ctx.jamf_protect.alerts.input.match.facts.size() > 0) {
-        if (ctx.jamf_protect.alerts.input.match.facts[0].containsKey('name')) {
-          ctx.event.action = ctx.jamf_protect.alerts.input.match.facts[0].name;
-        }
-      }
-    ignore_failure: true
+    - script:
+        description: Populates event.action with the name of the event
+        lang: painless
+        source: >
+            if (ctx.jamf_protect?.alerts?.input?.match?.facts != null && ctx.jamf_protect.alerts.input.match.facts.size() > 0) {
+                if (ctx.jamf_protect.alerts.input.match.facts[0].containsKey('name')) {
+                ctx.event.action = ctx.jamf_protect.alerts.input.match.facts[0].name;
+                }
+            }
+        ignore_failure: true
 
-- script:
-    description: Populates event.reason with the name of the event
-    lang: painless
-    source: >
-      if (ctx.jamf_protect?.alerts?.input?.match?.facts != null && ctx.jamf_protect.alerts.input.match.facts.size() > 0) {
-        if (ctx.jamf_protect.alerts.input.match.facts[0].containsKey('human')) {
-          ctx.event.reason = ctx.jamf_protect.alerts.input.match.facts[0].human;
-        }
-      }
-    ignore_failure: true
-- script:
-    description: Populates event.tags with tags from the event
-    lang: painless
-    source: >
-      if (ctx.jamf_protect?.alerts?.input?.match?.facts != null && ctx.jamf_protect.alerts.input.match.facts.size() > 0) {
-        if (ctx.jamf_protect.alerts.input.match.facts[0].containsKey('tags')) {
-          ctx.tags = ctx.jamf_protect.alerts.input.match.facts[0].tags;
-        }
-      }
-    ignore_failure: true
-- rename:
-    field: jamf_protect.alerts.input.match.uuid
-    target_field: event.id
-    ignore_missing: true
-    if: ctx.jamf_protect?.alerts?.input?.match?.uuid != null
-- rename:
-    field: jamf_protect.alerts.input.match.severity
-    target_field: event.severity
-    ignore_missing: true
-    if: ctx.jamf_protect?.alerts?.input?.match?.severity != null
+    - script:
+        description: Populates event.reason with the name of the event
+        lang: painless
+        source: >
+            if (ctx.jamf_protect?.alerts?.input?.match?.facts != null && ctx.jamf_protect.alerts.input.match.facts.size() > 0) {
+                if (ctx.jamf_protect.alerts.input.match.facts[0].containsKey('human')) {
+                ctx.event.reason = ctx.jamf_protect.alerts.input.match.facts[0].human;
+                }
+            }
+        ignore_failure: true
+    - script:
+        description: Populates event.tags with tags from the event
+        lang: painless
+        source: >
+            if (ctx.jamf_protect?.alerts?.input?.match?.facts != null && ctx.jamf_protect.alerts.input.match.facts.size() > 0) {
+                if (ctx.jamf_protect.alerts.input.match.facts[0].containsKey('tags')) {
+                ctx.tags = ctx.jamf_protect.alerts.input.match.facts[0].tags;
+                }
+            }
+        ignore_failure: true
+    - rename:
+        field: jamf_protect.alerts.input.match.uuid
+        target_field: event.id
+        ignore_missing: true
+        if: ctx.jamf_protect?.alerts?.input?.match?.uuid != null
+    - rename:
+        field: jamf_protect.alerts.input.match.severity
+        target_field: event.severity
+        ignore_missing: true
+        if: ctx.jamf_protect?.alerts?.input?.match?.severity != null
 
 
-# - script:
-#     lang: painless
-#     source: >
-#         if (ctx.jamf_protect?.alerts?.input?.eventType != null && ctx.jamf_protect.alerts.input.eventType == 'GPProcessEvent') {
-#             ctx.event = ctx.event ?: new HashMap();
-#             ctx.event.type = ctx.event.type ?: new ArrayList();
+    # - script:
+    #     lang: painless
+    #     source: >
+    #         if (ctx.jamf_protect?.alerts?.input?.eventType != null && ctx.jamf_protect.alerts.input.eventType == 'GPProcessEvent') {
+    #             ctx.event = ctx.event ?: new HashMap();
+    #             ctx.event.type = ctx.event.type ?: new ArrayList();
 
-#             if (ctx.jamf_protect?.alerts?.input?.match?.event?.type != null) {
-#                 // Removed the premature addition of 'start'
-#                 int eventType = ctx.jamf_protect.alerts.input.match.event.type; // Assuming it's properly an integer.
-#                 switch (eventType) {
-#                     case 1:
-#                         ctx.event.type.add('start');
-#                         break;
-#                     case 2:
-#                         ctx.event.type.add('end');
-#                         break;
-#                     default:
-#                         ctx.event.type.add('unknown');
-#                 }
-#             }
-#         }
+    #             if (ctx.jamf_protect?.alerts?.input?.match?.event?.type != null) {
+    #                 // Removed the premature addition of 'start'
+    #                 int eventType = ctx.jamf_protect.alerts.input.match.event.type; // Assuming it's properly an integer.
+    #                 switch (eventType) {
+    #                     case 1:
+    #                         ctx.event.type.add('start');
+    #                         break;
+    #                     case 2:
+    #                         ctx.event.type.add('end');
+    #                         break;
+    #                     default:
+    #                         ctx.event.type.add('unknown');
+    #                 }
+    #             }
+    #         }
 
-# - set:
-#     field: event.outcome
-#     value: success
-#     if: ctx.jamf_protect?.alerts?.match.actions.name == "Prevented"
-# - set:
-#     field: event.outcome
-#     value: failure
-#     if: ctx.jamf_protect?.alerts?.match.actions.name == "false"
-# - set:
-#     field: event.outcome
-#     value: unknown
-#     if: ctx?.event?.outcome == null
+    # - set:
+    #     field: event.outcome
+    #     value: success
+    #     if: ctx.jamf_protect?.alerts?.match.actions.name == "Prevented"
+    # - set:
+    #     field: event.outcome
+    #     value: failure
+    #     if: ctx.jamf_protect?.alerts?.match.actions.name == "false"
+    # - set:
+    #     field: event.outcome
+    #     value: unknown
+    #     if: ctx?.event?.outcome == null
 
 #######################
 ## ECS Host Mapping ##
 #######################
-- rename:
-    field: jamf_protect.alerts.input.host.hostname
-    target_field: host.hostname
-    ignore_missing: true
-    if: ctx.jamf_protect?.alerts?.input?.host?.hostname != null
-- rename:
-    field: jamf_protect.alerts.input.host.provisioningUDID
-    target_field: host.id
-    ignore_missing: true
-    if: ctx.jamf_protect?.alerts?.input?.host?.provisioningUDID != null
-- rename:
-    field: jamf_protect.alerts.input.host.ips
-    target_field: host.ip
-    ignore_missing: true
-    if: ctx.jamf_protect?.alerts?.input?.host?.ips != null && ctx.jamf_protect?.alerts?.input?.host?.ips != ""
-- rename:
-    field: jamf_protect.alerts.input.host.os
-    target_field: host.os.full
-    if: ctx.jamf_protect?.alerts?.input?.host?.os != null
-    ignore_missing: true
-- set:
-    field: host.os.family
-    value: macos
+    - rename:
+        field: jamf_protect.alerts.input.host.hostname
+        target_field: host.hostname
+        ignore_missing: true
+        if: ctx.jamf_protect?.alerts?.input?.host?.hostname != null
+    - rename:
+        field: jamf_protect.alerts.input.host.provisioningUDID
+        target_field: host.id
+        ignore_missing: true
+        if: ctx.jamf_protect?.alerts?.input?.host?.provisioningUDID != null
+    - rename:
+        field: jamf_protect.alerts.input.host.ips
+        target_field: host.ip
+        ignore_missing: true
+        if: ctx.jamf_protect?.alerts?.input?.host?.ips != null && ctx.jamf_protect?.alerts?.input?.host?.ips != ""
+    - rename:
+        field: jamf_protect.alerts.input.host.os
+        target_field: host.os.full
+        if: ctx.jamf_protect?.alerts?.input?.host?.os != null
+        ignore_missing: true
+    - set:
+        field: host.os.family
+        value: macos
 
 ########################
 ## ECS Source Mapping ##
 ########################
 
-# - rename:
-#       field: ctx.jamf_protect.alerts.input.related.users[0].name
-#       target_field: user.name
-#       ignore_missing: true
-#       if: ctx.jamf_protect?.alerts?.input?.related?.users != null
-- script:
-    description: Script processor to capture user names from related.users array
-    tag: set-process-command_line
-    lang: painless
-    source: |
-        if (ctx.jamf_protect?.alerts?.input?.related?.users != null && ctx.jamf_protect.alerts.input.related.users.size() > 0) {
-            ArrayList userNames = new ArrayList();
-        
-            for (def user : ctx.jamf_protect.alerts.input.related.users) {
-                if (user.containsKey('name') && user['name'] != null) {
-                    userNames.add(user['name']);
+    # - rename:
+    #       field: ctx.jamf_protect.alerts.input.related.users[0].name
+    #       target_field: user.name
+    #       ignore_missing: true
+    #       if: ctx.jamf_protect?.alerts?.input?.related?.users != null
+    - script:
+        description: Script processor to capture user names from related.users array
+        tag: set-process-command_line
+        lang: painless
+        source: |
+            if (ctx.jamf_protect?.alerts?.input?.related?.users != null && ctx.jamf_protect.alerts.input.related.users.size() > 0) {
+                ArrayList userNames = new ArrayList();
+            
+                for (def user : ctx.jamf_protect.alerts.input.related.users) {
+                    if (user.containsKey('name') && user['name'] != null) {
+                        userNames.add(user['name']);
+                    }
+                }
+                if (userNames.size() > 0) {
+                    ctx.related = ctx.related ?: new HashMap(); // Ensure the related object exists
+                    ctx.related.user = userNames;
                 }
             }
-            if (userNames.size() > 0) {
-                ctx.related = ctx.related ?: new HashMap(); // Ensure the related object exists
-                ctx.related.user = userNames;
-            }
-        }
 
-# - script:
-#     description: Script processor to capture user ids from related.users array
-#     tag: set-process-command_line
-#     lang: painless
-#     source: |
-#         if (ctx.jamf_protect?.alerts?.input?.related?.users != null && ctx.jamf_protect.alerts.input.related.users.size() > 0) {
-#             ArrayList userIds = new ArrayList();
-#             for (def user : ctx.jamf_protect.alerts.input.related.users) {
-#                 if (user.containsKey('uid')) {
-#                     userIds.add(user['uid']);
-#                 }
-#             }
-#             ctx.user.names = userIds;
-#         }
-      
+    # - script:
+    #     description: Script processor to capture user ids from related.users array
+    #     tag: set-process-command_line
+    #     lang: painless
+    #     source: |
+    #         if (ctx.jamf_protect?.alerts?.input?.related?.users != null && ctx.jamf_protect.alerts.input.related.users.size() > 0) {
+    #             ArrayList userIds = new ArrayList();
+    #             for (def user : ctx.jamf_protect.alerts.input.related.users) {
+    #                 if (user.containsKey('uid')) {
+    #                     userIds.add(user['uid']);
+    #                 }
+    #             }
+    #             ctx.user.names = userIds;
+    #         }
+        
 
 
 
@@ -236,212 +239,211 @@ processors:
 # ECS File Mapping ##
 ########################
 
-- append:
-    field: event.type
-    value: creation
-    if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPFSEvent' && ctx.jamf_protect?.alerts?.input?.match?.event?.type == 0
-- append:
-    field: event.type
-    value: deletion
-    if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPFSEvent' && ctx.jamf_protect?.alerts?.input?.match?.event?.type == 1
-- append:
-    field: event.type
-    value: change
-    if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPFSEvent' && ctx.jamf_protect?.alerts?.input?.match?.event?.type == 3
-- append:
-    field: event.type
-    value: change
-    if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPFSEvent' && ctx.jamf_protect?.alerts?.input?.match?.event?.type == 4
-- append:
-    field: event.type
-    value: creation
-    if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPFSEvent' && ctx.jamf_protect?.alerts?.input?.match?.event?.type == 7
+    - append:
+        field: event.type
+        value: creation
+        if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPFSEvent' && ctx.jamf_protect?.alerts?.input?.match?.event?.type == 0
+    - append:
+        field: event.type
+        value: deletion
+        if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPFSEvent' && ctx.jamf_protect?.alerts?.input?.match?.event?.type == 1
+    - append:
+        field: event.type
+        value: change
+        if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPFSEvent' && ctx.jamf_protect?.alerts?.input?.match?.event?.type == 3
+    - append:
+        field: event.type
+        value: change
+        if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPFSEvent' && ctx.jamf_protect?.alerts?.input?.match?.event?.type == 4
+    - append:
+        field: event.type
+        value: creation
+        if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPFSEvent' && ctx.jamf_protect?.alerts?.input?.match?.event?.type == 7
 
-- script:
-    description: One scripting processor to capture all the related file information for the related file.
-    lang: painless
-    if: ctx.jamf_protect?.alerts?.input?.related?.files.size() > 0
-    source: >
-      if (ctx.jamf_protect.alerts.input.related.files.size() > 0) {
-        def firstFile = ctx.jamf_protect.alerts.input.related.files[0];
+    - script:
+        description: One scripting processor to capture all the related file information for the related file.
+        lang: painless
+        if: ctx.jamf_protect?.alerts?.input?.related?.files.size() > 0
+        source: >
+            if (ctx.jamf_protect.alerts.input.related.files.size() > 0) {
+                def firstFile = ctx.jamf_protect.alerts.input.related.files[0];
 
-        ctx.file = ctx.file ?: new HashMap();
-        
-        ctx.file.path = firstFile.path;
-        ctx.file.size = firstFile.size;
-        ctx.file.inode = String.valueOf(firstFile.inode);
-        ctx.file.gid = String.valueOf(firstFile.gid);
-        ctx.file.mode = String.valueOf(firstFile.mode);
-        ctx.file.uid = String.valueOf(firstFile.uid);
-        
-        ctx.file.hash = ctx.file.hash ?: new HashMap();
-        ctx.file.hash.sha1 = firstFile.sha1hex;
-        ctx.file.hash.sha256 = firstFile.sha256hex;
-        
-        ctx.file.code_signature = ctx.file.code_signature ?: new HashMap();
-        ctx.file.code_signature.signing_id = firstFile.signingInfo?.appid; // Use safe navigation for nested objects
-        ctx.file.code_signature.status = firstFile.signingInfo?.statusMessage;
-        ctx.file.code_signature.team_id = firstFile.signingInfo?.teamid;
-      }
+                ctx.file = ctx.file ?: new HashMap();
+                
+                ctx.file.path = firstFile.path;
+                ctx.file.size = firstFile.size;
+                ctx.file.inode = String.valueOf(firstFile.inode);
+                ctx.file.gid = String.valueOf(firstFile.gid);
+                ctx.file.mode = String.valueOf(firstFile.mode);
+                ctx.file.uid = String.valueOf(firstFile.uid);
+                
+                ctx.file.hash = ctx.file.hash ?: new HashMap();
+                ctx.file.hash.sha1 = firstFile.sha1hex;
+                ctx.file.hash.sha256 = firstFile.sha256hex;
+                
+                ctx.file.code_signature = ctx.file.code_signature ?: new HashMap();
+                ctx.file.code_signature.signing_id = firstFile.signingInfo?.appid; // Use safe navigation for nested objects
+                ctx.file.code_signature.status = firstFile.signingInfo?.statusMessage;
+                ctx.file.code_signature.team_id = firstFile.signingInfo?.teamid;
+            }
 
 ######################
 ## ECS Process Mapping ##
 ######################
-- append:
-    field: event.type
-    value:
-    - start
-    if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPProcessEvent' && ctx.jamf_protect?.alerts?.input?.match?.event?.type == 1
-- append:
-    field: event.type
-    value: end
-    if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPProcessEvent' && ctx.jamf_protect?.alerts?.input?.match?.event?.type == 2
-- script:
-    description: One scripting processor to capture all the related process information for the current process.
-    lang: painless
-    if: ctx.jamf_protect?.alerts?.input?.related?.processes.size() > 0
-    source: >
-      if (ctx.jamf_protect?.alerts?.input?.related?.processes != null && ctx.jamf_protect.alerts.input.related.processes.size() > 0) {
-        def process = ctx.jamf_protect.alerts.input.related.processes[0];
-        
-        ctx.process = ctx.process ?: new HashMap();
-        
-        ctx.process.name = process.name;
-        ctx.process.executable = process.path;
-        ctx.process.pid = process.pid;
-        ctx.process.ppid = process.responsiblePID;
-        ctx.process.args = process.args ?: new ArrayList();
-        
-        ctx.process.uid = process.uid.toString();
-        ctx.process.user = new HashMap();
-        ctx.process.user.id = process.uid.toString();
-        ctx.process.group = new HashMap();
-        ctx.process.group.id = process.gid.toString();
-        
-        if (process.containsKey('startTimestamp')) {
-          ctx.process.start = Instant.ofEpochSecond(process.startTimestamp).toString();
-        }
-        
-        ctx.process.exit_code = process.exitCode;
-        ctx.process.tty = process.tty;
-        ctx.process.pgid = process.pgid;
-        ctx.process.ruid = process.ruid.toString(); // If relevant, convert to string
-        ctx.process.rgid = process.rgid.toString(); // If relevant, convert to string
-        // Note: ECS does not have direct fields for `uuid`, `responsiblePID`, `originalParentPID`, consider storing in custom fields or under process.Ext if needed
+    - append:
+        field: event.type
+        value:
+        - start
+        if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPProcessEvent' && ctx.jamf_protect?.alerts?.input?.match?.event?.type == 1
+    - append:
+        field: event.type
+        value: end
+        if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPProcessEvent' && ctx.jamf_protect?.alerts?.input?.match?.event?.type == 2
+    - script:
+        description: One scripting processor to capture all the related process information for the current process.
+        lang: painless
+        if: ctx.jamf_protect?.alerts?.input?.related?.processes.size() > 0
+        source: >
+            if (ctx.jamf_protect?.alerts?.input?.related?.processes != null && ctx.jamf_protect.alerts.input.related.processes.size() > 0) {
+                def process = ctx.jamf_protect.alerts.input.related.processes[0];
+                
+                ctx.process = ctx.process ?: new HashMap();
+                
+                ctx.process.name = process.name;
+                ctx.process.executable = process.path;
+                ctx.process.pid = process.pid;
+                ctx.process.ppid = process.responsiblePID;
+                ctx.process.args = process.args ?: new ArrayList();
+                
+                ctx.process.uid = process.uid.toString();
+                ctx.process.user = new HashMap();
+                ctx.process.user.id = process.uid.toString();
+                ctx.process.group = new HashMap();
+                ctx.process.group.id = process.gid.toString();
+                
+                if (process.containsKey('startTimestamp')) {
+                ctx.process.start = Instant.ofEpochSecond(process.startTimestamp).toString();
+                }
+                
+                ctx.process.exit_code = process.exitCode;
+                ctx.process.tty = process.tty;
+                ctx.process.pgid = process.pgid;
+                ctx.process.ruid = process.ruid.toString(); // If relevant, convert to string
+                ctx.process.rgid = process.rgid.toString(); // If relevant, convert to string
+                // Note: ECS does not have direct fields for `uuid`, `responsiblePID`, `originalParentPID`, consider storing in custom fields or under process.Ext if needed
 
-        ctx.process.hash = ctx.process.hash ?: new HashMap();
-        ctx.process.hash.sha1 = process.sha1hex;
-        ctx.process.hash.sha256 = process.sha256hex;
-        
-        ctx.process.code_signature = ctx.process.code_signature ?: new HashMap();
-        ctx.process.code_signature.signing_id = process.signingInfo?.appid; // Use safe navigation for nested objects
-        ctx.process.code_signature.status = process.signingInfo?.statusMessage;
-        ctx.process.code_signature.team_id = process.signingInfo?.teamid;
-      }
+                ctx.process.hash = ctx.process.hash ?: new HashMap();
+                ctx.process.hash.sha1 = process.sha1hex;
+                ctx.process.hash.sha256 = process.sha256hex;
+                
+                ctx.process.code_signature = ctx.process.code_signature ?: new HashMap();
+                ctx.process.code_signature.signing_id = process.signingInfo?.appid; // Use safe navigation for nested objects
+                ctx.process.code_signature.status = process.signingInfo?.statusMessage;
+                ctx.process.code_signature.team_id = process.signingInfo?.teamid;
+            }
 
 ######################
 ## ECS Group Mapping ##
 ######################
-
-- script:
-    description: One scripting processor to capture all the related group information for the event.
-    lang: painless
-    source: >
-      if (ctx.jamf_protect?.alerts?.input?.related?.groups != null && ctx.jamf_protect.alerts.input.related.groups.size() > 0) {
-        def group = ctx.jamf_protect.alerts.input.related.groups[0];
-        
-        ctx.group = ctx.group ?: new HashMap();
-        
-        ctx.group.name = group.name;
-        ctx.group.id = group.gid;
-      }
+    - script:
+        description: One scripting processor to capture all the related group information for the event.
+        lang: painless
+        source: >
+            if (ctx.jamf_protect?.alerts?.input?.related?.groups != null && ctx.jamf_protect.alerts.input.related.groups.size() > 0) {
+                def group = ctx.jamf_protect.alerts.input.related.groups[0];
+                
+                ctx.group = ctx.group ?: new HashMap();
+                
+                ctx.group.name = group.name;
+                ctx.group.id = group.gid;
+            }
 
 
 ########################
 # ECS Threat Mapping ##
 ########################
-- set:
-    field: threat.framework
-    value: "MITRE ATT&CK"
-    if: ctx.jamf_protect?.alerts?.input?.match?.facts[0].tags.contains("MITREattack")
-- set:
-    field: threat.software.platforms
-    value: macOS
-    if: ctx.jamf_protect?.alerts?.input?.match?.facts[0].tags.contains("MITREattack")
-# - script:
-#     description: Populates threat.enrichments with tags from the event
-#     lang: painless
-#     source: >
-#       if (ctx.jamf_protect?.alerts?.input?.match?.facts != null && ctx.jamf_protect.alerts.input.match.facts.size() > 0) {
-#         if (ctx.jamf_protect.alerts.input.match.facts[0].containsKey('tags')) {
-#           ctx.threat.enrichments = ctx.jamf_protect.alerts.input.match.facts[0].tags;
-#         }
-#       }
-#     ignore_failure: true
+    - set:
+        field: threat.framework
+        value: "MITRE ATT&CK"
+        if: ctx.jamf_protect?.alerts?.input?.match?.facts[0].tags.contains("MITREattack")
+    - set:
+        field: threat.software.platforms
+        value: macOS
+        if: ctx.jamf_protect?.alerts?.input?.match?.facts[0].tags.contains("MITREattack")
+    # - script:
+    #     description: Populates threat.enrichments with tags from the event
+    #     lang: painless
+    #     source: >
+    #       if (ctx.jamf_protect?.alerts?.input?.match?.facts != null && ctx.jamf_protect.alerts.input.match.facts.size() > 0) {
+    #         if (ctx.jamf_protect.alerts.input.match.facts[0].containsKey('tags')) {
+    #           ctx.threat.enrichments = ctx.jamf_protect.alerts.input.match.facts[0].tags;
+    #         }
+    #       }
+    #     ignore_failure: true
 
 
 
 ########################
 # ECS Related Mapping ##
 ########################
-- append:
-    field: related.hosts
-    value: "{{ host.name }}"
-    if: ctx?.jamf_protect?.alerts?.input?.host?.hostname != null
-    allow_duplicates: false
-- append:
-    field: related.user
-    value: "{{ user.name }}"
-    if: ctx?.jamf_protect?.alerts?.input?.related?.users != null
-    allow_duplicates: false
-- append:
-    field: related.ip
-    value: "{{ host.ip }}"
-    if: ctx?.jamf_protect?.alerts?.input?.host?.ips != null
-    allow_duplicates: false
-- append:
-    field: related.hash
-    value: "{{ file.hash.sha256 }}"
-    if: ctx?.jamf_protect?.alerts?.input?.related?.file != null
-    allow_duplicates: false
-- append:
-    field: related.hash
-    value: "{{ file.hash.sha256 }}"
-    if: ctx?.jamf_protect?.alerts?.input?.related?.file != null
-    allow_duplicates: false
-- append:
-    field: related.hash
-    value: "{{ process.hash.sha1 }}"
-    if: ctx?.jamf_protect?.alerts?.input?.related?.processes != null
-    allow_duplicates: false
-- append:
-    field: related.hash
-    value: "{{ process.hash.sha256 }}"
-    if: ctx?.jamf_protect?.alerts?.input?.related?.processes != null
-    allow_duplicates: false
+    - append:
+        field: related.hosts
+        value: "{{ host.name }}"
+        if: ctx?.jamf_protect?.alerts?.input?.host?.hostname != null
+        allow_duplicates: false
+    - append:
+        field: related.user
+        value: "{{ user.name }}"
+        if: ctx?.jamf_protect?.alerts?.input?.related?.users != null
+        allow_duplicates: false
+    - append:
+        field: related.ip
+        value: "{{ host.ip }}"
+        if: ctx?.jamf_protect?.alerts?.input?.host?.ips != null
+        allow_duplicates: false
+    - append:
+        field: related.hash
+        value: "{{ file.hash.sha256 }}"
+        if: ctx?.jamf_protect?.alerts?.input?.related?.file != null
+        allow_duplicates: false
+    - append:
+        field: related.hash
+        value: "{{ file.hash.sha256 }}"
+        if: ctx?.jamf_protect?.alerts?.input?.related?.file != null
+        allow_duplicates: false
+    - append:
+        field: related.hash
+        value: "{{ process.hash.sha1 }}"
+        if: ctx?.jamf_protect?.alerts?.input?.related?.processes != null
+        allow_duplicates: false
+    - append:
+        field: related.hash
+        value: "{{ process.hash.sha256 }}"
+        if: ctx?.jamf_protect?.alerts?.input?.related?.processes != null
+        allow_duplicates: false
 
 
 #######################
 ## ECS pipelines ##
 #######################
-- pipeline:
-    name: '{{ IngestPipeline "gpusbevent" }}'
-    if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUSBEvent"
+    - pipeline:
+        name: '{{ IngestPipeline "gpusbevent" }}'
+        if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUSBEvent"
 
 
 #############
 ## Cleanup ##
 #############
-# - remove:
-#     field:
-#     - jamf_protect.alerts
-#     ignore_missing: true
+    # - remove:
+    #     field:
+    #     - jamf_protect.alerts
+    #     ignore_missing: true
 
 
 on_failure:
-  - set:
-      field: event.kind
-      value: pipeline_error
-  - append:
-      field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+    - set:
+        field: event.kind
+        value: pipeline_error
+    - append:
+        field: error.message
+        value: '{{{ _ingest.on_failure_message }}}'
