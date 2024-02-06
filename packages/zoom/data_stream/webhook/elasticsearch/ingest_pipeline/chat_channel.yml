@@ -4,7 +4,12 @@ processors:
 - append:
     field: event.type
     value: user
-    if: "['chat_channel.member_invited', 'chat_channel.member_joined', 'chat_channel.member_left'].contains(ctx.event?.action)"
+    if: >-
+      [
+        'chat_channel.member_invited',
+        'chat_channel.member_joined',
+        'chat_channel.member_left'
+      ].contains(ctx.event?.action)
 - append:
     field: event.type
     value: creation
@@ -37,7 +42,7 @@ processors:
     target_field: '@timestamp'
     formats:
     - ISO_INSTANT
-    if: "ctx.zoom?.chat_channel?.date_time != null && ctx.zoom?.chat_channel?.timestamp == null"
+    if: ctx.zoom?.chat_channel?.date_time != null && ctx.zoom?.chat_channel?.timestamp == null
     ignore_failure: true
 - remove:
     field: zoom.chat_channel.timestamp

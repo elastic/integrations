@@ -49,10 +49,10 @@ processors:
     ignore_failure: true
 - remove:
     field: zoom.recording.recording_file.recording_start
-    if: 'ctx.zoom?.recording?.recording_file?.recording_start == ""'
+    if: ctx.zoom?.recording?.recording_file?.recording_start == ""
 - remove:
     field: zoom.recording.recording_file.recording_end
-    if: 'ctx.zoom?.recording?.recording_file?.recording_end == ""'
+    if: ctx.zoom?.recording?.recording_file?.recording_end == ""
 - set:
     field: event.start
     value: '{{{ zoom.recording.recording_file.recording_start }}}'
@@ -65,7 +65,7 @@ processors:
     if: ctx.event?.action == 'recording.stopped'
 - script:
     lang: painless
-    if: "ctx.event?.end != null && ctx.event?.start != null && ctx.event?.action == 'recording.stopped'"
+    if: ctx.event?.end != null && ctx.event?.start != null && ctx.event?.action == 'recording.stopped'
     source: >-
       ZonedDateTime start = ZonedDateTime.parse(ctx.event.start);
       ZonedDateTime end = ZonedDateTime.parse(ctx.event.end);
@@ -75,16 +75,16 @@ processors:
     target_field: '@timestamp'
     formats:
     - ISO_INSTANT
-    if: "ctx.zoom?.recording?.recording_file?.recording_start != null && ctx.event?.action == 'recording.started'"
+    if: ctx.zoom?.recording?.recording_file?.recording_start != null && ctx.event?.action == 'recording.started'
     ignore_failure: true
 - append:
     field: related.user
     value: "{{{zoom.recording.host_id}}}"
-    if: "ctx.zoom?.recording?.host_id != null"
+    if: ctx.zoom?.recording?.host_id != null
 - append:
     field: related.user
     value: "{{{zoom.registrant.id}}}"
-    if: "ctx.zoom?.registrant?.id != null"
+    if: ctx.zoom?.registrant?.id != null
 - remove:
     field: zoom.time_stamp
     ignore_missing: true
@@ -93,22 +93,22 @@ processors:
     field: 'user.email'
     value: '{{{zoom.registrant.email}}}'
     ignore_empty_value: true
-    if: 'ctx.user?.id == null && ctx.zoom?.registrant != null'
+    if: ctx.user?.id == null && ctx.zoom?.registrant != null
 - set:
     field: 'user.full_name'
     value: '{{zoom.registrant.first_name}} {{zoom.registrant.last_name}}'
     ignore_empty_value: true
-    if: 'ctx.user?.id == null && ctx.zoom?.registrant != null'
+    if: ctx.user?.id == null && ctx.zoom?.registrant != null
 - set:
     field: 'user.id'
     value: '{{{zoom.registrant.id}}}'
     ignore_empty_value: true
-    if: 'ctx.user?.id == null && ctx.zoom?.registrant != null'
+    if: ctx.user?.id == null && ctx.zoom?.registrant != null
 - set:
     field: 'user.id'
     value: '{{{zoom.recording.host_id}}}'
     ignore_empty_value: true
-    if: 'ctx.zoom?.registrant == null'
+    if: ctx.zoom?.registrant == null
 on_failure:
   - set:
       field: event.kind

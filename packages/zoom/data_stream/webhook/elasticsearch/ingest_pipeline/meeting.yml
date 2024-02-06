@@ -54,7 +54,7 @@ processors:
     field:
       - user
     ignore_missing: true
-    if: 'ctx.zoom?.participant != null'
+    if: ctx.zoom?.participant != null
 - set:
     field: user.id
     value: '{{{zoom.participant.id}}}'
@@ -80,12 +80,12 @@ processors:
     field: related.user
     value: "{{{zoom.participant.id}}}"
     allow_duplicates: false
-    if: 'ctx.zoom?.participant?.id != null'
+    if: ctx.zoom?.participant?.id != null
 - append:
     field: related.user
     value: "{{{zoom.meeting.host_id}}}"
     allow_duplicates: false
-    if: 'ctx.zoom?.meeting?.host_id != null'
+    if: ctx.zoom?.meeting?.host_id != null
 
 - date:
     field: zoom.meeting.start_time
@@ -106,7 +106,12 @@ processors:
     target_field: '@timestamp'
     formats:
     - ISO_INSTANT
-    if: "['meeting.participant_put_in_waiting_room', 'meeting.participant_joined_waiting_room', 'meeting.participant_left_waiting_room'].contains(ctx.event?.action)"
+    if: >-
+      [
+        'meeting.participant_put_in_waiting_room',
+        'meeting.participant_joined_waiting_room',
+        'meeting.participant_left_waiting_room'
+      ].contains(ctx.event?.action)
     ignore_failure: true
 - date:
     field: zoom.participant.join_time
@@ -149,7 +154,12 @@ processors:
 - remove:
     field: zoom.participant.date_time
     ignore_missing: true
-    if: "['meeting.participant_put_in_waiting_room', 'meeting.participant_joined_waiting_room', 'meeting.participant_left_waiting_room'].contains(ctx.event?.action)"
+    if: >-
+      [
+        'meeting.participant_put_in_waiting_room',
+        'meeting.participant_joined_waiting_room',
+        'meeting.participant_left_waiting_room'
+      ].contains(ctx.event?.action)
 - remove:
     field: zoom.participant.join_time
     ignore_missing: true
