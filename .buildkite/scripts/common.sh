@@ -336,6 +336,17 @@ capabilities_manifest() {
     cat manifest.yml | yq ".conditions.elastic.capabilities"
 }
 
+is_package_excluded() {
+    local package=$1
+    local config_file_path=$2
+
+    excluded_packages=$(cat "${config_file_path}" | yq -r '."xpack.fleet.internal.registry.excludePackages"' | grep -v "#")
+    if echo "${excluded_packages}" | grep -E "${package}"; then
+        return 0
+    fi
+    return 1
+}
+
 is_supported_capability() {
     if [ "${SERVERLESS_PROJECT}" == "" ]; then
         return 0
@@ -580,6 +591,10 @@ is_pr_affected() {
     fi
 
     if is_serverless; then
+        if is_package_excluded "${package}" "${WORKSPACE}/kibana.serverless.config.yml";  then
+            echo "[${package}] PR is not affected: package ${package} excluded in Kibana config for ${SERVERLESS_PROJECT}"
+            return 1
+        fi
         if ! is_supported_capability ; then
             echo "[${package}] PR is not affected: capabilities not mached with the project (${SERVERLESS_PROJECT})"
             return 1
