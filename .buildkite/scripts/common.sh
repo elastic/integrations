@@ -361,7 +361,7 @@ is_supported_capability() {
     fi
 
     if [[ ${SERVERLESS_PROJECT} == "observability" ]]; then
-        if echo "${capabilities}" | grep -q -E 'apm|observability|uptime' > /dev/null ; then
+        if echo "${capabilities}" | grep -q -E 'apm|observability|uptime'; then
             return 0
         else
             return 1
@@ -369,7 +369,7 @@ is_supported_capability() {
     fi
 
     if [[ ${SERVERLESS_PROJECT} == "security" ]]; then
-        if echo "${capabilities}" | grep -q -E 'security' > /dev/null; then
+        if echo "${capabilities}" | grep -q -E 'security'; then
             return 0
         else
             return 1
