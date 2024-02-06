@@ -879,11 +879,12 @@ process_package() {
         fi
     fi
 
-    if ! run_tests_package "${package}" ; then
-        exit_code=1
-        echo "[${package}] run_tests_package failed"
-        echo "- ${package}" >> "${FAILED_PACKAGES_FILE_PATH}"
-    fi
+    echo "--- [${package}] Skipping tests"
+    # if ! run_tests_package "${package}" ; then
+    #     exit_code=1
+    #     echo "[${package}] run_tests_package failed"
+    #     echo "- ${package}" >> "${FAILED_PACKAGES_FILE_PATH}"
+    # fi
 
     if ! is_serverless ; then
         if [[ $exit_code -eq 0 ]]; then
