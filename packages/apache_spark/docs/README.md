@@ -1,10 +1,37 @@
 # Apache Spark Integration
 
-The Apache Spark integration collects and parses data using the Jolokia Input.
+## Overview
+
+[Apache Spark](https://spark.apache.org) is an open-source, distributed computing system that provides a fast and general-purpose cluster-computing framework. It offers in-memory data processing capabilities, which significantly enhances the performance of big data analytics applications. Spark provides support for a variety of programming languages including Scala, Python, Java, and R, and comes with built-in modules for SQL, streaming, machine learning, and graph processing. This makes it a versatile tool for a wide range of data processing and analysis tasks.
+
+Use the Apache Spark integration to:
+
+- Collect metrics related to the application, driver, executor and node.
+- Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
+- Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
+
+## Data streams
+
+The Apache Spark integration collects metrics data.
+
+Metrics give you insight into the statistics of the Apache Spark. The `Metric` data streams collected by the Apache Spark integration are `application`, `driver`, `executor` and `node` so that the user can monitor and troubleshoot the performance of the Apache Spark instance.
+
+Data streams:
+- `application`: Collects information related to the number of cores used, application name, runtime in milliseconds and current status.
+- `driver`: Collects information related to the driver details, job durations, task execution, memory usage, executor status and JVM metrics.
+- `executor`: Collects information related to the startup and shutdown of the Apache Spark application server, the deployment of new applications, or the failure of one or more subsystems.
+- `node`: Collects information related to the connection pool such as number of active and idle connections.
+
+Note:
+- Users can monitor and see the metrics inside the ingested documents for PHP-FPM in the `metrics-*` index pattern from `Discover`.
 
 ## Compatibility
 
-This integration has been tested against `Apache Spark version 3.5.0`
+This integration has been tested against `Apache Spark version 3.5.0`.
+
+## Prerequisites
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on your own hardware.
 
 ## Requirements
 
@@ -63,15 +90,23 @@ Restart Spark master.
 
 Follow the same set of steps for Spark Worker, Driver and Executor.
 
+## Setup
+
+For step-by-step instructions on how to set up an integration, see the [Getting Started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+## Validation
+
+After the integration is successfully configured, clicking on the Assets tab of the Apache Spark Integration should display a list of available dashboards. Click on the dashboard available for your configured data stream. It should be populated with the required data.
+
 ### Troubleshooting
 
-If host.ip is shown conflicted under ``metrics-*`` data view, then this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds-reindex.html) the ``Application``, ``Driver``, ``Executor`` and ``Node`` data stream's indices.
+If `host.ip` appears conflicted under the ``metrics-*`` data view, this issue can be resolved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds-reindex.html) the ``Application``, ``Driver``, ``Executor`` and ``Node`` data stream.
 
 ## Metrics
 
 ### Application
 
-This is the `application` data stream.
+This is the `application` data stream. This data stream gives metrics related to the number of cores used, application name, runtime in milliseconds and current status.
 
 An example event for `application` looks as following:
 
@@ -182,7 +217,7 @@ An example event for `application` looks as following:
 
 ### Driver
 
-This is the `driver` data stream.
+This is the `driver` data stream. This data stream gives metrics related to the driver details, job durations, task execution, memory usage, executor status and JVM metrics.
 
 An example event for `driver` looks as following:
 
@@ -364,7 +399,7 @@ An example event for `driver` looks as following:
 
 ### Executor
 
-This is the `executor` data stream.
+This is the `executor` data stream. This data stream gives metrics related to the startup and shutdown of the Apache Spark application server, the deployment of new applications, or the failure of one or more subsystems.
 
 An example event for `executor` looks as following:
 
@@ -543,7 +578,7 @@ An example event for `executor` looks as following:
 
 ### Node
 
-This is the `node` data stream.
+This is the `node` data stream. This data stream gives metrics related to the connection pool such as number of active and idle connections.
 
 An example event for `node` looks as following:
 
