@@ -1,17 +1,47 @@
 # Spring Boot integration
 
+## Overview
+
 The Spring Boot integration is used to fetch observability data from [Spring Boot Actuator web endpoints](https://docs.spring.io/spring-boot/docs/2.6.3/actuator-api/htmlsingle/) and ingest it into Elasticsearch.
+
+Use the Spring Boot integration to:
+
+- Collect logs related to the auditevents and httptrace and metrics related to the gc, memory and threading.
+- Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
+- Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
+
+## Data streams
+
+The Spring Boot integration collects logs and metrics data.
+
+Logs help you keep a record of events that happen on your machine. The `Log` data streams collected by Spring Boot integration are `auditevents` and `httptrace`, so that users can keep track of authentication events, HTTP request and response details, enabling comprehensive monitoring and security auditing.
+
+Metrics give you insight into the statistics of the Spring Boot. Metrics data streams collected by the Spring Boot integration include auditevents, gc, httptrace, memory and threading so that the user can monitor and troubleshoot the performance of the Spring Boot instances.
+
+Data streams:
+- `auditevents`: Collects information related to the authentication status, remote address, document ID and principal.
+- `gc`: Collects information related to the gc collector name, memory usage before and after collection, thread count and time metrics.
+- `httptrace`: Collects information related to the http requests, status response, principal and session details.
+- `memory`: Collects information related to the heap and non-heap memory, buffer pool and manager.
+- `threading`: Collects information related to the thread allocations, monitoring and CPU times.
+
+Note:
+- Users can monitor and see the log inside the ingested documents for Spring Boot in the `logs-*` index pattern from `Discover`, and for metrics, the index pattern is `metrics-*`.
 
 ## Compatibility
 
 This integration has been tested against Spring Boot v2.7.17 with LTS JDK versions 8, 11, 17, and 21.
+
+## Prerequisites
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on your own hardware.
 
 ## Requirements
 
 In order to ingest data from Spring Boot:
 - You must know the host for Spring Boot application, add that host while configuring the integration package.
 - Add default path for jolokia.
-- Spring-boot-actuator module provides all Spring Boot’s production-ready features. So add below dependency in `pom.xml` file.
+- Spring-boot-actuator module provides all Spring Boot's production-ready features. So add below dependency in `pom.xml` file.
 ```
 <dependency>
     <groupId>org.springframework.boot</groupId>
@@ -28,11 +58,19 @@ In order to ingest data from Spring Boot:
 - To expose `HTTP Trace` metrics following class can be used [InMemoryHttpTraceRepository](https://docs.spring.io/spring-boot/docs/2.0.6.RELEASE/api/org/springframework/boot/actuate/trace/http/InMemoryHttpTraceRepository.html).
 - To expose `Audit Events` metrics following class can be used [InMemoryAuditEventRepository](https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/actuate/audit/InMemoryAuditEventRepository.html).
 
+## Setup
+
+For step-by-step instructions on how to set up an integration, see the [Getting Started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+## Validation
+
+After the integration is successfully configured, clicking on the Assets tab of the Spring Boot Integration should display a list of available dashboards. Click on the dashboard available for your configured data stream. It should be populated with the required data.
+
 ### Troubleshooting
 
-- If **[Spring Boot] Audit Events panel** does not display older documents after upgrading to ``0.9.0`` or later versions, then this issue can be solved by reindexing the ``Audit Events`` data stream's indices.
-- If host.ip is shown conflicted under ``logs-*`` data view, then this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the ``Audit Events`` data stream's indices. 
-- If host.ip is shown conflicted under ``metrics-*`` data view, then this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the ``Garbage Collector``, ``Memory`` and ``Threading`` data stream's indices.
+- If **[Spring Boot] Audit Events panel** does not display older documents after upgrading to ``0.9.0`` or later versions, this issue can be resolved by reindexing the ``Audit Events`` data stream.
+- If `host.ip` appears conflicted under the ``logs-*`` data view, this issue can be resolved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the ``Audit Events`` data stream. 
+- If `host.ip` appears conflicted under the ``metrics-*`` data view, this issue can be resolved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the ``Garbage Collector``, ``Memory`` and ``Threading`` data stream.
 
 ## Logs
 
