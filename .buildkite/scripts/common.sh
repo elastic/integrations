@@ -341,7 +341,7 @@ is_package_excluded() {
     local config_file_path=$2
 
     excluded_packages=$(cat "${config_file_path}" | yq -r '."xpack.fleet.internal.registry.excludePackages"' | grep -v "#")
-    if echo "${excluded_packages}" | grep -E "'${package}'"; then
+    if echo "${excluded_packages}" | grep -q -E "'${package}'"; then
         return 0
     fi
     return 1
@@ -361,7 +361,7 @@ is_supported_capability() {
     fi
 
     if [[ ${SERVERLESS_PROJECT} == "observability" ]]; then
-        if echo "${capabilities}" | grep -E 'apm|observability|uptime' ; then
+        if echo "${capabilities}" | grep -q -E 'apm|observability|uptime' > /dev/null ; then
             return 0
         else
             return 1
@@ -369,7 +369,7 @@ is_supported_capability() {
     fi
 
     if [[ ${SERVERLESS_PROJECT} == "security" ]]; then
-        if echo "${capabilities}" | grep -E 'security' ; then
+        if echo "${capabilities}" | grep -q -E 'security' > /dev/null; then
             return 0
         else
             return 1
@@ -583,7 +583,7 @@ is_pr_affected() {
     local from=${2:-""}
     local to=${3:-""}
 
-    echo "[${package}] Original commits: from '${from}' - to: '${to}'"
+    echoerr "[${package}] Original commits: from '${from}' - to: '${to}'"
 
     if ! is_supported_stack ; then
         echo "[${package}] PR is not affected: unsupported stack (${STACK_VERSION})"
