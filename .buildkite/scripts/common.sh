@@ -341,7 +341,7 @@ is_package_excluded() {
     local config_file_path=$2
 
     excluded_packages=$(cat "${config_file_path}" | yq -r '."xpack.fleet.internal.registry.excludePackages"' | grep -v "#")
-    if echo "${excluded_packages}" | grep -E "${package}"; then
+    if echo "${excluded_packages}" | grep -E "'${package}'"; then
         return 0
     fi
     return 1
