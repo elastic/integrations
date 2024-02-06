@@ -16,12 +16,6 @@ processors:
       target_field: mimecast
   - drop:
       if: ctx?.mimecast?.datetime == null
-  - fingerprint:
-      fields:
-        - mimecast.MsgId
-        - mimecast.datetime
-      target_field: "_id"
-      ignore_missing: true
 
   - date:
       description: Use 'mimecast.datetime' as the '@timestamp'
@@ -29,6 +23,32 @@ processors:
       timezone: UTC
       formats:
         - yyyy-MM-dd'T'HH:mm:ssZ
+
+  ### NOTE STAGE
+  - set:
+      field: mimecast.stage
+      value: receipt
+      if: ctx.mimecast?.Cphr != null && ctx.mimecast?.IP != null && ctx.mimecast?.Delivered == null
+  - set:
+      field: mimecast.stage
+      value: process
+      if: ctx.mimecast?.Cphr == null && ctx.mimecast?.IP == null
+  - set:
+      field: mimecast.stage
+      value: delivery
+      if: ctx.mimecast?.Cphr != null && ctx.mimecast?.IP != null && ctx.mimecast?.Delivered != null
+
+  - fingerprint:
+      fields:
+        - mimecast.MsgId
+        - mimecast.aCode
+        - mimecast.datetime
+        - mimecast.Sender
+        - mimecast.Rcpt
+        - mimecast.Attempt
+        - mimecast.stage
+      target_field: "_id"
+      ignore_missing: true
 
   ### RECEIPT LOGS
   - rename:
@@ -94,6 +114,7 @@ processors:
       field: mimecast.TlsVer
       target_field: tls.version
       ignore_missing: true
+
   ### PROCESS LOGS
   - rename:
       field: mimecast.AttSize
@@ -107,7 +128,8 @@ processors:
       field: mimecast.Hld
       target_field: event.reason
       ignore_missing: true
-    ### DELIVERY LOGS
+
+  ### DELIVERY LOGS
   - rename:
       field: mimecast.Err
       target_field: error.message
@@ -124,7 +146,8 @@ processors:
       field: tls.established
       value: false
       if: 'ctx.tls?.established instanceof String && ctx.tls.established.toLowerCase() == "no"'
-      ### AV LOGS
+
+  ### AV LOGS
   - rename:
       field: mimecast.fileExt
       target_field: email.attachments.file.extension
@@ -162,17 +185,20 @@ processors:
       field: mimecast.fileName
       target_field: email.attachments.file.name
       ignore_missing: true
-      ### SPAM EVENT THREAD LOGS
+
+  ### SPAM EVENT THREAD LOGS
   - rename:
       field: mimecast.SourceIP
       target_field: source.ip
       ignore_missing: true
-      ### SIEM Email Protect Logs
+
+  ### SIEM Email Protect Logs
   - rename:
       field: mimecast.URL
       target_field: url.full
       ignore_missing: true
-      ### SIEM Impersonation logs                       
+
+  ### SIEM Impersonation logs                       
   - rename:
       field: mimecast.Action
       target_field: event.action
@@ -185,7 +211,8 @@ processors:
       field: mimecast.NewDomain
       target_field: source.domain
       ignore_missing: true
-      ### SIEM TTP Url Logs
+
+  ### SIEM TTP Url Logs
   - rename:
       field: mimecast.reason
       target_field: event.reason
@@ -349,7 +376,6 @@ processors:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true  
-  ###
 
 # Error handling
 on_failure:
