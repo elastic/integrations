@@ -96,7 +96,7 @@ For step-by-step instructions on how to set up an integration, see the [Getting 
 
 After the integration is successfully configured, click on the *Assets* tab of the Apache Spark Integration to display the available dashboards. Select the dashboard for your configured data stream, which should be populated with the required data.
 
-### Troubleshooting
+## Troubleshooting
 
 If `host.ip` appears conflicted under the ``metrics-*`` data view, this issue can be resolved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds-reindex.html) the ``Application``, ``Driver``, ``Executor`` and ``Node`` data stream.
 
