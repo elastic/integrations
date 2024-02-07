@@ -64,7 +64,7 @@ For step-by-step instructions on how to set up an integration, see the [Getting 
 
 ## Validation
 
-After the integration is successfully configured, clicking on the Assets tab of the Spring Boot Integration should display a list of available dashboards. Click on the dashboard available for your configured data stream. It should be populated with the required data.
+After the integration is successfully configured, click on the *Assets* tab of the Spring Boot Integration to display the available dashboards. Select the dashboard for your configured data stream, which should be populated with the required data.
 
 ### Troubleshooting
 
