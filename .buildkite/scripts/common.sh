@@ -373,7 +373,6 @@ capabilities_in_kibana() {
 }
 
 packages_excluded() {
-    local config_file_path=$1
     # Expected format:
     #   xpack.fleet.internal.registry.excludePackages: [
     #     # Security integrations
@@ -386,6 +385,7 @@ packages_excluded() {
     # "endpoint"
     # "beaconing"
     # "osquery_manager"
+    local config_file_path=$1
     local excluded_packages=""
     excluded_packages=$(cat "${config_file_path}" | yq -M -r -o json '."xpack.fleet.internal.registry.excludePackages"')
     if [[ "${excluded_packages}" != "null" ]]; then
@@ -393,7 +393,6 @@ packages_excluded() {
         return
     fi
     echo "${excluded_packages}"
-
 }
 
 is_package_excluded() {
