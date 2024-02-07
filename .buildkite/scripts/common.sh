@@ -336,23 +336,55 @@ capabilities_manifest() {
     cat manifest.yml | yq ".conditions.elastic.capabilities"
 }
 
+capabilities_in_kibana() {
+    # Expected format
+    # xpack.fleet.internal.registry.capabilities: [
+    #   'apm',
+    #   'observability',
+    #   'uptime',
+    # ]
+    # Expected output:
+    # 'apm','observability','uptime'
+    cat "${KIBANA_CONFIG_FILE_PATH}" | yq -r '."xpack.fleet.internal.registry.capabilities"' | grep -v "#" | tr -d '[] \n'
+}
+
 is_package_excluded() {
     local package=$1
     local config_file_path=$2
+    local excluded_packages=""
 
-    excluded_packages=$(cat "${config_file_path}" | yq -r '."xpack.fleet.internal.registry.excludePackages"' | grep -v "#")
+    # Expected format:
+    #   xpack.fleet.internal.registry.excludePackages: [
+    #     # Oblt integrations
+    #     'apm',
+    #     'synthetics',
+    #     'synthetics_dashboards',
+
+    #     # Removed in 8.11 integrations
+    #     'cisco',
+    #     'microsoft',
+    #     'symantec',
+    #     'cyberark',
+
+    #     # ML integrations
+    #     'dga',
+    #   ]
+    excluded_packages=$(cat "${config_file_path}" | yq -r '."xpack.fleet.internal.registry.excludePackages"' | grep -v "#" | tr -d '[] \n')
+    # excluded_packages must be:
+    # 'endpoint','beaconing','osquery_manager','cisco','microsoft','symantec','cyberark','dga','profiler_agent'
     if echo "${excluded_packages}" | grep -q -E "'${package}'"; then
         return 0
     fi
     return 1
 }
 
+
 is_supported_capability() {
     if [ "${SERVERLESS_PROJECT}" == "" ]; then
         return 0
     fi
 
-    local capabilities
+    local capabilities=""
     capabilities=$(capabilities_manifest)
 
     # if no capabilities defined, it is available iavailable all projects
@@ -360,20 +392,21 @@ is_supported_capability() {
         return 0
     fi
 
-    if [[ ${SERVERLESS_PROJECT} == "observability" ]]; then
-        if echo "${capabilities}" | grep -q -E 'apm|observability|uptime'; then
-            return 0
-        else
-            return 1
-        fi
+    local capabilities_kibana_grep=""
+
+    capabilities_kibana_grep=$(capabilities_in_kibana | sed 's/,/|/g' )
+    # Expected value of "capabilities_kibana"
+    # 'apm'|'observability'|'uptime'
+
+    # if there is no key defined in kibana, allow to be tested
+    if [[ ${capabilities_kibana_grep} == "null" ]]; then
+        return 0
     fi
 
-    if [[ ${SERVERLESS_PROJECT} == "security" ]]; then
-        if echo "${capabilities}" | grep -q -E 'security'; then
-            return 0
-        else
-            return 1
-        fi
+    echo ">>> Capabilities found: ${capabilities_kibana_grep}"
+
+    if echo "${capabilities}" | grep -q -E "${capabilities_kibana_grep}"; then
+        return 0
     fi
 
     return 1
