@@ -49,7 +49,7 @@ For step-by-step instructions on how to set up an integration, see the [Getting 
 
 After the integration is successfully configured, click on the *Assets* tab of the PHP-FPM Integration to display the available dashboards. Select the dashboard for your configured data stream, which should be populated with the required data.
 
-### Troubleshooting
+## Troubleshooting
 
 If `host.ip` appears conflicted under the ``logs-*`` data view, this issue can be resolved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the indices of the ``Pool`` and ``Process`` data streams.
 
