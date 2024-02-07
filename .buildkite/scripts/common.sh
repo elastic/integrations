@@ -333,7 +333,23 @@ kibana_version_manifest() {
 }
 
 capabilities_manifest() {
-    cat manifest.yml | yq ".conditions.elastic.capabilities"
+    # 1) Expected format
+    #  conditions:
+    #    elastic:
+    #      capabilities:
+    #        - observability
+    #        - uptime
+    # expected output:
+    # "observability"
+    # "uptime"
+    # 2) Expected format
+    #  conditions:
+    #    elastic:
+    #      capabilities: [observability, uptime]
+    # expected output:
+    # "observability"
+    # "uptime"
+    cat manifest.yml | yq -M -r -o json ".conditions.elastic.capabilities" | jq '.[]'
 }
 
 capabilities_in_kibana() {
@@ -344,8 +360,10 @@ capabilities_in_kibana() {
     #   'uptime',
     # ]
     # Expected output:
-    # 'apm','observability','uptime'
-    cat "${KIBANA_CONFIG_FILE_PATH}" | yq -r '."xpack.fleet.internal.registry.capabilities"' | grep -v "#" | tr -d '[] \n'
+    # "apm"
+    # "observability"
+    # "uptime"
+    cat "${KIBANA_CONFIG_FILE_PATH}" | yq -M -r -o json '."xpack.fleet.internal.registry.capabilities"' | jq '.[]'
 }
 
 is_package_excluded() {
@@ -355,24 +373,18 @@ is_package_excluded() {
 
     # Expected format:
     #   xpack.fleet.internal.registry.excludePackages: [
-    #     # Oblt integrations
-    #     'apm',
-    #     'synthetics',
-    #     'synthetics_dashboards',
-
-    #     # Removed in 8.11 integrations
-    #     'cisco',
-    #     'microsoft',
-    #     'symantec',
-    #     'cyberark',
-
-    #     # ML integrations
-    #     'dga',
+    #     # Security integrations
+    #     'endpoint',
+    #     'beaconing',
+    #     'osquery_manager',
     #   ]
-    excluded_packages=$(cat "${config_file_path}" | yq -r '."xpack.fleet.internal.registry.excludePackages"' | grep -v "#" | tr -d '[] \n')
+    excluded_packages=$(cat "${config_file_path}" | yq -M -r -o json '."xpack.fleet.internal.registry.excludePackages"' | jq '.[]')
+    # required double quotes to ensure that the package is checked (e.g. synthetics synthetics_dashboard)
     # excluded_packages must be:
-    # 'endpoint','beaconing','osquery_manager','cisco','microsoft','symantec','cyberark','dga','profiler_agent'
-    if echo "${excluded_packages}" | grep -q -E "'${package}'"; then
+    # "endpoint"
+    # "beaconing"
+    # "osquery_manager"
+    if echo "${excluded_packages}" | grep -q -E "\"${package}\""; then
         return 0
     fi
     return 1
@@ -394,22 +406,26 @@ is_supported_capability() {
 
     local capabilities_kibana_grep=""
 
-    capabilities_kibana_grep=$(capabilities_in_kibana | sed 's/,/|/g' )
+    capabilities_kibana_grep=$(capabilities_in_kibana | sed 's/ /|/g' )
     # Expected value of "capabilities_kibana"
-    # 'apm'|'observability'|'uptime'
+    # "apm"|"observability"|"uptime"
 
     # if there is no key defined in kibana, allow to be tested
     if [[ ${capabilities_kibana_grep} == "null" ]]; then
         return 0
     fi
 
-    echo ">>> Capabilities found: ${capabilities_kibana_grep}"
+    echoerr ">>> Capabilities found for grep: ${capabilities_kibana_grep}"
+    echoerr ">>> Capabilities manifest: ${capabilities}"
 
-    if echo "${capabilities}" | grep -q -E "${capabilities_kibana_grep}"; then
-        return 0
-    fi
+    for cap in ${capabilities}; do
+        echoerr "Comparing ${cap} to ${capabilities_kibana_grep}"
+        if ! echo "${cap}" | grep -q -E "${capabilities_kibana_grep}"; then
+            return 1
+        fi
+    done
 
-    return 1
+    return 0
 }
 
 is_supported_stack() {
