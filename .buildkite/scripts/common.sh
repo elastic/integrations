@@ -428,7 +428,7 @@ is_supported_capability() {
 
     local capabilities_kibana_grep=""
 
-    capabilities_kibana_grep=$(capabilities_in_kibana | sed 's/\n/|/g' | sed 's/ /|/g')
+    capabilities_kibana_grep=$(capabilities_in_kibana | tr -d '\n' | sed 's/""/"|"/g')
     # Expected value of "capabilities_kibana"
     # "apm"|"observability"|"uptime"
 
