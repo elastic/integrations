@@ -50,8 +50,9 @@ resource "aws_s3_bucket_notification" "bucket_notification" {
 resource "aws_s3_object" "object" {
   bucket = aws_s3_bucket.bucket.id
   key    = "waf.log"
-  source = "./files/test-waf.log"
+  source = "./files/waflogs.log.gz"
   depends_on = [aws_sqs_queue.queue]
+  content_type = "application/x-gzip"
 }
 
 output "queue_url" {
