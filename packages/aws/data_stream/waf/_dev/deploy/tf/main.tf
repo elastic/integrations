@@ -19,8 +19,8 @@ resource "aws_s3_bucket" "bucket" {
 }
 
 resource "aws_sqs_queue" "queue" {
-  name       = "elastic-package-aws-queue-${var.TEST_RUN_ID}"
-  policy     = <<POLICY
+  name   = "elastic-package-aws-queue-${var.TEST_RUN_ID}"
+  policy = <<POLICY
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -48,10 +48,10 @@ resource "aws_s3_bucket_notification" "bucket_notification" {
 }
 
 resource "aws_s3_object" "object" {
-  bucket = aws_s3_bucket.bucket.id
-  key    = "waf.log"
-  source = "./files/waflogs.log.gz"
-  depends_on = [aws_sqs_queue.queue]
+  bucket       = aws_s3_bucket.bucket.id
+  key          = "waf.log"
+  source       = "./files/waflogs.log.gz"
+  depends_on   = [aws_sqs_queue.queue]
   content_type = "application/x-gzip"
 }
 
