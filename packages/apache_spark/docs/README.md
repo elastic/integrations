@@ -29,11 +29,9 @@ Note:
 
 This integration has been tested against `Apache Spark version 3.5.0`.
 
-## Prerequisites
-
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on your own hardware.
-
 ## Requirements
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
 In order to ingest data from Apache Spark, you must know the full hosts for the Main and Worker nodes.
 
@@ -106,7 +104,7 @@ If `host.ip` appears conflicted under the ``metrics-*`` data view, this issue ca
 
 ### Application
 
-This is the `application` data stream. This data stream gives metrics related to the number of cores used, application name, runtime in milliseconds and current status of the application.
+The `application` data stream provides metrics related to the number of cores used, application name, runtime in milliseconds, and current status of the application.
 
 An example event for `application` looks as following:
 
@@ -217,7 +215,7 @@ An example event for `application` looks as following:
 
 ### Driver
 
-This is the `driver` data stream. This data stream gives metrics related to the driver details, job durations, task execution, memory usage, executor status and JVM metrics.
+The `driver` data stream provides metrics related to the driver details, job durations, task execution, memory usage, executor status, and JVM metrics.
 
 An example event for `driver` looks as following:
 
@@ -399,7 +397,7 @@ An example event for `driver` looks as following:
 
 ### Executor
 
-This is the `executor` data stream. This data stream gives metrics related to the operations, memory usage, garbage collection, file handling, and threadpool activity.
+The `executor` data stream provides metrics related to the operations, memory usage, garbage collection, file handling, and threadpool activity.
 
 An example event for `executor` looks as following:
 
@@ -578,7 +576,7 @@ An example event for `executor` looks as following:
 
 ### Node
 
-This is the `node` data stream. This data stream gives metrics related to the application count, waiting applications, worker metrics, executor count, core usage and memory usage.
+The `node` data stream provides metrics related to the application count, waiting applications, worker metrics, executor count, core usage, and memory usage.
 
 An example event for `node` looks as following:
 
