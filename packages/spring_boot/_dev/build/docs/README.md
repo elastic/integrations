@@ -32,16 +32,14 @@ Note:
 
 This integration has been tested against Spring Boot v2.7.17 with LTS JDK versions 8, 11, 17, and 21.
 
-## Prerequisites
+## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on your own hardware.
-
-## Requirements
 
 In order to ingest data from Spring Boot:
 - You must know the host for Spring Boot application, add that host while configuring the integration package.
 - Add default path for jolokia.
-- Spring-boot-actuator module provides all Spring Boot's production-ready features. So add below dependency in `pom.xml` file.
+- Spring-boot-actuator module provides all Spring Boot's production-ready features. You also need to add the following dependency to the `pom.xml` file:
 ```
 <dependency>
     <groupId>org.springframework.boot</groupId>
@@ -66,7 +64,7 @@ For step-by-step instructions on how to set up an integration, see the [Getting 
 
 After the integration is successfully configured, click on the *Assets* tab of the Spring Boot Integration to display the available dashboards. Select the dashboard for your configured data stream, which should be populated with the required data.
 
-### Troubleshooting
+## Troubleshooting
 
 - If **[Spring Boot] Audit Events panel** does not display older documents after upgrading to ``0.9.0`` or later versions, this issue can be resolved by reindexing the ``Audit Events`` data stream.
 - If `host.ip` appears conflicted under the ``logs-*`` data view, this issue can be resolved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the ``Audit Events`` data stream. 
