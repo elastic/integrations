@@ -349,7 +349,13 @@ capabilities_manifest() {
     # expected output:
     # "observability"
     # "uptime"
-    cat manifest.yml | yq -M -r -o json ".conditions.elastic.capabilities" | jq '.[]'
+    local capabilities=""
+    capabilities=$(cat manifest.yml | yq -M -r -o json ".conditions.elastic.capabilities")
+    if [[ "$capabilities" != "null" ]]; then
+        echo "$capabilities" | jq '.[]'
+        return
+    fi
+    echo "$capabilities"
 }
 
 capabilities_in_kibana() {
@@ -366,11 +372,8 @@ capabilities_in_kibana() {
     cat "${KIBANA_CONFIG_FILE_PATH}" | yq -M -r -o json '."xpack.fleet.internal.registry.capabilities"' | jq '.[]'
 }
 
-is_package_excluded() {
-    local package=$1
-    local config_file_path=$2
-    local excluded_packages=""
-
+packages_excluded() {
+    local config_file_path=$1
     # Expected format:
     #   xpack.fleet.internal.registry.excludePackages: [
     #     # Security integrations
@@ -378,12 +381,30 @@ is_package_excluded() {
     #     'beaconing',
     #     'osquery_manager',
     #   ]
-    excluded_packages=$(cat "${config_file_path}" | yq -M -r -o json '."xpack.fleet.internal.registry.excludePackages"' | jq '.[]')
     # required double quotes to ensure that the package is checked (e.g. synthetics synthetics_dashboard)
     # excluded_packages must be:
     # "endpoint"
     # "beaconing"
     # "osquery_manager"
+    local excluded_packages=""
+    excluded_packages=$(cat "${config_file_path}" | yq -M -r -o json '."xpack.fleet.internal.registry.excludePackages"')
+    if [[ "${excluded_packages}" != "null" ]]; then
+        echo "${excluded_packages}" | jq '.[]'
+        return
+    fi
+    echo "${excluded_packages}"
+
+}
+
+is_package_excluded() {
+    local package=$1
+    local config_file_path=$2
+    local excluded_packages=""
+
+    excluded_packages=$(packages_excluded "${config_file_path}")
+    if [[ "${excluded_packages}" == "null" ]]; then
+        return 1
+    fi
     if echo "${excluded_packages}" | grep -q -E "\"${package}\""; then
         return 0
     fi
@@ -401,6 +422,7 @@ is_supported_capability() {
 
     # if no capabilities defined, it is available iavailable all projects
     if [[  "${capabilities}" == "null" ]]; then
+        echoerr "No capabilities defined"
         return 0
     fi
 
