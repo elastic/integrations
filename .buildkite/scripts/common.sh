@@ -422,7 +422,6 @@ is_supported_capability() {
 
     # if no capabilities defined, it is available iavailable all projects
     if [[  "${capabilities}" == "null" ]]; then
-        echoerr "No capabilities defined"
         return 0
     fi
 
@@ -437,11 +436,7 @@ is_supported_capability() {
         return 0
     fi
 
-    echoerr ">>> Capabilities found for grep: ${capabilities_kibana_grep}"
-    echoerr ">>> Capabilities manifest: ${capabilities}"
-
     for cap in ${capabilities}; do
-        echoerr "Comparing ${cap} to ${capabilities_kibana_grep}"
         if ! echo "${cap}" | grep -q -E "${capabilities_kibana_grep}"; then
             return 1
         fi
