@@ -15,6 +15,8 @@ export ELASTIC_PACKAGE_BIN=${WORKSPACE}/build/elastic-package
 
 API_BUILDKITE_PIPELINES_URL="https://api.buildkite.com/v2/organizations/elastic/pipelines/"
 
+COVERAGE_FORMAT="generic"
+COVERAGE_OPTIONS="--test-coverage --coverage-format=${COVERAGE_FORMAT}"
 
 running_on_buildkite() {
     if [[ "${BUILDKITE:-"false"}" == "true" ]]; then
@@ -685,11 +687,11 @@ install_package() {
 
 test_package_in_local_stack() {
     local package=$1
-    TEST_OPTIONS="-v --report-format xUnit --report-output file --test-coverage"
+    TEST_OPTIONS="-v --report-format xUnit --report-output file"
 
     echo "Test package: ${package}"
     # Run all test suites
-    ${ELASTIC_PACKAGE_BIN} test ${TEST_OPTIONS}
+    ${ELASTIC_PACKAGE_BIN} test ${TEST_OPTIONS} ${COVERAGE_OPTIONS}
     local ret=$?
     echo ""
     return $ret
@@ -703,10 +705,10 @@ test_package_in_serverless() {
     TEST_OPTIONS="-v --report-format xUnit --report-output file"
 
     echo "Test package: ${package}"
-    if ! ${ELASTIC_PACKAGE_BIN} test asset ${TEST_OPTIONS} --test-coverage ; then
+    if ! ${ELASTIC_PACKAGE_BIN} test asset ${TEST_OPTIONS} ${COVERAGE_OPTIONS}; then
         return 1
     fi
-    if ! ${ELASTIC_PACKAGE_BIN} test static ${TEST_OPTIONS} --test-coverage ; then
+    if ! ${ELASTIC_PACKAGE_BIN} test static ${TEST_OPTIONS} ${COVERAGE_OPTIONS}; then
         return 1
     fi
     # FIXME: adding test-coverage for serverless results in errors like this:
