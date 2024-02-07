@@ -17,10 +17,10 @@ The Apache Spark integration collects metrics data.
 Metrics give you insight into the statistics of the Apache Spark. The `Metric` data streams collected by the Apache Spark integration are `application`, `driver`, `executor` and `node` so that the user can monitor and troubleshoot the performance of the Apache Spark instance.
 
 Data streams:
-- `application`: Collects information related to the number of cores used, application name, runtime in milliseconds and current status.
+- `application`: Collects information related to the number of cores used, application name, runtime in milliseconds and current status of the application.
 - `driver`: Collects information related to the driver details, job durations, task execution, memory usage, executor status and JVM metrics.
-- `executor`: Collects information related to the startup and shutdown of the Apache Spark application server, the deployment of new applications, or the failure of one or more subsystems.
-- `node`: Collects information related to the connection pool such as number of active and idle connections.
+- `executor`: Collects information related to the operations, memory usage, garbage collection, file handling, and threadpool activity.
+- `node`: Collects information related to the application count, waiting applications, worker metrics, executor count, core usage and memory usage.
 
 Note:
 - Users can monitor and see the metrics inside the ingested documents for PHP-FPM in the `metrics-*` index pattern from `Discover`.
@@ -106,7 +106,7 @@ If `host.ip` appears conflicted under the ``metrics-*`` data view, this issue ca
 
 ### Application
 
-This is the `application` data stream. This data stream gives metrics related to the number of cores used, application name, runtime in milliseconds and current status.
+This is the `application` data stream. This data stream gives metrics related to the number of cores used, application name, runtime in milliseconds and current status of the application.
 
 An example event for `application` looks as following:
 
@@ -399,7 +399,7 @@ An example event for `driver` looks as following:
 
 ### Executor
 
-This is the `executor` data stream. This data stream gives metrics related to the startup and shutdown of the Apache Spark application server, the deployment of new applications, or the failure of one or more subsystems.
+This is the `executor` data stream. This data stream gives metrics related to the operations, memory usage, garbage collection, file handling, and threadpool activity.
 
 An example event for `executor` looks as following:
 
@@ -578,7 +578,7 @@ An example event for `executor` looks as following:
 
 ### Node
 
-This is the `node` data stream. This data stream gives metrics related to the connection pool such as number of active and idle connections.
+This is the `node` data stream. This data stream gives metrics related to the application count, waiting applications, worker metrics, executor count, core usage and memory usage.
 
 An example event for `node` looks as following:
 
