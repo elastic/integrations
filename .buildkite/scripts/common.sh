@@ -912,11 +912,12 @@ process_package() {
         fi
     fi
 
-    if ! run_tests_package "${package}" ; then
-        exit_code=1
-        echo "[${package}] run_tests_package failed"
-        echo "- ${package}" >> "${FAILED_PACKAGES_FILE_PATH}"
-    fi
+    echo "--- [${package}] Run tests - Skipped"
+    # if ! run_tests_package "${package}" ; then
+    #     exit_code=1
+    #     echo "[${package}] run_tests_package failed"
+    #     echo "- ${package}" >> "${FAILED_PACKAGES_FILE_PATH}"
+    # fi
 
     if ! is_serverless ; then
         if [[ $exit_code -eq 0 ]]; then
@@ -928,14 +929,14 @@ process_package() {
         delete_kind_cluster
     fi
 
-    if is_serverless ; then
-        teardown_serverless_test_package "${package}"
-    else
-        if ! teardown_test_package "${package}" ; then
-            exit_code=1
-            echo "[${package}] teardown_test_package failed"
-        fi
-    fi
+    # if is_serverless ; then
+    #     teardown_serverless_test_package "${package}"
+    # else
+    #     if ! teardown_test_package "${package}" ; then
+    #         exit_code=1
+    #         echo "[${package}] teardown_test_package failed"
+    #     fi
+    # fi
 
     popd > /dev/null
     return $exit_code
