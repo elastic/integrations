@@ -27,10 +27,6 @@ Note:
 
 This integration has been tested against `v8.2` and `v8.1` standalone versions of PHP-FPM.
 
-## Prerequisites
-
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on your own hardware.
-
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
@@ -51,7 +47,7 @@ For step-by-step instructions on how to set up an integration, see the [Getting 
 
 ## Validation
 
-After the integration is successfully configured, clicking on the Assets tab of the PHP-FPM Integration should display a list of available dashboards. Click on the dashboard available for your configured data stream. It should be populated with the required data.
+After the integration is successfully configured, click on the *Assets* tab of the PHP-FPM Integration to display the available dashboards. Select the dashboard for your configured data stream, which should be populated with the required data.
 
 ### Troubleshooting
 
@@ -61,7 +57,7 @@ If `host.ip` appears conflicted under the ``logs-*`` data view, this issue can b
 
 ### Pool
 
-This is the `pool` data stream. `pool` data stream collects metrics related to the setup and contents of the FPM status page.
+The `pool` data stream collects metrics related to the setup and contents of the FPM status page.
 
 An example event for `pool` looks as following:
 
@@ -187,7 +183,7 @@ An example event for `pool` looks as following:
 
 ### Process
 
-This is the `process` data stream. `process` data stream collects metrics related to the request duration, content length, process state, etc.
+The `process` data stream collects metrics related to the request duration, content length, process state, etc.
 
 An example event for `process` looks as following:
 
