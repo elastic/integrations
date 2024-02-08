@@ -1,0 +1,180 @@
+{{- $timestamp := generate "timestamp" }}
+{{- $agent_id := generate "agent_id" }}
+{{- $agent_name := generate "agent_name" }}
+{{- $agent_ephemeral_id := generate "agent_ephemeral_id" }}
+{{- $event_duration := generate "event_duration" }}
+{{- $host_id := generate "host_id" }}
+{{- $memory_available_bytes := generate "memory_available_bytes" }}
+{{- $memory_usage_bytes := generate "memory_usage_bytes" }}
+{{- $memory_rss_bytes := generate "memory_rss_bytes" }}
+{{- $memory_workingset_bytes := generate "memory_workingset_bytes" }}
+{{- $pagefaults := generate "pagefaults" }}
+{{- $majorpagefaults := generate "majorpagefaults" }}
+{{- $network_rx_bytes := generate "network_rx_bytes" }}
+{{- $network_rx_errors := generate "network_rx_errors" }}
+{{- $network_tx_bytes := generate "network_tx_bytes" }}
+{{- $network_tx_errors := generate "network_tx_errors" }}
+{{- $fs_capacity_bytes := generate "fs_capacity_bytes" }}                    
+{{- $fs_available_bytes := generate "fs_available_bytes" }}                     
+{{- $fs_used_bytes := generate "fs_used_bytes" }}                     
+{{- $fs_inodes_used := generate "fs_inodes_used" }}            
+{{- $fs_inodes_count := generate "fs_inodes_count" }}             
+{{- $fs_inodes_free := generate "fs_inodes_free" }}
+{{- $runtime_imagefs_capacity_bytes := generate "runtime_imagefs_capacity_bytes" }}                    
+{{- $runtime_imagefs_available_bytes := generate "runtime_imagefs_available_bytes" }}                     
+{{- $runtime_imagefs_used_bytes := generate "runtime_imagefs_used_bytes" }}  
+{{- $cpu_usage_core_ns := generate "cpu_usage_core_ns" }}   
+{{- $nanocores := generate "nanocores" }}
+{
+    "@timestamp": "{{$timestamp.Format "2006-01-02T15:04:05.999999Z07:00"}}",
+    "event": {
+        "dataset": "kubernetes.node",
+        "module": "kubernetes",
+        "duration": {{ $event_duration }}
+    },
+    "data_stream": {
+        "dataset": "kubernetes.node",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "service": {
+        "type": "kubernetes",
+        "address": "{{ $agent_name }}:10250"
+    },
+    "host": {
+        "containerized": false,
+        "ip": [
+            "192.168.64.10",
+            "fe80::a883:2fff:fe7f:6b12",
+            "172.17.0.1",
+            "fe80::42:d4ff:fe8c:9493",
+            "fe80::2859:80ff:fe9e:fcd6",
+            "fe80::d83a:d9ff:fee9:7052",
+            "fe80::880a:b6ff:fe18:ba76",
+            "fe80::f447:faff:fe80:e88b",
+            "fe80::9cc3:ffff:fe95:e48e",
+            "fe80::6c1c:29ff:fe50:d40c",
+            "fe80::b4f3:11ff:fe60:14ed",
+            "fe80::20f2:2aff:fe96:1e7b",
+            "fe80::5434:baff:fede:5720",
+            "fe80::a878:91ff:fe29:81f7"
+        ],
+        "mac": [
+            "aa:83:2f:7f:6b:12",
+            "02:42:d4:8c:94:93",
+            "2a:59:80:9e:fc:d6",
+            "da:3a:d9:e9:70:52",
+            "8a:0a:b6:18:ba:76",
+            "f6:47:fa:80:e8:8b",
+            "9e:c3:ff:95:e4:8e",
+            "6e:1c:29:50:d4:0c",
+            "b6:f3:11:60:14:ed",
+            "22:f2:2a:96:1e:7b",
+            "56:34:ba:de:57:20",
+            "aa:78:91:29:81:f7"
+        ],
+        "name": "minikube",
+        "hostname": "minikube",
+        "architecture": "x86_64",
+        "os": {
+            "codename": "Core",
+            "platform": "centos",
+            "version": "7 (Core)",
+            "family": "redhat",
+            "name": "CentOS Linux",
+            "kernel": "4.19.81"
+        },
+        "id": "{{ $host_id }}"
+    },
+    "metricset": {
+        "name": "node",
+        "period": 10000
+    },
+    "kubernetes": {
+        "labels": {
+            "beta_kubernetes_io/os": "linux",
+            "kubernetes_io/arch": "amd64",
+            "kubernetes_io/hostname": "minikube",
+            "kubernetes_io/os": "linux",
+            "node-role_kubernetes_io/master": "",
+            "beta_kubernetes_io/arch": "amd64"
+        },
+        "node": {
+            "memory": {
+                "available": {
+                    "bytes": {{ $memory_available_bytes }}
+                },
+                "usage": {
+                    "bytes": {{ $memory_usage_bytes }}
+                },
+                "workingset": {
+                    "bytes": {{ $memory_workingset_bytes }}
+                },
+                "rss": {
+                    "bytes": {{ $memory_rss_bytes }}
+                },
+                "pagefaults": {{ $pagefaults }},
+                "majorpagefaults": {{ $majorpagefaults }}
+            },
+            "network": {
+                "rx": {
+                    "bytes": {{ $network_rx_bytes }},
+                    "errors": {{ $network_rx_errors }}
+                },
+                "tx": {
+                    "bytes": {{ $network_tx_bytes }},
+                    "errors": {{ $network_tx_errors }}
+                }
+            },
+            "fs": {
+                "available": {
+                    "bytes": {{ $fs_available_bytes }}
+                },
+                "capacity": {
+                    "bytes": {{ $fs_capacity_bytes }}
+                },
+                "used": {
+                    "bytes": {{ $fs_used_bytes }}
+                },
+                "inodes": {
+                    "count": {{ $fs_inodes_count }},
+                    "used": {{ $fs_inodes_used }},
+                    "free": {{ $fs_inodes_free }}
+                }
+            },
+            "runtime": {
+                "imagefs": {
+                    "capacity": {
+                        "bytes": {{ $runtime_imagefs_capacity_bytes }}
+                    },
+                    "used": {
+                        "bytes": {{ $runtime_imagefs_used_bytes }}
+                    },
+                    "available": {
+                        "bytes": {{ $runtime_imagefs_available_bytes }}
+                    }
+                }
+            },
+            "start_time": "{{$timestamp.Format "2006-01-02T15:04:05.999999Z07:00"}}",
+            "name": "minikube",
+            "cpu": {
+                "usage": {
+                    "core": {
+                        "ns": {{ $cpu_usage_core_ns }}
+                    },
+                    "nanocores": {{ $nanocores }}
+                }
+            }
+        }
+    },
+    "agent": {
+        "name": "{{ $agent_name }}",
+        "type": "metricbeat",
+        "version": "8.8.0",
+        "ephemeral_id": "{{ $agent_ephemeral_id }}",
+        "id": "{{ $agent_id }}"
+    },
+    "ecs": {
+        "version": "1.5.0"
+    }
+}
