@@ -36,8 +36,10 @@ processors:
       patterns:
         - '%{DATA:_temp_.header} %%{GREEDYDATA:message}'
         - '%{DATA:_temp_.header} %{NTP_MESSAGE:ntp_message}'
+        - '%{DATA:_temp_.header} %{REPEATED_MESSAGE:repeated_message}'
       pattern_definitions:
         NTP_MESSAGE: 'NTP %{GREEDYDATA}'
+        REPEATED_MESSAGE: 'last message repeated %{INT} times.'
       tag: dissect_header
   - grok:
       field: _temp_.header
@@ -156,6 +158,11 @@ processors:
       target_field: message
       tag: rename_ntp_message
       if: ctx.ntp_message != null
+  - rename:
+      field: repeated_message
+      target_field: message
+      tag: rename_repeated_message
+      if: ctx.repeated_message != null
   - convert:
       field: event.severity
       type: long
