@@ -444,11 +444,11 @@ An example event for `siem` looks as following:
 {
     "@timestamp": "2021-11-12T12:15:46.000Z",
     "agent": {
-        "ephemeral_id": "c6e5221f-b305-4a75-acb4-7a43547a1e6d",
-        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
+        "ephemeral_id": "3a0135b8-1557-4b7f-9f04-b7cbe8b6490c",
+        "id": "b256abb3-219e-4360-96f0-e1176f971883",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.0"
+        "version": "8.11.1"
     },
     "data_stream": {
         "dataset": "mimecast.siem_logs",
@@ -459,9 +459,9 @@ An example event for `siem` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
+        "id": "b256abb3-219e-4360-96f0-e1176f971883",
         "snapshot": false,
-        "version": "8.9.0"
+        "version": "8.11.1"
     },
     "email": {
         "direction": "internal",
@@ -481,7 +481,7 @@ An example event for `siem` looks as following:
         "agent_id_status": "verified",
         "created": "2021-11-12T12:15:46+0000",
         "dataset": "mimecast.siem_logs",
-        "ingested": "2023-07-27T14:59:24Z",
+        "ingested": "2024-02-08T03:05:16Z",
         "original": "{\"Content-Disposition\":\"attachment; filename=\\\"jrnl_20211018093329655.json\\\"\",\"Dir\":\"Internal\",\"Rcpt\":\"o365_service_account@example.com\",\"RcptActType\":\"Jnl\",\"RcptHdrType\":\"Unknown\",\"Sender\":\"johndoe@example.com\",\"aCode\":\"fjihpfEgM_iRwemxhe3t_w\",\"acc\":\"ABC123\",\"datetime\":\"2021-11-12T12:15:46+0000\"}",
         "outcome": "unknown"
     },
@@ -492,7 +492,8 @@ An example event for `siem` looks as following:
         "RcptActType": "Jnl",
         "RcptHdrType": "Unknown",
         "acc": "ABC123",
-        "log_type": "jrnl"
+        "log_type": "jrnl",
+        "stage": "journal"
     },
     "tags": [
         "preserve_original_event",
@@ -500,7 +501,6 @@ An example event for `siem` looks as following:
         "mimecast-siem-logs"
     ]
 }
-
 ```
 
 **Exported fields**

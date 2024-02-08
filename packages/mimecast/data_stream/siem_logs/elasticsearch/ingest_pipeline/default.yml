@@ -28,15 +28,45 @@ processors:
   - set:
       field: mimecast.stage
       value: receipt
-      if: ctx.mimecast?.Cphr != null && ctx.mimecast?.IP != null && ctx.mimecast?.Delivered == null
+      if: >-
+        ctx.mimecast?.headerFrom != null ||
+        ctx.mimecast?.SpamLimit != null ||
+        ctx.mimecast?.Error != null
   - set:
       field: mimecast.stage
       value: process
-      if: ctx.mimecast?.Cphr == null && ctx.mimecast?.IP == null
+      if: >-
+        ctx.mimecast?.stage == null && (
+          ctx.mimecast?.Hld != null ||
+          ctx.mimecast?.AttNames != null
+        )
   - set:
       field: mimecast.stage
       value: delivery
-      if: ctx.mimecast?.Cphr != null && ctx.mimecast?.IP != null && ctx.mimecast?.Delivered != null
+      if: >-
+        ctx.mimecast?.stage == null && (
+          ctx.mimecast?.Delivered != null ||
+          ctx.mimecast?.Snt != null ||
+          ctx.mimecast?.ReceiptAck != null ||
+          ctx.mimecast?.Latency != null
+        )
+  - set:
+      field: mimecast.stage
+      value: protection
+      if: >-
+        ctx.mimecast?.stage == null && (
+          ctx.mimecast?.urlCategory != null ||
+          ctx.mimecast?.md5 != null ||
+          ctx.mimecast?.sha1 != null ||
+          ctx.mimecast?.fileName != null
+        )
+  - set:
+      field: mimecast.stage
+      value: journal
+      if: >-
+        ctx.mimecast?.stage == null && (
+          ctx.mimecast?.RcptActType != null
+        )
 
   - fingerprint:
       fields:
