@@ -33,38 +33,23 @@ processors:
       ignore_missing: true
   - grok:
       field: event.original
-      patterns:
-        - '%{DATA:_temp_.header} %%{GREEDYDATA:message}'
-        - '%{DATA:_temp_.header} %{NTP_MESSAGE:ntp_message}'
-        - '%{DATA:_temp_.header} %{REPEATED_MESSAGE:repeated_message}'
-      pattern_definitions:
-        NTP_MESSAGE: 'NTP %{GREEDYDATA}'
-        REPEATED_MESSAGE: 'last message repeated %{INT} times.'
-      tag: dissect_header
-  - grok:
-      field: _temp_.header
       tag: grok_header
       patterns:
-        - '^(%{SYSLOGTIMESTAMP}[:]? )?(%{IP}[:]? )?(%{HOSTNAME:log.syslog.hostname}[:]? )?%{NUMBER:cisco.ios.sequence}: (%{CISCO_TIMESTAMP}|%{NOTSPACE:cisco.ios.uptime}:)'
-        - '^(<%{NONNEGINT:log.syslog.priority:long}>)?(?:%{NUMBER:cisco.ios.message_count}: |: )(%{SYSLOGTIMESTAMP}[:]? )?(%{IP}[:]? )?(%{HOSTNAME:log.syslog.hostname}: )?%{NUMBER:cisco.ios.sequence}: (%{CISCO_TIMESTAMP}|%{NOTSPACE:cisco.ios.uptime}:)'
-        - '^(<%{NONNEGINT:log.syslog.priority:long}>)?(?:%{NUMBER:cisco.ios.message_count}: |: )(%{SYSLOGTIMESTAMP}[:]? )?(%{IP}[:]? )?(%{HOSTNAME:log.syslog.hostname}: )?(%{NUMBER:cisco.ios.sequence}: )?(%{CISCO_TIMESTAMP}|%{NOTSPACE:cisco.ios.uptime}:)'
-        - '^(<%{NONNEGINT:log.syslog.priority:long}>)?(?:%{NUMBER:cisco.ios.message_count}: |: )?(%{SYSLOGTIMESTAMP}[:]? )?(%{IP}[:]? )?%{HOSTNAME:log.syslog.hostname}: %{NUMBER:cisco.ios.sequence}: (%{CISCO_TIMESTAMP}|%{NOTSPACE:cisco.ios.uptime}:)'
-        - '^(<%{NONNEGINT:log.syslog.priority:long}>)?(?:%{NUMBER:cisco.ios.message_count}: |: )?(%{SYSLOGTIMESTAMP}[:]? )?(%{IP}[:]? )?%{NUMBER:cisco.ios.sequence}: (%{CISCO_TIMESTAMP}|%{NOTSPACE:cisco.ios.uptime}:)'
-        - '^(<%{NONNEGINT:log.syslog.priority:long}>)?(?:%{NUMBER:cisco.ios.message_count}: |: )?(%{SYSLOGTIMESTAMP}[:]? )?(%{IP}[:]? )?%{HOSTNAME:log.syslog.hostname}: (%{CISCO_TIMESTAMP}|%{NOTSPACE:cisco.ios.uptime}:)'
-        - '^(<%{NONNEGINT:log.syslog.priority:long}>)?(?:%{NUMBER:cisco.ios.message_count}: |: )?(%{SYSLOGTIMESTAMP}[:]? )?(%{IP}[:]? )?(%{HOSTNAME:log.syslog.hostname}: )?(%{NUMBER:cisco.ios.sequence}: )?(%{CISCO_TIMESTAMP}|%{NOTSPACE:cisco.ios.uptime}:)'
+        - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} %{IP} %{CISCO_HOSTNAME:log.syslog.hostname}: (?:%{NUMBER:cisco.ios.sequence}: )?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
+        - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} (?:%{IP}|%{CISCO_HOSTNAME:log.syslog.hostname}) %{NUMBER:cisco.ios.sequence}: (?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
+        - '^%{CISCO_PRIORITY_MSGCOUNT}?(?:(?:%{CISCO_HOSTNAME:log.syslog.hostname}|%{IP})[:]? )?(?:%{NUMBER:cisco.ios.sequence}: )?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
       pattern_definitions:
+        CISCO_PRIORITY_MSGCOUNT: '<%{NONNEGINT:log.syslog.priority:long}>(?:%{NONNEGINT:cisco.ios.message_count})?(?:: )?'
         CISCO_TIMESTAMP: '[*]?%{CISCOTIMESTAMP:_temp_.cisco_timestamp}(?: %{CISCO_TZ:_temp_.tz})?'
+        CISCO_UPTIME: '[0-9a-zA-Z]+'
+        CISCO_HOSTNAME: '[a-zA-Z][0-9a-zA-Z-]{0,61}[0-9a-zA-Z]?'
         CISCO_TZ: '[a-zA-Z]{1,4}'
-      on_failure:
-        - append:
-            field: error.message
-            value: |-
-                Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
-        - remove:
-            field: _temp_.header
-            ignore_missing: true
-            tag: on_failure_remove_header
-
+  - grok:
+      field: _temp_.message
+      tag: grok_message
+      patterns:
+        - '^%%{GREEDYDATA:message}$'
+        - '^%{GREEDYDATA:_temp_.generic_message}$'
   - set:
       field: event.sequence
       copy_from: cisco.ios.sequence
@@ -154,15 +139,10 @@ processors:
       ignore_missing: true
       if: ctx.cisco?.ios?.facility == 'FW' && ctx.event?.code == 'DROP_PKT'
   - rename:
-      field: ntp_message
+      field: _temp_.generic_message
       target_field: message
-      tag: rename_ntp_message
-      if: ctx.ntp_message != null
-  - rename:
-      field: repeated_message
-      target_field: message
-      tag: rename_repeated_message
-      if: ctx.repeated_message != null
+      tag: rename_generic_message
+      if: ctx._temp_?.generic_message != null
   - convert:
       field: event.severity
       type: long
