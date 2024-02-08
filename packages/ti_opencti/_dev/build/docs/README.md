@@ -41,7 +41,7 @@ An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/c
 
 The dashboards show only active indicators, except the Ingestion dashboard, which shows data from both the source data stream and the indices of the latest indicators.
 
-Indicators that are never expired or revoked will not be removed from the indices of the latest indicators. If accumulation of indicators there is a problem, it can be managed upstream in OpenCTI, or by manually deleting indicators from those indicies.
+Indicators that are never expired or revoked will not be removed from the indices of the latest indicators. If accumulation of indicators is a problem there, it can be managed upstream in OpenCTI, or by manually deleting indicators from those indices.
 
 To prevent unbounded growth of the source data stream `logs-ti_opencti.indicator-*`, it has an index lifecycle management (ILM) policy that deletes records 5 days after ingestion.
 
