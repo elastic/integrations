@@ -29,9 +29,11 @@ processors:
       field: mimecast.stage
       value: receipt
       if: >-
-        ctx.mimecast?.headerFrom != null ||
-        ctx.mimecast?.SpamLimit != null ||
-        ctx.mimecast?.Error != null
+        ctx.mimecast?.stage == null && (
+          ctx.mimecast?.headerFrom != null ||
+          ctx.mimecast?.SpamLimit != null ||
+          ctx.mimecast?.Error != null
+        )
   - set:
       field: mimecast.stage
       value: process
@@ -66,6 +68,70 @@ processors:
       if: >-
         ctx.mimecast?.stage == null && (
           ctx.mimecast?.RcptActType != null
+        )
+  - set:
+      field: mimecast.stage
+      value: avlog
+      if: >-
+        ctx.mimecast?.stage == null && (
+          ctx.mimecast?.Virus != null &&
+          ctx.mimecast?.Rcpt == null &&
+          ctx.mimecast?.headerFrom == null
+        )
+  - set:
+      field: mimecast.stage
+      value: spam
+      if: >-
+        ctx.mimecast?.stage == null && (
+          ctx.mimecast?.SourceIP != null &&
+          ctx.mimecast?.Reason == null &&
+          ctx.mimecast?.urlCategory == null &&
+          ctx.mimecast?.Rcpt == null &&
+          ctx.mimecast?.headerFrom == null
+        )
+  - set:
+      field: mimecast.stage
+      value: internal-email-protect
+      if: >-
+        ctx.mimecast?.stage == null && (
+          ctx.mimecast?.ScanResultInfo != null
+        )
+  - set:
+      field: mimecast.stage
+      value: impersonation-protect
+      if: >-
+        ctx.mimecast?.stage == null && (
+          ctx.mimecast?.CustomName != null ||
+          ctx.mimecast?.CustomThreatDictionary != null ||
+          ctx.mimecast?.SimilarCustomExternalDomain != null ||
+          ctx.mimecast?.SimilarInternalDomain != null ||
+          ctx.mimecast?.SimilarMimecastExternalDomain != null ||
+          ctx.mimecast?.TaggedExternal != null ||
+          ctx.mimecast?.TaggedMalicious != null ||
+          ctx.mimecast?.ThreatDictionary != null
+        )
+  - set:
+      field: mimecast.stage
+      value: email-protect
+      if: >-
+        ctx.mimecast?.stage == null && (
+          ctx.mimecast?.UrlCategory != null &&
+          ctx.mimecast?.reason != null &&
+          ctx.mimecast?.ScanResultInfo == null
+        )
+  - set:
+      field: mimecast.stage
+      value: attachment-protect
+      if: >-
+        ctx.mimecast?.stage == null && (
+          (
+            ctx.mimecast?.fileName != null ||
+            ctx.mimecast?.md5 != null ||
+            ctx.mimecast?.sha1 != null ||
+            ctx.mimecast?.sha256 != null
+          ) &&
+          ctx.mimecast?.Virus == null &&
+          ctx.mimecast?.SenderDomainInternal == null
         )
 
   - fingerprint:
@@ -327,15 +393,15 @@ processors:
   - set:
       field: event.outcome
       value: "success"
-      if: 'ctx?.event?.outcome ==true'
+      if: ctx?.event?.outcome == true
   - set:
       field: event.outcome
       value: "failure"
-      if: 'ctx?.event?.outcome ==false'
+      if: ctx?.event?.outcome == false
   - set:
       field: event.outcome
       value: "unknown"
-      if: 'ctx?.event?.outcome ==null'
+      if: ctx?.event?.outcome == null
   - lowercase:
       field: email.direction
       ignore_missing: true

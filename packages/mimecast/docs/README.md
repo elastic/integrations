@@ -583,12 +583,13 @@ An example event for `siem` looks as following:
 | mimecast.IPThreadDict | For emails subject to Targeted Threat Protection - Impersonation Protect, if the content of the email was detected to contain words in the Mimecast threat dictionary. | keyword |
 | mimecast.InternalName | The email was detected to be from an internal user name. | keyword |
 | mimecast.Latency | The time in milliseconds that the delivery attempt took. | long |
-| mimecast.MimecastIP | The source IP is one of the Mimecast' IPs e.g. Mimecast Personal Portal. | keyword |
+| mimecast.MimecastIP | The source IP is one of the Mimecast' IPs e.g. Mimecast Personal Portal. | keyword |
 | mimecast.MsgId | The internet message id of the email. | keyword |
 | mimecast.MsgSize | The total size of the email. | long |
 | mimecast.RcptActType | Action after reception. | keyword |
 | mimecast.RcptHdrType | Type of the receipt header. | keyword |
 | mimecast.ReceiptAck | The receipt acknowledgment message received by Mimecast from the receiving mail server. | keyword |
+| mimecast.Recipient | The recipient of the original message. | keyword |
 | mimecast.ReplyMismatch | The reply address does not correspond to the senders address. | keyword |
 | mimecast.Route | Email route. | keyword |
 | mimecast.ScanResultInfo | The reason that the click was blocked. | keyword |
