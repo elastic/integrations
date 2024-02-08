@@ -30,9 +30,11 @@ request.transforms:
 - set:
     target: body.page
     value: 1
+{{#if limit}}
 - set:
     target: body.limit
-    value: 10
+    value: {{limit}}
+{{/if}}
 {{#if enforce_warning_list}}
 - set:
     target: body.enforceWarninglist
@@ -43,7 +45,12 @@ request.transforms:
     value: json
 - set:
     target: body.timestamp
-    value: '[[.cursor.timestamp.Unix]]'
+    value: >-
+      [[- if index .cursor "timestamp" -]]
+        [[- .cursor.timestamp -]]
+      [[- else -]]
+        [[- .last_response.url.params.Get "timestamp" -]]
+      [[- end -]]
     default: '[[ (now (parseDuration "-{{initial_interval}}")).Unix ]]'
 - set:
     # Ignored by MISP, set as a workaround to make it available in response.pagination.
@@ -52,6 +59,9 @@ request.transforms:
 - set:
     target: body.includeDecayScore
     value: true
+- set:
+    target: body.order
+    value: timestamp
 
 response.split:
   target: body.response.Attribute
@@ -72,7 +82,7 @@ response.pagination:
     value: '[[.last_response.url.params.Get "timestamp"]]'
 cursor:
   timestamp:
-    value: '[[.last_event.Attribute.timestamp]]'
+    value: '[[.last_event.timestamp]]'
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
