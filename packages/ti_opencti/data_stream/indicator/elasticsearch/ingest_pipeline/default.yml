@@ -129,13 +129,13 @@ processors:
   - script:
       lang: painless
       source: |
-        def values = new TreeSet();
-        // valid_until always has a value, will be epoch + 10^14 ms if no other value
-        values.add(ctx.opencti.indicator.valid_until);
-        if (ctx.opencti.indicator.revoked == true) {
-          values.add(ctx.threat.indicator.modified_at);
+        if (ctx.opencti.indicator.revoked == true &&
+            ctx.threat.indicator.modified_at.compareTo(ctx.opencti.indicator.valid_until) < 0) {
+            ctx.opencti.indicator.invalid_or_revoked_from = ctx.threat.indicator.modified_at;
+        } else {
+            // valid_until always has a value, will be epoch + 10^14 ms if no other value
+            ctx.opencti.indicator.invalid_or_revoked_from = ctx.opencti.indicator.valid_until;
         }
-        ctx.opencti.indicator.invalid_or_revoked_from = values.first();
   - rename:
       field: x_opencti_score
       target_field: opencti.indicator.score
