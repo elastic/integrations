@@ -352,7 +352,6 @@ If you want to learn more about Amazon ECS metrics, take a look at the blog post
 | awsfargate.task_stats.memory.rss.usage.total | Total memory usage. | long | gauge |
 | awsfargate.task_stats.memory.stats.\* | Raw memory stats from the cgroups memory.stat interface | unsigned_long |  |
 | awsfargate.task_stats.memory.usage.max | Max memory usage. | long | counter |
-| awsfargate.task_stats.memory.usage.pct | Memory usage percentage. | scaled_float | gauge |
 | awsfargate.task_stats.memory.usage.total | Total memory usage. | long | gauge |
 | awsfargate.task_stats.network.\*.inbound.bytes | Total number of incoming bytes. | long | counter |
 | awsfargate.task_stats.network.\*.inbound.dropped | Total number of dropped incoming packets. | long | counter |
@@ -521,7 +520,6 @@ An example event for `task_stats` looks as following:
                 },
                 "usage": {
                     "max": 15294464,
-                    "pct": 0.003136136404770672,
                     "total": 12349440
                 }
             },
