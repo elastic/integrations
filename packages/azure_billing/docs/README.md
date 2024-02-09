@@ -79,6 +79,10 @@ Take note of the content in the **Value** column in the **Client secrets** table
 
 #### Assign role
 
+Assign a role to the app registration depending on the scope you're interested in.
+
+If you want to collect billing metrics from a single subscription, you only need to assign the **Billing Reader** to the app registration on that subscription:
+
 1. In the [Azure Portal](https://portal.azure.com/), search for and select **Subscriptions**.
 1. Select the subscription to assign the application.
 1. Select **Access control (IAM)**.
@@ -89,6 +93,15 @@ Take note of the content in the **Value** column in the **Client secrets** table
 1. To find your application, search by name (for example, "elastic-agent") and select it from the list.
 1. Click the **Select** button.
 1. Then click the **Review + assign** button.
+
+If you want to collect billing metrics from multiple subscriptions, you need to assign the **Billing account reader** to the app registration on the billing account (instead of the subscription):
+
+1. In the [Azure Portal](https://portal.azure.com/), search for and select **Cost Management + Billing**.
+1. Select **Access control (IAM)**.
+1. Select **Add**.
+1. In the **Add role assignment** panel, select the role **Billing account reader** (View-only access).
+1. In the **Users, groups, or apps** search box, type the name of the app registration you created and select it.
+1. Click on the **Add** button.
 
 Take note of the following values, which you will use later when specifying settings.
 
