@@ -157,7 +157,7 @@ Add the Azure Resource Metrics integration in Kibana and specify settings.
 
 If you're new to integrations, you can find step-by-step instructions on how to set up an integration in the {{ url "getting-started-observability" "Getting started" }} guide.
 
-The settings' main section contains all the options needed to access the Azure APIs and collect the billing data. You will now use all the values from [App registration](#app-registration) including:
+The settings' main section contains all the options needed to access the Azure APIs and collect the monitoring data. You will now use all the values from [App registration](#app-registration) including:
 
 `Client ID` _string_
 : The unique identifier of the App Registration (sometimes referred to as Application ID).
