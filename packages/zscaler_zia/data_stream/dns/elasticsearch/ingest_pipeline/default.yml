@@ -212,6 +212,10 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.id
+      copy_from: json.user
+      ignore_empty_value: true
   - urldecode:
       field: json.user
       target_field: user.email
@@ -239,6 +243,11 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null
   - urldecode:
       field: json.department
       target_field: zscaler_zia.dns.department
