@@ -1017,11 +1017,13 @@ and/or `session_token`.
 | file.path.text | Multi-field of `file.path`. | match_only_text |
 | file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
 | file.type | File type (file, dir, or symlink). | keyword |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.geo.city_name | City name. | keyword |
 | host.geo.continent_name | Name of the continent. | keyword |
 | host.geo.country_name | Country name. | keyword |
 | host.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.ip | Host ip addresses. | ip |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
