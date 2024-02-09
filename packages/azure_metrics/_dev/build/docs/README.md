@@ -70,7 +70,7 @@ so the `period` for `database_account` should be `300s` or multiples of `300s`.
 
 ## Requirements
 
-The Elastic Agent fetches metric data from the Azure Monitor API and sends it to dedicated data streams named `metrics-azure.*-default` in Elasticsearch.
+The Elastic Agent fetches metric data from the Azure Monitor API and sends it to dedicated data streams named `metrics-azure.<metricset>-default` in Elasticsearch.
 
 Elastic Agent needs an App Registration to access Azure on your behalf to collect data using the Azure APIs programmatically.
 
