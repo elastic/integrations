@@ -137,7 +137,7 @@ Take note of the content in the **Value** column in the **Client secrets** table
 1. Select the subscription to assign the application.
 1. Select **Access control (IAM)**.
 1. Select **Add** > **Add role assignment** to open the _Add role assignment page_.
-1. In the **Role** tab, search and select the role **Billing Reader**.
+1. In the **Role** tab, search and select the role **Monitoring Reader**.
 1. Select the **Next** button to move to the **Members** tab.
 1. Select **Assign access to** > **User, group, or service principal**, and select **Select members**. This page does not display Azure AD applications in the available options by default.
 1. To find your application, search by name (for example, "elastic-agent") and select it from the list.
