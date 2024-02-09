@@ -60,19 +60,19 @@ processors:
       ignore_missing: true
   - append:
       field: related.user
-      value: "{{zoom.operator_id}}"
-      if: "ctx.zoom?.operator_id != null"
+      value: "{{{zoom.operator_id}}}"
+      if: ctx.zoom?.operator_id != null
   # Set user.id from operator data (user who performs an action).
   - set:
       field: user.id
-      value: "{{zoom.operator_id}}"
-      if: "ctx.zoom?.operator_id != null"
+      value: "{{{zoom.operator_id}}}"
+      if: ctx.zoom?.operator_id != null
   # Set user.name from operator data only when user.id also set above.
   - set:
       field: user.email
-      value: "{{zoom.operator}}"
+      value: "{{{zoom.operator}}}"
       ignore_empty_value: true
-      if: "ctx.zoom?.operator_id != null"
+      if: ctx.zoom?.operator_id != null
   # Removing some fields that have complex nested arrays that might impact performance
   - remove:
       field:
@@ -94,31 +94,31 @@ processors:
       ignore_missing: true
   - pipeline:
       name: '{{ IngestPipeline "meeting" }}'
-      if: "ctx?.event?.action.startsWith('meeting')"
+      if: ctx.event?.action?.startsWith('meeting') == true
   - pipeline:
       name: '{{ IngestPipeline "account" }}'
-      if: "ctx?.event?.action.startsWith('account')"
+      if: ctx.event?.action?.startsWith('account') == true
   - pipeline:
       name: '{{ IngestPipeline "chat_message" }}'
-      if: "ctx?.event?.action.startsWith('chat_message')"
+      if: ctx.event?.action?.startsWith('chat_message') == true
   - pipeline:
       name: '{{ IngestPipeline "chat_channel" }}'
-      if: "ctx?.event?.action.startsWith('chat_channel')"
+      if: ctx.event?.action?.startsWith('chat_channel') == true
   - pipeline:
       name: '{{ IngestPipeline "phone" }}'
-      if: "ctx?.event?.action.startsWith('phone')"
+      if: ctx.event?.action?.startsWith('phone') == true
   - pipeline:
       name: '{{ IngestPipeline "recording" }}'
-      if: "ctx?.event?.action.startsWith('recording')"
+      if: ctx.event?.action?.startsWith('recording') == true
   - pipeline:
       name: '{{ IngestPipeline "user" }}'
-      if: "ctx?.event?.action.startsWith('user')"
+      if: ctx.event?.action?.startsWith('user') == true
   - pipeline:
       name: '{{ IngestPipeline "webinar" }}'
-      if: "ctx?.event?.action.startsWith('webinar')"
+      if: ctx.event?.action?.startsWith('webinar') == true
   - pipeline:
       name: '{{ IngestPipeline "zoomroom" }}'
-      if: "ctx?.event?.action.startsWith('zoomroom')"
+      if: ctx.event?.action?.startsWith('zoomroom') == true
 on_failure:
   - set:
       field: event.kind
