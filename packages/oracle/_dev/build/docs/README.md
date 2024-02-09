@@ -96,7 +96,7 @@ The `database_audit` dataset collects Oracle Audit logs.
 
 Tablespace metrics describes the tablespace usage metrics of all types of tablespaces in the oracle database.
 
-To collect the Tablespace metrics, Oracle integration relies on a specific set of views. It is important to verify that the user configured within the Oracle DNS configuration has `READ` access permissions to the views listed below.
+To collect the Tablespace metrics, Oracle integration relies on a specific set of views. It is important to verify that the user configured within the Oracle DSN configuration has `READ` access permissions to the views listed below.
  
 - `SYS.DBA_DATA_FILES`
 - `SYS.DBA_TEMP_FILES`
@@ -110,7 +110,7 @@ To collect the Tablespace metrics, Oracle integration relies on a specific set o
 
 The system metrics value captured for the most current time interval for the long duration (60-seconds) are mentioned below. 
 
-To collect the Sysmetrics metrics, Oracle integration relies on a specific set of views. It is important to verify that the user configured within the Oracle DNS configuration has `READ` access permissions to the view mentioned below.
+To collect the Sysmetrics metrics, Oracle integration relies on a specific set of views. It is important to verify that the user configured within the Oracle DSN configuration has `READ` access permissions to the view mentioned below.
 
 - `V$SYSMETRIC`
 
@@ -122,7 +122,7 @@ To collect the Sysmetrics metrics, Oracle integration relies on a specific set o
 
 A Program Global Area (PGA) is a memory region that contains data and control information for a server process. It is nonshared memory created by Oracle Database when a server process is started. Access to the PGA is exclusive to the server process. Metrics concerning Program Global Area (PGA) memory are mentioned below.
 
-To collect the Memory metrics, Oracle integration relies on a specific set of views. It is important to verify that the user configured within the Oracle DNS configuration has `READ` access permissions to the views listed below.
+To collect the Memory metrics, Oracle integration relies on a specific set of views. It is important to verify that the user configured within the Oracle DSN configuration has `READ` access permissions to the views listed below.
 
 - `V$SGASTAT`
 - `V$PGASTAT`
@@ -135,7 +135,7 @@ To collect the Memory metrics, Oracle integration relies on a specific set of vi
 
 The System Global Area (SGA) is a group of shared memory structures that contain data and control information for one Oracle Database instance. Metrics concerning System Global Area (SGA) memory are mentioned below.
 
-To collect the System Statistics metrics, Oracle integration relies on a specific set of views. It is important to verify that the user configured within the Oracle DNS configuration has `READ` access permissions to the view mentioned below.
+To collect the System Statistics metrics, Oracle integration relies on a specific set of views. It is important to verify that the user configured within the Oracle DSN configuration has `READ` access permissions to the view mentioned below.
 
 - `V$SYSSTAT`
 
@@ -147,7 +147,7 @@ To collect the System Statistics metrics, Oracle integration relies on a specifi
 
 Performance metrics give an overview of where time is spent in the system and enable comparisons of wait times across the system.
 
-To collect the Performance metrics, Oracle integration relies on a specific set of views. It is important to verify that the user configured within the Oracle DNS configuration has `READ` access permissions to the views listed below.
+To collect the Performance metrics, Oracle integration relies on a specific set of views. It is important to verify that the user configured within the Oracle DSN configuration has `READ` access permissions to the views listed below.
 
 - `V$BUFFER_POOL_STATISTICS`
 - `V$SESSTAT`
