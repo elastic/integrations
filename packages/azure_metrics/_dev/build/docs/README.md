@@ -166,7 +166,7 @@ The settings' main section contains all the options needed to access the Azure A
 : The client secret for authentication.
 
 `Subscription ID` _string_
-: The unique identifier for the Azure subscription. You can provide just one subscription ID. The Agent uses this ID to access Azure APIs. The Agent also uses this ID as the default scope for billing information: see the "Scope" section for more details about how to collect data for more than one subscription.
+: The unique identifier for the Azure subscription. You can provide just one subscription ID. The Agent uses this ID to access Azure APIs. 
 
 `Tenant ID` _string_
 : The unique identifier of the Azure Active Directory's Tenant ID.
