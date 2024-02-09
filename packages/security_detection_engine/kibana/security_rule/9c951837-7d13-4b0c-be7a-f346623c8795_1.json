@@ -11,7 +11,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Potential Enumeration via Active Directory Web Service",
-        "query": "sequence by process.entity_id with maxspan=3m\n [library where host.os.type == \"windows\" and \n  dll.name : (\"System.DirectoryServices*.dll\", \"System.IdentityModel*.dll\") and \n  not user.id in (\"S-1-5-18\", \"S-1-5-19\", \"S-1-5-20\") and \n  not process.executable : \n                (\"?:\\\\windows\\\\system32\\\\dsac.exe\", \n                 \"?:\\\\program files\\\\powershell\\\\?\\\\pwsh.exe\", \n                 \"?:\\\\windows\\\\system32\\\\windowspowershell\\\\*.exe\", \n                 \"?:\\\\windows\\\\syswow64\\\\windowspowershell\\\\*.exe\", \n                 \"?:\\\\program files\\\\microsoft monitoring agent\\\\*.exe\", \n                 \"?:\\\\windows\\\\adws\\\\microsoft.activedirectory.webservices.exe\")]\n [network where host.os.type == \"windows\" and destination.port == 9389 and source.port \u003e= 49152 and\n  network.direction == \"egress\" and network.transport == \"tcp\" and not cidrmatch(destination.ip, \"127.0.0.0/8\", \"::1/128\")]\n",
+        "query": "sequence by process.entity_id with maxspan=3m\n [library where host.os.type == \"windows\" and \n  dll.name : (\"System.DirectoryServices*.dll\", \"System.IdentityModel*.dll\") and \n  not user.id in (\"S-1-5-18\", \"S-1-5-19\", \"S-1-5-20\") and \n  not process.executable : \n                (\"?:\\\\windows\\\\system32\\\\dsac.exe\", \n                 \"?:\\\\program files\\\\powershell\\\\?\\\\pwsh.exe\", \n                 \"?:\\\\windows\\\\system32\\\\windowspowershell\\\\*.exe\", \n                 \"?:\\\\windows\\\\syswow64\\\\windowspowershell\\\\*.exe\", \n                 \"?:\\\\program files\\\\microsoft monitoring agent\\\\*.exe\", \n                 \"?:\\\\windows\\\\adws\\\\microsoft.activedirectory.webservices.exe\")]\n [network where host.os.type == \"windows\" and destination.port == 9389 and source.port >= 49152 and\n  network.direction == \"egress\" and network.transport == \"tcp\" and not cidrmatch(destination.ip, \"127.0.0.0/8\", \"::1/128\")]\n",
         "references": [
             "https://github.com/FalconForceTeam/SOAPHound"
         ],
@@ -85,7 +85,7 @@
         ],
         "threat": [
             {
-                "framework": "MITRE ATT\u0026CK",
+                "framework": "MITRE ATT&CK",
                 "tactic": {
                     "id": "TA0007",
                     "name": "Discovery",
