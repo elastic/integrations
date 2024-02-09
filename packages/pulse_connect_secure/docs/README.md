@@ -10,11 +10,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2021-10-19T09:10:35.000+02:00",
     "agent": {
-        "ephemeral_id": "dbefdcf7-8da3-42ce-a1dd-919d2f3e0611",
-        "id": "0a5c1566-c6fd-4e91-b96d-4083445a000e",
+        "ephemeral_id": "f5012eed-664a-4430-85b2-b8c48267837e",
+        "id": "1b313b92-040f-43af-8905-5b86b2755044",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.0"
+        "version": "8.11.4"
     },
     "client": {
         "address": "89.160.20.156",
@@ -47,16 +47,16 @@ An example event for `log` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0a5c1566-c6fd-4e91-b96d-4083445a000e",
+        "id": "1b313b92-040f-43af-8905-5b86b2755044",
         "snapshot": false,
-        "version": "8.9.0"
+        "version": "8.11.4"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "network",
         "created": "2021-10-19T09:10:35.000+02:00",
         "dataset": "pulse_connect_secure.log",
-        "ingested": "2023-08-07T18:48:45Z",
+        "ingested": "2024-02-09T13:09:18Z",
         "kind": "event",
         "original": "Oct 19 09:10:35 pcs-node1 1 2021-10-19T09:10:35+02:00 10.5.2.3 PulseSecure: - - - 2021-10-19 09:10:35 - pcs-node1 - [89.160.20.156] user.name(REALM)[REALM_ROLES] - Agent login succeeded for user.name/REALM (session:sid74fa8e00ca601280318287f67dfaee7cc6da40db0be6ac75) from 89.160.20.156 with Pulse-Secure/9.1.13.11723 (Windows 10) Pulse/9.1.13.11723.",
         "outcome": "success",
@@ -70,7 +70,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.176.4:55846"
+            "address": "192.168.176.4:39024"
         }
     },
     "message": "Agent login succeeded for user.name/REALM (session:sid74fa8e00ca601280318287f67dfaee7cc6da40db0be6ac75) from 89.160.20.156 with Pulse-Secure/9.1.13.11723 (Windows 10) Pulse/9.1.13.11723.",
@@ -133,7 +133,6 @@ An example event for `log` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -207,8 +206,8 @@ An example event for `log` looks as following:
 | observer.vendor | Vendor name of the observer. | keyword |
 | pulse_secure.realm | test | keyword |
 | pulse_secure.role | test | keyword |
-| pulse_secure.session |  | keyword |
 | pulse_secure.session.id | test | keyword |
+| pulse_secure.session.id_short |  | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
