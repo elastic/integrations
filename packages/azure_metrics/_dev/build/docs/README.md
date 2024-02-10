@@ -2,71 +2,41 @@
 
 The [Azure Monitor](https://docs.microsoft.com/en-us/azure/azure-monitor/essentials/data-platform-metrics) feature collects and aggregates logs and metrics from a variety of sources into a common data platform where it can be used for analysis, visualization, and alerting.
 
-The Azure Monitor metrics are numerical values that describe some aspects of a system at a particular point in time. They are collected at regular intervals and are identified with a timestamp, a name, a value, and one or more defining labels.
-
-The Azure Resource Metrics will periodically retrieve the Azure Monitor metrics using the Azure REST APIs as MetricList.
-Additional Azure API calls can be used to retrieve information regarding the resources targeted by the user.
+The Azure Resource Metrics will periodically retrieve the Azure Monitor metrics using the Azure REST APIs as MetricList. Additional Azure API calls can be used to retrieve information regarding the resources targeted by the user.
 
 ## Data streams
 
 The Azure Resource Metrics collects one type of data: metrics.
 
-- `monitor`
-- `compute_vm`
-- `compute_vm_scaleset`
-- `storage_account`
-- `container_instance`
-- `container_registry`
-- `container_service`
-- `database_account`
+**Metrics** are numerical values that describe some aspects of a system at a particular point in time. They are collected at regular intervals and are identified with a timestamp, a name, a value, and one or more defining labels.
 
-`monitor`
-This data stream allows users to retrieve metrics from specified resources. Added filters can apply here as the interval of retrieving these metrics, metric names,
+Azure Resource Metrics collects the following types of data streams:
+
+**`monitor`** - This data stream allows users to retrieve metrics from specified resources. Added filters can apply here as the interval of retrieving these metrics, metric names,
 aggregation list, namespaces and metric dimensions. The monitor metrics will have a minimum timegrain of 5 minutes, so the `period` for `monitor` dataset should be `300s` or multiples of `300s`.
 
-{{fields "monitor"}}
-
-`compute_vm`
-This data stream will collect metrics from the virtual machines, these metrics will have a timegrain every 5 minutes,
+**`compute_vm`** - This data stream will collect metrics from the virtual machines, these metrics will have a timegrain every 5 minutes,
 so the `period` for `compute_vm` should be `300s` or multiples of `300s`.
 
-{{fields "compute_vm"}}
-
-`compute_vm_scaleset`
-This data stream will collect metrics from the virtual machine scalesets, these metrics will have a timegrain every 5 minutes,
+**`compute_vm_scaleset`** - This data stream will collect metrics from the virtual machine scalesets, these metrics will have a timegrain every 5 minutes,
 so the `period` for `compute_vm_scaleset` should be `300s` or multiples of `300s`.
 
-{{fields "compute_vm_scaleset"}}
-
- `storage_account`
-This data stream will collect metrics from the storage accounts, these metrics will have a timegrain every 5 minutes,
+**`storage_account`** - This data stream will collect metrics from the storage accounts, these metrics will have a timegrain every 5 minutes,
 so the `period` for `storage_account` should be `300s` or multiples of `300s`.
 
-{{fields "storage_account"}}
-
-`container_instance`
-This data stream will collect metrics from specified container groups, these metrics will have a timegrain every 5 minutes,
+**`container_instance`** - This data stream will collect metrics from specified container groups, these metrics will have a timegrain every 5 minutes,
 so the `period` for `container_instance` should be `300s` or multiples of `300s`.
 
-{{fields "container_instance"}}
-
-`container_registry`
-This data stream will collect metrics from the container registries, these metrics will have a timegrain every 5 minutes,
+**`container_registry`** - This data stream will collect metrics from the container registries, these metrics will have a timegrain every 5 minutes,
 so the `period` for `container_registry` should be `300s` or multiples of `300s`.
 
-{{fields "container_registry"}}
-
-`container_service`
-This data stream will collect metrics from the container services, these metrics will have a timegrain every 5 minutes,
+**`container_service`** - This data stream will collect metrics from the container services, these metrics will have a timegrain every 5 minutes,
 so the `period` for `container_service` should be `300s` or multiples of `300s`.
 
-{{fields "container_service"}}
-
-`database_account`
-This data stream will collect relevant metrics from specified database accounts, these metrics will have a timegrain every 5 minutes,
+**`database_account`** - This data stream will collect relevant metrics from specified database accounts, these metrics will have a timegrain every 5 minutes,
 so the `period` for `database_account` should be `300s` or multiples of `300s`.
 
-{{fields "database_account"}}
+For each individual data stream, you can check the exported fields in the [Metrics reference](#metrics-reference) section.
 
 ## Requirements
 
@@ -195,7 +165,52 @@ Examples:
 * `https://login.microsoftonline.com` for Azure PublicCloud
 * `https://login.microsoftonline.us` for Azure USGovernmentCloud
 
+## Metrics reference
 
+`monitor`
+This data stream allows users to retrieve metrics from specified resources. Added filters can apply here as the interval of retrieving these metrics, metric names,
+aggregation list, namespaces and metric dimensions. The monitor metrics will have a minimum timegrain of 5 minutes, so the `period` for `monitor` dataset should be `300s` or multiples of `300s`.
 
+{{fields "monitor"}}
 
+`compute_vm`
+This data stream will collect metrics from the virtual machines, these metrics will have a timegrain every 5 minutes,
+so the `period` for `compute_vm` should be `300s` or multiples of `300s`.
 
+{{fields "compute_vm"}}
+
+`compute_vm_scaleset`
+This data stream will collect metrics from the virtual machine scalesets, these metrics will have a timegrain every 5 minutes,
+so the `period` for `compute_vm_scaleset` should be `300s` or multiples of `300s`.
+
+{{fields "compute_vm_scaleset"}}
+
+ `storage_account`
+This data stream will collect metrics from the storage accounts, these metrics will have a timegrain every 5 minutes,
+so the `period` for `storage_account` should be `300s` or multiples of `300s`.
+
+{{fields "storage_account"}}
+
+`container_instance`
+This data stream will collect metrics from specified container groups, these metrics will have a timegrain every 5 minutes,
+so the `period` for `container_instance` should be `300s` or multiples of `300s`.
+
+{{fields "container_instance"}}
+
+`container_registry`
+This data stream will collect metrics from the container registries, these metrics will have a timegrain every 5 minutes,
+so the `period` for `container_registry` should be `300s` or multiples of `300s`.
+
+{{fields "container_registry"}}
+
+`container_service`
+This data stream will collect metrics from the container services, these metrics will have a timegrain every 5 minutes,
+so the `period` for `container_service` should be `300s` or multiples of `300s`.
+
+{{fields "container_service"}}
+
+`database_account`
+This data stream will collect relevant metrics from specified database accounts, these metrics will have a timegrain every 5 minutes,
+so the `period` for `database_account` should be `300s` or multiples of `300s`.
+
+{{fields "database_account"}}
