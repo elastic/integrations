@@ -50,19 +50,22 @@ To use this integration you will need:
 * **Elasticsearch and Kibana**: You need Elasticsearch to store and search your data and Kibana to visualize and manage it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, the [Native Azure Integration](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/elastic.elasticsearch?tab=Overview), or self-manage the Elastic Stack on your hardware.
 
 
-### Additional notes about configuration, metrics, and costs
+### Authentication and costs
 
-Configuration: All the tasks executed against the Azure Monitor REST API use the Azure Resource Manager authentication model. Therefore, all requests must be authenticated with Azure Active Directory (Azure AD).
+**Authentication on the Azure side**
+All the tasks executed against the Azure Monitor REST API use the Azure Resource Manager authentication model. Therefore, all requests must be authenticated with Azure Active Directory (Azure AD).
 To authenticate the client application, create an Azure AD service principal and retrieve the authentication (JWT) token. For more details, check the following procedures:
 * [Create an Azure service principal with Azure PowerShell](https://docs.microsoft.com/en-us/powershell/azure/create-azure-service-principal-azureps?view=azps-2.7.0.)
 * [Use the portal to create an Azure AD application and service principal that can access resources](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal).
 
-Users will have to make sure the roles assigned to the application contain at least reading permissions to the monitor data. See: [Azure built-in roles](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles).
+Make sure that the roles assigned to the application contain at least reading permissions to the monitor data. Check [Azure built-in roles](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles) for more details.
 
-Costs: Metric queries are charged based on the number of standard API calls. 
-See: [Azure Monitor pricing](https://azure.microsoft.com/en-gb/pricing/details/monitor/).
+**Authentication on the Elastic side**
+Elastic handles authentication by creating or renewing the authentication token. It is recommended to use dedicated credentials for Metricbeat only.
 
-Authentication: We are handling authentication on our side (creating/renewing the authentication token), so we advise users to use dedicated credentials for metricbeat only.
+**Costs**
+Metric queries are charged based on the number of standard API calls. 
+Check [Azure Monitor pricing](https://azure.microsoft.com/en-gb/pricing/details/monitor/) for more details.
 
 ## Setup
 
