@@ -10,30 +10,30 @@ The Azure Resource Metrics collects one type of data: metrics.
 
 **Metrics** are numerical values that describe some aspects of a system at a particular point in time. They are collected at regular intervals and are identified with a timestamp, a name, a value, and one or more defining labels.
 
-Azure Resource Metrics collects the following types of data streams:
+The following data streams are available:
 
-**`monitor`** - This data stream allows users to retrieve metrics from specified resources. Added filters can apply here as the interval of retrieving these metrics, metric names,
+**`monitor`** - Allows users to retrieve metrics from specified resources. Added filters can apply here as the interval of retrieving these metrics, metric names,
 aggregation list, namespaces and metric dimensions. The monitor metrics will have a minimum timegrain of 5 minutes, so the `period` for `monitor` dataset should be `300s` or multiples of `300s`.
 
-**`compute_vm`** - This data stream will collect metrics from the virtual machines, these metrics will have a timegrain every 5 minutes,
+**`compute_vm`** - Collects metrics from the virtual machines, these metrics will have a timegrain every 5 minutes,
 so the `period` for `compute_vm` should be `300s` or multiples of `300s`.
 
-**`compute_vm_scaleset`** - This data stream will collect metrics from the virtual machine scalesets, these metrics will have a timegrain every 5 minutes,
+**`compute_vm_scaleset`** - Collects metrics from the virtual machine scalesets, these metrics will have a timegrain every 5 minutes,
 so the `period` for `compute_vm_scaleset` should be `300s` or multiples of `300s`.
 
-**`storage_account`** - This data stream will collect metrics from the storage accounts, these metrics will have a timegrain every 5 minutes,
+**`storage_account`** - Collects metrics from the storage accounts, these metrics will have a timegrain every 5 minutes,
 so the `period` for `storage_account` should be `300s` or multiples of `300s`.
 
-**`container_instance`** - This data stream will collect metrics from specified container groups, these metrics will have a timegrain every 5 minutes,
+**`container_instance`** - Collects metrics from specified container groups, these metrics will have a timegrain every 5 minutes,
 so the `period` for `container_instance` should be `300s` or multiples of `300s`.
 
-**`container_registry`** - This data stream will collect metrics from the container registries, these metrics will have a timegrain every 5 minutes,
+**`container_registry`** - Collects metrics from the container registries, these metrics will have a timegrain every 5 minutes,
 so the `period` for `container_registry` should be `300s` or multiples of `300s`.
 
-**`container_service`** - This data stream will collect metrics from the container services, these metrics will have a timegrain every 5 minutes,
+**`container_service`** - Collects metrics from the container services, these metrics will have a timegrain every 5 minutes,
 so the `period` for `container_service` should be `300s` or multiples of `300s`.
 
-**`database_account`** - This data stream will collect relevant metrics from specified database accounts, these metrics will have a timegrain every 5 minutes,
+**`database_account`** - Collects relevant metrics from specified database accounts, these metrics will have a timegrain every 5 minutes,
 so the `period` for `database_account` should be `300s` or multiples of `300s`.
 
 For each individual data stream, you can check the exported fields in the [Metrics reference](#metrics-reference) section.
