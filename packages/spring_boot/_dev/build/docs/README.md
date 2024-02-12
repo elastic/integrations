@@ -7,8 +7,8 @@ The Spring Boot integration is used to fetch observability data from [Spring Boo
 Use the Spring Boot integration to:
 
 - Collect logs related to audit events, HTTP trace, and metrics related to garbage collection(gc), memory, and threading.
-- Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
-- Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
+- Create visualizations to monitor, measure, and analyze usage trends and key data, deriving business insights.
+- Create alerts to reduce the MTTD and MTTR by referencing relevant logs when troubleshooting an issue.
 
 ## Data streams
 
