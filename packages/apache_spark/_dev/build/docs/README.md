@@ -7,14 +7,14 @@
 Use the Apache Spark integration to:
 
 - Collect metrics related to the application, driver, executor and node.
-- Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
-- Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
+- Create visualizations to monitor, measure, and analyze usage trends and key data, deriving business insights.
+- Create alerts to reduce the MTTD and MTTR by referencing relevant logs when troubleshooting an issue.
 
 ## Data streams
 
 The Apache Spark integration collects metrics data.
 
-Metrics give you insight into the statistics of the Apache Spark. The `Metric` data streams collected by the Apache Spark integration are `application`, `driver`, `executor` and `node` so that the user can monitor and troubleshoot the performance of the Apache Spark instance.
+Metrics provide insight into the statistics of Apache Spark. The `Metric` data streams collected by the Apache Spark integration include `application`, `driver`, `executor`, and `node`, allowing users to monitor and troubleshoot the performance of their Apache Spark instance.
 
 Data streams:
 - `application`: Collects information related to the number of cores used, application name, runtime in milliseconds and current status of the application.
@@ -23,7 +23,7 @@ Data streams:
 - `node`: Collects information related to the application count, waiting applications, worker metrics, executor count, core usage and memory usage.
 
 Note:
-- Users can monitor and see the metrics inside the ingested documents for Apache Spark in the `metrics-*` index pattern from `Discover`.
+- Users can monitor and view the metrics inside the ingested documents for Apache Spark under the `metrics-*` index pattern in `Discover`.
 
 ## Compatibility
 
@@ -104,7 +104,7 @@ If `host.ip` appears conflicted under the ``metrics-*`` data view, this issue ca
 
 ### Application
 
-The `application` data stream provides metrics related to the number of cores used, application name, runtime in milliseconds, and current status of the application.
+The `application` data stream collects metrics related to the number of cores used, application name, runtime in milliseconds, and current status of the application.
 
 {{event "application"}}
 
@@ -112,7 +112,7 @@ The `application` data stream provides metrics related to the number of cores us
 
 ### Driver
 
-The `driver` data stream provides metrics related to the driver details, job durations, task execution, memory usage, executor status, and JVM metrics.
+The `driver` data stream collects metrics related to the driver details, job durations, task execution, memory usage, executor status, and JVM metrics.
 
 {{event "driver"}}
 
@@ -120,7 +120,7 @@ The `driver` data stream provides metrics related to the driver details, job dur
 
 ### Executor
 
-The `executor` data stream provides metrics related to the operations, memory usage, garbage collection, file handling, and threadpool activity.
+The `executor` data stream collects metrics related to the operations, memory usage, garbage collection, file handling, and threadpool activity.
 
 {{event "executor"}}
 
@@ -128,7 +128,7 @@ The `executor` data stream provides metrics related to the operations, memory us
 
 ### Node
 
-The `node` data stream provides metrics related to the application count, waiting applications, worker metrics, executor count, core usage, and memory usage.
+The `node` data stream collects metrics related to the application count, waiting applications, worker metrics, executor count, core usage, and memory usage.
 
 {{event "node"}}
 
