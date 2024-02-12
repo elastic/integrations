@@ -126,6 +126,16 @@ processors:
   - rename:
       field: valid_until
       target_field: opencti.indicator.valid_until
+  - script:
+      lang: painless
+      source: |
+        if (ctx.opencti.indicator.revoked == true &&
+            ctx.threat.indicator.modified_at.compareTo(ctx.opencti.indicator.valid_until) < 0) {
+            ctx.opencti.indicator.invalid_or_revoked_from = ctx.threat.indicator.modified_at;
+        } else {
+            // valid_until always has a value, will be epoch + 10^14 ms if no other value
+            ctx.opencti.indicator.invalid_or_revoked_from = ctx.opencti.indicator.valid_until;
+        }
   - rename:
       field: x_opencti_score
       target_field: opencti.indicator.score
