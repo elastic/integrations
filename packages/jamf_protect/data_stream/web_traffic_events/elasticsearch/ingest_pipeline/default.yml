@@ -1,5 +1,5 @@
 ---
-description: Pipeline for parsing Jamf Protect Web Protection logs
+description: Pipeline for parsing Jamf Protect Web Protection traffic logs
 processors:
     - set:
         field: ecs.version
@@ -12,12 +12,6 @@ processors:
         field: json
         target_field: jamf_protect.traffic
         if: ctx.json != null
-    # - rename:
-    #     field: message
-    #     target_field: event.original
-    #     ignore_missing: true
-    #     if: ctx.event?.original == null
-
 
 ##########################
 ## ECS Observer Mapping ##
@@ -28,10 +22,6 @@ processors:
     - set:
         field: observer.vendor
         value: Jamf
-    # - rename:
-    #     field: json.detectionSource
-    #     target_field: observer.name
-    #     ignore_missing: true
 
 #######################
 ## ECS Event Mapping ##
@@ -70,11 +60,6 @@ processors:
         field: event.reason
         value: '{{jamf_protect.traffic.event.threat.result}}'
         if: ctx.jamf_protect?.traffic?.event?.threat?.result != null
-    # - rename:
-    #     field: jamf_protect.traffic.event.eventType.description
-    #     target_field: event.reason
-    #     ignore_missing: true
-    #     if: ctx.jamf_protect?.traffic?.event?.eventType?.description != null
     - append:
         field: event.outcome
         value: failure

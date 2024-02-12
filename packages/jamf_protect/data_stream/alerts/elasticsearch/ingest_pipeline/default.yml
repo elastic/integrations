@@ -302,6 +302,73 @@ processors:
                 if (process?.signingInfo?.teamid != null) {
                     ctx.process.code_signature.team_id = process.signingInfo.teamid;
                 }
+
+                // Mapping out the parent process
+                if (ctx.jamf_protect.alerts.input.related.processes.size() > 1) {
+                def parentProcess = ctx.jamf_protect.alerts.input.related.processes[1];
+
+                ctx.process.parent = new HashMap();
+                ctx.process.parent.name = parentProcess.name;
+                ctx.process.parent.pid = parentProcess.pid;
+                ctx.process.parent.executable = parentProcess.path;
+
+                if (parentProcess.containsKey('startTimestamp')) {
+                    ctx.process.parent.start = Instant.ofEpochSecond(parentProcess.startTimestamp).toString();
+                }
+
+                ctx.process.parent.user = new HashMap();
+                if (parentProcess?.uid != null) {
+                    ctx.process.parent.user.id = parentProcess.uid.toString();
+                }      
+
+                ctx.process.parent.real_user = new HashMap();
+                if (parentProcess?.ruid != null) {
+                    ctx.process.parent.real_user.id = parentProcess.ruid.toString();
+                }               
+
+                ctx.process.parent.real_group = new HashMap();
+                if (parentProcess?.rgid != null) {
+                    ctx.process.parent.real_group.id = parentProcess.rgid.toString();
+                }
+
+                ctx.process.parent.code_signature = ctx.process.parent.code_signature ?: new HashMap();
+                if (parentProcess.signingInfo?.appid != null) {
+                    ctx.process.parent.code_signature.signing_id = parentProcess.signingInfo.appid;
+                }
+                if (parentProcess.signingInfo?.statusMessage != null) {
+                    ctx.process.parent.code_signature.status = parentProcess.signingInfo.statusMessage;
+                }
+                if (parentProcess?.signingInfo?.teamid != null) {
+                    ctx.process.parent.code_signature.team_id = parentProcess.signingInfo.teamid;
+                }
+
+                }
+
+                // Mapping out the process group leader, which can be the same as parent
+                def processGroupLeader = ctx.jamf_protect.alerts.input.related.processes[ctx.jamf_protect.alerts.input.related.processes.size() - 1];
+                ctx.process.group_leader = new HashMap();
+                ctx.process.group_leader.name = processGroupLeader.name;
+                ctx.process.group_leader.pid = processGroupLeader.pid;
+                ctx.process.group_leader.executable = processGroupLeader.path;
+
+                if (processGroupLeader.containsKey('startTimestamp')) {
+                    ctx.process.group_leader.start = Instant.ofEpochSecond(processGroupLeader.startTimestamp).toString();
+                }
+
+                ctx.process.group_leader.user = new HashMap();
+                if (processGroupLeader?.uid != null) {
+                    ctx.process.group_leader.user.id = processGroupLeader.uid.toString();
+                }      
+
+                ctx.process.group_leader.real_user = new HashMap();
+                if (processGroupLeader?.ruid != null) {
+                    ctx.process.group_leader.real_user.id = processGroupLeader.ruid.toString();
+                }               
+
+                ctx.process.group_leader.real_group = new HashMap();
+                if (processGroupLeader?.rgid != null) {
+                    ctx.process.group_leader.real_group.id = processGroupLeader.rgid.toString();
+                }
             }
 
 ######################
@@ -381,7 +448,6 @@ processors:
     - pipeline:
         name: '{{ IngestPipeline "gpunifiedlogevent" }}'
         if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUnifiedLogEvent"
-
 
 
 #############
