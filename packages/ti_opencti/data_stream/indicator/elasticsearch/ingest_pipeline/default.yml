@@ -165,10 +165,10 @@ processors:
 
   - gsub:
       if: |
-        ctx.objectMarking.edges != null &&
-        !ctx.objectMarking.edges.isEmpty() &&
-        ctx.objectMarking.edges[0].node.definition_type == "TLP"
-      field: objectMarking.edges.0.node.definition
+        ctx.objectMarking != null &&
+        !ctx.objectMarking.isEmpty() &&
+        ctx.objectMarking[0].definition_type == "TLP"
+      field: objectMarking.0.definition
       pattern: '^TLP:'
       replacement: ''
       target_field: threat.indicator.marking.tlp
@@ -176,23 +176,23 @@ processors:
       field: objectMarking
 
   - foreach:
-      field: objectLabel.edges
+      field: objectLabel
       ignore_missing: true
       processor:
         append:
           field: tags
-          value: "{{{_ingest._value.node.value}}}"
+          value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
   - remove:
       field: objectLabel
 
   - foreach:
-      field: killChainPhases.edges
+      field: killChainPhases
       ignore_missing: true
       processor:
         append:
           field: opencti.indicator.kill_chain_phase
-          value: "[{{{_ingest._value.node.kill_chain_name}}}] {{{_ingest._value.node.phase_name}}}"
+          value: "[{{{_ingest._value.kill_chain_name}}}] {{{_ingest._value.phase_name}}}"
   - remove:
       field: killChainPhases
 
