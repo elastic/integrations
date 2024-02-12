@@ -6,7 +6,7 @@ The Spring Boot integration is used to fetch observability data from [Spring Boo
 
 Use the Spring Boot integration to:
 
-- Collect logs related to the auditevents and httptrace and metrics related to the gc, memory and threading.
+- Collect logs related to audit events, HTTP trace, and metrics related to garbage collection(gc), memory, and threading.
 - Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
 - Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
@@ -14,19 +14,19 @@ Use the Spring Boot integration to:
 
 The Spring Boot integration collects logs and metrics data.
 
-Logs help you keep a record of events that happen on your machine. The `Log` data streams collected by Spring Boot integration are `auditevents` and `httptrace`, so that users can keep track of authentication events, HTTP request and response details, enabling comprehensive monitoring and security auditing.
+Logs help you keep a record of events that occur on your machine. The Log data streams collected by Spring Boot integration are `auditevents` and `httptrace`, allowing users to track authentication events, HTTP request and response details, enabling comprehensive monitoring and security auditing.
 
-Metrics give you insight into the statistics of the Spring Boot. Metrics data streams collected by the Spring Boot integration include auditevents, gc, httptrace, memory and threading so that the user can monitor and troubleshoot the performance of the Spring Boot instances.
+Metrics provide insight into the statistics of Spring Boot. The Metrics data streams collected by the Spring Boot integration include auditevents, gc, httptrace, memory, and threading, enabling users to monitor and troubleshoot the performance of Spring Boot instances.
 
 Data streams:
 - `auditevents`: Collects information related to the authentication status, remote address, document ID and principal.
-- `gc`: Collects information related to the gc collector name, memory usage before and after collection, thread count and time metrics.
+- `gc`: Collects information related to the GC collector name, memory usage before and after collection, thread count, and time metrics.
 - `httptrace`: Collects information related to the http requests, status response, principal and session details.
 - `memory`: Collects information related to the heap and non-heap memory, buffer pool and manager.
 - `threading`: Collects information related to the thread allocations, monitoring and CPU times.
 
 Note:
-- Users can monitor and see the log inside the ingested documents for Spring Boot in the `logs-*` index pattern from `Discover`, and for metrics, the index pattern is `metrics-*`.
+- Users can monitor and view the logs inside the ingested documents for Spring Boot in the `logs-*` index pattern from `Discover`, while for metrics, the index pattern is `metrics-*`.
 
 ## Compatibility
 
