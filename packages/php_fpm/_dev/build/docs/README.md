@@ -7,21 +7,21 @@ PHP-FPM (FastCGI Process Manager) is a web tool used to speed up the performance
 Use the PHP-FPM integration to:
 
 - Collect metrics related to the pool and process.
-- Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
-- Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
+- Create visualizations to monitor, measure, and analyze usage trends and key data, deriving business insights.
+- Create alerts to reduce the MTTD and MTTR by referencing relevant logs when troubleshooting an issue.
 
 ## Data streams
 
 The PHP-FPM integration collects metrics data.
 
-Metrics give you insight into the statistics of the PHP-FPM. Metrics data streams collected by the PHP-FPM integration include [pool](https://www.php.net/manual/en/fpm.status.php#:~:text=Basic%20information%20%2D%20Always%20displayed%20on%20the%20status%20page) and [process](https://www.php.net/manual/en/fpm.status.php#:~:text=Per%2Dprocess%20information%20%2D%20only%20displayed%20in%20full%20output%20mode) so that the user can monitor and troubleshoot the performance of the PHP-FPM instances.
+Metrics provide insight into the statistics of the PHP-FPM. The Metrics data streams collected by the PHP-FPM integration include [pool](https://www.php.net/manual/en/fpm.status.php#:~:text=Basic%20information%20%2D%20Always%20displayed%20on%20the%20status%20page) and [process](https://www.php.net/manual/en/fpm.status.php#:~:text=Per%2Dprocess%20information%20%2D%20only%20displayed%20in%20full%20output%20mode) so that the user can monitor and troubleshoot the performance of the PHP-FPM instances.
 
 Data streams:
 - `pool`: Collects information related to the connection handling, queue metrics, process manager configuration, process activity and performance indicators.
 - `process`: Collects information related to the request metrics, the latest CPU and memory usage and the current running state.
 
 Note:
-- Users can monitor and see the metrics inside the ingested documents for PHP-FPM in the `logs-*` index pattern from `Discover`.
+- Users can monitor and view the metrics inside the ingested documents for PHP-FPM in the `logs-*` index pattern in `Discover`.
 
 ## Compatibility
 
@@ -47,7 +47,7 @@ For step-by-step instructions on how to set up an integration, see the [Getting 
 
 ## Validation
 
-After the integration is successfully configured, click on the *Assets* tab of the PHP-FPM Integration to display the available dashboards. Select the dashboard for your configured data stream, which should be populated with the required data.
+After successfully configuring the integration, click on the *Assets* tab of the PHP-FPM integration to display the available dashboards. Select the dashboard for your configured data stream, which should be populated with the required data.
 
 ## Troubleshooting
 
