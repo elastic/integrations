@@ -15,7 +15,7 @@ Each event in the log data stream collected by the OpenCTI integration is an ind
 
 This integration requires Filebeat version 8.9.0, or later.
 
-It was initially developed using OpenCTI version 5.10.1 and updated for verison 5.12.X.
+It has been updated for OpenCTI version 5.12.24 and requires that version or later.
 
 ## Setup
 
